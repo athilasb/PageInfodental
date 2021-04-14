@@ -1,4 +1,9 @@
 <?php
+	if(empty($paciente)) {
+		$jsc->jAlert("Paciente não encontrado!","erro","document.location.href='pg_contatos_pacientes.php'");
+		die();
+	}
+
 	if(isset($_POST['pacienteHiddenFoto'])) {
 		if(isset($_FILES['foto']) and !empty($_FILES['foto']['tmp_name'])) {
 			$ext = explode(".",$_FILES['foto']['name']);
