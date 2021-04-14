@@ -488,8 +488,24 @@
 										$msgOk="Plano de Tratamento foi <b>REPROVADO</b> com sucesso!";
 										$persistir=false;
 
+										// remove os pagamentos com fusao
+										$sql->consult($_table."_pagamentos","*","where id_tratamento=$cnt->id and id_fusao>0");
+										$pagamentosUnidosIds=array(-1);
+										while($x=mysqli_fetch_object($sql->mysqry)) {
+											$pagamentosUnidosIds[$x->id_fusao]=$x->id_fusao;
+										}
+
+										// retorna pagamentos de uniao
+										$pagamentosFusaoIds=array(-1);
+										$sql->consult($_table."_pagamentos","*","where id IN (".implode(",",$pagamentosUnidosIds).") and fusao=1");
+										while($x=mysqli_fetch_object($sql->mysqry)) {
+											$pagamentosFusaoIds[$x->id_fusao]=$x->id_fusao;
+										}
+
+
+
 										$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$cnt->id");
-										$sql->update($_table."_pagamentos","lixo=1","where id_tratamento=$cnt->id");
+										$sql->update($_table."_pagamentos","lixo=1","where id_tratamento=$cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
 										$sql->update($_table,"pagamentos=''","where id=$cnt->id");
 									} else {
 										$erro="Este tratamento já está REPROVADO";
@@ -835,10 +851,9 @@
 							}
 
 							pagamentos=parcelas;
-							pagamentosListar();
 						}
-
-
+						
+						pagamentosListar();
 
 						$('.js-valorTotal').html(number_format(valorTotal,2,",","."));
 
@@ -910,7 +925,7 @@
 							atualizaValor();
 							desativarCampos();
 						}
-						
+						console.log(procedimentos);
 						$('textarea.js-json-procedimentos').val(JSON.stringify(procedimentos));
 						
 					}
@@ -1126,6 +1141,8 @@
 							}
 							count++;
 						});
+
+						procedimentosListar();
 						
 						atualizaValor();
 						//procedimentos[index].descontoAplicartEmTodos=descontoAplicartEmTodos;
@@ -1597,7 +1614,7 @@
 									}
 									?>
 
-									<textarea name="procedimentos" class="js-json-procedimentos" style="display:none;"><?php echo $values['procedimentos'];?></textarea>
+									<textarea name="procedimentos" class="js-json-procedimentos" style="display:none"><?php echo $values['procedimentos'];?></textarea>
 									
 									<div class="registros2"><?php /* style="height:<?php echo $tratamentoAprovado==false?"calc(115vh - 570px)":"calc(100vh - 400px)";?>; overflow:auto;">*/?>
 
