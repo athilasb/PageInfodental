@@ -1,7 +1,7 @@
 <?php
 	include "includes/header.php";
 	include "includes/nav.php";
-
+ 
 
 	$_table=$_p."pacientes_tratamentos_pagamentos";
 	$_page=basename($_SERVER['PHP_SELF']);
