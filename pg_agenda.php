@@ -329,7 +329,7 @@
 
 							if($dias==0) $agendadoHa="Agendado&nbsp;<strong>HOJE</strong>";
 							else if($dias==1) $agendadoHa="Agendado&nbsp;<strong>ONTEM</strong>";
-							else $agendadoHa="Agendado há&nbsp;<strong>$dias</strong>&nbsp;dias";
+							else $agendadoHa="agendou há&nbsp;<strong>$dias</strong>&nbsp;dias";
 
 							//	$pacienteNome=$_pacientes[$x->id_paciente]->nome;
 							$agendamentos[]=array('agendaPessoal'=>0,																										
@@ -1186,15 +1186,15 @@
 						    if(musica.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-music"></i> ${musica}</p>`;
 						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-music"></i> -</p>`;
 
-						    if(agendadoHa.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> ${agendadoHa}</p>`;
-						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> -</p>`;
-
-						    if(agendadoPor) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> Agendado por&nbsp;<b>${agendadoPor}</b></p>`;
-						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> -</p>`;
+						    // if(agendadoHa.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> ${agendadoHa}</p>`;
+						    // else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> -</p>`;
 
 						    if(indicacao.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-hand-pointing-right"></i> ${indicacao}</p>`;
 						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-hand-pointing-right"></i> -</p>`;
-						   
+
+						    if(agendadoPor) infos+=`<p class="paciente-info-grid__item" style="grid-column:span 2"><i class="iconify" data-icon="bi:calendar-check"></i> <span><strong>${agendadoPor}</strong> ${agendadoHa}</span></p>`;
+						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> -</p>`;
+
 						    /*if(pontuacao.length>0) {
 						    	infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-star"></i> ${pontuacao} <span class="iconify" data-icon="fe:link-external" data-inline="false"></span></p>`;
 						    }*/
