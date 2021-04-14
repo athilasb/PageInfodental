@@ -166,6 +166,12 @@ $values=$adm->get($_GET);
 				</div>
 
 				<div class="filter-group">
+					<div class="filter-title">
+						<span class="badge">1</span> Procedimentos
+					</div>
+				</div>
+
+				<div class="filter-group">
 					<div class="filter-input">
 						<input type="text" name="" placeholder="Nome do paciente" />
 					</div>

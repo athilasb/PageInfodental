@@ -80,8 +80,24 @@
 			<section class="grid">
 				<div class="box">
 					
+					<div class="filter">
+
+						<div class="filter-group">
+							<div class="filter-button">
+								<a href="javascript:;"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
+							</div>
+						</div>
+
+						<div class="filter-group">
+							<div class="filter-title">
+								<span class="badge">1</span> Escolha o tipo de evolução
+							</div>
+						</div>
+
+					</div>
+
 					<div class="filtros">
-						<h1 class="filtros__titulo">Selecione o tipo de evolução</h1>
+						
 						<div class="filtros-acoes">
 							<a href="<?php echo $_page."?".$url;?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
 						</div>
@@ -120,10 +136,11 @@
 			<section class="grid">
 				<section class="box">
 
-					<div class="filtros">
-						<h1 class="filtros__titulo">Evolução</h1>
-						<div class="filtros-acoes">
-							<a href="<?php echo $_page."?form=1&$url";?>" data-padding="0" class="principal tooltip" title="Adicionar"><i class="iconify" data-icon="bx-bx-plus"></i></a>
+					<div class="filter">
+						<div class="filter-group">
+							<div class="filter-button">
+								<a href="<?php echo $_page."?form=1&$url";?>" class="verde"><i class="iconify" data-icon="bx-bx-plus"></i><span>adicionar evolução</span></a>
+							</div>
 						</div>
 					</div>
 
