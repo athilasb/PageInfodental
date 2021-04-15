@@ -61,10 +61,10 @@
 			<p><span style="color:var(--cinza3);">#<?php echo $paciente->id;?></span>
 		</div>		
 	</div>
-	<div class="filtros-acoes">
+	<?php /*<div class="filtros-acoes">
 		<a href="pg_contatos_pacientes.php"><i class="iconify" data-icon="bx-bx-search"></i></a>
 		<a href="?deletaPaciente=<?php echo $paciente->id."&".$url;?>" class="sec js-deletar" ><i class="iconify" data-icon="bx-bx-trash"></i></a>
-	</div>
+	</div>*/?>
 </section>
 
 <ul class="abas">

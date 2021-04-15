@@ -647,41 +647,7 @@
 			
 		</script>
 
-		<section class="grid grid_5">
-			<div class="box">
-				<dl>
-					<dt>Valor À Receber</dt>
-					<dd>
-						<span style="font-weight:bold"><?php echo number_format($valor['aReceber'],2,",",".");?></span>
-					</dd>
-				</dl>
-			</div>
-			<div class="box">
-				<dl>
-					<dt>Valor Recebido</dt>
-					<dd>
-						<span style="font-weight:bold"><?php echo number_format($valor['valorRecebido'],2,",",".");?></span>
-					</dd>
-				</dl>
-			</div>
-			<div class="box">
-				<dl>
-					<dt>Valores Vencidos</dt>
-					<dd>
-						<span style="font-weight:bold"><?php echo number_format($valor['valoresVencido'],2,",",".");?></span>
-					</dd>
-				</dl>
-			</div>
-			<div class="box">
-				<dl>
-					<dt>Total</dt>
-					<dd>
-						<span style="font-weight:bold"><?php echo number_format($valor['valorTotal'],2,",",".");?></span>
-					</dd>
-				</dl>
-			</div>
-
-		</section>
+		
 
 		<script type="text/javascript">
 			var pagamentos = [];
@@ -853,8 +819,65 @@
 		<section class="grid">
 			<div class="box">
 
-				<div class="filtros">
-					<h1 class="filtros__titulo">Financeiro</h1>
+				<div class="filter">
+					<div class="filter-group">
+						<div class="filter-button">
+							<a href="javascript:;" class="verde"><i class="iconify" data-icon="bx-bx-plus"></i><span>Nova Cobrança</span></a>
+						</div>
+					</div>
+
+					<div class="filter-group">
+						<div class="filter-data">
+							<h1>Valor À Receber</h1>
+							<h2>R$ <?php echo number_format($valor['aReceber'],2,",",".");?></h2>
+						</div>					
+					</div>	
+					<div class="filter-group">
+						<div class="filter-data">
+							<h1>Valor Recebido</h1>
+							<h2>R$ <?php echo number_format($valor['valorRecebido'],2,",",".");?></h2>
+						</div>					
+					</div>	
+					<div class="filter-group">
+						<div class="filter-data">
+							<h1>Valores Vencidos</h1>
+							<h2>R$ <?php echo number_format($valor['valoresVencido'],2,",",".");?></h2>
+						</div>					
+					</div>	
+					<div class="filter-group">
+						<div class="filter-data">
+							<h1>Valor Total</h1>
+							<h2>R$ <?php echo number_format($valor['valorTotal'],2,",",".");?></h2>
+						</div>					
+					</div>	
+
+					<div class="filter-group filter-group_right">
+						<div class="filter-button">
+							<?php
+							if(isset($_GET['unirPagamentos'])) {
+							?>
+
+							<div class="filter-group">
+								<div class="filter-input">
+									<span class="badge">1</span> Selecione nova data de vencimento
+									<input type="text" class="js-dataVencimento data datecalendar" value="" style="width:120px;" />
+								</div>
+							</div>
+							<a href="javascript:;" data-padding="0" class="principal tooltip js-btn-unirPagamentos azul" title="Unir"><i class="iconify" data-icon="bx:bx-check" data-inline="false"></i> Unir</a>
+							<a href="<?php echo $_page."?".$url;?>" data-padding="0" class="principal tooltip" title="Cancelar" style="background: var(--vermelho);color:#FFF;"><span class="iconify" data-icon="topcoat:cancel" data-inline="false"></span></a>
+
+							<?php
+							} else {
+							?>
+							<a href="<?php echo $_page."?unirPagamentos=1&$url";?>" data-padding="0" class="adicionar tooltip azul" title="Unir Pagamentos"><i class="iconify" data-icon="codicon:group-by-ref-type"></i>&nbsp;Unir pagamentos</a>
+							<?php
+							}
+							?>
+						</div>
+					</div>
+				</div>
+
+				<?php /*<div class="filtros">
 					<div class="filtros-acoes">
 						<?php
 						if(isset($_GET['unirPagamentos'])) {
@@ -872,7 +895,7 @@
 						?>
 						<a href="<?php echo $_page."?form=1&$url";?>" data-padding="0" class="adicionar tooltip" title="Adicionar"><i class="iconify" data-icon="bx-bx-plus"></i></a>
 					</div>
-				</div>
+				</div>*/?>
 
 				<div class="registros2">
 					<form class="js-form-pagamentos" onsubmit="return false">
@@ -1002,7 +1025,7 @@
 								
 
 							?>
-							<div class="card js-procedimento-item" data-id_pagamento="<?php echo $x->id;?>" style="border-left:solid 10px <?php echo $cor;?>;opacity: <?php echo $opacity;?>" onclick="popView(this);">
+							<div class="card js-procedimento-item" data-id_pagamento="<?php echo $x->id;?>" style="border-left:solid 10px <?php echo $cor;?>;opacity: <?php echo $opacity;?>" <?php if(!isset($_GET['unirPagamentos'])) {?>onclick="popView(this);"<?php } ?>>
 							
 								<?php
 								if(isset($_GET['unirPagamentos'])) {
@@ -1157,209 +1180,8 @@
 					</section>
 	    		</section>
 
-				<?php /*<div class="registros">
-					<form class="js-form-pagamentos" onsubmit="return false">
-
-						<table class="">
-							<thead>
-								<tr>
-									<?php
-									if(isset($_GET['unirPagamentos'])) {
-									?>
-									<th style="width:20px;"></th>
-									<?php	
-									}
-									?>
-									<th>Vencimento</th>
-									<th style="width:30%">Plano de Tratamento</th>
-									<th>Status</th>
-									<th>Inicial</th> 
-									<th>Corrigido</th> 
-									<th>Pago</th> 
-									<th>À Pagar</th> 			
-									<th style="width:50px;"></th>				
-								</tr>
-							</thead>
-							<tbody>
-							<?php
-							foreach($registros as $x) {
-								$opacity=1;
-								if(isset($_GET['unirPagamentos'])) {
-									if(isset($pagamentosComBaixas[$x->id])) { 
-										$opacity=0.3;
-									}
-								}
-
-								$saldoAPagar=$x->valor;
-								$valorCorrigido=$x->valor;
-								$valorPago=$descontos=$multas=0;
-								$dataUltimoPagamento='-';
-
-								if(isset($_baixas[$x->id])) {
-									$dataUltimoPagamento=date('d/m/Y',strtotime($_baixas[$x->id][count($_baixas[$x->id])-1]->data));
-
-									foreach($_baixas[$x->id] as $v) {
-										$saldoAPagar-=$v->valor;
-										$valorPago+=$v->valor;
-									}
-								}
-
-								$atraso=(strtotime($x->data_vencimento)-strtotime(date('Y-m-d')))/(60*60*24);
-
-								$status='';
-
-								// verifica se possui baixas 
-								if(isset($_baixas[$x->id])) {
-									$baixaVencida=false;
-									$baixaEmAberta=false;
-									foreach($_baixas[$x->id] as $b) {
-										if(strtotime($b->data_vencimento)<strtotime('Y-m-d')) {
-											$baixaVencida=true;
-											break;
-										}
-										if($b->pago==0) {
-											$baixaEmAberta=true;
-										}
-									}
-
-									if($baixaVencida===true) {
-										$status="<font color=red>INADIMPLENTE</font>";
-									} else if($baixaEmAberta==false) {
-										$status="<font color=green>ADIMPLENTE</font>";
-									} else {
-										if($saldoAPagar==0) {
-											$status="<font color=orange>PROMESSA DE PAGAMENTO</font>";
-										} else {
-											$status="<font color=blue>EM ABERTO</font>";
-										}
-									}
-									
-								} 
-								// nao possui nenhuma baixa
-								else {
-									if(strtotime($x->data_vencimento)<strtotime(date('Y-m-d'))) $status="<font color=red>INADIMPLENTE</font>";
-									else $status="<font color=blue>EM ABERTO</font>";
-								}
-
-								$valorDespesa=$valorDesconto=0;
-
-
-
-							?>
-							<tr data-id_pagamento="<?php echo $x->id;?>" style="opacity: <?php echo $opacity;?>">
-								<?php
-								if(isset($_GET['unirPagamentos'])) {
-								?>
-								<td class="js-tr-fusao">
-									<input type="checkbox" name="pagamentos[]" class="js-checkbox-pagamentos" value="<?php echo $x->id;?>" />
-								</td>
-								<?php	
-								}
-								?>
-								<td class="js-tr-fusao">
-									<?php 
-									echo date('d/m/Y',strtotime($x->data_vencimento));
-									//echo "<BR>".$x->id;
-									?>
-								</td>
-								<td class="js-tr-fusao">
-									<?php 
-									if($x->fusao>0) {
-									?>
-									<a href="javascript:;" style="text-decoration: none;color:#000;"><strong><i class="iconify" data-icon="codicon:group-by-ref-type" data-height="18" data-inline="true"></i> União de Pagamentos (<?php echo isset($_subpagamentos[$x->id])?count($_subpagamentos[$x->id]):0;?>)</strong></a>
-									<?php
-									} else {
-										echo isset($_tratamentos[$x->id_tratamento])?utf8_encode($_tratamentos[$x->id_tratamento]->titulo):'Avulso';
-									}
-									?>
-								</td>
-								<td class="js-tr-fusao">
-									<?php 
-
-
-									echo $status;
-
-									/*if($saldoAPagar<=0) echo '<font color=green><span class="iconify" data-icon="el:ok" data-inline="true" data-height="10"></span> pago</font>';
-									else {
-										echo ($atraso<0)?"<font color=red>atrasado há <b>".($atraso*-1)."</b> dia(s)</font>":"vence em <b>".$atraso."</b> dia(s)";
-									}**
-
-									?>
-								</td>
-								<td class="js-tr-fusao"><?php echo $x->valor==0?"-":number_format($x->valor,2,",",".");?></td>
-								<td class="js-tr-fusao"><?php echo $valorCorrigido==0?"-":number_format($valorCorrigido,2,",",".");?></td>
-								<td class="js-tr-fusao"><?php echo number_format($valorPago,2,",",".");?></td>
-								<td class="js-tr-fusao"><?php echo number_format($saldoAPagar>=$saldoAPagar?$saldoAPagar:0,2,",",".");?></td>
-								<td>
-									<a href="javascript:;" class="js-tr-pagamento button" data-id_pagamento="<?php echo $x->id;?>" style="color:#FFF"><span class="iconify" data-icon="ic:round-attach-money" data-inline="false" data-height="20"></span></a>
-								</td>
-							</tr>
-							<?php
-								if($x->fusao==1) {
-									if(isset($_subpagamentos[$x->id])) {
-										foreach($_subpagamentos[$x->id] as $y) {
-										
-							?>
-							<tr class="js-fusao-<?php echo $x->id;?>" style="background:#f0f0f0;display:none;font-size:12px;">
-								<?php
-								if(isset($_GET['unirPagamentos'])) {
-								?>
-								<td>
-									<input type="checkbox" name="pagamentos[]" class="js-checkbox-pagamentos" value="<?php echo $x->id;?>" />
-								</td>
-								<?php	
-								}
-								?>
-								<td>
-									<?php 
-									echo date('d/m/Y',strtotime($y->data_vencimento));
-									?>
-								</td>
-								<td>
-									<?php 
-									if($y->fusao>0) {
-									?>
-									<a href="javascript:;" class="tooltip" title="Tratamentos" style="text-decoration: none;color:#000;"><strong><i class="iconify" data-icon="codicon:group-by-ref-type" data-height="18" data-inline="true"></i> Fusão</strong></a>
-									<?php
-									} else {
-										echo isset($_tratamentos[$y->id_tratamento])?utf8_encode($_tratamentos[$y->id_tratamento]->titulo):'Avulso';
-									}
-									?>
-								</td>
-								<td>
-									
-								</td>
-								<td><?php echo $y->valor==0?"-":number_format($y->valor,2,",",".");?></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-							</tr>
-							<?php	
-										}
-							?>
-
-							<tr class="js-fusao-<?php echo $x->id;?>" style="background:#f0f0f0;display:none;color:var(--vermelho)">
-								<td colspan="9">
-									<center>
-										<a href="javascript:;" class="js-desfazerUniao" data-id_pagamento="<?php echo $x->id;?>"><span class="iconify" data-icon="eva:undo-fill" data-inline="false"></span> Desfazer união</a>
-									</center>
-								</td>
-							</tr>
-							<?php
-									}	
-								}
-							}
-							?>
-							
-							</tbody>
-						</table>
-					</form>
-
-				</div>*/?>
 				<script type="text/javascript">
 					pagamentos = JSON.parse(`<?php echo json_encode($pagamentosJSON);?>`);
-					console.log(pagamentos);
 				</script>
 				<?php
 				}

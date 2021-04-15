@@ -274,6 +274,7 @@
 							$values['pagamentos']=empty($cnt->pagamentos)?"[]":utf8_encode($cnt->pagamentos);
 						}
 
+
 				} else {
 					$jsc->jAlert("Plano de Tratamento não encontrado!","erro","document.location.href='$_page?$url'");
 					die();
@@ -517,7 +518,6 @@
 								}
 							}
 
-						
 
 						// Persiste informações
 						if($persistir===true) { 
@@ -1068,8 +1068,9 @@
 						       $('#cal-popup').hide();
 						    }
 						});
+				
 				$(function(){
-
+					pagamentos=JSON.parse($('textarea.js-json-pagamentos').val());
 
 					$('.js-pagamentos').on('keyup','.js-valor',function(){
 						let index = $(this).index('.js-pagamentos .js-valor');
@@ -1506,25 +1507,83 @@
 						$('.js-metodoPagamento:checked').trigger('click');
 
 
-						pagamentos=JSON.parse($('textarea.js-json-pagamentos').val());
+						
 						pagamentosListar();
 
 					desativarCampos();
 
 					$('#modalProcedimento').hide();
+
+					$('.js-btn-status').click(function(){
+						let status = $(this).attr('data-status');
+						if(status=="PENDENTE") {
+							$('input[name=status]').val('PENDENTE');
+						} else if(status=="APROVADO") {
+							$('input[name=status]').val('APROVADO');
+
+						} else if(status=="CANCELADO") {
+							$('input[name=status]').val('CANCELADO');
+
+						} else  {
+
+							$('input[name=status]').val('');
+						}
+
+						$('form.js-form').submit();
+					})
 					
 				});
 			</script>
 			
 		
-
 			<form method="post" class="form js-form"  autocomplete="off" enctype="multipart/form-data">
 				<input type="hidden" name="acao" value="salvar" />
 
 				<section class="grid" style="padding:2rem; height:calc(100vh - 210px);?>">
 
 						<div class="box" style="display:flex; flex-direction:column;">
-							<div class="filtros" style="flex:0;background:none;">
+							<div class="filter">
+								<div class="filter-group">
+									<div class="filter-button">
+										<a href="<?php echo $_page."?id_paciente=$paciente->id&$url";?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
+									</div>
+								</div>
+
+								<div class="filter-group">
+									<div class="filter-input">
+										<input type="text" name="titulo" value="<?php echo $values['titulo'];?>" placeholder="Nome do plano" style="width:300px" />
+									</div>
+								</div>
+								<?php
+								if(is_object($cnt)) {
+								?>
+								<input type="hidden" name="status" />
+								<div class="filter-group filter-group_right">
+									<div class="filter-links">
+										<a href="javascript:;" data-status="PENDENTE" class="js-btn-status<?php echo $cnt->status=="PENDENTE"?" active":"";?>">Em aberto</a>
+										<a href="javascript:;" data-status="APROVADO" class="js-btn-status<?php echo $cnt->status=="APROVADO"?" active":"";?>">Aprovado</a>
+										<a href="javascript:;" data-status="CANCELADO" class="js-btn-status<?php echo $cnt->status=="CANCELADO"?" active":"";?>">Reprovado</a>
+									</div>
+								</div>
+								<?php
+								}
+								?>
+								<div class="filter-group">
+									<div class="filter-data">
+										<h1>Valor Total</h1>
+										<h2 class="js-valorTotal">0,00</h2>
+									</div>					
+								</div>	
+
+								<div class="filter-group filter-group_right">
+									<div class="filter-button">
+										<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+										<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+										<a href="javascript:;" class="azul js-btn-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+									</div>
+								</div>
+							</div>
+							<?php /*<div class="filtros" style="flex:0;background:none;">
 								<h1 class="filtros__titulo" style="width:500px; max-width:70%;">
 									<input type="text" name="titulo" placeholder="Título do tratamento..." value="<?php echo $values['titulo'];?>" style="background:none;border:0; border-radius:0; border-bottom:1px solid var(--cinza2); " />
 								</h1>
@@ -1533,27 +1592,7 @@
 
 									?>
 									<input type="hidden" name="status" />
-									<script type="text/javascript">
-										$(function(){ 
-											$('.js-btn-status').click(function(){
-												let status = $(this).attr('data-status');
-												if(status=="PENDENTE") {
-													$('input[name=status]').val('PENDENTE');
-												} else if(status=="APROVADO") {
-													$('input[name=status]').val('APROVADO');
-
-												} else if(status=="CANCELADO") {
-													$('input[name=status]').val('CANCELADO');
-
-												} else  {
-
-													$('input[name=status]').val('');
-												}
-
-												$('form.js-form').submit();
-											})
-										});
-									</script>
+									
 									<style type="text/css">
 										ul.btns {
 										}
@@ -1588,7 +1627,7 @@
 									?>
 									<a href="box/boxPacienteTratamentoCancelar.php?id_paciente=<?php echo $paciente->id;?>&id_tratamento=<?php echo $cnt->id;?>&id_unidade=<?php echo $usrUnidade->id;?>" data-fancybox data-type="ajax" data-padding="0" class="tooltip js-btn-reprovar sec" title="Cancelar"><i class="iconify" data-icon="bx-bx-x"></i></a>
 									<?php
-										}*/
+										}*888
 									}
 									?>
 								<div class="filtros-acoes">
@@ -1598,18 +1637,25 @@
 
 									
 								</div>
-							</div>
+							</div>*/?>
 							
 							<div class="grid grid_auto" style="flex:1;">
 								<fieldset style="grid-column:span 2; margin:0;">
 									
-									<legend>Procedimentos </legend>
+									<legend><span class="badge">1</span> Adicione os Procedimentos</legend>
 									<?php
 									if($tratamentoAprovado===false) {
 									?>
-									<div class="clearfix" style="margin-bottom: 10px;">
+									<?php /*<div class="clearfix" style="margin-bottom: 10px;">
 										<a href="javascript:;" class="button js-btn-addProcedimento tooltip " title="Adicionar Procedimento" style="background:var(--azul);color:#FFF;float: right"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar Procedimento</a>
+									</div>*/?>
+									<div class="filter">
+									<div class="filter-group">
+										<div class="filter-button">
+											<a href="javascript:;" class="verde js-btn-addProcedimento "><i class="iconify" data-icon="bx-bx-plus"></i><span>Novo Procedimento</span></a>
+										</div>
 									</div>
+								</div>
 									<?php
 									}
 									?>
@@ -1638,7 +1684,7 @@
 								</fieldset>												
 								
 								<fieldset style="margin:0;">
-									<legend>Financeiro</legend>
+									<legend><span class="badge">2</span> Defina o Financeiro</legend>
 									
 									<?php /*<div class="colunas4">
 										<dl>
@@ -1881,13 +1927,20 @@
 
 		<section class="grid">
 			<div class="box">
+				<div class="filter">
+					<div class="filter-group">
+						<div class="filter-button">
+							<a href="<?php echo $_page."?form=1&$url";?>" class="verde"><i class="iconify" data-icon="bx-bx-plus"></i><span>Novo Tratamento</span></a>
+						</div>
+					</div>
+				</div>
 
-				<div class="filtros">
+				<?php /*<div class="filtros">
 					<h1 class="filtros__titulo">Tratamento</h1>
 					<div class="filtros-acoes">
 						<a href="<?php echo $_page."?form=1&$url";?>" data-padding="0" class="adicionar tooltip" title="Adicionar">Adicionar Tratamento</a>
 					</div>
-				</div>
+				</div>*/?>
 				<div class="registros2">
 					<?php
 					foreach($registros as $x) {

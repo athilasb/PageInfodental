@@ -224,21 +224,6 @@
 		<?php
 		require_once("includes/abaPaciente.php");
 		?>
-		
-		<?php
-		/*
-		if(!isset($_GET['form'])) {
-		?>
-		<div class="filtros">
-			<h1 class="filtros__titulo">Tratamento</h1>
-			<div class="filtros-acoes">
-				<a href="<?php echo $_page."?form=1&$url";?>" data-padding="0" class="principal tooltip" title="Adicionar"><i class="iconify" data-icon="bx-bx-plus"></i></a>
-			</div>
-		</div>
-		<?php
-		}
-		*/
-		?>
 			
 		<?php
 		if(isset($_GET['form'])) {
@@ -625,7 +610,7 @@
 						}
 
 					} else {
-						$jsc->jAlert("Tratamento não encontrado!","erro","document.location.href='$_page?$url'");
+						$jsc->jAlert("Laboratorio não encontrado!","erro","document.location.href='$_page?$url'");
 						die();
 					}
 				} else {
@@ -933,11 +918,11 @@
 						procedimentosListar();
 					}
 
-					const validarTratamento = () => {
+					const validarLaboratorio = () => {
 						let erro = ``;
 
 						if($('input[name=titulo]').val().length==0) {
-							erro='Digite o título do <b>Tratamento</b>';
+							erro='Digite o título do <b>Laboratorio</b>';
 							$('input[name=titulo]').addClass('erro');
 						}
 
@@ -1180,7 +1165,7 @@
 						if(valorSaldo!=0) {
 							swal({title: "Erro!", text: 'Para salvar este tratamento, o saldo não pode apresentar diferença!', html:true, type:"error", confirmButtonColor: "#424242"});
 						} else {
-							let erro=validarTratamento();
+							let erro=validarLaboratorio();
 
 							if(erro.length==0) {
 								$('.js-procedimento-item').each(function(index,elem){
@@ -1215,7 +1200,7 @@
 							swal({title: "Erro!", text: 'Para salvar este tratamento, adicione pelo menos um procedimento!', html:true, type:"error", confirmButtonColor: "#424242"});
 						} else {
 
-							let erro=validarTratamento();
+							let erro=validarLaboratorio();
 
 							if(erro.length>0) {
 								swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
@@ -1541,7 +1526,45 @@
 				});
 			</script>
 			
-		
+			<section class="grid">
+				
+				<div class="box">
+					<div class="filter">
+
+						<div class="filter-group">
+							<div class="filter-button">
+								<a href="javascript:;" class="verde"><i class="iconify" data-icon="bx-bx-plus"></i><span>novo serviço</span></a>
+							</div>
+						</div>
+
+						<div class="filter-group">
+							<div class="filter-data">
+								<h1>Valor Total</h1>
+								<h2>R$ 3.540,00</h2>
+							</div>					
+						</div>
+
+
+						<div class="filter-group">
+							<div class="filter-links">
+								<a href="" class="active">Ativado</a>
+								<a href="">Desativado</a>
+								<a href="">Cancelado</a>
+							</div>
+						</div>
+
+						<div class="filter-group filter-group_right">
+							<div class="filter-button">
+								<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+								<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+								<a href="javascript:;" class="azul"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+			</section>
 
 			<form method="post" class="form js-form"  autocomplete="off" enctype="multipart/form-data">
 				<input type="hidden" name="acao" value="salvar" />
@@ -1549,112 +1572,79 @@
 				<section class="grid" style="padding:2rem; height:calc(100vh - 210px);?>">
 
 						<div class="box" style="display:flex; flex-direction:column;">
-							<div class="filtros" style="flex:0;background:none;">
+
+							<div class="filter">
+								<div class="filter-group">
+									<div class="filter-button">
+										<a href="<?php echo $_page."?id_paciente=$paciente->id&$url";?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
+									</div>
+								</div>
+
+								<div class="filter-group">
+									<div class="filter-input">
+										<input type="text" name="titulo" value="<?php echo $values['titulo'];?>" placeholder="Nome do plano" style="width:300px" />
+									</div>
+								</div>
+
+								<div class="filter-group">
+									<div class="filter-data">
+										<h1>Valor Total</h1>
+										<h2 class="js-valorTotal">0,00</h2>
+									</div>					
+								</div>	
+
+								<div class="filter-group filter-group_right">
+									<div class="filter-button">
+										<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+										<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+										<a href="javascript:;" class="azul js-btn-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+									</div>
+								</div>
+							</div>
+
+							<?php /*<div class="filtros" style="flex:0;background:none;">
 								<h1 class="filtros__titulo" style="width:500px; max-width:70%;">
 									<input type="text" name="titulo" placeholder="Título do tratamento..." value="<?php echo $values['titulo'];?>" style="background:none;border:0; border-radius:0; border-bottom:1px solid var(--cinza2); " />
 								</h1>
-								<?php
-									if(is_object($cnt)) {
-
-									?>
-									<input type="hidden" name="status" />
-									<script type="text/javascript">
-										$(function(){ 
-											$('.js-btn-status').click(function(){
-												let status = $(this).attr('data-status');
-												if(status=="PENDENTE") {
-													$('input[name=status]').val('PENDENTE');
-												} else if(status=="APROVADO") {
-													$('input[name=status]').val('APROVADO');
-
-												} else if(status=="CANCELADO") {
-													$('input[name=status]').val('CANCELADO');
-
-												} else  {
-
-													$('input[name=status]').val('');
-												}
-
-												$('form.js-form').submit();
-											})
-										});
-									</script>
-									<style type="text/css">
-										ul.btns {
-										}
-										ul.btns li {
-											float:left;
-											background: var(--cinza2);
-											padding:23px;
-											border-radius: 31px;
-											margin-right: 10px;
-
-										}
-										ul.btns li.active {
-											background: var(--cinza3)
-
-										}
-									</style>
-									<ul class="btns">
-										<a href="javascript:;" data-status="PENDENTE" class="js-btn-status"><li class="<?php echo $cnt->status=="PENDENTE"?"active":"";?>">Em Aberto</li></a>
-										<a href="javascript:;" data-status="APROVADO" class="js-btn-status"><li class="<?php echo $cnt->status=="APROVADO"?"active":"";?>">Aprovado</li></a>
-										<a href="javascript:;" data-status="CANCELADO" class="js-btn-status"><li class="<?php echo $cnt->status=="CANCELADO"?"active":"";?>">Reprovado</li></a>
-									</ul>
-									<?php
-										/*if($cnt->status=="PENDENTE") {
-									?>
-									<a href="javascript:;" data-padding="0" class="principal2 tooltip js-btn-aprovar" title="Aprovar"><i class="iconify" data-icon="bx-bx-check-double"></i> <p>Aprovar tratamento</p></a>
-
-									<a href="javascript:;" data-padding="0" class="principal2 tooltip js-btn-reprovar" title="Reprovar" style="background:var(--vermelho);"><i class="iconify" data-icon="websymbol:cancel" data-height="16"></i> <p>Reprovar tratamento</p></a>
-									<?php
-										} 
-										if($cnt->status=="APROVADO") {
-
-									?>
-									<a href="box/boxPacienteTratamentoCancelar.php?id_paciente=<?php echo $paciente->id;?>&id_tratamento=<?php echo $cnt->id;?>&id_unidade=<?php echo $usrUnidade->id;?>" data-fancybox data-type="ajax" data-padding="0" class="tooltip js-btn-reprovar sec" title="Cancelar"><i class="iconify" data-icon="bx-bx-x"></i></a>
-									<?php
-										}*/
-									}
-									?>
+								
 								<div class="filtros-acoes">
 									<a href="javascript:;"><b>Valor Total:</b>&nbsp;<span class="js-valorTotal"></span></a>
 									<a href="<?php echo $_page."?".$url;?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
 									<a href="javascript:;" data-padding="0" class="principal tooltip js-btn-salvar" title="Salvar">Salvar</a>
-
-									
 								</div>
-							</div>
+							</div>*/ ?>
 							
 							<div class="grid grid_auto" style="flex:1;">
 								<fieldset style="grid-column:span 2; margin:0;">
 									
 									<legend>Laboratório</legend>
+
 									<?php
 									if($tratamentoAprovado===false) {
 									?>
 									<div class="clearfix" style="margin-bottom: 10px;">
 
 										<div class="colunas4">
-										<dl>
-											<dt>Laboratório</dt>
-											<dd>
-												<select class="js-add-laboratorio">
-													<option value="">-</option>
-													<?php
-													foreach($_laboratorios as $l) {
-														echo '<option value="'.$l->id.'">'.utf8_encode($l->tipo_pessoa=="PJ"?$l->razao_social:$l->nome).'</option>';
-													}
-													?>
-												</select>
-											</dd>
-										</dl>
-										<dl class="dl2">
-											<dd>
-												<a href="javascript:;" class="button js-btn-addOS tooltip " title="Adicionar OS" style="background:var(--verde);color:#FFF;"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar Serviço</a>
-												<a href="javascript:;" class="button js-btn-addOS tooltip " title="Adicionar OS" style="background:var(--azul);color:#FFF;"><i class="iconify" data-icon="ic-baseline-add"></i> Informações OS</a>
-											</dd>
-										</dl>
-									</div>
+											<dl>
+												<dt>Laboratório</dt>
+												<dd>
+													<select class="js-add-laboratorio">
+														<option value="">-</option>
+														<?php
+														foreach($_laboratorios as $l) {
+															echo '<option value="'.$l->id.'">'.utf8_encode($l->tipo_pessoa=="PJ"?$l->razao_social:$l->nome).'</option>';
+														}
+														?>
+													</select>
+												</dd>
+											</dl>
+											<dl class="dl2">
+												<dd>
+													<a href="javascript:;" class="button js-btn-addOS tooltip " title="Adicionar OS" style="background:var(--verde);color:#FFF;"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar Serviço</a>
+													<a href="javascript:;" class="button js-btn-addOS tooltip " title="Adicionar OS" style="background:var(--azul);color:#FFF;"><i class="iconify" data-icon="ic-baseline-add"></i> Informações OS</a>
+												</dd>
+											</dl>
+										</div>
 										
 									</div>
 									<?php
@@ -1689,7 +1679,7 @@
 									
 									<?php /*<div class="colunas4">
 										<dl>
-											<dt>Tratamento</dt>
+											<dt>Laboratorio</dt>
 											<dd style="color:red"><span class="js-valorTotal">R$ 0,00</span></dd>
 										</dl>
 										<dl>
@@ -1779,7 +1769,8 @@
 					</dl>
 				</article>
 			</section>
-				<section id="modalProcedimento" class="modal" style="width:950px;">
+
+			<section id="modalProcedimento" class="modal" style="width:950px;">
 				
 				<header class="modal-conteudo">
 						<form method="post" class="form js-form-agendamento">
@@ -1936,13 +1927,20 @@
 
 		<section class="grid">
 			<div class="box">
-
+				<div class="filter">
+					<div class="filter-group">
+						<div class="filter-button">
+							<a href="<?php echo $_page."?form=1&$url";?>" class="verde"><i class="iconify" data-icon="bx-bx-plus"></i><span>Nova Ordem de Serviço</span></a>
+						</div>
+					</div>
+				</div>
+				<?php /*
 				<div class="filtros">
-					<h1 class="filtros__titulo">Tratamento</h1>
+					<h1 class="filtros__titulo">Laboratório</h1>
 					<div class="filtros-acoes">
 						<a href="<?php echo $_page."?form=1&$url";?>" data-padding="0" class="adicionar tooltip" title="Adicionar">Nova Ordem de Serviço</a>
 					</div>
-				</div>
+				</div>*/?>
 				<div class="registros2">
 					<?php
 					foreach($registros as $x) {
@@ -2012,88 +2010,7 @@
 					}
 					?>
 				</div>
-				<?php /*<div class="registros">
 
-					<table class="tablesorter">
-						<thead>
-							<tr>
-								<th style="width:30px;"></th>
-								<th>Título</th>
-								<th>Data</th>
-								<th style="width:300px;">Conclusão da Evolução</th>
-								<th style="width:300px;">Conclusão do Pagamento</th>								
-							</tr>
-						</thead>
-						<tbody>
-						<?php
-						
-						foreach($registros as $x) {
-
-							$procedimentos=array();
-							if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
-
-							$pagamentos=array();
-							if(isset($_pagamentos[$x->id])) $pagamentos=$_pagamentos[$x->id];
-							
-						?>
-						<tr onclick="document.location.href='<?php echo "$_page?form=1&edita=$x->id&$url";?>'">
-							<td>
-								<?php
-								
-								?>
-							</td>
-							<td><strong><?php echo utf8_encode($x->titulo);?></strong></td>
-							<td><?php echo date('d/m/Y H:i',strtotime($x->data));?></td>
-							<td>
-								<?php
-								if($x->id_aprovado==0) {
-									echo "-";
-								} else {
-									if(count($procedimentos)==0) echo '<a href="javascript" class="tooltip" title="Nenhum procedimento foi aprovado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
-									else {
-										$abertos=0;
-										$finalizados=0;
-										foreach($procedimentos as $p) {
-											if($p->id_concluido==0) $abertos++;
-											else $finalizados++;
-										}
-										$perc=($abertos+$finalizados)==0?0:number_format(($finalizados/($abertos+$finalizados))*100,0,"","");
-									?>
-									<div class="grafico-barra"><span style="width:<?php echo $perc;?>%">&nbsp;</span></div>
-									<?php
-									}
-								}
-								?>
-							</td>
-							<td>
-								<?php
-								if($x->id_aprovado==0) {
-									echo "-";
-								} else {
-									if(count($pagamentos)==0) echo '<a href="javascript" class="tooltip" title="Nenhum pagamento foi adicionado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
-									else {
-										$abertos=0;
-										$finalizados=0;
-										foreach($pagamentos as $p) {
-											//if($p->id_pago==0) $abertos++;
-										//	else $finalizados++;
-										}
-										$perc=($abertos+$finalizados)==0?0:number_format(($finalizados/($abertos+$finalizados))*100,0,"","");
-									?>
-									<div class="grafico-barra"><span style="width:<?php echo $perc;?>%">&nbsp;</span></div>
-									<?php
-									}
-								}
-								?>
-							</td>
-						</tr>
-						<?php
-						}
-						?>
-						
-						</tbody>
-					</table>
-				</div>*/?>
 				<?php
 				}
 				?>

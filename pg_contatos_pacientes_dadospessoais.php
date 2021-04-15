@@ -298,8 +298,24 @@
 
 			<section class="grid" style="padding:2rem;">
 				<div class="box">
+					<div class="filter">
 
-					<div class="filtros">
+						<div class="filter-group">
+							<div class="filter-button">
+								<a href="javascript:history.back(-1);"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
+							</div>
+						</div>
+
+						<div class="filter-group filter-group_right">
+							<div class="filter-button">
+								<a href="?deletaPaciente=<?php echo $paciente->id."&".$url;?>" class="js-deletar"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+								<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+								<a href="javascript:;" class="azul  btn-submit"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+							</div>
+						</div>
+
+					</div>
+					<?php /*<div class="filtros">
 						<h1 class="filtros__titulo">Dados Pessoais</h1>
 						<?php
 						if(is_object($cnt)) {
@@ -310,7 +326,7 @@
 						<?php
 						}
 						?>
-					</div>
+					</div>*/?>
 
 					<div class="grid grid_2">
 						<fieldset style="margin:0;">

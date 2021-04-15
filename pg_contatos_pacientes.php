@@ -996,80 +996,127 @@
 				</div>
 			</section>
 
-			<section class="box">
-				
-				<div class="filtros">
-					<h1 class="filtros__titulo">Pacientes</h1>
-					<form method="get" class="filtros-form">
-						<input type="hidden" name="csv" value="0" />
-						<dl>
-							<dt>Busca</dt>
-							<dd><input type="text" name="busca" value="<?php echo isset($values['busca'])?$values['busca']:"";?>" /></dd>
-						</dl>
-						<button type="submit" class="filtros-form__button"><i class="iconify" data-icon="bx-bx-search"></i></button>
-					</form>
-					<div class="filtros-acoes">
-						<a href="pg_contatos_pacientes_dadospessoais.php" data-padding="0" class="adicionar tooltip" title="Novo Paciente"><i class="iconify" data-icon="bx-bx-plus"></i></a>
-					</div>
-				</div>
+			<section class="grid">
+				<div class="box">
+					<div class="filter">
 
-				<div class="registros">
-					<table class="tablesorter" style="overflow: none;">
-						<thead>
-							<tr>
-								<th style="width:70px;">Código</th>
-								<th>Nome</th>
-								<th>Telefone</th>
-							</tr>
-						</thead>
-						<tbody>
-						<?php
-						$where="WHERE lixo='0'";
-						if(isset($values['busca']) and !empty($values['busca'])) $where.=" and (nome like '%".utf8_decode($values['busca'])."%' or cpf like '%".cpf($values['busca'])."%' or id = '".addslashes($values['busca'])."')";
+						<div class="filter-group">
+							<div class="filter-button">
+								<a href="pg_contatos_pacientes_dadospessoais.php" class="verde"><i class="iconify" data-icon="bx-bx-plus"></i><span>Novo Paciente</span></a>
+							</div>
+						</div>
+
 						
-						//echo $where;
-						if($usr->cpf=="wlib" and isset($_GET['cmd'])) echo $where;
+						<div class="filter-group filter-group_right">
+							<form method="get" class="filter-form">
+								<input type="hidden" name="csv" value="0" />
+								<dl>
+									<dd><input type="text" name="busca" value="<?php echo isset($values['busca'])?$values['busca']:"";?>" placeholder="" style="width:250px;" class="noupper" /></dd>
+								</dl>
+								<button type="submit"><i class="iconify" data-icon="bx-bx-search"></i></button>
+							</form>
+						</div>
 
-						$sql->consultPagMto2($_table,"*",100,$where,"",15,"pagina",$_page."?".$url."&pagina=");
+					</div>
+					<?php
+					$where="WHERE lixo='0'";
+					if(isset($values['busca']) and !empty($values['busca'])) $where.=" and (nome like '%".utf8_decode($values['busca'])."%' or cpf like '%".cpf($values['busca'])."%' or id = '".addslashes($values['busca'])."')";
+					
+					//echo $where;
+
+					?>
+					<div class="reg">
+						<?php
+						$sql->consultPagMto2($_table,"*",10,$where,"",15,"pagina",$_page."?".$url."&pagina=");
 						if($sql->rows==0) {
 							$msgSemResultado="Nenhum paciente";
 							if(isset($values['busca'])) $msgSemResultado="Nenhum paciente encontrado";
-						?>
-						<tr>	
-							<td colspan="4"><center><?php echo $msgSemResultado;?></center></td>
-						</tr>
-						<?php
+
+							echo "<center>$msgSemResultado</center>";
 						} else {
 							while($x=mysqli_fetch_object($sql->mysqry)) {
 						?>
-						<tr onclick="document.location.href='pg_contatos_pacientes_resumo.php?id_paciente=<?php echo $x->id?>'">
-							<td><?php echo $x->id;?></td>
-							<td><?php echo utf8_encode($x->nome);?></td>
-							<td><?php echo mask($x->telefone1);?></td>
-						</tr>
+						<a href="pg_contatos_pacientes_resumo.php?id_paciente=<?php echo $x->id?>" class="reg-group">
+							<div class="reg-color" style="background-color:var(--cinza3)"></div>
+							<div class="reg-data" style="flex:0 1 50%;">
+								<h1><?php echo strtoupperWLIB(utf8_encode($x->nome));?></h1>
+								<p>Código: <?php echo $x->id;?></p>
+							</div>
+							<div class="reg-data" style="flex:0 1 70px;">
+								<p><?php echo $x->data_nascimento!="0000-00-00"?idade($x->data_nascimento)." anos":"";?></p>
+							</div>
+							<div class="reg-data" style="flex:0 1 100px;">
+								<p><?php echo !empty($x->telefone1)?mask($x->telefone1):"";?></p>
+							</div>
+							
+						</a>
 						<?php
+							}
+
+							if(isset($sql->myspaginacao) and !empty($sql->myspaginacao)) {
+							?>	
+						<div class="paginacao" style="margin-top: 30px;">
+							<p class="paginacao__item"><span>Página</span><?php echo $sql->myspaginacao;?></p>
+						</div>
+							<?php
 							}
 						}
 						?>
-						</tbody>
-					</table>
-					<?php
-					if(isset($sql->myspaginacao) and !empty($sql->myspaginacao)) {
-					?>	
-						
-					<div class="paginacao">
-						<p class="paginacao__item"><span>Página</span><?php echo $sql->myspaginacao;?></p>
 					</div>
-					<?php
-					}
-					?>
+					
+					<?php /*<div class="registros">
+						<table class="tablesorter" style="overflow: none;">
+							<thead>
+								<tr>
+									<th style="width:70px;">Código</th>
+									<th>Nome</th>
+									<th>Telefone</th>
+								</tr>
+							</thead>
+							<tbody>
+							<?php
+							
+							if($sql->rows==0) {
+								$msgSemResultado="Nenhum paciente";
+								if(isset($values['busca'])) $msgSemResultado="Nenhum paciente encontrado";
+							?>
+							<tr>	
+								<td colspan="4"><center><?php echo $msgSemResultado;?></center></td>
+							</tr>
+							<?php
+							} else {
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+							?>
+							<tr onclick="document.location.href='pg_contatos_pacientes_resumo.php?id_paciente=<?php echo $x->id?>'">
+								<td><?php echo $x->id;?></td>
+								<td><?php echo utf8_encode($x->nome);?></td>
+								<td><?php echo mask($x->telefone1);?></td>
+							</tr>
+							<?php
+								}
+							}
+							?>
+							</tbody>
+						</table>
+						<?php
+						if(isset($sql->myspaginacao) and !empty($sql->myspaginacao)) {
+						?>	
+							
+						<div class="paginacao">
+							<p class="paginacao__item"><span>Página</span><?php echo $sql->myspaginacao;?></p>
+						</div>
+						<?php
+						}
+						?>
+					</div>*/?>
 				</div>
-				<?php
-				}
-				?>
 			</section>
 		
 		</section>
+
+	<?php
+	}
+	?>
 
 </section>
 
