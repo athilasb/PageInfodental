@@ -81,53 +81,52 @@
 				<div class="box">
 					
 					<div class="filter">
-
 						<div class="filter-group">
 							<div class="filter-button">
-								<a href="javascript:;"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
+								<a href="<?php echo $_page."?".$url;?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
 							</div>
 						</div>
-
 						<div class="filter-group">
 							<div class="filter-title">
 								<span class="badge">1</span> Escolha o tipo de evolução
 							</div>
 						</div>
-
 					</div>
 
-					<div class="filtros">
-						
-						<div class="filtros-acoes">
-							<a href="<?php echo $_page."?".$url;?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
-						</div>
+					<div class="grid-links">
+						<a href="pg_contatos_pacientes_evolucao-anamnese.php">
+							<i class="iconify" data-icon="mdi-clipboard-check-multiple-outline"></i>
+							<p>Anamnese</p>
+						</a>
+						<a href="pg_contatos_pacientes_evolucao-procedimentos.php?id_paciente=<?php echo $paciente->id;?>">
+							<i class="iconify" data-icon="mdi-check-circle-outline"></i>
+							<p>Precedimentos Aprovados</p>
+						</a>
+						<a href="pg_contatos_pacientes_evolucao-avulso.php">
+							<i class="iconify" data-icon="mdi-progress-check"></i>
+							<p>Procedimentos Avulsos</p>
+						</a>
+						<a href="pg_contatos_pacientes_evolucao-atestado.php">
+							<i class="iconify" data-icon="mdi-file-document-outline"></i>
+							<p>Atestado</p>
+						</a>
+						<a href="pg_contatos_pacientes_evolucao-laboratorio.php">
+							<i class="iconify" data-icon="entypo-lab-flask"></i>
+							<p>Serviços de Laboratório</p>
+						</a>
+						<a href="pg_contatos_pacientes_evolucao-exames.php">
+							<i class="iconify" data-icon="carbon-user-x-ray"></i>
+							<p>Pedidos de Exames</p>
+						</a>
+						<a href="pg_contatos_pacientes_evolucao-receituario.php">
+							<i class="iconify" data-icon="mdi-pill"></i>
+							<p>Receituário</p>
+						</a>
+						<a href="pg_contatos_pacientes_evolucao-consulta.php">
+							<i class="iconify" data-icon="mdi-calendar-cursor"></i>
+							<p>Próxima Consulta</p>
+						</a>
 					</div>
-					<style type="text/css">
-						.div-evolucoes a {
-							width:265px;
-							text-align: center;
-							border: 1px solid #CCC;
-							margin: 10px;
-							padding:30px;
-							float:left;
-							background:#efefef;
-							border-radius: 10px;
-							box-shadow: 0 2px 4px rgb(0 0 0 / 15%);
-						}
-					</style>
-					
-					<div class="div-evolucoes">
-						<a href="pg_contatos_pacientes_evolucao-anamnese.php"><span class="iconify" data-icon="octicon:checklist-16" data-inline="false" data-width="30"></span><br />Anamnese</a>
-						<a href="pg_contatos_pacientes_evolucao-procedimentos.php?id_paciente=<?php echo $paciente->id;?>"><span class="iconify" data-icon="octicon:checklist-16" data-inline="false" data-width="30"></span><br />Precedimentos Aprovados</a>
-						<a href="pg_contatos_pacientes_evolucao-avulso.php"><span class="iconify" data-icon="octicon:checklist-16" data-inline="false" data-width="30"></span><br />Procedimentos Avulsos</a>
-						<a href="pg_contatos_pacientes_evolucao-atestado.php"><span class="iconify" data-icon="octicon:checklist-16" data-inline="false" data-width="30"></span><br />Atestado</a>
-						<a href="pg_contatos_pacientes_evolucao-laboratorio.php"><span class="iconify" data-icon="octicon:checklist-16" data-inline="false" data-width="30"></span><br />Serviços de Laboratório</a>
-						<a href="pg_contatos_pacientes_evolucao-exames.php"><span class="iconify" data-icon="octicon:checklist-16" data-inline="false" data-width="30"></span><br />Pedidos de Exames</a>
-						<a href="pg_contatos_pacientes_evolucao-receituario.php"><span class="iconify" data-icon="octicon:checklist-16" data-inline="false" data-width="30"></span><br />Receituário</a>
-						<a href="pg_contatos_pacientes_evolucao-consulta.php"><span class="iconify" data-icon="octicon:checklist-16" data-inline="false" data-width="30"></span><br />Próxima Consulta</a>
-					</div>
-
-
 				</div>				
 			</section>
 		<?php

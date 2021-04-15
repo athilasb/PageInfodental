@@ -72,7 +72,7 @@ body {height:100vh; text-rendering: optimizeSpeed; -webkit-font-smoothing:antial
 .button__full {width:100%;}
 .button:hover {opacity:0.8;}
 
-.badge {display:inline-flex; align-items:center; justify-content:center; width:2rem; height:2rem; border-radius:2rem; background:var(--cor1); color:#fff; font-size:0.813em; margin-right:.5rem;}
+.badge {display:inline-flex; align-items:center; justify-content:center; width:1.5em; height:1.5em; border-radius:1.5em; background:var(--cor1); color:#fff; font-size:0.75em; margin-right:.375rem;}
 .badge__sec {background-color:var(--cinza3); border-color:var(--cinza3);}
 .badge-outline {display:inline-block; padding:.25em .4em; border:1px solid var(--cor1); color:var(--cor1);}
 .badge-outline__sec {border-color:var(--cinza3); color:var(--cinza3);}
@@ -83,7 +83,7 @@ select, textarea {width:100%; transition:all 150ms; border:1px solid #C8C8C8; pa
 select {background:url(../img/select-icon.png) no-repeat right center #fff; -webkit-appearance:none; -moz-appearance:none; appearance:none;}
 input:focus, select:focus, textarea:focus {border-color:var(--cor1);}
 fieldset {padding:.5rem 2rem 1.5rem 2rem; border:1px solid var(--cinza2); margin-bottom:1rem; border-radius:10px;}
-legend {font-size:1.25em; font-weight:bold; padding:0.65em; color:var(--cinza4); margin-left:-.375em}
+legend {font-size:1.5em; padding:0.65em; color:var(--cinza4); margin-left:-.375em}
 form .erro {background-color:#ffffdb !important;}
 form input:not(.noupper),form textarea:not(.noupper) { text-transform: uppercase }
 
@@ -432,3 +432,9 @@ a.registros-qtd__item {display:inline-block; color:#fff; background:var(--cor1);
 .reg-bar p {font-size:0.813em; color:var(--cinza4); margin-bottom:.25rem;}
 .reg-bar__container {width:100%; height:12px; border:1px solid var(--cinza2); border-radius:12px; display:flex;}
 .reg-bar__container span {background:var(--verde); margin:1px; border-radius:3px 0 0 3px;}
+
+.grid-links {display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,auto)); grid-gap:1rem;}
+.grid-links a {border:1px solid var(--cinza2); border-bottom:3px solid var(--cinza2); border-radius:12px; padding:1.5rem; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:space-between;}
+.grid-links .iconify {font-size:2.5em; color:var(--cinza4); margin-bottom:.5rem;}
+
+

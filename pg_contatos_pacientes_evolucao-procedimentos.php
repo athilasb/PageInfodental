@@ -100,15 +100,107 @@
 		<section class="grid">
 			<div class="box">
 				
-				<div class="filtros">
-					<h1 class="filtros__titulo">Procedimentos Aprovados</h1>
-					<div class="filtros-acoes">
-						<a href="<?php echo $_page."?".$url;?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
-						<a href="javascript:;" class="button js-btn-addProcedimento tooltip " title="Adicionar Procedimento" style="background:var(--azul);color:#FFF;float: right"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar Procedimento</a>
+				<div class="filter">
+					<div class="filter-group">
+						<div class="filter-button">
+							<a href="<?php echo $_page."?".$url;?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
+						</div>
+					</div>
+					<div class="filter-group filter-group_right">
+						<div class="filter-button">
+							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+							<a href="javascript:;" class="azul"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+						</div>
 					</div>
 				</div>
+
+				<form class="form">
+					<div class="grid grid_3">
+
+						<fieldset style="grid-column:span 2">
+							<legend><span class="badge">2</span> Selecione o procedimento</legend>
+
+							<div class="colunas2">
+								<dl>
+									<dd>
+										<select name="">
+											<option value=""></option>
+											<option value="">Nome do Procedimento</option>
+											<option value="">Outro Procedimento</option>
+										</select>
+									</dd>
+								</dl>
+								<dl>
+									<dd><button type="submit" class="button">Adicionar</button></dd>
+								</dl>
+							</div>
+
+							<div class="reg" style="margin-top:2rem;">
+
+								<a href="javascript:;" class="reg-group">
+									<div class="reg-color" style="background-color:palegreen"></div>
+									<div class="reg-data" style="flex:0 1 300px">
+										<h1>GENTIVECTOMIA + GENGIVOPLASTIA</h1>
+										<p>MANDÍBULA - PARTICULAR-SD</p>
+									</div>
+									<div class="reg-data">
+										<p>APROVADO</p>
+									</div>									
+									<div class="reg-user">
+										<span style="background:blueviolet">KP</span>
+									</div>
+								</a>
+
+								<a href="javascript:;" class="reg-group">
+									<div class="reg-color" style="background-color:palegreen"></div>
+									<div class="reg-data" style="flex:0 1 300px">
+										<h1>GENTIVECTOMIA + GENGIVOPLASTIA</h1>
+										<p>MANDÍBULA - PARTICULAR-SD</p>
+									</div>
+									<div class="reg-data">
+										<p>APROVADO</p>
+									</div>									
+									<div class="reg-user">
+										<span style="background:blueviolet">KP</span>
+									</div>
+								</a>
+
+								<a href="javascript:;" class="reg-group">
+									<div class="reg-color" style="background-color:palegreen"></div>
+									<div class="reg-data" style="flex:0 1 300px">
+										<h1>GENTIVECTOMIA + GENGIVOPLASTIA</h1>
+										<p>MANDÍBULA - PARTICULAR-SD</p>
+									</div>
+									<div class="reg-data">
+										<p>APROVADO</p>
+									</div>									
+									<div class="reg-user">
+										<span style="background:blueviolet">KP</span>
+									</div>
+								</a>
+
+							</div>
+
+						</fieldset>
+
+						<fieldset>
+							<legend><span class="badge">3</span> Preencha o histórico</legend>
+
+							<dl style="height:100%;">
+								<dd style="height:100%;"><textarea name="" style="height:100%;" class="noupper"></textarea></dd>
+							</dl>
+						</fieldset>
+
+
+					</div>
+				</form>
+
+
+
+				<?php /*
 				<fieldset>
-					<legend>Procedimentos</legend>
+					<legend><span class="badge">2</span> Procedimentos</legend>
 					<dl class="dl3">
 							<dt>Procedimento</dt>
 							<dd>
@@ -131,6 +223,7 @@
 						
 					</div>
 				</fieldset>
+				*/ ?>
 
 
 			</div>				
