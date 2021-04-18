@@ -1,9 +1,6 @@
 <?php
-
-
 	include "includes/header.php";
 	include "includes/nav.php";
-
 
 	$_table=$_p."pacientes";
 	$_page=basename($_SERVER['PHP_SELF']);
@@ -79,7 +76,7 @@
 		?>
 			<section class="grid">
 				<div class="box">
-					
+
 					<div class="filter">
 						<div class="filter-group">
 							<div class="filter-button">
@@ -91,44 +88,68 @@
 								<span class="badge">1</span> Escolha o tipo de evolução
 							</div>
 						</div>
+						<div class="filter-group filter-group_right">
+							<div class="filter-button">
+								<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+								<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+								<a href="javascript:;" class="azul"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+							</div>
+						</div>
 					</div>
 
-					<div class="grid-links">
-						<a href="pg_contatos_pacientes_evolucao-anamnese.php">
+					<script>
+						$(function() {
+							$(".js-evolucao").click(function() {
+								$(".js-evolucao").removeClass("active");
+								$(this).addClass("active");
+								$(".js-evolucao-adicionar").hide();
+								var tipo = $(this).attr("data-tipo");
+								$("#evolucao-"+ tipo).show();
+							});
+						});
+					</script>
+
+					<div class="grid-links" style="grid-template-columns:repeat(8,1fr); margin-bottom:2rem;">
+						<a href="javascript:;" class="js-evolucao" data-tipo="anamnese">
 							<i class="iconify" data-icon="mdi-clipboard-check-multiple-outline"></i>
 							<p>Anamnese</p>
 						</a>
-						<a href="pg_contatos_pacientes_evolucao-procedimentos.php?id_paciente=<?php echo $paciente->id;?>">
+						<a href="javascript:;" class="js-evolucao" data-tipo="procedimentos-aprovados">
 							<i class="iconify" data-icon="mdi-check-circle-outline"></i>
 							<p>Precedimentos Aprovados</p>
 						</a>
-						<a href="pg_contatos_pacientes_evolucao-avulso.php">
+						<a href="javascript:;" class="js-evolucao" data-tipo="procedimentos-avulsos">
 							<i class="iconify" data-icon="mdi-progress-check"></i>
 							<p>Procedimentos Avulsos</p>
 						</a>
-						<a href="pg_contatos_pacientes_evolucao-atestado.php">
+						<a href="javascript:;" class="js-evolucao" data-tipo="atestado">
 							<i class="iconify" data-icon="mdi-file-document-outline"></i>
 							<p>Atestado</p>
 						</a>
-						<a href="pg_contatos_pacientes_evolucao-laboratorio.php">
+						<a href="javascript:;" class="js-evolucao" data-tipo="servicos-de-laboratorio">
 							<i class="iconify" data-icon="entypo-lab-flask"></i>
 							<p>Serviços de Laboratório</p>
 						</a>
-						<a href="pg_contatos_pacientes_evolucao-exames.php">
+						<a href="javascript:;" class="js-evolucao" data-tipo="pedidos-de-exames">
 							<i class="iconify" data-icon="carbon-user-x-ray"></i>
 							<p>Pedidos de Exames</p>
 						</a>
-						<a href="pg_contatos_pacientes_evolucao-receituario.php">
+						<a href="javascript:;" class="js-evolucao" data-tipo="receituario">
 							<i class="iconify" data-icon="mdi-pill"></i>
 							<p>Receituário</p>
 						</a>
-						<a href="pg_contatos_pacientes_evolucao-consulta.php">
+						<a href="javascript:;" class="js-evolucao" data-tipo="proxima-consulta">
 							<i class="iconify" data-icon="mdi-calendar-cursor"></i>
 							<p>Próxima Consulta</p>
 						</a>
 					</div>
+
+					<?php include "includes/evolucaoAdicionar.php"; ?>
+
 				</div>				
 			</section>
+
+
 		<?php
 		} else {
 		?>

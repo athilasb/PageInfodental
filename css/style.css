@@ -16,6 +16,9 @@ html, button, input, textarea, select, figure, article, section, aside, header, 
 	--cor1Hover:#A06C4F;
 	--gradient1:linear-gradient(180deg, #D3602B 0%, #EA692D 100%);
 	--gradient2:linear-gradient(180deg, #A6A3A3 0%, #C0BEBE 100%);
+	--gradientCor1: linear-gradient(to right top, #A06C4F, #D38E69);
+	--gradientVerde: linear-gradient(to right top, #76b852, #8dc26f);
+	--gradientAzul: linear-gradient(to right top, #773FD2, #0083FA);
 	--verde:#70A64B;
 	--verdeClaro:#A4D186;
 	--vermelho:#FF3434;
@@ -403,8 +406,8 @@ a.registros-qtd__item {display:inline-block; color:#fff; background:var(--cor1);
 .filter-button a .iconify {font-size:1.5em;}
 .filter-button a span {margin-left:.25rem; font-weight:bold;}
 .filter-button a:last-child {margin-right:0;}
-.filter-button a.verde {background: linear-gradient(to right top, #76b852, #8dc26f); color:#fff;}
-.filter-button a.azul {background: linear-gradient(to right top, #773FD2, #0083FA); color:#fff;}
+.filter-button a.verde {background: var(--gradientVerde); color:#fff;}
+.filter-button a.azul {background: var(--gradientAzul); color:#fff;}
 
 .filter-form {height:50px; border-radius:25px; padding:0 1.5rem; display:flex; align-items:center; background:var(--cinza1);}
 .filter-form dl {display:flex; align-items:center; margin-right:.5rem;}
@@ -432,9 +435,13 @@ a.registros-qtd__item {display:inline-block; color:#fff; background:var(--cor1);
 .reg-bar p {font-size:0.813em; color:var(--cinza4); margin-bottom:.25rem;}
 .reg-bar__container {width:100%; height:12px; border:1px solid var(--cinza2); border-radius:12px; display:flex;}
 .reg-bar__container span {background:var(--verde); margin:1px; border-radius:3px 0 0 3px;}
+.reg-icon {font-size:1.25em;}
 
 .grid-links {display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,auto)); grid-gap:1rem;}
 .grid-links a {border:1px solid var(--cinza2); border-bottom:3px solid var(--cinza2); border-radius:12px; padding:1.5rem; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:space-between;}
 .grid-links .iconify {font-size:2.5em; color:var(--cinza4); margin-bottom:.5rem;}
+.grid-links a:hover {background:var(--cinza1);}
+.grid-links a.active {background:var(--gradientCor1); color:#fff;}
+.grid-links a.active .iconify {color:#fff;}
 
 
