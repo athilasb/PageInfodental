@@ -118,25 +118,40 @@
 						<table class="tablesorter">
 							<thead>
 								<tr>
-									<th>Tipo</th>
-									<th>Data-hora</th>
-									<th>Profissional</th>
-									<th>Descrição</th>
+									<th style="width:20px;"></th>
+									<th style="width:150px;">Tipo</th>
+									<th style="width:100px;">Data-hora</th>
+									<th style="width:100px;">Quantidade</th>
+									<th style="width:100px;">Lançado por</th>
+									<th>Observação</th>
 								</tr>
 							</thead>
 							<tbody>
 								<?php
 								$registros=array();
-								$tratamentoProdecimentosIds=array(-1);
+								$revolucoesIds=array(-1);
+								$usuariosIds=array(-1);
 								$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id and lixo=0 order by data desc");
 								while($x=mysqli_fetch_object($sql->mysqry)) {
 									$registros[]=$x;
-
-									// procedimentos aprovados
-									if($x->id_tipo==2) {
-										$tratamentoProdecimentosIds[]=$x->id_tratamento_procedimento;
-									}
+									$usuariosIds[]=$x->id_usuario;
+									$revolucoesIds[]=$x->id;
 								}
+
+								$_usuarios=array();
+								$sql->consult($_p."usuarios","*","WHERE id IN (".implode(",",$usuariosIds).")");
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+									$_usuarios[$x->id]=$x;
+								}
+
+								$tratamentoProdecimentosIds=array(-1);
+								$registrosProcedimentos=array();
+								$sql->consult($_p."pacientes_evolucoes_procedimentos","*","where id_paciente=$paciente->id and id_evolucao IN (".implode(",",$revolucoesIds).") and lixo=0 order by data desc");
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+									$revolucoesIds[]=$x->id;
+									$registrosProcedimentos[$x->id_evolucao][]=$x;
+								}
+								
 
 								$prodecimentosIds=array(-1);
 								$_tratamentoProcedimentos=array();
@@ -153,12 +168,24 @@
 									$_procedimentos[$x->id]=$x;
 								}
 
-
 								foreach($registros as $x) {
-									if(isset($_tiposEvolucao[$x->id_tipo]) and isset($_profissionais[$x->id_profissional])) {
+									if(isset($_tiposEvolucao[$x->id_tipo])) {
+										$tipo = $_tiposEvolucao[$x->id_tipo];
+									?>
+									<tr onclick="document.location.href='<?php echo $tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;?>';">
+										<td style="font-size:1.25rem;"><i class="iconify" data-icon="<?php echo $tipo->icone;?>"></i></td>
+										<td><?php echo utf8_encode($tipo->tituloSingular);?></td>
+										<td><?php echo date('d/m/Y',strtotime($x->data));?><br /><span style="color:var(--cinza4)"><?php echo date('H:i',strtotime($x->data));?></span></td>
+										<td><?php echo isset($registrosProcedimentos[$x->id])?count($registrosProcedimentos[$x->id]):0;?></td>
+										<td><?php echo isset($_usuarios[$x->id_usuario])?utf8_encode($_usuarios[$x->id_usuario]->nome):'-';?></td>
+										<td><?php echo utf8_encode($x->obs);?></td>
+									</tr>	
+									<?php
+									}
+									/*if(isset($_tiposEvolucao[$x->id_tipo]) and isset($_profissionais[$x->id_profissional])) {
 										$tipo = $_tiposEvolucao[$x->id_tipo];
 										
-										$profissional = $_profissionais[$x->id_profissional];
+										//$profissional = $_profissionais[$x->id_profissional];
 
 										// procedimentos aprovados
 										if($tipo->id==2) {
@@ -182,7 +209,9 @@
 									</td>
 								</tr>
 								<?php
-									}
+									}*/
+
+
 								}
 								?>
 								<tr>

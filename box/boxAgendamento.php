@@ -752,7 +752,7 @@
 				<dl>					
 					<dd>
 						<div class="input-icon"><i class="iconify" data-icon="uil-comment-info"></i></div>
-						<textarea name="obs" class="noupper" rows="3" placeholder="INFORMAÇÕES"><?php echo $values['obs'];?></textarea>
+						<textarea name="obs" class="noupper" rows="3" placeholder="INFORMAÇÕES" style="height:150px"><?php echo $values['obs'];?></textarea>
 					</dd>
 				</dl>
 

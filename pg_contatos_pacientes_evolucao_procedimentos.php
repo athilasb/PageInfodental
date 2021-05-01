@@ -24,6 +24,18 @@
 	}
 
 
+	$_planos=array();
+	$sql->consult($_p."parametros_planos","*","where lixo=0 order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_planos[$x->id]=$x;
+	}
+	$_usuarios=array();
+	$sql->consult($_p."usuarios","id,nome","order by nome asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_usuarios[$x->id]=$x;
+	}
+
+
 	$_pacienteIndicacoes=array();
 	$sql->consult($_p."parametros_indicacoes","*","where lixo=0 order by titulo asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
@@ -95,13 +107,16 @@
 	$selectProfissional.='</select>';
 
 
-	$tratamentosIds=array();
+	$tratamentosIds=array('1');
 	$sql->consult($_p."pacientes_tratamentos","*","where id_paciente=$paciente->id and  status='APROVADO' and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) $tratamentosIds[]=$x->id;
 
 	$procedimentosIds=array();
 	$_procedimentosAprovados=array();
-	$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIds).") and lixo=0 and situacao='aprovado' and status_evolucao NOT IN ('cancelado','finalizado')");
+	$where="where lixo=0 and situacao='aprovado' and status_evolucao NOT IN ('cancelado','finalizado') and id_tratamento IN (".implode(",",$tratamentosIds).")";
+
+	//die();
+	$sql->consult($_p."pacientes_tratamentos_procedimentos","*",$where);
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$procedimentosIds[]=$x->id_procedimento;
 		$_procedimentosAprovados[$x->id]=$x;
@@ -111,6 +126,72 @@
 	$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$procedimentosIds).")");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_procedimentos[$x->id]=$x;
+	}
+
+	$evolucao='';
+	$evolucaoProcedimentos=array();
+	if(isset($_GET['edita']) and is_numeric($_GET['edita'])) {	
+		$sql->consult($_p."pacientes_evolucoes","*","where id='".$_GET['edita']."'");
+		if($sql->rows) {
+			$evolucao=mysqli_fetch_object($sql->mysqry);
+
+			$sql->consult($_p."pacientes_evolucoes_procedimentos","*","where id_evolucao=$evolucao->id");
+			if($sql->rows) {
+				$registros=array();
+				$tratamentosProdecimentosIds=array(-1);
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$registros[]=$x;
+					$tratamentosProdecimentosIds[]=$x->id_tratamento_procedimento;
+
+				}
+
+				$_tratamentosProcedimentos=array();
+				$where="where id IN (".implode(",",$tratamentosProdecimentosIds).") and id_paciente=$paciente->id";
+				$sql->consult($_p."pacientes_tratamentos_procedimentos","*",$where);
+				while($x=mysqli_fetch_object($sql->mysqry)) $_tratamentosProcedimentos[$x->id]=$x;
+
+
+				foreach($registros as $x) {
+					if(isset($_tratamentosProcedimentos[$x->id_tratamento_procedimento])) {
+						$tratamentoProc=$_tratamentosProcedimentos[$x->id_tratamento_procedimento];
+
+						if(isset($_procedimentos[$tratamentoProc->id_procedimento])) {
+							$proc=$_procedimentos[$tratamentoProc->id_procedimento];
+							$profissionalCor='';
+							$profissionalIniciais='';
+
+							if(isset($_profissionais[$x->id_profissional])) {
+								$p=$_profissionais[$x->id_profissional];
+								$profissionalIniciais=$p->calendario_iniciais;
+								$profissionalCor=$p->calendario_cor;
+							}
+
+							$autor='-';
+							if(isset($_usuarios[$evolucao->id_usuario])) {
+								$p=$_usuarios[$evolucao->id_usuario];
+								$autor=utf8_encode($p->nome);
+							}
+
+
+							$evolucaoProcedimentos[]=array('id'=>$x->id,
+															'autor'=>$autor,
+															'data'=>date('d/m/Y',strtotime($x->data)),
+															'id_usuario'=>$evolucao->id_usuario,
+															'id_tratamento_procedimento'=>$tratamentoProc->id,
+															'id_procedimento'=>$tratamentoProc->id_procedimento,
+															'id_profissional'=>$x->id_profissional,
+															'obs'=>utf8_encode($x->obs),
+															'opcao'=>utf8_encode($tratamentoProc->opcao),
+															'plano'=>isset($_planos[$tratamentoProc->id_plano])?utf8_encode($_planos[$tratamentoProc->id_plano]->titulo):'-',
+															'profissionalCor'=>$profissionalCor,
+															'profissionalIniciais'=>$profissionalIniciais,
+															'statusEvolucao'=>$x->status,
+														 	'titulo'=>utf8_encode($proc->titulo));
+						}
+					}
+				}
+			}
+		}
 	}
 
 
@@ -126,41 +207,80 @@
 				$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id=$v->id_procedimento");
 				if($sql->rows) {
 					$x=mysqli_fetch_object($sql->mysqry);
-					$procedimentosEvoluidos[]=array('tratamentoProc'=>$x,'evolucaoProc'=>$v);
+					$procedimentosEvoluidos[]=array('tratamentoProc'=>$x,'evolucaoProc'=>$v,'id_evolucao_procedimento'=>isset($v->id)?$v->id:0);
 				} else {
 					$erro='Procedimento '.$v->titulo.' não foi encontrado!';
 				}
 			}
 
+
 			if(empty($erro)) {
 
 				if(count($procedimentosEvoluidos)>0) {
+
+					if(is_object($evolucao)) {
+						$sql->update($_p."pacientes_evolucoes","obs='".addslashes(utf8_decode($_POST['obs']))."'","where id=$evolucao->id");
+						$id_evolucao=$evolucao->id;
+					} else {
+						// id_tipo = 2 -> Procedimentos Aprovados
+						$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
+																								id_paciente=$paciente->id and
+																								id_tipo=2 and  
+																								id_usuario=$usr->id");	
+						if($sql->rows) {
+							$e=mysqli_fetch_object($sql->mysqry);
+							$sql->update($_p."pacientes_evolucoes","obs='".addslashes($_POST['obs'])."'","where id=$e->id");
+							$id_evolucao=$e->id;
+						} else {
+							$sql->add($_p."pacientes_evolucoes","data=now(),
+																	id_tipo=2,
+																	id_paciente=$paciente->id,
+																	id_usuario=$usr->id,
+																	obs='".addslashes(utf8_decode($_POST['obs']))."'");
+							$id_evolucao=$sql->ulid;
+						}
+					}
+
+					
+
 					foreach($procedimentosEvoluidos as $obj) {
 						$obj=(object)$obj;
 						$tratamentoProc=$obj->tratamentoProc;
 						$evolucaoProc=$obj->evolucaoProc;
-
 						$vSQLProc="data=now(),
-									id_tipo=$evolucao->id,
 									id_paciente=$paciente->id,
-									id_tratamento_procedimento='".addslashes($evolucaoProc->id_procedimento)."',
-									id_tratamento='".addslashes($tratamentoProc->id)."',
+									id_evolucao=$id_evolucao,
+									id_tratamento_procedimento='".addslashes($evolucaoProc->id_tratamento_procedimento)."',
+									id_tratamento='".addslashes($tratamentoProc->id_tratamento)."',
 									id_profissional='".addslashes($evolucaoProc->id_profissional)."',
 									status='".addslashes($evolucaoProc->statusEvolucao)."',
-									obs='".addslashes($evolucaoProc->obs)."'";
+									obs='".addslashes(utf8_decode($evolucaoProc->obs))."'";
 
-						$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
-																							id_paciente=$paciente->id and 
-																							id_tipo=$evolucao->id and 
-																							id_tratamento='".addslashes($tratamentoProc->id)."'");	
-						if($sql->rows) {
-							$x=mysqli_fetch_object($sql->mysqry);
-							$sql->update($_p."pacientes_evolucoes",$vSQLProc);
-						} else {
-							$sql->add($_p."pacientes_evolucoes",$vSQLProc);
+					//	echo $vSQLProc."<BR>";	
+						$evProc='';
+						if(isset($obj->id_evolucao_procedimento) and is_numeric($obj->id_evolucao_procedimento)) {
+							$sql->consult($_p."pacientes_evolucoes_procedimentos","*","where id=$obj->id_evolucao_procedimento and id_paciente=$paciente->id and lixo=0");
+							if($sql->rows) {
+								$evProc=mysqli_fetch_object($sql->mysqry);
+							}
 						}
 
-					}
+						if(empty($evProc)) {
+							$sql->consult($_p."pacientes_evolucoes_procedimentos","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
+																								id_paciente=$paciente->id and 
+																								id_evolucao=$id_evolucao and 
+																								id_tratamento='".addslashes($tratamentoProc->id_tratamento)."'");	
+							if($sql->rows) {
+								$x=mysqli_fetch_object($sql->mysqry);
+								$sql->update($_p."pacientes_evolucoes_procedimentos",$vSQLProc,"where id=$x->id");
+							} else {
+								$sql->add($_p."pacientes_evolucoes_procedimentos",$vSQLProc);
+							}
+						} else {
+							$sql->update($_p."pacientes_evolucoes_procedimentos",$vSQLProc,"where id=$evProc->id");
+						}
+
+					}	
 
 
 					$jsc->jAlert("Evolução salva com sucesso!","sucesso","document.location.href='pg_contatos_pacientes_evolucao.php?id_paciente=$paciente->id'");
@@ -176,8 +296,9 @@
 		} else {
 			$jsc->jAlert("Adicione pelo menos um procedimento para adicionar à Evolução","erro","");
 		}
-
 	}
+
+	//var_dump($evolucaoProcedimentos);
 
 	?>
 	<section class="content">
@@ -188,7 +309,12 @@
 
 		<script type="text/javascript">
 			var popViewInfos = [];
-
+			function jsonEscape(str)  {
+			    return str.replace(/\n/g, "\\\\n").replace(/\r/g, "\\\\r").replace(/\t/g, "\\\\t");
+			}
+			function jsonUnEscape(str)  {
+			    return str.replace(/\\n/g, "\n");
+			}
 			const popView = (obj) => {
 
 
@@ -222,7 +348,7 @@
 					$('#cal-popup .js-opcaoEQtd').html(`Quantidade: ${popViewInfos[index].quantidade}`);
 				}*/
 
-				$('#cal-popup .js-obs').val(procedimentos[index].obs);
+				$('#cal-popup .js-obs').val(jsonUnEscape(procedimentos[index].obs));
 				$('#cal-popup .js-titulo').html(procedimentos[index].titulo);
 				$('#cal-popup .js-plano').html(procedimentos[index].plano);
 				$('#cal-popup .js-opcao').html(procedimentos[index].opcao);
@@ -235,7 +361,8 @@
 				$('#cal-popup .js-index').val(index);
 			}
 
-			var procedimentos = [];
+			var procedimentos = JSON.parse(jsonEscape(`<?php echo json_encode($evolucaoProcedimentos);?>`));
+
 			var cardHTML = `<a href="javascript:;" class="reg-group js-procedimento">
 								<div class="reg-color" style="background-color:palegreen"></div>
 								<div class="reg-data js-titulo" style="flex:0 1 300px">
@@ -249,8 +376,9 @@
 									<span style="background:blueviolet">KP</span>
 								</div>
 							</a>`;
+
 			var autor = `<?php echo utf8_encode($usr->nome);?>`;
-			var id_autor = `<?php echo utf8_encode($usr->id);?>`;
+			var id_usuario = `<?php echo utf8_encode($usr->id);?>`;
 
 			const procedimentosListar = () => {
 
@@ -280,7 +408,7 @@
 					$('.js-procedimento .reg-color:last').css('background-color',cor);
 					$('.js-procedimento .js-titulo:last').html(`<h1>${x.titulo}</h1><p>${x.opcao} - ${x.plano}</p>`);
 					$('.js-procedimento .js-status:last').html(`<p>${status}</p>`);
-					$('.js-procedimento .reg-user:last span').html(x.profissionalIniciais);
+					$('.js-procedimento .reg-user:last span').html(x.profissionalIniciais.length==0?'<span class="iconify" data-icon="bi:person-fill" data-inline="false"></span>':x.profissionalIniciais);
 					$('.js-procedimento .reg-user:last span').css('background',x.profissionalCor);
 					$(`.js-procedimento:last`).attr('data-usuario',autor);
 					$(`.js-procedimento:last`).click(function(){popView(this);});
@@ -290,7 +418,13 @@
 
 			}
 			$(function(){
-
+				<?php
+				if(isset($evolucao)) {
+				?>
+				procedimentosListar();
+				<?php
+				}
+				?>
 				$(document).mouseup(function(e)  {
 				    var container = $("#cal-popup");
 				    // if the target of the click isn't the container nor a descendant of the container
@@ -313,6 +447,7 @@
 					let titulo = $('select.js-sel-procedimento option:selected').attr('data-titulo');
 					let id_profissional = $('select.js-sel-procedimento option:selected').attr('data-id_profissional');
 					let profissionalIniciais = $('select.js-sel-procedimento option:selected').attr('data-profissionalIniciais');
+					let id_tratamento_procedimento = $('select.js-sel-procedimento option:selected').attr('data-id_tratamento_procedimento');
 					let profissionalCor = $('select.js-sel-procedimento option:selected').attr('data-profissionalCor');
 					let statusEvolucao = $('select.js-sel-procedimento option:selected').attr('data-statusEvolucao');
 					let obs = ``;
@@ -331,11 +466,11 @@
 										profissionalIniciais, 
 										statusEvolucao, 
 										autor, 
-										id_autor, 
+										id_usuario, 
 										data, 
 										obs,
-										id_profissional
-
+										id_profissional,
+										id_tratamento_procedimento
 									}
 						procedimentos.push(item);
 						procedimentosListar();
@@ -358,8 +493,8 @@
 
 				$('#cal-popup').on('change','.js-situacao',function(){
 					let index = $('#cal-popup .js-index').val();
+					//procedimentos[index].statusEvolucao=$(this).val();
 					procedimentos[index].statusEvolucao=$(this).val();
-					procedimentos[index].statusEvolucao=$(this).text();
 					procedimentosListar();
 				});
 
@@ -369,29 +504,74 @@
 					procedimentos[index].profissionalIniciais=$(this).find('option:selected').attr('data-iniciais');
 					procedimentos[index].profissionalCor=$(this).find('option:selected').attr('data-iniciaisCor');
 					procedimentosListar();
+				});
+
+				$('#cal-popup').on('click','.js-btn-excluir',function(){
+
+					swal({
+						title: "Atenção",
+						text: "Você tem certeza que deseja remover este registro?",
+						type: "warning",
+						showCancelButton: true,
+						confirmButtonColor: "#DD6B55",
+						confirmButtonText: "Sim!",
+						cancelButtonText: "Não",
+						closeOnConfirm: true,
+						closeOnCancel: false 
+						}, 
+						function(isConfirm) {   
+							if (isConfirm) {  
+							 	let index = $('#cal-popup .js-index').val();
+								procedimentos.splice(index,1);
+								procedimentosListar();	
+							} else {   
+								swal.close();   
+							}
+						}
+						);
+
+					
 				})
 
 
 			});
 		</script>
 
-
-		
 		<section class="grid">
 			<div class="box">
 
 				<?php
-				require_once("includes/evolucaoMenu.php");
+				if(empty($evolucao)) { 
+					require_once("includes/evolucaoMenu.php");
+				} else {
+				?>
+				<div class="filter">
+					<div class="filter-group">
+						<div class="filter-button">
+							<a href="pg_contatos_pacientes_evolucao.php?id_paciente=<?php echo $paciente->id;?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
+						</div>
+					</div>
+					<div class="filter-group filter-group_right">
+						<div class="filter-button">
+							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+							<a href="javascript:;" class="azul js-btn-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+						</div>
+					</div>
+				</div>
+				<?php
+				}
 				?>
 
 				<section class="js-evolucao-adicionar" id="evolucao-procedimentos-aprovados">
 						
 					<form class="form js-form-evolucao" method="post">
 						<input type="hidden" name="acao" value="wlib" />
+						<input type="hidden" name="id_evolucao" value="<?php echo is_object($evolucao)?$evolucao->id:0;?>" />
 						<div class="grid grid_3">
 
 							<fieldset style="grid-column:span 2">
-								<legend><span class="badge">2</span> Selecione o procedimento</legend>
+								<legend><?php echo empty($evolucao)?'<span class="badge">2</span> Selecione o procedimento':'Procedimentos';?></legend>
 
 								<div class="colunas2">
 									<dl>
@@ -410,7 +590,7 @@
 															$profissionalCor=$p->calendario_cor;
 
 														}
-														echo '<option value="'.$v->id.'" data-opcao="'.utf8_encode($v->opcao).'" data-plano="'.utf8_encode($v->plano).'" data-profissionalCor="'.$profissionalCor.'" data-id_profissional="'.$v->id_profissional.'" data-profissionalIniciais="'.$profissionalIniciais.'"  data-statusEvolucao="'.$v->status_evolucao.'" data-titulo="'.utf8_encode($procedimento->titulo).'">'.utf8_encode($procedimento->titulo).' - '.utf8_encode($v->opcao).'</option>';
+														echo '<option value="'.$v->id.'" data-opcao="'.utf8_encode($v->opcao).'" data-plano="'.utf8_encode($v->plano).'" data-profissionalCor="'.$profissionalCor.'" data-id_profissional="'.$v->id_profissional.'" data-profissionalIniciais="'.$profissionalIniciais.'"  data-statusEvolucao="'.$v->status_evolucao.'" data-titulo="'.utf8_encode($procedimento->titulo).'" data-id_tratamento_procedimento="'.$v->id.'">'.utf8_encode($procedimento->titulo).' - '.utf8_encode($v->opcao).'</option>';
 													}
 												}
 												?>
@@ -424,19 +604,15 @@
 
 								<textarea name="procedimentos" style="display: none"></textarea>
 
-								<div class="reg js-div-procedimentos" style="margin-top:2rem;">
-
-									
-
-								</div>
+								<div class="reg js-div-procedimentos" style="margin-top:2rem;"></div>
 
 							</fieldset>
 
 							<fieldset>
-								<legend><span class="badge">3</span> Preencha o histórico</legend>
+								<legend><?php echo empty($evolucao)?'<span class="badge">3</span> Preencha o histórico':'Histórico';?></legend>
 
 								<dl style="height:100%;">
-									<dd style="height:100%;"><textarea name="obs" style="height:100%;" class="noupper"></textarea></dd>
+									<dd style="height:100%;"><textarea name="obs" style="height:100%;" class="noupper"><?php echo is_object($evolucao)?utf8_encode($evolucao->obs):'';?></textarea></dd>
 								</dl>
 							</fieldset>
 
@@ -503,7 +679,7 @@
 			</div>
 			<div class="paciente-info-opcoes">
 				<?php echo $selectSituacaoOptions;?>
-				<a href="javascript:;" target="_blank" class="js-btn-excluir button button__sec">excluir</a>
+				<a href="javascript:;" class="js-btn-excluir button button__sec">excluir</a>
 			</div>
 		</section>
 	</section>
