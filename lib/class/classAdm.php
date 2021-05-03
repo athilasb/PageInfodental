@@ -318,8 +318,6 @@
 		
 		function get($get) {
 			
-			$str = new String();
-			
 			$datas=array('data','data_inicio','data_fim');
 			$multi=array('status_multi','status_produto_multi','status_ged_multi','status_entrega_multi');
 			
@@ -341,7 +339,7 @@
 						if(is_array($v)) $values[$k]=$v;
 						else $values[$k]=array();
 					} else {
-						$values[$k]=$str->protege($v);
+						$values[$k]=addslashes($v);
 					}
 				}
 			}

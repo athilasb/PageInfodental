@@ -24,7 +24,7 @@ while($x=mysqli_fetch_object($sql->mysqry)) $usuarios[$x->id]=$x->login;
 		<?php
 		if(isset($_GET['table']) and isset($_GET['id']) and is_numeric($_GET['id'])) {
 			$sql = new Mysql();
-			$sql->consult($_p."log","*,date_format(data,'%d/%m/%Y %H:%i') as dataf","where tabela='".$str->protege($_GET['table'])."' and id_reg='".$_GET['id']."' order by data desc");
+			$sql->consult($_p."log","*,date_format(data,'%d/%m/%Y %H:%i') as dataf","where tabela='".addslashes($_GET['table'])."' and id_reg='".$_GET['id']."' order by data desc");
 			if($sql->rows==0) {
 			?>
 		<tr>

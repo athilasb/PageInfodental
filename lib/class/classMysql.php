@@ -8,7 +8,7 @@ class Mysql {
 			$ms_server="localhost";
 			$ms_login="root";
 			$ms_senha="";
-			$ms_db="";
+			$ms_db="infodental";
 		} else {
 			$ms_server="localhost";
 			$ms_login="root";

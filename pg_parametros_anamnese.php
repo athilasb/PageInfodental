@@ -337,7 +337,7 @@
 
 						if(is_object($pergunta)) {
 
-							$vSQL="id_anamnese=".$_POST['id_anamnese'].", pergunta='".utf8_decode(strtoupperWLIB($str->protege($_POST['pergunta'])))."'";
+							$vSQL="id_anamnese=".$_POST['id_anamnese'].", pergunta='".utf8_decode(strtoupperWLIB(addslashes($_POST['pergunta'])))."'";
 							$vSQL.=",pub='".((isset($_POST['pub']) and $_POST['pub']==1)?1:0)."'";
 						
 
@@ -352,12 +352,12 @@
 									if(!empty($v)) {
 										if($_POST['id_opcao'][$aux]>0) {
 											$vSQLOpcoes['update'][$_POST['id_opcao'][$aux]]="id_formulario=$id_formulario,
-																								opcao='".utf8_decode(strtoupperWLIB($str->protege($v)))."',
+																								opcao='".utf8_decode(strtoupperWLIB(addslashes($v)))."',
 																								lixo=0,
 																								alerta='".((isset($_POST['alerta'][$aux]) and $_POST['alerta'][$aux]==1)?1:0)."'";
 										} else {
 											$vSQLOpcoes['insert'][]="id_formulario=$id_formulario,
-																		opcao='".utf8_decode(strtoupperWLIB($str->protege($v)))."',
+																		opcao='".utf8_decode(strtoupperWLIB(addslashes($v)))."',
 																		lixo=0,
 																		alerta='".((isset($_POST['alerta'][$aux]) and $_POST['alerta'][$aux]==1)?1:0)."'";
 										}
@@ -382,7 +382,7 @@
 							//echo "edit";die();
 						} else {
 
-							$vSQL="id_anamnese=".$_POST['id_anamnese'].", pergunta='".utf8_decode(strtoupperWLIB($str->protege($_POST['pergunta'])))."',tipo='".$_POST['tipo']."'";
+							$vSQL="id_anamnese=".$_POST['id_anamnese'].", pergunta='".utf8_decode(strtoupperWLIB(addslashes($_POST['pergunta'])))."',tipo='".$_POST['tipo']."'";
 							$vSQL.=",pub='".((isset($_POST['pub']) and $_POST['pub']==1)?1:0)."'";
 						
 							$sql->add($_table."_formulario",$vSQL);
@@ -390,7 +390,7 @@
 							if(isset($_POST['opcao']) and is_array($_POST['opcao'])) {
 								$vSQLOpcoes=array();
 								foreach($_POST['opcao'] as $v) {
-									$vSQLOpcoes[]="id_formulario=$id_formulario,opcao='".addslashes(utf8_decode(strtoupperWLIB($str->protege($v))))."'";
+									$vSQLOpcoes[]="id_formulario=$id_formulario,opcao='".addslashes(utf8_decode(strtoupperWLIB(addslashes($v))))."'";
 								}
 								if(count($vSQLOpcoes)>0) {
 									foreach($vSQLOpcoes as $v) {

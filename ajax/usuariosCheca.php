@@ -3,8 +3,7 @@
 		$dir="../";
 		require_once("../lib/conf.php");
 		require_once("../usuarios/checa.php");
-		$str = new String();
-		$sql->consult($_p."usuarios","*","where login='".$str->protege($_POST['login'])."' and lixo=0");
+		$sql->consult($_p."usuarios","*","where login='".addslashes($_POST['login'])."' and lixo=0");
 		if($sql->rows) {
 			echo 1;
 		}
