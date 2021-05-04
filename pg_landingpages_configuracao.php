@@ -11,7 +11,6 @@
 		if($sql->rows) {
 			$landingpage=mysqli_fetch_object($sql->mysqry);
 			$cnt=$landingpage;
-
 		}
 	}
 

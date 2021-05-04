@@ -2,11 +2,10 @@
 	include "includes/header.php";
 	include "includes/nav.php";
 
-	$_table=$_p."landingpage_banner";
+	$_table=$_p."landingpage_aclinica";
 	$_page=basename($_SERVER['PHP_SELF']);
-	$_dir="arqs/landingpages/banner/";
-	$_width=1440;
-	$_height=800;
+	$_width=750;
+	$_height='';
 
 	$landingpage=$cnt='';
 	if(isset($_GET['id_landingpage']) and is_numeric($_GET['id_landingpage'])) {
@@ -26,7 +25,13 @@
 		$cnt=mysqli_fetch_object($sql->mysqry);
 	}
 
-	$campos=explode(",","titulo,descricao,video,id_tema,palavras");
+	$fotos = array(
+		'foto1' => array('titulo' => 'Foto 1', 'dir' => 'arqs/landingpages/aclinica/fotos1/', 'class' => 'obg', 'titulo_legenda' => 'Legenda 1', 'legenda' => 'legenda1'),
+		'foto2' => array('titulo' => 'Foto 2', 'dir' => 'arqs/landingpages/aclinica/fotos2/', 'class' => '', 'titulo_legenda' => 'Legenda 2', 'legenda' => 'legenda2'),
+		'foto3' => array('titulo' => 'Foto 3', 'dir' => 'arqs/landingpages/aclinica/fotos3/', 'class' => '', 'titulo_legenda' => 'Legenda 3', 'legenda' => 'legenda3')
+	);
+
+	$campos=explode(",","id_tema,nome,legenda1,legenda2,legenda3");
 	foreach($campos as $v) $values[$v]='';
 
 	if(is_object($cnt)) {
@@ -53,18 +58,20 @@
 			}
 
 			$msgErro='';
-			if(isset($_FILES['foto']) and !empty($_FILES['foto']['tmp_name'])) { 
-				$up=new Uploader();
-				$up->uploadCorta("Imagem",$_FILES['foto'],"",5242880*2,$_width,$_height,$_dir,$id_reg);
+			foreach($fotos as $k => $v) {
+				if(isset($_FILES[$k]) and !empty($_FILES[$k]['tmp_name'])) { 
+					$up=new Uploader();
+					$up->uploadCorta("Imagem",$_FILES[$k],"",5242880*2,$_width,$_height,$v['dir'],$id_reg);
 
-				if($up->erro) {
-					$msgErro=$up->resul;
-				} else {
-					$ext=$up->ext;
-					$vSQL="foto='".$ext."'";
-					$vWHERE="where id='".$id_reg."'";
-					$sql->update($_table,$vSQL,$vWHERE);
-					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$id_reg."'");
+					if($up->erro) {
+						$msgErro=$up->resul;
+					} else {
+						$ext=$up->ext;
+						$vSQL="$k='".$ext."'";
+						$vWHERE="where id='".$id_reg."'";
+						$sql->update($_table,$vSQL,$vWHERE);
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$id_reg."'");
+					}
 				}
 			}
 
@@ -101,34 +108,23 @@
 
 						<div class="filter-group filter-group_right">
 							<div class="filter-button">
-								<?php if(is_object($cnt)){?><a href="?deletaPaginainicial=<?php echo $cnt->id."&".$url;?>" class="js-deletar"><i class="iconify" data-icon="bx-bx-trash"></i></a><?php }?>
+								<?php if(is_object($cnt)){?><a href="?deletaAclinica=<?php echo $cnt->id."&".$url;?>" class="js-deletar"><i class="iconify" data-icon="bx-bx-trash"></i></a><?php }?>
 								<a href="javascript:;" class="azul  btn-submit"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
 							</div>
 						</div>
 
 					</div>
-					<div class="colunas4">
-						<dl class="dl2">
-							<dt>Título Estático</dt>
-							<dd>
-								<input type="text" name="titulo" value="<?php echo $values['titulo'];?>" class="obg"/>
-							</dd>
-						</dl>
-						<dl class="dl2">
-							<dt>Título Dinâmico</dt>
-							<dd>
-								<input type="text" name="palavras" value="<?php echo $values['palavras'];?>"  class="obg noupper" />
-							</dd>
-						</dl>	
-					</div>
-					<dl>
-						<dt>Descrição</dt>
-						<dd><input type="text" name="descricao" class="noupper" value="<?php echo $values['descricao'];?>" /></dd>
+					<dl class="dl2">
+						<dt>Nome da Clínica</dt>
+						<dd>
+							<input type="text" name="nome" value="<?php echo $values['nome'];?>" class="obg"/>
+						</dd>
 					</dl>
 					<?php
-					if(is_object($cnt)) {
-						$ft=$_dir.$cnt->id.".".$cnt->foto;
-						if(file_exists($ft)) {	
+					foreach($fotos as $k => $v) {
+						if(is_object($cnt) and isset($cnt->$k)) {
+							$ft = $v['dir'].$cnt->id.".".$cnt->$k;
+							if(file_exists($ft)) {	
 					?>
 					<dl>
 						<dd><a href="<?php echo $ft;?>" data-fancybox><img src="<?php echo $ft;?>" width="200" style="border: solid 1px #CCC;padding:2px;" /></a></dd>
@@ -138,14 +134,19 @@
 					}
 					?>
 					<dl>
-						<dt>Banner</dt>
-						<dd><input type="file" name="foto" class="<?php echo empty($cnt)?"obg":"";?>" /></dd>
+						<dt><?php echo $v['titulo'];?></dt>
+						<dd><input type="file" name="<?php echo $k;?>" class="<?php echo empty($cnt)?$v['class']:"";?>" /></dd>
 						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span>&nbsp;&nbsp;Dimensão: <?php echo $_width."x".$_height;?></label></dd>
 					</dl>
 					<dl>
-						<dt>Vídeo</dt>
-						<dd><textarea name="video" class="noupper" style="height: 150px;"><?php echo $values['video'];?></textarea></dd>
+						<dt><?php echo $v['titulo_legenda'];?></dt>
+						<dd>
+							<input type="text" name="<?php echo $v['legenda'];?>" value="<?php echo $values[$v['legenda']];?>" class="<?php echo $v['class'];?>"/>
+						</dd>
 					</dl>
+					<?php
+						}
+					?>
 				</div>
 			</section>
 

@@ -89,6 +89,7 @@
 
 						<div class="filter-group filter-group_right">
 							<div class="filter-button">
+								<?php if(is_object($cnt)){?><a href="?deletaInformativo=<?php echo $cnt->id."&".$url;?>" class="js-deletar"><i class="iconify" data-icon="bx-bx-trash"></i></a><?php }?>
 								<a href="javascript:;" class="azul  btn-submit"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
 							</div>
 						</div>

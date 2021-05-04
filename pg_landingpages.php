@@ -384,19 +384,26 @@
 
 			<section class="grid">
 				<div class="box">
-					<section class="filtros">
-					<h1 class="filtros__titulo">Landing Page</h1>
-					<form method="get" class="filtros-form">
-						<dl>
-							<dt>Busca</dt>
-							<dd><input type="text" name="busca" value="<?php echo isset($values['busca'])?$values['busca']:"";?>" /></dd>
-						</dl>
-						<button type="submit" class="filtros-form__button"><i class="iconify" data-icon="bx-bx-search"></i></button>
-					</form>
-					<div class="filtros-acoes">
-						<a href="pg_landingpages_configuracao.php" data-padding="0" class="adicionar tooltip" title="Adicionar"><i class="iconify" data-icon="bx-bx-plus"></i></a>			
+
+					<div class="filter">
+
+						<div class="filter-group">
+							<div class="filter-button">
+								<a href="pg_contatos_pacientes_dadospessoais.php" class="verde"><i class="iconify" data-icon="bx-bx-plus"></i><span>Nova Landing Page</span></a>
+							</div>
+						</div>
+
+						<div class="filter-group filter-group_right">
+							<form method="get" class="filter-form">
+								<dl>
+									<dd><input type="text" name="busca" value="<?php echo isset($values['busca'])?$values['busca']:"";?>" placeholder="" style="width:235px;" class="noupper" /></dd>
+								</dl>
+								<button type="submit"><i class="iconify" data-icon="bx-bx-search"></i></button>
+							</form>
+						</div>
+
 					</div>
-				</section>
+
 					<?php
 					$where="WHERE lixo='0'";
 					if(isset($values['busca']) and !empty($values['busca'])) $where.=" and (titulo like '%".utf8_decode($values['busca'])."%')";
