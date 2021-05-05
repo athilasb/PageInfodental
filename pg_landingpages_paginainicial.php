@@ -99,6 +99,12 @@
 							</div>
 						</div>
 
+						<div class="filter-group">
+							<div class="filter-title">
+								<span class="badge">2</span> Preencha os dados do Banner
+							</div>
+						</div>
+
 						<div class="filter-group filter-group_right">
 							<div class="filter-button">
 								<?php if(is_object($cnt)){?><a href="?deletaPaginainicial=<?php echo $cnt->id."&".$url;?>" class="js-deletar"><i class="iconify" data-icon="bx-bx-trash"></i></a><?php }?>
@@ -109,21 +115,24 @@
 					</div>
 					<div class="colunas4">
 						<dl class="dl2">
-							<dt>Título Estático</dt>
+							<dt>Título da Página</dt>
 							<dd>
 								<input type="text" name="titulo" value="<?php echo $values['titulo'];?>" class="obg"/>
 							</dd>
+							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 						<dl class="dl2">
-							<dt>Título Dinâmico</dt>
+							<dt>Subtítulo Dinâmico</dt>
 							<dd>
 								<input type="text" name="palavras" value="<?php echo $values['palavras'];?>"  class="obg noupper" />
 							</dd>
+							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>	
 					</div>
 					<dl>
 						<dt>Descrição</dt>
 						<dd><input type="text" name="descricao" class="noupper" value="<?php echo $values['descricao'];?>" /></dd>
+						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 					<?php
 					if(is_object($cnt)) {
@@ -145,6 +154,7 @@
 					<dl>
 						<dt>Vídeo</dt>
 						<dd><textarea name="video" class="noupper" style="height: 150px;"><?php echo $values['video'];?></textarea></dd>
+						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 				</div>
 			</section>

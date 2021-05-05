@@ -3,11 +3,12 @@
 	if(basename($_SERVER['PHP_SELF'])=="index.php") {
 		require_once("lib/conf.php");
 		require_once("lib/classes.php");
-		if(isset($_COOKIE[$_p.'adm_cpf']) and isset($_COOKIE[$_p.'adm_senha']) and isset($_COOKIE[$_p.'adm_id'])) {		
+		if(isset($_COOKIE[$_p.'adm_cpf']) and isset($_COOKIE[$_p.'adm_senha']) and isset($_COOKIE[$_p.'adm_id'])) {
+			$str = new String();		
 			$sql = new Mysql();
-			$sql->consult($_p."usuarios","*","where id='".addslashes($_COOKIE[$_p.'adm_id'])."' and 
-																	cpf='".addslashes($_COOKIE[$_p.'adm_cpf'])."' and 
-																	senha='".addslashes($_COOKIE[$_p.'adm_senha'])."' and 
+			$sql->consult($_p."usuarios","*","where id='".$str->protege($_COOKIE[$_p.'adm_id'])."' and 
+																	cpf='".$str->protege($_COOKIE[$_p.'adm_cpf'])."' and 
+																	senha='".$str->protege($_COOKIE[$_p.'adm_senha'])."' and 
 																	pub='1'");
 			if($sql->rows) {
 				header("Location: dashboard.php");
@@ -21,6 +22,7 @@
 		require_once("usuarios/checa.php");
 		
 		$sql=new Mysql();
+		$str=new String();
 		$jsc=new Js();
 
 		$adm = new Adm($_p);

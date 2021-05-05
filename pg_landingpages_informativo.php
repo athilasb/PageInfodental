@@ -87,9 +87,14 @@
 							</div>
 						</div>
 
+						<div class="filter-group">
+							<div class="filter-title">
+								<span class="badge">3</span> Preencha os dados do informativo
+							</div>
+						</div>
+
 						<div class="filter-group filter-group_right">
 							<div class="filter-button">
-								<?php if(is_object($cnt)){?><a href="?deletaInformativo=<?php echo $cnt->id."&".$url;?>" class="js-deletar"><i class="iconify" data-icon="bx-bx-trash"></i></a><?php }?>
 								<a href="javascript:;" class="azul  btn-submit"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
 							</div>
 						</div>
@@ -99,10 +104,12 @@
 					<dl>
 						<dt>Título Informativo</dt>
 						<dd><input type="text" name="titulo" class="obg noupper" value="<?php echo $values['titulo'];?>" /></dd>
+						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 					<dl>
 						<dt>Descrição</dt>
 						<dd><textarea name="texto" id="texto" class="noupper" style="height:400px;"><?php echo $values['texto'];?></textarea></dd>
+						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 				</div>
 			</section>

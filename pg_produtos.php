@@ -1110,7 +1110,7 @@
 		$where="WHERE lixo='0'";
 		
 		if(isset($values['busca']) and !empty($values['busca'])) $where.=" and (titulo like '%".addslashes($values['busca'])."%' or codigo like '%".addslashes($values['busca'])."%')";
-		if(isset($values['tipo']) and !empty($values['tipo'])) $where.=" and tipo='".addslashes($values['tipo'])."'";
+		if(isset($values['tipo']) and !empty($values['tipo'])) $where.=" and tipo='".$str->protege($values['tipo'])."'";
 		
 
 		//echo $where;

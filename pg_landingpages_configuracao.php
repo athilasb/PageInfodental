@@ -11,6 +11,7 @@
 		if($sql->rows) {
 			$landingpage=mysqli_fetch_object($sql->mysqry);
 			$cnt=$landingpage;
+
 		}
 	}
 
@@ -89,7 +90,7 @@
 			if(empty($cnt)) {
 			?>
 			<section class="filtros">
-				<h1 class="filtros__titulo">Landing Page</h1>
+				<h1 class="filtros__titulo">Nova Landing Page</h1>
 				<div class="filtros-acoes">
 					<a href="pg_landingpages.php"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
 					<a href="javascript:;" class="principal btn-submit"><i class="iconify" data-icon="bx-bx-check"></i></a>
@@ -110,9 +111,15 @@
 							</div>
 						</div>
 
+						<div class="filter-group">
+							<div class="filter-title">
+								<span class="badge">1</span> Preencha os dados da Landing Page
+							</div>
+						</div>
+
 						<div class="filter-group filter-group_right">
 							<div class="filter-button">
-								<a href="?deletaLandingPage=<?php echo $landingpage->id."&".$url;?>" class="js-deletar"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+								<?php if(is_object($cnt)){?><a href="?deletaLandingPage=<?php echo $landingpage->id."&".$url;?>" class="js-deletar"><i class="iconify" data-icon="bx-bx-trash"></i></a><?php }?>
 								<a href="javascript:;" class="azul  btn-submit"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
 							</div>
 						</div>
@@ -122,26 +129,30 @@
 					<div>
 						<div class="colunas4">
 							<dl class="dl2">
-								<dt>Nome do Tema</dt>
+								<dt>Tema da Landing Page</dt>
 								<dd>
 									<input type="text" name="titulo" value="<?php echo $values['titulo'];?>" class="obg"/>
 								</dd>
+								<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 							</dl>
 							<dl class="dl2">
 								<dt>URL do Tema</dt>
 								<dd>
 									<input type="text" name="code" value="<?php echo $values['code'];?>"  class="obg noupper" />
 								</dd>
+								<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 							</dl>	
 						</div>
 						<div class="colunas4">
 							<dl class="dl2">
 								<dt>Cor Primária</dt>
 								<dd><input type="text" name="cor_primaria" value="<?php echo $values['cor_primaria'];?>" class="obg" /></dd>
+								<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 							</dl>
 							<dl class="dl2">
 								<dt>Cor Secundária</dt>
 								<dd><input type="text" name="cor_secundaria" value="<?php echo $values['cor_secundaria'];?>" class="obg" /></dd>
+								<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 							</dl>
 						</div>
 						<dl>
@@ -149,12 +160,14 @@
 							<dd>
 								<textarea name="codigo_body" style="height: 200px;" class="noupper"><?php echo $values['codigo_body'];?></textarea>
 							</dd>
+							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 						<dl>
 							<dt>Código de Rastreamento Head</dt>
 							<dd>
 								<textarea name="codigo_head" style="height: 200px;" class="noupper"><?php echo $values['codigo_head'];?></textarea>
 							</dd>
+							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 					</div>
 				</div>

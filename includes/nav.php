@@ -35,6 +35,10 @@
 																		array('pg_landingpage_formulario.php'.$urlTema=>'Formulário')
 																	),
 					),
+					'landingpages'=>array('titulo'=>'Landing Pages','icone'=>'<i class="iconify" data-icon="mdi:web"></i>','submenu'=>array(
+																		array('pg_landingpages.php'.$urlTema=>'Landing Pages')
+																	),
+					),
 					'whatsapp'=>array('pg_whatsapp.php'=>'Whatsapp','icone'=>'<i class="iconify" data-icon="cib:whatsapp"></i>','titulo'=>'Whatsapp'),
 					//'usuarios'=>array('usuarios.php'=>'Usuários','icone'=>'<i class="iconify" data-icon="cib:open-access"></i>','titulo'=>'Usuários')
 			   );

@@ -389,7 +389,7 @@
 
 						<div class="filter-group">
 							<div class="filter-button">
-								<a href="pg_contatos_pacientes_dadospessoais.php" class="verde"><i class="iconify" data-icon="bx-bx-plus"></i><span>Nova Landing Page</span></a>
+								<a href="pg_landingpages_configuracao.php" class="verde"><i class="iconify" data-icon="bx-bx-plus"></i><span>Nova Landing Page</span></a>
 							</div>
 						</div>
 

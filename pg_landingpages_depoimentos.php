@@ -2,7 +2,7 @@
 	include "includes/header.php";
 	include "includes/nav.php";
 
-	$_table=$_p."landingpage_depoimentos";
+	$_table=$_p."landingpages_depoimentos";
 	$_page=basename($_SERVER['PHP_SELF']);
 
 	$landingpage=$cnt='';
@@ -10,8 +10,6 @@
 		$sql->consult($_p."landingpage_temas","*","where id='".$_GET['id_landingpage']."'");
 		if($sql->rows) {
 			$landingpage=mysqli_fetch_object($sql->mysqry);
-			$cnt=$landingpage;
-
 		}
 	}
 
@@ -20,46 +18,39 @@
 		die();
 	}
 
-	if(isset($_GET['form'])) {
-		$cnt='';
-		$campos=explode(",","autor,depoimento,id_tema");
-		foreach($campos as $v) $values[$v]='';
+	$sql->consult($_table,"*","WHERE id_tema='".$landingpage->id."' and lixo=0");
+	if($sql->rows) {
+		$cnt=mysqli_fetch_object($sql->mysqry);
+	}
+
+	$campos=explode(",","id_tema,autor1,depoimento1,autor2,depoimento2,autor3,depoimento3");
+	foreach($campos as $v) $values[$v]='';
+
+	if(is_object($cnt)) {
+		$values=$adm->values($campos,$cnt);
+	}
+
+	if(isset($_POST['acao']) and $_POST['acao']=="wlib") {
+		$vSQL=$adm->vSQL($campos,$_POST);
+		$values=$adm->values;
+		$processa=true;
+
+		if($processa===true) {	
 		
-		if(isset($_GET['id_tema']) and is_numeric($_GET['id_tema'])) $values['id_tema']=$_GET['id_tema'];
-		
-		if(isset($_GET['edita']) and is_numeric($_GET['edita'])) {
-			$sql->consult($_table,"*","where id='".$_GET['edita']."'");
-			if($sql->rows) {
-				$cnt=mysqli_fetch_object($sql->mysqry);
-				$values=$adm->values($campos,$cnt);
+			if(is_object($cnt)) {
+				$vSQL.="id_alteracao=$usr->id,alteracao_data=now()";
+				$vWHERE="where id='".$cnt->id."'";
+				$sql->update($_table,$vSQL,$vWHERE);
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
+				$id_reg=$cnt->id;
 			} else {
-				$jsc->jAlert("Informação não encontrada!","erro","document.location.href='".$_page."'");
-				die();
+				$sql->add($_table,$vSQL."data=now(),id_usuario='".$usr->id."'");
+				$id_reg=$sql->ulid;
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$sql->ulid."'");
 			}
-		}
 
-		if(isset($_POST['acao']) and $_POST['acao']=="wlib") {
-			$vSQL=$adm->vSQL($campos,$_POST);
-			$values=$adm->values;
-			$processa=true;
-
-			if($processa===true) {	
-			
-				if(is_object($cnt)) {
-					$vSQL.="id_alteracao=$usr->id,alteracao_data=now()";
-					$vWHERE="where id='".$cnt->id."'";
-					$sql->update($_table,$vSQL,$vWHERE);
-					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
-					$id_reg=$cnt->id;
-				} else {
-					$sql->add($_table,$vSQL."data=now(),id_usuario='".$usr->id."'");
-					$id_reg=$sql->ulid;
-					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$sql->ulid."'");
-				}
-
-				$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='".$_page."?form=1&edita=".$id_reg."&".$url."'");
-				die();
-			}
+			$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='".$_page."?form=1&edita=".$id_reg."&".$url."'");
+			die();
 		}
 	}
 ?>
@@ -69,9 +60,6 @@
 		require_once("includes/abaLandingPage.php");
 		?>
 
-		<?php
-			if(isset($_GET['form'])) {
-		?>
 		<form method="post" class="form formulario-validacao"  autocomplete="off" enctype="multipart/form-data">
 			<input type="hidden" name="acao" value="wlib" />
 			<input type="hidden" name="id_tema" value="<?php echo $landingpage->id;?>" />		
@@ -87,6 +75,12 @@
 							</div>
 						</div>
 
+						<div class="filter-group">
+							<div class="filter-title">
+								<span class="badge">6</span> Preencha o depoimento e autor
+							</div>
+						</div>
+
 						<div class="filter-group filter-group_right">
 							<div class="filter-button">
 								<?php if(is_object($cnt)){?><a href="?deletaLandingPage=<?php echo $landingpage->id."&".$url;?>" class="js-deletar"><i class="iconify" data-icon="bx-bx-trash"></i></a><?php }?>
@@ -96,70 +90,50 @@
 
 					</div>
 
-					<dl>
-						<dt>Autor</dt>
-						<dd><input type="text" name="autor" class="obg noupper" value="<?php echo $values['autor'];?>" /></dd>
-					</dl>
-					<dl>
-						<dt>Depoimento</dt>
-						<dd><input type="text" name="depoimento" class="depoimento noupper" value="<?php echo $values['depoimento'];?>" /></dd>
-					</dl>
+					<div class="colunas4">
+						<dl class="dl3">
+							<dt>1° Depoimento</dt>
+							<dd><input type="text" name="depoimento1" class="depoimento obg noupper" value="<?php echo $values['depoimento1'];?>" /></dd>
+							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
+						</dl>
+						<dl class="dl2">
+							<dt>Autor</dt>
+							<dd><input type="text" name="autor1" class="obg noupper" value="<?php echo $values['autor1'];?>" /></dd>
+							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
+						</dl>
+					</div>
+
+					<div class="colunas4">
+						<dl class="dl3">
+							<dt>2° Depoimento</dt>
+							<dd><input type="text" name="depoimento2" class="depoimento noupper" value="<?php echo $values['depoimento2'];?>" /></dd>
+							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
+						</dl>
+						<dl class="dl2">
+							<dt>Autor</dt>
+							<dd><input type="text" name="autor2" class="noupper" value="<?php echo $values['autor2'];?>" /></dd>
+							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
+						</dl>
+					</div>
+
+					<div class="colunas4">
+						<dl class="dl3">
+							<dt>3° Depoimento</dt>
+							<dd><input type="text" name="depoimento3" class="depoimento noupper" value="<?php echo $values['depoimento3'];?>" /></dd>
+							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
+						</dl>
+						<dl class="dl2">
+							<dt>Autor</dt>
+							<dd><input type="text" name="autor3" class="noupper" value="<?php echo $values['autor3'];?>" /></dd>
+							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
+						</dl>
+					</div>
 					
 				</div>
 			</section>
-
 		</form>
-		<?php
-			} else {
-		?>
-		<section class="grid">
-			<section class="box">
 
-				<div class="filter">
-					<div class="filter-group">
-						<div class="filter-button">
-							<a href="<?php echo $_page."?form=1&$url";?>" class="verde"><i class="iconify" data-icon="bx-bx-plus"></i><span>adicionar</span></a>
-						</div>
-					</div>
-				</div>
-
-				<div class="registros">
-					<table class="tablesorter">
-						<thead>
-							<tr>
-								<th>Autor</th>
-								<th>Depoimento</th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php
-							$registros=array();
-							$sql->consult($_table,"*","where id_tema=$landingpage->id and lixo=0 order by data desc");
-							while($x=mysqli_fetch_object($sql->mysqry)) {
-								$registros[]=$x;
-							}
-
-							foreach($registros as $x) {
-								?>
-								<tr onclick="document.location.href='<?php echo $_page."?form=1&id_landingpage=$landingpage->id&edita=".$x->id;?>';">
-									<td><strong><?php echo utf8_encode($x->autor);?></strong></td>
-									<td><?php echo utf8_encode($x->depoimento);?></td>
-								</tr>	
-							<?php
-							}
-							?>
-							<tr>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-
-			</section>
-		</section>
-		<?php
-			}
-		?>
-		</section>
+	</section>
 		
 <?php
 include "includes/footer.php";

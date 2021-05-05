@@ -26,9 +26,9 @@
 	}
 
 	$fotos = array(
-		'foto1' => array('titulo' => 'Foto 1', 'dir' => 'arqs/landingpages/aclinica/fotos1/', 'class' => 'obg', 'titulo_legenda' => 'Legenda 1', 'legenda' => 'legenda1'),
-		'foto2' => array('titulo' => 'Foto 2', 'dir' => 'arqs/landingpages/aclinica/fotos2/', 'class' => '', 'titulo_legenda' => 'Legenda 2', 'legenda' => 'legenda2'),
-		'foto3' => array('titulo' => 'Foto 3', 'dir' => 'arqs/landingpages/aclinica/fotos3/', 'class' => '', 'titulo_legenda' => 'Legenda 3', 'legenda' => 'legenda3')
+		'foto1' => array('titulo' => 'Foto 1', 'dir' => 'arqs/landingpages/aclinica/fotos1/', 'class' => 'obg', 'titulo_legenda' => 'Descrição', 'legenda' => 'legenda1'),
+		'foto2' => array('titulo' => 'Foto 2', 'dir' => 'arqs/landingpages/aclinica/fotos2/', 'class' => '', 'titulo_legenda' => 'Descrição', 'legenda' => 'legenda2'),
+		'foto3' => array('titulo' => 'Foto 3', 'dir' => 'arqs/landingpages/aclinica/fotos3/', 'class' => '', 'titulo_legenda' => 'Descrição', 'legenda' => 'legenda3')
 	);
 
 	$campos=explode(",","id_tema,nome,legenda1,legenda2,legenda3");
@@ -106,6 +106,12 @@
 							</div>
 						</div>
 
+						<div class="filter-group">
+							<div class="filter-title">
+								<span class="badge">4</span> Escolha as fotos e preencha a descrição
+							</div>
+						</div>
+
 						<div class="filter-group filter-group_right">
 							<div class="filter-button">
 								<?php if(is_object($cnt)){?><a href="?deletaAclinica=<?php echo $cnt->id."&".$url;?>" class="js-deletar"><i class="iconify" data-icon="bx-bx-trash"></i></a><?php }?>
@@ -119,6 +125,7 @@
 						<dd>
 							<input type="text" name="nome" value="<?php echo $values['nome'];?>" class="obg"/>
 						</dd>
+						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 					<?php
 					foreach($fotos as $k => $v) {
@@ -143,6 +150,7 @@
 						<dd>
 							<input type="text" name="<?php echo $v['legenda'];?>" value="<?php echo $values[$v['legenda']];?>" class="<?php echo $v['class'];?>"/>
 						</dd>
+						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 					<?php
 						}
