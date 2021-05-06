@@ -122,7 +122,7 @@
 							<legend><span class="badge">2</span> Tipo de Anamnese</legend>
 							<dl>
 								<dd>
-									<select name="id_anamnese" class="chosen js-anamnese" data-placeholder="Selecione">
+									<select name="id_anamnese" class="chosen js-anamnese" data-placeholder="Selecione"<?php echo is_object($anamnese)?" disabled":"";?>>
 										<option value=""></option>
 										<?php
 										foreach($_anamnese as $x) {

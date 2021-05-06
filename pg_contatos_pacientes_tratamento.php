@@ -1293,7 +1293,7 @@
 									item.id_procedimento=id_procedimento;
 									item.procedimento=procedimento;
 									item.id_regiao=id_regiao;
-									item.id_plano=id_plano;
+									item.id_plano=id_plano; 
 									item.plano=plano;
 									item.profissional=0;
 									item.quantidade=quantidade;
@@ -1672,12 +1672,12 @@
 										<a href="javascript:;" class="button js-btn-addProcedimento tooltip " title="Adicionar Procedimento" style="background:var(--azul);color:#FFF;float: right"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar Procedimento</a>
 									</div>*/?>
 									<div class="filter">
-									<div class="filter-group">
-										<div class="filter-button">
-											<a href="javascript:;" class="verde js-btn-addProcedimento "><i class="iconify" data-icon="bx-bx-plus"></i><span>Novo Procedimento</span></a>
+										<div class="filter-group">
+											<div class="filter-button">
+												<a href="javascript:;" class="verde js-btn-addProcedimento "><i class="iconify" data-icon="bx-bx-plus"></i><span>Novo Procedimento</span></a>
+											</div>
 										</div>
 									</div>
-								</div>
 									<?php
 									}
 									?>
@@ -1804,7 +1804,7 @@
 					</dl>
 				</article>
 			</section>
-				<section id="modalProcedimento" class="modal" style="width:950px;">
+			<section id="modalProcedimento" class="modal" style="width:950px;">
 				
 				<header class="modal-conteudo">
 						<form method="post" class="form js-form-agendamento">
@@ -1912,7 +1912,7 @@
 								<dl>
 									<dt>&nbsp;</dt>
 									<dd>
-										<a href="javascript:;" class="button js-btn-add" style="background:var(--azul)"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar</a>
+										<a href="javascript:;" class="button js-btn-add"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar</a>
 									</dd>
 								</dl>
 							</div>

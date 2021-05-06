@@ -111,7 +111,7 @@
 	$sql->consult($_p."pacientes_tratamentos","*","where id_paciente=$paciente->id and  status='APROVADO' and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) $tratamentosIds[]=$x->id;
 
-	$procedimentosIds=array();
+	$procedimentosIds=array(-1);
 	$_procedimentosAprovados=array();
 	$where="where lixo=0 and situacao='aprovado' and status_evolucao NOT IN ('cancelado','finalizado') and id_tratamento IN (".implode(",",$tratamentosIds).")";
 
@@ -408,8 +408,8 @@
 					$('.js-procedimento .reg-color:last').css('background-color',cor);
 					$('.js-procedimento .js-titulo:last').html(`<h1>${x.titulo}</h1><p>${x.opcao} - ${x.plano}</p>`);
 					$('.js-procedimento .js-status:last').html(`<p>${status}</p>`);
-					$('.js-procedimento .reg-user:last span').html(x.profissionalIniciais.length==0?'<span class="iconify" data-icon="bi:person-fill" data-inline="false"></span>':x.profissionalIniciais);
-					$('.js-procedimento .reg-user:last span').css('background',x.profissionalCor);
+					$('.js-procedimento .reg-user:last span').html((!x.profissionalIniciais || x.profissionalIniciais.length==0)?'<span class="iconify" data-icon="bi:person-fill" data-inline="false"></span>':x.profissionalIniciais);
+					$('.js-procedimento .reg-user:last span').css('background',(!x.profissionalCor || x.profissionalCor.length==0)?'':x.profissionalCor);
 					$(`.js-procedimento:last`).attr('data-usuario',autor);
 					$(`.js-procedimento:last`).click(function(){popView(this);});
 				});
@@ -436,7 +436,7 @@
 
 				$('.js-btn-salvar').click(function(){
 					$('form').submit();
-				})
+				});
 
 				$('.js-btn-fechar').click(function(){$('.cal-popup').hide();})
 
@@ -452,10 +452,12 @@
 					let statusEvolucao = $('select.js-sel-procedimento option:selected').attr('data-statusEvolucao');
 					let obs = ``;
 					let dt = new Date();
-					let mes = dt.getMonth();
+					let dia = dt.getMonth();
+					let mes = dt.getDate();
 					mes++
 					mes=mes<=9?`0${mes}`:mes;
-					let data = `${dt.getDate()}/${mes}/${dt.getFullYear()} ${dt.getHours()}:${dt.getMinutes()}`;
+					dia=dia<=9?`0${dia}`:dia;
+					let data = `${dia}/${mes}/${dt.getFullYear()} ${dt.getHours()}:${dt.getMinutes()}`;
 
 					if(id_procedimento.length>0) {
 						let item = { id_procedimento, 
