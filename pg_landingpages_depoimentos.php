@@ -77,7 +77,7 @@
 
 						<div class="filter-group">
 							<div class="filter-title">
-								<span class="badge">6</span> Preencha o depoimento e autor
+								<span class="badge">7</span> Preencha o depoimento e autor
 							</div>
 						</div>
 
@@ -92,40 +92,34 @@
 
 					<div class="colunas4">
 						<dl class="dl3">
-							<dt>1° Depoimento</dt>
+							<dt>1° Depoimento <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd><input type="text" name="depoimento1" class="depoimento obg noupper" value="<?php echo $values['depoimento1'];?>" /></dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 						<dl class="dl2">
-							<dt>Autor</dt>
+							<dt>Autor <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd><input type="text" name="autor1" class="obg noupper" value="<?php echo $values['autor1'];?>" /></dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 					</div>
 
 					<div class="colunas4">
 						<dl class="dl3">
-							<dt>2° Depoimento</dt>
+							<dt>2° Depoimento <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd><input type="text" name="depoimento2" class="depoimento noupper" value="<?php echo $values['depoimento2'];?>" /></dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 						<dl class="dl2">
-							<dt>Autor</dt>
+							<dt>Autor <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd><input type="text" name="autor2" class="noupper" value="<?php echo $values['autor2'];?>" /></dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 					</div>
 
 					<div class="colunas4">
 						<dl class="dl3">
-							<dt>3° Depoimento</dt>
+							<dt>3° Depoimento <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd><input type="text" name="depoimento3" class="depoimento noupper" value="<?php echo $values['depoimento3'];?>" /></dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 						<dl class="dl2">
-							<dt>Autor</dt>
+							<dt>Autor <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd><input type="text" name="autor3" class="noupper" value="<?php echo $values['autor3'];?>" /></dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 					</div>
 					

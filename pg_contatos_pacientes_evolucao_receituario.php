@@ -5,33 +5,6 @@
 	$_table=$_p."pacientes";
 	$_page=basename($_SERVER['PHP_SELF']);
 
-	$_width=400;
-	$_height=400;
-	$_dir="arqs/pacientes/";
-
-	$_cidades=array();
-	$sql->consult($_p."cidades","*","");
-	while($x=mysqli_fetch_object($sql->mysqry)) $_cidades[$x->id]=$x;
-
-	$_profissoes=array();
-	$sql->consult($_p."parametros_profissoes","*","where lixo=0 order by titulo asc");
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_profissoes[$x->id]=$x;
-	}
-
-
-	$_pacienteIndicacoes=array();
-	$sql->consult($_p."parametros_indicacoes","*","where lixo=0 order by titulo asc");
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_pacienteIndicacoes[$x->id]=$x;
-	}
-
-	$_pacienteGrauDeParentesco=array();
-	$sql->consult($_p."parametros_grauparentesco","*","where lixo=0 order by titulo asc");
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_pacienteGrauDeParentesco[$x->id]=$x;
-	}
-
 	$paciente=$cnt='';
 	if(isset($_GET['id_paciente']) and is_numeric($_GET['id_paciente'])) {
 		$sql->consult($_p."pacientes","*","where id='".$_GET['id_paciente']."'");
@@ -41,18 +14,32 @@
 		}
 	}
 
+	$evolucao='';
+	$evolucaoReceita='';
+	if(isset($_GET['edita']) and is_numeric($_GET['edita'])) {	
+		$sql->consult($_p."pacientes_evolucoes","*","where id='".$_GET['edita']."' and id_tipo=8");
+		if($sql->rows) {
+			$evolucao=mysqli_fetch_object($sql->mysqry);
 
-	$campos=explode(",","nome,situacao,noem,sexo,foto,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,profissao,estado_civil,telefone1,telefone1_whatsapp,telefone1_whatsapp_permissao,telefone2,email,instagram,instagram_naopossui,musica,indicacao_tipo,indicacao,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,responsavel_possui,responsavel_nome,responsavel_sexo,responsavel_rg,responsavel_rg_orgaoemissor,responsavel_rg_estado,responsavel_datanascimento,responsavel_estadocivil,responsavel_cpf,responsavel_profissao,responsavel_grauparentesco,preferencia_contato");
-	
-	foreach($campos as $v) $values[$v]='';
-	$values['data']=date('d/m/Y H:i');
-	$values['sexo']='M';
+			$sql->consult($_p."pacientes_evolucoes_receitas","*","where id_evolucao=$evolucao->id and lixo=0");
+			if($sql->rows) {
+				$evolucaoReceita=mysqli_fetch_object($sql->mysqry);
 
-
-	if(is_object($paciente)) {
-		$values=$adm->values($campos,$cnt);
-		$values['data']=date('d/m/Y H:i',strtotime($cnt->data));
+ 			} 
+		} else {
+			$jsc->jAlert("Receita não encontrada!","erro","document.location.href='pg_contatos_pacientes_evolucao.php?id_paciente='".$paciente->id."'");
+			die();
+		}
 	}
+
+	$_profissionais=array();
+	$sql->consult($_p."profissionais","*","where lixo=0 order by nome asc");//"where unidades like '%,$unidade->id,%' and lixo=0 order by nome asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_profissionais[$x->id]=$x;
+	}
+
+
+
 	?>
 	<section class="content">
 		
@@ -68,6 +55,9 @@
 					$(`.js-box`).hide();
 					$(`.js-box-${tipo}`).show();
 				})
+				$('.js-btn-salvar').click(function(){
+					$('form').submit();
+				});
 			});
 		</script>
 
@@ -76,7 +66,26 @@
 			<div class="box">
 
 				<?php
-				require_once("includes/evolucaoMenu.php");
+				if(empty($evolucao)) {
+					require_once("includes/evolucaoMenu.php");
+				} else {
+				?>
+				<div class="filter">
+					<div class="filter-group">
+						<div class="filter-button">
+							<a href="pg_contatos_pacientes_evolucao.php?id_paciente=<?php echo $paciente->id;?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
+						</div>
+					</div>
+					<div class="filter-group filter-group_right">
+						<div class="filter-button">
+							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+							<a href="javascript:;" class="azul js-btn-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+						</div>
+					</div>
+				</div>
+				<?php
+				}
 				?>
 
 				<section class="js-evolucao-adicionar" id="evolucao-receituario" style="display:;">
@@ -88,22 +97,31 @@
 								
 								<dl>
 									<dt>Data e Hora</dt>
-									<dd><input type="text" name="" /></dd>
+									<dd><input type="text" name="data" class="datahora datepicker" value="<?php echo is_object($evolucaoReceita)?date('d/m/Y H:i',strtotime($evolucaoReceita->data_receita)):date('d/m/Y H:i');?>" /></dd>
 								</dl>
 								<dl>
 									<dt>Tipo de Uso</dt>
 									<dd>
-										<select name="">
-											<option value="">Tipo de uso 1</option>
-											<option value="">Tipo de uso 2</option>
+										<select name="tipo" class="obg chosen" data-placeholder="Selecione...">
+											<option value=""></option>
+											<?php
+											foreach($_tiposReceitas as $k=>$v) {
+												echo '<option value="'.$k.'">'.$v.'</option>';
+											}
+											?>
 										</select>
 									</dd>
 								</dl>
 								<dl>
 									<dt>Cirurgião Dentista</dt>
 									<dd>
-										<select name="">
-											<option value="">Kroner Costa</option>
+										<select name="id_profissional" class="obg chosen" data-placeholder="Selecione...">
+											<option value=""></option>
+										<?php
+										foreach($_profissionais as $p) {
+											echo '<option value="'.$p->id.'"'.((is_object($evolucaoReceita) and $evolucaoReceita->id_profissional==$p->id)?' selected':'').'>'.utf8_encode($p->nome).'</option>';
+										}
+										?>
 										</select>
 									</dd>
 								</dl>
@@ -150,7 +168,7 @@
 								</div>								
 							</fieldset>
 						</div>
-						<fieldset>
+						<?php /*<fieldset>
 							<legend><span class="badge">4</span> Pré-visualize e edite se necessário</legend>
 							<script>
 								$(function(){
@@ -167,7 +185,7 @@
 								<h1 style="text-align:center;">Receituário</h1>
 								<p>Atesto para os devidos fins que {NOME PACIENTE} estará dispensado das atividades trabalhistas durante o período de {DIAS ATESTADO} dias a partir da data de {DATA ATESTADO}</p>
 							</textarea>
-						</fieldset>
+						</fieldset>*/?>
 					</form>
 
 				</section>

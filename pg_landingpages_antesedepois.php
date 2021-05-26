@@ -109,7 +109,7 @@
 
 						<div class="filter-group">
 							<div class="filter-title">
-								<span class="badge">5</span> Escolha as fotos do antes e depois
+								<span class="badge">6</span> Escolha as fotos do antes e depois
 							</div>
 						</div>
 
@@ -136,19 +136,17 @@
 					}
 					?>
 					<dl>
-						<dt><?php echo $v['titulo'];?></dt>
+						<dt><?php echo $v['titulo'];?> <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span>&nbsp;&nbsp;Dimensão: <?php echo $_width."x".$_height;?></dt>
 						<dd><input type="file" name="<?php echo $k;?>" class="<?php echo empty($cnt)?$v['class']:"";?>" /></dd>
-						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span>&nbsp;&nbsp;Dimensão: <?php echo $_width."x".$_height;?></label></dd>
 					</dl>
 					<?php
 							if(!empty($v['legenda'])) {
 					?>
 					<dl>
-						<dt><?php echo $v['titulo_legenda'];?></dt>
+						<dt><?php echo $v['titulo_legenda'];?> <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 						<dd>
 							<input type="text" name="<?php echo $v['legenda'];?>" value="<?php echo $values[$v['legenda']];?>" class="<?php echo $v['class'];?>"/>
 						</dd>
-						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 					<?php
 							}

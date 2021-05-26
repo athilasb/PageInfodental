@@ -59,4 +59,15 @@
 		"TO" => "Tocantins"				    					    					   		    
 	);
 
+	$_tiposReceitas=array('interno'=>'USO INTERNO',
+							'externo'=>'USO EXTERNO');
+
+	$optAgendaDuracao=array(10,30,60,90,120);
+
+	
+	$_tiposFornecedores=array('FORNECEDOR'=>'FORNECEDOR',
+								'LABORATORIO'=>'LABORATÓRIO',
+								'CLINICA'=>'CLÍNICA RADIOLÓGICA');
+
+	
 ?>

@@ -131,7 +131,7 @@
 	$evolucao='';
 	$evolucaoProcedimentos=array();
 	if(isset($_GET['edita']) and is_numeric($_GET['edita'])) {	
-		$sql->consult($_p."pacientes_evolucoes","*","where id='".$_GET['edita']."'");
+		$sql->consult($_p."pacientes_evolucoes","*","where id='".$_GET['edita']."' and id_tipo=2");
 		if($sql->rows) {
 			$evolucao=mysqli_fetch_object($sql->mysqry);
 
@@ -190,7 +190,10 @@
 						}
 					}
 				}
-			}
+			} 
+		} else {
+			$jsc->jAlert("Procedimento Aprovado não encontrado!","erro","document.location.href='pg_contatos_pacientes_evolucao.php?id_paciente='".$paciente->id."'");
+			die();
 		}
 	}
 
@@ -256,7 +259,6 @@
 									status='".addslashes($evolucaoProc->statusEvolucao)."',
 									obs='".addslashes(utf8_decode($evolucaoProc->obs))."'";
 
-					//	echo $vSQLProc."<BR>";	
 						$evProc='';
 						if(isset($obj->id_evolucao_procedimento) and is_numeric($obj->id_evolucao_procedimento)) {
 							$sql->consult($_p."pacientes_evolucoes_procedimentos","*","where id=$obj->id_evolucao_procedimento and id_paciente=$paciente->id and lixo=0");
@@ -280,8 +282,19 @@
 							$sql->update($_p."pacientes_evolucoes_procedimentos",$vSQLProc,"where id=$evProc->id");
 						}
 
-					}	
 
+						// atualiza status de Tratamento / Procedimento
+						if($evolucaoProc->statusEvolucao=="iniciar" or 
+								$evolucaoProc->statusEvolucao=="iniciado" or 
+								$evolucaoProc->statusEvolucao=="finalizado" or 
+								$evolucaoProc->statusEvolucao=="cancelado") {
+
+							$sql->update($_p."pacientes_tratamentos_procedimentos","status_evolucao='".$evolucaoProc->statusEvolucao."'","where id='".$evolucaoProc->id_tratamento_procedimento."'");
+						}
+
+						
+
+					}	
 
 					$jsc->jAlert("Evolução salva com sucesso!","sucesso","document.location.href='pg_contatos_pacientes_evolucao.php?id_paciente=$paciente->id'");
 					die();

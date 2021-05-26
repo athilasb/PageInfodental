@@ -883,10 +883,10 @@
 											<td>${(tratamentoAprovado===1)?'':'<a href="javascript:;" style="font-size:1.25rem;" class="js-btn-removerProcedimento"><i class="iconify" data-icon="bx-bx-trash"></i></a>'}</td>
 										</tr>`;*/
 
-					var procedimentosHMTL = `<div class="card js-procedimento-item">
-												<div class="js-descricao">
+					var procedimentosHMTL = `<a href="javascript:;" class="reg-group js-procedimento-item">
+												<div class="reg-data js-descricao">
 													<h1 class="js-procedimento"></h1>
-													<h2 class="js-regiao"></h2>
+													<p class="js-regiao"></p>
 												</div>
 												<div class="js-valor">
 													R$2.000,00
@@ -894,7 +894,7 @@
 												<div class="js-profissional">
 													
 												</div>
-											</div>`;
+											</a>`;
 
 
 					const procedimentosListar = () => {
@@ -1672,12 +1672,12 @@
 										<a href="javascript:;" class="button js-btn-addProcedimento tooltip " title="Adicionar Procedimento" style="background:var(--azul);color:#FFF;float: right"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar Procedimento</a>
 									</div>*/?>
 									<div class="filter">
-										<div class="filter-group">
-											<div class="filter-button">
-												<a href="javascript:;" class="verde js-btn-addProcedimento "><i class="iconify" data-icon="bx-bx-plus"></i><span>Novo Procedimento</span></a>
-											</div>
+									<div class="filter-group">
+										<div class="filter-button">
+											<a href="javascript:;" class="verde js-btn-addProcedimento "><i class="iconify" data-icon="bx-bx-plus"></i><span>Novo Procedimento</span></a>
 										</div>
 									</div>
+								</div>
 									<?php
 									}
 									?>
@@ -1804,7 +1804,7 @@
 					</dl>
 				</article>
 			</section>
-			<section id="modalProcedimento" class="modal" style="width:950px;">
+				<section id="modalProcedimento" class="modal" style="width:950px;">
 				
 				<header class="modal-conteudo">
 						<form method="post" class="form js-form-agendamento">
@@ -1980,10 +1980,10 @@
 						if(isset($_pagamentos[$x->id])) $pagamentos=$_pagamentos[$x->id];
 					?>
 					<div class="js-procedimentos">
-						<div class="card js-procedimento-item" style="border-left:solid 10px <?php echo $cor;?>;" onclick="document.location.href='<?php echo "$_page?form=1&edita=$x->id&$url";?>'">
-							<div class="js-descricao" style="width:58%;">
+						<a href="<?php echo "$_page?form=1&edita=$x->id&$url";?>" class="reg-group js-procedimento-item" style="border-left:solid 10px <?php echo $cor;?>;">
+							<div class="reg-data js-descricao" style="width:58%;">
 								<h1 class="js-procedimento"><strong><?php echo utf8_encode($x->titulo);?></strong></h1>
-								<h2 class="js-regiao"><?php echo date('d/m/Y H:i',strtotime($x->data));?></h2>
+								<p class="js-regiao"><?php echo date('d/m/Y H:i',strtotime($x->data));?></p>
 							</div>
 							<div class="js-valor" style="width:20%;margin-right: 10px;">
 								<?php
@@ -2030,7 +2030,7 @@
 								?>
 							</div>
 
-						</div>
+						</a>
 					</div>
 					<?php
 					}

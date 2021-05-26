@@ -135,7 +135,8 @@
 								while($x=mysqli_fetch_object($sql->mysqry)) {
 									$registros[]=$x;
 									$usuariosIds[]=$x->id_usuario;
-									$revolucoesIds[]=$x->id;
+									if($x->id_tipo==2 or $x->id_tipo==3) $revolucoesIds[]=$x->id;
+
 								}
 
 								$_usuarios=array();
@@ -176,9 +177,17 @@
 										<td style="font-size:1.25rem;"><i class="iconify" data-icon="<?php echo $tipo->icone;?>"></i></td>
 										<td><?php echo utf8_encode($tipo->tituloSingular);?></td>
 										<td><?php echo date('d/m/Y',strtotime($x->data));?><br /><span style="color:var(--cinza4)"><?php echo date('H:i',strtotime($x->data));?></span></td>
-										<td><?php echo isset($registrosProcedimentos[$x->id])?count($registrosProcedimentos[$x->id]):0;?></td>
+										<td>
+											<?php 
+											if($x->id_tipo==2 or $x->id_tipo==3) {
+												echo isset($registrosProcedimentos[$x->id])?count($registrosProcedimentos[$x->id]):0;
+											} else {
+												echo 1;
+											}
+											?>
+										</td>
 										<td><?php echo isset($_usuarios[$x->id_usuario])?utf8_encode($_usuarios[$x->id_usuario]->nome):'-';?></td>
-										<td><?php echo utf8_encode($x->obs);?></td>
+										<td><?php echo empty($x->obs)?"-":utf8_encode($x->obs);?></td>
 									</tr>	
 									<?php
 									}

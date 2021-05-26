@@ -89,7 +89,7 @@
 
 						<div class="filter-group">
 							<div class="filter-title">
-								<span class="badge">7</span> Preencha as informações da Clínica
+								<span class="badge">8</span> Preencha as informações da Clínica
 							</div>
 						</div>
 
@@ -102,50 +102,44 @@
 					</div>
 
 					<dl>
-						<dt>Nome da Clínica</dt>
+						<dt>Nome da Clínica <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 						<dd>
 							<input type="text" name="nome" value="<?php echo $values['nome'];?>"  class="obg noupper" />
 						</dd>
-						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 
 					<div class="colunas4">
 						<dl class="dl2">
-							<dt>Whatsapp</dt>
+							<dt>Whatsapp <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd>
 								<input type="text" name="whatsapp" value="<?php echo $values['whatsapp'];?>"  class="obg noupper celular" />
 							</dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 						<dl class="dl2">
-							<dt>Endereço</dt>
+							<dt>Endereço <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd>
 								<input type="text" name="endereco" value="<?php echo $values['endereco'];?>" maxlength="140"  class="noupper" />
 							</dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 					</div>
 
 					<div class="colunas4">
 						<dl class="dl2">
-							<dt>Facebook</dt>
+							<dt>Facebook <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd>
 								<input type="text" name="facebook" value="<?php echo $values['facebook'];?>"  class="noupper" />
 							</dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 						<dl class="dl2">
-							<dt>Instagram</dt>
+							<dt>Instagram <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd>
 								<input type="text" name="instagram" value="<?php echo $values['instagram'];?>"  class="noupper" />
 							</dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 					</div>
 					<dl>
-						<dt>Texto Institucional</dt>
+						<dt>Texto Institucional <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 						<dd><textarea name="texto" class="noupper" style="height:400px;"><?php echo $values['texto'];?></textarea></dd>
-						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 				</div>
 			</section>

@@ -1025,7 +1025,7 @@
 								
 
 							?>
-							<div class="card js-procedimento-item" data-id_pagamento="<?php echo $x->id;?>" style="border-left:solid 10px <?php echo $cor;?>;opacity: <?php echo $opacity;?>" <?php if(!isset($_GET['unirPagamentos'])) {?>onclick="popView(this);"<?php } ?>>
+							<a href="javascript:;" class="reg-group js-procedimento-item" data-id_pagamento="<?php echo $x->id;?>" style="border-left:solid 10px <?php echo $cor;?>;opacity: <?php echo $opacity;?>" <?php if(!isset($_GET['unirPagamentos'])) {?>onclick="popView(this);"<?php } ?>>
 							
 								<?php
 								if(isset($_GET['unirPagamentos'])) {
@@ -1036,7 +1036,7 @@
 								<?php	
 								}
 								?>
-								<div class="js-descricao" style="width:30%;">
+								<div class="reg-data js-descricao" style="width:30%;">
 									<h1 class="js-procedimento">
 										<?php  
 										if($x->fusao>0) {
@@ -1048,7 +1048,7 @@
 										}
 										?>
 									</h1>
-									<h2 class="js-regiao"><?php echo date('d/m/Y',strtotime($x->data_vencimento));?></h2>
+									<p class="js-regiao"><?php echo date('d/m/Y',strtotime($x->data_vencimento));?></p>
 								</div>
 
 
@@ -1068,7 +1068,7 @@
 									<span style="font-size:12px;color:#999;">À Pagar</span>
 									<?php echo number_format($saldoAPagar>=$saldoAPagar?$saldoAPagar:0,2,",",".");?>
 								</div>
-							</div>
+							</a>
 							<?php
 										
 								

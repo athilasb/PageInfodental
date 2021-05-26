@@ -60,8 +60,32 @@
 		}
 	}
 ?>
+<script src="js/jquery.colorpicker.js"></script>
 <script type="text/javascript">
 	$(function(){
+		$('input[name=cor_primaria]').ColorPicker({
+			color: '<?php echo $values['cor_primaria'];?>',
+			onShow: function (colpkr) {$(colpkr).fadeIn(500);return false;},
+			onHide: function (colpkr) {$(colpkr).fadeOut(500);return false;},
+			onChange: function (hsb, hex, rgb) {console.log(hex);$('input[name=cor_primaria]').css('backgroundColor', '#' + hex).val('#'+hex);}
+		});
+		$('input[name=cor_secundaria]').ColorPicker({
+			color: '<?php echo $values['cor_secundaria'];?>',
+			onShow: function (colpkr) {$(colpkr).fadeIn(500);return false;},
+			onHide: function (colpkr) {$(colpkr).fadeOut(500);return false;},
+			onChange: function (hsb, hex, rgb) {console.log(hex);$('input[name=cor_secundaria]').css('backgroundColor', '#' + hex).val('#'+hex);}
+		});
+		$('input[name=cor_primaria]').css('backgroundColor','<?php echo $values['cor_primaria'];?>');
+		$('input[name=cor_secundaria]').css('backgroundColor','<?php echo $values['cor_secundaria'];?>');
+		var input = $('input[name=code]');
+
+		input.bind('keypress', function(e)
+		{
+		    if (((e.which < 65 || e.which > 122) && (e.which < 48 || e.which > 57)) && e.which != 45)
+		    {
+		        e.preventDefault();
+		    } 
+		});
 		<?php
 		if(empty($cnt)) {
 		?>
@@ -129,45 +153,39 @@
 					<div>
 						<div class="colunas4">
 							<dl class="dl2">
-								<dt>Tema da Landing Page</dt>
+								<dt>Tema da Landing Page <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 								<dd>
 									<input type="text" name="titulo" value="<?php echo $values['titulo'];?>" class="obg"/>
 								</dd>
-								<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 							</dl>
 							<dl class="dl2">
-								<dt>URL do Tema</dt>
+								<dt>URL do Tema <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 								<dd>
 									<input type="text" name="code" value="<?php echo $values['code'];?>"  class="obg noupper" />
 								</dd>
-								<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 							</dl>	
 						</div>
 						<div class="colunas4">
 							<dl class="dl2">
-								<dt>Cor Primária</dt>
+								<dt>Cor Primária <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 								<dd><input type="text" name="cor_primaria" value="<?php echo $values['cor_primaria'];?>" class="obg" /></dd>
-								<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 							</dl>
 							<dl class="dl2">
-								<dt>Cor Secundária</dt>
+								<dt>Cor Secundária <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 								<dd><input type="text" name="cor_secundaria" value="<?php echo $values['cor_secundaria'];?>" class="obg" /></dd>
-								<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 							</dl>
 						</div>
 						<dl>
-							<dt>Código de Rastreamento Body</dt>
+							<dt>Código de Rastreamento Body <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd>
 								<textarea name="codigo_body" style="height: 200px;" class="noupper"><?php echo $values['codigo_body'];?></textarea>
 							</dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 						<dl>
-							<dt>Código de Rastreamento Head</dt>
+							<dt>Código de Rastreamento Head <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd>
 								<textarea name="codigo_head" style="height: 200px;" class="noupper"><?php echo $values['codigo_head'];?></textarea>
 							</dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 					</div>
 				</div>

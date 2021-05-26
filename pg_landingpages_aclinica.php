@@ -121,11 +121,10 @@
 
 					</div>
 					<dl class="dl2">
-						<dt>Nome da Clínica</dt>
+						<dt>Nome da Clínica <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 						<dd>
 							<input type="text" name="nome" value="<?php echo $values['nome'];?>" class="obg"/>
 						</dd>
-						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 					<?php
 					foreach($fotos as $k => $v) {
@@ -141,16 +140,14 @@
 					}
 					?>
 					<dl>
-						<dt><?php echo $v['titulo'];?></dt>
+						<dt><?php echo $v['titulo'];?> <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span>&nbsp;&nbsp;Dimensão: <?php echo $_width."x".$_height;?></dt>
 						<dd><input type="file" name="<?php echo $k;?>" class="<?php echo empty($cnt)?$v['class']:"";?>" /></dd>
-						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span>&nbsp;&nbsp;Dimensão: <?php echo $_width."x".$_height;?></label></dd>
 					</dl>
 					<dl>
-						<dt><?php echo $v['titulo_legenda'];?></dt>
+						<dt><?php echo $v['titulo_legenda'];?> <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 						<dd>
 							<input type="text" name="<?php echo $v['legenda'];?>" value="<?php echo $values[$v['legenda']];?>" class="<?php echo $v['class'];?>"/>
 						</dd>
-						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 					<?php
 						}

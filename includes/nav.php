@@ -10,6 +10,7 @@
 					),*/
 
 					'pacientes'=>array('pg_contatos_pacientes.php'=>'Pacientes','icone'=>'<i class="iconify" data-icon="ic-baseline-person"></i>','titulo'=>'Pacientes'),
+					'colaboradores'=>array('pg_colaboradores.php'=>'Colaboradores','icone'=>'<span class="iconify" data-icon="gridicons-multiple-users" data-inline="false"></span>','titulo'=>'Colaboradores'),
 					'indicacoes'=>array('pg_parametros_indicacoes.php'=>'Indicações','icone'=>'<i class="iconify" data-icon="ic-outline-rocket"></i>','titulo'=>'Indicações'),
 					/*'estacionamento'=>array('pg_estacionamento.php'=>'Estacionamento', 'titulo' => 'Estacionamento'),
 					'caixa'=>array('pg_caixa.php'=>'Caixa', 'titulo' => 'Caixa'),*/
@@ -35,10 +36,7 @@
 																		array('pg_landingpage_formulario.php'.$urlTema=>'Formulário')
 																	),
 					),
-					'landingpages'=>array('titulo'=>'Landing Pages','icone'=>'<i class="iconify" data-icon="mdi:web"></i>','submenu'=>array(
-																		array('pg_landingpages.php'.$urlTema=>'Landing Pages')
-																	),
-					),
+					'landingpages'=>array('pg_landingpages.php'=>'Landing Pages','icone'=>'<span class="iconify" data-icon="ri:pages-fill" data-inline="false"></span>','titulo'=>'Landing Pages'),
 					'whatsapp'=>array('pg_whatsapp.php'=>'Whatsapp','icone'=>'<i class="iconify" data-icon="cib:whatsapp"></i>','titulo'=>'Whatsapp'),
 					//'usuarios'=>array('usuarios.php'=>'Usuários','icone'=>'<i class="iconify" data-icon="cib:open-access"></i>','titulo'=>'Usuários')
 			   );

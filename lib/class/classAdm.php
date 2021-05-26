@@ -6,10 +6,10 @@
 			$pre,
 			$_p="wtalk_",
 			$emp,
-			$dinheiro=array('price','valor','instrumentacao'),
+			$dinheiro=array('price','valor','instrumentacao','teleconsulta_valor','teleconsulta_desconto','consultapresencial_valor','consultapresencial_desconto','salario'),
 			$bool=array('instrumentacao_pago','credito','efetivado'),
 			$datahora=array('data','data_cirurgia'),
-			$checkbox=array('pub','destaque','face','quantitativo','dia_inteiro','responsavel_possui'),
+			$checkbox=array('pub','destaque','face','quantitativo','dia_inteiro','responsavel_possui','atendimentopersonalizado'),
 			$noupper=array('email','instagram','tipo','legenda','codigo_conversao','codigo_head','codigo_body','instagram'),
 			$multi=array('permissoes','unidade','camposEvolucao'),
 			$telefones=array('telefone','telefone1','telefone2','telefone3'),
@@ -318,6 +318,8 @@
 		
 		function get($get) {
 			
+			$str = new String();
+			
 			$datas=array('data','data_inicio','data_fim');
 			$multi=array('status_multi','status_produto_multi','status_ged_multi','status_entrega_multi');
 			
@@ -339,7 +341,7 @@
 						if(is_array($v)) $values[$k]=$v;
 						else $values[$k]=array();
 					} else {
-						$values[$k]=addslashes($v);
+						$values[$k]=$str->protege($v);
 					}
 				}
 			}

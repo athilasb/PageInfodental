@@ -115,24 +115,21 @@
 					</div>
 					<div class="colunas4">
 						<dl class="dl2">
-							<dt>Título da Página</dt>
+							<dt>Título da Página <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd>
 								<input type="text" name="titulo" value="<?php echo $values['titulo'];?>" class="obg"/>
 							</dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>
 						<dl class="dl2">
-							<dt>Subtítulo Dinâmico</dt>
+							<dt>Subtítulo Dinâmico <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 							<dd>
 								<input type="text" name="palavras" value="<?php echo $values['palavras'];?>"  class="obg noupper" />
 							</dd>
-							<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 						</dl>	
 					</div>
 					<dl>
-						<dt>Descrição</dt>
+						<dt>Descrição <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 						<dd><input type="text" name="descricao" class="noupper" value="<?php echo $values['descricao'];?>" /></dd>
-						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 					<?php
 					if(is_object($cnt)) {
@@ -147,12 +144,11 @@
 					}
 					?>
 					<dl>
-						<dt>Banner</dt>
+						<dt>Banner <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span>&nbsp;&nbsp;Dimensão: <?php echo $_width."x".$_height;?></dt>
 						<dd><input type="file" name="foto" class="<?php echo empty($cnt)?"obg":"";?>" /></dd>
-						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span>&nbsp;&nbsp;Dimensão: <?php echo $_width."x".$_height;?></label></dd>
 					</dl>
 					<dl>
-						<dt>Vídeo</dt>
+						<dt>Vídeo <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 						<dd><textarea name="video" class="noupper" style="height: 150px;"><?php echo $values['video'];?></textarea></dd>
 						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>

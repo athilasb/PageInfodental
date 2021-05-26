@@ -714,7 +714,7 @@
 												})
 											}
 													$(`.js-fase-table select.js-fase-evolucao:last option`).attr('data-id_fase',x.id);
-											$(`.js-fase-table select.js-fase-evolucao:last`).chosen();
+											$(`.js-fase-table select.js-fase-evolucao:last`).chosen({hide_results_on_select:false,allow_single_deselect:true});
 											
 										})
 									} else if(rtn.error) {
@@ -1198,7 +1198,7 @@
 										$('.js-fase-table .js-fase-evolucao:last').find(`option[value=${f}]`).prop('selected',true);
 									});
 								}
-								$('.js-fase-table .js-fase-evolucao:last').chosen();
+								$('.js-fase-table .js-fase-evolucao:last').chosen({hide_results_on_select:false,allow_single_deselect:true});
 							});
 
 

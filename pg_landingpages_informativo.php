@@ -102,14 +102,12 @@
 					</div>
 
 					<dl>
-						<dt>Título Informativo</dt>
+						<dt>Título Informativo <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 						<dd><input type="text" name="titulo" class="obg noupper" value="<?php echo $values['titulo'];?>" /></dd>
-						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 					<dl>
-						<dt>Descrição</dt>
+						<dt>Descrição <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
 						<dd><textarea name="texto" id="texto" class="noupper" style="height:400px;"><?php echo $values['texto'];?></textarea></dd>
-						<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span></label></dd>
 					</dl>
 				</div>
 			</section>

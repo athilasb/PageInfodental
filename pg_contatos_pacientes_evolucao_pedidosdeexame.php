@@ -5,32 +5,32 @@
 	$_table=$_p."pacientes";
 	$_page=basename($_SERVER['PHP_SELF']);
 
-	$_width=400;
-	$_height=400;
-	$_dir="arqs/pacientes/";
-
-	$_cidades=array();
-	$sql->consult($_p."cidades","*","");
-	while($x=mysqli_fetch_object($sql->mysqry)) $_cidades[$x->id]=$x;
-
-	$_profissoes=array();
-	$sql->consult($_p."parametros_profissoes","*","where lixo=0 order by titulo asc");
+	$_profissionais=array();
+	$sql->consult($_p."profissionais","*","where lixo=0 order by nome asc");//"where unidades like '%,$unidade->id,%' and lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_profissoes[$x->id]=$x;
+		$_profissionais[$x->id]=$x;
 	}
 
-
-	$_pacienteIndicacoes=array();
-	$sql->consult($_p."parametros_indicacoes","*","where lixo=0 order by titulo asc");
+	$_tiposExames=array();
+	$sql->consult($_p."parametros_examedeimagem","*","where lixo=0 order by titulo asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_pacienteIndicacoes[$x->id]=$x;
+		$_tiposExames[$x->id]=$x;
 	}
 
-	$_pacienteGrauDeParentesco=array();
-	$sql->consult($_p."parametros_grauparentesco","*","where lixo=0 order by titulo asc");
+	$_clinicas=array();
+	$sql->consult($_p."parametros_fornecedores","*","where lixo=0 and tipo='CLINICA' order by razao_social, nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_pacienteGrauDeParentesco[$x->id]=$x;
+		$_clinicas[$x->id]=$x;
 	}
+
+	$_regioesOpcoes=array();
+	$sql->consult($_p."parametros_procedimentos_regioes_opcoes","*","order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_regioesOpcoes[$x->id_regiao][]=$x;
+
+	$_regioes=array();
+	$sql->consult($_p."parametros_procedimentos_regioes","*","");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_regioes[$x->id]=$x;
+
 
 	$paciente=$cnt='';
 	if(isset($_GET['id_paciente']) and is_numeric($_GET['id_paciente'])) {
@@ -41,17 +41,22 @@
 		}
 	}
 
+	$evolucao='';
+	$evolucaoPedido='';
+	if(isset($_GET['edita']) and is_numeric($_GET['edita'])) {	
+		$sql->consult($_p."pacientes_evolucoes","*","where id='".$_GET['edita']."' and id_tipo=8");
+		if($sql->rows) {
+			$evolucao=mysqli_fetch_object($sql->mysqry);
 
-	$campos=explode(",","nome,situacao,noem,sexo,foto,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,profissao,estado_civil,telefone1,telefone1_whatsapp,telefone1_whatsapp_permissao,telefone2,email,instagram,instagram_naopossui,musica,indicacao_tipo,indicacao,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,responsavel_possui,responsavel_nome,responsavel_sexo,responsavel_rg,responsavel_rg_orgaoemissor,responsavel_rg_estado,responsavel_datanascimento,responsavel_estadocivil,responsavel_cpf,responsavel_profissao,responsavel_grauparentesco,preferencia_contato");
-	
-	foreach($campos as $v) $values[$v]='';
-	$values['data']=date('d/m/Y H:i');
-	$values['sexo']='M';
+			$sql->consult($_p."pacientes_evolucoes_pedidosdeexames","*","where id_evolucao=$evolucao->id and lixo=0");
+			if($sql->rows) {
+				$evolucaoPedido=mysqli_fetch_object($sql->mysqry);
 
-
-	if(is_object($paciente)) {
-		$values=$adm->values($campos,$cnt);
-		$values['data']=date('d/m/Y H:i',strtotime($cnt->data));
+ 			} 
+		} else {
+			$jsc->jAlert("Procedimento Aprovado não encontrado!","erro","document.location.href='pg_contatos_pacientes_evolucao.php?id_paciente='".$paciente->id."'");
+			die();
+		}
 	}
 	?>
 	<section class="content">
@@ -67,7 +72,11 @@
 
 					$(`.js-box`).hide();
 					$(`.js-box-${tipo}`).show();
-				})
+				});
+
+				$('.js-btn-salvar').click(function(){
+					$('form').submit();
+				});
 			});
 		</script>
 
@@ -76,34 +85,68 @@
 			<div class="box">
 
 				<?php
-				require_once("includes/evolucaoMenu.php");
+				if(empty($evolucao)) {
+					require_once("includes/evolucaoMenu.php");
+				} else {
 				?>
+				<div class="filter">
+					<div class="filter-group">
+						<div class="filter-button">
+							<a href="pg_contatos_pacientes_evolucao.php?id_paciente=<?php echo $paciente->id;?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
+						</div>
+					</div>
+					<div class="filter-group filter-group_right">
+						<div class="filter-button">
+							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+							<a href="javascript:;" class="azul js-btn-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+						</div>
+					</div>
+				</div>
+				<?php
+				}
+				?>
+
 
 				<section class="js-evolucao-adicionar" id="evolucao-pedidos-de-exames">
 						
-					<form class="form">
+					<form class="form" method="post">
+
+						<textarea name="examesJSON" class="js-agenda-examesJSON" style="display:none;"></textarea>
+						<input type="hidden" name="acao" value="wlib" />
+						<input type="hidden" name="id_evolucao" value="<?php echo is_object($evolucao)?$evolucao->id:0;?>" />
+
 						<div class="grid grid_3">
 							<fieldset>
 								<legend><span class="badge">2</span>Cabeçalho do exame</legend>
 								
 								<dl>
 									<dt>Data do Pedido</dt>
-									<dd><input type="text" name="" class="datecalendar" /></dd>
+									<dd><input type="text" name="data" class="datecalendar data" value="<?php echo is_object($evolucaoPedido)?date('d/m/Y',strtotime($evolucaoPedido->data_pedido)):date('d/m/Y');?>" /></dd>
 								</dl>
 								<dl>
 									<dt>Clínica Radiológica</dt>
 									<dd>
-										<select name="">
-											<option value="">Clínica 1</option>
-											<option value="">Clínica 2</option>
+										<select name="id_clinica" class="chosen obg" data-placeholder="Selecione...">
+											<option value=""></option>
+											<?php
+											foreach($_clinicas as $v) {
+												echo '<option value="'.$v->id.'"'.((is_object($evolucaoPedido) and $evolucaoPedido->id_clinica==$v->id)?' selected':'').'>'.utf8_encode($v->tipo_pessoa=="PJ"?$v->razao_social:$v->nome).'</option>';
+											}
+											?>
 										</select>
 									</dd>
 								</dl>
 								<dl>
 									<dt>Cirurgião Dentista</dt>
 									<dd>
-										<select name="">
-											<option value="">Kroner Costa</option>
+										<select name="id_profissional" class="chosen obg" data-placeholder="Selecione...">
+											<option value=""></option>
+											<?php
+											foreach($_profissionais as $v) {
+												echo '<option value="'.$v->id.'"'.((is_object($evolucaoPedido) and $evolucaoPedido->id_profissional==$v->id)?' selected':'').'>'.utf8_encode($v->nome).'</option>';
+											}
+											?>
 										</select>
 									</dd>
 								</dl>
@@ -115,9 +158,13 @@
 								<dl>
 									<dt>Tipo de Exame</dt>
 									<dd>
-										<select name="">
-											<option value="">Tipo de Exame 1</option>
-											<option value="">Tipo de Exame 2</option>
+										<select class="chosen js-tipoExame" data-placeholder="Selecione...">
+											<option value=""></option>
+											<?php
+											foreach($_tiposExames as $v) {
+												echo '<option value="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
+											}
+											?>
 										</select>
 									</dd>
 								</dl>
@@ -125,10 +172,12 @@
 									<dl>
 										<dt>Região</dt>
 										<dd>
-											<select name="">
-												<option value="">1</option>	
-												<option value="">2</option>	
-												<option value="">3</option>	
+											<select class="chosen js-regiao" data-placeholder="Selecione...">
+												<?php
+												foreach($_regioes as $v) {
+													echo '<option value="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
+												}
+												?>
 											</select>
 										</dd>
 									</dl>
@@ -152,7 +201,7 @@
 								</div>								
 							</fieldset>
 						</div>
-						<fieldset>
+						<?php /*<fieldset>
 							<legend><span class="badge">4</span> Pré-visualize e edite se necessário</legend>
 							<script>
 								$(function(){
@@ -165,11 +214,20 @@
 									CKFinder.setupCKEditor(fck_texto);
 								});
 							</script>
-							<textarea name="texto" id="texto2" class="noupper" style="height:400px;">
+							<textarea name="pedido" id="texto2" class="noupper" style="height:400px;">
+								<?php
+								if(is_object($evolucaoPedido)) {
+									echo utf8_encode($evolucaoPedido->pedido);
+
+								} else {
+								?>
 								<h1 style="text-align:center;">Pedido de Exame</h1>
-								<p>Atesto para os devidos fins que {NOME PACIENTE} estará dispensado das atividades trabalhistas durante o período de {DIAS ATESTADO} dias a partir da data de {DATA ATESTADO}</p>
+								<p>Atesto para os devidos fins que <b><?php echo utf8_encode($paciente->nome);?></b> estará dispensado das atividades trabalhistas durante o período de {DIAS ATESTADO} dias a partir da data de {DATA ATESTADO}</p>
+								<?php
+								}
+								?>
 							</textarea>
-						</fieldset>
+						</fieldset>*/?>
 					</form>
 
 				</section>

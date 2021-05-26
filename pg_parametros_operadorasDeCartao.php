@@ -26,7 +26,7 @@
 
 		<?php
 			require_once("includes/abaConfiguracoes.php");
-			$_table=$_p."parametros_cartoes_operadoras";
+			$_table=$_p."parametros_cartoes_bandeiras";
 			$_page=basename($_SERVER['PHP_SELF']);
 
 			if(isset($_GET['form'])) {

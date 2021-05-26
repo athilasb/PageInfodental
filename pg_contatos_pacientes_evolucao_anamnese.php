@@ -63,10 +63,13 @@
 
 	$evolucao='';
 	if(isset($_GET['edita']) and is_numeric($_GET['edita'])) {	
-		$sql->consult($_p."pacientes_evolucoes","*","where id='".$_GET['edita']."'");
+		$sql->consult($_p."pacientes_evolucoes","*","where id='".$_GET['edita']."' and id_tipo=1");
 		if($sql->rows) {
 			$evolucao=mysqli_fetch_object($sql->mysqry);
 			$_GET['id_anamnese']=$evolucao->id_anamnese;
+		} else {
+			$jsc->jAlert("Anamnese não encontrada","erro","document.location.href='pg_contatos_pacientes_evolucao.php?id_paciente='".$paciente->id."'");
+			die();
 		}
 	}
 

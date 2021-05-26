@@ -28,7 +28,7 @@
 			$(this).val(numero);
 		});
 
-		$('.chosen').chosen();
+		$('.chosen').chosen({hide_results_on_select:false,allow_single_deselect:true});
 		$('.agendaData').datetimepicker({
 			timepicker:false,
 			format:'d/m/Y',
@@ -288,7 +288,7 @@
 
 							$(`.js-regiao`).hide();
 							$(`.js-regiao-${id_regiao}`).show();
-							$(`.js-regiao-${id_regiao}`).find('select').chosen();
+							$(`.js-regiao-${id_regiao}`).find('select').chosen({hide_results_on_select:false,allow_single_deselect:true});
 							$(`.js-regiao-descritivo`).show().find('dd input').val(regiao);
 
 							$(`.js-procedimento-btnOk`).show();

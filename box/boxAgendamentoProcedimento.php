@@ -34,7 +34,7 @@
 	var dentes = [];
 
 	$(function(){
-		//$('.js-regiao-2-select,.js-regiao-3-select').chosen();
+		//$('.js-regiao-2-select,.js-regiao-3-select').chosen({hide_results_on_select:false,allow_single_deselect:true});
 		$('select.js-agenda-id_procedimento').change(function(){
 			let id = $(this).val();
 			let id_regiao = $(this).find('option:selected').attr('data-id_regiao');
@@ -42,7 +42,7 @@
 			console.log(id+' '+id_regiao)
 			$(`.js-regiao`).hide();
 			$(`.js-regiao-${id_regiao}`).show();
-			$(`.js-regiao-${id_regiao}`).find('select').chosen();
+			$(`.js-regiao-${id_regiao}`).find('select').chosen({hide_results_on_select:false,allow_single_deselect:true});
 			$(`.js-regiao-descritivo`).show().find('dd input').val(regiao)
 		});
 
