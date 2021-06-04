@@ -10,10 +10,6 @@
 
 	$values=$adm->get($_GET);
 
-	$_tiposFornecedores=array('FORNECEDOR'=>'FORNECEDOR',
-								'LABORATORIO'=>'LABORATÓRIO',
-								'CLINICA'=>'CLÍNICA RADIOLÓGICA');
-
 	$_table=$_p."parametros_fornecedores";
 	$_page=basename($_SERVER['PHP_SELF']);
 

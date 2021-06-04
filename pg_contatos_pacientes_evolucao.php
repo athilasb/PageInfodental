@@ -19,6 +19,17 @@
 		$_profissoes[$x->id]=$x;
 	}
 
+	$_profissionais=array();
+	$sql->consult($_p."profissionais","*","where lixo=0 order by nome asc");//"where unidades like '%,$unidade->id,%' and lixo=0 order by nome asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_profissionais[$x->id]=$x;
+	}
+
+	$_tiposEvolucao=array();
+	$sql->consult($_p."pacientes_evolucoes_tipos","*","");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_tiposEvolucao[$x->id]=$x;
+	}
 
 	$_pacienteIndicacoes=array();
 	$sql->consult($_p."parametros_indicacoes","*","where lixo=0 order by titulo asc");
@@ -77,74 +88,11 @@
 			<section class="grid">
 				<div class="box">
 
-					<div class="filter">
-						<div class="filter-group">
-							<div class="filter-button">
-								<a href="<?php echo $_page."?".$url;?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
-							</div>
-						</div>
-						<div class="filter-group">
-							<div class="filter-title">
-								<span class="badge">1</span> Escolha o tipo de evolução
-							</div>
-						</div>
-						<div class="filter-group filter-group_right">
-							<div class="filter-button">
-								<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
-								<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
-								<a href="javascript:;" class="azul"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
-							</div>
-						</div>
-					</div>
+					<?php
+					require_once("includes/evolucaoMenu.php");
+					?>
 
-					<script>
-						$(function() {
-							$(".js-evolucao").click(function() {
-								$(".js-evolucao").removeClass("active");
-								$(this).addClass("active");
-								$(".js-evolucao-adicionar").hide();
-								var tipo = $(this).attr("data-tipo");
-								$("#evolucao-"+ tipo).show();
-							});
-						});
-					</script>
-
-					<div class="grid-links" style="grid-template-columns:repeat(8,1fr); margin-bottom:2rem;">
-						<a href="javascript:;" class="js-evolucao" data-tipo="anamnese">
-							<i class="iconify" data-icon="mdi-clipboard-check-multiple-outline"></i>
-							<p>Anamnese</p>
-						</a>
-						<a href="javascript:;" class="js-evolucao" data-tipo="procedimentos-aprovados">
-							<i class="iconify" data-icon="mdi-check-circle-outline"></i>
-							<p>Precedimentos Aprovados</p>
-						</a>
-						<a href="javascript:;" class="js-evolucao" data-tipo="procedimentos-avulsos">
-							<i class="iconify" data-icon="mdi-progress-check"></i>
-							<p>Procedimentos Avulsos</p>
-						</a>
-						<a href="javascript:;" class="js-evolucao" data-tipo="atestado">
-							<i class="iconify" data-icon="mdi-file-document-outline"></i>
-							<p>Atestado</p>
-						</a>
-						<a href="javascript:;" class="js-evolucao" data-tipo="servicos-de-laboratorio">
-							<i class="iconify" data-icon="entypo-lab-flask"></i>
-							<p>Serviços de Laboratório</p>
-						</a>
-						<a href="javascript:;" class="js-evolucao" data-tipo="pedidos-de-exames">
-							<i class="iconify" data-icon="carbon-user-x-ray"></i>
-							<p>Pedidos de Exames</p>
-						</a>
-						<a href="javascript:;" class="js-evolucao" data-tipo="receituario">
-							<i class="iconify" data-icon="mdi-pill"></i>
-							<p>Receituário</p>
-						</a>
-						<a href="javascript:;" class="js-evolucao" data-tipo="proxima-consulta">
-							<i class="iconify" data-icon="mdi-calendar-cursor"></i>
-							<p>Próxima Consulta</p>
-						</a>
-					</div>
-
-					<?php include "includes/evolucaoAdicionar.php"; ?>
+					
 
 				</div>				
 			</section>
@@ -170,14 +118,115 @@
 						<table class="tablesorter">
 							<thead>
 								<tr>
-									<th>Tipo</th>
-									<th>Data-hora</th>
-									<th>Profissional</th>
-									<th>Descrição</th>
+									<th style="width:20px;"></th>
+									<th style="width:150px;">Tipo</th>
+									<th style="width:100px;">Data-hora</th>
+									<th style="width:100px;">Quantidade</th>
+									<th style="width:100px;">Lançado por</th>
+									<th>Observação</th>
 								</tr>
 							</thead>
 							<tbody>
+								<?php
+								$registros=array();
+								$revolucoesIds=array(-1);
+								$usuariosIds=array(-1);
+								$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id and lixo=0 order by data desc");
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+									$registros[]=$x;
+									$usuariosIds[]=$x->id_usuario;
+									if($x->id_tipo==2 or $x->id_tipo==3) $revolucoesIds[]=$x->id;
+
+								}
+
+								$_usuarios=array();
+								$sql->consult($_p."usuarios","*","WHERE id IN (".implode(",",$usuariosIds).")");
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+									$_usuarios[$x->id]=$x;
+								}
+
+								$tratamentoProdecimentosIds=array(-1);
+								$registrosProcedimentos=array();
+								$sql->consult($_p."pacientes_evolucoes_procedimentos","*","where id_paciente=$paciente->id and id_evolucao IN (".implode(",",$revolucoesIds).") and lixo=0 order by data desc");
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+									$revolucoesIds[]=$x->id;
+									$registrosProcedimentos[$x->id_evolucao][]=$x;
+								}
+								
+
+								$prodecimentosIds=array(-1);
+								$_tratamentoProcedimentos=array();
+								$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id IN (".implode(",",$tratamentoProdecimentosIds).")");
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+									$prodecimentosIds[]=$x->id_procedimento;
+									$_tratamentoProcedimentos[$x->id]=$x;
+								}
+
+
+								$_procedimentos=array();
+								$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$prodecimentosIds).")");
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+									$_procedimentos[$x->id]=$x;
+								}
+
+								foreach($registros as $x) {
+									if(isset($_tiposEvolucao[$x->id_tipo])) {
+										$tipo = $_tiposEvolucao[$x->id_tipo];
+									?>
+									<tr onclick="document.location.href='<?php echo $tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;?>';">
+										<td style="font-size:1.25rem;"><i class="iconify" data-icon="<?php echo $tipo->icone;?>"></i></td>
+										<td><?php echo utf8_encode($tipo->tituloSingular);?></td>
+										<td><?php echo date('d/m/Y',strtotime($x->data));?><br /><span style="color:var(--cinza4)"><?php echo date('H:i',strtotime($x->data));?></span></td>
+										<td>
+											<?php 
+											if($x->id_tipo==2 or $x->id_tipo==3) {
+												echo isset($registrosProcedimentos[$x->id])?count($registrosProcedimentos[$x->id]):0;
+											} else {
+												echo 1;
+											}
+											?>
+										</td>
+										<td><?php echo isset($_usuarios[$x->id_usuario])?utf8_encode($_usuarios[$x->id_usuario]->nome):'-';?></td>
+										<td><?php echo empty($x->obs)?"-":utf8_encode($x->obs);?></td>
+									</tr>	
+									<?php
+									}
+									/*if(isset($_tiposEvolucao[$x->id_tipo]) and isset($_profissionais[$x->id_profissional])) {
+										$tipo = $_tiposEvolucao[$x->id_tipo];
+										
+										//$profissional = $_profissionais[$x->id_profissional];
+
+										// procedimentos aprovados
+										if($tipo->id==2) {
+											if(!isset($_tratamentoProcedimentos[$x->id_tratamento_procedimento])) continue;
+											$tratamentoProcedimento=$_tratamentoProcedimentos[$x->id_tratamento_procedimento];
+											if(!isset($_procedimentos[$tratamentoProcedimento->id_procedimento])) continue;
+											$procedimento = $_procedimentos[$tratamentoProcedimento->id_procedimento];
+										}
+
+
+								?>
 								<tr>
+									<td style="font-size:1.25rem;"><i class="iconify" data-icon="<?php echo $tipo->icone;?>"></i></td>
+									<td><?php echo date('d/m/Y',strtotime($x->data));?><br /><span style="color:var(--cinza4)"><?php echo date('H:i',strtotime($x->data));?></span></td>
+									<td><?php echo utf8_encode($profissional->nome);?></td>
+									<td>
+										<strong><?php echo utf8_encode($procedimento->titulo);?></strong>
+										<p>
+											<?php echo utf8_encode($tratamentoProcedimento->plano);?> - <?php echo utf8_encode($tratamentoProcedimento->opcao);?>
+										</p>
+									</td>
+								</tr>
+								<?php
+									}*/
+
+
+								}
+								?>
+								<tr>
+
+								</tr>
+								<?php /*<tr>
 									<td style="font-size:1.25rem;"><i class="iconify" data-icon="mdi-pill"></i></td>
 									<td>16/03/2020<br /><span style="color:var(--cinza4)">18:06</span></td>
 									<td>Dr. Kronner</td>
@@ -230,7 +279,7 @@
 									<td>16/03/2020<br /><span style="color:var(--cinza4)">18:06</span></td>
 									<td>Dr. Kronner</td>
 									<td><strong>Prótese Múltipla de Resina / PMMA (43/43)</strong><br />Procedimento finalizado.</td>								
-								</tr>
+								</tr>*/?>
 							</tbody>
 						</table>						
 					</div>

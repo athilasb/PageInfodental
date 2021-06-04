@@ -855,10 +855,10 @@
 											<td>${(tratamentoAprovado===1)?'':'<a href="javascript:;" style="font-size:1.25rem;" class="js-btn-removerProcedimento"><i class="iconify" data-icon="bx-bx-trash"></i></a>'}</td>
 										</tr>`;*/
 
-					var procedimentosHMTL = `<div class="card js-procedimento-item">
-												<div class="js-descricao">
+					var procedimentosHMTL = `<a href="javascript:;" class="reg-group js-procedimento-item">
+												<div class="reg-data js-descricao">
 													<h1 class="js-procedimento"></h1>
-													<h2 class="js-regiao"></h2>
+													<p class="js-regiao"></p>
 												</div>
 												<div class="js-valor">
 													R$2.000,00
@@ -866,7 +866,7 @@
 												<div class="js-profissional">
 													
 												</div>
-											</div>`;
+											</a>`;
 
 
 					const procedimentosListar = () => {
@@ -1941,30 +1941,30 @@
 						<a href="<?php echo $_page."?form=1&$url";?>" data-padding="0" class="adicionar tooltip" title="Adicionar">Nova Ordem de Serviço</a>
 					</div>
 				</div>*/?>
-				<div class="registros2">
-					<?php
-					foreach($registros as $x) {
-						$cor="orange";
-						if($x->status=="CANCELADO") $cor="red";
-						else if($x->status=="APROVADO") $cor="green";
-						$procedimentos=array();
-						if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
-
-						$pagamentos=array();
-						if(isset($_pagamentos[$x->id])) $pagamentos=$_pagamentos[$x->id];
-					?>
+				<div class="reg">
 					<div class="js-procedimentos">
-						<div class="card js-procedimento-item" style="border-left:solid 10px <?php echo $cor;?>;" onclick="document.location.href='<?php echo "$_page?form=1&edita=$x->id&$url";?>'">
-							<div class="js-descricao" style="width:58%;">
+						<?php
+						foreach($registros as $x) {
+							$cor="orange";
+							if($x->status=="CANCELADO") $cor="red";
+							else if($x->status=="APROVADO") $cor="green";
+							$procedimentos=array();
+							if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
+
+							$pagamentos=array();
+							if(isset($_pagamentos[$x->id])) $pagamentos=$_pagamentos[$x->id];
+						?>
+						<a href="<?php echo "$_page?form=1&edita=$x->id&$url";?>" class="reg-group js-procedimento-item" style="border-left:solid 10px <?php echo $cor;?>;">
+							<div class="reg-data js-descricao" style="width:58%;">
 								<h1 class="js-procedimento"><strong><?php echo utf8_encode($x->titulo);?></strong></h1>
-								<h2 class="js-regiao"><?php echo date('d/m/Y H:i',strtotime($x->data));?></h2>
+								<p class="js-regiao"><?php echo date('d/m/Y H:i',strtotime($x->data));?></p>
 							</div>
 							<div class="js-valor" style="width:20%;margin-right: 10px;">
 								<?php
 								if($x->id_aprovado==0) {
 									echo "-";
 								} else {
-									if(count($procedimentos)==0) echo '<a href="javascript" class="tooltip" title="Nenhum procedimento foi aprovado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
+									if(count($procedimentos)==0) echo '<a href="javascript:;" class="tooltip" title="Nenhum procedimento foi aprovado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
 									else {
 										$abertos=0;
 										$finalizados=0;
@@ -1986,7 +1986,7 @@
 								if($x->id_aprovado==0) {
 									echo "-";
 								} else {
-									if(count($pagamentos)==0) echo '<a href="javascript" class="tooltip" title="Nenhum pagamento foi adicionado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
+									if(count($pagamentos)==0) echo '<a href="javascript:;" class="tooltip" title="Nenhum pagamento foi adicionado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
 									else {
 										$abertos=0;
 										$finalizados=0;
@@ -2004,11 +2004,12 @@
 								?>
 							</div>
 
-						</div>
+						</a>
+						<?php
+						}
+						?>
 					</div>
-					<?php
-					}
-					?>
+					
 				</div>
 
 				<?php

@@ -380,7 +380,7 @@ a.registros-qtd__item {display:inline-block; color:#fff; background:var(--cor1);
 .agenda-filtros {display:flex; width:100%;}
 .agenda-filtros__inner1 {flex:0 1 620px; margin-right:auto; display:flex; align-items:center;}
 .agenda-filtros__inner1 > * {margin-right:.5rem;}
-.agenda-filtros__inner2 {flex:0 1 540px; display:flex; align-items:center; background:var(--cinza1); padding:0 1rem; border-radius:100px;}
+.agenda-filtros__inner2 {flex:0 1 360px; display:flex; align-items:center; background:var(--cinza1); padding:0 1rem; border-radius:100px;}
 .agenda-filtros__inner2 > * {flex:1; margin-right:.5rem;}
 .agenda-filtros__inner2 > *:last-child {margin-right:0;}
 .agenda-filtros__inner1 .js-calendario {flex:0 1 25px; border-color:transparent;}

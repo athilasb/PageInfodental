@@ -286,6 +286,7 @@
 
 			if(isset($_POST['acao'])) {
 
+
 				// persiste as informacoes do tratamento
 				if($_POST['acao']=="salvar") {
 					$vSQL=$adm->vSQL($campos,$_POST);
@@ -295,7 +296,10 @@
 						$vSQL.="procedimentos='".addslashes(utf8_decode($_POST['procedimentos']))."',";
 						$vSQL.="pagamentos='".addslashes(utf8_decode($_POST['pagamentos']))."',";
 					}
-					
+
+					if(isset($_POST['parcelas']) and is_numeric($_POST['parcelas'])) $vSQL.="parcelas='".$_POST['parcelas']."',";
+					if(isset($_POST['pagamento'])) $vSQL.="pagamento='".$_POST['pagamento']."',";
+				
 					if(is_object($cnt)) {
 						$vSQL=substr($vSQL,0,strlen($vSQL)-1);
 						$vWHERE="where id='".$cnt->id."'";
@@ -412,9 +416,9 @@
 											}
 										}
 
-										if($valorProcedimento!=$valorPagamento) { 
+										if(!(abs($valorPagamento - $valorProcedimento) < 0.00000001)) {
 											$erro="Defina as parcelas de pagamento!";
-										}
+										} 
 									}
 
 								
@@ -776,7 +780,7 @@
 					}*/
 				
 				// ATUALIZACAO DE VALORES
-					const atualizaValor = () => {
+					const atualizaValor = () => { 
 						valorTotal=0;
 
 						let reprovarAtivo=true;
@@ -833,6 +837,13 @@
 
 								let startDate = new Date();
 								for(var i=1;i<=numeroParcelas;i++) {
+
+									/*val = -1;
+									if($(`.js-pagamentos .js-valor:eq(${i})`).length) {
+										val = $(`.js-pagamentos .js-valor:eq(${(i-1)})`).val();
+									}
+									console.log(`${$(`.js-pagamentos .js-valor:eq(${i})`).length} -> .js-pagamentos .js-valor:eq(${(i-1)}) => ${val}`);*/
+
 									let item = {};
 									let mes = startDate.getMonth()+1;
 									mes = mes <= 9 ? `0${mes}`:mes;
@@ -850,7 +861,8 @@
 								}
 							}
 
-							pagamentos=parcelas;
+							
+							 pagamentos=parcelas;
 						}
 						
 						pagamentosListar();
@@ -871,10 +883,10 @@
 											<td>${(tratamentoAprovado===1)?'':'<a href="javascript:;" style="font-size:1.25rem;" class="js-btn-removerProcedimento"><i class="iconify" data-icon="bx-bx-trash"></i></a>'}</td>
 										</tr>`;*/
 
-					var procedimentosHMTL = `<div class="card js-procedimento-item">
-												<div class="js-descricao">
+					var procedimentosHMTL = `<a href="javascript:;" class="reg-group js-procedimento-item">
+												<div class="reg-data js-descricao">
 													<h1 class="js-procedimento"></h1>
-													<h2 class="js-regiao"></h2>
+													<p class="js-regiao"></p>
 												</div>
 												<div class="js-valor">
 													R$2.000,00
@@ -882,7 +894,7 @@
 												<div class="js-profissional">
 													
 												</div>
-											</div>`;
+											</a>`;
 
 
 					const procedimentosListar = () => {
@@ -1017,7 +1029,7 @@
 
 						$('#cal-popup .js-situacao').val(popViewInfos[index].situacao);
 						$('#cal-popup .js-index').val(index);
-					//	atualizaValor();	
+						//	atualizaValor();	
 						
 					}
 
@@ -1034,6 +1046,15 @@
 					const pagamentosListar = () => {
 						$('.js-pagamentos .js-pagamento-item').remove();
 						if(pagamentos.length>0) {
+
+							/*if(pagamentos.length>1) {
+								$('.js-pagamento-parcelado').prop('checked',true);
+
+							}
+							else {
+								$('.js-pagamento-avista').prop('checked',true);
+							}*/
+
 							let index=1;
 							pagamentos.forEach(x=>{
 								$('.js-pagamentos').append(pagamentosHTML);
@@ -1272,7 +1293,7 @@
 									item.id_procedimento=id_procedimento;
 									item.procedimento=procedimento;
 									item.id_regiao=id_regiao;
-									item.id_plano=id_plano;
+									item.id_plano=id_plano; 
 									item.plano=plano;
 									item.profissional=0;
 									item.quantidade=quantidade;
@@ -1363,6 +1384,7 @@
 						$('#cal-popup').on('change','.js-situacao',function(){
 							let index = $('#cal-popup .js-index').val();
 							procedimentos[index].situacao=$(this).val();
+						//	$('input[name=pagamento][value=avista]').click();
 							procedimentosListar();
 						})
 
@@ -1714,15 +1736,19 @@
 									</div>*/?> 
 									<?php
 									if($tratamentoAprovado===false) {
+
 									?>
-										<dl class="dl3" style="padding: 0">
-											<dd>
-												<label><input type="radio" name="pagamento" value="avista" /> À Vista</label>
-												<label><input type="radio" name="pagamento" value="parcelado" /> Parcelado em</label>
-												<input type="number" style="float:left;width:50px;display: none;" value="1" class="js-pagamentos-quantidade" />
-											</dd>
-										</dl>
-										<?php /*<dl class="dl4">
+										<div class="js-formDiv-financeiro">
+											<dl class="dl3" style="padding: 0">
+												<dd>
+													<label><input type="radio" name="pagamento" value="avista" class="js-pagamento-avista"<?php echo (is_object($cnt) and $cnt->pagamento=="avista")?" checked":"";?> /> À Vista</label>
+													<label><input type="radio" name="pagamento" value="parcelado" class="js-pagamento-parcelado"<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?" checked":"";?> /> Parcelado em</label>
+													<input type="number" name="parcelas" style="float:left;width:50px;display: none;" value="<?php echo is_object($cnt)?$cnt->parcelas:1;?>" class="js-pagamentos-quantidade" />
+												</dd>
+											</dl>
+										</div>
+										<?php 
+										/*<dl class="dl4">
 											<dt>&nbsp;</dt>
 											<dd>
 												<a href="javascript:;" class="button js-btn-addPagamento tooltip" title="Adicionar Procedimento" style="background:var(--azul);color:#FFF;margin-top: 15px;"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar Parcela</a>
@@ -1886,7 +1912,7 @@
 								<dl>
 									<dt>&nbsp;</dt>
 									<dd>
-										<a href="javascript:;" class="button js-btn-add" style="background:var(--azul)"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar</a>
+										<a href="javascript:;" class="button js-btn-add"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar</a>
 									</dd>
 								</dl>
 							</div>
@@ -1954,10 +1980,10 @@
 						if(isset($_pagamentos[$x->id])) $pagamentos=$_pagamentos[$x->id];
 					?>
 					<div class="js-procedimentos">
-						<div class="card js-procedimento-item" style="border-left:solid 10px <?php echo $cor;?>;" onclick="document.location.href='<?php echo "$_page?form=1&edita=$x->id&$url";?>'">
-							<div class="js-descricao" style="width:58%;">
+						<a href="<?php echo "$_page?form=1&edita=$x->id&$url";?>" class="reg-group js-procedimento-item" style="border-left:solid 10px <?php echo $cor;?>;">
+							<div class="reg-data js-descricao" style="width:58%;">
 								<h1 class="js-procedimento"><strong><?php echo utf8_encode($x->titulo);?></strong></h1>
-								<h2 class="js-regiao"><?php echo date('d/m/Y H:i',strtotime($x->data));?></h2>
+								<p class="js-regiao"><?php echo date('d/m/Y H:i',strtotime($x->data));?></p>
 							</div>
 							<div class="js-valor" style="width:20%;margin-right: 10px;">
 								<?php
@@ -2004,7 +2030,7 @@
 								?>
 							</div>
 
-						</div>
+						</a>
 					</div>
 					<?php
 					}

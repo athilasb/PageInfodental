@@ -262,6 +262,8 @@
 		if($v=="profissionais") $values[$v]=array();
 		else $values[$v]='';
 	}
+	$values['agenda_data']=date('d/m/Y');
+	$values['agenda_hora']=date('H:i');
 
 	if(isset($_GET['data_agenda']) and !empty($_GET['data_agenda'])) {
 		list($_ano,$_mes,$_dia)=explode("-",$_GET['data_agenda']);

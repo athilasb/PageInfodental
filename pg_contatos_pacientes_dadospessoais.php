@@ -251,6 +251,10 @@
 			var initIndicacao_tipo = '<?php echo $values['indicacao_tipo'];?>';
 
 			$(function(){
+				$("#upload_link").on('click', function(e){
+				    e.preventDefault();
+				    $("#upload:hidden").trigger('click');
+				});
 				$('select[name=indicacao_tipo]').change(function(){
 					//let id_indicacao = $(this).find('option:selected').attr('data-id');
 					let indicacao_tipo = $(this).val();
@@ -328,20 +332,26 @@
 						?>
 					</div>*/?>
 
-					<div class="grid grid_2">
+					<div>
 						<fieldset style="margin:0;">
-							<legend>Cadastro</legend>
+							<legend style="font-size: 12px;">
+								<div class="filter-group">
+									<div class="filter-title">
+										<span class="badge">1</span> Cadastro
+									</div>
+								</div>
+							</legend>
 							
 							<div class="colunas4">
 								<dl class="dl3">
 									<dt>Nome</dt>
 									<dd>
-										<input type="text" name="nome" value="<?php echo $values['nome'];?>" class="obg"/>
+										<input type="text" name="nome" value="<?php echo $values['nome'];?>" class="obg" style="width: 840px;"/>
 									</dd>
 								</dl>
 								<dl>
-									<dt>Sexo</dt>
-									<dd>
+									<dt style="margin-left: 30px;">Sexo</dt>
+									<dd style="margin-left: 30px;">
 										<select name="sexo" class="">
 											<option value="">-</option>
 											<option value="M"<?php echo $values['sexo']=="M"?" selected":"";?>>Masculino</option>
@@ -350,7 +360,28 @@
 									</dd>
 								</dl>
 							</div>
-							<div class="colunas4">
+
+							<div class="grid grid_3">
+								<fieldset style="margin:0;">
+									<legend>Foto</legend>
+
+									<?php
+									$ft='img/ilustra-colaborador.jpeg';
+									if(is_object($cnt)) {
+										$ftColaborador='arqs/colaboradores/'.$cnt->id.".".$cnt->foto;
+										if(file_exists($ftColaborador)) {
+											$ft=$ftColaborador;
+										}
+									}
+									?>
+									<dl>
+										<dd><a href="javascript:;" id="upload_link"><img src="<?php echo $ft;?>" width="200" style="border: solid 1px #CCC;padding:2px;" /></a></dd>
+									</dl>
+									<input type="file" name="foto" id="upload" style="display: none;" />
+									
+								</fieldset>
+								<div style="margin:0;grid-column:span 2">
+							<div class="colunas3">
 								<dl>
 									<dt>Doc. Identidade</dt>
 									<dd>
@@ -370,21 +401,21 @@
 									</dd>
 								</dl>
 							</div>
-							<div class="colunas4">
+							<div class="colunas3">
 								
-								<dl class="dl">
+								<dl>
 									<dt>CPF</dt>
 									<dd>
 										<input type="text" name="cpf" value="<?php echo $values['cpf'];?>" class="cpf" />
 									</dd>
 								</dl>
-								<dl class="dl">
+								<dl>
 									<dt>Data de Nascimento</dt>
 									<dd>
 										<input type="text" name="data_nascimento" value="<?php echo $values['data_nascimento'];?>" class="data" />
 									</dd>
 								</dl>
-								<dl class="dl2">
+								<dl>
 									<dt>Estado Civil</dt>
 									<dd>
 										<select name="estado_civil" class="chosen">
@@ -397,10 +428,8 @@
 										</select>
 									</dd>
 								</dl>
-								
-								
 							</div>
-							<div class="colunas4">
+							<div class="colunas3">
 							
 								<dl class="dl2">
 									<dt>Profissão</dt>
@@ -415,14 +444,14 @@
 										</select>
 									</dd>
 								</dl>						
-								<dl class="dl2">
+								<dl>
 									<dt>Preferência Musical</dt>
 									<dd><input type="text" name="musica" value="<?php echo $values['musica'];?>" /></dd>
 								</dl>
 							</div>
 
 
-							<div class="colunas4">
+							<div class="colunas3">
 								<dl class="dl2">
 									<dt>&nbsp;</dt>
 									<dd>
@@ -435,6 +464,9 @@
 										<input type="text" name="estrangeiro_passaporte" value="<?php echo $values['estrangeiro_passaporte'];?>" />
 									</dd>
 								</dl>
+							</div>
+
+							</div>
 							</div>
 
 						</fieldset>
@@ -476,85 +508,97 @@
 							})
 						</script>
 
-						<fieldset style="margin:0;">
-							<legend>Contato</legend>
-							<div class="colunas4">
-								<dl class="dl2">
-									<dt>Tipo de Indicação</dt>
-									<dd>
-										<select name="indicacao_tipo" class="chosen">
-											<option value=""></option>
+						<div class="grid grid_2">
+
+							<fieldset style="margin:0;">
+								<legend style="font-size: 12px;">
+									<div class="filter-group">
+										<div class="filter-title">
+											<span class="badge">2</span> Contato
+										</div>
+									</div>
+								</legend>
+								<div class="colunas4">
+									<dl class="dl2">
+										<dt>Tipo de Indicação</dt>
+										<dd>
+											<select name="indicacao_tipo" class="chosen">
+												<option value=""></option>
+												<?php
+												foreach($optTipoIndicacao as $k=>$v) echo '<option value="'.$k.'"'.($values['indicacao_tipo']==$k?' selected':'').'>'.$v.'</option>';
+												?>
+											</select>
+										</dd>
+									</dl>
+									<dl class="dl2">
+										<dt>Indicação</dt>
+										<dd>
+											<select name="indicacao" class="chosen">
+												<option value=""></option>
+											</select>
+										</dd>
+									</dl>
+								</div>
+
+								<div class="colunas4">
+									<dl class="dl2">
+										<dt>Telefone 1</dt>
+										<dd><input type="text" name="telefone1" style="width:85%;float:right;" class="obg" attern="\d*" x-autocompletetype="tel" value="<?php echo $values['telefone1'];?>" /></dd>
+									</dl>
+									<dl class="dl2">
+										<dt>Telefone 2</dt>
+										<dd><input type="text" name="telefone2" style="width:85%;float:right;" attern="\d*" x-autocompletetype="tel" value="<?php echo $values['telefone2'];?>"  /></dd>
+									</dl>
+								</div>
+
+								<div class="colunas4">
+									<dl class="dl2">
+										<dt>E-mail</dt>
+										<dd><input type="text" name="email" class="noupper" value="<?php echo $values['email'];?>" /></dd>
+									</dl>	
+									<dl class="dl2">
+										<dt>Instagram</dt>
+										<dd><input type="text" name="instagram" class="noupper" placeholder="@" value="<?php echo $values['instagram'];?>" /></dd>
+									</dl>
+								</div>
+
+								<div class="colunas4">
+									<dl class="dl2">
+										<dt>Preferência de Contato</dt>
+										<dd>
 											<?php
-											foreach($optTipoIndicacao as $k=>$v) echo '<option value="'.$k.'"'.($values['indicacao_tipo']==$k?' selected':'').'>'.$v.'</option>';
+											foreach($_preferenciaContato as $k=>$v) {
 											?>
-										</select>
-									</dd>
-								</dl>
-								<dl class="dl2">
-									<dt>Indicação</dt>
-									<dd>
-										<select name="indicacao" class="chosen">
-											<option value=""></option>
-										</select>
-									</dd>
-								</dl>
-							</div>
-
-							<div class="colunas4">
-								<dl class="dl2">
-									<dt>Telefone 1</dt>
-									<dd><input type="text" name="telefone1" style="width:85%;float:right;" class="obg" attern="\d*" x-autocompletetype="tel" value="<?php echo $values['telefone1'];?>" /></dd>
-								</dl>
-								<dl class="dl2">
-									<dt>Telefone 2</dt>
-									<dd><input type="text" name="telefone2" style="width:85%;float:right;" attern="\d*" x-autocompletetype="tel" value="<?php echo $values['telefone2'];?>"  /></dd>
-								</dl>
-							</div>
-
-							<div class="colunas4">
-								<dl class="dl2">
-									<dt>E-mail</dt>
-									<dd><input type="text" name="email" class="noupper" value="<?php echo $values['email'];?>" /></dd>
-								</dl>	
-								<dl class="dl2">
-									<dt>Instagram</dt>
-									<dd><input type="text" name="instagram" class="noupper" placeholder="@" value="<?php echo $values['instagram'];?>" /></dd>
-								</dl>
-							</div>
-
-							<div class="colunas4">
-								<dl class="dl2">
-									<dt>Preferência de Contato</dt>
-									<dd>
-										<?php
-										foreach($_preferenciaContato as $k=>$v) {
-										?>
-										<label><input type="radio" name="preferencia_contato" value="<?php echo $k;?>"<?php echo ($values['preferencia_contato']==$k)?" checked":"";?> /> <?php echo $v;?></label>
-										<?php
-										}
-										?>
-									</dd>
-								</dl>
-
-								<dl class="dl2">
-									<dt>Situação</dt>
-									<dd>
-										<select name="situacao">
-											<option value="">-</option>
+											<label><input type="radio" name="preferencia_contato" value="<?php echo $k;?>"<?php echo ($values['preferencia_contato']==$k)?" checked":"";?> /> <?php echo $v;?></label>
 											<?php
-											foreach($_pacienteSituacao as $k=>$v) echo '<option value="'.$k.'"'.($values['situacao']==$k?' selected':'').'>'.($v).'</option>';
+											}
 											?>
-										</select>
-									</dd>
-								</dl>
-							</div>
-						</fieldset>
-						
+										</dd>
+									</dl>
 
-						
+									<dl class="dl2">
+										<dt>Situação</dt>
+										<dd>
+											<select name="situacao">
+												<option value="">-</option>
+												<?php
+												foreach($_pacienteSituacao as $k=>$v) echo '<option value="'.$k.'"'.($values['situacao']==$k?' selected':'').'>'.($v).'</option>';
+												?>
+											</select>
+										</dd>
+									</dl>
+								</div>
+							</fieldset>
 
 						<fieldset style="margin:0;">
-							<legend>Endereço</legend>
+
+							<legend style="font-size: 12px;">
+								<div class="filter-group">
+									<div class="filter-title">
+										<span class="badge">3</span> Endereço
+									</div>
+								</div>
+							</legend>
 							<div class="colunas4">
 								<dl class="dl2">
 									<dt>CEP</dt>
@@ -563,8 +607,6 @@
 										<a href="javascript:;" id="js-consultacep" class="button button__sec tooltip" style="float:right;"><i class="iconify" data-icon="bx-bx-search" data-inline="false"></i></a>
 									</dd>
 								</dl>
-								
-								
 							</div>
 							<div class="colunas4">
 								<dl class="dl2">
@@ -622,7 +664,13 @@
 							})
 						</script>
 						<fieldset style="margin:0;">
-							<legend>Responsável</legend>
+							<legend style="font-size: 12px;">
+								<div class="filter-group">
+									<div class="filter-title">
+										<span class="badge">4</span> Responsável
+									</div>
+								</div>
+							</legend>
 
 							<div class="colunas4">
 								<dl class="dl2">
@@ -732,6 +780,7 @@
 								</dl>
 							</div>
 						</fieldset>
+					</div>
 						
 					</div>
 				</div>

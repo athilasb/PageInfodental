@@ -69,8 +69,8 @@
 	<header class="modal-header">
 		<div class="filtros">
 			<h1 class="filtros__titulo">Novo Paciente</h1>
-			<div class="filtros-acoes">
-				<button type="button" class="principal js-salvar"><i class="iconify" data-icon="bx-bx-check"></i></button>
+			<div class="filter-button">
+				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
 			</div>
 		</div>
 	</header>

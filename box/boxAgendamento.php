@@ -1,9 +1,8 @@
-<?php
+	<?php
 	require_once("../lib/conf.php");
 	$dir="../";
 	require_once("../usuarios/checa.php");
 	
-	$optAgendaDuracao=array(10,30,60,90,120);
 
 	if(isset($_POST['ajax'])) {
 		$rtn=array();
@@ -398,6 +397,8 @@
 	}
 	$values['id_status']=1;
 	$values['agenda_duracao']=60;
+	$values['agenda_data']=date('d/m/Y');
+	$values['agenda_hora']=date('H:i');
 
 
 	if(isset($_GET['data_agenda']) and !empty($_GET['data_agenda'])) {
@@ -488,7 +489,7 @@
 			$(this).val(numero);
 		});
 
-		$('.chosen').chosen();
+		$('.chosen').chosen({hide_results_on_select:false,allow_single_deselect:true});
 		$('.agendaData').datetimepicker({
 			timepicker:false,
 			format:'d/m/Y',
@@ -638,14 +639,18 @@
 			<?php
 			}
 			?>
-			<div class="filtros-acoes">
-				<button type="button" class="principal js-salvar"><i class="iconify" data-icon="bx-bx-check"></i></button>
+			<div class="filtros-acoes filter-button">
+				<?php /* <div class="filter-button">
+					<?php if(is_object($agenda)) {?><a href="javascript:;" class="js-remover"><i class="iconify" data-icon="bx-bx-trash"></i></a><?php }?>
+					<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+				</div> */ ?>
+				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
 				<?php
 				if(is_object($agenda)) {
 				?>
 				<button type="button" class="js-remover"><i class="iconify" data-icon="bx-bx-trash"></i></button>
 				<?php
-				}
+				} 
 				?>
 			</div>
 		</div>
@@ -680,7 +685,8 @@
 
 								if(!empty($values['agenda_duracao']) and $possuiDuracao===false) echo '<option value="'.$values['agenda_duracao'].'" selected>'.$values['agenda_duracao'].'</option>';
 								?>
-							</select><div class="input-info">min</div></dd>
+							</select><div class="input-info">min</div>
+						</dd>
 					</dl>
 					<dl>
 						<dd>
@@ -752,7 +758,7 @@
 				<dl>					
 					<dd>
 						<div class="input-icon"><i class="iconify" data-icon="uil-comment-info"></i></div>
-						<textarea name="obs" class="noupper" rows="3" placeholder="INFORMAÇÕES"><?php echo $values['obs'];?></textarea>
+						<textarea name="obs" class="noupper" rows="3" placeholder="INFORMAÇÕES" style="height:150px"><?php echo $values['obs'];?></textarea>
 					</dd>
 				</dl>
 
@@ -869,7 +875,7 @@
 
 							$(`.js-regiao`).hide();
 							$(`.js-regiao-${id_regiao}`).show();
-							$(`.js-regiao-${id_regiao}`).find('select').chosen();
+							$(`.js-regiao-${id_regiao}`).find('select').chosen({hide_results_on_select:false,allow_single_deselect:true});
 							$(`.js-regiao-descritivo`).show().find('dd input').val(regiao);
 
 							$(`.js-procedimento-btnOk`).show();
@@ -878,7 +884,7 @@
 							$(`.js-regiao-descritivo`).hide().find('dd input').val(``);
 							$(`.js-procedimento-btnOk`).hide();
 						}
-					});
+					}); 
 
 					$('.js-procedimento-btnOk a').click(function(){
 						let id_procedimento = $('select.js-agenda-id_procedimento').val();
@@ -942,13 +948,14 @@
 			</script>
 
 			<fieldset>
-				<legend>Procedimentos</legend>
+				<legend>Adicionar Procedimentos</legend>
 
 				<div class="box-filtros clearfix js-agenda-formProcedimento" style="display:">
-					<dl class="dl2">
+					<dl>
 						<dd>
+							<dt>Procedimento</dt>
 							<select class="js-agenda-id_procedimento chosen">
-								<option value="">Adicionar...</option>
+								<option value=""></option>
 								<?php
 								foreach($_procedimentos as $p) {
 									echo '<option value="'.$p->id.'" data-id_regiao="'.$p->id_regiao.'" data-regiao="'.(isset($_regioes[$p->id_regiao])?utf8_encode($_regioes[$p->id_regiao]->titulo):"-").'">'.utf8_encode($p->titulo).'</option>';
@@ -1005,7 +1012,10 @@
 							</dd>
 						</dl>
 						<dl class="js-procedimento-btnOk" style="display: none">
-							<dd><a href="javascript:;" class="button button__sec"><i class="iconify" data-icon="bx-bx-plus"></i></a></dd>
+							<?php /* <dd><a href="javascript:;" class="button button__sec"><i class="iconify" data-icon="bx-bx-plus"></i></a></dd> */ ?>
+							<dd>
+								<a href="javascript:;" class="button"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar</a>
+							</dd>
 						</dl>
 					</div>
 					

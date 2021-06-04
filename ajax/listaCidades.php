@@ -4,10 +4,9 @@
 		require_once("../lib/conf.php");
 		require_once("../usuarios/checa.php");
 		$sql = new Mysql();
-		$str = new String();
 		$cidades=array();
 
-		$estado=$str->protege($_POST['estado']);
+		$estado=addslashes($_POST['estado']);
 		$sql->consult($_p."cidades","*","where uf='".$estado."' order by capital desc, titulo asc") ;
 		if($sql->rows) {
 			while($x=mysqli_fetch_object($sql->mysqry)) {

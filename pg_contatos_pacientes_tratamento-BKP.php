@@ -574,7 +574,7 @@
 													}
 													$(`.js-regiao`).hide();
 													$(`.js-regiao-${id_regiao}`).show();
-													$(`.js-regiao-${id_regiao}`).find('select').chosen();
+													$(`.js-regiao-${id_regiao}`).find('select').chosen({hide_results_on_select:false,allow_single_deselect:true});
 
 													$(`.js-procedimento-btnOk`).show();
 													let data = `ajax=planos&id_unidade=${id_unidade}&id_procedimento=${id_procedimento}`;

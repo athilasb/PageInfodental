@@ -3,10 +3,9 @@
 	if(!isset($wtalk)) $wtalk="";
 	require_once($dir."lib/classes.php");
 	if(isset($_COOKIE[$_p.'adm_cpf']) and isset($_COOKIE[$_p.'adm_senha']) and isset($_COOKIE[$_p.'adm_id'])) {
-		$str = new String();
 		$sql = new Mysql();
 		
-		$sql->consult($_p."usuarios","*","where id='".$str->protege($_COOKIE[$_p.'adm_id'])."' and cpf='".$str->protege($_COOKIE[$_p.'adm_cpf'])."' and senha='".$str->protege($_COOKIE[$_p.'adm_senha'])."' and lixo='0'");
+		$sql->consult($_p."usuarios","*","where id='".addslashes($_COOKIE[$_p.'adm_id'])."' and cpf='".addslashes($_COOKIE[$_p.'adm_cpf'])."' and senha='".addslashes($_COOKIE[$_p.'adm_senha'])."' and lixo='0'");
 																
 		if($sql->rows) {
 			$usr = mysqli_fetch_object($sql->mysqry);

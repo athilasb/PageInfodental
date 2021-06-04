@@ -72,8 +72,8 @@
 	<header class="modal-header">
 		<div class="filtros">
 			<h1 class="filtros__titulo">Editar telefone</h1>
-			<div class="filtros-acoes">
-				<button type="submit" class="principal js-salvar"><i class="iconify" data-icon="bx-bx-check"></i></button>
+			<div class="filter-button">
+				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
 			</div>
 		</div>
 	</header>
