@@ -14,28 +14,150 @@
 		}
 	}
 
+	$_profissionais=array();
+	$sql->consult($_p."colaboradores","*","where lixo=0 order by nome asc");//"where unidades like '%,$unidade->id,%' and lixo=0 order by nome asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_profissionais[$x->id]=$x;
+	}
+
+	$_medicamentos=array();
+	$sql->consult($_p."medicamentos","*","where lixo=0 order by titulo");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_medicamentos[]=array('titulo'=>utf8_encode($x->titulo));
+	}
+
+	$_medicamentosTipos=array('ampola'=>'Ampola(s)',
+							 'caixa'=>'Caixa(s)',
+							 'comprimido'=>'Comprimido(s)',
+							 'fraco'=>'Fraco(s)',
+							 'pacote'=>'Pacote(s)',
+							 'tubo'=>'Tubo(s)',
+							 'capsula'=>'Capsula(s)');
+
 	$evolucao='';
-	$evolucaoReceita='';
+	$evolucaoReceita=array();
 	if(isset($_GET['edita']) and is_numeric($_GET['edita'])) {	
-		$sql->consult($_p."pacientes_evolucoes","*","where id='".$_GET['edita']."' and id_tipo=8");
+		$sql->consult($_p."pacientes_evolucoes","*","where id='".$_GET['edita']."' and id_tipo=7");
 		if($sql->rows) {
 			$evolucao=mysqli_fetch_object($sql->mysqry);
 
 			$sql->consult($_p."pacientes_evolucoes_receitas","*","where id_evolucao=$evolucao->id and lixo=0");
 			if($sql->rows) {
-				$evolucaoReceita=mysqli_fetch_object($sql->mysqry);
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$evolucaoReceita[]=array('id_evolucao_receita'=>$x->id,
+											'medicamento'=>utf8_encode($x->medicamento),
+											'tipo'=>$x->tipo,
+											'tipoTitulo'=>isset($_medicamentosTipos[$x->tipo])?$_medicamentosTipos[$x->tipo]:$x->tipo,
+											'quantidade'=>utf8_encode($x->quantidade),
+											'posologia'=>utf8_encode($x->posologia));;
+				}
 
  			} 
 		} else {
-			$jsc->jAlert("Receita não encontrada!","erro","document.location.href='pg_contatos_pacientes_evolucao.php?id_paciente='".$paciente->id."'");
+			$jsc->jAlert("Receita não encontrada!","erro","document.location.href='pg_contatos_pacientes_evolucao.php?id_paciente=".$paciente->id."'");
 			die();
 		}
 	}
 
-	$_profissionais=array();
-	$sql->consult($_p."profissionais","*","where lixo=0 order by nome asc");//"where unidades like '%,$unidade->id,%' and lixo=0 order by nome asc");
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_profissionais[$x->id]=$x;
+	if(isset($_POST['acao'])) {
+
+		if(isset($_POST['receitas']) and !empty($_POST['receitas'])) {
+
+			$receitasJSON = json_decode($_POST['receitas']);
+
+			
+
+
+			if(empty($erro)) {
+
+				if(count($receitasJSON)>0) {
+
+					if(is_object($evolucao)) {
+						$sql->update($_p."pacientes_evolucoes","data_pedido='".addslashes(invDate($_POST['data_pedido']))."',
+																id_profissional='".addslashes(utf8_decode($_POST['id_profissional']))."',
+																tipo_receita='".addslashes(utf8_decode($_POST['tipo_receita']))."'","where id=$evolucao->id");
+						$id_evolucao=$evolucao->id;
+					} else {
+						// id_tipo = 7 -> receituario
+						$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
+																								id_paciente=$paciente->id and
+																								id_tipo=7 and  
+																								id_usuario=$usr->id");	
+						if($sql->rows) {
+							$e=mysqli_fetch_object($sql->mysqry);
+							$sql->update($_p."pacientes_evolucoes","data_pedido='".addslashes(invDate($_POST['data_pedido']))."',
+																		id_profissional='".addslashes(utf8_decode($_POST['id_profissional']))."',
+																		tipo_receita='".addslashes(utf8_decode($_POST['tipo_receita']))."'","where id=$e->id");
+							$id_evolucao=$e->id;
+						} else {
+							$sql->add($_p."pacientes_evolucoes","data=now(),
+																	id_tipo=7,
+																	id_paciente=$paciente->id,
+																	id_usuario=$usr->id,
+																	data_pedido='".addslashes(invDate($_POST['data_pedido']))."',
+																	id_profissional='".addslashes(utf8_decode($_POST['id_profissional']))."',
+																	tipo_receita='".addslashes(utf8_decode($_POST['tipo_receita']))."'");
+																	//obs='".addslashes(utf8_decode($_POST['obs']))."'");
+							$id_evolucao=$sql->ulid;
+						}
+					}
+
+					
+
+					$sql->update($_p."pacientes_evolucoes_receitas","lixo=1","where id_evolucao=$id_evolucao");
+					foreach($receitasJSON as $obj) {
+						$obj=(object)$obj;
+
+						$vSQLReceita="data=now(),
+									id_paciente=$paciente->id,
+									id_evolucao=$id_evolucao,
+									medicamento='".addslashes(utf8_decode($obj->medicamento))."',
+									quantidade='".addslashes(utf8_decode($obj->quantidade))."',
+									posologia='".addslashes(utf8_decode($obj->posologia))."',
+									tipo='".addslashes(utf8_decode($obj->tipo))."'";
+						$evProc='';
+						if(isset($obj->id_evolucao_receita) and is_numeric($obj->id_evolucao_receita)) {
+							$sql->consult($_p."pacientes_evolucoes_receitas","*","where id=$obj->id_evolucao_receita and id_paciente=$paciente->id and lixo=0");
+							if($sql->rows) {
+								$evProc=mysqli_fetch_object($sql->mysqry);
+							}
+						}
+
+						if(empty($evProc)) {
+							$sql->consult($_p."pacientes_evolucoes_receitas","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
+																								id_paciente=$paciente->id and 
+																								id_evolucao=$id_evolucao and 
+																								medicamento='".addslashes($obj->medicamento)."'");	
+							if($sql->rows) {
+								$x=mysqli_fetch_object($sql->mysqry);
+								$sql->update($_p."pacientes_evolucoes_receitas",$vSQLReceita,"where id=$x->id");
+							} else {
+								$sql->add($_p."pacientes_evolucoes_receitas",$vSQLReceita);
+							}
+						} else {
+							$sql->update($_p."pacientes_evolucoes_receitas",$vSQLReceita,"where id=$evProc->id");
+						}
+
+
+						
+
+						
+
+					}	
+
+					$jsc->jAlert("Evolução salva com sucesso!","sucesso","document.location.href='pg_contatos_pacientes_evolucao.php?id_paciente=$paciente->id'");
+					die();
+				} else {
+					$jsc->jAlert("Adicione pelo menos um procedimento!","erro","");
+				}
+
+			} else {
+				$jsc->jAlert($erro,"erro","");
+			}
+
+		} else {
+			$jsc->jAlert("Adicione pelo menos um pedido de exame para adicionar à Evolução","erro","");
+		}
 	}
 
 
@@ -44,6 +166,7 @@
 	<section class="content">
 		
 		<?php
+		$exibirEvolucaoNav=1;
 		require_once("includes/abaPaciente.php");
 		?>
 
@@ -58,7 +181,20 @@
 				$('.js-btn-salvar').click(function(){
 					$('form').submit();
 				});
+
+				var options = {
+						data: <?php echo json_encode($_medicamentos);?>,
+						getValue: "titulo",
+						list: {match: {enabled: true}},
+						  template: {
+								type: "custom",
+								method: function(value, item) {return item.titulo}
+							}
+					};
+				$('.js-input-medicamento').easyAutocomplete(options);
+
 			});
+
 		</script>
 
 		
@@ -87,26 +223,143 @@
 				<?php
 				}
 				?>
+				<script type="text/javascript">
+				
 
+					var receitas = JSON.parse(jsonEscape(`<?php echo json_encode($evolucaoReceita);?>`));
+
+					var cardHTML = `<div class="reg-group js-receita">
+									<div class="reg-color" style="background-color:palegreen"></div>
+									<div class="reg-data">
+										<h1 class="js-titulo"></h1>
+										<p class="js-posologia"></p>
+									</div>
+									<div class="reg-icon">
+										<a href="javascript:;" class="js-btn-excluir"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+									</div>
+								</div>`;
+
+					var autor = `<?php echo utf8_encode($usr->nome);?>`;
+					var id_usuario = `<?php echo utf8_encode($usr->id);?>`;
+
+					const receitasListar = () => {
+
+						$('.js-receita').remove();
+
+						receitas.forEach(x=>{
+							$('.js-div-receitas').append(cardHTML);
+
+							let cor = `#CCC`;
+
+
+							$('.js-receita .reg-color:last').css('background-color',cor);
+							$('.js-receita .js-titulo:last').html(`${x.medicamento} - ${x.quantidade} ${x.tipoTitulo}`);
+							$('.js-receita .js-posologia:last').html(x.posologia);
+
+						});
+
+						$('textarea[name=receitas]').val(JSON.stringify(receitas));
+
+					}
+					$(function(){
+
+
+						$('.js-div-receitas').on('click','.js-btn-excluir',function(){
+							let index = $(this).index('.js-div-receitas .js-btn-excluir');
+							swal({
+								title: "Atenção",
+								text: "Você tem certeza que deseja remover este registro?",
+								type: "warning",
+								showCancelButton: true,
+								confirmButtonColor: "#DD6B55",
+								confirmButtonText: "Sim!",
+								cancelButtonText: "Não",
+								closeOnConfirm: true,
+								closeOnCancel: false 
+								}, 
+								function(isConfirm) {   
+									if (isConfirm) {  
+										receitas.splice(index,1);
+										receitasListar();	
+									} else {   
+										swal.close();   
+									}
+								}
+							);
+
+							
+						});
+						$('.js-btn-salvar').click(function(){
+							$('form').submit();
+						});
+
+						
+
+						$('.js-btn-add').click(function(){
+							let medicamento = $('.js-input-medicamento').val();
+							let quantidade = $('.js-input-quantidade').val();
+							let tipo = $('.js-input-tipo').val();
+							let tipoTitulo = $('.js-input-tipo option:selected').text();
+							let posologia = $('.js-input-posologia').val();
+
+							let erro = ``;
+							if(medicamento.length==0) erro='Digite o Medicamento!';
+							else if(quantidade.length==0) erro='Digite a Quantidade!';
+							
+
+							if(erro.length==0) {
+
+								let item = { medicamento, 
+												quantidade,
+												tipo,
+												tipoTitulo,
+												posologia,
+												id_usuario,
+											}
+								receitas.push(item);
+								receitasListar();
+
+								$('.js-input-medicamento').val('');
+								$('.js-input-quantidade').val('1');
+								$('.js-input-tipo').val('');
+								$('.js-input-posologia').val('');
+								
+							
+							} else {
+								swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+							}
+
+						});
+
+						
+
+						receitasListar();
+					});
+				</script>
 				<section class="js-evolucao-adicionar" id="evolucao-receituario" style="display:;">
 					
-					<form class="form">
+					<form class="form formulario-validacao" method="post">
+
+						<textarea name="receitas" style="display:none;"></textarea>
+						<input type="hidden" name="acao" value="wlib" />
+						<input type="hidden" name="id_evolucao" value="<?php echo is_object($evolucao)?$evolucao->id:0;?>" />
+
 						<div class="grid grid_3">
 							<fieldset>
-								<legend><span class="badge">2</span>Cabeçalho da receita</legend>
+								<legend><span class="badge">1</span>Cabeçalho da receita</legend>
 								
 								<dl>
 									<dt>Data e Hora</dt>
-									<dd><input type="text" name="data" class="datahora datepicker" value="<?php echo is_object($evolucaoReceita)?date('d/m/Y H:i',strtotime($evolucaoReceita->data_receita)):date('d/m/Y H:i');?>" /></dd>
+									<dd><input type="text" name="data_pedido" class="data daecalendar" value="<?php echo is_object($evolucao)?date('d/m/Y',strtotime($evolucao->data_pedido)):date('d/m/Y');?>" /></dd>
 								</dl>
 								<dl>
 									<dt>Tipo de Uso</dt>
 									<dd>
-										<select name="tipo" class="obg chosen" data-placeholder="Selecione...">
+										<select name="tipo_receita" class="obg chosen" data-placeholder="Selecione...">
 											<option value=""></option>
 											<?php
 											foreach($_tiposReceitas as $k=>$v) {
-												echo '<option value="'.$k.'">'.$v.'</option>';
+												echo '<option value="'.$k.'"'.((is_object($evolucao) and $evolucao->tipo_receita==$k)?' selected':'').'>'.$v.'</option>';
 											}
 											?>
 										</select>
@@ -119,7 +372,7 @@
 											<option value=""></option>
 										<?php
 										foreach($_profissionais as $p) {
-											echo '<option value="'.$p->id.'"'.((is_object($evolucaoReceita) and $evolucaoReceita->id_profissional==$p->id)?' selected':'').'>'.utf8_encode($p->nome).'</option>';
+											echo '<option value="'.$p->id.'"'.((is_object($evolucao) and $evolucao->id_profissional==$p->id)?' selected':'').'>'.utf8_encode($p->nome).'</option>';
 										}
 										?>
 										</select>
@@ -129,43 +382,40 @@
 							</fieldset>
 
 							<fieldset style="grid-column:span 2">
-								<legend><span class="badge">3</span>Selecione os medicamentos</legend>
+								<legend><span class="badge">2</span>Selecione os medicamentos</legend>
 								<dl>
 									<dt>Medicamento</dt>
 									<dd>
-										<select name="">
-											<option value="">Amoxilina</option>
-										</select>
+										<input type="text" class="js-input-medicamento noupper" style="width:600px;" />
 									</dd>
 								</dl>
 								<div class="colunas4">
 									<dl>
 										<dt>Quantidade</dt>
 										<dd>
-											<input type="number" name="" value="1" />
-											<select name="">
-												<option value="">caixa</option>	
+											<input type="number" min="1"  value="1" class="js-input-quantidade" />
+											<select class="js-input-tipo">
+												<option value="">-</option>
+												<?php
+												foreach($_medicamentosTipos as $k=>$v) {
+													echo '<option value="'.$k.'"'.($values['tipo']==$k?' selected':'').'>'.$v.'</option>';
+												}
+												?>
 											</select>
 										</dd>
 									</dl>
 									<dl class="dl3">
 										<dt>Posologia</dt>
-										<dd><input type="text" name="" value="Tomar 1 comprimido via oral de 8 em 8 horas por 7 dias"><button type="submit" class="button">adicionar</button></dd>
+										<dd>
+											<input type="text" class="js-input-posologia noupper" placeholder="Tomar 1 comprimido via oral de 8 em 8 horas por 7 dias" />
+											<button type="button" class="button js-btn-add">adicionar</button>
+										</dd>
 									</dl>
 								</div>
 
-								<div class="reg" style="margin-top:2rem;">
-									<div class="reg-group">
-										<div class="reg-color" style="background-color:palegreen"></div>
-										<div class="reg-data">
-											<h1>Amoxilina - 1 caixa</h1>
-											<p>Tomar 1 comprimido via oral de 8 em 8 horas por 7 dias</p>
-										</div>
-										<div class="reg-icon">
-											<a href=""><i class="iconify" data-icon="bx-bx-trash"></i></a>
-										</div>
-									</div>
-								</div>								
+								<div class="reg js-div-receitas" style="margin-top:2rem;">
+									
+								</div>						
 							</fieldset>
 						</div>
 						<?php /*<fieldset>

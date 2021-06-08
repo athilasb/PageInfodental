@@ -18,7 +18,7 @@
 
 		<section class="grid grid_2">
 			<?php
-			$sql->consult($_p."pacientes","*","where data>='".date('Y-m-d H:i:s',strtotime(date('Y-m-d H:i:s')." - 1 year"))."' and lixo=0");
+			$sql->consult($_p."colaboradores","*","where lixo=0");
 			$total=$sql->rows;
 
 			// Grafico 2: Idade
@@ -32,7 +32,7 @@
 			}
 
 			$pacintesQuantidade=array();
-			$pacientesIdade=array();
+			$colaboradoresIdade=array();
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$mes=date('m',strtotime($x->data));
 				$ano=date('y',strtotime($x->data));
@@ -43,26 +43,26 @@
 				$idade=idade($x->data_nascimento);
 
 				if($idade<=10) {
-					if(!isset($pacientesIdade[0])) $pacientesIdade[0]=0;
-					$pacientesIdade[0]++;
+					if(!isset($colaboradoresIdade[0])) $colaboradoresIdade[0]=0;
+					$colaboradoresIdade[0]++;
 				} else if($idade<=20) {
-					if(!isset($pacientesIdade[1])) $pacientesIdade[1]=0;
-					$pacientesIdade[1]++;
+					if(!isset($colaboradoresIdade[1])) $colaboradoresIdade[1]=0;
+					$colaboradoresIdade[1]++;
 				} else if($idade<=30) {
-					if(!isset($pacientesIdade[2])) $pacientesIdade[2]=0;
-					$pacientesIdade[2]++;
+					if(!isset($colaboradoresIdade[2])) $colaboradoresIdade[2]=0;
+					$colaboradoresIdade[2]++;
 				} else if($idade<=40) {
-					if(!isset($pacientesIdade[3])) $pacientesIdade[3]=0;
-					$pacientesIdade[3]++;
+					if(!isset($colaboradoresIdade[3])) $colaboradoresIdade[3]=0;
+					$colaboradoresIdade[3]++;
 				} else if($idade<=50) {
-					if(!isset($pacientesIdade[4])) $pacientesIdade[4]=0;
-					$pacientesIdade[4]++;
+					if(!isset($colaboradoresIdade[4])) $colaboradoresIdade[4]=0;
+					$colaboradoresIdade[4]++;
 				} else if($idade<=60) {
-					if(!isset($pacientesIdade[5])) $pacientesIdade[5]=0;
-					$pacientesIdade[5]++;
+					if(!isset($colaboradoresIdade[5])) $colaboradoresIdade[5]=0;
+					$colaboradoresIdade[5]++;
 				} else if($idade<=70) {
-					if(!isset($pacientesIdade[6])) $pacientesIdade[6]=0;
-					$pacientesIdade[6]++;
+					if(!isset($colaboradoresIdade[6])) $colaboradoresIdade[6]=0;
+					$colaboradoresIdade[6]++;
 				} 
 				if(!isset($grafico2[$idade])) $grafico2[$idade]=0;
 				$grafico2[$idade]++;
@@ -72,7 +72,7 @@
 			// Grafico 2: Idade
 			$grafico2Data=array();
 			foreach($grafico2Labels as $key=>$v) {
-				$grafico2Data[$key]=isset($pacientesIdade[$key])?$pacientesIdade[$key]:0;
+				$grafico2Data[$key]=isset($colaboradoresIdade[$key])?$colaboradoresIdade[$key]:0;
 			}
 			//echo json_encode($grafico2Data);
 
@@ -97,8 +97,17 @@
 				}
 			}
 
-			
-
+			$grafico3Data = array();
+			$sql->consult($_p."colaboradores","count(*) as total","WHERE lixo=0 and sexo='M'");
+			if($sql->rows) {
+				$x=mysqli_fetch_object($sql->mysqry);
+				$grafico3Data[]= $x->total;
+			}
+			$sql->consult($_p."colaboradores","count(*) as total","WHERE lixo=0 and sexo='F'");
+			if($sql->rows) {
+				$x=mysqli_fetch_object($sql->mysqry);
+				$grafico3Data[]= $x->total;
+			}
 			?>
 			<section class="box">
 				<div class="lista-botoes">
@@ -133,7 +142,7 @@
 					<a href="javascript:;" class="lista-botoes__item js-grafico" data-grafico="5">
 						<i class="iconify" data-icon="tabler-user-plus"></i>
 						<div class="lista-botoes__inner1">
-							<h1 class="lista-botoes__titulo">Novos Pacientes</h1>
+							<h1 class="lista-botoes__titulo">Novos colaboradores</h1>
 							<h2 class="lista-botoes__valor">9 / mês</h2>
 						</div>
 					</a>
@@ -165,7 +174,7 @@
 						        datasets: [{
 						            fill:true,
 						            borderDashOffset: 0.0,
-						            label: 'Pacientes',
+						            label: 'Colaboradores',
 						            data: <?php echo json_encode($grafico1Data);?>,
 						            backgroundColor: gradientStroke,
 						            borderColor:'rgba(254,71,2,0.3)',
@@ -208,7 +217,7 @@
 						        datasets: [{
 						            fill:true,
 						            borderDashOffset: 0.0,
-						            label: 'Pacientes',
+						            label: 'Colaboradores',
 						            data: <?php echo json_encode($grafico2Data);?>,
 						            backgroundColor: gradientStroke,
 						            borderColor:'rgba(254,71,2,0.3)',
@@ -245,6 +254,75 @@
 						gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
 						gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
 						var grafico3 = new Chart(ctx, {    
+						    type: 'line',
+						    data: {
+						        labels: ["1","2","3","4","5","6","7"],
+						        datasets: [{
+						            fill:true,
+						            borderDashOffset: 0.0,
+						            label: '# visitas',
+						            data: [1200,1100,1300,1300,500,1200,1345],
+						            backgroundColor: gradientStroke,
+						            borderColor:'rgba(254,71,2,0.3)',
+						            borderWidth: 1,
+						            borderDash: [],
+						            borderDashOffset: 0.0
+						        }]
+						    },
+						    options: {
+						        scales: {
+						            yAxes: [{
+						                ticks: {
+						                    beginAtZero: true
+						                },
+						                gridLines: {
+						                	drawBorder: false,
+						                	color: 'transparent'
+						                }
+						            }],
+						            xAxes: [{
+							            gridLines: {
+							            	drawBorder: false,
+							                color: '#ebebeb',
+							                zeroLineColor: "#ebebeb"
+							            }	              
+							        }]
+						        }
+						    }
+						});
+
+						const DATA_COUNT = 5;
+						const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
+						var ctx = document.getElementById('grafico3').getContext('2d');
+						var gradientStroke = ctx.createLinearGradient(0,230,0,50);
+						gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
+						gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
+						gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
+						var grafico3 = new Chart(ctx, {    
+						    type: 'pie',
+						    data: {
+								  labels: ['Masculino', 'Feminino'],
+								  datasets: [
+								    {
+								      label: 'Dataset 1',
+								      data: <?php echo json_encode($grafico3Data);?>,
+								      backgroundColor: ['blue','pink'],
+								    }
+								  ]
+						    },
+						    options: {
+						        scales: {
+						            
+						        }
+						    }
+						});
+
+						var ctx = document.getElementById('grafico4').getContext('2d');
+						var gradientStroke = ctx.createLinearGradient(0,230,0,50);
+						gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
+						gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
+						gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
+						var grafico4 = new Chart(ctx, {    
 						    type: 'line',
 						    data: {
 						        labels: ["1","2","3","4","5","6","7"],
@@ -424,15 +502,25 @@
 							<div class="reg-color" style="background-color:green;"></div>
 							<div class="reg-data" style="flex:0 1 50%;">
 								<h1><?php echo strtoupperWLIB(utf8_encode($x->nome));?></h1>
-								<p>Código: <?php echo $x->id;?></p>
 							</div>
-							<div class="reg-data" style="flex:0 1 70px;">
+							<?php /* <div class="reg-data" style="flex:0 1 70px;">
 								<p><?php echo $x->data_nascimento!="0000-00-00"?idade($x->data_nascimento)." anos":"";?></p>
-							</div>
+							</div> */ ?>
 							<div class="reg-data" style="flex:0 1 100px;">
-								<p><?php echo !empty($x->telefone1)?mask($x->telefone1):"";?></p>
+								<p><?php echo $x->data_nascimento!="0000-00-00"?idade($x->data_nascimento)." anos":"";?></p>
+								<?php /* <p><?php echo !empty($x->telefone1)?mask($x->telefone1):"";?></p> */ ?>
 							</div>
-							
+							<div class="reg-data" style="flex:0 1 40px;">
+								<p>
+									<?php
+									if(!empty($x->calendario_iniciais)) {
+									?>
+									<span style="background:<?php echo empty($x->calendario_cor)?"#CCC":$x->calendario_cor;?>;color:#FFF;padding:10px;border-radius: 50%"><?php echo $x->calendario_iniciais;?></span>
+									<?php
+									}
+									?>
+								</p>
+							</div>
 						</a>
 						<?php
 							}

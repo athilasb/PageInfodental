@@ -1,3 +1,7 @@
+
+	<?php
+	if(isset($_GET['form']) or isset($exibirEvolucaoNav)) {
+	?>
 <div class="filter">
 	<div class="filter-group">
 		<div class="filter-button">
@@ -6,7 +10,7 @@
 	</div>
 	<div class="filter-group">
 		<div class="filter-title">
-			<span class="badge">1</span> Escolha o tipo de evolução
+			Escolha o tipo de evolução
 		</div>
 	</div>
 	<div class="filter-group filter-group_right">
@@ -17,6 +21,9 @@
 		</div>
 	</div>
 </div>
+	<?php
+	}		
+	?>
 
 <?php
 	
@@ -33,11 +40,12 @@
 							'servicos-de-laboratorio'=>array('titulo'=>'Serviços de Laboratório','icone'=>'entypo-lab-flask','url'=>'pg_contatos_pacientes_evolucao_laboratorio.php'),
 							'pedidos-de-exames'=>array('titulo'=>'Pedidos de Exames','icone'=>'carbon-user-x-ray','url'=>'pg_contatos_pacientes_evolucao_pedidosdeexame.php'),
 							'receituario'=>array('titulo'=>'Receituário','icone'=>'mdi-pill','url'=>'pg_contatos_pacientes_evolucao_receituario.php'),
-							'proxima-consulta'=>array('titulo'=>'Próxima Consulta','icone'=>'mdi-calendar-cursor','url'=>'pg_contatos_pacientes_evolucao_proximaconsulta.php'),);
-
+							'proxima-consulta'=>array('titulo'=>'Próxima Consulta','icone'=>'mdi-calendar-cursor','url'=>'pg_contatos_pacientes_evolucao_proximaconsulta.php'),
+							'baixa'=>array('titulo'=>'Baixa de Estoque','icone'=>'clarity:list-outline-badged','url'=>'pg_contatos_pacientes_evolucao_baixa.php'),);
+//<span class="iconify" data-icon="clarity:list-outline-badged" data-inline="false"></span>
 ?>
 
-<div class="grid-links" style="grid-template-columns:repeat(8,1fr); margin-bottom:2rem;">
+<div class="grid-links" style="grid-template-columns:repeat(9,1fr);<?php echo (isset($_GET['form']) or isset($exibirEvolucaoNav))?"margin-bottom:2rem;":"";?>">
 	<?php
 	foreach($evolucaoMenu as $tipo=>$arr) {
 	?>

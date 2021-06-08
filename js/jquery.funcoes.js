@@ -20,6 +20,12 @@ function number_format (number, decimals, dec_point, thousands_sep) {
   }
   return s.join(dec);
 }
+function jsonEscape(str)  {
+    return str.replace(/\n/g, "\\\\n").replace(/\r/g, "\\\\r").replace(/\t/g, "\\\\t");
+}
+function jsonUnEscape(str)  {
+    return str.replace(/\\n/g, "\n");
+}
 function retira_acentos(str) {
 
     com_acento = "Ã€ÃÃ‚ÃƒÃ„Ã…Ã†Ã‡ÃˆÃ‰ÃŠÃ‹ÃŒÃÃŽÃÃÃ‘Ã’Ã“Ã”Ã•Ã–Ã˜Ã™ÃšÃ›ÃœÃÅ”ÃžÃŸÃ Ã¡Ã¢Ã£Ã¤Ã¥Ã¦Ã§Ã¨Ã©ÃªÃ«Ã¬Ã­Ã®Ã¯Ã°Ã±Ã²Ã³Ã´ÃµÃ¶Ã¸Ã¹ÃºÃ»Ã¼Ã½Ã¾Ã¿Å•";
@@ -210,6 +216,22 @@ $(function() {
 				}
 			});
 	}).trigger('change');
+
+	$('.btn-salvar').click(function() {
+		let cpf = $('.js-cpf').val().replace(/[^0-9+]/g, '');
+
+		if(cpf.length == 11) {
+			if(!validarCPF(cpf)) {
+				swal({title: "Erro!", text: "Digite um CPF válido", type:"error", confirmButtonColor: "#424242"});
+				return false;
+			} else {
+				$('form.formulario-validacao').submit();
+			}
+		} else {
+			$('form.formulario-validacao').submit();
+		}
+
+	});
 
 	$('.btn-submit').click(function(){
 		$('form.formulario-validacao').submit();

@@ -9,7 +9,7 @@
 			$dinheiro=array('price','valor','instrumentacao','teleconsulta_valor','teleconsulta_desconto','consultapresencial_valor','consultapresencial_desconto','salario'),
 			$bool=array('instrumentacao_pago','credito','efetivado'),
 			$datahora=array('data','data_cirurgia'),
-			$checkbox=array('pub','destaque','face','quantitativo','dia_inteiro','responsavel_possui','atendimentopersonalizado'),
+			$checkbox=array('pub','destaque','face','quantitativo','dia_inteiro','responsavel_possui','atendimentopersonalizado','permitir_acesso'),
 			$noupper=array('email','instagram','tipo','legenda','codigo_conversao','codigo_head','codigo_body','instagram'),
 			$multi=array('permissoes','unidade','camposEvolucao'),
 			$telefones=array('telefone','telefone1','telefone2','telefone3'),
@@ -351,7 +351,7 @@
 		
 		function url($get) {
 
-			$noURL=explode(",","fichadocliente,edita,pagina,ancoraanexo,csv,deleta,form,pagina,alterarUnidade,deletaPaciente,unirPagamentos");
+			$noURL=explode(",","fichadocliente,edita,pagina,ancoraanexo,csv,deleta,form,pagina,alterarUnidade,deletaPaciente,unirPagamentos,abrirAnamnese");
 
 			$url="";
 			if(is_array($get)) {

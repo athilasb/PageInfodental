@@ -135,7 +135,7 @@
 
 
 	$_profissionais=array();
-	$sql->consult($_p."profissionais","*","where lixo=0 order by nome asc");//"where unidades like '%,$unidade->id,%' and lixo=0 order by nome asc");
+	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_profissionais[$x->id]=$x;
 	}
@@ -739,6 +739,7 @@
 
 				<?php
 				if(empty($evolucao)) { 
+					$exibirEvolucaoNav=1;
 					require_once("includes/evolucaoMenu.php");
 				} else {
 				?>
@@ -767,7 +768,7 @@
 						<div class="grid grid_3">
 
 							<fieldset style="grid-column:span 2">
-								<legend><?php echo empty($evolucao)?'<span class="badge">2</span> Selecione o procedimento':'Procedimentos';?></legend>
+								<legend><?php echo empty($evolucao)?'<span class="badge">1</span> Selecione o procedimento':'Procedimentos';?></legend>
 
 								<div class="filter">
 									<div class="filter-group">
@@ -784,7 +785,7 @@
 							</fieldset>
 
 							<fieldset>
-								<legend><?php echo empty($evolucao)?'<span class="badge">3</span> Preencha o histórico':'Histórico';?></legend>
+								<legend><?php echo empty($evolucao)?'<span class="badge">2</span> Preencha o histórico':'Histórico';?></legend>
 
 								<dl style="height:100%;">
 									<dd style="height:100%;"><textarea name="obs" style="height:100%;" class="noupper"><?php echo is_object($evolucao)?utf8_encode($evolucao->obs):'';?></textarea></dd>

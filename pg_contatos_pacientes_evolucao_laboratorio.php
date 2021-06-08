@@ -76,6 +76,7 @@
 			<div class="box">
 
 				<?php
+				$exibirEvolucaoNav=1;
 				require_once("includes/evolucaoMenu.php");
 				?>
 
@@ -85,7 +86,7 @@
 						<div class="grid grid_3">
 
 							<fieldset style="grid-column:span 2">
-								<legend><span class="badge">2</span> Selecione os serviços</legend>
+								<legend><span class="badge">1</span> Selecione os serviços</legend>
 
 								<div class="colunas2">
 									<dl>
@@ -151,7 +152,7 @@
 							</fieldset>
 
 							<fieldset>
-								<legend><span class="badge">3</span> Preencha o histórico</legend>
+								<legend><span class="badge">2</span> Preencha o histórico</legend>
 
 								<dl style="height:100%;">
 									<dd style="height:100%;"><textarea name="" style="height:100%;" class="noupper"></textarea></dd>

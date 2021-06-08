@@ -283,7 +283,7 @@
 									if(!empty($v) and is_numeric($v)) $profissionaisID[]=$v;
 								}
 
-								$sql2->consult($_p."profissionais","*","where id in (".implode(",",$profissionaisID).") and lixo=0");
+								$sql2->consult($_p."colaboradores","*","where id in (".implode(",",$profissionaisID).") and lixo=0");
 
 								if($sql2->rows) {
 									$cont=1;
@@ -326,12 +326,12 @@
 								$agendadoPor=$pNome;
 							}	
 
-							$dias=round((strtotime(date('Y-m-d H:i:s'))-strtotime($x->data_atualizacao))/(60 * 60 * 24));
+							$dias=round((strtotime(date('Y-m-d H:i:s'))-strtotime($x->data_atualizacao=="0000-00-00 00:00:00"?$x->data:$x->data_atualizacao))/(60 * 60 * 24));
 
 							if($dias==0) $agendadoHa="Agendado&nbsp;<strong>HOJE</strong>";
 							else if($dias==1) $agendadoHa="Agendado&nbsp;<strong>ONTEM</strong>";
 							else $agendadoHa="agendou há&nbsp;<strong>$dias</strong>&nbsp;dias";
-
+							
 							//	$pacienteNome=$_pacientes[$x->id_paciente]->nome;
 							$agendamentos[]=array('agendaPessoal'=>0,																										
 													'resourceId'=>$x->id_cadeira,'start'=>$dtStart,
@@ -382,7 +382,7 @@
 									if(!empty($v) and is_numeric($v)) $profissionaisID[]=$v;
 								}
 
-								$sql2->consult($_p."profissionais","*","where id in (".implode(",",$profissionaisID).") and lixo=0");
+								$sql2->consult($_p."colaboradores","*","where id in (".implode(",",$profissionaisID).") and lixo=0");
 
 								if($sql2->rows) {
 									$cont=1;
@@ -483,7 +483,7 @@
 	while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
 
 	$_profissionais=array();
-	$sql->consult($_p."profissionais","*","where lixo=0 order by nome asc");
+	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
 
 	$_agendaStatus=array('confirmado'=>'CONFIRMADO','agendado'=>'AGENDADO');

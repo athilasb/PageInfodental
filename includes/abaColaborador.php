@@ -71,4 +71,5 @@
 	<li><a href="pg_colaboradores_dadospessoais.php?<?php echo "id_colaborador=$colaborador->id";?>" class="main-nav__resumo-do-paciente<?php echo basename($_SERVER['PHP_SELF'])=="pg_colaboradores_dadospessoais.php"?" active":"";?>">Dados Pessoais</a></li>
 	<li><a href="pg_colaboradores_dadoscontratacao.php?<?php echo "id_colaborador=$colaborador->id";?>" class="main-nav__resumo-do-paciente<?php echo basename($_SERVER['PHP_SELF'])=="pg_colaboradores_dadoscontratacao.php"?" active":"";?>">Dados da Contratação</a></li>
 	<li><a href="pg_colaboradores_cargahoraria.php?<?php echo "id_colaborador=$colaborador->id";?>" class="main-nav__resumo-do-paciente<?php echo basename($_SERVER['PHP_SELF'])=="pg_colaboradores_cargahoraria.php"?" active":"";?>">Carga Horária</a></li>
+	<li><a href="pg_colaboradores_acesso.php?<?php echo "id_colaborador=$colaborador->id";?>" class="main-nav__resumo-do-paciente<?php echo basename($_SERVER['PHP_SELF'])=="pg_colaboradores_acesso.php"?" active":"";?>">Acesso ao Sistema</a></li>
 </ul>

@@ -26,7 +26,7 @@
 		}
 	}
 
-	$campos=explode(",","nome,sexo,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,estado_civil,telefone1,telefone2,nome_pai,nome_mae,email,instagram,linkedin,facebook,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,escolaridade,cro,uf_cro,tipo_cro,calendario_cor,inicial_cd");
+	$campos=explode(",","nome,sexo,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,estado_civil,telefone1,telefone2,nome_pai,nome_mae,email,instagram,linkedin,facebook,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,escolaridade,cro,uf_cro,tipo_cro,calendario_cor,calendario_iniciais");
 	
 	foreach($campos as $v) $values[$v]='';
 	$values['calendario_cor']="#c18c6a";
@@ -112,6 +112,7 @@
 					$('.js-calendarioCor').hide();
 				}
 			});
+			$('select[name=tipo_cro]').trigger('change');
 			$("#upload_link").on('click', function(e){
 			    e.preventDefault();
 			    $("#upload:hidden").trigger('click');
@@ -183,7 +184,7 @@
 										<select name="sexo" class="">
 											<option value="">-</option>
 											<option value="M"<?php echo $values['sexo']=="M"?" selected":"";?>>Masculino</option>
-											<option value="M"<?php echo $values['sexo']=="F"?" selected":"";?>>Feminino</option>
+											<option value="F"<?php echo $values['sexo']=="F"?" selected":"";?>>Feminino</option>
 										</select>
 									</dd>
 								</dl>
@@ -203,9 +204,9 @@
 									}
 									?>
 									<dl>
-										<dd><a href="" id="upload_link"><img src="<?php echo $ft;?>" width="200" style="border: solid 1px #CCC;padding:2px;" /></a></dd>
+										<dd><a href="" id="upload_link"><img id="output" src="<?php echo $ft;?>" width="200" style="border: solid 1px #CCC;padding:2px;" /></a></dd>
 									</dl>
-									<input type="file" name="foto" id="upload" style="display: none;" />
+									<input type="file" name="foto" id="upload" style="display: none;" onchange="document.getElementById('output').src = window.URL.createObjectURL(this.files[0])" />
 									
 								</fieldset>
 								<div style="margin:0;grid-column:span 2">
@@ -270,6 +271,47 @@
 											<input type="text" name="nome_mae" value="<?php echo $values['nome_mae'];?>" class="" />
 										</dd>
 									</dl>
+									<div class="colunas3">
+										<dl>
+											<dt>CRO</dt>
+											<dd>
+												<input type="text" name="cro" value="<?php echo $values['cro']; ?>" class="" />
+											</dd>
+										</dl>
+										<dl>
+											<dt>UF do CRO</dt>
+											<dd>
+												<?php $inEstado=strtoupperWLIB($values['uf_cro']);?><select name="uf_cro" class="chosen"><option value=""></option><option value="AC"<?php echo $inEstado=="AC"?" selected":"";?>>ACRE</option><option value="AL"<?php echo $inEstado=="AL"?" selected":"";?>>ALAGOAS</option><option value="AM"<?php echo $inEstado=="AM"?" selected":"";?>>AMAZONAS</option><option value="AP"<?php echo $inEstado=="AP"?" selected":"";?>>AMAPÁ</option><option value="BA"<?php echo $inEstado=="BA"?" selected":"";?>>BAHIA</option><option value="CE"<?php echo $inEstado=="CE"?" selected":"";?>>CEARÁ</option><option value="DF"<?php echo $inEstado=="DF"?" selected":"";?>>DISTRITO FEDERAL</option><option value="ES"<?php echo $inEstado=="ES"?" selected":"";?>>ESPÍRITO SANTO</option><option value="GO"<?php echo $inEstado=="GO"?" selected":"";?>>GOIÁS</option><option value="MA"<?php echo $inEstado=="MA"?" selected":"";?>>MARANHÃO</option><option value="MT"<?php echo $inEstado=="MT"?" selected":"";?>>MATO GROSSO</option><option value="MS"<?php echo $inEstado=="MS"?" selected":"";?>>MATO GROSSO DO SUL</option><option value="MG"<?php echo $inEstado=="MG"?" selected":"";?>>MINAS GERAIS</option><option value="PA"<?php echo $inEstado=="PA"?" selected":"";?>>PARÁ</option><option value="PB"<?php echo $inEstado=="PB"?" selected":"";?>>PARAÍBA</option><option value="PR"<?php echo $inEstado=="PR"?" selected":"";?>>PARANÁ</option><option value="PE"<?php echo $inEstado=="PE"?" selected":"";?>>PERNANBUMCO</option><option value="PI"<?php echo $inEstado=="PI"?" selected":"";?>>PIAUÍ</option><option value="RJ"<?php echo $inEstado=="RJ"?" selected":"";?>>RIO DE JANEIRO</option><option value="RN"<?php echo $inEstado=="RN"?" selected":"";?>>RIO GRANDE DO NORTE</option><option value="RO"<?php echo $inEstado=="RO"?" selected":"";?>>RONDÔNIA</option><option value="RS"<?php echo $inEstado=="RS"?" selected":"";?>>RIO GRANDE DO SUL</option><option value="RR"<?php echo $inEstado=="RR"?" selected":"";?>>RORAIMA</option><option value="SC"<?php echo $inEstado=="SC"?" selected":"";?>>SANTA CATARINA</option><option value="SE"<?php echo $inEstado=="SE"?" selected":"";?>>SERGIPE</option><option value="SP"<?php echo $inEstado=="SP"?" selected":"";?>>SÃO PAULO</option><option value="TO"<?php echo $inEstado=="TO"?" selected":"";?>>TOCANTINS</option></select>
+											</dd>
+										</dl>
+									</div>
+									<div class="colunas3">
+										<dl>
+											<dt>Tipo do CRO</dt>
+											<dd>
+												<select name="tipo_cro" class="chosen">
+													<option value="">-</option>
+													<?php
+													foreach($_tipoCRO as $k=>$v) {
+														echo '<option value="'.$k.'"'.(($values['tipo_cro']==$k)?' selected':'').'>'.$v.'</option>';
+													}
+													?>
+												</select>
+											</dd>
+										</dl>
+										<dl class="dl js-inicialCD" style="display:none;">
+											<dt>Inicial do CD</dt>
+											<dd>
+												<input type="text" name="calendario_iniciais" value="<?php echo $values['calendario_iniciais'];?>" class="" />
+											</dd>
+										</dl>
+										<dl class="dl js-calendarioCor" style="display:none;">
+											<dt>Cor Calendário</dt>
+											<dd>
+												<input type="text" name="calendario_cor" value="<?php echo $values['calendario_cor'];?>" class="" />
+											</dd>
+										</dl>
+									</div>
 								</div>
 							</div>
 
@@ -403,66 +445,6 @@
 							</dl>
 						</fieldset>
 
-						<fieldset style="margin:0;">
-							<legend style="font-size: 12px;">
-								<div class="filter-group">
-									<div class="filter-title">
-										<span class="badge">4</span> Dados Complementares
-									</div>
-								</div>
-							</legend>
-
-							<dl>
-								<dt>Escolaridade</dt>
-								<dd>
-									<input type="text" name="escolaridade" value="<?php echo $values['escolaridade']; ?>" class="" />
-								</dd>
-							</dl>
-							<div class="colunas4">
-								<dl class="dl2">
-									<dt>CRO</dt>
-									<dd>
-										<input type="text" name="cro" value="<?php echo $values['cro']; ?>" class="" />
-									</dd>
-								</dl>
-								<dl class="dl2">
-									<dt>UF do CRO</dt>
-									<dd>
-										<?php $inEstado=strtoupperWLIB($values['uf_cro']);?><select name="uf_cro" class="chosen"><option value=""></option><option value="AC"<?php echo $inEstado=="AC"?" selected":"";?>>ACRE</option><option value="AL"<?php echo $inEstado=="AL"?" selected":"";?>>ALAGOAS</option><option value="AM"<?php echo $inEstado=="AM"?" selected":"";?>>AMAZONAS</option><option value="AP"<?php echo $inEstado=="AP"?" selected":"";?>>AMAPÁ</option><option value="BA"<?php echo $inEstado=="BA"?" selected":"";?>>BAHIA</option><option value="CE"<?php echo $inEstado=="CE"?" selected":"";?>>CEARÁ</option><option value="DF"<?php echo $inEstado=="DF"?" selected":"";?>>DISTRITO FEDERAL</option><option value="ES"<?php echo $inEstado=="ES"?" selected":"";?>>ESPÍRITO SANTO</option><option value="GO"<?php echo $inEstado=="GO"?" selected":"";?>>GOIÁS</option><option value="MA"<?php echo $inEstado=="MA"?" selected":"";?>>MARANHÃO</option><option value="MT"<?php echo $inEstado=="MT"?" selected":"";?>>MATO GROSSO</option><option value="MS"<?php echo $inEstado=="MS"?" selected":"";?>>MATO GROSSO DO SUL</option><option value="MG"<?php echo $inEstado=="MG"?" selected":"";?>>MINAS GERAIS</option><option value="PA"<?php echo $inEstado=="PA"?" selected":"";?>>PARÁ</option><option value="PB"<?php echo $inEstado=="PB"?" selected":"";?>>PARAÍBA</option><option value="PR"<?php echo $inEstado=="PR"?" selected":"";?>>PARANÁ</option><option value="PE"<?php echo $inEstado=="PE"?" selected":"";?>>PERNANBUMCO</option><option value="PI"<?php echo $inEstado=="PI"?" selected":"";?>>PIAUÍ</option><option value="RJ"<?php echo $inEstado=="RJ"?" selected":"";?>>RIO DE JANEIRO</option><option value="RN"<?php echo $inEstado=="RN"?" selected":"";?>>RIO GRANDE DO NORTE</option><option value="RO"<?php echo $inEstado=="RO"?" selected":"";?>>RONDÔNIA</option><option value="RS"<?php echo $inEstado=="RS"?" selected":"";?>>RIO GRANDE DO SUL</option><option value="RR"<?php echo $inEstado=="RR"?" selected":"";?>>RORAIMA</option><option value="SC"<?php echo $inEstado=="SC"?" selected":"";?>>SANTA CATARINA</option><option value="SE"<?php echo $inEstado=="SE"?" selected":"";?>>SERGIPE</option><option value="SP"<?php echo $inEstado=="SP"?" selected":"";?>>SÃO PAULO</option><option value="TO"<?php echo $inEstado=="TO"?" selected":"";?>>TOCANTINS</option></select>
-									</dd>
-								</dl>
-							</div>
-							<div class="colunas3">
-								
-								<dl>
-									<dt>Tipo do CRO</dt>
-									<dd>
-										<select name="tipo_cro" class="chosen">
-											<option value="">-</option>
-											<?php
-											foreach($_tipoCRO as $k=>$v) {
-												echo '<option value="'.$k.'"'.(($values['tipo_cro']==$k)?' selected':'').'>'.$v.'</option>';
-											}
-											?>
-										</select>
-									</dd>
-								</dl>
-								<dl class="dl js-inicialCD" style="display:none;">
-									<dt>Inicial do CD</dt>
-									<dd>
-										<input type="text" name="inicial_cd" value="<?php echo $values['inicial_cd'];?>" class="" />
-									</dd>
-								</dl>
-								<dl class="dl js-calendarioCor" style="display:none;">
-									<dt>Cor Calendário</dt>
-									<dd>
-										<input type="text" name="calendario_cor" value="<?php echo $values['calendario_cor'];?>" class="" />
-									</dd>
-								</dl>
-								
-							</div>
-						</fieldset>
-						
 					</div>
 				</div>
 			</section>

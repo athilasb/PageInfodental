@@ -15,7 +15,7 @@
 	}
 
 	$_profissionais=array();
-	$sql->consult($_p."profissionais","*","where lixo=0 order by nome asc");//"where unidades like '%,$unidade->id,%' and lixo=0 order by nome asc");
+	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_profissionais[$x->id]=$x;
 	}
@@ -97,15 +97,15 @@
 
 
 		if(empty($evolucaoAtestado)) {
-			$sql->consult($_p."pacientes_evolucoes_atestados","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
+			/*$sql->consult($_p."pacientes_evolucoes_atestados","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
 																				id_paciente=$paciente->id and 
 																				id_evolucao=$id_evolucao");	
 			if($sql->rows) {
 				$x=mysqli_fetch_object($sql->mysqry);
 				$sql->update($_p."pacientes_evolucoes_atestados",$vSQLAtestado,"where id=$x->id");
-			} else {
+			} else {*/
 				$sql->add($_p."pacientes_evolucoes_atestados",$vSQLAtestado);
-			}
+		//	}
 		} else {
 			$sql->update($_p."pacientes_evolucoes_atestados",$vSQLAtestado,"where id=$evolucaoAtestado->id");
 		}
@@ -131,6 +131,7 @@
 	<section class="content">
 		
 		<?php
+		$exibirEvolucaoNav=1;
 		require_once("includes/abaPaciente.php");
 		?>
 
@@ -183,7 +184,7 @@
 						<input type="hidden" name="id_evolucao" value="<?php echo is_object($evolucao)?$evolucao->id:0;?>" />
 
 						<fieldset>
-							<legend><span class="badge">2</span> Cabeçalho do atestado</legend>
+							<legend><span class="badge">1</span> Cabeçalho do atestado</legend>
 
 							<div class="colunas5">
 								<dl>
@@ -249,7 +250,7 @@
 							</div>
 						</fieldset>
 						<fieldset>
-							<legend><span class="badge">3</span> Pré-visualize e edite se necessário</legend>
+							<legend><span class="badge">2</span> Pré-visualize e edite se necessário</legend>
 							<script>
 								$(function(){
 									var fck_texto = CKEDITOR.replace('texto',{

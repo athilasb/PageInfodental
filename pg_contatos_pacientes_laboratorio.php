@@ -158,7 +158,7 @@
 	}
 
 	$_profissionais=array();
-	$sql->consult($_p."profissionais","*","where lixo=0 order by nome asc");//"where unidades like '%,$unidade->id,%' and lixo=0 order by nome asc");
+	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_profissionais[$x->id]=$x;
 	}

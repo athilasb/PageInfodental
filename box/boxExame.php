@@ -18,8 +18,7 @@
 			}
 
 			$vSQL="titulo='".addslashes(utf8_decode($_POST['titulo']))."',
-				   	id_regiao='".$_POST['id_regiao']."',
-					clinicas='".utf8_decode($_POST['clinicas'])."'";
+				   	obs='".addslashes(utf8_decode($_POST['obs']))."'";
 
 			if(is_object($exame)) {
 				$vWHERE="where id=$exame->id";
@@ -58,7 +57,7 @@
 		echo json_encode($rtn);
 		die();
 	}
-	$campos=explode(",","titulo,id_regiao");
+	$campos=explode(",","titulo,id_regiao,obs");
 		
 	foreach($campos as $v) $values[$v]='';
 
@@ -100,7 +99,7 @@
 						swal.close();  
 						if(rtn.success) {
 							$.fancybox.close();
-							location.reload(true);
+							document.location.href=`pg_configuracao_anamnese_exames.php`
 						} else if(rtn.error) {
 							swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 						} else {
@@ -142,6 +141,7 @@
 				success:function(rtn) {
 					if(rtn.success) {
 						$.fancybox.close();
+						document.location.href=`pg_configuracao_anamnese_exames.php`
 					} else if(rtn.error) {
 						swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 					} else {
@@ -190,14 +190,14 @@
 		<form method="post" class="form js-form-clinica">
 			<fieldset>
 				<legend><span class="badge">1</span> Dados do Exame</legend>
-				<div class="colunas4">
-					<dl class="dl2">
+				<div>
+					<dl>
 						<dt>Nome do Exame</dt>
 						<dd>
 							<input type="text" name="titulo" value="<?php echo $values['titulo'];?>"  class="obg" />
 						</dd>
 					</dl>
-					<dl>
+					<?php /*<dl>
 						<dt>Região</dt>
 						<dd>
 							<select name="id_regiao">
@@ -209,10 +209,15 @@
 								?>
 							</select>
 						</dd>
-					</dl>
+					</dl> */ ?>
 				</div>
+				<dl>
+					<dt>Obs.</dt>
+					<dd><input type="text" name="obs" value="<?php echo $values['obs'];?>" /></dd>
+				</dl>
 			</fieldset>
 
+			<?php /*
 			<fieldset>
 				<legend><span class="badge">2</span> Clínicas que realizam</legend>
 				<textarea name="clinicas" style="text-transform: none;display: none;"><?php echo isset($values['clinicas'])?$values['clinicas']:'';?></textarea>
@@ -308,22 +313,7 @@
 					</dl>
 				</div>
 				<div class="reg js-div-clinicas" style="margin-top:2rem;"></div>
-				<div class="registros">
-					<table class="tablesorter js-clinicas">
-						<thead>
-							<tr>
-								<th>Clínica</th>
-								<th style="width:120px"></th>
-							</tr>
-						</thead>
-						<tbody>
-							
-						</tbody>
-					</table>
-				</div>
-				
-
-			</fieldset>
+			</fieldset> */ ?>
 				
 		</form>
 	</article>

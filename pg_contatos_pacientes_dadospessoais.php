@@ -15,7 +15,7 @@
 					$whereIndicacao="where lixo=0 order by nome asc";
 					$campoIndicacao="nome";
 				} else if ($_POST['indicacao_tipo']=="PROFISSIONAL") {
-					$tableIndicacao=$_p."profissionais";
+					$tableIndicacao=$_p."colaboradores";
 					$whereIndicacao="where lixo=0 order by nome asc";
 					$campoIndicacao="nome";
 				} else {
@@ -76,7 +76,6 @@
 
 		die();
 	}
-
 	include "includes/header.php";
 	include "includes/nav.php";
 
@@ -121,7 +120,7 @@
 	}
 
 
-	$campos=explode(",","nome,situacao,noem,sexo,foto,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,profissao,estado_civil,telefone1,telefone1_whatsapp,telefone1_whatsapp_permissao,telefone2,email,instagram,instagram_naopossui,musica,indicacao_tipo,indicacao,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,responsavel_possui,responsavel_nome,responsavel_sexo,responsavel_rg,responsavel_rg_orgaoemissor,responsavel_rg_estado,responsavel_datanascimento,responsavel_estadocivil,responsavel_cpf,responsavel_profissao,responsavel_grauparentesco,preferencia_contato,estrangeiro,estrangeiro_passaporte");
+	$campos=explode(",","nome,situacao,sexo,foto,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,profissao,estado_civil,telefone1,telefone1_whatsapp,telefone1_whatsapp_permissao,telefone2,email,instagram,instagram_naopossui,musica,indicacao_tipo,indicacao,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,responsavel_possui,responsavel_nome,responsavel_sexo,responsavel_rg,responsavel_rg_orgaoemissor,responsavel_rg_estado,responsavel_datanascimento,responsavel_estadocivil,responsavel_cpf,responsavel_profissao,responsavel_grauparentesco,preferencia_contato,estrangeiro,estrangeiro_passaporte,lat,lng");
 	
 	foreach($campos as $v) $values[$v]='';
 	$values['data']=date('d/m/Y H:i');
@@ -137,19 +136,15 @@
 	if(isset($_POST['acao']) and $_POST['acao']=="wlib") {
 		$vSQL=$adm->vSQL($campos,$_POST);
 		$values=$adm->values;
-		//var_dump($_POST);
-		//var_dump($values);die();
 		$processa=true;
 
-		if(empty($cnt) or (is_object($cnt) and $cnt->cpf!=cpf($_POST['cpf']))) {
+		if((empty($cnt) or (is_object($cnt) and $cnt->cpf!=cpf($_POST['cpf']))) and !empty($_POST['cpf'])) {
 			$sql->consult($_table,"*","where cpf='".addslashes(cpf($_POST['cpf']))."' and lixo=0");
-		//	echo "where cpf='".addslashes(cpf($_POST['cpf']))."' and lixo=0";echo $sql->rows;die();
 			if($sql->rows) {
 				$processa=false;
 				$jsc->jAlert("Já existe cliente cadastrado com este CPF","erro",""); 
 			}
 		}
-
 
 		if($processa===true) {	
 		
@@ -183,7 +178,7 @@
 			if(!empty($msgErro)) {
 				$jsc->jAlert($msgErro,"erro","");
 			} else {
-				$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='".$_page."?form=1&edita=".$id_reg."&".$url."'");
+				$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='".$_page."?id_paciente=".$id_reg."'");
 				die();
 			}
 		}
@@ -197,6 +192,16 @@
 		$(function(){
 
 			$('.m-contatos').addClass("active");
+			$('.js-cpf').keyup(function(){
+				let cpf = $(this).val().replace(/[^0-9+]/g, '');
+
+				if(cpf.length==11) {
+					if(!validarCPF(cpf)) {
+						swal({title: "Erro!", text: "Digite um CPF válido", type:"error", confirmButtonColor: "#424242"});
+						return false;
+					} 
+				} 
+			});
 
 			$('.js-btn-profissao').click(function(){ 
 				var id_profissao=$('select[name=profissao]').val();
@@ -314,7 +319,7 @@
 							<div class="filter-button">
 								<a href="?deletaPaciente=<?php echo $paciente->id."&".$url;?>" class="js-deletar"><i class="iconify" data-icon="bx-bx-trash"></i></a>
 								<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
-								<a href="javascript:;" class="azul  btn-submit"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+								<a href="javascript:;" class="azul btn-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
 							</div>
 						</div>
 
@@ -355,7 +360,7 @@
 										<select name="sexo" class="">
 											<option value="">-</option>
 											<option value="M"<?php echo $values['sexo']=="M"?" selected":"";?>>Masculino</option>
-											<option value="M"<?php echo $values['sexo']=="F"?" selected":"";?>>Feminino</option>
+											<option value="F"<?php echo $values['sexo']=="F"?" selected":"";?>>Feminino</option>
 										</select>
 									</dd>
 								</dl>
@@ -368,16 +373,16 @@
 									<?php
 									$ft='img/ilustra-colaborador.jpeg';
 									if(is_object($cnt)) {
-										$ftColaborador='arqs/colaboradores/'.$cnt->id.".".$cnt->foto;
+										$ftColaborador='arqs/pacientes/'.$cnt->id.".".$cnt->foto;
 										if(file_exists($ftColaborador)) {
 											$ft=$ftColaborador;
 										}
 									}
 									?>
 									<dl>
-										<dd><a href="javascript:;" id="upload_link"><img src="<?php echo $ft;?>" width="200" style="border: solid 1px #CCC;padding:2px;" /></a></dd>
+										<dd><a href="javascript:;" id="upload_link"><img id="output" src="<?php echo $ft;?>" width="200" style="border: solid 1px #CCC;padding:2px;" /></a></dd>
 									</dl>
-									<input type="file" name="foto" id="upload" style="display: none;" />
+									<input type="file" name="foto" id="upload" onchange="document.getElementById('output').src = window.URL.createObjectURL(this.files[0])" style="display: none;" />
 									
 								</fieldset>
 								<div style="margin:0;grid-column:span 2">
@@ -406,7 +411,7 @@
 								<dl>
 									<dt>CPF</dt>
 									<dd>
-										<input type="text" name="cpf" value="<?php echo $values['cpf'];?>" class="cpf" />
+										<input type="text" name="cpf" value="<?php echo $values['cpf'];?>" class="cpf js-cpf" />
 									</dd>
 								</dl>
 								<dl>
@@ -592,6 +597,114 @@
 
 						<fieldset style="margin:0;">
 
+							<script>
+								var marker = '';
+								var map = '';
+								var position = '';
+								var positionEndereco = '';
+								var el = document.getElementById("geolocation");
+								var location_timeout = '';
+								var geocoder = '';
+								var enderecoObj = {};
+								var enderecos = [];	
+								var lat = `-16.688304`;
+								var lng = `-49.267055`;
+
+								function initMap() {
+									let options = {componentRestrictions: {country: "bra"}}
+									var input = document.getElementById('search');
+
+									var autocomplete = new google.maps.places.Autocomplete(input,options);
+									geocoder = new google.maps.Geocoder();
+
+									autocomplete.addListener('place_changed', function() {
+
+										var result = autocomplete.getPlace();
+										lat = result.geometry.location.lat();
+										lng = result.geometry.location.lng();
+										position = new google.maps.LatLng(lat,lng);
+										map = new google.maps.Map(document.getElementById('map'), {
+										  center: {lat: lat, lng: lng},
+										  zoom: 17
+										});
+
+										marker = new google.maps.Marker({
+										    position: {lat: lat, lng: lng},
+										    map,
+										    title: "Click to zoom",
+										});
+
+										marker.addListener("click", () => {
+										    map.setZoom(20);
+										    map.setCenter(marker.getPosition());
+										});
+
+										$('input[name=lat]').val(lat);
+										$('input[name=lng]').val(lng);
+										
+										let logradouro = '';
+										let numero = '';
+										let bairro = '';
+										let cep = '';
+										let cidade = '';
+										let estado = '';
+										let pais = '';
+										let descricao = '';
+
+										if(result.address_components) {
+											result.address_components.forEach(component => {
+												if(component.types) {
+													component.types.forEach(type => {
+														if(type=='route' && logradouro.length==0) logradouro = component.long_name;
+														else if(type=='street_number' && numero.length==0) numero = component.long_name;
+														else if(type=='sublocality' && bairro.length==0) bairro = component.long_name;
+														else if(type=='administrative_area_level_2' && cidade.length==0) cidade = component.long_name;
+														else if(type=='administrative_area_level_1' && estado.length==0) estado = component.short_name;
+														else if(type=='postal_code' && cep.length==0) cep = component.long_name;
+														else if(type=='country' && pais.length==0) pais = component.long_name;
+
+													})
+												}
+											});
+										}
+										if(descricao.length==0) descricao = result.formatted_address;
+										
+
+										enderecoObj = { logradouro, numero, bairro, cep, cidade, estado, pais, descricao, lat, lng }
+
+										//$('#js-form-endereco ').html(enderecoObj.descricao);
+										$('input[name=descricao]').val(enderecoObj.descricao); 
+										$('input[name=numero]').val(enderecoObj.numero);
+										$('input[name=logradouro]').val(enderecoObj.logradouro);
+										$('input[name=bairro]').val(enderecoObj.bairro);
+										$('select[name=estado]').val(enderecoObj.estado.toUpperCase());
+        								$('select[name=estado]').trigger('change').trigger('chosen:updated');
+
+										$('select[name=id_cidade] option').each(function () {
+											var text = $(this).text();
+											if(text == enderecoObj.cidade) {
+												$(this).prop('selected', true);
+											}
+										});
+										$('select[name=id_cidade]').trigger('chosen:updated');
+										$('select[name=cidade]').val(enderecoObj.cidade);
+										$('input[name=cep]').val(enderecoObj.cep);
+										$('input[name=lat]').val(enderecoObj.lat);
+										$('input[name=lng]').val(enderecoObj.lng);
+										$('input[name=pais]').val(enderecoObj.pais);
+										console.log(enderecoObj.cidade);
+										$('#map').show();
+									});
+
+								}	
+							</script>
+							<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCDLcXlfkEGRZwlDYaXWbF8O-toogN05-g&libraries=geometry,drawing,places&callback=initMap" defer></script>
+
+							<input type="text" name="descricao" style="display:none;" />
+							<input type="text" name="lat"  style="display:none;" />
+							<input type="text" name="lng"  style="display:none;" />
+							<input type="text" name="pais" style="display:none;" />
+
 							<legend style="font-size: 12px;">
 								<div class="filter-group">
 									<div class="filter-title">
@@ -640,7 +753,7 @@
 							<dl class="dl2">
 								<dt>Endereço</dt>
 								<dd>
-									<input type="text" name="endereco" value="<?php echo $values['endereco']; ?>" class="" />
+									<input type="text" name="endereco" value="<?php echo $values['endereco']; ?>" id="search" class="" />
 								</dd>
 							</dl>
 							<dl class="dl2">
@@ -649,6 +762,30 @@
 									<input type="text" name="complemento" value="<?php echo $values['complemento']; ?>" class="" />
 								</dd>
 							</dl>
+							<?php
+								if(isset($values['lat']) and !empty($values['lat']) and isset($values['lng']) and !empty($values['lng'])) {
+							?>
+							<script>
+								function initMap() {
+									  const map = new google.maps.Map(
+									    document.getElementById("map"),
+									    {
+									      zoom: 17,
+									      center: { lat: <?php echo $values['lat'];?>, lng: <?php echo $values['lng'];?> },
+									    }
+									  );
+									  const marker = new google.maps.Marker({
+									    position: {lat: <?php echo $values['lat'];?>, lng: <?php echo $values['lng'];?>},
+									    map,
+									    title: "Click to zoom",
+									});
+									  $('#map').show();
+									}
+							</script>	
+							<?php
+								}
+							?>	
+							<section id="map" style="width: 600px;height:500px;margin-bottom: 10px;display:none;"></section>
 						</fieldset>
 						<script type="text/javascript">
 							$(function(){
@@ -708,7 +845,7 @@
 										<select name="sexo" class="">
 											<option value="">-</option>
 											<option value="M"<?php echo $values['sexo']=="M"?" selected":"";?>>Masculino</option>
-											<option value="M"<?php echo $values['sexo']=="F"?" selected":"";?>>Feminino</option>
+											<option value="F"<?php echo $values['sexo']=="F"?" selected":"";?>>Feminino</option>
 										</select>
 									</dd>
 								</dl>

@@ -420,7 +420,7 @@
 								<select name="sexo" class="obg">
 									<option value="">-</option>
 									<option value="M"<?php echo $values['sexo']=="M"?" selected":"";?>>Masculino</option>
-									<option value="M"<?php echo $values['sexo']=="F"?" selected":"";?>>Feminino</option>
+									<option value="F"<?php echo $values['sexo']=="F"?" selected":"";?>>Feminino</option>
 								</select>
 							</dd>
 						</dl>
@@ -713,9 +713,19 @@
 				}
 			}
 
-			
-
+			$grafico3Data = array();
+			$sql->consult($_p."pacientes","count(*) as total","WHERE lixo=0 and sexo='M'");
+			if($sql->rows) {
+				$x=mysqli_fetch_object($sql->mysqry);
+				$grafico3Data[]= $x->total;
+			}
+			$sql->consult($_p."pacientes","count(*) as total","WHERE lixo=0 and sexo='F'");
+			if($sql->rows) {
+				$x=mysqli_fetch_object($sql->mysqry);
+				$grafico3Data[]= $x->total;
+			}
 			?>
+			<!-- BI -->
 			<section class="box">
 				<div class="lista-botoes">
 					<a href="javascript:;" class="lista-botoes__item js-grafico" data-grafico="1">
@@ -755,7 +765,7 @@
 					</a>
 				</div>
 				<div class="grafico">
-					<script>
+				<script>
 					$(function() {
 						
 						$('.js-grafico').click(function(){
@@ -855,45 +865,30 @@
 						    }
 						});
 
+
+
+						const DATA_COUNT = 5;
+						const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
 						var ctx = document.getElementById('grafico3').getContext('2d');
 						var gradientStroke = ctx.createLinearGradient(0,230,0,50);
 						gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
 						gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
 						gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
 						var grafico3 = new Chart(ctx, {    
-						    type: 'line',
+						    type: 'pie',
 						    data: {
-						        labels: ["1","2","3","4","5","6","7"],
-						        datasets: [{
-						            fill:true,
-						            borderDashOffset: 0.0,
-						            label: '# visitas',
-						            data: [1200,1100,1300,1300,500,1200,1345],
-						            backgroundColor: gradientStroke,
-						            borderColor:'rgba(254,71,2,0.3)',
-						            borderWidth: 1,
-						            borderDash: [],
-						            borderDashOffset: 0.0
-						        }]
+								  labels: ['Masculino', 'Feminino'],
+								  datasets: [
+								    {
+								      label: 'Dataset 1',
+								      data: <?php echo json_encode($grafico3Data);?>,
+								      backgroundColor: ['blue','pink'],
+								    }
+								  ]
 						    },
 						    options: {
 						        scales: {
-						            yAxes: [{
-						                ticks: {
-						                    beginAtZero: true
-						                },
-						                gridLines: {
-						                	drawBorder: false,
-						                	color: 'transparent'
-						                }
-						            }],
-						            xAxes: [{
-							            gridLines: {
-							            	drawBorder: false,
-							                color: '#ebebeb',
-							                zeroLineColor: "#ebebeb"
-							            }	              
-							        }]
+						            
 						        }
 						    }
 						});
@@ -996,6 +991,7 @@
 				</div>
 			</section>
 
+			<!-- Lista -->
 			<section class="grid">
 				<div class="box">
 					<div class="filter">

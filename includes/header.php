@@ -32,7 +32,7 @@
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:og="http://ogp.me/ns#"
-      xmlns:fb="http://www.facebook.com/2008/fbml">
+      xmlns:fb="http://www.facebook.com/2008/fbml"> 
 
 <head>
 <meta charset="utf-8">
@@ -65,8 +65,9 @@
 <script type="text/javascript" src="js/jquery.mobilePhoneNumber.js"></script>
 <script type="text/javascript" src="js/jquery.chart-utils.js"></script>
 <script type="text/javascript" src="js/jquery.validacao.js"></script>
-<script type="text/javascript" src="js/jquery.funcoes.js?V"></script>
+<script type="text/javascript" src="js/jquery.funcoes.js?v2"></script>
 <script type="text/javascript" src="js/jquery.moment.js"></script>
+<script type="text/javascript" src="js/jquery.autocomplete.js"></script>
 <script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
 
 <script type="text/javascript" src="ckeditor/ckeditor.js"></script>

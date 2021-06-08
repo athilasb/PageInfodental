@@ -322,6 +322,7 @@
 
 		<script type="text/javascript">
 			var popViewInfos = [];
+			
 			const popView = (obj) => {
 
 
@@ -458,17 +459,12 @@
 					let profissionalCor = $('select.js-sel-procedimento option:selected').attr('data-profissionalCor');
 					let statusEvolucao = $('select.js-sel-procedimento option:selected').attr('data-statusEvolucao');
 					let obs = ``;
-					
 					let dt = new Date();
-					let dia = dt.getDate();
-					let mes = dt.getMonth();
-					let min = dt.getMinutes();
-					let hrs = dt.getHours();
+					let dia = dt.getMonth();
+					let mes = dt.getDate();
 					mes++
 					mes=mes<=9?`0${mes}`:mes;
 					dia=dia<=9?`0${dia}`:dia;
-					min=min<=9?`0${min}`:min;
-					hrs=hrs<=9?`0${hrs}`:hrs;
 					let data = `${dia}/${mes}/${dt.getFullYear()} ${dt.getHours()}:${dt.getMinutes()}`;
 
 					if(id_procedimento.length>0) {
@@ -556,7 +552,6 @@
 
 				<?php
 				if(empty($evolucao)) { 
-					$exibirEvolucaoNav=1;
 					require_once("includes/evolucaoMenu.php");
 				} else {
 				?>
@@ -586,7 +581,7 @@
 						<div class="grid grid_3">
 
 							<fieldset style="grid-column:span 2">
-								<legend><?php echo empty($evolucao)?'<span class="badge">1</span> Selecione o procedimento':'Procedimentos';?></legend>
+								<legend><?php echo empty($evolucao)?'<span class="badge">2</span> Selecione o procedimento':'Procedimentos';?></legend>
 
 								<div class="colunas2">
 									<dl>
@@ -624,7 +619,7 @@
 							</fieldset>
 
 							<fieldset>
-								<legend><?php echo empty($evolucao)?'<span class="badge">2</span> Preencha o histórico':'Histórico';?></legend>
+								<legend><?php echo empty($evolucao)?'<span class="badge">3</span> Preencha o histórico':'Histórico';?></legend>
 
 								<dl style="height:100%;">
 									<dd style="height:100%;"><textarea name="obs" style="height:100%;" class="noupper"><?php echo is_object($evolucao)?utf8_encode($evolucao->obs):'';?></textarea></dd>

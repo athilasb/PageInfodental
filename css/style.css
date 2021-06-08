@@ -418,6 +418,7 @@ a.registros-qtd__item {display:inline-block; color:#fff; background:var(--cor1);
 
 .filter-input {height:50px; display:flex; align-items:center;}
 .filter-input input {border:0; border-radius:0; background-color:transparent; border-bottom:1px solid var(--cinza3); font-size:1.25em;}
+.filter-input select {border:0; border-radius:0; background-color:transparent; border-bottom:1px solid var(--cinza3); font-size:1.25em; padding-right:2rem;}
 
 .filter-data {height:50px; border-radius:25px; display:flex; flex-direction:column; justify-content:center; border:1px solid var(--cinza2); padding:0 1.5rem;}
 .filter-data h1 {font-weight:normal; color:var(--cinza4);}
@@ -436,6 +437,14 @@ a.registros-qtd__item {display:inline-block; color:#fff; background:var(--cor1);
 .reg-bar__container {width:100%; height:12px; border:1px solid var(--cinza2); border-radius:12px; display:flex;}
 .reg-bar__container span {background:var(--verde); margin:1px; border-radius:3px 0 0 3px;}
 .reg-icon {font-size:1.25em;}
+.reg-icon a {padding:.375rem;}
+.reg-steps {display:flex; flex:0 1 500px;}
+.reg-steps__item {flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; margin:0 .5rem;}
+.reg-steps__item h1 {font-size:1.25em; background:var(--cinza1); color:var(--cinza3); width:32px; height:32px; border-radius:32px; display:flex; align-items:center; justify-content:center;}
+.reg-steps__item p {font-size:0.813em; color:var(--cinza4); margin-top:.25rem;}
+.reg-steps__item.active h1 {background:var(--gradientVerde); color:#fff;}
+.reg-steps__item.active p {color:var(--cinza5);}
+
 
 .grid-links {display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,auto)); grid-gap:1rem;}
 .grid-links a {border:1px solid var(--cinza2); border-bottom:3px solid var(--cinza2); border-radius:12px; padding:1.5rem; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:space-between;}
@@ -443,5 +452,3 @@ a.registros-qtd__item {display:inline-block; color:#fff; background:var(--cor1);
 .grid-links a:hover {background:var(--cinza1);}
 .grid-links a.active {background:var(--gradientCor1); color:#fff;}
 .grid-links a.active .iconify {color:#fff;}
-
-

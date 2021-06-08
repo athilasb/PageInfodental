@@ -20,7 +20,7 @@
 				
 				$profissional='';
 				if(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional'])) {
-					$sql->consult($_p."profissionais","*","where id='".$_POST['id_profissional']."' and lixo=0");
+					$sql->consult($_p."colaboradores","*","where id='".$_POST['id_profissional']."' and lixo=0");
 					if($sql->rows) {
 						$profissional=mysqli_fetch_object($sql->mysqry);
 
@@ -262,7 +262,7 @@
 					
 					$profissionaisID=explode(",",$_POST['profissionais']);
 					if(count($profissionaisID)>0) {
-						$sql->consult($_p."profissionais","*","where id IN (".implode(",",$profissionaisID).") and lixo=0");
+						$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisID).") and lixo=0");
 						if($sql->rows) {
 							while($x=mysqli_fetch_object($sql->mysqry)) {
 								$profissionais[$x->id]=$x;
@@ -438,7 +438,7 @@
 		$_pacientes[$x->id]=$x;
 	}
 	$_profissionais=array();
-	$sql->consult($_p."profissionais","*","where lixo=0 order by nome asc");//"where unidades like '%,$unidade->id,%' and lixo=0 order by nome asc");
+	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_profissionais[$x->id]=$x;
 	}

@@ -17,9 +17,15 @@
 	}
 
 	$_profissionais=array();
-	$sql->consult($_p."profissionais","id,nome","");
+	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_profissionais[$x->id]=$x;
+	}
+
+	$_tiposEvolucao=array();
+	$sql->consult($_p."pacientes_evolucoes_tipos","*","");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_tiposEvolucao[$x->id]=$x;
 	}
 
 ?>
@@ -42,7 +48,7 @@
 		
 	});
 </script>
-<script src="js/jquery.vendas.js"></script>
+<?php /* <script src="js/jquery.vendas.js"></script> */ ?>
 
 	<section class="content">
 
@@ -100,64 +106,109 @@
 				<div class="paciente-evolucao" sty>
 					<h1 class="paciente__titulo1">Evolução</h1>
 					<?php /*<a href="" class="paciente-evolucao__add"><i class="iconify" data-icon="mdi-plus-circle-outline"></i> Adicionar evolução</a>*/ ?>
+
 					<div class="paciente-scroll">
-						<?php /*<table class="paciente-agenda-table">
-							<tr>
-								<td><i class="iconify" data-icon="mdi-pill"></i></td>
-								<td>16/03/2020<br /><span style="color:var(--cinza4)">18:06</span></td>
-								<td>Dr. Kronner</td>
-								<td><strong>Receituário Pós-Operatório</strong></td>
-							</tr>
-							<tr>
-								<td><i class="iconify" data-icon="mdi-clipboard-check-outline"></i></td>
-								<td>16/03/2020<br /><span style="color:var(--cinza4)">18:06</span></td>
-								<td>Dr. Kronner</td>
-								<td><strong>Atestado Pós-Operatório</strong></td>
-							</tr>
-							<tr>
-								<td><i class="iconify" data-icon="mdi-progress-check"></i></td>
-								<td>16/03/2020<br /><span style="color:var(--cinza4)">18:06</span></td>
-								<td>Dr. Kronner</td>
-								<td><strong>Prótese Múltipla de Resina / PMMA (43/43)</strong><br />Procedimento finalizado.</td>			
-							</tr>
-							<tr>
-								<td><i class="iconify" data-icon="mdi-pill"></i></td>
-								<td>16/03/2020<br /><span style="color:var(--cinza4)">18:06</span></td>
-								<td>Dr. Kronner</td>
-								<td><strong>Receituário Pós-Operatório</strong></td>
-							</tr>
-							<tr>
-								<td><i class="iconify" data-icon="mdi-clipboard-check-outline"></i></td>
-								<td>16/03/2020<br /><span style="color:var(--cinza4)">18:06</span></td>
-								<td>Dr. Kronner</td>
-								<td><strong>Atestado Pós-Operatório</strong></td>
-							</tr>
-							<tr>
-								<td><i class="iconify" data-icon="mdi-progress-check"></i></td>
-								<td>16/03/2020<br /><span style="color:var(--cinza4)">18:06</span></td>
-								<td>Dr. Kronner</td>
-								<td><strong>Prótese Múltipla de Resina / PMMA (43/43)</strong><br />Procedimento finalizado.</td>			
-							</tr>
-							<tr>
-								<td><i class="iconify" data-icon="mdi-pill"></i></td>
-								<td>16/03/2020<br /><span style="color:var(--cinza4)">18:06</span></td>
-								<td>Dr. Kronner</td>
-								<td><strong>Receituário Pós-Operatório</strong></td>
-							</tr>
-							<tr>
-								<td><i class="iconify" data-icon="mdi-clipboard-check-outline"></i></td>
-								<td>16/03/2020<br /><span style="color:var(--cinza4)">18:06</span></td>
-								<td>Dr. Kronner</td>
-								<td><strong>Atestado Pós-Operatório</strong></td>
-							</tr>
-							<tr>
-								<td><i class="iconify" data-icon="mdi-progress-check"></i></td>
-								<td>16/03/2020<br /><span style="color:var(--cinza4)">18:06</span></td>
-								<td>Dr. Kronner</td>
-								<td><strong>Prótese Múltipla de Resina / PMMA (43/43)</strong><br />Procedimento finalizado.</td>			
-							</tr>
-						</table>*/?>
-						<div style="text-align: center;color:#CCC"><span class="iconify" data-icon="el:eye-close" data-inline="false" data-height="50"></span><br />Nenhum registro.</div>
+						<?php
+							$registros=array();
+							$evolucoesIds=array(-1);
+							$usuariosIds=array(-1);
+							$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id and lixo=0 order by data desc");
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$registros[]=$x;
+								$usuariosIds[]=$x->id_usuario;
+								if($x->id_tipo==2 or $x->id_tipo==3 or $x->id_tipo==6 or $x->id_tipo==7) $evolucoesIds[]=$x->id;
+
+							}
+
+							$_usuarios=array();
+							$sql->consult($_p."usuarios","*","WHERE id IN (".implode(",",$usuariosIds).")");
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$_usuarios[$x->id]=$x;
+							}
+
+							$tratamentoProdecimentosIds=array(-1);
+							$registrosProcedimentos=array();
+							$sql->consult($_p."pacientes_evolucoes_procedimentos","*","where id_paciente=$paciente->id and id_evolucao IN (".implode(",",$evolucoesIds).") and lixo=0 order by data desc");
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$evolucoesIds[]=$x->id;
+								$registrosProcedimentos[$x->id_evolucao][]=$x;
+							}
+							
+
+							$prodecimentosIds=array(-1);
+							$_tratamentoProcedimentos=array();
+							$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id IN (".implode(",",$tratamentoProdecimentosIds).")");
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$prodecimentosIds[]=$x->id_procedimento;
+								$_tratamentoProcedimentos[$x->id]=$x;
+							}
+
+
+							$_exames=array();
+							$sql->consult($_p."pacientes_evolucoes_pedidosdeexames","id,id_evolucao","where id_paciente=$paciente->id and id_evolucao IN (".implode(",",$evolucoesIds).") and lixo=0 order by data desc");
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$_exames[$x->id_evolucao][]=$x;
+							}
+
+							$_receitas=array();
+							$sql->consult($_p."pacientes_evolucoes_receitas","id,id_evolucao","where id_paciente=$paciente->id and id_evolucao IN (".implode(",",$evolucoesIds).") and lixo=0 order by data desc");
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$_receitas[$x->id_evolucao][]=$x;
+							} 
+
+							$_procedimentos=array();
+							$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$prodecimentosIds).")");
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$_procedimentos[$x->id]=$x;
+							}
+						?>
+
+						<div class="reg">
+							<?php
+								foreach($registros as $x) {
+									if(isset($_tiposEvolucao[$x->id_tipo])) {
+										$tipo = $_tiposEvolucao[$x->id_tipo];
+							?>
+							<a href="<?php echo $tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;?>" class="reg-group">
+								<div class="reg-color" style="background-color:green;"></div>
+								<div class="reg-data" style="width:5%">
+									<i class="iconify" data-icon="<?php echo $tipo->icone;?>"></i>
+								</div>
+
+								<div class="reg-data" style="width:30%">
+									<p><strong><?php echo utf8_encode($tipo->tituloSingular);?></strong></p>
+									<p>Qtd.: <?php 
+										if($x->id_tipo==2 or $x->id_tipo==3) {
+											echo isset($registrosProcedimentos[$x->id])?count($registrosProcedimentos[$x->id]):0;
+										} else if($x->id_tipo==6) {
+											echo isset($_exames[$x->id])?count($_exames[$x->id]):0;
+
+										} else if($x->id_tipo==7) {
+
+											echo (isset($_receitas[$x->id])?count($_receitas[$x->id]):0);
+
+										} else {
+											echo 1;
+										}
+										?>
+									</p>
+								</div>
+
+								<div class="reg-data" style="width:10%;color:#">
+									<p><b><?php echo date('d/m/Y',strtotime($x->data));?></b></p>
+									<p><?php echo date('H:i',strtotime($x->data));?></p>
+								</div>
+
+								<div class="reg-data" style="width: 25%;">
+									<p><?php echo isset($_usuarios[$x->id_usuario])?utf8_encode($_usuarios[$x->id_usuario]->nome):'-';?></p>
+								</div>
+
+							</a>
+							<?php
+									}
+								}
+							?>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -262,7 +313,7 @@
 					<h1 class="paciente__titulo1">Histórico WhatsApp</h1>
 					<script>
 						$(function() {
-							$(".paciente-wp__inner1").scrollTop($(".paciente-wp__inner1")[0].scrollHeight);
+							//$(".paciente-wp__inner1").scrollTop($(".paciente-wp__inner1")[0].scrollHeight);
 						});
 					</script>
 					<?php /*<div class="paciente-scroll paciente-wp__inner1">

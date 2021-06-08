@@ -52,7 +52,7 @@
 							while($x=mysqli_fetch_object($sql->mysqry)) {
 								$registros[]=$x;
 						?>
-						<a href="box/boxAnamnese.php?id_anamnese=<?php echo $x->id;?>" data-fancybox data-type="ajax" data-height="300" data-padding="0" class="reg-group">
+						<a href="box/boxAnamnese.php?id_anamnese=<?php echo $x->id;?>" data-fancybox data-type="ajax" data-height="300" data-padding="0" class="js-anamnese-<?php echo $x->id;?> reg-group">
 							<div class="reg-color" style="background-color:green;"></div>
 							<div class="reg-data" style="flex:0 1 50%;">
 								<h1><?php echo strtoupperWLIB(utf8_encode($x->titulo));?></h1>
@@ -74,6 +74,18 @@
 
 				</div>
 			</section>
+			<?php
+			if(isset($_GET['abrirAnamnese']) and is_numeric($_GET['abrirAnamnese'])) {
+			?>
+			<script type="text/javascript">
+				$(function(){
+					$(`.js-anamnese-<?php echo $_GET['abrirAnamnese'];?>`).trigger('click');
+				})
+			</script>
+			<?php	
+			}
+
+			?>
 
 			<section class="grid">
 				<div class="box">

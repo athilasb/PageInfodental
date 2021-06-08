@@ -956,6 +956,8 @@
 											}
 										}
 										$baixas[]=array('data'=>date('d/m',strtotime($b->data_vencimento)),
+														'vencimento'=>$b->data_vencimento,
+														'pago'=>$b->pago,
 														'formaobs'=>$formaobs,
 														'valor'=>(float)number_format($v->valor,2,",","."));
 									}
@@ -1007,6 +1009,57 @@
 								}
 
 
+								$statusPromessa=false;
+								$statusInadimplente=false;
+
+								// nao possui baixa
+								if(count($baixas)==0) {
+
+								}
+								// possui baixa
+								else {
+
+									// se saldo = 0
+									if($saldoAPagar==0) {
+										$baixaVencida=false;
+										$baixaPaga=false; 
+										$todasPagas=true;
+										foreach($baixas as $b) {
+											$b=(object)$b;
+											if($b->pago==0) {
+												if(strtotime(date('Y-m-d'))>strtotime($b->vencimento)) { 
+													$baixaVencida=true;
+												} 
+
+											
+												$todasPagas=false;
+											} else {
+												$baixaPaga=true;
+											}
+										}
+
+
+										// se possui baixa vencida
+										if($baixaVencida===true) { 
+											$statusInadimplente=true;
+
+											// se todas foram pagas
+											if($todasPagas===true) {
+
+											} else {
+												$statusPromessa=true;
+											}
+										} else {
+											// se todas foram pagas
+											if($todasPagas===true) {
+
+											} else {
+												$statusPromessa=true;
+											}
+										}
+									}
+
+								}
 
 								$item=array('id_parcela'=>$x->id,
 											'titulo'=>$titulo,
@@ -1051,12 +1104,30 @@
 									<p class="js-regiao"><?php echo date('d/m/Y',strtotime($x->data_vencimento));?></p>
 								</div>
 
+								<div class="reg-steps" style="margin:0 auto;">
+
+									<div class="reg-steps__item active">
+										<h1<?php echo ($statusPromessa===true or $statusInadimplente==true)?"":" style=\"background:var(--amarelo);\"";?>>1</h1>
+										<p>Em Aberto</p>									
+									</div>
+
+									<div class="reg-steps__item active">
+										<h1<?php echo ($statusPromessa===true)?"":" style=\"background:var(--amarelo);\"";?>>2</h1>
+										<p>Promessa de Pagamento</p>									
+									</div>
+
+									<div class="reg-steps__item"<?php echo ($statusInadimplente==true and $statusPromessa===true)?" active":"";?>>
+										<h1<?php echo $statusInadimplente===true?" style=\"background:var(--vermelho);\"":" ";?>>3</h1>
+										<p>Adimplente/Inadimplente</p>									
+									</div>
+									
+								</div>						
 
 								<div class="js-descricao" style="width:20%;">
 									
 								</div>
 
-								<div class="js-descricao" style="width:20%">
+								<?php /*<div class="js-descricao" style="width:20%">
 									<span style="font-size:12px;color:#999;">Valor Total</span>
 									<?php echo $x->valor==0?"-":number_format($valorCorrigido,2,",",".");?>
 								</div>
@@ -1067,7 +1138,7 @@
 								<div class="js-descricao" style="width:20%">
 									<span style="font-size:12px;color:#999;">À Pagar</span>
 									<?php echo number_format($saldoAPagar>=$saldoAPagar?$saldoAPagar:0,2,",",".");?>
-								</div>
+								</div>*/?>
 							</a>
 							<?php
 										

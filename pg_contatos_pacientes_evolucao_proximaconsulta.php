@@ -6,7 +6,7 @@
 	$_page=basename($_SERVER['PHP_SELF']);
 
 	$_profissionais=array();
-	$sql->consult($_p."profissionais","*","where lixo=0 order by nome asc");//"where unidades like '%,$unidade->id,%' and lixo=0 order by nome asc");
+	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_profissionais[$x->id]=$x;
 	}
@@ -163,6 +163,7 @@
 
 				<?php
 				if(empty($evolucao)) {
+					$exibirEvolucaoNav=1;
 					require_once("includes/evolucaoMenu.php");
 				} else {
 				?>
@@ -194,7 +195,7 @@
 						<div class="grid grid_3">
 						
 						<fieldset style="grid-column:span 2">
-							<legend><span class="badge">2</span> Agende a próxima consulta</legend>
+							<legend><span class="badge">1</span> Agende a próxima consulta</legend>
 
 							<div class="colunas6">
 								<dl>
@@ -500,7 +501,7 @@
 						</fieldset>
 
 						<fieldset>
-							<legend><span class="badge">3</span> Preencha o histórico</legend>
+							<legend><span class="badge">2</span> Preencha o histórico</legend>
 							<dl style="height:100%;">
 								<dd style="height:100%;"><textarea name="obs" style="height:100%;" class="noupper"><?php echo is_object($evolucao)?utf8_encode($evolucao->obs):'';?></textarea></dd>
 							</dl>

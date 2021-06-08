@@ -103,7 +103,7 @@
 	}
 
 	$_profissionais=array();
-	$sql->consult($_p."profissionais","*","where lixo=0 order by nome asc");//"where unidades like '%,$unidade->id,%' and lixo=0 order by nome asc");
+	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_profissionais[$x->id]=$x;
 	}
@@ -281,6 +281,7 @@
 				}
 			}
 
+
 			$tratamentoAprovado=(is_object($cnt) and $cnt->status=="APROVADO")?true:false;
 			
 
@@ -296,6 +297,7 @@
 						$vSQL.="procedimentos='".addslashes(utf8_decode($_POST['procedimentos']))."',";
 						$vSQL.="pagamentos='".addslashes(utf8_decode($_POST['pagamentos']))."',";
 					}
+
 
 					if(isset($_POST['parcelas']) and is_numeric($_POST['parcelas'])) $vSQL.="parcelas='".$_POST['parcelas']."',";
 					if(isset($_POST['pagamento'])) $vSQL.="pagamento='".$_POST['pagamento']."',";
@@ -318,11 +320,7 @@
 						$id_tratamento=$sql->ulid;
 						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$id_tratamento."'");
 					}
-
-					
-				
-
-				} 
+				}
 				if(isset($_POST['status']) and !empty($_POST['status'])) {
 
 					
@@ -363,6 +361,7 @@
 						}
 
 
+
 						// APROVACAO
 							if($_POST['status']=="APROVADO") {
 
@@ -379,8 +378,8 @@
 													$erro='Para aprovar o tratamento, é necessário aprovar/reprovar todos os procedimentos';
 													break;
 												}
-												if($x->id_profissional==0 or empty($x->id_profissional)) {
-													$erro='Para aprovar o tratamento, é necessário selecionar o Profissional para todos os procedimentos';
+												if($x->situacao=="aprovado" and ($x->id_profissional==0 or empty($x->id_profissional))) {
+													$erro='Para aprovar o tratamento, é necessário selecionar o Profissional para todos os procedimentos aprovados';
 													break;
 												}
 											}
@@ -436,6 +435,7 @@
 
 						// PENDENTE
 							else if($_POST['status']=="PENDENTE") {
+
 								if($pagamentosBaixas==0) {
 									if($cnt->status=="APROVADO" || $cnt->status=="CANCELADO") {
 
@@ -448,7 +448,7 @@
 
 
 											// remove os pagamentos com fusao
-											$sql->consult($_table."_pagamentos","*","where id_tratamento=$cnt->id and id_fusao>0");
+											/*$sql->consult($_table."_pagamentos","*","where id_tratamento=$cnt->id and id_fusao>0");
 											$pagamentosUnidosIds=array(-1);
 											while($x=mysqli_fetch_object($sql->mysqry)) {
 												$pagamentosUnidosIds[$x->id_fusao]=$x->id_fusao;
@@ -462,10 +462,9 @@
 											}
 
 
-
 											$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$cnt->id");
 											$sql->update($_table."_pagamentos","lixo=1","where id_tratamento=$cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
-											$sql->update($_table,"pagamentos=''","where id=$cnt->id");
+											$sql->update($_table,"pagamentos=''","where id=$cnt->id");*/
 
 										}
 
@@ -678,7 +677,7 @@
 							</dl>
 							<dl>
 								
-								<dd style="padding-top: 10px"><button type="button" class="js-btn-descontoAplicartEmTodos button">aplicar em todos</button></dd>
+								<dd style="padding-top: 10px"><button type="button" class="js-btn-descontoAplicartEmTodos button">Desconto em Todos</button></dd>
 							</dl>
 
 						<dl style="grid-column:span ;">
@@ -713,7 +712,7 @@
 					</div>
 					<div class="paciente-info-opcoes">
 						<?php echo $selectSituacaoOptions;?>
-						<a href="javascript:;" target="_blank" class="js-btn-excluir button button__sec">excluir</a>
+						<a href="javascript:;" class="js-btn-excluir button button__sec">excluir</a>
 					</div>
 				</section>
     		</section>
@@ -724,10 +723,12 @@
 				var procedimentos = [];
 				var id_unidade = '<?php echo $usrUnidade->id;?>';
 				var planosDosProcedimentos = JSON.parse(`<?php echo json_encode($planosDosProcedimentos);;?>`);
-				var pagamentos = [];
+				var pagamentos = JSON.parse(`<?php echo ($values['pagamentos']);;?>`);
 				var valorTotal = 0;
 				var valorPagamento = 0;
 				var valorSaldo = 0;
+				var autor = `<?php echo utf8_encode($usr->nome);?>`;
+				var id_usuario = `<?php echo utf8_encode($usr->id);?>`;
 
 				const desativarCampos = () => {
 					if(tratamentoAprovado===1) { 
@@ -780,7 +781,8 @@
 					}*/
 				
 				// ATUALIZACAO DE VALORES
-					const atualizaValor = () => { 
+					const atualizaValor = (atualizacao,pelaQtd) => { 
+
 						valorTotal=0;
 
 						let reprovarAtivo=true;
@@ -797,11 +799,11 @@
 						})
 						
 
+
 						if(reprovarAtivo===true) {
 							$('.js-btn-reprovar').show();
 						} else {
 							$('.js-btn-reprovar').hide();
-
 						}
 
 
@@ -816,6 +818,8 @@
 								item.valor=valorTotal;
 
 								parcelas.push(item);
+								pagamentos=parcelas;
+								$('.js-pagamentos-quantidade').val(1);
 
 								/*console.log(x);
 									$('.js-pagamentos').append(pagamentosHTML);
@@ -830,14 +834,13 @@
 								$('.js-pagamentos-quantidade').show();
 
 								let numeroParcelas = $('.js-pagamentos-quantidade').val();
-
+								//alert(numeroParcelas)
 								if(numeroParcelas.length==0 || numeroParcelas<=0) numeroParcelas=2;
 								
 								valorParcela=valorTotal/numeroParcelas;
 
 								let startDate = new Date();
 								for(var i=1;i<=numeroParcelas;i++) {
-
 									/*val = -1;
 									if($(`.js-pagamentos .js-valor:eq(${i})`).length) {
 										val = $(`.js-pagamentos .js-valor:eq(${(i-1)})`).val();
@@ -862,10 +865,31 @@
 							}
 
 							
-							 pagamentos=parcelas;
+
+							let totalAtual = ($('.js-valorTotal').html());
+							if(totalAtual.length>0) totalAtual=unMoney(totalAtual);
+
+
+							if(totalAtual!=0) {
+								if(totalAtual!=valorTotal) {
+								
+									swal({title: "Atenção", text: 'Os valores foram alterados.<br />Por favor redefina as formas de pagamento', html:true, type:"warning", confirmButtonColor: "#424242"});
+									atualizacao=true;
+									
+								}
+								else atualizacao=false;
+							}
+
+							if(atualizacao===true || pelaQtd===true) {
+								pagamentos=parcelas;
+							}
+
+							//console.log(`estava ${totalAtual} e vai ficar ${valorTotal}`)
 						}
 						
 						pagamentosListar();
+
+						
 
 						$('.js-valorTotal').html(number_format(valorTotal,2,",","."));
 
@@ -897,11 +921,15 @@
 											</a>`;
 
 
-					const procedimentosListar = () => {
+					const procedimentosListar = (atualizacao) => {
 						$('.js-procedimentos .js-procedimento-item').remove();
 						if(procedimentos.length>0) {
+							$('.js-btn-aprovarTodosProcedimentos').show();
 							let index=0;
 							let total = 0;
+
+							
+
 							procedimentos.forEach(x=> {
 								popViewInfos[index] = x;
 
@@ -928,23 +956,26 @@
 								$(`.js-procedimentos .js-regiao:last`).append(` - ${x.plano}`);
 								$(`.js-procedimentos .js-valor:last`).html(number_format(x.valorCorrigido?x.valorCorrigido:x.valor,2,",","."));
 								$(`.js-procedimentos .js-profissional:last`).html(iniciais);
+								//console.log(x);
 								index++;
-								total+=x.valorCorrigido?x.valorCorrigido:x.valor;
+								total+=x.valorCorrigido?(x.valorCorrigido):(x.valor);
 							});
 
-							$('.js-valorTotal').html(total);
 
-							atualizaValor();
+							atualizaValor(atualizacao,false);
 							desativarCampos();
+						} else {
+
+							$('.js-btn-aprovarTodosProcedimentos').hide();
 						}
-						console.log(procedimentos);
+						//console.log(procedimentos);
 						$('textarea.js-json-procedimentos').val(JSON.stringify(procedimentos));
 						
 					}
 
 					const procedimentosRemover = (index) => {
 						procedimentos.splice(index,1);
-						procedimentosListar();
+						procedimentosListar(true);
 					}
 
 					const validarTratamento = () => {
@@ -1009,7 +1040,8 @@
 						$('#cal-popup').css({'top':clickTop,'left':clickLeft,'margin-left': clickMargin});
 						$('#cal-popup').show();
 
-						console.log(popViewInfos[index]);
+
+						//console.log(popViewInfos[index]);
 						if(popViewInfos[index].opcao.length>0) {
 							$('#cal-popup .js-opcaoEQtd').html(`Região: ${popViewInfos[index].opcao}`);
 						} else {
@@ -1022,13 +1054,16 @@
 						$('#cal-popup .js-valorDeDesconto').val(number_format(popViewInfos[index].desconto,2,",","."))
 						$('#cal-popup .js-valorTabela').val(number_format(popViewInfos[index].valor,2,",","."));
 						$('#cal-popup .js-valorCorrigido').val(number_format(popViewInfos[index].valor-popViewInfos[index].desconto,2,",","."))
-						$('#cal-popup .js-valorDeDesconto').trigger('change');
 						$('#cal-popup .js-obs').val(popViewInfos[index].obs);
+
+						$('#cal-popup .js-autor').html(popViewInfos[index].autor);
+						$('#cal-popup .js-autor-data').html(procedimentos[index].data);
 
 						//$('#cal-popup .js-btn-descontoAplicartEmTodos').prop('checked',popViewInfos[index].descontoAplicartEmTodos==1?true:false)
 
 						$('#cal-popup .js-situacao').val(popViewInfos[index].situacao);
 						$('#cal-popup .js-index').val(index);
+						$('#cal-popup .js-valorDeDesconto').trigger('change');
 						//	atualizaValor();	
 						
 					}
@@ -1054,7 +1089,6 @@
 							else {
 								$('.js-pagamento-avista').prop('checked',true);
 							}*/
-
 							let index=1;
 							pagamentos.forEach(x=>{
 								$('.js-pagamentos').append(pagamentosHTML);
@@ -1092,7 +1126,7 @@
 				
 				$(function(){
 					pagamentos=JSON.parse($('textarea.js-json-pagamentos').val());
-
+				
 					$('.js-pagamentos').on('keyup','.js-valor',function(){
 						let index = $(this).index('.js-pagamentos .js-valor');
 						let numeroParcelas = eval($('.js-pagamentos-quantidade').val());
@@ -1137,6 +1171,20 @@
 
 					});
 
+					$('.js-btn-aprovarTodosProcedimentos').click(function(){
+						if(procedimentos.length>0) {
+							let aux = 0;
+							procedimentos.forEach(x=>{
+								if(procedimentos[aux].situacao=="aguardandoAprovacao") procedimentos[aux].situacao='aprovado';
+								aux++;
+							});
+
+							procedimentosListar();
+						} else {
+
+						}
+					});
+
 					$('.js-pagamentos').on('blur','.js-valor',function(){
 						pagamentosListar();
 					});
@@ -1147,29 +1195,46 @@
 					})
 
 					$('.js-btn-descontoAplicartEmTodos').click(function(){
-						let index = $('.js-index').val();
-						let count = 0; 
-						let id_procedimento = procedimentos[index].id_procedimento;
-						procedimentos.forEach(x=>{
-							if(count!=index) {
-
-								if(id_procedimento==procedimentos[count].id_procedimento) {
-									procedimentos[count].desconto=procedimentos[index].desconto;
-									procedimentos[count].valorCorrigido=procedimentos[index].valor-procedimentos[index].desconto;
 
 
-									$(`.js-procedimentos .js-valor:eq(${count})`).html(number_format(procedimentos[count].valorCorrigido,2,",","."));
-								}
-							}
-							count++;
-						});
+						swal({ title: "Atenção",
+								text: "Você deseja aplicar desconto em todos os procedimentos do mesmo grupo?",
+								type:"warning",
+								showCancelButton:true,
+								confirmButtonColor: "#DD6B55",
+								confirmButtonText:"Sim!",
+								cancelButtonText: "Não",
+								closeOnConfirm: false,
+								closeOnCancel: true 
+							}, 
+							function(isConfirm){   
+								if (isConfirm) {    
+									let index = $('.js-index').val();
+									let count = 0; 
+									let id_procedimento = procedimentos[index].id_procedimento;
+									procedimentos.forEach(x=>{
+										if(count!=index) {
 
-						procedimentosListar();
+											if(id_procedimento==procedimentos[count].id_procedimento) {
+												procedimentos[count].desconto=procedimentos[index].desconto;
+												procedimentos[count].valorCorrigido=procedimentos[index].valor-procedimentos[index].desconto;
+
+
+												$(`.js-procedimentos .js-valor:eq(${count})`).html(number_format(procedimentos[count].valorCorrigido,2,",","."));
+											}
+										}
+										count++;
+									});
+
+									procedimentosListar(true);
+									
+									atualizaValor(true,false);
+									swal.close();
+								} 
+							});
+
 						
-						atualizaValor();
 						//procedimentos[index].descontoAplicartEmTodos=descontoAplicartEmTodos;
-
-
 					});
 
 					$('.js-btn-fechar').click(function(){
@@ -1178,7 +1243,7 @@
 					})
 
 					$('input[name=pagamento]').click(function(){
-						atualizaValor();
+						atualizaValor(false,false);
 					});
 
 					$('.js-pagamentos-quantidade').click(function(){
@@ -1192,7 +1257,7 @@
 
 						$('.js-pagamentos-quantidade').val(qtd);
 
-						atualizaValor();
+						atualizaValor(true,true);
 					});
 
 					$('.js-procedimentos').on('click','.js-procedimento-item',function(index,el){
@@ -1307,6 +1372,21 @@
 									item.id_profissional=id_profissional;
 									item.iniciais=iniciais
 									item.iniciaisCor=iniciaisCor;
+									let dt = new Date();
+									let dia = dt.getDate();
+									let mes = dt.getMonth();
+									let min = dt.getMinutes();
+									let hrs = dt.getHours();
+									mes++
+									mes=mes<=9?`0${mes}`:mes;
+									dia=dia<=9?`0${dia}`:dia;
+									min=min<=9?`0${min}`:min;
+									hrs=hrs<=9?`0${hrs}`:hrs;
+
+									let data = `${dia}/${mes}/${dt.getFullYear()} ${hrs}:${min}`;
+									item.data=data;
+									item.autor=autor;
+									item.id_usuario=id_usuario;
 
 									opcao = id_opcao = ``;
 									if(id_regiao>=2) {
@@ -1326,7 +1406,7 @@
 								
 								$(`.js-regiao-${id_regiao}-select`).val([]).trigger('chosen:updated').parent().parent().hide();;
 								$.fancybox.close();
-								procedimentosListar();
+								procedimentosListar(true);
 							} else {
 								swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 							}
@@ -1384,11 +1464,11 @@
 						$('#cal-popup').on('change','.js-situacao',function(){
 							let index = $('#cal-popup .js-index').val();
 							procedimentos[index].situacao=$(this).val();
-						//	$('input[name=pagamento][value=avista]').click();
-							procedimentosListar();
+							//	$('input[name=pagamento][value=avista]').click();
+							procedimentosListar(true);
 						})
 
-						$('#cal-popup').on('keyup','.js-valorTabela,.js-valorDeDesconto',function(){
+						$('#cal-popup').on('change','.js-valorTabela,.js-valorDeDesconto',function(){
 								let index = $('#cal-popup .js-index').val();
 								let valorTabela = unMoney($('.js-valorTabela').val());
 								let valorDesconto = $.isNumeric(unMoney($('.js-valorDeDesconto').val()))?unMoney($('.js-valorDeDesconto').val()):0;
@@ -1406,10 +1486,9 @@
 									procedimentos[index].valor=valorTabela;
 									procedimentos[index].valorCorrigido=valorTabela-valorDesconto;
 								}
-								procedimentosListar();
+								procedimentosListar(true);
 
-
-							});
+						});
 
 						$('#cal-popup').on('change','.js-profissional',function(){
 							let index = $('#cal-popup .js-index').val();
@@ -1552,6 +1631,33 @@
 						}
 
 						$('form.js-form').submit();
+					});
+
+					$('#cal-popup').on('click','.js-btn-excluir',function(){
+
+						swal({
+							title: "Atenção",
+							text: "Você tem certeza que deseja remover este registro?",
+							type: "warning",
+							showCancelButton: true,
+							confirmButtonColor: "#DD6B55",
+							confirmButtonText: "Sim!",
+							cancelButtonText: "Não",
+							closeOnConfirm: true,
+							closeOnCancel: false 
+							}, 
+							function(isConfirm) {   
+								if (isConfirm) {  
+								 	let index = $('#cal-popup .js-index').val();
+									procedimentos.splice(index,1);
+									procedimentosListar();	
+								} else {   
+									swal.close();   
+								}
+							}
+							);
+
+						
 					})
 					
 				});
@@ -1588,6 +1694,17 @@
 									</div>
 								</div>
 								<?php
+								} else {
+								?>
+								<div class="tooltip filter-group filter-group_right" style="opacity: 0.5" title="Salve o tratamento para poder alterar o status">
+									<div class="filter-links">
+										<a href="javascript:;" data-status="PENDENTE" class="active">Em aberto</a>
+										<a href="javascript:;" data-status="APROVADO">Aprovado</a>
+										<a href="javascript:;" data-status="CANCELADO">Reprovado</a>
+									</div>
+								</div>
+								<?php
+
 								}
 								?>
 								<div class="filter-group">
@@ -1672,12 +1789,14 @@
 										<a href="javascript:;" class="button js-btn-addProcedimento tooltip " title="Adicionar Procedimento" style="background:var(--azul);color:#FFF;float: right"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar Procedimento</a>
 									</div>*/?>
 									<div class="filter">
-									<div class="filter-group">
-										<div class="filter-button">
-											<a href="javascript:;" class="verde js-btn-addProcedimento "><i class="iconify" data-icon="bx-bx-plus"></i><span>Novo Procedimento</span></a>
+										<div class="filter-group">
+											<div class="filter-button">
+												<a href="javascript:;" class="verde js-btn-addProcedimento "><i class="iconify" data-icon="bx-bx-plus"></i><span>Novo Procedimento</span></a>
+												
+												<a href="javascript:;" class="js-btn-aprovarTodosProcedimentos">Aprovar Todos Aguardando Aprovação</span></a>
+											</div>
 										</div>
 									</div>
-								</div>
 									<?php
 									}
 									?>
@@ -1700,7 +1819,6 @@
 												</div>
 											</div>*/?>
 										</div>
-										
 									</div>
 									
 								</fieldset>												
@@ -2012,7 +2130,7 @@
 								if($x->id_aprovado==0) {
 									echo "-";
 								} else {
-									if(count($pagamentos)==0) echo '<a href="javascript" class="tooltip" title="Nenhum pagamento foi adicionado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
+									if(count($pagamentos)==0) echo '';//<a href="javascript" class="tooltip" title="Nenhum pagamento foi adicionado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
 									else {
 										$abertos=0;
 										$finalizados=0;

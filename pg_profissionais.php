@@ -35,7 +35,7 @@
 		} else if($_POST['ajax']=="comissionamentoPersistir") {
 			$profissional='';
 			if(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional'])) {
-				$sql->consult($_p."profissionais", "*","where id='".$_POST['id_profissional']."' and lixo=0");
+				$sql->consult($_p."colaboradores", "*","where id='".$_POST['id_profissional']."' and lixo=0");
 				if($sql->rows) {
 					$profissional=mysqli_fetch_object($sql->mysqry);
 				}

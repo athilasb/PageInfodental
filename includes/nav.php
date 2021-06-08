@@ -59,7 +59,7 @@
 				<option value="">STUDIO DENTAL - OESTE</option>
 				<option value="">STUDIO DENTAL - GYN SHOP</option>
 			</select>
-			<a href="pg_parametros_procedimentos.php" class="header-controles__config"><i class="iconify" data-icon="ic-baseline-settings"></i></a>
+			<a href="pg_configuracao_anamnese_exames.php" class="header-controles__config"><i class="iconify" data-icon="ic-baseline-settings"></i></a>
 			<a href="" class="header-controles__usuario"><img src="img/ilustra-perfil.png" alt="" width="120" height="120" /></a>
 		</section>
 

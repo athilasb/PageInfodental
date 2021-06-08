@@ -73,15 +73,10 @@
 		}
 	}
 
-
 	$anamnese='';
 	if(isset($_GET['id_anamnese']) and is_numeric($_GET['id_anamnese']) and isset($_anamnese[$_GET['id_anamnese']])) {
 		$anamnese=$_anamnese[$_GET['id_anamnese']];
 	}
-
-
-
-
 	?>
 	<section class="content">
 		
@@ -97,14 +92,55 @@
 					$(`.js-box`).hide();
 					$(`.js-box-${tipo}`).show();
 				});
-
 				$('.js-anamnese').change(function(){
 					let id_anamnese = $(this).val();
 					document.location.href=`<?php echo "$_page?id_paciente=$paciente->id"?>&id_anamnese=${this.value}`;
 				})
-
 				$('.js-btn-salvar').click(function(){
-					$('form').submit();
+					///$('form').submit();
+
+					let erro = false;
+					$('.js-form-anamnese').find('.js-pergunta').each(function(i,el){
+						let obg = eval($(el).attr('data-obg'));
+						let tipo = $(el).attr('data-tipo');
+
+						if(obg==1) {
+							if(tipo=="nota" || tipo=="simnao") {
+								let selecionou = $(el).find('input[type=radio]:checked').length>0?true:false;
+								if(selecionou===false) {
+									$(el).css('background', '#ffffdb');
+									erro=true;
+								}
+							} else if(tipo=="simnaotexto") {
+								let selecionouOpcao = ($(el).find('input[type=radio]:checked').length>0)?true:false;
+								let selecionouTexto = ($(el).find('textarea').val().length>0)?true:false;
+
+								if(selecionouOpcao===false) {
+									$(el).css('background','#ffffdb');
+									erro=true;
+								} 
+								if(selecionouTexto===false) {
+									$(el).find('textarea').css('background-color', '#ffffdb');
+									erro=true;
+								}
+							} else if(tipo=="texto") {
+
+								let selecionou = ($(el).find('textarea').val().length>0)?true:false;
+
+								if(selecionou===false) {
+									$(el).find('textarea').css('background-color','#ffffdb');
+									erro=true;
+								}
+							}
+						}
+					});
+
+					if(erro===true) {
+						alert('Preencha os campos destacados');
+					} else {
+						$('.js-form-anamnese').submit();
+					}
+
 				})
 			});
 		</script>
@@ -114,15 +150,16 @@
 			<div class="box">
 
 				<?php
+				$exibirEvolucaoNav=1;
 				require_once("includes/evolucaoMenu.php");
 				?>
 
 				<section class="js-evolucao-adicionar" id="evolucao-anamnese">
 
-					<form class="form" method="post">
+					<form class="form js-form-anamnese" method="post">
 						<input type="hidden" name="acao" value="wlib" />
 						<fieldset>
-							<legend><span class="badge">2</span> Tipo de Anamnese</legend>
+							<legend><span class="badge">1</span> Tipo de Anamnese</legend>
 							<dl>
 								<dd>
 									<select name="id_anamnese" class="chosen js-anamnese" data-placeholder="Selecione"<?php echo is_object($anamnese)?" disabled":"";?>>
@@ -138,7 +175,7 @@
 						</fieldset>
 						<?php
 						if(is_object($anamnese)) {
-
+							$perguntas=array();
 							$sql->consult($_p."parametros_anamnese_formulario","*","where id_anamnese=$anamnese->id and lixo=0 order by ordem asc");
 							if($sql->rows) while($x=mysqli_fetch_object($sql->mysqry)) $perguntas[$x->id]=$x;
 
@@ -185,22 +222,13 @@
 															tipo='".$p->tipo."',
 															json_pergunta='".addslashes((json_encode($pJson)))."'";
 
-											if($p->tipo=="discursiva" or $p->tipo=="nota" or $p->tipo=="radiobox") {
+											if($p->tipo=="nota" or $p->tipo=="simnao") {
 												$vsqlResposta.=",resposta='".addslashes(strtoupperWLIB(utf8_decode(isset($_POST["resposta_$p->id"])?$_POST["resposta_$p->id"]:"")))."'";
-
-											} else if($p->tipo=="checkbox") {
-												$checkboxResposta='';
-												$sql->consult($_p."parametros_anamnese_formulario_opcoes","*","where id_formulario=$p->id order by id asc");
-												if($sql->rows) {
-													$checkboxResposta=',';
-													while($x=mysqli_fetch_object($sql->mysqry)) {
-														if(isset($_POST["resposta_opcao_$x->id"]) and $_POST["resposta_opcao_$x->id"]=="1") {
-															$checkboxResposta.="$x->id,";
-														} 
-													}
-												}
-												$vsqlResposta.=",resposta='".addslashes($checkboxResposta)."'";
-											} 
+											} else if($p->tipo=='texto') {
+												$vsqlResposta.=",resposta_texto='".addslashes(strtoupperWLIB(utf8_decode(isset($_POST["resposta_texto_$p->id"])?$_POST["resposta_texto_$p->id"]:"")))."'";
+											} else if($p->tipo=='simnaotexto') {
+												$vsqlResposta.=",resposta='".addslashes(strtoupperWLIB(utf8_decode(isset($_POST["resposta_$p->id"])?$_POST["resposta_$p->id"]:"")))."',resposta_texto='".addslashes(strtoupperWLIB(utf8_decode(isset($_POST["resposta_texto_$p->id"])?$_POST["resposta_texto_$p->id"]:"")))."'";
+											}
 
 											//echo $vsqlResposta."<BR>";
 											$resposta='';
@@ -216,7 +244,6 @@
 												$sql->add($_p."pacientes_evolucoes_anamnese",$vsqlResposta.",data=now(),id_usuario=$usr->id");
 
 											}
-
 										}
 									}
 
@@ -231,62 +258,50 @@
 									$respostas[$evolucao->id][$x->id_pergunta]=$x;
 								}
 							}
-			
 						?>
 						<fieldset>
-							<legend><span class="badge">3</span> Preencha o formulário</legend>
+							<legend><span class="badge">2</span> Preencha o formulário</legend>
 							<?php
 							$cont=1;
+							if(count($perguntas)==0) echo "<center>Anamnese não configurada!</center>";
 							foreach($perguntas as $p) {
 
 								if(is_object($evolucao)) {
 									if(isset($respostas[$evolucao->id][$p->id])) {
+										$values["resposta_texto_$p->id"]=utf8_encode($respostas[$evolucao->id][$p->id]->resposta_texto);
 										$values["resposta_$p->id"]=utf8_encode($respostas[$evolucao->id][$p->id]->resposta);
 									}
 								}
 							?>
-							<dl>
+							<dl class="js-pergunta" data-obg="<?php echo $p->obrigatorio;?>" data-tipo="<?php echo $p->tipo;?>">
 								<dt><?php echo $cont.". ".utf8_encode($p->pergunta);?></dt>
 								<dd>
 									<?php
-									if($p->tipo=="discursiva") {
-									?>
-										<textarea name="resposta_<?php echo $p->id;?>" style="height:150px;" class=""><?php echo isset($values["resposta_$p->id"])?$values["resposta_$p->id"]:"";?></textarea>
-									<?php
-									} else if($p->tipo=="nota") {
+									if($p->tipo=="nota") {
 										for($i=0;$i<=10;$i++) {
 									?>
 										<label><input type="radio" name="resposta_<?php echo $p->id;?>" value="<?php echo $i;?>"<?php echo (isset($values["resposta_$p->id"]) and $values["resposta_$p->id"]==$i)?"checked":"";?> /> <?php echo $i;?></label>
 									<?php
 										}
-									} else if($p->tipo=="checkbox") {
-										$checkID=array();
-										if(isset($values["resposta_$p->id"]) and !empty($values["resposta_$p->id"])) {
-											$aux=explode(",",$values["resposta_$p->id"]);
-											if(count($aux)>0) {
-												foreach($aux as $v) {
-													if(is_numeric($v)) $checkID[]=$v; 
-												}
-											}
-										}
-										$sql->consult($_p."parametros_anamnese_formulario_opcoes","*","where id_formulario=$p->id and lixo=0 order by id asc");
-										if($sql->rows) {
-											while($x=mysqli_fetch_object($sql->mysqry)) {
+									} else if($p->tipo=="simnao") {
 									?>
-										<label><input type="checkbox" name="resposta_opcao_<?php echo $x->id;?>" value="1"<?php echo (count($checkID)>0 and in_array($x->id, $checkID))?" checked":"";?> /> <?php echo utf8_encode($x->opcao);?></label>
+										<label><input type="radio" name="resposta_<?php echo $p->id;?>" value="SIM"<?php echo (isset($values["resposta_$p->id"]) and $values["resposta_$p->id"]=='SIM')?"checked":"";?> /> Sim</label>
+										<label><input type="radio" name="resposta_<?php echo $p->id;?>" value="NAO"<?php echo (isset($values["resposta_$p->id"]) and $values["resposta_$p->id"]=='NAO')?"checked":"";?> /> Não</label>
 									<?php
-											}
-										}
-									} else if($p->tipo=="radiobox") {
-										$sql->consult($_p."parametros_anamnese_formulario_opcoes","*","where id_formulario=$p->id and lixo=0 order by id asc");
-										if($sql->rows) {
-											while($x=mysqli_fetch_object($sql->mysqry)) {
+									} else if($p->tipo=="simnaotexto") {
 									?>
-										<label><input type="radio" name="resposta_<?php echo $p->id;?>" value="<?php echo $x->id;?>"<?php echo (isset($values["resposta_$p->id"]) and $values["resposta_$p->id"]==$x->id)?"checked":"";?> /> <?php echo utf8_encode($x->opcao);?></label>
+
+										<label><input type="radio" name="resposta_<?php echo $p->id;?>" value="SIM"<?php echo (isset($values["resposta_$p->id"]) and $values["resposta_$p->id"]=='SIM')?"checked":"";?> /> Sim</label>
+										<label><input type="radio" name="resposta_<?php echo $p->id;?>" value="NAO"<?php echo (isset($values["resposta_$p->id"]) and $values["resposta_$p->id"]=='NAO')?"checked":"";?> /> Não</label>
+
+											<textarea name="resposta_texto_<?php echo $p->id;?>" style="height:150px;" class=""><?php echo isset($values["resposta_texto_$p->id"])?$values["resposta_texto_$p->id"]:"";?></textarea>
+										
 									<?php
-											}
-										}
-									}
+									} else if($p->tipo=="texto") {
+									?>
+										<textarea name="resposta_texto_<?php echo $p->id;?>" style="height:150px;" class=""><?php echo isset($values["resposta_texto_$p->id"])?$values["resposta_texto_$p->id"]:"";?></textarea>
+									<?php
+									} 
 									?>
 								</dd>
 							</dl>
