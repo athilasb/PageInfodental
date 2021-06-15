@@ -452,3 +452,27 @@ a.registros-qtd__item {display:inline-block; color:#fff; background:var(--cor1);
 .grid-links a:hover {background:var(--cinza1);}
 .grid-links a.active {background:var(--gradientCor1); color:#fff;}
 .grid-links a.active .iconify {color:#fff;}
+
+.kanban {display:flex;}
+.kanban-item {flex:1; max-width:250px; margin-right:1.5rem; background:var(--cinza3); color:var(--cinza3); border-radius:8px;}
+.kanban-item__titulo {display:flex; align-items:center; justify-content:center; height:60px; text-align:center; font-size:1.125em; padding:0 1rem; color:#fff;}
+.kanban-item__titulo .iconify {margin-left:.25rem;}
+.kanban-card {position:relative;}
+.kanban-card-dados {display:flex; flex-direction:column; margin:8px; background:#fff; border-radius:4px; padding:.5rem; box-shadow:0 2px 4px rgba(0,0,0,0.1);}
+.kanban-card-dados > * {margin-bottom:.125rem;}
+.kanban-card-dados > *:last-child {margin-bottom:0;}
+.kanban-card-dados__data {display:flex; align-items:center; font-size:0.75em; font-weight:bold; color:currentColor;}
+.kanban-card-dados__data .iconify {font-size:1rem; margin-right:.25rem;}
+.kanban-card-dados h1 {font-size:0.9375em; color:var(--cinza5);}
+.kanban-card-dados h2 {font-size:0.8125em; color:var(--cinza4); font-weight:normal;}
+.kanban-card-modal {position:absolute; left:50%; bottom:100%; background:#fff; transform:translate(-50%,0); width:220px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.3); color:var(--cinza5);}
+.kanban-card-modal:after {content:""; position:absolute; bottom:-10px; left:50%; transform:translate(-50%,0); background:url(../img/cal-seta-bottom.png) no-repeat; width:21px; height:10px;}
+.kanban-card-modal__inner1 {padding:1rem; background:var(--cinza1);}
+.kanban-card-modal__inner2 {padding:1rem;}
+.kanban-card-modal__fechar {position:absolute; right:.5rem; top:.5rem; font-size:1rem; padding:.5rem;}
+.kanban-card-modal h1 {font-size:1.125em; margin-bottom:.125rem;}
+.kanban-card-modal h1 {font-size:1.125em; margin-bottom:.125rem;}
+.kanban-card-modal h2 {font-size:0.9375em; color:var(--cinza4); font-weight:normal; margin-bottom:.125rem;}
+.kanban-card-modal .button {border-radius:100px;}
+.kanban-card-modal__inner2 * {margin-bottom:.5rem;}
+.kanban-card-modal__inner2 *:last-child {margin-bottom:0;}
