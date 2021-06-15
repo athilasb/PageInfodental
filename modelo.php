@@ -320,51 +320,11 @@ $values=$adm->get($_GET);
 							</div>
 						</div>
 					</div>
-
-					<a href="javascript:;" class="kanban-card">
-						<p class="kanban-card__data">
-							<i class="iconify" data-icon="ph:calendar-blank"></i>
-							03/06 (quinta-feira) &bull; 09:00
-						</p>
-						<h1>Cláudia de Paula Gomes</h1>
-						<h2>(62) 98450-2332</h2>
-					</a>
-					<a href="javascript:;" class="kanban-card">
-						<p class="kanban-card__data">
-							<i class="iconify" data-icon="ph:calendar-blank"></i>
-							03/06 (quinta-feira) &bull; 09:00
-						</p>
-						<h1>Cláudia de Paula Gomes</h1>
-						<h2>(62) 98450-2332</h2>
-					</a>
-					<a href="javascript:;" class="kanban-card">
-						<p class="kanban-card__data">
-							<i class="iconify" data-icon="ph:calendar-blank"></i>
-							03/06 (quinta-feira) &bull; 09:00
-						</p>
-						<h1>Cláudia de Paula Gomes</h1>
-						<h2>(62) 98450-2332</h2>
-					</a>
-					<a href="javascript:;" class="kanban-card">
-						<p class="kanban-card__data">
-							<i class="iconify" data-icon="ph:calendar-blank"></i>
-							03/06 (quinta-feira) &bull; 09:00
-						</p>
-						<h1>Cláudia de Paula Gomes</h1>
-						<h2>(62) 98450-2332</h2>
-					</a>
 				</div>
 
 				<div class="kanban-item" style="background:var(--azul); color:var(--azul);">
 					<h1 class="kanban-item__titulo">Confirmação Fria <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span></h1>
-					<a href="javascript:;" class="kanban-card">
-						<p class="kanban-card__data">
-							<i class="iconify" data-icon="ph:calendar-blank"></i>
-							03/06 (quinta-feira) &bull; 09:00
-						</p>
-						<h1>Cláudia de Paula Gomes</h1>
-						<h2>(62) 98450-2332</h2>
-					</a>
+					
 				</div>
 
 				<div class="kanban-item">
