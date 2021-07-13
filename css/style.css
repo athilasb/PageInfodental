@@ -465,7 +465,11 @@ a.registros-qtd__item {display:inline-block; color:#fff; background:var(--cor1);
 .kanban-card-dados__data .iconify {font-size:1rem; margin-right:.25rem;}
 .kanban-card-dados h1 {font-size:0.9375em; color:var(--cinza5);}
 .kanban-card-dados h2 {font-size:0.8125em; color:var(--cinza4); font-weight:normal;}
+<<<<<<< HEAD
 .kanban-card-modal {position:absolute; left:50%; bottom:100%; background:#fff; transform:translate(-50%,0); width:320px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.3); color:var(--cinza5);}
+=======
+.kanban-card-modal {position:absolute; left:50%; bottom:100%; background:#fff; transform:translate(-50%,0); width:220px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.3); color:var(--cinza5);}
+>>>>>>> 77ee8fa0d00766587d01062b6cc9d46e9d7f40f7
 .kanban-card-modal:after {content:""; position:absolute; bottom:-10px; left:50%; transform:translate(-50%,0); background:url(../img/cal-seta-bottom.png) no-repeat; width:21px; height:10px;}
 .kanban-card-modal__inner1 {padding:1rem; background:var(--cinza1);}
 .kanban-card-modal__inner2 {padding:1rem;}

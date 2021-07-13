@@ -283,6 +283,7 @@ $values=$adm->get($_GET);
 				<div class="kanban-item" style="background:var(--cor1); color:var(--cor1);">
 					<h1 class="kanban-item__titulo">Confirmação Quente <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span></h1>
 					<div class="kanban-card">
+<<<<<<< HEAD
 						<a href="javascript:;" onclick="$('.kanban-card-modal').hide(); $(this).next('.kanban-card-modal').show();" class="kanban-card-dados">
 							<p class="kanban-card-dados__data">
 								<i class="iconify" data-icon="ph:calendar-blank"></i>
@@ -360,6 +361,9 @@ $values=$adm->get($_GET);
 					</div>
 					<div class="kanban-card">
 						<a href="javascript:;" onclick="$('.kanban-card-modal').hide(); $(this).next('.kanban-card-modal').show();" class="kanban-card-dados">
+=======
+						<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados">
+>>>>>>> 77ee8fa0d00766587d01062b6cc9d46e9d7f40f7
 							<p class="kanban-card-dados__data">
 								<i class="iconify" data-icon="ph:calendar-blank"></i>
 								03/06 (quinta-feira) &bull; 09:00
@@ -399,7 +403,12 @@ $values=$adm->get($_GET);
 				</div>
 
 				<div class="kanban-item" style="background:var(--azul); color:var(--azul);">
+<<<<<<< HEAD
 					<h1 class="kanban-item__titulo">Confirmação Fria <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span></h1>					
+=======
+					<h1 class="kanban-item__titulo">Confirmação Fria <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span></h1>
+					
+>>>>>>> 77ee8fa0d00766587d01062b6cc9d46e9d7f40f7
 				</div>
 
 				<div class="kanban-item">
@@ -417,6 +426,11 @@ $values=$adm->get($_GET);
 
 			</div>
 
+<<<<<<< HEAD
+=======
+			
+
+>>>>>>> 77ee8fa0d00766587d01062b6cc9d46e9d7f40f7
 		</div>
 
 	</section>
