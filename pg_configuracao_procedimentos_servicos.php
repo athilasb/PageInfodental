@@ -1,4 +1,32 @@
 <?php
+	if(isset($_POST['ajax'])) {
+		require_once("lib/conf.php");
+		require_once("usuarios/checa.php");
+
+		$rtn=array();
+		if($_POST['ajax']=="persistirMaterial") {
+
+			$material=(isset($_POST['material']) and !empty($_POST['material']))?$_POST['material']:'';
+			if(empty($material)) {
+				$rtn=array('success'=>false,'error'=>'Tipo de Material não definido');
+			} else {
+				$vSQL="titulo='".addslashes(utf8_decode($material))."',
+						lixo=0";
+
+				$sql->add($_p."parametros_servicosdelaboratorio_materiais",$vSQL);
+				$id_material=$sql->ulid;
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."parametros_servicosdelaboratorio_materiais',id_reg='".$id_material."'");
+
+				$rtn=array('success'=>true,
+							'material'=>$material,
+							'id_material'=>$id_material);
+			}
+		}
+
+		header("Content-type: application/json");
+		echo json_encode($rtn);
+		die();
+	}
 	$title="";
 	include "includes/header.php";
 	include "includes/nav.php";
@@ -68,8 +96,6 @@
 							$('.js-planos').append(`<tr>
 														<td>${x.plano}</td>
 														<td>${number_format(x.valor,2,",",".")}</td>
-														<td>${number_format(x.custo,2,",",".")}</td>
-														<td>${number_format(x.comissionamento,2,",",".")}</td>
 													</tr>`);
 							});
 					} else {
@@ -79,6 +105,7 @@
 					$('#cal-popup-procedimento .js-titulo').html(procedimentos[index].titulo);
 					$('#cal-popup-procedimento .js-regiao').html(`Região: ${procedimentos[index].regiao}`);
 					$('#cal-popup-procedimento .js-hrefProcedimento').attr('href',`box/boxProcedimentos.php?id_procedimento=${procedimentos[index].id}`);
+					$('#cal-popup-procedimento .js-hrefExcluir').attr('data-id_procedimento',`${procedimentos[index].id}`);
 					$('#cal-popup-procedimento .js-index').val(index);
 				}
 
@@ -101,6 +128,47 @@
 							src:`box/boxProcedimentos.php?id_procedimento=${id_procedimento}`
 						});
 						return false;
+					});
+					$('#cal-popup-procedimento').on('click','.js-hrefExcluir',function(){
+						let id_procedimento = $(this).attr('data-id_procedimento');
+						swal({
+							title: "Atenção",
+							text: "Você tem certeza que deseja remover este registro?",
+							type: "warning",
+							showCancelButton: true,
+							confirmButtonColor: "#DD6B55",
+							confirmButtonText: "Sim!",
+							cancelButtonText: "Não",
+							closeOnConfirm: true,
+							closeOnCancel: false 
+							}, 
+							function(isConfirm) {   
+								if (isConfirm) {  
+								 	let data = `ajax=procedimentoRemover&id_procedimento=${id_procedimento}`;   
+									$.ajax({
+										type:"POST",
+										url:'box/boxProcedimentos.php',
+										data:data,
+										success:function(rtn){
+											swal.close();  
+											if(rtn.success) {
+												document.location.href=`pg_configuracao_procedimentos_servicos.php`
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												swal({title: "Erro!", text: "Procedimento não removido. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+											}
+										},
+										error:function(){
+											swal.close();  
+											swal({title: "Erro!", text: "Procedimento não removido. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+										}
+									});
+								} else {   
+									swal.close();   
+								}
+							}
+						);
 					});
 				});
 			</script>
@@ -135,7 +203,7 @@
 					<div class="reg">
 						<?php
 						$registros = array();
-						$sql->consultPagMto2($_p."parametros_procedimentos","*",10,$where,"",15,"pagina",$_page."?".$url."&pagina=");
+						$sql->consultPagMto2($_p."parametros_procedimentos","*",10,$where." order by id desc","",15,"pagina",$_page."?".$url."&pagina=");
 						if($sql->rows==0) {
 							$msgSemResultado="Nenhum Procedimento";
 							if(isset($values['busca'])) $msgSemResultado="Nenhuma Procedimento encontrado";
@@ -148,7 +216,7 @@
 						<a href="javascript:;" class="reg-group" onclick="popViewProcedimento(this);">
 							<div class="reg-color" style="background-color:green;"></div>
 							<div class="reg-data" style="flex:0 1 50%;">
-								<h1><?php echo strtoupperWLIB(utf8_encode($x->titulo));?></h1>
+								<h1><?php echo utf8_encode($x->titulo);?></h1>
 								<p>
 									<?php echo isset($_regioes[$x->id_regiao])?utf8_encode($_regioes[$x->id_regiao]->titulo):"-";?>
 								</p>
@@ -196,9 +264,7 @@
 
 						$planos[]=array('id'=>$y->id,
 										'plano'=>$plano,
-										'valor'=>$y->valor,
-										'comissionamento'=>$y->comissionamento,
-										'custo'=>$y->custo);
+										'valor'=>$y->valor);
 					}
 
 					$item=array(
@@ -234,8 +300,6 @@
 								<tr>
 									<th>Plano</th>
 									<th>Valor</th>
-									<th>Custo</th>
-									<th>Comissionamento</th>
 								</tr>
 							</thead>
 							<tbody class="js-planos">
@@ -245,7 +309,7 @@
 
 					<div class="paciente-info-opcoes">
 						<a href="javascript:;" data-fancybox="" data-type="ajax" data-padding="0" class="js-hrefProcedimento button" onclick="$('.cal-popup').hide();" style="margin-left: 230px;">Editar</a>
-						<a href="javascript:;" class="button button__sec">Excluir</a>
+						<a href="javascript:;" class="button button__sec js-hrefExcluir" data-id_procedimento="">Excluir</a>
 					</div>
 				
 				</section>
@@ -369,7 +433,7 @@
 						<a href="javascript:;" class="reg-group" onclick="popViewServico(this);">
 							<div class="reg-color" style="background-color:green;"></div>
 							<div class="reg-data" style="flex:0 1 50%;">
-								<h1><?php echo strtoupperWLIB(utf8_encode($x->titulo));?></h1>
+								<h1><?php echo utf8_encode($x->titulo);?></h1>
 								<p>
 									<?php echo isset($_regioes[$x->id_regiao])?utf8_encode($_regioes[$x->id_regiao]->titulo):"-";?>
 								</p>
@@ -455,7 +519,7 @@
 
 					<div class="paciente-info-opcoes">
 						<a href="javascript:;" data-fancybox="" data-type="ajax" data-padding="0" class="js-hrefServico button" onclick="$('.cal-popup').hide();" style="margin-left: 230px;">Editar</a>
-						<a href="javascript:;" class="button button__sec">Excluir</a>
+						<a href="javascript:;" class="button button__sec js-hrefExcluir">Excluir</a>
 					</div>
 				
 				</section>

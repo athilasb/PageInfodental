@@ -34,14 +34,15 @@
 	}
 
 	$evolucaoMenu = array('anamnese'=>array('titulo'=>'Anamnese','icone'=>'mdi-clipboard-check-multiple-outline','url'=>'pg_contatos_pacientes_evolucao_anamnese.php'),
-							'procedimentos-aprovados'=>array('titulo'=>'Procedimentos Aprovados','icone'=>'mdi-check-circle-outline','url'=>'pg_contatos_pacientes_evolucao_procedimentos.php'),
-							'procedimentos-avulsos'=>array('titulo'=>'Procedimentos Avulsos','icone'=>'mdi-progress-check','url'=>'pg_contatos_pacientes_evolucao_procedimentosavulsos.php'),
+							'procedimentos-aprovados'=>array('titulo'=>'Procedimentos','icone'=>'mdi-check-circle-outline','url'=>'pg_contatos_pacientes_evolucao_procedimentos.php'),
+							/*'procedimentos-avulsos'=>array('titulo'=>'Procedimentos Avulsos','icone'=>'mdi-progress-check','url'=>'pg_contatos_pacientes_evolucao_procedimentosavulsos.php'),*/
 							'atestado'=>array('titulo'=>'Atestado','icone'=>'mdi-file-document-outline','url'=>'pg_contatos_pacientes_evolucao_atestado.php'),
 							'servicos-de-laboratorio'=>array('titulo'=>'Serviços de Laboratório','icone'=>'entypo-lab-flask','url'=>'pg_contatos_pacientes_evolucao_laboratorio.php'),
 							'pedidos-de-exames'=>array('titulo'=>'Pedidos de Exames','icone'=>'carbon-user-x-ray','url'=>'pg_contatos_pacientes_evolucao_pedidosdeexame.php'),
 							'receituario'=>array('titulo'=>'Receituário','icone'=>'mdi-pill','url'=>'pg_contatos_pacientes_evolucao_receituario.php'),
 							'proxima-consulta'=>array('titulo'=>'Próxima Consulta','icone'=>'mdi-calendar-cursor','url'=>'pg_contatos_pacientes_evolucao_proximaconsulta.php'),
-							'baixa'=>array('titulo'=>'Baixa de Estoque','icone'=>'clarity:list-outline-badged','url'=>'pg_contatos_pacientes_evolucao_baixa.php'),);
+							'documentos'=>array('titulo'=>'Documentos','icone'=>'fluent:document-add-28-regular','url'=>'pg_contatos_pacientes_evolucao_documentos.php'),
+							'baixa'=>array('titulo'=>'Estoque','icone'=>'clarity:list-outline-badged','url'=>'pg_contatos_pacientes_evolucao_baixa.php'),);
 //<span class="iconify" data-icon="clarity:list-outline-badged" data-inline="false"></span>
 ?>
 

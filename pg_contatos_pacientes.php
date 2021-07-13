@@ -75,8 +75,6 @@
 	}
 
 ?>
-
-
 <section class="content">
 
 	<?php /*<header class="caminho">
@@ -649,7 +647,9 @@
 
 			$pacintesQuantidade=array();
 			$pacientesIdade=array();
+			$locations=array();
 			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$locations[] = array(utf8_encode($x->nome), $x->lat , $x->lng);
 				$mes=date('m',strtotime($x->data));
 				$ano=date('y',strtotime($x->data));
 
@@ -682,9 +682,7 @@
 				} 
 				if(!isset($grafico2[$idade])) $grafico2[$idade]=0;
 				$grafico2[$idade]++;
-			}	
-
-
+			}
 			// Grafico 2: Idade
 			$grafico2Data=array();
 			foreach($grafico2Labels as $key=>$v) {
@@ -767,7 +765,6 @@
 				<div class="grafico">
 				<script>
 					$(function() {
-						
 						$('.js-grafico').click(function(){
 							let grafico = $(this).attr('data-grafico');
 
@@ -893,49 +890,6 @@
 						    }
 						});
 
-						var ctx = document.getElementById('grafico4').getContext('2d');
-						var gradientStroke = ctx.createLinearGradient(0,230,0,50);
-						gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
-						gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
-						gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
-						var grafico4 = new Chart(ctx, {    
-						    type: 'line',
-						    data: {
-						        labels: ["1","2","3","4","5","6","7"],
-						        datasets: [{
-						            fill:true,
-						            borderDashOffset: 0.0,
-						            label: '# visitas',
-						            data: [1200,1100,1300,1300,500,1200,1345],
-						            backgroundColor: gradientStroke,
-						            borderColor:'rgba(254,71,2,0.3)',
-						            borderWidth: 1,
-						            borderDash: [],
-						            borderDashOffset: 0.0
-						        }]
-						    },
-						    options: {
-						        scales: {
-						            yAxes: [{
-						                ticks: {
-						                    beginAtZero: true
-						                },
-						                gridLines: {
-						                	drawBorder: false,
-						                	color: 'transparent'
-						                }
-						            }],
-						            xAxes: [{
-							            gridLines: {
-							            	drawBorder: false,
-							                color: '#ebebeb',
-							                zeroLineColor: "#ebebeb"
-							            }	              
-							        }]
-						        }
-						    }
-						});
-
 						var ctx = document.getElementById('grafico5').getContext('2d');
 						var gradientStroke = ctx.createLinearGradient(0,230,0,50);
 						gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
@@ -984,7 +938,31 @@
 						<canvas id="grafico1" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
 						<canvas id="grafico2" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
 						<canvas id="grafico3" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
-						<canvas id="grafico4" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
+						<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCDLcXlfkEGRZwlDYaXWbF8O-toogN05-g&libraries=geometry,drawing,places&callback=initMap" defer></script>
+						<script>
+							function initMap() {
+							  const myLatlng = { lat: -16.6958288, lng: -49.4443537 };
+							  const map = new google.maps.Map(document.getElementById("grafico4"), {
+							    zoom: 10,
+							    center: myLatlng,
+							  });
+							  var locations = <?php echo json_encode($locations);?>;
+							  var infowindow =  new google.maps.InfoWindow({});
+							  var marker, count;for (count = 0; count < locations.length; count++) {
+								    marker = new google.maps.Marker({
+								      position: new google.maps.LatLng(locations[count][1], locations[count][2]),
+								      map: map,
+								      title: locations[count][0]
+								    });google.maps.event.addListener(marker, 'click', (function (marker, count) {
+								      return function () {
+								        infowindow.setContent(locations[count][0]);
+								        infowindow.open(map, marker);
+								      }
+									})(marker, count));
+								}
+							}
+						</script>
+						<section id="grafico4" class="box-grafico" style="width: 600px;height:500px;margin-bottom: 10px;display:none;"></section>
 						<canvas id="grafico5" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
 					</div>
 

@@ -135,17 +135,12 @@
 			} else {
 				$rtn=array('success'=>false,'error'=>'Serviço não encontrado');
 			}
-		}
+		} 
 
 		header("Content-type: application/json");
 		echo json_encode($rtn);
 		die();
 	}
-
-	$_tipos = array(
-		'porcelona' => 'PORCELANA',
-		'resina'    => 'RESINA'
-	);
 	$campos=explode(",","titulo,id_regiao,tipo_material");
 		
 	foreach($campos as $v) $values[$v]='';
@@ -172,6 +167,12 @@
 	$sql->consult($_p."parametros_procedimentos_regioes","*","where lixo=0 order by titulo asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_regioes[$x->id]=$x;
+	}
+
+	$_materiais=array();
+	$sql->consult($_p."parametros_servicosdelaboratorio_materiais","*","where lixo=0 order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_materiais[$x->id]=$x;
 	}
 ?>
 <script>
@@ -230,7 +231,7 @@
 				data:data,
 				success:function(rtn) {
 					if(rtn.success) {
-						$.fancybox.close();
+						document.location.href=`pg_configuracao_procedimentos_servicos.php`
 					} else if(rtn.error) {
 						swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 					} else {
@@ -256,7 +257,7 @@
 			?>
 			<h1 class="filtros__titulo"></h1>
 			<div class="filtros-acoes filter-button">
-				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>Salvar</span></a>
 			</div>
 			<?php
 				} else {
@@ -265,7 +266,7 @@
 			
 			<div class="filtros-acoes filter-button">
 				<a href="javascript:;" class="js-remover"><i class="iconify" data-icon="bx-bx-trash"></i></a>
-				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>Salvar</span></a>
 			</div>
 			<?php
 				}
@@ -305,12 +306,15 @@
 							<select name="tipo_material">
 								<option value="">-</option>
 								<?php
-								foreach($_tipos as $k => $v) {
-									echo  '<option value="'.$k.'"'.($k==$values['tipo_material']?' selected':'').'>'.$v.'</option>';
+								foreach($_materiais as $v) {
+									echo  '<option value="'.$v->id.'"'.($v->id==$values['tipo_material']?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
 								}
 								?>
 							</select>
 						</dd>
+					</dl>
+					<dl>
+						<dd><a href="box/boxNovoMaterial.php" data-fancybox data-type="ajax" class="button button__sec"><i class="iconify" data-icon="bx-bx-plus"></i></a></dd>
 					</dl>
 				</div>
 			</fieldset>
@@ -448,8 +452,7 @@
 						<dd><input type="text" class="js-laboratorio-valor money" /></dd>
 					</dl>
 					<dl>
-						<dt>&nbsp;</dt>
-						<dd><a href="javascript:;" class="button button__sec js-add-laboratorio"><i class="iconify" data-icon="bx-bx-check"></i></a></dd>
+						<dd><button type="button" class="button js-add-laboratorio"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar</button></dd>
 					</dl>
 				</div>
 				<div class="registros">

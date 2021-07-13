@@ -18,8 +18,8 @@
 	);
 
 	$colaborador=$cnt='';
-	if(isset($_GET['id_colaborador']) and is_numeric($_GET['id_colaborador'])) {
-		$sql->consult($_table,"*","where id='".$_GET['id_colaborador']."'");
+	if(isset($_GET['edita']) and is_numeric($_GET['edita'])) {
+		$sql->consult($_table,"*","where id='".$_GET['edita']."'");
 		if($sql->rows) {
 			$colaborador=mysqli_fetch_object($sql->mysqry);
 			$cnt=$colaborador;
@@ -80,7 +80,7 @@
 			if(!empty($msgErro)) {
 				$jsc->jAlert($msgErro,"erro","");
 			} else {
-				$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='".$_page."?form=1&edita=".$id_reg."&".$url."'");
+				$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='pg_colaboradores_dadospessoais.php?edita=".$id_reg."&".$url."'");
 				die();
 			}
 		}
@@ -236,7 +236,7 @@
 										<dl>
 											<dt>CPF</dt>
 											<dd>
-												<input type="text" name="cpf" value="<?php echo $values['cpf'];?>" class="cpf" />
+												<input type="text" name="cpf" value="<?php echo $values['cpf'];?>" class="cpf obg" />
 											</dd>
 										</dl>
 										<dl>

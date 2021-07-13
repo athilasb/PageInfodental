@@ -81,7 +81,7 @@
 
 						<dl>
 							<dt></dt>
-							<dd><label><input type="checkbox" name="permitir_acesso" value="1"<?php echo $values['permitir_acesso']=='1'?' checked':'';?> /> Permitir Acesso</label></dd>
+							<dd><label><input type="checkbox" name="permitir_acesso" value="1" class="input-switch"<?php echo $values['permitir_acesso']=='1'?' checked':'';?> /> Permitir Acesso</label></dd>
 						</dl>
 
 						<div class="colunas4">

@@ -25,7 +25,22 @@
 	$_table=$_p."parametros_cartoes_bandeiras";
 	$_page=basename($_SERVER['PHP_SELF']);
 	?>
+		<script type="text/javascript">
+			$(function(){
+				$(".js-anamnese").click(function(){
 
+					let url = ($(this).attr('data-id'))?`?id_anamnese=${$(this).attr('data-id')}`:''; 
+
+					$.fancybox.open({
+						closeClick  : false, 
+						src:`box/boxAnamnese.php${url}`,
+						type:'ajax',
+						clickSlide:false,
+						touch:false
+					});
+				});
+			})
+		</script>
 		<section class="grid grid_2">
 
 			<section class="grid">
@@ -34,7 +49,7 @@
 
 						<div class="filter-group">
 							<div class="filter-button">
-								<a href="box/boxAnamnese.php" data-fancybox data-type="ajax" data-height="300" data-padding="0" class="verde adicionar tooltip" title="adicionar"><i class="iconify" data-icon="bx-bx-plus"></i><span>Anamnese</span></a>
+								<a href="javascript:;" data-padding="0" class="js-anamnese verde adicionar tooltip" title="adicionar"><i class="iconify" data-icon="bx-bx-plus"></i><span>Anamnese</span></a>
 							</div>
 						</div>
 
@@ -52,10 +67,11 @@
 							while($x=mysqli_fetch_object($sql->mysqry)) {
 								$registros[]=$x;
 						?>
-						<a href="box/boxAnamnese.php?id_anamnese=<?php echo $x->id;?>" data-fancybox data-type="ajax" data-height="300" data-padding="0" class="js-anamnese-<?php echo $x->id;?> reg-group">
+						<?php /*<a href="box/boxAnamnese.php?id_anamnese=<?php echo $x->id;?>" data-fancybox data-type="ajax" data-height="300" data-padding="0" class="js-anamnese-<?php echo $x->id;?> reg-group">*/?>
+						<a href="javascript:;"data-height="300" data-padding="0" data-id="<?php echo $x->id;?>" class="js-anamnese js-anamnese-<?php echo $x->id;?> reg-group">
 							<div class="reg-color" style="background-color:green;"></div>
 							<div class="reg-data" style="flex:0 1 50%;">
-								<h1><?php echo strtoupperWLIB(utf8_encode($x->titulo));?></h1>
+								<h1><?php echo ucwords(utf8_encode($x->titulo));?></h1>
 							</div>
 						</a>
 						<?php
@@ -114,7 +130,7 @@
 						<a href="box/boxExame.php?id_exame=<?php echo $x->id;?>" data-fancybox data-type="ajax" data-height="300" data-padding="0" class="reg-group">
 							<div class="reg-color" style="background-color:green;"></div>
 							<div class="reg-data" style="flex:0 1 50%;">
-								<h1><?php echo strtoupperWLIB(utf8_encode($x->titulo));?></h1>
+								<h1><?php echo ucwords(utf8_encode($x->titulo));?></h1>
 								<p>
 									<?php echo isset($_regioes[$x->id_regiao])?utf8_encode($_regioes[$x->id_regiao]->titulo):'-';?>
 								</p>

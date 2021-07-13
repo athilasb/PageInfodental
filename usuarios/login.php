@@ -5,12 +5,13 @@
 		require_once("../lib/classes.php");
 		
 		$sql = new Mysql();
+
 		$localIP = '';// getHostByName(getHostName());
 		$cpf=addslashes($_POST['auth_cpf']);
 		$senha=sha1($_POST['auth_senha']);
-		$sql->consult($_p."usuarios","*","where cpf='".$cpf."' and senha='".$senha."' and pub='1' and lixo='0'");
-		//echo $sql->rows;die();
-			
+
+		$sql->consult($_p."colaboradores","*","where cpf='".$cpf."' and senha='".$senha."' and permitir_acesso='1' and lixo='0'");	
+		//echo "where cpf='".$cpf."' and senha='".$senha."' and permitir_acesso='1' and lixo='0' ".$sql->rows;die();
 		if($sql->rows) {
 			$usr = mysqli_fetch_object($sql->mysqry);
 			

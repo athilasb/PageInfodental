@@ -20,9 +20,9 @@
 	$_page=basename($_SERVER['PHP_SELF']);
 	?>
 
-		<section class="grid grid_2">
+		<section class="grid ">
 
-			<section class="grid">
+			<?php /*<section class="grid">
 				<div class="box">
 					<div class="filter">
 
@@ -67,7 +67,7 @@
 					</div>
 
 				</div>
-			</section>
+			</section>*/?>
 
 			<section class="grid">
 				<div class="box">
@@ -75,7 +75,7 @@
 
 						<div class="filter-group">
 							<div class="filter-button">
-								<a href="box/boxBandeiraCartao.php" data-fancybox data-type="ajax" data-height="400" data-padding="0" class="verde adicionar tooltip" title="adicionar"><i class="iconify" data-icon="bx-bx-plus"></i><span>Nova operadora</span></a>
+								<a href="box/boxOperadoraCartao.php" data-fancybox data-type="ajax" data-height="400" data-padding="0" class="verde adicionar tooltip" title="adicionar"><i class="iconify" data-icon="bx-bx-plus"></i><span>Nova operadora</span></a>
 							</div>
 						</div>
 
@@ -83,7 +83,7 @@
 					<div class="reg">
 						<?php
 						$registros = array();
-						$sql->consultPagMto2($_p."parametros_cartoes_bandeiras","*",10,"WHERE lixo=0 order by titulo asc","",15,"pagina",$_page."?".$url."&pagina=");
+						$sql->consultPagMto2($_p."parametros_cartoes_operadoras","*",10,"WHERE lixo=0 order by titulo asc","",15,"pagina",$_page."?".$url."&pagina=");
 						if($sql->rows==0) {
 							$msgSemResultado="Nenhuma Operadora";
 							if(isset($values['busca'])) $msgSemResultado="Nenhuma Operadora encontrada";

@@ -173,6 +173,7 @@
 		require_once("lib/conf.php");
 		require_once("usuarios/checa.php");
 		$sql2=new Mysql();
+		$str=new String();
 		$rtn=array();
 		if($_GET['ajax']=="agenda") {
 
@@ -221,9 +222,8 @@
 					} else $where.=" and 2=1";
 				}
 
-
 				$_usuarios=array();
-				$sql->consult($_p."usuarios","id,nome","");
+				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$_usuarios[$x->id]=$x;
 				}
@@ -493,6 +493,8 @@
 					"resourceTimeGridFiveDay"=>"5 dias",
 					"resourceTimeGridSevenDay"=>"7 dias");
 
+	$_page=basename($_SERVER['PHP_SELF']);
+
 ?>
 <script>
 	var calendar = '';
@@ -712,7 +714,7 @@
 
 			calendarioVisualizacaoData();
 		});
-		$('a.js-left').click(function(){
+		$('a.js-left').click(function(){ 
 			if(calendar.view.type=="resourceTimeGridFiveDay") {
 				let dtJS = new Date(calendar.getDate());
 				dtJS.setDate(dtJS.getDate() - 7);
@@ -830,192 +832,212 @@
 		<!-- <a href="box/boxAgendamento.php?id_unidade=1" data-fancybox data-type="ajax" class="caminho__tutorial button button__sec"><i class="iconify" data-icon="bx-bx-plus-circle"></i> Novo Agendamento</a> -->
 	</header>*/?>
 
-		<section class="filtros">
-			<?php
-			$_table=$_p."produtos_fotos";
-			$_page=basename($_SERVER['PHP_SELF']);
-			?>
-			<div class="filter-group">
-				<div class="filter-button">
-					<a href="box/boxAgendamento.php?id_unidade=1" data-fancybox data-type="ajax" data-height="300" data-padding="0" class="verde adicionar tooltip" title="adicionar"><i class="iconify" data-icon="bx-bx-plus"></i><span>Agendamento</span></a>
+		
+		
+		<?php
+
+		require_once("includes/asideAgenda.php");
+		$filtro='';
+
+		if(isset($values['id_status']) and isset($_status[$values['id_status']])) $filtro.="&id_status=".$values['id_status'];
+		if(isset($values['id_profissional']) and isset($_profissionais[$values['id_profissional']])) $filtro.="&id_profissional=".$values['id_profissional'];
+		if(isset($values['id_cadeira']) and isset($_cadeiras[$values['id_cadeira']])) $filtro.="&id_cadeira=".$values['id_cadeira'];
+		if(isset($values['busca']) and !empty($values['busca'])) $filtro.="&busca=".$values['busca'];
+
+		//echo $filtro;
+		?>
+		<section id="cal-popup" class="cal-popup cal-popup_paciente cal-popup_top cal-popup_alt" style="left:703px; top:338px; margin-left:303px;display: none">
+			<a href="javascript:;" class="cal-popup__fechar js-btn-fechar"><i class="iconify" data-icon="mdi-close"></i></a>
+			<section class="paciente-info">
+				<header class="paciente-info-header">
+					<img src="" alt="" width="84" height="84" class="paciente-info-header__foto" style="" />
+					<img src="img/loading.gif" width="20" height="20" class="js-loading" style="margin:30px;">
+					<section class="paciente-info-header__inner1">
+						<h1 class="js-nome"></h1>
+						<p class="js-idade"></p>
+						<p><span style="color:var(--cinza3);" class="js-id_paciente">#44</span> <span style="color:var(--cor1);"></span></p>
+					</section>
+				</header>
+				<div class="abasPopover">
+					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-info').show();$(this).addClass('active');" class="active">Informações</a>
+					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-procedimentos').show();$(this).addClass('active');">Procedimentos</a>
+					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-obs').show();$(this).addClass('active');">Observações</a>
 				</div>
-			</div>
-
-				<form method="get" class="formulario-validacao js-filtro form agenda-filtros">
-					<div class="agenda-filtros__inner1">
-						<input type="hidden" name="csv" value="0" />					
-						<a href="javascript:;" class="button button__alt js-today">HOJE</a>
-						<a href="javascript:;" class="button button__empty js-left"><i class="iconify" data-icon="entypo-chevron-thin-left"></i></a>
-						<a href="javascript:;" class="button button__empty js-right"><i class="iconify" data-icon="entypo-chevron-thin-right"></i></a>
-						
-						<div class="js-calendario">
-							<span class="iconify" data-icon="bi:calendar-week" data-inline="false" data-width="20"></span>
-						</div>
-
-						<input class="js-calendario-title noupper" readonly="" />
-
-						<select class="js-view" class="chosenWithoutFind">
-							<?php
-							foreach($_views as $k=>$v) {
-								echo '<option value="'.$k.'"'.($k=="resourceTimeGridOneDay"?' selected':'').'>'.$v.'</option>';
-							}
-							?>
-						</select>
-					</div>
-					<div class="agenda-filtros__inner2">
-						<select name="id_cadeira" class="js-cadeira custom-select">
-							<option value="">Consultório</option>
-							<?php
-							$_cadeirasJSON=array();
-							foreach($_cadeiras as $v) {
-								if(!(isset($values['id_cadeira']) and isset($_cadeiras[$values['id_cadeira']]) and $values['id_cadeira']!=$v->id)) {
-									$_cadeirasJSON[]=array('ordem'=>$v->ordem,'id'=>$v->id,'title'=>utf8_encode($v->titulo));
-								}
-								echo '<option value="'.$v->id.'"'.((isset($values['id_cadeira']) and $values['id_cadeira']==$v->id)?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
-							}
-							?>
-						</select>
-						<select name="id_profissional" class="js-profissionais">
-							<option value="">Profissionais</option>
-							<?php
-							foreach($_profissionais as $v) {
-								echo '<option value="'.$v->id.'"'.((isset($values['id_profissional']) and $values['id_profissional']==$v->id)?' selected':'').'>'.utf8_encode($v->nome).'</option>';
-							}
-							?>
-						</select>
-						<?php /*<select name="id_status" class="js-status chosenWithoutFind">
-							<option value="">Status</option>
-							<?php
-							foreach($_status as $v) {
-								echo '<option value="'.$v->id.'"'.((isset($values['id_status']) and $values['id_status']==$v->id)?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
-							}
-							?>
-						</select>*/?>
-					</div>
-				</form>
-				
+				<div class="paciente-info-grid js-grid js-grid-info">
+					
+				</div>
+				<div class="paciente-info-grid js-grid js-grid-procedimentos" style="display:none;">							
+				</div>
+				<div class="paciente-info-grid js-grid js-grid-obs" style="display:none;font-size:12px;color:#666">							
+				</div>
+				<div class="paciente-info-opcoes">
+					<select class="js-id_status">
+						<?php
+						foreach($_status as $v) {
+							echo '<option value="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
+						}
+						?>
+					</select>
+					<a href="javascript:;" data-fancybox="" data-type="ajax" data-padding="0" class="js-hrefAgenda button" onclick="$('.cal-popup').hide();">Editar</a>
+					
+					<a href="javascript:;" target="_blank" class="js-hrefPaciente button button__sec"><i class="iconify" data-icon="bx:bxs-user"></i></a>
+				</div>
 			</section>
-			<?php
-			$filtro='';
+		</section>
 
-			if(isset($values['id_status']) and isset($_status[$values['id_status']])) $filtro.="&id_status=".$values['id_status'];
-			if(isset($values['id_profissional']) and isset($_profissionais[$values['id_profissional']])) $filtro.="&id_profissional=".$values['id_profissional'];
-			if(isset($values['id_cadeira']) and isset($_cadeiras[$values['id_cadeira']])) $filtro.="&id_cadeira=".$values['id_cadeira'];
-			if(isset($values['busca']) and !empty($values['busca'])) $filtro.="&busca=".$values['busca'];
+		<div class="box-registros">
+			<link href='https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.3.0/main.min.css' rel='stylesheet' />
+			<script src='https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.3.0/main.min.js'></script>
 
-			//echo $filtro;
-			?>
-			<section id="cal-popup" class="cal-popup cal-popup_paciente cal-popup_top cal-popup_alt" style="left:703px; top:338px; margin-left:303px;display: none">
-				<a href="javascript:;" class="cal-popup__fechar js-btn-fechar"><i class="iconify" data-icon="mdi-close"></i></a>
-				<section class="paciente-info">
-					<header class="paciente-info-header">
-						<img src="" alt="" width="84" height="84" class="paciente-info-header__foto" style="" />
-						<img src="img/loading.gif" width="20" height="20" class="js-loading" style="margin:30px;">
-						<section class="paciente-info-header__inner1">
-							<h1 class="js-nome"></h1>
-							<p class="js-idade"></p>
-							<p><span style="color:var(--cinza3);" class="js-id_paciente">#44</span> <span style="color:var(--cor1);"></span></p>
-						</section>
-					</header>
-					<div class="abasPopover">
-						<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-info').show();$(this).addClass('active');" class="active">Informações</a>
-						<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-procedimentos').show();$(this).addClass('active');">Procedimentos</a>
-						<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-obs').show();$(this).addClass('active');">Observações</a>
-					</div>
-					<div class="paciente-info-grid js-grid js-grid-info">
-						
-					</div>
-					<div class="paciente-info-grid js-grid js-grid-procedimentos" style="display:none;">							
-					</div>
-					<div class="paciente-info-grid js-grid js-grid-obs" style="display:none;font-size:12px;color:#666">							
-					</div>
-					<div class="paciente-info-opcoes">
-						<select class="js-id_status">
-							<?php
-							foreach($_status as $v) {
-								echo '<option value="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
-							}
-							?>
-						</select>
-						<a href="javascript:;" data-fancybox="" data-type="ajax" data-padding="0" class="js-hrefAgenda button" onclick="$('.cal-popup').hide();">Editar</a>
-						
-						<a href="javascript:;" target="_blank" class="js-hrefPaciente button button__sec"><i class="iconify" data-icon="bx:bxs-user"></i></a>
-					</div>
-				</section>
-    		</section>
-			<div class="box-registros">
-				<link href='https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.3.0/main.min.css' rel='stylesheet' />
-  				<script src='https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.3.0/main.min.js'></script>
-				<script>
-					var popViewInfos = [];
+			<script>
+				var popViewInfos = [];
 
-					const popView = (obj,id_agenda) => {
-						$('#cal-popup')
-								.removeClass('cal-popup_left')
-								.removeClass('cal-popup_right')
-								.removeClass('cal-popup_bottom')
-								.removeClass('cal-popup_top');
-						$('.js-id_status').attr('data-id',id_agenda);
-						let clickTop=obj.getBoundingClientRect().top+window.scrollY;
-						console.log(clickTop);
-						let clickLeft=Math.round(obj.getBoundingClientRect().left);
-						let clickMargin=Math.round(obj.getBoundingClientRect().width/2);
-						$(obj).prev('.cal-popup')
-								.removeClass('cal-popup_left')
-								.removeClass('cal-popup_right')
-								.removeClass('cal-popup_bottom')
-								.removeClass('cal-popup_top');
+				const popView = (obj,id_agenda) => {
+					$('#cal-popup')
+							.removeClass('cal-popup_left')
+							.removeClass('cal-popup_right')
+							.removeClass('cal-popup_bottom')
+							.removeClass('cal-popup_top');
+					$('.js-id_status').attr('data-id',id_agenda);
+					let clickTop=obj.getBoundingClientRect().top+window.scrollY;
+					console.log(clickTop);
+					let clickLeft=Math.round(obj.getBoundingClientRect().left);
+					let clickMargin=Math.round(obj.getBoundingClientRect().width/2);
+					$(obj).prev('.cal-popup')
+							.removeClass('cal-popup_left')
+							.removeClass('cal-popup_right')
+							.removeClass('cal-popup_bottom')
+							.removeClass('cal-popup_top');
 
-						let popClass='cal-popup_top';
-						if(clickLeft>=1200) {
-							//popClass='cal-popup_left';
-							//clickLeft-=Math.round($('#cal-popup').width());
-							//clickMargin/=4;
-						}
-						$('#cal-popup').addClass(popClass).toggle();
-						$('#cal-popup').css({'top':clickTop,'left':clickLeft,'margin-left': clickMargin});
-						$('#cal-popup').show();
-						$('#cal-popup .js-nome').html(popViewInfos[id_agenda].nomeCompleto);
-						$('#cal-popup .js-idade').html(popViewInfos[id_agenda].idade.length>0?`${popViewInfos[id_agenda].idade} anos`:``);
-						$('#cal-popup .js-id_paciente').html(`#${popViewInfos[id_agenda].id_paciente}`);
-						$('#cal-popup .js-grid-info').html(popViewInfos[id_agenda].infos);
-						$('#cal-popup .js-grid-procedimentos').html(popViewInfos[id_agenda].procedimentosLista);
-						$('#cal-popup .js-grid-obs').html(popViewInfos[id_agenda].obs);
-						$('#cal-popup .js-id_status').val(popViewInfos[id_agenda].id_status);
-						$('#cal-popup .js-hrefAgenda').attr('href',`box/boxAgendamento.php?id_unidade=${popViewInfos[id_agenda].id_unidade}&id_agenda=${popViewInfos[id_agenda].id_agenda}`);
-						$('#cal-popup .js-hrefPaciente').attr('href',`pg_contatos_pacientes_resumo.php?id_paciente=${popViewInfos[id_agenda].id_paciente}`);
-
-						$('#cal-popup .js-loading').show();
-						$('#cal-popup .paciente-info-header__foto').hide();
-
-						if(popViewInfos[id_agenda].foto.length>0) {
-							$('#cal-popup img.paciente-info-header__foto').attr({'src':popViewInfos[id_agenda].foto}).load(function(){
-
-								$('#cal-popup .paciente-info-header__foto').show();
-								$('#cal-popup .js-loading').hide();
-							});
-						} else {
-							$('#cal-popup .js-loading').hide();
-							$('#cal-popup .paciente-info-header__foto').hide();
-						}
-						
-						console.log('top: '+clickTop+' leftOriginal: '+obj.getBoundingClientRect().left+' left+w: '+clickLeft+' wid: '+obj.getBoundingClientRect().width);
-						
+					let popClass='cal-popup_top';
+					if(clickLeft>=1200) {
+						//popClass='cal-popup_left';
+						//clickLeft-=Math.round($('#cal-popup').width());
+						//clickMargin/=4;
 					}
-					var calendar = '';
-					var calpopID = 0;
-					$(function(){
+					$('#cal-popup').addClass(popClass).toggle();
 
-						$('#cal-popup').on('change','.js-id_status',function(){ 
+					
+					$('#cal-popup').css({'top':clickTop,'left':clickLeft,'margin-left': clickMargin});
+					$('#cal-popup').show();
+					$('#cal-popup .js-nome').html(popViewInfos[id_agenda].nomeCompleto);
+					$('#cal-popup .js-idade').html(popViewInfos[id_agenda].idade.length>0?`${popViewInfos[id_agenda].idade} anos`:``);
+					$('#cal-popup .js-id_paciente').html(`#${popViewInfos[id_agenda].id_paciente}`);
+					$('#cal-popup .js-grid-info').html(popViewInfos[id_agenda].infos);
+					$('#cal-popup .js-grid-procedimentos').html(popViewInfos[id_agenda].procedimentosLista);
+					$('#cal-popup .js-grid-obs').html(popViewInfos[id_agenda].obs);
+					$('#cal-popup .js-id_status').val(popViewInfos[id_agenda].id_status);
+					$('#cal-popup .js-hrefAgenda').attr('href',`box/boxAgendamento.php?id_unidade=${popViewInfos[id_agenda].id_unidade}&id_agenda=${popViewInfos[id_agenda].id_agenda}`);
+					$('#cal-popup .js-hrefPaciente').attr('href',`pg_contatos_pacientes_resumo.php?id_paciente=${popViewInfos[id_agenda].id_paciente}`);
 
-							let id_agenda = $(this).attr('data-id');
+					$('#cal-popup .js-loading').show();
+					$('#cal-popup .paciente-info-header__foto').hide();
 
-							let id_status = $(this).val();
-							let data = `ajax=alterarStatus&id_agenda=${id_agenda}&id_status=${id_status}&id_unidade=${id_unidade}`;
+					if(popViewInfos[id_agenda].foto.length>0) {
+						$('#cal-popup img.paciente-info-header__foto').attr({'src':popViewInfos[id_agenda].foto}).load(function(){
 
+							$('#cal-popup .paciente-info-header__foto').show();
+							$('#cal-popup .js-loading').hide();
+						});
+					} else {
+						$('#cal-popup .js-loading').hide();
+						$('#cal-popup .paciente-info-header__foto').hide();
+					}
+					
+					console.log('top: '+clickTop+' leftOriginal: '+obj.getBoundingClientRect().left+' left+w: '+clickLeft+' wid: '+obj.getBoundingClientRect().width);
+					
+				}
+				var calendar = '';
+				var calpopID = 0;
+				$(function(){
+
+					$('#cal-popup').on('change','.js-id_status',function(){ 
+
+						let id_agenda = $(this).attr('data-id');
+
+						let id_status = $(this).val();
+						let data = `ajax=alterarStatus&id_agenda=${id_agenda}&id_status=${id_status}&id_unidade=${id_unidade}`;
+
+						$.ajax({
+							type:"POST",
+							url:"box/boxAgendamento.php",
+							data:data,
+							success:function(rtn) {
+								if(rtn.success) {
+									calendar.refetchEvents(); 
+								} else if(rtn.error) {
+									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+								} else {
+									swal({title: "Erro!", text: 'Algum erro ocorreu durante a alteração de data deste agendamento!', type:"error", confirmButtonColor: "#424242"});
+								}
+							},
+							error:function() {
+									swal({title: "Erro!", text: 'Algum erro ocorreu durante a alteração de data deste agendamento!', type:"error", confirmButtonColor: "#424242"});
+							}
+						})
+					})
+
+
+					var calendarEl = document.getElementById('calendar'); 
+					calendar = new FullCalendar.Calendar(calendarEl, {
+					  	schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+
+						locale: 'pt-br',
+					    headerToolbar: {
+					      left: '',
+					      center:'',
+					      right:''
+					    },
+					 	slotDuration:'00:30:00',
+						allDaySlot:false,
+						slotMinTime:'07:00:00',
+						slotMaxTime:'22:00:00',
+						firstDay:1,
+						editable:true,
+						initialView:'resourceTimeGridOneDay',
+    					eventResizableFromStart: true,
+					    views: {
+					      dayGridMonth:{
+					      	dayMaxEventRows:1,
+					      	buttonText:'MÊS',					      	
+					      },
+					      resourceTimeGridOneDay: {
+					      	titleFormat: { weekday: 'long', month:'short', day: '2-digit', year:'numeric'},
+					        type: 'resourceTimeGrid',
+					        duration: { days: 1 },
+					        buttonText: '1 DIA',
+
+					      },
+					      resourceTimeGridFiveDay: {
+					      	titleFormat: { weekday: 'short', month:'short', day: '2-digit', year:'numeric'},
+					        type: 'timeGridWeek',
+					        duration: { days: 5 },
+					        buttonText: '5 DIAS',
+
+					      },
+					      resourceTimeGridSevenDay: {
+					      	titleFormat: { weekday: 'short', month:'short', day: '2-digit', year:'numeric'},
+					        type: 'timeGridWeek',
+					        duration: { days: 7 },
+					        buttonText: '7 DIAS'
+					      }
+					    },
+					    resources: <?php echo json_encode($_cadeirasJSON);?>,
+					    resourceOrder: 'ordem,titulo',
+						dateClick: function(info) {
+							$('#cal-popup').hide();
+							$.fancybox.open({
+								src  : `box/boxAgendamento.php?id_unidade=${id_unidade}&data_agenda=${info.dateStr}`,
+								type : 'ajax',
+							});
+						},
+						eventResize:function(e) {
+							let id = e.event.id;
+							let start = e.event.startStr;
+							let end = e.event.endStr;
+							let data=`ajax=persistirNovoHorario&id_agenda=${id}&start=${start}&end=${end}`;
 							$.ajax({
 								type:"POST",
-								url:"box/boxAgendamento.php",
 								data:data,
 								success:function(rtn) {
 									if(rtn.success) {
@@ -1025,320 +1047,240 @@
 									} else {
 										swal({title: "Erro!", text: 'Algum erro ocorreu durante a alteração de data deste agendamento!', type:"error", confirmButtonColor: "#424242"});
 									}
-								},
-								error:function() {
+								}
+							});
+						},
+						eventDrop: function(ev) {
+							let id = ev.event.id;
+							let novaData=ev.event.startStr;
+							let id_cadeira = (ev.newResource)?ev.newResource.id:'';
+							let data=`ajax=persistirNovoAgendamento&id_agenda=${id}&novaData=${novaData}&id_cadeira=${id_cadeira}`;
+							$.ajax({
+								type:"POST",
+								data:data,
+								success:function(rtn) {
+									if(rtn.success) {
+										calendar.refetchEvents();
+									} else if(rtn.error) {
+										swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+									} else {
 										swal({title: "Erro!", text: 'Algum erro ocorreu durante a alteração de data deste agendamento!', type:"error", confirmButtonColor: "#424242"});
-								}
-							})
-						})
-
-
-						var calendarEl = document.getElementById('calendar'); 
-						calendar = new FullCalendar.Calendar(calendarEl, {
-						  	schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-
-							locale: 'pt-br',
-						    headerToolbar: {
-						      left: '',
-						      center:'',
-						      right:''
-						    },
-						 	slotDuration:'00:30:00',
-							allDaySlot:false,
-							slotMinTime:'07:00:00',
-							slotMaxTime:'22:00:00',
-							firstDay:1,
-							editable:true,
-							initialView:'resourceTimeGridOneDay',
-	    					eventResizableFromStart: true,
-						    views: {
-						      dayGridMonth:{
-						      	dayMaxEventRows:1,
-						      	buttonText:'MÊS',					      	
-						      },
-						      resourceTimeGridOneDay: {
-						      	titleFormat: { weekday: 'long', month:'short', day: '2-digit', year:'numeric'},
-						        type: 'resourceTimeGrid',
-						        duration: { days: 1 },
-						        buttonText: '1 DIA',
-
-						      },
-						      resourceTimeGridFiveDay: {
-						      	titleFormat: { weekday: 'short', month:'short', day: '2-digit', year:'numeric'},
-						        type: 'timeGridWeek',
-						        duration: { days: 5 },
-						        buttonText: '5 DIAS',
-
-						      },
-						      resourceTimeGridSevenDay: {
-						      	titleFormat: { weekday: 'short', month:'short', day: '2-digit', year:'numeric'},
-						        type: 'timeGridWeek',
-						        duration: { days: 7 },
-						        buttonText: '7 DIAS'
-						      }
-						    },
-						    resources: <?php echo json_encode($_cadeirasJSON);?>,
-						    resourceOrder: 'ordem,titulo',
-							dateClick: function(info) {
-								$('#cal-popup').hide();
-								$.fancybox.open({
-									src  : `box/boxAgendamento.php?id_unidade=${id_unidade}&data_agenda=${info.dateStr}`,
-									type : 'ajax',
-								});
-							},
-							eventResize:function(e) {
-								let id = e.event.id;
-								let start = e.event.startStr;
-								let end = e.event.endStr;
-								let data=`ajax=persistirNovoHorario&id_agenda=${id}&start=${start}&end=${end}`;
-								$.ajax({
-									type:"POST",
-									data:data,
-									success:function(rtn) {
-										if(rtn.success) {
-											calendar.refetchEvents(); 
-										} else if(rtn.error) {
-											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-										} else {
-											swal({title: "Erro!", text: 'Algum erro ocorreu durante a alteração de data deste agendamento!', type:"error", confirmButtonColor: "#424242"});
-										}
 									}
-								});
-							},
-							eventDrop: function(ev) {
-								let id = ev.event.id;
-								let novaData=ev.event.startStr;
-								let id_cadeira = (ev.newResource)?ev.newResource.id:'';
-								let data=`ajax=persistirNovoAgendamento&id_agenda=${id}&novaData=${novaData}&id_cadeira=${id_cadeira}`;
-								$.ajax({
-									type:"POST",
-									data:data,
-									success:function(rtn) {
-										if(rtn.success) {
-											calendar.refetchEvents();
-										} else if(rtn.error) {
-											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-										} else {
-											swal({title: "Erro!", text: 'Algum erro ocorreu durante a alteração de data deste agendamento!', type:"error", confirmButtonColor: "#424242"});
-										}
-									}
-								});
-						    },
-							resourcesSet:function(arg) {
-								setTimeout(function(){$('.fc-scrollgrid-sync-inner ').css('height','30px');},10);
-							},
-							/*resourcesChange:function(arg) {
-								setTimeout(function(){$('.fc-scrollgrid-sync-inner ').css('height','30px');},10);
-							},*/
-							datesSet:function(dateInfo) {
-								
-							},
-						    events: function(info, successCallback, failure) {
-								$.getJSON(`<?php echo $_page;?>?ajax=agenda&id_unidade=<?php echo $usrUnidade->id;?>&start=${info.start.valueOf()}&end=${info.end.valueOf()}&<?php echo $filtro;?>&id_status=${filtroStatus}&id_cadeira=${filtroCadeira}&id_profissional=${filtroProfissional}`,
-											function (data) {
-												if(data.success) {
-												 	successCallback(data.agendamentos)
-												}
-											});
-							},
-							//events: 'https://fullcalendar.io/demo-events.json',
-
-							eventContent: function (arg) { 
-								var view = calendar.view.type;
-								let nome = arg.event.title;
-								let nomeCompleto = arg.event.extendedProps.nomeCompleto;
-								let obs = arg.event.extendedProps.obs;
-								let idade = arg.event.extendedProps.idade;
-								let id = arg.event.id;
-								let foto = arg.event.extendedProps.foto;
-								let img = (arg.event.extendedProps.imageurl);
-
-								let inicio = arg.event.extendedProps.hora;
-								let fim = arg.event.extendedProps.horaFinal;
-								let hora = `${inicio}-${fim}`;
-								let duracao = arg.event.extendedProps.duracao;
-								let cadeira = arg.event.extendedProps.cadeira;
-								let id_paciente = arg.event.extendedProps.id_paciente;
-								let nomeIniciais = arg.event.extendedProps.nomeIniciais;
-
-								let situacao = arg.event.extendedProps.situacao;
-								let agendaPessoal = arg.event.extendedProps.agendaPessoal;
-								let indicacao = arg.event.extendedProps.indicacao;
-								let pontuacao = arg.event.extendedProps.pontuacao;
-
-								let instagram = arg.event.extendedProps.instagram;
-								let id_status = arg.event.extendedProps.id_status;
-								let telefone1 = arg.event.extendedProps.telefone1;
-								let agendadoHa = arg.event.extendedProps.agendadoHa;
-								let agendadoPor = arg.event.extendedProps.agendadoPor;
-								let musica = arg.event.extendedProps.musica;
-								let statusColor = arg.event.extendedProps.statusColor;
-								let procedimentos = arg.event.extendedProps.procedimentos;
-								let profissionais = arg.event.extendedProps.profissionais;
-								let id_agenda = arg.event.id;
-								let id_unidade = arg.event.extendedProps.id_unidade;
-								let infos = ``;
-
-	   							
-	   							linkFichaPaciente=``;
-	   							if(agendaPessoal==0) linkFichaPaciente=`<a href="pg_contatos_pacientes_resumo.php?id_paciente=${id_paciente}" target="_blank" class="button button__sec"><i class="iconify" data-icon="bx:bxs-user"></i></a>`;
-								
-								if(profissionais.length!=0) profissionais = `<div class="cal-item__fotos">${profissionais}</div>`; 
-								
-
-							    if(instagram.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-instagram"></i> ${instagram}</p>`;
-							    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-instagram"></i> -</p>`;
-
-							    if(telefone1.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-phone"></i> ${telefone1}</p>`;
-							    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-phone"></i> -</p>`;
-
-							    if(musica.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-music"></i> ${musica}</p>`;
-							    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-music"></i> -</p>`;
-
-							    // if(agendadoHa.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> ${agendadoHa}</p>`;
-							    // else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> -</p>`;
-
-							    if(indicacao.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-hand-pointing-right"></i> ${indicacao}</p>`;
-							    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-hand-pointing-right"></i> -</p>`;
-
-							    if(agendadoPor) infos+=`<p class="paciente-info-grid__item" style="grid-column:span 2"><i class="iconify" data-icon="bi:calendar-check"></i> <span><strong>${agendadoPor}</strong> ${agendadoHa}</span></p>`;
-							    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> -</p>`;
-
-							    /*if(pontuacao.length>0) {
-							    	infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-star"></i> ${pontuacao} <span class="iconify" data-icon="fe:link-external" data-inline="false"></span></p>`;
-							    }*/
-
-							   //if(foto.length>0) foto=`<img src="${foto}" alt="" width="84" height="84" class="paciente-info-header__foto" />`;
-							 //  if(foto.length>0) foto=`<img src="${foto}" alt="" width="84" height="84" class="paciente-info-header__foto" />`;
-								
-							    let procedimentosLista='-';
-							    if(procedimentos && procedimentos.length>0) {
-							    	procedimentosLista='';
-							    	procedimentos.forEach(p=>{
-							    		procedimentosLista+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="fluent:dentist-12-regular"></i> ${p}</p>`; 
-							    	})
-							    }
-
-
-							   
-								
-							    popInfos = {};
-							    popInfos.nome = nome;
-							    popInfos.nomeCompleto = nomeCompleto;
-							    popInfos.idade = idade;
-							    popInfos.id_paciente = id_paciente;
-							    popInfos.situacao = situacao;
-							    popInfos.obs = obs;
-							    popInfos.infos=infos;
-							    popInfos.id_status=id_status;
-							    popInfos.id_unidade=id_unidade;
-							    popInfos.id_agenda=id_agenda;
-							    popInfos.foto=foto.length>0?foto:'';
-							    popInfos.procedimentosLista=procedimentosLista;
-
-								popViewInfos[id_agenda] = popInfos;
-
-
-								cardView=`<section class="cal-popup  cal-popup_paciente" style="display:none;">
-												<a href="javascript:$('.cal-popup').hide();" class="cal-popup__fechar"><i class="iconify" data-icon="mdi-close"></i></a>
-												<section class="paciente-info">
-													<header class="paciente-info-header">
-														${foto}
-														<section class="paciente-info-header__inner1">
-															<h1>${nome}</h1>
-															<p>${idade} anos</p>
-															<p><span style="color:var(--cinza3);">#${id_paciente}</span> <span style="color:var(--cor1);">${situacao}</span></p>
-														</section>
-													</header>
-													<div class="abasPopover">
-														<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-info').show();$(this).addClass('active');" class="active">Informações</a>
-														<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-procedimentos').show();$(this).addClass('active');">Procedimentos</a>
-													</div>
-													<div class="paciente-info-grid js-grid js-grid-info">
-														${infos}
-													</div>
-
-													<div class="paciente-info-grid js-grid js-grid-procedimentos" style="display:none;">
-														${procedimentosLista}
-													</div>
-													<div class="paciente-info-opcoes">
-														<select>
-															<option value="">opcao 1</option>
-															<option value="">opcao 2</option>
-															<option value="">opcao 3</option>
-														</select>
-														<a href="box/${agendaPessoal==1?"boxAgendamentoPessoal":"boxAgendamento"}.php?id_unidade=${id_unidade}&id_agenda=${id_agenda}" data-fancybox data-type="ajax" data-padding="0" class="button" onclick="$('.cal-popup').hide();">Editar</a>
-														
-														${linkFichaPaciente}
-													</div>
-												</section>
-								    		</section>`;
-
-							    if(view=="dayGridMonth") {
-							    	eventHTML=`<section class="cal-item" style="height:100%;border-left:6px solid ${statusColor};" >
-													${cardView}
-													<section onclick="popView(this,${id_agenda});">
-														 <p>${hora}</p>
-														 <h1 class="cal-item__titulo">${nome}</h1>
-													</section>
-												</section>`
-							    } else {
-							    	eventHTML=`<section class="cal-item" style="height:100%;border-left:6px solid ${statusColor};" >
-													${cardView}
-													<section class="cal-item__inner1" style="height:100%"  onclick="popView(this,${id_agenda});">
-														<div class="cal-item-dados">
-															<h1>${hora} - ${cadeira}</h1>
-															<h2>${nome}</h2>
-														</div>
-														${profissionais}
-													</section>
-												</section>`
-							    }
-								return { html: eventHTML }
-							},
-							dayHeaderContent: function (arg) {
-								console.log(calendar.view.type);
-								let dt = arg.date;
-								let html = ``;
-								if(calendar.view.type=="dayGridMonth") {
-									setTimeout(function(){$('.fc-scrollgrid-sync-inner ').css('height','30px');},10);
-									//return { html: html, arg: arg }
-								} else {
-									html = `<div class="agenda-fc__dia"><h1>${dia(dt.getDay())}</h1><h2>${dt.getDate()}</h2></div>`;
-									setTimeout(function(){
-										$('.fc-scrollgrid-sync-inner ').css('height','90px');},10);
-										$('.fc-scrollgrid-sync-inner ').css('height','90px');
-									return { html: html }
 								}
-							}
-						  });
-						calendar.render();
+							});
+					    },
+						resourcesSet:function(arg) {
+							setTimeout(function(){$('.fc-scrollgrid-sync-inner ').css('height','30px');},10);
+						},
+						/*resourcesChange:function(arg) {
+							setTimeout(function(){$('.fc-scrollgrid-sync-inner ').css('height','30px');},10);
+						},*/
+						datesSet:function(dateInfo) {
+							
+						},
+					    events: function(info, successCallback, failure) {
+							$.getJSON(`<?php echo $_page;?>?ajax=agenda&id_unidade=<?php echo $usrUnidade->id;?>&start=${info.start.valueOf()}&end=${info.end.valueOf()}&<?php echo $filtro;?>&id_status=${filtroStatus}&id_cadeira=${filtroCadeira}&id_profissional=${filtroProfissional}`,
+										function (data) {
+											if(data.success) {
+											 	successCallback(data.agendamentos)
+											}
+										});
+						},
+						//events: 'https://fullcalendar.io/demo-events.json',
 
-						$('.js-calendario-title').val(calendar.view.title);
-					});
-					$(function(){
-						$(document).mouseup(function(e)  {
-						    var container = $("#cal-popup");
-						    // if the target of the click isn't the container nor a descendant of the container
-						    if (!container.is(e.target) && container.has(e.target).length === 0) 
-						    {
-						       $('#cal-popup').hide();
+						eventContent: function (arg) { 
+							var view = calendar.view.type;
+							let nome = arg.event.title;
+							let nomeCompleto = arg.event.extendedProps.nomeCompleto;
+							let obs = arg.event.extendedProps.obs;
+							let idade = arg.event.extendedProps.idade;
+							let id = arg.event.id;
+							let foto = arg.event.extendedProps.foto;
+							let img = (arg.event.extendedProps.imageurl);
+
+							let inicio = arg.event.extendedProps.hora;
+							let fim = arg.event.extendedProps.horaFinal;
+							let hora = `${inicio}-${fim}`;
+							let duracao = arg.event.extendedProps.duracao;
+							let cadeira = arg.event.extendedProps.cadeira;
+							let id_paciente = arg.event.extendedProps.id_paciente;
+							let nomeIniciais = arg.event.extendedProps.nomeIniciais;
+
+							let situacao = arg.event.extendedProps.situacao;
+							let agendaPessoal = arg.event.extendedProps.agendaPessoal;
+							let indicacao = arg.event.extendedProps.indicacao;
+							let pontuacao = arg.event.extendedProps.pontuacao;
+
+							let instagram = arg.event.extendedProps.instagram;
+							let id_status = arg.event.extendedProps.id_status;
+							let telefone1 = arg.event.extendedProps.telefone1;
+							let agendadoHa = arg.event.extendedProps.agendadoHa;
+							let agendadoPor = arg.event.extendedProps.agendadoPor;
+							let musica = arg.event.extendedProps.musica;
+							let statusColor = arg.event.extendedProps.statusColor;
+							let procedimentos = arg.event.extendedProps.procedimentos;
+							let profissionais = arg.event.extendedProps.profissionais;
+							let id_agenda = arg.event.id;
+							let id_unidade = arg.event.extendedProps.id_unidade;
+							let infos = ``;
+
+   							
+   							linkFichaPaciente=``;
+   							if(agendaPessoal==0) linkFichaPaciente=`<a href="pg_contatos_pacientes_resumo.php?id_paciente=${id_paciente}" target="_blank" class="button button__sec"><i class="iconify" data-icon="bx:bxs-user"></i></a>`;
+							
+							if(profissionais.length!=0) profissionais = `<div class="cal-item__fotos">${profissionais}</div>`; 
+							
+
+						    if(instagram.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-instagram"></i> ${instagram}</p>`;
+						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-instagram"></i> -</p>`;
+
+						    if(telefone1.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-phone"></i> ${telefone1}</p>`;
+						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-phone"></i> -</p>`;
+
+						    if(musica.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-music"></i> ${musica}</p>`;
+						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-music"></i> -</p>`;
+
+						    // if(agendadoHa.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> ${agendadoHa}</p>`;
+						    // else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> -</p>`;
+
+						    if(indicacao.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-hand-pointing-right"></i> ${indicacao}</p>`;
+						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-hand-pointing-right"></i> -</p>`;
+
+						    if(agendadoPor) infos+=`<p class="paciente-info-grid__item" style="grid-column:span 2"><i class="iconify" data-icon="bi:calendar-check"></i> <span><strong>${agendadoPor}</strong> ${agendadoHa}</span></p>`;
+						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> -</p>`;
+
+						    /*if(pontuacao.length>0) {
+						    	infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-star"></i> ${pontuacao} <span class="iconify" data-icon="fe:link-external" data-inline="false"></span></p>`;
+						    }*/
+
+						   //if(foto.length>0) foto=`<img src="${foto}" alt="" width="84" height="84" class="paciente-info-header__foto" />`;
+						 //  if(foto.length>0) foto=`<img src="${foto}" alt="" width="84" height="84" class="paciente-info-header__foto" />`;
+							
+						    let procedimentosLista='-';
+						    if(procedimentos && procedimentos.length>0) {
+						    	procedimentosLista='';
+						    	procedimentos.forEach(p=>{
+						    		procedimentosLista+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="fluent:dentist-12-regular"></i> ${p}</p>`; 
+						    	})
 						    }
-						});
+
+
+						   
+							
+						    popInfos = {};
+						    popInfos.nome = nome;
+						    popInfos.nomeCompleto = nomeCompleto;
+						    popInfos.idade = idade;
+						    popInfos.id_paciente = id_paciente;
+						    popInfos.situacao = situacao;
+						    popInfos.obs = obs;
+						    popInfos.infos=infos;
+						    popInfos.id_status=id_status;
+						    popInfos.id_unidade=id_unidade;
+						    popInfos.id_agenda=id_agenda;
+						    popInfos.foto=foto.length>0?foto:'';
+						    popInfos.procedimentosLista=procedimentosLista;
+
+							popViewInfos[id_agenda] = popInfos;
+
+
+							cardView=`<section class="cal-popup  cal-popup_paciente" style="display:none;">
+											<a href="javascript:$('.cal-popup').hide();" class="cal-popup__fechar"><i class="iconify" data-icon="mdi-close"></i></a>
+											<section class="paciente-info">
+												<header class="paciente-info-header">
+													${foto}
+													<section class="paciente-info-header__inner1">
+														<h1>${nome}</h1>
+														<p>${idade} anos</p>
+														<p><span style="color:var(--cinza3);">#${id_paciente}</span> <span style="color:var(--cor1);">${situacao}</span></p>
+													</section>
+												</header>
+												<div class="abasPopover">
+													<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-info').show();$(this).addClass('active');" class="active">Informações</a>
+													<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-procedimentos').show();$(this).addClass('active');">Procedimentos</a>
+												</div>
+												<div class="paciente-info-grid js-grid js-grid-info">
+													${infos}
+												</div>
+
+												<div class="paciente-info-grid js-grid js-grid-procedimentos" style="display:none;">
+													${procedimentosLista}
+												</div>
+												<div class="paciente-info-opcoes">
+													<select>
+														<option value="">opcao 1</option>
+														<option value="">opcao 2</option>
+														<option value="">opcao 3</option>
+													</select>
+													<a href="box/${agendaPessoal==1?"boxAgendamentoPessoal":"boxAgendamento"}.php?id_unidade=${id_unidade}&id_agenda=${id_agenda}" data-fancybox data-type="ajax" data-padding="0" class="button" onclick="$('.cal-popup').hide();">Editar</a>
+													
+													${linkFichaPaciente}
+												</div>
+											</section>
+							    		</section>`;
+
+						    if(view=="dayGridMonth") {
+						    	eventHTML=`<section class="cal-item" style="height:100%;border-left:6px solid ${statusColor};" >
+												${cardView}
+												<section onclick="popView(this,${id_agenda});">
+													 <p>${hora}</p>
+													 <h1 class="cal-item__titulo">${nome}</h1>
+												</section>
+											</section>`
+						    } else {
+						    	eventHTML=`<section class="cal-item" style="height:100%;border-left:6px solid ${statusColor};" >
+												${cardView}
+												<section class="cal-item__inner1" style="height:100%"  onclick="popView(this,${id_agenda});">
+													<div class="cal-item-dados">
+														<h1>${hora} - ${cadeira}</h1>
+														<h2>${nome}</h2>
+													</div>
+													${profissionais}
+												</section>
+											</section>`
+						    }
+							return { html: eventHTML }
+						},
+						dayHeaderContent: function (arg) {
+							console.log(calendar.view.type);
+							let dt = arg.date;
+							let html = ``;
+							if(calendar.view.type=="dayGridMonth") {
+								setTimeout(function(){$('.fc-scrollgrid-sync-inner ').css('height','30px');},10);
+								//return { html: html, arg: arg }
+							} else {
+								html = `<div class="agenda-fc__dia"><h1>${dia(dt.getDay())}</h1><h2>${dt.getDate()}</h2></div>`;
+								setTimeout(function(){
+									$('.fc-scrollgrid-sync-inner ').css('height','90px');},10);
+									$('.fc-scrollgrid-sync-inner ').css('height','90px');
+								return { html: html }
+							}
+						}
+					  });
+					calendar.render();
+
+					$('.js-calendario-title').val(calendar.view.title);
+				});
+				$(function(){
+					$(document).mouseup(function(e)  {
+					    var container = $("#cal-popup");
+					    // if the target of the click isn't the container nor a descendant of the container
+					    if (!container.is(e.target) && container.has(e.target).length === 0) 
+					    {
+					       $('#cal-popup').hide();
+					    }
 					});
+				});
 
-				</script>
+			</script>
 
-				
-				<div id='calendar'></div>
+			
+			<div id='calendar'></div>
 
-				
-				
-			</div>
+			
+			
+		</div>
 
-		</section>
-	</section>
-	
 </section>
 			
 <?php

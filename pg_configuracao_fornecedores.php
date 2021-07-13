@@ -30,7 +30,7 @@
 	<?php
 	if(isset($_GET['form'])) {
 		$cnt='';
-		$campos=explode(",","tipo,tipo_pessoa,nome,cpf,razao_social,cnpj,responsavel,telefone1,telefone2,email,cep,logradouro,numero,complemento,bairro,id_cidade,estado");
+		$campos=explode(",","tipo,tipo_pessoa,nome,cpf,razao_social,nome_fantasia,cnpj,responsavel,telefone1,telefone2,email,cep,logradouro,numero,complemento,bairro,id_cidade,estado,lat,lng");
 		
 		foreach($campos as $v) $values[$v]='';
 		$values['tipo_pessoa']='PF';
@@ -161,6 +161,10 @@
 
 					<div class="colunas4 js-box-pj">
 						<dl class="dl2">
+							<dt>Nome Fantasia</dt>
+							<dd><input type="text" name="nome_fantasia" value="<?php echo $values['nome_fantasia'];?>" /></dd>
+						</dl>
+						<dl class="dl2">
 							<dt>Razão Social</dt>
 							<dd><input type="text" name="razao_social" value="<?php echo $values['razao_social'];?>" /></dd>
 						</dl>
@@ -195,28 +199,130 @@
 					</div>
 				</fieldset>
 
+				<script>
+					var marker = '';
+					var map = '';
+					var position = '';
+					var positionEndereco = '';
+					var el = document.getElementById("geolocation");
+					var location_timeout = '';
+					var geocoder = '';
+					var enderecoObj = {};
+					var enderecos = [];	
+					var lat = `-16.688304`;
+					var lng = `-49.267055`;
+
+					function initMap() {
+						let options = {componentRestrictions: {country: "bra"}}
+						var input = document.getElementById('search');
+
+						var autocomplete = new google.maps.places.Autocomplete(input,options);
+						geocoder = new google.maps.Geocoder();
+
+						autocomplete.addListener('place_changed', function() {
+
+							var result = autocomplete.getPlace();
+							lat = result.geometry.location.lat();
+							lng = result.geometry.location.lng();
+							position = new google.maps.LatLng(lat,lng);
+							map = new google.maps.Map(document.getElementById('map'), {
+							  center: {lat: lat, lng: lng},
+							  zoom: 17
+							});
+
+							marker = new google.maps.Marker({
+							    position: {lat: lat, lng: lng},
+							    map,
+							    title: "Click to zoom",
+							});
+
+							marker.addListener("click", () => {
+							    map.setZoom(20);
+							    map.setCenter(marker.getPosition());
+							});
+
+							$('input[name=lat]').val(lat);
+							$('input[name=lng]').val(lng);
+							
+							let logradouro = '';
+							let numero = '';
+							let bairro = '';
+							let cep = '';
+							let cidade = '';
+							let estado = '';
+							let pais = '';
+							let descricao = '';
+
+							if(result.address_components) {
+								result.address_components.forEach(component => {
+									if(component.types) {
+										component.types.forEach(type => {
+											if(type=='route' && logradouro.length==0) logradouro = component.long_name;
+											else if(type=='street_number' && numero.length==0) numero = component.long_name;
+											else if(type=='sublocality' && bairro.length==0) bairro = component.long_name;
+											else if(type=='administrative_area_level_2' && cidade.length==0) cidade = component.long_name;
+											else if(type=='administrative_area_level_1' && estado.length==0) estado = component.short_name;
+											else if(type=='postal_code' && cep.length==0) cep = component.long_name;
+											else if(type=='country' && pais.length==0) pais = component.long_name;
+
+										})
+									}
+								});
+							}
+							if(descricao.length==0) descricao = result.formatted_address;
+							
+
+							enderecoObj = { logradouro, numero, bairro, cep, cidade, estado, pais, descricao, lat, lng }
+
+							//$('#js-form-endereco ').html(enderecoObj.descricao);
+							$('input[name=descricao]').val(enderecoObj.descricao); 
+							$('input[name=numero]').val(enderecoObj.numero);
+							$('input[name=logradouro]').val(enderecoObj.logradouro);
+							$('input[name=bairro]').val(enderecoObj.bairro);
+							$('select[name=estado]').val(enderecoObj.estado.toUpperCase());
+							$('select[name=estado]').trigger('change').trigger('chosen:updated');
+
+							$('select[name=id_cidade] option').each(function () {
+								var text = $(this).text();
+								if(text == enderecoObj.cidade) {
+									$(this).prop('selected', true);
+								}
+							});
+							$('select[name=id_cidade]').trigger('chosen:updated');
+							$('select[name=cidade]').val(enderecoObj.cidade);
+							$('input[name=cep]').val(enderecoObj.cep);
+							$('input[name=lat]').val(enderecoObj.lat);
+							$('input[name=lng]').val(enderecoObj.lng);
+							$('input[name=pais]').val(enderecoObj.pais);
+							console.log(enderecoObj.cidade);
+							$('#map').show();
+						});
+
+					}	
+				</script>
+				<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCDLcXlfkEGRZwlDYaXWbF8O-toogN05-g&libraries=geometry,drawing,places&callback=initMap" defer></script>
+
+				<input type="text" name="descricao" style="display:none;" />
+				<input type="text" name="lat"  style="display:none;" />
+				<input type="text" name="lng"  style="display:none;" />
+				<input type="text" name="pais" style="display:none;" />
+
 				<fieldset>
 					<legend><span class="badge">3</span> Dados de Endereço</legend>
-					<div class="colunas5">
+					<dl>
+						<dt>Endereço</dt>
+						<dd><input type="text" name="logradouro" value="<?php echo $values['logradouro'];?>" id="search" /></dd>
+					</dl>
+					<div class="colunas4">
 						<dl>
 							<dt>CEP</dt>
 							<dd><input type="text" name="cep" value="<?php echo $values['cep'];?>" class="cep" /></dd>
 						</dl>
 						<dl>
-							<dt>&nbsp;</dt>
-							<dd><a href="javascript:;" class="botao js-cep"><i class="icon-search"></i></a></dd>
-						</dl>
-					</div>
-					<div class="colunas4">
-						<dl class="dl2">
-							<dt>Logradouro</dt>
-							<dd><input type="text" name="logradouro" value="<?php echo $values['logradouro'];?>" class="" /></dd>
-						</dl>
-						<dl>
 							<dt>Número</dt>
 							<dd><input type="text" name="numero" value="<?php echo $values['numero'];?>" class="" /></dd>
 						</dl>
-						<dl>
+						<dl class="dl2">
 							<dt>Complemento</dt>
 							<dd><input type="text" name="complemento" value="<?php echo $values['complemento'];?>" class="" /></dd>
 						</dl>
@@ -241,6 +347,30 @@
 							</dd>
 						</dl>
 					</div>
+					<?php
+						if(isset($values['lat']) and !empty($values['lat']) and isset($values['lng']) and !empty($values['lng'])) {
+					?>
+					<script>
+						function initMap() {
+							  const map = new google.maps.Map(
+							    document.getElementById("map"),
+							    {
+							      zoom: 17,
+							      center: { lat: <?php echo $values['lat'];?>, lng: <?php echo $values['lng'];?> },
+							    }
+							  );
+							  const marker = new google.maps.Marker({
+							    position: {lat: <?php echo $values['lat'];?>, lng: <?php echo $values['lng'];?>},
+							    map,
+							    title: "Click to zoom",
+							});
+							  $('#map').show();
+							}
+					</script>	
+					<?php
+						}
+							?>	
+					<section id="map" style="width: 600px;height:500px;margin-bottom: 10px;display:none;"></section>
 				</fieldset>
 
 				<fieldset>

@@ -482,6 +482,7 @@
 		$('.js-agenda-verifica').change(function(){
 			verificaAgendamento();
 		});
+
 		$('.js-maskNumber').keyup(function() {
 			let regex= /[^(\d+)\.(\d+)]/g;
 			let numero = $(this).val().replace(regex,'');
@@ -490,6 +491,7 @@
 		});
 
 		$('.chosen').chosen({hide_results_on_select:false,allow_single_deselect:true});
+
 		$('.agendaData').datetimepicker({
 			timepicker:false,
 			format:'d/m/Y',
@@ -505,7 +507,9 @@
 		});
 
 		$("input.agendaData,input.data").inputmask("99/99/9999");
+		
 		$("input.telefone").inputmask("(99) 99999-9999");
+
 		$("input[name=cpf]").inputmask("999.999.999-99");
 		
 		$("input[name=agenda_hora]").inputmask("99:99");
@@ -604,7 +608,7 @@
 		        src: `box/boxPacienteTelefone.php?id_paciente=${id_paciente}`,
 		        type: "ajax"
 		    });
-		})
+		});
 		
 		
 	})

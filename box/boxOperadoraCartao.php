@@ -53,7 +53,7 @@
 											"id_bandeira"=>$b->id,
 											"operacao"=>"credito",
 											"parcela"=>$i,
-											"taxa"=>$_POST['credito_taxa_'.$i.'_'.$b->id],
+											"taxa"=>valor($_POST['credito_taxa_'.$i.'_'.$b->id]),
 											"cobrarCliente"=>isset($_POST['credito_cobrarCliente_'.$i.'_'.$b->id])?$_POST['credito_cobrarCliente_'.$i.'_'.$b->id]:0,
 											"prazo"=>$_POST['credito_prazo_'.$i.'_'.$b->id]);
 						}
@@ -76,7 +76,7 @@
 											"id_bandeira"=>$b->id,
 											"operacao"=>"debito",
 											"parcela"=>1,
-											"taxa"=>$_POST['debito_taxa_'.$b->id],
+											"taxa"=>valor($_POST['debito_taxa_'.$b->id]),
 											"cobrarCliente"=>isset($_POST['debito_cobrarCliente_'.$b->id])?$_POST['debito_cobrarCliente_'.$b->id]:0,
 											"prazo"=>$_POST['debito_prazo_'.$b->id]);
 					}
@@ -98,7 +98,6 @@
 						cobrarCliente='".$x->cobrarCliente."',
 						prazo='".$x->prazo."',
 						lixo=0";
-
 
 				$sql->consult($_p."parametros_cartoes_taxas","*",$where);
 
@@ -464,7 +463,7 @@
 						<table>
 							<tr>
 								<th></th>
-								<th style="width:50%">Taxa</th>
+								<th style="width:50%">Taxa (%)</th>
 								<th style="width:50%">Prazo</th>
 								<?php /*<th style="width:40%"></th>*/?>
 							</tr>
@@ -487,7 +486,7 @@
 							?>
 							<tr class="js-tr-<?php echo $v->id;?>" style="display: <?php echo $parcelaDisplay;?>;">
 								<td><?php echo $i;?>x</td>
-								<td><input type="text" name="credito_taxa_<?php echo $i."_".$v->id;?>" maxlength="4" class="js-maskFloat" value="<?php echo $parcelaTaxa;?>" /></td>
+								<td><input type="text" name="credito_taxa_<?php echo $i."_".$v->id;?>" maxlength="4" class="js-maskFloat" value="<?php echo number_format($parcelaTaxa,2,",","");?>" /></td>
 								<td><input type="text" name="credito_prazo_<?php echo $i."_".$v->id;?>" maxlength="3" class="js-maskNumber" value="<?php echo $parcelaPrazo;?>" /></td>
 								<?php /*<td><label><input type="checkbox" name="credito_cobrarCliente_<?php echo $i."_".$v->id;?>" value="1"<?php echo $parcelaCobrarCliente==1?" checked":"";?> /> cobrar cliente</label></td>*/?>
 							</tr>
@@ -513,7 +512,7 @@
 						?>
 						<div class="colunas2">
 							<dl>
-								<dt>Taxa</dt>
+								<dt>Taxa (%)</dt>
 								<dd><input type="text" name="debito_taxa_<?php echo $v->id;?>" value="<?php echo $debitoTaxa;?>" maxlength="4" /></dd>
 							</dl>
 							<dl>

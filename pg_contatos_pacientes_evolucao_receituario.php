@@ -1,4 +1,46 @@
 <?php
+	if(isset($_POST['ajax'])) {
+		require_once("lib/conf.php");	
+		require_once("usuarios/checa.php");
+
+		$sql = new Mysql();
+		$rtn = array();
+
+		if($_POST['ajax']=="persistirMedicamento") {
+
+			$medicamento=(isset($_POST['medicamento']) and !empty($_POST['medicamento']))?$_POST['medicamento']:'';
+			$quantidade=(isset($_POST['quantidade']) and is_numeric($_POST['quantidade']))?$_POST['quantidade']:'';
+			$tipo=(isset($_POST['tipo']) and !empty($_POST['tipo']))?$_POST['tipo']:'';
+			$posologia=(isset($_POST['posologia']) and !empty($_POST['posologia']))?$_POST['posologia']:'';
+			if(empty($medicamento)) {
+				$rtn=array('success'=>false,'error'=>'Medicamento não definido');
+			} else if(empty($quantidade)) {
+				$rtn=array('success'=>false,'error'=>'Quantidade não definida');
+			} else if(empty($tipo)) {
+				$rtn=array('success'=>false,'error'=>'Tipo do Medicamento não definido');
+			} else if(empty($posologia)) {
+				$rtn=array('success'=>false,'error'=>'Posologia não definida');
+			} else {
+				$vSQL="titulo='".addslashes(utf8_decode($medicamento))."',
+						lixo=0";
+
+				$sql->add($_p."medicamentos",$vSQL);
+				$id_medicamento=$sql->ulid;
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."medicamentos',id_reg='".$id_medicamento."'");
+
+				$rtn=array('success'=>true,
+							'medicamento'=>$medicamento,
+							'quantidade'=>$quantidade,
+							'tipo'=>$tipo,
+							'posologia'=>$posologia);
+			}
+		}
+
+		header("Content-type: application/json");
+		echo json_encode($rtn);
+		die();
+
+	}
 	include "includes/header.php";
 	include "includes/nav.php";
 
@@ -23,7 +65,7 @@
 	$_medicamentos=array();
 	$sql->consult($_p."medicamentos","*","where lixo=0 order by titulo");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_medicamentos[]=array('titulo'=>utf8_encode($x->titulo));
+		$_medicamentos[]=array('id'=>$x->id,'titulo'=>utf8_encode($x->titulo));
 	}
 
 	$_medicamentosTipos=array('ampola'=>'Ampola(s)',
@@ -185,10 +227,18 @@
 				var options = {
 						data: <?php echo json_encode($_medicamentos);?>,
 						getValue: "titulo",
-						list: {match: {enabled: true}},
+						list: {
+							match: {enabled: true},
+							onChooseEvent: function (){
+								val = $(".js-input-medicamento").getSelectedItemData().realName;
+								console.log(val);
+							}
+						},
 						  template: {
 								type: "custom",
-								method: function(value, item) {return item.titulo}
+								method: function(value, item) {
+									return item.titulo
+								}
 							}
 					};
 				$('.js-input-medicamento').easyAutocomplete(options);
@@ -383,17 +433,24 @@
 
 							<fieldset style="grid-column:span 2">
 								<legend><span class="badge">2</span>Selecione os medicamentos</legend>
-								<dl>
-									<dt>Medicamento</dt>
-									<dd>
-										<input type="text" class="js-input-medicamento noupper" style="width:600px;" />
-									</dd>
-								</dl>
-								<div class="colunas4">
+								<div class="colunas5">
+									<dl>
+										<dt>Medicamento</dt>
+										<dd>
+											<input type="text" class="js-input-medicamento" />
+											<a href="box/boxNovoMedicamento.php" data-fancybox data-type="ajax" class="button button__sec"><i class="iconify" data-icon="bx-bx-plus"></i></a>
+											
+										</dd>
+									</dl>	
 									<dl>
 										<dt>Quantidade</dt>
 										<dd>
 											<input type="number" min="1"  value="1" class="js-input-quantidade" />
+										</dd>
+									</dl>
+									<dl>
+										<dt>Tipo</dt>
+										<dd>
 											<select class="js-input-tipo">
 												<option value="">-</option>
 												<?php
@@ -404,6 +461,9 @@
 											</select>
 										</dd>
 									</dl>
+								</div>
+								<div class="">
+
 									<dl class="dl3">
 										<dt>Posologia</dt>
 										<dd>

@@ -1,3 +1,4 @@
+
 <?php
 	require_once("../lib/conf.php");
 	$dir="../";
@@ -144,8 +145,10 @@
 							  	"tipoBaixa"=>isset($_tipoBaixa[$x->tipoBaixa])?$_tipoBaixa[$x->tipoBaixa]:$x->tipoBaixa,
 							  	"id_formadepagamento"=>(int)$x->id_formadepagamento,
 							   	"formaDePagamento"=>isset($_formasDePagamento[$x->id_formadepagamento])?utf8_encode($_formasDePagamento[$x->id_formadepagamento]->titulo):'',
+							   	"pago"=>$x->pago,
 							   	"recibo"=>$x->recibo,
 							   	"parcelas"=>$x->parcelas,
+							   	"vencido"=>(strtotime($x->data_vencimento)<strtotime(date('Y-m-d'))?true:false),
 							   	"parcela"=>$x->parcela,
 							   	"obs"=>utf8_encode($x->obs),
 							   	"total"=>(float)$x->valor);
@@ -638,8 +641,14 @@
 			
 			<h1 class="filtros__titulo">Financeiro</h1>
 		
-			<div class="filtros-acoes">
+			<?php /*<div class="filtros-acoes">
 				<button type="button" class="principal js-salvar" onclick="document.location.reload();"><i class="iconify" data-icon="bx-bx-check"></i></button>
+			</div>*/?>
+
+			<div class="filter-group filter-group_right">
+				<div class="filter-button">
+					<a href="javascript:;" class="azul js-salvar" onclick="document.location.reload();"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+				</div>
 			</div>
 		</div>
 	</header>
@@ -847,6 +856,7 @@
 				<div class="registros">
 					<table class="js-table-baixas">
 						<tr>
+							<th></th>
 							<th>Data Pagamento</th>
 							<th>Tipo de Baixa</th>
 							<th>Forma/Obs.</th>

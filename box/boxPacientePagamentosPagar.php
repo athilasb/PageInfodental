@@ -1,4 +1,55 @@
 <?php
+
+
+	if(isset($_POST['ajax'])) {
+
+		require_once("../lib/conf.php");
+		$dir="../";
+		require_once("../usuarios/checa.php");
+
+
+		header("Content-type: application/json");
+		$rtn=array();
+
+		if($_POST['ajax']==="persistirBaixa") {
+			
+			$baixa='';
+			if(isset($_POST['id_baixa']) and is_numeric($_POST['id_baixa'])) {
+				$sql->consult($_p."pacientes_tratamentos_pagamentos_baixas","*","where id='".$_POST['id_baixa']."'");
+				if($sql->rows) {
+					$baixa=mysqli_fetch_object($sql->mysqry);
+
+				}
+			}
+
+			$dataPagamento='';
+			if(isset($_POST['dataPagamento']) and !empty($_POST['dataPagamento'])) {
+				list($dia,$mes,$ano) = explode("/",$_POST['dataPagamento']);
+				if(checkdate($mes, $dia, $ano)) {
+					$dataPagamento=$ano."-".$mes."-".$dia;
+				}
+			}
+
+
+
+			if(is_object($baixa))  {
+				if(!empty($dataPagamento)) {
+					$sql->update($_p."pacientes_tratamentos_pagamentos_baixas","pago=1,pago_data='".$dataPagamento."',pago_id_usuario=$usr->id","where id=$baixa->id");
+
+					$rtn=array('success'=>true);
+				} else {
+					$rtn=array('success'=>false,'error'=>'Defina uma data de pagamento válida!');
+				}
+			} else {
+				$rtn=array('success'=>false,'error'=>'Baixa não encontrada!');
+			}
+
+		}
+
+		echo json_encode($rtn);
+
+		die();
+	}
 	require_once("../lib/conf.php");
 	$dir="../";
 	require_once("../usuarios/checa.php");
@@ -40,15 +91,67 @@
 		
 ?>
 
+<script type="text/javascript">
+	var id_baixa = '<?php echo $baixa->id;?>';
+	var id_paciente = '<?php echo $pagamento->id_paciente;?>';
+	$(function(){
+		$('.js-pagar-dataPagamento').inputmask('99/99/9999').datetimepicker({
+																		timepicker:false,
+																		format:'d/m/Y',
+																		scrollMonth:false,
+																		scrollTime:false,
+																		scrollInput:false,
+																	});
+
+
+		$('.js-btn-pagar').click(function(){
+
+			let dataPagamento = $('.js-pagar-dataPagamento').val();
+			
+
+			if(dataPagamento.length==0) {
+				swal({title: "Erro!", text: "Defina a data de pagamento",  html:true,type:"error", confirmButtonColor: "#424242"});
+			} else {
+
+				let data = `ajax=persistirBaixa&dataPagamento=${dataPagamento}&id_baixa=${id_baixa}`;
+
+				$.ajax({
+					type:"POST",
+					data:data,
+					url:'box/<?php echo basename($_SERVER['PHP_SELF']);?>',
+					success:function(rtn) {
+						if(rtn.success) {
+							document.location.href=`pg_contatos_pacientes_financeiro.php?id_paciente=${id_paciente}`
+						} else if(rtn.error) {
+							swal({title: "Erro!", text: rtn.error,  html:true,type:"error", confirmButtonColor: "#424242"});
+						} else {
+							swal({title: "Erro!", text: "Algum erro ocorreu durante a confirmação de pagamento. Tente novamente!",  html:true,type:"error", confirmButtonColor: "#424242"});
+						}
+					},
+					error:function(){
+						swal({title: "Erro!", text: "Algum erro ocorreu durante a confirmação de pagamento. Tente novamente.",  html:true,type:"error", confirmButtonColor: "#424242"});
+					}
+				})
+			}
+
+			return false;
+		})
+	})
+</script>
+
 <section class="modal" style="height:auto; width:950px;">
 
 	<header class="modal-header">
 		<div class="filtros">
-			
+			<div class="filter-group">
+				<div class="filter-button">
+					<a href="javascript:;" onclick="$.fancybox.close();"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
+				</div>
+			</div>
 			<h1 class="filtros__titulo">Recebimento</h1>
 		
 			<div class="filtros-acoes">
-				<button type="button" class="principal js-salvar" onclick="$.fancybox.close()"><i class="iconify" data-icon="bx-bx-check"></i></button>
+				<button type="button" class="principal js-btn-pagar"><i class="iconify" data-icon="bx-bx-check"></i></button>
 			</div>
 		</div>
 	</header>
@@ -58,8 +161,15 @@
 		<form method="post" class="form js-form-agendamento">
 
 			<fieldset>
-				<legend>Informações do Pagamento</legend>
+				<legend>Confirmação do Pagamento</legend>
 				<div class="colunas3">
+
+					<dl>
+						<dt>Data do Pagamento</dt>
+						<dd><input type="text" value="<?php echo date('d/m/Y');?>" class="js-pagar-dataPagamento data datecalendar" /></dd>
+					</dl>
+				</div>
+				<?php /*<div class="colunas3">
 					<dl>
 						<dt>Vencimento do Pagamento</dt>
 						<dd><input type="text" value="<?php echo date('d/m/Y',strtotime($pagamento->data_vencimento));?>" disabled /></dd>
@@ -68,7 +178,7 @@
 						<dt>Valor do Pagamento</dt>
 						<dd><input type="text" value="<?php echo number_format($pagamento->valor,2,",",".");?>" disabled /></dd>
 					</dl>
-				</div>
+				</div>*/?>
 				<div class="colunas3">
 					<dl>
 						<dt>Vencimento da Parcela</dt>
@@ -85,22 +195,30 @@
 				</div>
 			</fieldset>
 
-
+			<?php
+			if(isset($_formasDePagamento[$baixa->id_formadepagamento]) and $_formasDePagamento[$baixa->id_formadepagamento]->tipo=="dinheiro") {
+			?>
 			<fieldset>
-				<legend>Informações do Pagamento</legend>
+				<legend>Conta</legend>
 				
 				<dl>
-					<dt>Banco/Conta</dt>
 					<dd>
 						<select name="id_banco">
 							<option value="">-</option>
 							<?php
-							foreach($_bancos as $x) echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
+							foreach($_bancos as $x) {
+								if($x->tipo=="dinheiro") {
+									echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
+								}
+							}
 							?>
 						</select>
 					</dd>
 				</dl>
 			</fieldset>
+			<?php
+			}
+			?>
 
 			<fieldset class="js-fieldset-pagamentos" style="display: none">
 				<legend>Baixa</legend>

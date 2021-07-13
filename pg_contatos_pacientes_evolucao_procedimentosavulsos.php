@@ -20,8 +20,7 @@
 			}
 
 			if(is_object($procedimento) and is_object($unidade)) {
-				$sql->consult($_p."parametros_procedimentos_planos","*","where id_procedimento=$procedimento->id and 
-																				id_unidade='".$unidade->id."'"); 
+				$sql->consult($_p."parametros_procedimentos_planos","*","where id_procedimento=$procedimento->id"); 
 				
 				$planosID=array();
 				$procedimentoPlano=array();
@@ -233,7 +232,6 @@
 		if(isset($_POST['procedimentos']) and !empty($_POST['procedimentos'])) {
 
 			$procedimentosJSON = json_decode($_POST['procedimentos']);
-
 			$procedimentosEvoluidos=array();
 			$erro='';
 			foreach($procedimentosJSON as $v) {
@@ -245,7 +243,6 @@
 					$erro='Procedimento '.$v->titulo.' não foi encontrado!';
 				}
 			}
-
 
 			if(empty($erro)) {
 

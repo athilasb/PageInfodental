@@ -19,7 +19,9 @@
 
 			$vSQL="id_especialidade='".$_POST['id_especialidade']."',
 				   id_regiao='".$_POST['id_regiao']."',
-					titulo='".addslashes(utf8_decode($_POST['titulo']))."'";
+					titulo='".addslashes(utf8_decode($_POST['titulo']))."',
+					quantitativo='".((isset($_POST['quantitativo']) and $_POST['quantitativo']==1)?1:0)."',
+					face='".((isset($_POST['face']) and $_POST['face']==1)?1:0)."'";
 
 			if(is_object($procedimento)) {
 				$vWHERE="where id=$procedimento->id";
@@ -40,8 +42,6 @@
 						$vsql="id_procedimento=$id_reg,
 								id_plano='".addslashes($p['id_plano'])."',
 								valor='".valor($p['valor'])."',
-								comissionamento='".valor($p['comissionamento'])."',
-								custo='".valor($p['custo'])."',
 								obs='".addslashes($p['obs'])."',
 								data=now(),
 								id_usuario=$usr->id";
@@ -122,9 +122,7 @@
 									'plano'=>$plano,
 									'id_plano'=>$x->id_plano,
 									'obs'=>utf8_encode($x->obs),
-									'valor'=>number_format($x->valor,2,",","."),
-									'comissionamento'=>number_format($x->comissionamento,2,",","."),
-									'custo'=>number_format($x->custo,2,",","."));
+									'valor'=>number_format($x->valor,2,",","."));
 				}
 
 				$rtn=array('success'=>true,'select'=>$_planosSel,'planos'=>$planos);
@@ -177,8 +175,6 @@
 									id_unidade=$unidade->id,
 									id_plano=$plano->id,
 									valor='".valor($_POST['valor'])."',
-									custo='".valor($_POST['custo'])."',
-									comissionamento='".valor($_POST['comissionamento'])."',
 									obs='".addslashes(utf8_decode($_POST['obs']))."'";
 
 							if(is_object($procPlano)) {
@@ -388,7 +384,7 @@
 		die();
 	}
 
-	$campos=explode(",","id_especialidade,titulo,id_regiao");
+	$campos=explode(",","id_especialidade,titulo,id_regiao,face,quantitativo");
 		
 	foreach($campos as $v) $values[$v]='';
 	$values['camposEvolucao']=array();
@@ -426,6 +422,7 @@
 ?>
 <script>
 	var id_procedimento = '<?php echo is_object($procedimento)?$procedimento->id:'';?>';
+	var id_unidade = '<?php echo $usrUnidade->id;?>';
 	$(function(){
 		$('.js-remover').click(function(){
 
@@ -440,7 +437,7 @@
 						success:function(rtn){
 							swal.close();  
 							if(rtn.success) {
-								$.fancybox.close();
+								document.location.href=`pg_configuracao_procedimentos_servicos.php`
 							} else if(rtn.error) {
 								swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 							} else {
@@ -481,7 +478,7 @@
 					data:data,
 					success:function(rtn) {
 						if(rtn.success) {
-							$.fancybox.close();
+							document.location.href=`pg_configuracao_procedimentos_servicos.php`
 						} else if(rtn.error) {
 							swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 						} else {
@@ -508,7 +505,7 @@
 			?>
 			<h1 class="filtros__titulo"></h1>
 			<div class="filtros-acoes filter-button">
-				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>Salvar</span></a>
 			</div>
 			<?php
 				} else {
@@ -516,8 +513,8 @@
 			<h1 class="filtros__titulo">Editar</h1>
 			
 			<div class="filtros-acoes filter-button">
-				<a href="javascript:;" class="js-remover" onclick="document.location.reload();"><i class="iconify" data-icon="bx-bx-trash"></i></a>
-				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+				<a href="javascript:;" class="js-remover"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>Salvar</span></a>
 			</div>
 			<?php
 				}
@@ -525,6 +522,25 @@
 		
 		</div>
 	</header>
+
+	<script type="text/javascript">
+		$(function(){
+			$('select[name=id_regiao]').change(function(){
+				let face = $(this).find(':checked').attr('data-face');
+				let quantitativo = $(this).find(':checked').attr('data-quantitativo');
+
+				$('.js-quantitativo, .js-face').hide();
+
+				if(face==1) {
+					$('.js-face').show();
+				} 
+				if(quantitativo==1) {
+					$('.js-quantitativo').show();
+				} 
+
+			}).trigger('change');
+		});
+	</script>
 	
 	<article class="modal-conteudo">
 
@@ -564,6 +580,16 @@
 							</select>
 						</dd>
 					</dl>
+					<dl class="js-face">
+						<dt>&nbsp;</dt>
+						<dd><label><input type="checkbox" name="face" value="1"<?php echo $values['face']==1?" checked":"";?> /> Por Face</label></dd>
+					</dl>
+					<dl class="js-quantitativo">
+						<dt>&nbsp;</dt>
+						<dd>
+							<label><input type="checkbox" name="quantitativo" value="1"<?php echo $values['quantitativo']==1?" checked":"";?> /> Procedimento quantitativo <a href="javascript:;" class="tooltip" style="color: var(--cor1)" title="Exige definição de quantidade ao incluir em um Plano de Tratamento"><span class="iconify" data-icon="dashicons:editor-help" data-inline="true" data-width="20"></span></a></label>
+						</dd>
+					</dl>
 				
 				</div>
 			</fieldset>
@@ -586,14 +612,6 @@
 							<dt>Valor</dt>
 							<dd><input type="text" class="js-plano-valor money" /></dd>
 						</dl>
-						<dl>
-							<dt>Custo</dt>
-							<dd><input type="text" class="js-plano-custo money" /></dd>
-						</dl>
-						<dl>
-							<dt>Comissionamento Valor Fixo</dt>
-							<dd><input type="text" class="js-plano-comissionamento money" /></dd>
-						</dl>
 					</div>
 					<div class="colunas4">
 						
@@ -604,8 +622,7 @@
 						<dl>
 							<dt>&nbsp;</dt>
 							<dd>
-								<a href="javascript:;" class="button button__sec js-plano-salvar"><i class="iconify" data-icon="bx-bx-check"></i></a>
-								
+								<button type="button" class="button js-plano-salvar"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar</button>
 								<a href="javascript:;" class="js-plano-cancelar tooltip" style="display: none;color:red" title="Cancelar edição"><span class="iconify" data-icon="icons8:cancel"></span> cancelar edição</a>
 							</dd>
 						</dl>
@@ -636,7 +653,7 @@
 										rtn.planos.forEach(x => {
 											$('.js-plano-id_plano').find(`option[value=${x.id_plano}]`).remove();
 											
-											let tr = `<tr><td>${x.plano}</td><td>${x.valor}</td><td>${x.custo}</td><td>${x.comissionamento}</td><td class="js-obs"></td><td><a href="javascript:;" data-id="${x.id}" class="js-editar registros__acao registros__acao_sec"><i class="iconify" data-icon="bx:bxs-edit-alt"></i></a><a href="javascript:;" data-id="${x.id}" class="js-remover registros__acao registros__acao_sec"><i class="iconify" data-icon="bx:bxs-trash"></i></a></tr>`;
+											let tr = `<tr><td>${x.plano}</td><td>${x.valor}</td><td class="js-obs"></td><td><a href="javascript:;" data-id="${x.id}" class="js-editar registros__acao registros__acao_sec"><i class="iconify" data-icon="bx:bxs-edit-alt"></i></a><a href="javascript:;" data-id="${x.id}" class="js-remover registros__acao registros__acao_sec"><i class="iconify" data-icon="bx:bxs-trash"></i></a></tr>`;
 											$('.js-planos-table tbody').append(tr);
 
 											let obs = x.obs.length>0?`<a href="javascript:" class="tooltip botao" title="${x.obs}"><span class="iconify" data-icon="fa-solid:comment"></span></a>`:`<span class="iconify" data-icon="fa-solid:comment" style="opacity:0.3"></span>`;
@@ -657,8 +674,6 @@
 						function planoAdicionar() {
 							let id_plano = $('select.js-plano-id_plano').val();
 							let valor = $('input.js-plano-valor').val();
-							let custo = $('input.js-plano-custo').val();
-							let comissionamento = $('input.js-plano-comissionamento').val();
 							let obs = $('input.js-plano-obs').val();
 							let id_procedimento_plano = $('input.js-plano-id').val();
 
@@ -668,7 +683,7 @@
 								swal({title: "Erro!", text: "Selecione o Valor!", type:"error", confirmButtonColor: "#424242"});
 							} else {
 
-								let data = `ajax=planoAdicionar&id_plano=${id_plano}&id_unidade=${id_unidade}&id_procedimento=${id_procedimento}&valor=${valor}&custo=${custo}&obs=${obs}&id_procedimento_plano=${id_procedimento_plano}&comissionamento=${comissionamento}`;
+								let data = `ajax=planoAdicionar&id_plano=${id_plano}&id_unidade=${id_unidade}&id_procedimento=${id_procedimento}&valor=${valor}&obs=${obs}&id_procedimento_plano=${id_procedimento_plano}`;
 								console.log(data);
 								$.ajax({
 									type:'POST',
@@ -678,8 +693,6 @@
 										if(rtn.success===true) {
 											$('select.js-plano-id_plano').val(``);
 											$('input.js-plano-valor').val(``);
-											$('input.js-plano-custo').val(``);
-											$('input.js-plano-comissionamento').val(``);
 											$('input.js-plano-obs').val(``);
 											$('input.js-plano-id').val(0);
 											planoListar();
@@ -713,8 +726,6 @@
 									$('select.js-plano-id_plano').find(`option[value=${obj[0].id_plano}]`).remove();
 									$('select.js-plano-id_plano').val(``);
 									$('input.js-plano-valor').val(``);
-									$('input.js-plano-custo').val(``);
-									$('input.js-plano-comissionamento').val(``);
 									$('input.js-plano-obs').val(``);
 									$('input.js-plano-id').val(0);
 								}
@@ -746,8 +757,6 @@
 														if(id_procedimento_plano==$('input.js-plano-id').val()) {
 															$('select.js-plano-id_plano').val(``);
 															$('input.js-plano-valor').val(``);
-															$('input.js-plano-custo').val(``);
-															$('input.js-plano-comissionamento').val(``);
 															$('input.js-plano-obs').val(``);
 															$('input.js-plano-id').val(0);
 															$('.js-plano-cancelar').hide();
@@ -782,8 +791,6 @@
 									$('input.js-plano-id').val(obj[0].id)
 									$('select.js-plano-id_plano').val(obj[0].id_plano);
 									$('input.js-plano-valor').val(obj[0].valor);
-									$('input.js-plano-custo').val(obj[0].custo);
-									$('input.js-plano-comissionamento').val(obj[0].comissionamento);
 									$('input.js-plano-obs').val(obj[0].obs);
 									$('.js-plano-cancelar').show();
 								} else {
@@ -798,8 +805,6 @@
 								<tr>
 									<th>Plano</th>
 									<th>Valor</th>
-									<th>Custo</th>
-									<th>Comissionamento</th>
 									<th style="width:50px;">Obs.</th>
 									<th style="width:120px"></th>
 								</tr>
@@ -831,15 +836,6 @@
 						<dt>Valor</dt>
 						<dd><input type="text" class="js-plano-valor money" /></dd>
 					</dl>
-					<dl>
-						<dt>Custo</dt>
-						<dd><input type="text" class="js-plano-custo money" /></dd>
-					</dl>
-
-					<dl>
-						<dt>Comissionamento Valor Fixo</dt>
-						<dd><input type="text" class="js-plano-comissionamento money" /></dd>
-					</dl>
 					
 				</div>
 				<div class="colunas4">
@@ -851,8 +847,7 @@
 					<dl>
 						<dt>&nbsp;</dt>
 						<dd>
-							<a href="javascript:;" class="button button__sec js-plano-salvar"><i class="iconify" data-icon="bx-bx-check"></i></a>
-							
+							<button type="button" class="button js-plano-salvar">Adicionar</button>
 							<a href="javascript:;" class="js-plano-cancelar tooltip" style="display: none;color:red" title="Cancelar edição"><span class="iconify" data-icon="icons8:cancel"></span> cancelar edição</a>
 						</dd>
 					</dl>
@@ -867,8 +862,6 @@
 							let tr = `<tr>
 											<td>${x.plano}</td>
 											<td>${x.valor}</td>
-											<td>${x.custo}</td>
-											<td>${x.comissionamento}</td>
 											<td class="js-obs"></td>
 											<td>
 												<a href="javascript:;" data-id="${x.id}" class="js-editar registros__acao registros__acao_sec"><i class="iconify" data-icon="bx:bxs-edit-alt"></i></a><a href="javascript:;" data-id="${x.id}" class="js-remover registros__acao registros__acao_sec"><i class="iconify" data-icon="bx:bxs-trash"></i></a>
@@ -906,8 +899,6 @@
 								$('select.js-plano-id_plano').append(`<option value="${x.id_plano}" data-plano="${x.plano}">${x.plano}</option>`);
 								$('select.js-plano-id_plano').find(`option[value=${x.id_plano}]`).prop('selected',true);
 								$('input.js-plano-valor').val(x.valor);
-								$('input.js-plano-custo').val(x.custo);
-								$('input.js-plano-comissionamento').val(x.comissionamento);
 								$('input.js-plano-obs').val(x.obs);
 								$('.js-plano-cancelar').show();
 								return;
@@ -917,8 +908,6 @@
 					function planoAdicionar() {
 						let id_plano = $('select.js-plano-id_plano').val();
 						let valor = $('input.js-plano-valor').val();
-						let custo = $('input.js-plano-custo').val();
-						let comissionamento = $('input.js-plano-comissionamento').val();
 						let obs = $('input.js-plano-obs').val();
 
 						if(id_plano.length==0) {
@@ -932,10 +921,7 @@
 							item.id_plano=id_plano;
 							item.plano=plano;
 							item.valor=valor;
-							item.custo=custo;
-							item.comissionamento=comissionamento;
 							item.obs=obs;
-
 
 							if($('.js-plano-editando').val().length && eval($('.js-plano-editando').val())>0) {
 								let indexEdita=eval($('.js-plano-editando').val()); 
@@ -958,8 +944,6 @@
 							
 							$('select.js-plano-id_plano').val('');
 							$('input.js-plano-valor').val('');
-							$('input.js-plano-custo').val('');
-							$('input.js-plano-comissionamento').val('');
 							$('input.js-plano-obs').val('');
 							$('.js-plano-editando').val('');
 							$('.js-plano-cancelar').hide();
@@ -1002,8 +986,6 @@
 							$('select.js-plano-id_plano').find(`option:selected`).remove();
 							$('select.js-plano-id_plano').val(``);
 							$('input.js-plano-valor').val(``);
-							$('input.js-plano-custo').val(``);
-							$('input.js-plano-comissionamento').val(``);
 							$('input.js-plano-obs').val(``);
 							$('input.js-plano-id').val(0);
 							
@@ -1024,8 +1006,6 @@
 							<tr>
 								<th>Plano</th>
 								<th>Valor</th>
-								<th>Custo</th>
-								<th>Comissionamento</th>
 								<th style="width:50px;">Obs.</th>
 								<th style="width:120px"></th>
 							</tr>

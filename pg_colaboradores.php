@@ -498,7 +498,7 @@
 						} else {
 							while($x=mysqli_fetch_object($sql->mysqry)) {
 						?>
-						<a href="pg_colaboradores_dadospessoais.php?id_colaborador=<?php echo $x->id?>" class="reg-group">
+						<a href="pg_colaboradores_dadospessoais.php?edita=<?php echo $x->id?>" class="reg-group">
 							<div class="reg-color" style="background-color:green;"></div>
 							<div class="reg-data" style="flex:0 1 50%;">
 								<h1><?php echo strtoupperWLIB(utf8_encode($x->nome));?></h1>

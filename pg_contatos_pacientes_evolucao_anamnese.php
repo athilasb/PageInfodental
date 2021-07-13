@@ -60,6 +60,11 @@
 		$_anamnese[$x->id]=$x;
 	}
 
+	$_profissionais=array();
+	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_profissionais[$x->id]=$x;
+	}
 
 	$evolucao='';
 	if(isset($_GET['edita']) and is_numeric($_GET['edita'])) {	
@@ -67,6 +72,7 @@
 		if($sql->rows) {
 			$evolucao=mysqli_fetch_object($sql->mysqry);
 			$_GET['id_anamnese']=$evolucao->id_anamnese;
+			$_GET['id_profissional']=$evolucao->id_profissional;
 		} else {
 			$jsc->jAlert("Anamnese não encontrada","erro","document.location.href='pg_contatos_pacientes_evolucao.php?id_paciente='".$paciente->id."'");
 			die();
@@ -76,6 +82,11 @@
 	$anamnese='';
 	if(isset($_GET['id_anamnese']) and is_numeric($_GET['id_anamnese']) and isset($_anamnese[$_GET['id_anamnese']])) {
 		$anamnese=$_anamnese[$_GET['id_anamnese']];
+	}
+
+	$profissional='';
+	if(isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional']) and isset($_profissionais[$_GET['id_profissional']])) {
+		$profissional=$_profissionais[$_GET['id_profissional']];
 	}
 	?>
 	<section class="content">
@@ -94,8 +105,14 @@
 				});
 				$('.js-anamnese').change(function(){
 					let id_anamnese = $(this).val();
-					document.location.href=`<?php echo "$_page?id_paciente=$paciente->id"?>&id_anamnese=${this.value}`;
-				})
+					let id_profissional = $('select[name=id_profissional]').val();
+
+					if(id_profissional.length==0) {
+						swal({title: "Erro!", text: 'Selecione o profissional', html:true, type:"error", confirmButtonColor: "#424242"});		
+					} else {
+						document.location.href=`<?php echo "$_page?id_paciente=$paciente->id"?>&id_anamnese=${this.value}&id_profissional=${id_profissional}`;
+					}
+				});
 				$('.js-btn-salvar').click(function(){
 					///$('form').submit();
 
@@ -158,11 +175,28 @@
 
 					<form class="form js-form-anamnese" method="post">
 						<input type="hidden" name="acao" value="wlib" />
+
 						<fieldset>
-							<legend><span class="badge">1</span> Tipo de Anamnese</legend>
+							<legend><span class="badge">1</span> Profissional</legend>
 							<dl>
 								<dd>
-									<select name="id_anamnese" class="chosen js-anamnese" data-placeholder="Selecione"<?php echo is_object($anamnese)?" disabled":"";?>>
+									<select name="id_profissional" class="chosen" data-placeholder="Selecione">
+										<option value=""></option>
+										<?php
+										foreach($_profissionais as $x) {
+											echo '<option value="'.$x->id.'"'.((is_object($profissional) and $profissional->id==$x->id)?' selected':'').'>'.utf8_encode($x->nome).'</option>';
+										}
+										?>
+									</select>
+								</dd>
+							</dl>
+						</fieldset>
+
+						<fieldset>
+							<legend><span class="badge">2</span> Tipo de Anamnese</legend>
+							<dl>
+								<dd>
+									<select name="id_anamnese" class="chosen js-anamnese" data-placeholder="Selecione">
 										<option value=""></option>
 										<?php
 										foreach($_anamnese as $x) {
@@ -187,6 +221,7 @@
 										if(is_object($evolucao)) {
 											//$sql->update($_p."pacientes_evolucoes","obs='".addslashes(utf8_decode($_POST['obs']))."'","where id=$evolucao->id");
 											$id_evolucao=$evolucao->id;
+											$sql->update($_p."pacientes_evolucoes","id_profissional='".$_POST['id_profissional']."'","where id=$id_evolucao");
 										} else {
 											// id_tipo = 1 -> Procedimentos Aprovados
 											$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
@@ -201,7 +236,8 @@
 																						id_tipo=1,
 																						id_anamnese=$anamnese->id,
 																						id_paciente=$paciente->id,
-																						id_usuario=$usr->id");
+																						id_usuario=$usr->id,
+																						id_profissional=$profissional->id");
 												$id_evolucao=$sql->ulid;
 											}
 										}

@@ -6,7 +6,24 @@
 		$sql = new Mysql();
 
 		$rtn = array();
-		if($_POST['ajax']=="indicacoesLista") {
+		if($_POST['ajax']=="persistirProfissao") {
+
+			$titulo=(isset($_POST['titulo']) and !empty($_POST['titulo']))?$_POST['titulo']:'';
+			if(empty($titulo)) {
+				$rtn=array('success'=>false,'error'=>'Título não definido');
+			} else {
+				$vSQL="titulo='".addslashes(utf8_decode(strtoupperWLIB($titulo)))."',
+						lixo=0";
+
+				$sql->add($_p."parametros_profissoes",$vSQL);
+				$id_profissao=$sql->ulid;
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."parametros_profissoes',id_reg='".$id_profissao."'");
+
+				$rtn=array('success'=>true,
+							'id_profissao'=>$id_profissao,
+							'profissao'=>strtoupperWLIB($titulo));
+			}
+		} else if($_POST['ajax']=="indicacoesLista") {
 
 			$indicacoesLista=array();
 			if(isset($_POST['indicacao_tipo'])) {
@@ -120,7 +137,7 @@
 	}
 
 
-	$campos=explode(",","nome,situacao,sexo,foto,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,profissao,estado_civil,telefone1,telefone1_whatsapp,telefone1_whatsapp_permissao,telefone2,email,instagram,instagram_naopossui,musica,indicacao_tipo,indicacao,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,responsavel_possui,responsavel_nome,responsavel_sexo,responsavel_rg,responsavel_rg_orgaoemissor,responsavel_rg_estado,responsavel_datanascimento,responsavel_estadocivil,responsavel_cpf,responsavel_profissao,responsavel_grauparentesco,preferencia_contato,estrangeiro,estrangeiro_passaporte,lat,lng");
+	$campos=explode(",","nome,situacao,sexo,foto,rg,rg_orgaoemissor,rg_uf,cpf,data_nascimento,profissao,estado_civil,telefone1,telefone1_whatsapp,telefone1_whatsapp_permissao,telefone2,email,instagram,instagram_naopossui,musica,indicacao_tipo,indicacao,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,responsavel_possui,responsavel_nome,responsavel_sexo,responsavel_rg,responsavel_rg_orgaoemissor,responsavel_rg_estado,responsavel_datanascimento,responsavel_estadocivil,responsavel_cpf,responsavel_profissao,responsavel_grauparentesco,preferencia_contato,estrangeiro,estrangeiro_passaporte,lat,lng");
 	
 	foreach($campos as $v) $values[$v]='';
 	$values['data']=date('d/m/Y H:i');
@@ -134,6 +151,14 @@
 	}
 
 	if(isset($_POST['acao']) and $_POST['acao']=="wlib") {
+
+
+		// aplica capitalize no campo nome
+		if(isset($_POST['nome'])) {
+			$_POST['nome']=ucwords(strtolowerWLIB($_POST['nome']));
+		}
+
+
 		$vSQL=$adm->vSQL($campos,$_POST);
 		$values=$adm->values;
 		$processa=true;
@@ -351,7 +376,7 @@
 								<dl class="dl3">
 									<dt>Nome</dt>
 									<dd>
-										<input type="text" name="nome" value="<?php echo $values['nome'];?>" class="obg" style="width: 840px;"/>
+										<input type="text" name="nome" value="<?php echo $values['nome'];?>" class="obg" style="text-transform: capitalize;"/>
 									</dd>
 								</dl>
 								<dl>
@@ -402,7 +427,7 @@
 								<dl>
 									<dt>UF</dt>
 									<dd>
-										<?php $inEstado=strtoupperWLIB($values['rg_orgaoemissor']);?><select name="rg_orgaoemissor" class="chosen"><option value="">-</option><option value="AC"<?php echo $inEstado=="AC"?" selected":"";?>>ACRE</option><option value="AL"<?php echo $inEstado=="AL"?" selected":"";?>>ALAGOAS</option><option value="AM"<?php echo $inEstado=="AM"?" selected":"";?>>AMAZONAS</option><option value="AP"<?php echo $inEstado=="AP"?" selected":"";?>>AMAPÁ</option><option value="BA"<?php echo $inEstado=="BA"?" selected":"";?>>BAHIA</option><option value="CE"<?php echo $inEstado=="CE"?" selected":"";?>>CEARÁ</option><option value="DF"<?php echo $inEstado=="DF"?" selected":"";?>>DISTRITO FEDERAL</option><option value="ES"<?php echo $inEstado=="ES"?" selected":"";?>>ESPÍRITO SANTO</option><option value="GO"<?php echo $inEstado=="GO"?" selected":"";?>>GOIÁS</option><option value="MA"<?php echo $inEstado=="MA"?" selected":"";?>>MARANHÃO</option><option value="MT"<?php echo $inEstado=="MT"?" selected":"";?>>MATO GROSSO</option><option value="MS"<?php echo $inEstado=="MS"?" selected":"";?>>MATO GROSSO DO SUL</option><option value="MG"<?php echo $inEstado=="MG"?" selected":"";?>>MINAS GERAIS</option><option value="PA"<?php echo $inEstado=="PA"?" selected":"";?>>PARÁ</option><option value="PB"<?php echo $inEstado=="PB"?" selected":"";?>>PARAÍBA</option><option value="PR"<?php echo $inEstado=="PR"?" selected":"";?>>PARANÁ</option><option value="PE"<?php echo $inEstado=="PE"?" selected":"";?>>PERNANBUMCO</option><option value="PI"<?php echo $inEstado=="PI"?" selected":"";?>>PIAUÍ</option><option value="RJ"<?php echo $inEstado=="RJ"?" selected":"";?>>RIO DE JANEIRO</option><option value="RN"<?php echo $inEstado=="RN"?" selected":"";?>>RIO GRANDE DO NORTE</option><option value="RO"<?php echo $inEstado=="RO"?" selected":"";?>>RONDÔNIA</option><option value="RS"<?php echo $inEstado=="RS"?" selected":"";?>>RIO GRANDE DO SUL</option><option value="RR"<?php echo $inEstado=="RR"?" selected":"";?>>RORAIMA</option><option value="SC"<?php echo $inEstado=="SC"?" selected":"";?>>SANTA CATARINA</option><option value="SE"<?php echo $inEstado=="SE"?" selected":"";?>>SERGIPE</option><option value="SP"<?php echo $inEstado=="SP"?" selected":"";?>>SÃO PAULO</option><option value="TO"<?php echo $inEstado=="TO"?" selected":"";?>>TOCANTINS</option></select>
+										<?php $inEstado=strtoupperWLIB($values['rg_uf']);?><select name="rg_uf" class="chosen"><option value="">-</option><option value="AC"<?php echo $inEstado=="AC"?" selected":"";?>>ACRE</option><option value="AL"<?php echo $inEstado=="AL"?" selected":"";?>>ALAGOAS</option><option value="AM"<?php echo $inEstado=="AM"?" selected":"";?>>AMAZONAS</option><option value="AP"<?php echo $inEstado=="AP"?" selected":"";?>>AMAPÁ</option><option value="BA"<?php echo $inEstado=="BA"?" selected":"";?>>BAHIA</option><option value="CE"<?php echo $inEstado=="CE"?" selected":"";?>>CEARÁ</option><option value="DF"<?php echo $inEstado=="DF"?" selected":"";?>>DISTRITO FEDERAL</option><option value="ES"<?php echo $inEstado=="ES"?" selected":"";?>>ESPÍRITO SANTO</option><option value="GO"<?php echo $inEstado=="GO"?" selected":"";?>>GOIÁS</option><option value="MA"<?php echo $inEstado=="MA"?" selected":"";?>>MARANHÃO</option><option value="MT"<?php echo $inEstado=="MT"?" selected":"";?>>MATO GROSSO</option><option value="MS"<?php echo $inEstado=="MS"?" selected":"";?>>MATO GROSSO DO SUL</option><option value="MG"<?php echo $inEstado=="MG"?" selected":"";?>>MINAS GERAIS</option><option value="PA"<?php echo $inEstado=="PA"?" selected":"";?>>PARÁ</option><option value="PB"<?php echo $inEstado=="PB"?" selected":"";?>>PARAÍBA</option><option value="PR"<?php echo $inEstado=="PR"?" selected":"";?>>PARANÁ</option><option value="PE"<?php echo $inEstado=="PE"?" selected":"";?>>PERNANBUMCO</option><option value="PI"<?php echo $inEstado=="PI"?" selected":"";?>>PIAUÍ</option><option value="RJ"<?php echo $inEstado=="RJ"?" selected":"";?>>RIO DE JANEIRO</option><option value="RN"<?php echo $inEstado=="RN"?" selected":"";?>>RIO GRANDE DO NORTE</option><option value="RO"<?php echo $inEstado=="RO"?" selected":"";?>>RONDÔNIA</option><option value="RS"<?php echo $inEstado=="RS"?" selected":"";?>>RIO GRANDE DO SUL</option><option value="RR"<?php echo $inEstado=="RR"?" selected":"";?>>RORAIMA</option><option value="SC"<?php echo $inEstado=="SC"?" selected":"";?>>SANTA CATARINA</option><option value="SE"<?php echo $inEstado=="SE"?" selected":"";?>>SERGIPE</option><option value="SP"<?php echo $inEstado=="SP"?" selected":"";?>>SÃO PAULO</option><option value="TO"<?php echo $inEstado=="TO"?" selected":"";?>>TOCANTINS</option></select>
 									</dd>
 								</dl>
 							</div>
@@ -439,14 +464,15 @@
 								<dl class="dl2">
 									<dt>Profissão</dt>
 									<dd>
-										<select name="profissao" class="chosen">
-											<option value="">-</option>
+										<select name="profissao" class="chosen" data-placeholder="PROFISSÃO">
+											<option value=""></option>
 											<?php
 											foreach($_profissoes as $v) {
 												echo '<option value="'.$v->id.'"'.(($values['profissao']==$v->id)?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
 											}
 											?>
 										</select>
+										<a href="box/boxNovaProfissao.php" data-fancybox data-type="ajax" class="button button__sec"><i class="iconify" data-icon="bx-bx-plus"></i></a>
 									</dd>
 								</dl>						
 								<dl>
@@ -460,7 +486,7 @@
 								<dl class="dl2">
 									<dt>&nbsp;</dt>
 									<dd>
-										<label><input type="checkbox" class="input-switch" name="estrangeiro" value="1"<?php echo $values['estrangeiro']==1?" checked":"";?> /> Estrangeiro</label>
+										<label><input type="checkbox" class="input-switch" name="estrangeiro" value="1"<?php echo (isset($values['estrangeiro']) and $values['estrangeiro']==1)?" checked":"";?> /> Estrangeiro</label>
 									</dd>
 								</dl>
 								<dl class="dl2">
@@ -574,7 +600,7 @@
 											<?php
 											foreach($_preferenciaContato as $k=>$v) {
 											?>
-											<label><input type="radio" name="preferencia_contato" value="<?php echo $k;?>"<?php echo ($values['preferencia_contato']==$k)?" checked":"";?> /> <?php echo $v;?></label>
+											<label><input type="radio" name="preferencia_contato" value="<?php echo $k;?>"<?php echo (isset($values['preferencia_contato']) and $values['preferencia_contato']==$k)?" checked":"";?> /> <?php echo $v;?></label>
 											<?php
 											}
 											?>
@@ -712,12 +738,18 @@
 									</div>
 								</div>
 							</legend>
+							<dl>
+								<dt>Endereço</dt>
+								<dd>
+									<input type="text" name="endereco" value="<?php echo $values['endereco']; ?>" id="search" class="" />
+								</dd>
+							</dl>
 							<div class="colunas4">
 								<dl class="dl2">
 									<dt>CEP</dt>
 									<dd>
 										<input type="text" name="cep" id="inpt-cep" value="<?php echo $values['cep'];?>" class="cep" autocomplete="off" style="width:80%float:left;;" />
-										<a href="javascript:;" id="js-consultacep" class="button button__sec tooltip" style="float:right;"><i class="iconify" data-icon="bx-bx-search" data-inline="false"></i></a>
+										<?php /* <a href="javascript:;" id="js-consultacep" class="button button__sec tooltip" style="float:right;"><i class="iconify" data-icon="bx-bx-search" data-inline="false"></i></a> */ ?>
 									</dd>
 								</dl>
 							</div>
@@ -750,12 +782,6 @@
 									<dd><input type="text" name="bairro" value="<?php echo $values['bairro']; ?>" class="" /></dd>
 								</dl>
 							</div>
-							<dl class="dl2">
-								<dt>Endereço</dt>
-								<dd>
-									<input type="text" name="endereco" value="<?php echo $values['endereco']; ?>" id="search" class="" />
-								</dd>
-							</dl>
 							<dl class="dl2">
 								<dt>Complemento</dt>
 								<dd>
@@ -842,10 +868,10 @@
 								<dl>
 									<dt>Sexo</dt>
 									<dd>
-										<select name="sexo" class="">
+										<select name="responsavel_sexo" class="">
 											<option value="">-</option>
-											<option value="M"<?php echo $values['sexo']=="M"?" selected":"";?>>Masculino</option>
-											<option value="F"<?php echo $values['sexo']=="F"?" selected":"";?>>Feminino</option>
+											<option value="M"<?php echo $values['responsavel_sexo']=="M"?" selected":"";?>>Masculino</option>
+											<option value="F"<?php echo $values['responsavel_sexo']=="F"?" selected":"";?>>Feminino</option>
 										</select>
 									</dd>
 								</dl>
@@ -905,11 +931,11 @@
 								<dl class="dl2">
 									<dt>Estado Civil</dt>
 									<dd>
-										<select name="estado_civil" class="chosen">
+										<select name="responsavel_estado_civil" class="chosen">
 											<option value=""></option>
 											<?php
 											foreach($_pacienteEstadoCivil as $k=>$v) {
-												echo '<option value="'.$k.'"'.(($values['estado_civil']==$k)?' selected':'').'>'.$v.'</option>';
+												echo '<option value="'.$k.'"'.(($values['responsavel_estado_civil']==$k)?' selected':'').'>'.$v.'</option>';
 											}
 											?>
 										</select>

@@ -400,7 +400,7 @@
 			</form>
 		<?php
 		} else {
-			$where="WHERE id_paciente=$paciente->id and lixo=0 order by data desc, id desc";
+			$where="WHERE id_paciente=$paciente->id and id_fusao=0 and lixo=0 order by data desc, id desc";
 			$sql->consult($_table,"*",$where);
 
 			$valor=array('aReceber'=>0,
@@ -436,7 +436,7 @@
 
 			$_baixas=array();
 			$pagamentosComBaixas=array();
-			$sql->consult($_table."_baixas","*","where id_pagamento IN (".implode(",",$pagamentosIDs).") and lixo=0");
+			$sql->consult($_table."_baixas","*","where id_pagamento IN (".implode(",",$pagamentosIDs).") and lixo=0 order by data_vencimento asc");
 			if($sql->rows) {
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$_baixas[$x->id_pagamento][]=$x;
@@ -453,7 +453,7 @@
 					
 					$dataUltimoPagamento=date('d/m/Y',strtotime($_baixas[$x->id][count($_baixas[$x->id])-1]->data));
 
-					foreach($_baixas[$x->id] as $v) {
+			   		foreach($_baixas[$x->id] as $v) {
 
 						$valor['valorRecebido']+=$v->valor;
 						//$saldoAPagar-=$v->valor;
@@ -505,7 +505,6 @@
 							$('.js-valorCreditoDebitoTaxa').val(`${cobrarTaxa==1?"+":"-"} ${taxa}%`);
 						}
 
-
 					} else if(tipo=='debito') {
 						let taxa = eval($('select.js-debitoBandeira option:selected').attr('data-taxa'));
 						let id_operadora = $('select.js-debitoBandeira option:checked').attr('data-id_operadora');
@@ -524,6 +523,7 @@
 					} else {
 						$('.js-valorCreditoDebitoTaxa').val('-');
 						$('.js-valorCreditoDebito').val('-');
+
 					}
 
 
@@ -574,6 +574,7 @@
 								let btns = ``;
 
 								if(x.pago==1) {
+									icon = `<span class="iconify" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
 
 								} else {
 									btns=`<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" style="color:#FFF;" title="Estorno"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
@@ -581,9 +582,19 @@
 									if(x.tipoBaixa=="PAGAMENTO") {
 										btns+=` <a href="javascript:;" class="js-pagar button button__sec" data-id_baixa="${x.id_baixa}" title="Pagar" style="color:#FFF;"><span class="iconify" data-icon="ic:round-attach-money" data-inline="false"></span></a>`;
 									}
+									if(x.vencido) {
+										icon = `<span class="iconify" data-icon="icons8:cancel" data-inline="true" style="color:red"></span>`;
+									} else {
+										icon = `<span class="iconify" data-icon="bx:bx-hourglass" data-inline="true" style="color:orange"></span>`;
+									}
 								}
 
+								
+							
+						
+
 								html = `<tr class="js-tr">
+											<td>${icon}</td>
 											<td>${x.data}</td>
 											<td>${x.tipoBaixa}</td>
 											<td>${pagamento}</td>
@@ -654,6 +665,7 @@
 
 			const popView = (obj) => {
 
+				$('.js-pop-informacoes').click();
 
 				index=$(obj).index();
 
@@ -683,14 +695,26 @@
 
 				if(pagamentos[index].baixas && pagamentos[index].baixas.length>0) {
 					pagamentos[index].baixas.forEach(x=> {
+
+						if(x.pago==1) {
+							icon = `<span class="iconify" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
+						} else {
+							if(x.vencido) {
+								icon = `<span class="iconify" data-icon="icons8:cancel" data-inline="true" style="color:red"></span>`;
+							} else {
+								icon = `<span class="iconify" data-icon="bx:bx-hourglass" data-inline="true" style="color:orange"></span>`;
+							}
+						}
+
 						$('.js-baixas').append(`<tr>
+													<td>${icon}</td>
 													<td>${x.data}</td>
 													<td>${x.formaobs}</td>
 													<td>${number_format(x.valor,2,",",".")}</td>
 												</tr>`);
 						});
 				} else {
-					$('.js-baixas').append(`<tr><td colspan="3"><center>Nehnuma baixa</center></td></tr>`);
+					$('.js-baixas').append(`<tr><td colspan="4"><center>Nehnuma programação de pagamento</center></td></tr>`);
 				}
 
 
@@ -698,17 +722,19 @@
 				if(pagamentos[index].subpagamentos && pagamentos[index].subpagamentos.length>0) {
 					pagamentos[index].subpagamentos.forEach(x=> {
 						$('.js-subpagamentos').append(`<tr>
-													<td>${x.vencimento}</td>
-													<td>${x.titulo}</td>
-													<td>${number_format(x.valor,2,",",".")}</td>
-												</tr>`);
+															<td>${x.vencimento}</td>
+															<td>${x.titulo}</td>
+															<td>${number_format(x.valor,2,",",".")}</td>
+														</tr>`);
 					});
 
 					$('.js-subpagamentos').append(`<tr>
-														<td colspan="3"><center><a href="javascript:;" class="js-desfazerUniao" data-id_pagamento="<?php echo $x->id;?>"><span class="iconify" data-icon="eva:undo-fill" data-inline="false"></span> Desfazer união</a></center></td>
+														<td colspan="3"><center><a href="javascript:;" class="js-desfazerUniao" data-id_pagamento="${pagamentos[index].id_parcela}"><span class="iconify" data-icon="eva:undo-fill" data-inline="false"></span> Desfazer união</a></center></td>
 													</tr>`)
 
+					$('.js-pop-agrupamento').show();
 				} else {
+					$('.js-pop-agrupamento').hide();
 					$('.js-subpagamentos').append(`<tr><td colspan="3"><center>Este pagamento não possui união</center></td></tr>`);
 				}
 
@@ -734,7 +760,7 @@
 				<?php
 				if(isset($_GET['unirPagamentos'])) {
 				?>
-				$('.js-btn-unirPagamentos').click(function(){
+				$('.js-btn-unirPagamentos').click(function() {
 
 					let dataVencimento = $('.js-dataVencimento').val();
 
@@ -755,11 +781,11 @@
 								} else if(rtn.error) {
 									swal({title: "Erro!", text: rtn.error,  html:true,type:"error", confirmButtonColor: "#424242"});
 								} else {
-									swal({title: "Erro!", text: "Algum erro ocorreu durante a baixa deste pagamento!",  html:true,type:"error", confirmButtonColor: "#424242"});
+									swal({title: "Erro!", text: "Algum erro ocorreu durante a baixa deste pagamento",  html:true,type:"error", confirmButtonColor: "#424242"});
 								}
 							},
 							error:function() {
-								swal({title: "Erro!", text: "Algum erro ocorreu durante a baixa deste pagamento!",  html:true,type:"error", confirmButtonColor: "#424242"});
+								swal({title: "Erro!", text: "Algum erro ocorreu durante a baixa deste pagamento.",  html:true,type:"error", confirmButtonColor: "#424242"});
 							}
 						}) 
 					}
@@ -936,15 +962,20 @@
 									$baixaVencida=false;
 									$baixaEmAberta=false;
 									foreach($_baixas[$x->id] as $b) {
-										if(strtotime($b->data_vencimento)<strtotime('Y-m-d')) {
+										$formaobs='';
+										$baixaVencida=false;
+										if(strtotime($b->data_vencimento)<strtotime(date('Y-m-d'))) {
 											$baixaVencida=true;
-											break;
-										}
-										if($b->pago==0) {
-											$baixaEmAberta=true;
+											
+										} else {  
+											if($b->pago==0) {
+												$baixaEmAberta=true;
+											}
 										}
 
-										$formaobs='';
+
+									//	echo $b->data_vencimento."-> ".date('Y-m-d')." -> ".$baixaVencida."<BR>";
+
 										if($b->tipoBaixa=="pagamento") {
 											$formaobs=isset($_formasDePagamento[$b->id_formadepagamento])?utf8_encode($_formasDePagamento[$b->id_formadepagamento]->titulo):'';
 										} else {
@@ -955,8 +986,10 @@
 												$formaobs="DESPESA";
 											}
 										}
+										//echo $b->data_vencimento."->".($baixaVencida?1:0)."<BR>";
 										$baixas[]=array('data'=>date('d/m',strtotime($b->data_vencimento)),
 														'vencimento'=>$b->data_vencimento,
+														'vencido'=>$baixaVencida,
 														'pago'=>$b->pago,
 														'formaobs'=>$formaobs,
 														'valor'=>(float)number_format($v->valor,2,",","."));
@@ -980,7 +1013,7 @@
 									
 								} 
 								// nao possui nenhuma baixa
-								else {
+								else {  
 									if(strtotime($x->data_vencimento)<strtotime(date('Y-m-d'))) {
 										$cor="red";
 										$status="<font color=red>INADIMPLENTE</font>";
@@ -1011,14 +1044,16 @@
 
 								$statusPromessa=false;
 								$statusInadimplente=false;
+								$todasPagas=false;
 
 								// nao possui baixa
 								if(count($baixas)==0) {
-
+									if(strtotime($x->data_vencimento)<strtotime(date('Y-m-d'))) {
+										$statusInadimplente=true;
+									}
 								}
 								// possui baixa
-								else {
-
+								else { 
 									// se saldo = 0
 									if($saldoAPagar==0) {
 										$baixaVencida=false;
@@ -1049,17 +1084,19 @@
 											} else {
 												$statusPromessa=true;
 											}
-										} else {
+										} else { 
 											// se todas foram pagas
 											if($todasPagas===true) {
 
+												$statusPromessa=true;
 											} else {
 												$statusPromessa=true;
 											}
 										}
+									} else {
 									}
 
-								}
+								} 
 
 								$item=array('id_parcela'=>$x->id,
 											'titulo'=>$titulo,
@@ -1075,10 +1112,9 @@
 
 								$pagamentosJSON[]=$item;
 	
-								
 
 							?>
-							<a href="javascript:;" class="reg-group js-procedimento-item" data-id_pagamento="<?php echo $x->id;?>" style="border-left:solid 10px <?php echo $cor;?>;opacity: <?php echo $opacity;?>" <?php if(!isset($_GET['unirPagamentos'])) {?>onclick="popView(this);"<?php } ?>>
+							<a href="javascript:;" class="reg-group js-procedimento-item" data-id_pagamento="<?php echo $x->id;?>" style="border-left:solid 10px var(--cor1);opacity: <?php echo $opacity;?>" <?php if(!isset($_GET['unirPagamentos'])) {?>onclick="popView(this);"<?php } ?>>
 							
 								<?php
 								if(isset($_GET['unirPagamentos'])) {
@@ -1094,7 +1130,7 @@
 										<?php  
 										if($x->fusao>0) {
 										?>
-										<a href="javascript:;" style="text-decoration: none;color:#000;"><strong><i class="iconify" data-icon="codicon:group-by-ref-type" data-height="18" data-inline="true"></i> União de Pagamentos (<?php echo isset($_subpagamentos[$x->id])?count($_subpagamentos[$x->id]):0;?>)</strong></a>
+										<strong><i class="iconify" data-icon="codicon:group-by-ref-type" data-height="18" data-inline="true"></i> União de Pagamentos (<?php echo isset($_subpagamentos[$x->id])?count($_subpagamentos[$x->id]):0;?>)</strong>
 										<?php
 										} else {
 											echo isset($_tratamentos[$x->id_tratamento])?utf8_encode($_tratamentos[$x->id_tratamento]->titulo):'Avulso';
@@ -1107,7 +1143,7 @@
 								<div class="reg-steps" style="margin:0 auto;">
 
 									<div class="reg-steps__item active">
-										<h1<?php echo ($statusPromessa===true or $statusInadimplente==true)?"":" style=\"background:var(--amarelo);\"";?>>1</h1>
+										<h1 style="background:var(--verde);">1</h1>
 										<p>Em Aberto</p>									
 									</div>
 
@@ -1116,9 +1152,15 @@
 										<p>Promessa de Pagamento</p>									
 									</div>
 
-									<div class="reg-steps__item"<?php echo ($statusInadimplente==true and $statusPromessa===true)?" active":"";?>>
-										<h1<?php echo $statusInadimplente===true?" style=\"background:var(--vermelho);\"":" ";?>>3</h1>
-										<p>Adimplente/Inadimplente</p>									
+									<div class="reg-steps__item<?php echo ($statusInadimplente==true or $todasPagas===true)?" active":"";?>">
+										<h1<?php echo ($statusInadimplente===true)?" style=\"background:var(--vermelho);\"":" ";?>>3</h1>
+										<p>
+										<?php
+										if($todasPagas) echo "Adimplente";
+										else if($statusInadimplente) echo "Inadimplente";
+										else echo "Adimplente/Inadimplente";
+										?>
+										</p>									
 									</div>
 									
 								</div>						
@@ -1163,9 +1205,9 @@
 						<input type="hidden" class="js-index" />
 
 						<div class="abasPopover">
-							<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-info').show();$(this).addClass('active');" class="active">Informações</a>
-							<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-baixas').show();$(this).addClass('active');">Baixas</a>
-							<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-pagamentos').show();$(this).addClass('active');">Pagamentos</a>
+							<a href="javascript:;" class="js-pop-informacoes" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-info').show();$(this).addClass('active');" class="active">Informações</a>
+							<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-baixas').show();$(this).addClass('active');">Programação de Pag.</a>
+							<a href="javascript:;" class="js-pop-agrupamento" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-pagamentos').show();$(this).addClass('active');">Agrupamento de Pag.</a>
 						</div>
 
 						<div class="paciente-info-grid js-grid js-grid-info" style="font-size: 12px;">		
@@ -1213,12 +1255,14 @@
 							<table style="grid-column:span 2;">
 								<thead>
 									<tr>
+										<th style="width:5%"></th>
 										<th>Pgto.</th>
 										<th>Forma/Obs.</th>
 										<th>Valor</th>
 									</tr>
 								</thead>
 								<tbody class="js-baixas">
+
 								</tbody>
 							</table>
 
@@ -1246,7 +1290,8 @@
 
 
 						<div class="paciente-info-opcoes">
-							<a href="javascript:;" target="_blank" class="js-btn-pagamento button button__sec">visualizar</a>
+							<a href="javascript:;" target="_blank" class="js-btn-pagamento button ">Programação de Pagamentos</a>
+							
 						</div>
 					</section>
 	    		</section>

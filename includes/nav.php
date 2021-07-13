@@ -2,6 +2,9 @@
 	$urlTema='';
 	if(isset($_GET['id_tema']) and is_numeric($_GET['id_tema'])) $urlTema="?id_tema=".$_GET['id_tema'];
 	$_menu=array('dashboard'=>array('dashboard.php'=>'Dashboard','icone'=>'<i class="iconify" data-icon="ic-outline-dashboard"></i>'),
+
+					'funil_leads'=>array('pg_funil_leads.php'=>'Funil de Leads','icone'=>'<span class="iconify" data-icon="la:funnel-dollar"></span>'),
+					'agenda_confirmacoes'=>array('pg_agenda_confirmacoes.php'=>'Confirmações','icone'=>'<span class="iconify" data-icon="akar-icons:check"></span>'),
 					'agenda'=>array('pg_agenda.php'=>'Agenda','icone'=>'<i class="iconify" data-icon="ic-outline-date-range"></i>'),
 					/*'contatos'=>array('titulo'=>'Contatos','icone'=>'<i class="iconify" data-icon="ic-baseline-person"></i>','submenu'=>array(
 																		array('pg_contatos_pacientes.php'=>'Pacientes'),
@@ -11,8 +14,8 @@
 
 					'pacientes'=>array('pg_contatos_pacientes.php'=>'Pacientes','icone'=>'<i class="iconify" data-icon="ic-baseline-person"></i>','titulo'=>'Pacientes'),
 					'colaboradores'=>array('pg_colaboradores.php'=>'Colaboradores','icone'=>'<span class="iconify" data-icon="gridicons-multiple-users" data-inline="false"></span>','titulo'=>'Colaboradores'),
-					'indicacoes'=>array('pg_parametros_indicacoes.php'=>'Indicações','icone'=>'<i class="iconify" data-icon="ic-outline-rocket"></i>','titulo'=>'Indicações'),
-					/*'estacionamento'=>array('pg_estacionamento.php'=>'Estacionamento', 'titulo' => 'Estacionamento'),
+					/*'configuracoes'=>array('pg_configuracao_anamnese_exames.php'=>'Configurações','icone'=>'<i class="iconify" data-icon="ic-outline-rocket"></i>','titulo'=>'Configurações'),
+					'estacionamento'=>array('pg_estacionamento.php'=>'Estacionamento', 'titulo' => 'Estacionamento'),
 					'caixa'=>array('pg_caixa.php'=>'Caixa', 'titulo' => 'Caixa'),*/
 					/*'parametros'=>array('titulo'=>'Personalização','icone'=>'<i class="iconify" data-icon="clarity:settings-solid"></i>','submenu'=>array(
 																		//array('pg_parametros_profissoes.php'=>'Profissões'),
@@ -24,7 +27,7 @@
 																		array('pg_cadeiras.php'=>'Cadeiras'),
 																		//array('pg_veiculos_modelos.php'=>'Modelos'),
 																	),
-					),*/
+					),
 					'landingpage'=>array('titulo'=>'Landing Page','icone'=>'<i class="iconify" data-icon="mdi:web"></i>','submenu'=>array(
 																		array('pg_landingpage_temas.php'.$urlTema=>'Temas'),
 																		array('pg_landingpage_banner.php'.$urlTema=>'Banner'),
@@ -35,7 +38,11 @@
 																		array('pg_landingpage_sobreaclinica.php'.$urlTema=>'Sobre a Clínica'),
 																		array('pg_landingpage_formulario.php'.$urlTema=>'Formulário')
 																	),
-					),
+					),*/
+					'financeiro'=>array('pg_landingpages.php'=>'Financeiro','icone'=>'<span class="iconify" data-icon="ic:baseline-attach-money" data-inline="false"></span>','submenu'=>array(
+																		array('pg_financeiro_fluxo.php'=>'Contas à Pagar'),
+																		array('pg_financeiro_fluxo.php?receber=1'=>'Contas à Receber'),
+																		array('pg_financeiro_movimentacao.php'=>'Movimentação Bancária'))),
 					'landingpages'=>array('pg_landingpages.php'=>'Landing Pages','icone'=>'<span class="iconify" data-icon="ri:pages-fill" data-inline="false"></span>','titulo'=>'Landing Pages'),
 					'whatsapp'=>array('pg_whatsapp.php'=>'Whatsapp','icone'=>'<i class="iconify" data-icon="cib:whatsapp"></i>','titulo'=>'Whatsapp'),
 					//'usuarios'=>array('usuarios.php'=>'Usuários','icone'=>'<i class="iconify" data-icon="cib:open-access"></i>','titulo'=>'Usuários')
@@ -55,10 +62,10 @@
 
 		<section class="header-controles">
 			
-			<select name="unidade" class="header-controles__select">
+			<?php /*<select name="unidade" class="header-controles__select">
 				<option value="">STUDIO DENTAL - OESTE</option>
 				<option value="">STUDIO DENTAL - GYN SHOP</option>
-			</select>
+			</select>*/?>
 			<a href="pg_configuracao_anamnese_exames.php" class="header-controles__config"><i class="iconify" data-icon="ic-baseline-settings"></i></a>
 			<a href="" class="header-controles__usuario"><img src="img/ilustra-perfil.png" alt="" width="120" height="120" /></a>
 		</section>
@@ -82,7 +89,7 @@
 			<ul>
 			<?php
 			foreach($_menu as $permissao=>$v) {
-				if($usr->tipo!="admin" and !in_array($permissao,$_usuariosPermissoes)) continue;
+				//if($usr->tipo!="admin" and !in_array($permissao,$_usuariosPermissoes)) continue;
 				
 				if(!isset($v['submenu'])) {
 					foreach($v as $k=>$n) {

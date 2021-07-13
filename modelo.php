@@ -274,6 +274,153 @@ $values=$adm->get($_GET);
 
 	</section>
 
+	<section class="grid">
+
+		<div class="box">
+
+			<div class="kanban">
+				
+				<div class="kanban-item" style="background:var(--cor1); color:var(--cor1);">
+					<h1 class="kanban-item__titulo">Confirmação Quente <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span></h1>
+					<div class="kanban-card">
+						<a href="javascript:;" onclick="$('.kanban-card-modal').hide(); $(this).next('.kanban-card-modal').show();" class="kanban-card-dados">
+							<p class="kanban-card-dados__data">
+								<i class="iconify" data-icon="ph:calendar-blank"></i>
+								03/06 (quinta-feira) &bull; 09:00
+							</p>
+							<h1>Cláudia de Paula Gomes</h1>
+							<h2>(62) 98450-2332</h2>
+						</a>
+						<div class="kanban-card-modal" style="display:none;">
+							<div class="kanban-card-modal__inner1">
+								<a class="kanban-card-modal__fechar" href="javascript:;" onclick="$(this).parent().parent().hide(); $('.js-reagendar, .js-cancelar').hide(); $('.js-opcoes').show();"><i class="iconify" data-icon="ph-x"></i></a>
+								<h1>Ana Paula Toniazzo</h1>
+								<h2>(62) 98450-2332</h2>
+								<h2>Anestesia</h2>
+							</div>
+							<div class="kanban-card-modal__inner2 js-opcoes">
+								<a href="javascript:;" class="button button__full" style="background-color:var(--verde);">Confirmar agendamento</a>
+								<a href="javascript:;" onclick="$(this).parent().hide(); $(this).parent().nextAll('.js-reagendar').show();" class="button button__full" style="background-color:var(--amarelo);">Reagendar</a>
+								<a href="javascript:;" onclick="$(this).parent().hide(); $(this).parent().nextAll('.js-cancelar').show();" class="button button__full" style="background-color:var(--vermelho);">Cancelar Agendamento</a>
+							</div>
+							<div class="kanban-card-modal__inner2 js-reagendar" style="display:none;">
+								<form>
+									<input type="text" name="" class="datecalendar" placeholder="06/04/2021" />
+									<select name=""><option value="">Profissional...</option></select>
+									<select name=""><option value="">Cadeira...</option></select>
+									<select name=""><option value="">Horas disponíveis...</option></select>
+									<button type="submit" class="button button__full" style="background:var(--amarelo);">Reagendar</button>
+								</form>
+							</div>
+							<div class="kanban-card-modal__inner2 js-cancelar" style="display:none;">
+								<form>
+									<textarea name="" rows="4" placeholder="Descreva o motivo do cancelamento..."></textarea>
+									<button type="submit" class="button button__full" style="background:var(--vermelho);">Cancelar</button>
+								</form>
+							</div>
+						</div>
+					</div>
+					<div class="kanban-card">
+						<a href="javascript:;" onclick="$('.kanban-card-modal').hide(); $(this).next('.kanban-card-modal').show();" class="kanban-card-dados">
+							<p class="kanban-card-dados__data">
+								<i class="iconify" data-icon="ph:calendar-blank"></i>
+								03/06 (quinta-feira) &bull; 09:00
+							</p>
+							<h1>Cláudia de Paula Gomes</h1>
+							<h2>(62) 98450-2332</h2>
+						</a>
+						<div class="kanban-card-modal" style="display:none;">
+							<div class="kanban-card-modal__inner1">
+								<a class="kanban-card-modal__fechar" href="javascript:;" onclick="$(this).parent().parent().hide(); $('.js-reagendar, .js-cancelar').hide(); $('.js-opcoes').show();"><i class="iconify" data-icon="ph-x"></i></a>
+								<h1>Ana Paula Toniazzo</h1>
+								<h2>(62) 98450-2332</h2>
+								<h2>Anestesia</h2>
+							</div>
+							<div class="kanban-card-modal__inner2 js-opcoes">
+								<a href="javascript:;" class="button button__full" style="background-color:var(--verde);">Confirmar agendamento</a>
+								<a href="javascript:;" onclick="$(this).parent().hide(); $(this).parent().nextAll('.js-reagendar').show();" class="button button__full" style="background-color:var(--amarelo);">Reagendar</a>
+								<a href="javascript:;" onclick="$(this).parent().hide(); $(this).parent().nextAll('.js-cancelar').show();" class="button button__full" style="background-color:var(--vermelho);">Cancelar Agendamento</a>
+							</div>
+							<div class="kanban-card-modal__inner2 js-reagendar" style="display:none;">
+								<form>
+									<input type="text" name="" class="datecalendar" placeholder="06/04/2021" />
+									<select name=""><option value="">Profissional...</option></select>
+									<select name=""><option value="">Cadeira...</option></select>
+									<select name=""><option value="">Horas disponíveis...</option></select>
+									<button type="submit" class="button button__full" style="background:var(--amarelo);">Reagendar</button>
+								</form>
+							</div>
+							<div class="kanban-card-modal__inner2 js-cancelar" style="display:none;">
+								<form>
+									<textarea name="" rows="4" placeholder="Descreva o motivo do cancelamento..."></textarea>
+									<button type="submit" class="button button__full" style="background:var(--vermelho);">Cancelar</button>
+								</form>
+							</div>
+						</div>
+					</div>
+					<div class="kanban-card">
+						<a href="javascript:;" onclick="$('.kanban-card-modal').hide(); $(this).next('.kanban-card-modal').show();" class="kanban-card-dados">
+							<p class="kanban-card-dados__data">
+								<i class="iconify" data-icon="ph:calendar-blank"></i>
+								03/06 (quinta-feira) &bull; 09:00
+							</p>
+							<h1>Cláudia de Paula Gomes</h1>
+							<h2>(62) 98450-2332</h2>
+						</a>
+						<div class="kanban-card-modal" style="display:none;">
+							<div class="kanban-card-modal__inner1">
+								<a class="kanban-card-modal__fechar" href="javascript:;" onclick="$(this).parent().parent().hide(); $('.js-reagendar, .js-cancelar').hide(); $('.js-opcoes').show();"><i class="iconify" data-icon="ph-x"></i></a>
+								<h1>Ana Paula Toniazzo</h1>
+								<h2>(62) 98450-2332</h2>
+								<h2>Anestesia</h2>
+							</div>
+							<div class="kanban-card-modal__inner2 js-opcoes">
+								<a href="javascript:;" class="button button__full" style="background-color:var(--verde);">Confirmar agendamento</a>
+								<a href="javascript:;" onclick="$(this).parent().hide(); $(this).parent().nextAll('.js-reagendar').show();" class="button button__full" style="background-color:var(--amarelo);">Reagendar</a>
+								<a href="javascript:;" onclick="$(this).parent().hide(); $(this).parent().nextAll('.js-cancelar').show();" class="button button__full" style="background-color:var(--vermelho);">Cancelar Agendamento</a>
+							</div>
+							<div class="kanban-card-modal__inner2 js-reagendar" style="display:none;">
+								<form>
+									<input type="text" name="" class="datecalendar" placeholder="06/04/2021" />
+									<select name=""><option value="">Profissional...</option></select>
+									<select name=""><option value="">Cadeira...</option></select>
+									<select name=""><option value="">Horas disponíveis...</option></select>
+									<button type="submit" class="button button__full" style="background:var(--amarelo);">Reagendar</button>
+								</form>
+							</div>
+							<div class="kanban-card-modal__inner2 js-cancelar" style="display:none;">
+								<form>
+									<textarea name="" rows="4" placeholder="Descreva o motivo do cancelamento..."></textarea>
+									<button type="submit" class="button button__full" style="background:var(--vermelho);">Cancelar</button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="kanban-item" style="background:var(--azul); color:var(--azul);">
+					<h1 class="kanban-item__titulo">Confirmação Fria <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span></h1>					
+				</div>
+
+				<div class="kanban-item">
+					<h1 class="kanban-item__titulo">Pacientes em tratamento sem horário <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span></h1>
+				</div>
+
+				<div class="kanban-item">
+					<h1 class="kanban-item__titulo">Possível paciente <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span></h1>
+				</div>
+
+				<div class="kanban-item">
+					<h1 class="kanban-item__titulo">Inteligência <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span></h1>
+				</div>
+
+
+			</div>
+
+		</div>
+
+	</section>
+
 </section>
 
 

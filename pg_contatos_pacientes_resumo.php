@@ -212,45 +212,101 @@
 					</div>
 				</div>
 			</div>
+			<?php
+			$where="WHERE id_paciente=$paciente->id and lixo=0 and status='aprovado'";
+			$sql->consult($_p."pacientes_tratamentos","*",$where);
 
+			$registros=array();
+			$tratamentosIDs=array(0);
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$registros[]=$x;
+				$tratamentosIDs[]=$x->id;
+			}
+
+			$_procedimentos=array();
+			$procedimentosIds=array(-1);
+			$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				if($x->situacao=="aprovado") {
+					$_procedimentos[$x->id_tratamento][]=$x;
+					$procedimentosIds[]=$x->id_procedimento;
+				}
+			}
+
+			$_procedimentosObj=array();
+			$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$procedimentosIds).")");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_procedimentosObj[$x->id]=$x;
+			}
+
+
+			$_pagamentos=array();
+			$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_pagamentos[$x->id_tratamento][]=$x;
+			}
+
+			/*
+			<script>
+				$(function(){
+					
+					var ctx = document.getElementById('grafico1').getContext('2d');
+					var grafico1 = new Chart(ctx, {    
+					    type: 'doughnut',
+					    options: {
+					    	legend: {display:false},
+					    	cutoutPercentage:70,
+					    },
+					    data: {
+					        labels: ["Procedimento 1","Procedimento 2","Procedimento 3", "Procedimento 4"],
+					        datasets: [{
+					            data: [10,20,20,50],
+					            backgroundColor: ['rgba(211,142,105,1)','rgba(239,198,155,1)','rgba(93,109,112,1)','rgba(72,74,71,1)','rgba(138,176,171,1)'],						            
+					        }]
+					    },
+					});		
+				});				
+				</script>
+				*/
+			?>
 			<div class="box" style="overflow:hidden;">
 				<div class="paciente-etapas">
 					<div class="paciente-etapas__slick">
-						<?php /*<div class="paciente-etapas__item">
-							<h1 class="paciente__titulo1">Cirúrgico Inferior <small>(08/12/2020)</small></h1>
-							<script>
-							$(function(){
-								
-								var ctx = document.getElementById('grafico1').getContext('2d');
-								var grafico1 = new Chart(ctx, {    
-								    type: 'doughnut',
-								    options: {
-								    	legend: {display:false},
-								    	cutoutPercentage:70,
-								    },
-								    data: {
-								        labels: ["Procedimento 1","Procedimento 2","Procedimento 3", "Procedimento 4"],
-								        datasets: [{
-								            data: [10,20,20,50],
-								            backgroundColor: ['rgba(211,142,105,1)','rgba(239,198,155,1)','rgba(93,109,112,1)','rgba(72,74,71,1)','rgba(138,176,171,1)'],						            
-								        }]
-								    },
-								});		
-							});				
-							</script>
-							<div class="paciente-etapas-grid">
-								<p>Conclusão da Evolução</p>
-								<div class="grafico-barra"><span style="width:80%">&nbsp;</span></div>
-								<p>Conclusão do Pagamento</p>
-								<div class="grafico-barra"><span style="width:50%">&nbsp;</span></div>
-							</div>
+						<?php
+						if(count($registros)>0) {
+							foreach($registros as $x) {
+								$procedimentos=array();
+								if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
 
-							
-							
-						</div>
+								$total=0;
+								$finalizados=0;
+								foreach($procedimentos as $p) {
+									if($p->status_evolucao=='finalizado') $finalizados++;
+									
+									$total++;
+								}
+								$perc=($total)==0?0:number_format(($finalizados/($total))*100,0,"","");
+						?>
 						<div class="paciente-etapas__item">
-							<h1 class="paciente__titulo1">Cirúrgico Superior</h1>
-						</div>*/?><div style="text-align: center;color:#CCC"><span class="iconify" data-icon="el:eye-close" data-inline="false" data-height="50"></span><br />Nenhum registro.</div>
+							<h1 class="paciente__titulo1"><?php echo utf8_encode($x->titulo);?> <small>(<?php echo date('d/m/Y',strtotime($x->data));?>)</small></h1>
+							
+							<div class="paciente-etapas-grid">
+								
+								<p>Procedimento <?php echo $finalizados."/".$total." - ".$perc."%";?></p>
+								<div class="grafico-barra"><span style="width:<?php echo $perc;?>%">&nbsp;</span></div>
+								<p>Pagamento</p>
+								<div class="grafico-barra"><span style="width:0%">&nbsp;</span></div>
+								
+							</div>
+						</div>
+						<?php
+							}
+						} else {
+						?>
+						<div style="text-align: center;color:#CCC"><span class="iconify" data-icon="el:eye-close" data-inline="false" data-height="50"></span><br />Nenhum plano de tratamento</div>
+						<?php	
+						}
+						?>
 					</div>					
 				</div>
 			</div>
@@ -258,7 +314,8 @@
 			<div class="box" style="overflow:hidden;">
 				<div class="paciente-fotos">
 					<h1 class="paciente__titulo1">Fotos</h1>
-					<?php /*<div class="paciente-fotos__slick">
+					<?php 
+					/*<div class="paciente-fotos__slick">
 						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
 						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
 						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>

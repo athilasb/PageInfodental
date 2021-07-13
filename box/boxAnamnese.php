@@ -27,7 +27,7 @@
 				}
 			}
 
-			$vSQL="titulo='".utf8_decode(strtoupperWLIB(addslashes($_POST['titulo'])))."'";
+			$vSQL="titulo='".utf8_decode((addslashes($_POST['titulo'])))."'";
 			if(isset($_POST['perguntas']) and !empty($_POST['perguntas'])) {
 				$vSQL.=",perguntas='".utf8_decode($_POST['perguntas'])."'";
 			}
@@ -113,7 +113,7 @@
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						$perguntas[]=array('id_pergunta' =>$x->id,
 											'id_anamnese' =>$x->id_anamnese,
-											'pergunta' =>utf8_encode(strtoupperWLIB(addslashes($x->pergunta))),
+											'pergunta' =>utf8_encode((addslashes($x->pergunta))),
 											'tipo' => isset($_avaliacaoTipos[$x->tipo])?$_avaliacaoTipos[$x->tipo]:"-",
 											'obrigatorio' => isset($_obrigatorio[$x->obrigatorio])?$_obrigatorio[$x->obrigatorio]:"-",
 											'alerta' => isset($_alerta[$x->alerta])?$_alerta[$x->alerta]:"-");
@@ -152,6 +152,22 @@
 			} else {
 				$rtn=array("success"=>false,"error"=>"Pergunta não encontrada!");
 			}
+		} else if($_POST['ajax']=="persistirOrdem") {
+			if(isset($_POST['ordem']) and !empty($_POST['ordem'])) {
+				$ordem=explode(",",$_POST['ordem']);
+				if(is_array($ordem) and count($ordem)>0) {
+					$aux=1;
+					foreach($ordem as $idItem) {
+						if(is_numeric($idItem)) {
+							$sql->update($_p."parametros_anamnese_formulario","ordem=$aux","where id=$idItem");
+							$aux++;
+						}
+					}
+					$rtn=array('success'=>true);
+				}
+			} else {
+				$rtn=array('error'=>'Ordem não definida!');
+			}
 		}
 
 		header("Content-type: application/json");
@@ -170,7 +186,7 @@
 		if($sql->rows) {
 			$anamnese=mysqli_fetch_object($sql->mysqry);
 
-			$sql->consult($_p."parametros_anamnese_formulario","*","where id_anamnese=$anamnese->id and lixo=0");
+			$sql->consult($_p."parametros_anamnese_formulario","*","where id_anamnese=$anamnese->id and lixo=0 order by ordem asc");
 			if($sql->rows) {
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$perguntas[]=array('id_pergunta' =>$x->id,
@@ -278,22 +294,27 @@
 
 	<header class="modal-header">
 		<div class="filtros">
-
+			<div class="filter">
+				<div class="filter-group">
+					<div class="filter-button">
+						<a href="javascript:$.fancybox.close();"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
+					</div>
+				</div>
+			</div>
 			<?php
 				if(empty($anamnese)) {
 			?>
-			<h1 class="filtros__titulo"></h1>
 			<div class="filtros-acoes filter-button">
-				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>Salvar</span></a>
 			</div>
 			<?php
 				} else {
 			?>
-			<h1 class="filtros__titulo">Editar</h1>
+			
 			
 			<div class="filtros-acoes filter-button">
 				<a href="javascript:;" class="js-remover"><i class="iconify" data-icon="bx-bx-trash"></i></a>
-				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>Salvar</span></a>
 			</div>
 			<?php
 				}
@@ -348,9 +369,8 @@
 							<dt>Obrigatório</dt>
 							<dd>
 								<select name="pergunta_obrigatorio" class="js-obrigatorio">
-									<option value="">-</option>
+									<option value="0" selected>Não</option>
 									<option value="1">Sim</option>
-									<option value="0">Não</option>
 								</select>
 							</dd>
 						</dl>
@@ -365,18 +385,25 @@
 							</dd>
 						</dl>
 						<dl>
-							<dd><button type="button" class="button js-btn-add">Adicionar</button></dd>
+							<dd>
+								<button type="button" class="button js-btn-add"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar</button>
+								<a href="javascript:;" class="js-pergunta-cancelar tooltip" style="display: none;color:red" title="Cancelar edição"><span class="iconify" data-icon="icons8:cancel"></span> cancelar edição</a>
+							</dd>
 						</dl>
 					</div>
 					<script>
 						var id_anamnese = '<?php echo $anamnese->id;?>';
 						var anamnesePerguntas = JSON.parse(jsonEscape(`<?php echo json_encode($perguntas);?>`));
+
 						function perguntasListar() {
 							$('.js-pergunta').remove();
 							anamnesePerguntas.forEach(x => {
 
-								var html = `<div class="reg-group js-pergunta">
+								var html = `<div class="reg-group js-pergunta" data-id_formulario="${x.id_pergunta}">
 												<div class="reg-color" style="background-color:green"></div>
+												<div class="reg-data" style="text-align: center;">
+													<a href="javascript:;//" style="cursor: all-scroll;color:#ccc;text-decoration:none;border:none;" ><span class="iconify" data-icon="carbon:drag-vertical" data-inline="false" data-height="30"></span></a>
+												</div>
 												<div class="reg-data js-titulo" style="flex:0 1 300px">
 													<h1>${x.pergunta}</h1>
 													<p>${x.tipo}</p>
@@ -390,11 +417,16 @@
 													<p>${x.alerta}</p>
 												</div>	
 												<div class="reg-icon">
+													<a href="javascript:;" class="js-editar" data-id="${x.id_pergunta}"><i class="iconify" data-icon="bx-bx-download"></i></a>
 													<a href="javascript:;" class="js-deleta" data-id="${x.id_pergunta}"><i class="iconify" data-icon="bx-bx-trash"></i></a>
 												</div>							
 											</div>`;
 							
 								$('.js-div-perguntas').append(html);
+								$('.js-pergunta .reg-icon .js-editar:last').click(function(){
+									let index = $(this).index('.js-pergunta .reg-icon .js-editar');
+									perguntaEditar(index);
+								});
 								$('.js-pergunta .reg-icon .js-deleta:last').click(function() {
 									let index = $(this).index('.js-pergunta .reg-icon .js-deleta');
 									swal({   title: "Atenção",   text: "Você tem certeza que deseja remover este registro?",   type: "warning",   showCancelButton: true,   confirmButtonColor: "#DD6B55",   confirmButtonText: "Sim!",   cancelButtonText: "Não",   closeOnConfirm: false,   closeOnCancel: false }, function(isConfirm){   if (isConfirm) {  perguntasRemover(index); swal.close();   } else {   swal.close();   } });
@@ -407,6 +439,53 @@
 						function perguntasRemover(index) {
 							anamnesePerguntas.splice(index,1);
 							perguntasListar();
+						}
+
+						function persistirOrdem() {
+							let ordem = [];
+							$(`.js-div-perguntas .js-pergunta`).each(function(index,elem){
+								ordem.push($(elem).attr('data-id_formulario'));
+							});
+
+							let data = `ajax=persistirOrdem&ordem=${ordem}`;
+							$.ajax({
+								type:"POST",
+								url:'box/boxAnamnese.php',
+								data:data,
+								success:function(rtn) {
+									console.log(rtn);
+								},
+								error:function() {
+
+								}
+							})
+						}
+
+						function perguntaEditar(index) {
+							let cont=0;
+							index++;
+
+							$('.js-pergunta-editando').val(index);
+
+							anamnesePerguntas.forEach(x=>{
+								cont++;
+								if(cont==index) {
+									$('input.js-pergunta-titulo').val(x.pergunta);
+
+									if(x.tipo=='texto'){
+										$('select.js-tipo').find('option[value=texto]').prop('selected',true);
+									} else if(x.tipo=='Sim / Não') {
+										$('select.js-tipo').find('option[value=simnao]').prop('selected',true);
+									} else {
+										$('select.js-tipo').find('option:contains(' + x.tipo + ')').prop('selected',true);
+									}
+									$('select.js-obrigatorio').find('option:contains(' + x.obrigatorio + ')').prop('selected',true);
+									$('select.js-alerta').find('option:contains(' + x.alerta + ')').prop('selected',true);
+									$('.js-pergunta-cancelar').show();
+									$('.js-tipo').trigger('change');
+									return;
+								}
+							});
 						}
 
 						$(function(){
@@ -430,11 +509,6 @@
 								} else if(tipo.length>0 && (tipo=='simnao' || tipo=='simnaotexto') && alerta.length==0) {
 									swal({title: "Erro!", text: 'Selecione o alerta da pergunta', html:true, type:"error", confirmButtonColor: "#424242"});
 								} else {
-									$('.js-pergunta-titulo').val(``);
-									$('.js-tipo').val(``);
-									$('.js-obrigatorio').val(``);
-									$('.js-alerta').val(``);
-									$('.js-dl-alerta').hide();
 
 									let item = {};
 									item.id_anamnese = id_anamnese;
@@ -442,9 +516,33 @@
 	      							item.tipo = tipoText;
 	      							item.obrigatorio = obrigatorioText;
 	      							item.alerta = alertaText;
-	      							
-	      							anamnesePerguntas.push(item);
+
+	      							if($('.js-pergunta-editando').val().length && eval($('.js-pergunta-editando').val())>0) {
+										let indexEdita=eval($('.js-pergunta-editando').val()); 
+										let perguntasNovo = [];
+										let cont = 0;
+										anamnesePerguntas.forEach(x => {
+											cont++;
+											if(cont==indexEdita) {
+												perguntasNovo.push(item)
+											} else {
+												perguntasNovo.push(x);
+											}
+										});
+										anamnesePerguntas=perguntasNovo;
+
+									} else {
+										anamnesePerguntas.push(item);
+									}
 									perguntasListar();
+
+									$('.js-pergunta-titulo').val(``);
+									$('.js-tipo').val(``);
+									$('.js-obrigatorio').val(0);
+									$('.js-alerta').val('nenhum');
+									$('.js-dl-alerta').hide();
+									$('.js-pergunta-editando').val('');
+									$('.js-pergunta-cancelar').hide();
 								}
 							});
 							$('.js-tipo').change(function(){
@@ -468,8 +566,25 @@
 									$('select[name=pergunta_alerta]').removeClass('obg');
 								}
 							});
+							$('.js-pergunta-cancelar').click(function(){
+								$('.js-pergunta-titulo').val(``);
+								$('.js-tipo').val(``);
+								$('.js-obrigatorio').val(``);
+								$('.js-obrigatorio').find('option[value=0]').prop('selected', true);
+								$('.js-alerta').val(``);
+								$('.js-alerta').find('option[value=nenhum]').prop('selected', true);
+								$('.js-dl-alerta').hide();
+								$(this).hide();
+							});
+							$(".js-div-perguntas").sortable({
+								stop:function(event,ui) {
+									 let id_formulario = $(ui.item).attr('data-id_formulario');
+									 persistirOrdem(id_formulario);
+								}
+							});
 						});
 					</script>
+					<input type="hidden" class="js-pergunta-editando" />
 					<div class="reg js-div-perguntas" style="margin-top:2rem;"></div> 
 
 				</div>

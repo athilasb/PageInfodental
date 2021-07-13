@@ -6,10 +6,10 @@
 		if(isset($_COOKIE[$_p.'adm_cpf']) and isset($_COOKIE[$_p.'adm_senha']) and isset($_COOKIE[$_p.'adm_id'])) {
 			$str = new String();		
 			$sql = new Mysql();
-			$sql->consult($_p."usuarios","*","where id='".$str->protege($_COOKIE[$_p.'adm_id'])."' and 
+			$sql->consult($_p."colaboradores","*","where id='".$str->protege($_COOKIE[$_p.'adm_id'])."' and 
 																	cpf='".$str->protege($_COOKIE[$_p.'adm_cpf'])."' and 
 																	senha='".$str->protege($_COOKIE[$_p.'adm_senha'])."' and 
-																	pub='1'");
+																	permitir_acesso='1'");
 			if($sql->rows) {
 				header("Location: dashboard.php");
 				echo "<html><head><title>Redirecionando...</title></head><body><font size=4>Redirecionando...</font></body></html>";
@@ -44,7 +44,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="css/style.css?v3" />
-<link rel="stylesheet" type="text/css" href="css/apps.css?v2" />
+<link rel="stylesheet" type="text/css" href="css/apps.css?v3" />
 <link rel="stylesheet" type="text/css" href="css/custom.css?v2" />
 <link rel="stylesheet" type="text/css" href="css/jquery-ui.css?v2" />
 
@@ -62,6 +62,8 @@
 <script type="text/javascript" src="js/jquery.money.js"></script>
 <script type="text/javascript" src="js/jquery.chart.js"></script>
 <script type="text/javascript" src="js/jquery.caret.js"></script>
+<script type="text/javascript" src="js/jquery.notify.js"></script>
+<script type="text/javascript" src="js/jquery.dad.js"></script>
 <script type="text/javascript" src="js/jquery.mobilePhoneNumber.js"></script>
 <script type="text/javascript" src="js/jquery.chart-utils.js"></script>
 <script type="text/javascript" src="js/jquery.validacao.js"></script>
