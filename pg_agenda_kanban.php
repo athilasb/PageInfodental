@@ -261,13 +261,11 @@
 					if(eval(x.id_status)==5) {
 						// se nao possui evolucao
 						if(x.evolucao==0) {
-
-							evolucao = `<div style="width:100%;background:var(--vermelho);color:#FFF;text-align:center;padding:5px;border-radius:10px;"></div>`;
+							evolucao = `kanban-item_erro`;
 						}
 					}
 					
-					let html = `<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item" data-id="${x.id_agenda}">
-									${evolucao}
+					let html = `<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
 									<p class="kanban-card-dados__data">
 										<i class="iconify" data-icon="ph:calendar-blank"></i>
 										${x.data} &bull; ${x.hora}

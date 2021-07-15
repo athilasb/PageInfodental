@@ -668,14 +668,17 @@
 					else agendadoHa=`agendado há <b>${x.dias}</b> dia(s)`;
 					
 
-					if(x.dias<7) {
-						cor = 'var(--verde)';
+					if(x.dias<7 && x.id_status != 'reagendar') {
+						// cor = 'var(--verde)';
+						cor = '#424242';
 					}
-					else if(x.dias>=7 && x.dias<30) {
-						cor = 'var(--laranja)';
+					else if(x.dias>=7 && x.dias<30 && x.id_status != 'reagendar') {
+						cor = '#6C6C6C';
 					}
-					else {
-						cor = 'var(--vermelho)';
+					else if(x.dias>30 && x.id_status != 'reagendar') {
+						cor = '#929292';
+					} else {
+						cor = '#fff';
 					}
 					
 					
@@ -686,10 +689,12 @@
 					let barra = ``;
 					if(x.id_status == 'reagendar') {
 						if(x.futuro === true) {
-							barra = `<div style="background:purple;width:100%;padding:5px;border-radius:5px;"></div>`;
+							// barra = `<div style="background:purple;width:100%;padding:5px;border-radius:5px;"></div>`;
+							barra = `kanban-item_destaque`;
 						} 
 					} else {
-						barra = `<div style="background:${cor};width:100%;padding:5px;border-radius:5px;"></div>`;
+						// barra = `<div style="background:${cor};width:100%;padding:5px;border-radius:5px;"></div>`;
+						barra = `kanban-item_destaque`;
 						
 					}
 					// barra = `<div style="background:${cor};width:100%;padding:5px;border-radius:5px;"></div>`;
@@ -706,8 +711,7 @@
 					}
 
  					let html = `<div class="kanban-card">
-									<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();$(this).next('.kanban-card-modal').find('.js-opcoes').show();$(this).next('.kanban-card-modal').find('.js-acoes').hide();" class="kanban-card-dados js-kanban-item" data-id="${x.id_agenda}">
-										${barra}
+									<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();$(this).next('.kanban-card-modal').find('.js-opcoes').show();$(this).next('.kanban-card-modal').find('.js-acoes').hide();" class="kanban-card-dados js-kanban-item ${barra}" style="background-color:${cor}" data-id="${x.id_agenda}">
 										<p class="kanban-card-dados__data">
 											<i class="iconify" data-icon="ph:calendar-blank"></i>
 											${x.data} &bull; ${x.hora}

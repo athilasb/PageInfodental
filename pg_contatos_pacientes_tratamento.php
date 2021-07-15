@@ -694,8 +694,7 @@
 								<dt>Valor Corrigido</dt>
 								<dd><input type="text" class='js-valorCorrigido money' style="background: #ccc" disabled /></dd>
 							</dl>
-							<dl>
-								
+							<dl>								
 								<dd style="padding-top: 10px;opacity:0.2"><button type="button" class="js-btn-descontoAplicarEmTodos button">Aplicar Desconto</button></dd>
 							</dl>
 
@@ -902,7 +901,7 @@
 
 						
 
-						$('.js-valorTotal').html(number_format(valorTotal,2,",","."));
+						$('.js-valorTotal').val(number_format(valorTotal,2,",","."));
 
 					}
 
@@ -1080,13 +1079,12 @@
 					}
 
 				// PAGAMENTOS
-					var pagamentosHTML = `<tr class="js-pagamento-item">
-												<td class="js-num"></td>
-												<td><input type="text" name="" class="datepicker data js-vencimento" value="" /></td>
-												<td><input type="text" name="" value="" class="js-valor" /></td>
-												
+					var pagamentosHTML = `<div class="js-pagamento-item colunas3" style="background:var(--cinza1); border-radius:8px; margin-bottom:.5rem; padding:.5rem 1.5rem;">
+												<dl><dd><label class="js-num"></label><input type="text" name="" class="datepicker data js-vencimento" value="" /></dd></dl>
+												<dl><dd><input type="text" name="" value="" class="js-valor" /></dd></dl>
+												<dl><dd><select class="js-id_formadepagamento js-tipoPagamento"><option value="">Forma de Pagamento...</option><option value="9" data-tipo="boleto">BOLETO</option><option value="2" data-tipo="credito">CARTÃO DE CRÉDITO</option><option value="3" data-tipo="debito">CARTÃO DE DÉBITO</option><option value="4" data-tipo="cheque">CHEQUE</option><option value="6" data-tipo="deposito">DEPÓSITO BANCÁRIO</option><option value="1" data-tipo="dinheiro">DINHEIRO</option><option value="8" data-tipo="permuta">PERMUTA</option><option value="7" data-tipo="pix">PIX</option><option value="5" data-tipo="transferencia">TRANSFERÊNCIA BANCÁRIA</option></select></dd></dl>
 											<?php /*	<td>${tratamentoAprovado===1?'':'<a href="javascript:;" style="font-size:1.25rem;" class="js-btn-removerPagamento"><i class="iconify" data-icon="bx-bx-trash"></i></a>'}</td>*/?>
-											</tr>`;
+											</div>`;
 
 
 					const pagamentosListar = () => {
@@ -1742,11 +1740,22 @@
 										<input type="text" name="titulo" value="<?php echo $values['titulo'];?>" placeholder="Nome do plano" style="width:300px" />
 									</div>
 								</div>
+
+								<?php /*
+								<div class="filter-group">
+									<div class="filter-data">
+										<h1>Valor Total</h1>
+										<h2 class="js-valorTotal">0,00</h2>
+									</div>					
+								</div>	
+								*/ ?>
+
 								<?php
 								if(is_object($cnt)) {
 								?>
 								<input type="hidden" name="status" />
 								<div class="filter-group filter-group_right">
+									<h1 class="filter-group__titulo">Status do Plano:</h1>
 									<div class="filter-links">
 										<a href="javascript:;" data-status="PENDENTE" class="js-btn-status<?php echo $cnt->status=="PENDENTE"?" active":"";?>">Em aberto</a>
 										<a href="javascript:;" data-status="APROVADO" class="js-btn-status<?php echo $cnt->status=="APROVADO"?" active":"";?>">Aprovado</a>
@@ -1764,17 +1773,10 @@
 									</div>
 								</div>
 								<?php
-
 								}
-								?>
-								<div class="filter-group">
-									<div class="filter-data">
-										<h1>Valor Total</h1>
-										<h2 class="js-valorTotal">0,00</h2>
-									</div>					
-								</div>	
+								?>								
 
-								<div class="filter-group filter-group_right">
+								<div class="filter-group">
 									<div class="filter-button">
 										<?php if(is_object($cnt)){?><a href="?deletaTratamento=<?php echo $cnt->id."&".$url;?>" class="js-deletar"><i class="iconify" data-icon="bx-bx-trash"></i></a><?php }?>
 										<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
@@ -1786,7 +1788,7 @@
 
 
 							<div class="grid grid_auto" style="flex:1;">
-								<fieldset style="grid-column:span 2; margin:0;">
+								<fieldset style="margin:0;">
 									
 									<legend><span class="badge">1</span> Adicione os Procedimentos</legend>
 									<?php
@@ -1795,24 +1797,22 @@
 									<?php /*<div class="clearfix" style="margin-bottom: 10px;">
 										<a href="javascript:;" class="button js-btn-addProcedimento tooltip " title="Adicionar Procedimento" style="background:var(--azul);color:#FFF;float: right"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar Procedimento</a>
 									</div>*/?>
-									<div class="filter">
-										<div class="filter-group">
-											<div class="filter-button">
-												<a href="javascript:;" class="verde js-btn-addProcedimento "><i class="iconify" data-icon="bx-bx-plus"></i><span>Novo Procedimento</span></a>
-												
-												<a href="javascript:;" class="js-btn-aprovarTodosProcedimentos">Aprovar Todos Aguardando Aprovação</span></a>
-												<a href="javascript:;" class="js-btn-boxDesconto">Aplicar Desconto</a>
-											</div>
-										</div>
-
-									</div>
+									
+											
+									<dl>
+										<dd>
+											<a href="javascript:;" class="button js-btn-addProcedimento" style="background:var(--verde);"><i class="iconify" data-icon="bx-bx-plus"></i><span>Novo Procedimento</span></a>
+											<a href="javascript:;" class="button js-btn-aprovarTodosProcedimentos">Aprovar Todos Aguardando Aprovação</span></a>
+										</dd>
+									</dl>							
+									
 									<?php
 									}
 									?>
 
 									<textarea name="procedimentos" class="js-json-procedimentos" style="display:none"><?php echo $values['procedimentos'];?></textarea>
 									
-									<div class="registros2"><?php /* style="height:<?php echo $tratamentoAprovado==false?"calc(115vh - 570px)":"calc(100vh - 400px)";?>; overflow:auto;">*/?>
+									<div class="registros2" style="margin-top:1rem;"><?php /* style="height:<?php echo $tratamentoAprovado==false?"calc(115vh - 570px)":"calc(100vh - 400px)";?>; overflow:auto;">*/?>
 
 										<div class="js-procedimentos">
 											<?php /*<div class="card">
@@ -1834,7 +1834,13 @@
 								
 								<fieldset style="margin:0;">
 									<legend><span class="badge">2</span> Defina o Financeiro</legend>
-									
+
+									<?php /*
+									<div class="filter-button">										
+										<a href="javascript:;" class="js-btn-boxDesconto">Aplicar Desconto</a>
+									</div>
+									*/ ?>
+
 									<?php /*<div class="colunas4">
 										<dl>
 											<dt>Tratamento</dt>
@@ -1866,13 +1872,21 @@
 
 									?>
 										<div class="js-formDiv-financeiro">
-											<dl class="dl3" style="padding: 0">
-												<dd>
-													<label><input type="radio" name="pagamento" value="avista" class="js-pagamento-avista"<?php echo (is_object($cnt) and $cnt->pagamento=="avista")?" checked":"";?> /> À Vista</label>
-													<label><input type="radio" name="pagamento" value="parcelado" class="js-pagamento-parcelado"<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?" checked":"";?> /> Parcelado em</label>
-													<input type="number" name="parcelas" style="float:left;width:50px;display: none;" value="<?php echo is_object($cnt)?$cnt->parcelas:1;?>" class="js-pagamentos-quantidade" />
-												</dd>
-											</dl>
+											<div class="colunas2">
+												<dl>
+													<dd>
+														<label><input type="radio" name="pagamento" value="avista" class="js-pagamento-avista"<?php echo (is_object($cnt) and $cnt->pagamento=="avista")?" checked":"";?> /> À Vista</label>
+														<label><input type="radio" name="pagamento" value="parcelado" class="js-pagamento-parcelado"<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?" checked":"";?> /> Parcelado em</label>
+														<input type="number" name="parcelas" style="float:left;width:50px;display: none;" value="<?php echo is_object($cnt)?$cnt->parcelas:1;?>" class="js-pagamentos-quantidade" />
+													</dd>
+												</dl>
+												<dl>													
+													<dd>
+														<label style="white-space:nowrap">Valor Total:</label><input type="text" class="js-valorTotal" val="0.00" disabled style="max-width:90px; text-align:center;" />
+														<a href="javascript:;" class="button js-btn-boxDesconto">Aplicar desconto</a>
+													</dd>
+												</dl>												
+											</div>
 										</div>
 										<?php 
 										/*<dl class="dl4">
@@ -1885,24 +1899,12 @@
 									}
 									?>
 									<textarea name="pagamentos" class="js-json-pagamentos" style="display:none;"><?php echo $values['pagamentos'];?></textarea>
-									<div class="registros"><?php /* style="height:<?php echo $tratamentoAprovado==false?"calc(115vh - 570px)":"calc(100vh - 400px)";?>; overflow:auto;">*/?>
-										<table>
-											<thead>
-
-												<tr>
-													<th style="width: 10%"></th>
-													<th style="width: 35%">Vencto</th>
-													<th>Valor</th>
-													<?php /*<th></th>*/?>
-												</tr>
-											</thead>
-											<tbody class="js-pagamentos">
-												
-											</tbody>
-										</table>									
+									
+										
+									<div class="js-pagamentos" style="margin-top:1rem;">
+										
 									</div>
-									
-									
+										
 								</fieldset>
 								
 							</div>

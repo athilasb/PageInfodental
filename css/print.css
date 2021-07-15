@@ -25,9 +25,11 @@ body {height:100vh; text-rendering: optimizeSpeed; -webkit-font-smoothing:antial
 .titulo2 h2 {font-size:13pt; line-height:1; font-weight:normal; color:gray;}
 
 .print-table table {width:100%; break-inside: avoid;}
+.print-table table th {text-align:left; padding:8px;}
 .print-table table td {padding:8px;}
 .print-table table td h1 {font-size:7pt; text-transform:uppercase; margin-bottom:.25rem;}
 .print-table table td a {border-bottom:1px solid #000;}
+.print-table table td small {font-size:0.813em;}
 
 .ficha {width:100%; display:flex; padding:10px; background:#ebebeb; border-radius:20px; font-size:13pt; margin-bottom:1.5rem;}
 .ficha__foto {display:block; flex:0 0 75px; width:75px; height:75px; object-fit:cover; border-radius:15px; margin-right:1rem;}
