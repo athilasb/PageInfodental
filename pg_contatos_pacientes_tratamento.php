@@ -1079,33 +1079,33 @@
 					}
 
 				// PAGAMENTOS
-					var pagamentosHTML = `<div class="js-pagamento-item colunas3" style="background:var(--cinza1); border-radius:8px; margin-bottom:.5rem; padding:.5rem 1.5rem;">
-
-												<dl><dd><label class="js-num"></label><input type="text" name="" class="datepicker data js-vencimento" value="" /></dd></dl>
-												
-												<dl><dd><input type="text" name="" value="" class="js-valor" /></dd></dl>
-
-												<dl><dd>
-													<select class="js-id_formadepagamento js-tipoPagamento">
-														<option value="">Forma de Pagamento...</option>
-														<?php echo $optionFormasDePagamento;?>
-													</select>
-												</dd></dl>
-
-												<dl><dd>
-													<select class="js-debitoBandeira js-tipoPagamento">
-														<option value="">selecione</option>
-														<?php
-														foreach($debitoBandeiras as $id_operadora=>$x) {
-															echo '<optgroup label="'.utf8_encode($x['titulo']).'">';
-															foreach($x['bandeiras'] as $band) {
-																echo '<option value="'.$band['id_bandeira'].'" data-id_operadora="'.$id_operadora.'" data-taxa="'.$band['taxa'].'" data-cobrarTaxa="'.$band['cobrarTaxa'].'">'.utf8_encode($band['titulo']).'</option>';
+					var pagamentosHTML = `<div class="js-pagamento-item" style="background:var(--cinza1); border-radius:8px; margin-bottom:.5rem; padding:.5rem 1.5rem;">
+												<div class="colunas3">
+													<dl><dd><label class="js-num"></label><input type="text" name="" class="datepicker data js-vencimento" value="" /></dd></dl>												
+													<dl><dd><input type="text" name="" value="" class="js-valor" /></dd></dl>
+													<dl><dd>
+														<select class="js-id_formadepagamento js-tipoPagamento">
+															<option value="">Forma de Pagamento...</option>
+															<?php echo $optionFormasDePagamento;?>
+														</select>
+													</dd></dl>
+												</div>
+												<div class="colunas3">
+													<dl><dd>
+														<select class="js-debitoBandeira js-tipoPagamento">
+															<option value="">selecione</option>
+															<?php
+															foreach($debitoBandeiras as $id_operadora=>$x) {
+																echo '<optgroup label="'.utf8_encode($x['titulo']).'">';
+																foreach($x['bandeiras'] as $band) {
+																	echo '<option value="'.$band['id_bandeira'].'" data-id_operadora="'.$id_operadora.'" data-taxa="'.$band['taxa'].'" data-cobrarTaxa="'.$band['cobrarTaxa'].'">'.utf8_encode($band['titulo']).'</option>';
+																}
+																echo '</optgroup>';
 															}
-															echo '</optgroup>';
-														}
-														?>
-													</select>
-												</dd></dl>
+															?>
+														</select>
+													</dd></dl>
+												</div>
 											
 											</div>
 											`;
