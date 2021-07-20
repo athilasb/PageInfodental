@@ -2,10 +2,10 @@
 	$urlTema='';
 	if(isset($_GET['id_tema']) and is_numeric($_GET['id_tema'])) $urlTema="?id_tema=".$_GET['id_tema'];
 	$_menu=array('dashboard'=>array('dashboard.php'=>'Dashboard','icone'=>'<i class="iconify" data-icon="ic-outline-dashboard"></i>'),
+					'agenda'=>array('pg_agenda.php'=>'Agenda','icone'=>'<i class="iconify" data-icon="ic-outline-date-range"></i>'),
 
 					'funil_leads'=>array('pg_funil_leads.php'=>'Funil de Leads','icone'=>'<span class="iconify" data-icon="la:funnel-dollar"></span>'),
 					'agenda_confirmacoes'=>array('pg_agenda_confirmacoes.php'=>'Confirmações','icone'=>'<span class="iconify" data-icon="akar-icons:check"></span>'),
-					'agenda'=>array('pg_agenda.php'=>'Agenda','icone'=>'<i class="iconify" data-icon="ic-outline-date-range"></i>'),
 					/*'contatos'=>array('titulo'=>'Contatos','icone'=>'<i class="iconify" data-icon="ic-baseline-person"></i>','submenu'=>array(
 																		array('pg_contatos_pacientes.php'=>'Pacientes'),
 																		array('javascipt:;'=>'Prospect')

@@ -61,6 +61,74 @@ include "print-header.php";
 	</table>
 </div>
 
+<div class="box">
+	<table>
+		<tr>
+			<td colspan="3">
+				<h1>Procedimento</h1>
+				<p><strong>Sorriso Gengival</strong> - Mandíbula - Particular SD.</p>				
+				<p>Obs: Fazer a cirurgia com guia cirúrgico</p>
+			</td>
+			<td>
+				<h1>Dentista</h1>
+				<p>Dr. Kroner Costa</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<h1>Status</h1>
+				<p>Aprovado</p>
+			</td>
+			<td>
+				<h1>Valor</h1>
+				<p>R$ 100,00</p>
+			</td>
+			<td>
+				<h1>Desconto</h1>
+				<p>R$ 10,00</p>
+			</td>
+			<td>
+				<h1>Valor Corrigido</h1>
+				<p>R$ 90,00</p>
+			</td>
+		</tr>		
+	</table>
+</div>
+
+<div class="box">
+	<table>
+		<tr>
+			<td colspan="3">
+				<h1>Procedimento</h1>
+				<p><strong>Sorriso Gengival</strong> - Mandíbula - Particular SD.</p>				
+				<p>Obs: Fazer a cirurgia com guia cirúrgico</p>
+			</td>
+			<td>
+				<h1>Dentista</h1>
+				<p>Dr. Kroner Costa</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<h1>Status</h1>
+				<p>Aprovado</p>
+			</td>
+			<td>
+				<h1>Valor</h1>
+				<p>R$ 100,00</p>
+			</td>
+			<td>
+				<h1>Desconto</h1>
+				<p>R$ 10,00</p>
+			</td>
+			<td>
+				<h1>Valor Corrigido</h1>
+				<p>R$ 90,00</p>
+			</td>
+		</tr>		
+	</table>
+</div>
+
 <header class="titulo2">
 	<h1>Cronograma de Pagamento</h1>
 </header>

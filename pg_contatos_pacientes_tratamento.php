@@ -78,7 +78,7 @@
 	$sql->consult($_p."parametros_formasdepagamento","*","order by titulo asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_formasDePagamento[$x->id]=$x;
-		$optionFormasDePagamento.='<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
+		$optionFormasDePagamento.='<option value="'.$x->id.'" data-tipo="'.$x->tipo.'">'.utf8_encode($x->titulo).'</option>';
 	}
 
 	$_regioesOpcoes=array();
@@ -1080,11 +1080,35 @@
 
 				// PAGAMENTOS
 					var pagamentosHTML = `<div class="js-pagamento-item colunas3" style="background:var(--cinza1); border-radius:8px; margin-bottom:.5rem; padding:.5rem 1.5rem;">
+
 												<dl><dd><label class="js-num"></label><input type="text" name="" class="datepicker data js-vencimento" value="" /></dd></dl>
+												
 												<dl><dd><input type="text" name="" value="" class="js-valor" /></dd></dl>
-												<dl><dd><select class="js-id_formadepagamento js-tipoPagamento"><option value="">Forma de Pagamento...</option><option value="9" data-tipo="boleto">BOLETO</option><option value="2" data-tipo="credito">CARTÃO DE CRÉDITO</option><option value="3" data-tipo="debito">CARTÃO DE DÉBITO</option><option value="4" data-tipo="cheque">CHEQUE</option><option value="6" data-tipo="deposito">DEPÓSITO BANCÁRIO</option><option value="1" data-tipo="dinheiro">DINHEIRO</option><option value="8" data-tipo="permuta">PERMUTA</option><option value="7" data-tipo="pix">PIX</option><option value="5" data-tipo="transferencia">TRANSFERÊNCIA BANCÁRIA</option></select></dd></dl>
-											<?php /*	<td>${tratamentoAprovado===1?'':'<a href="javascript:;" style="font-size:1.25rem;" class="js-btn-removerPagamento"><i class="iconify" data-icon="bx-bx-trash"></i></a>'}</td>*/?>
-											</div>`;
+
+												<dl><dd>
+													<select class="js-id_formadepagamento js-tipoPagamento">
+														<option value="">Forma de Pagamento...</option>
+														<?php echo $optionFormasDePagamento;?>
+													</select>
+												</dd></dl>
+
+												<dl><dd>
+													<select class="js-debitoBandeira js-tipoPagamento">
+														<option value="">selecione</option>
+														<?php
+														foreach($debitoBandeiras as $id_operadora=>$x) {
+															echo '<optgroup label="'.utf8_encode($x['titulo']).'">';
+															foreach($x['bandeiras'] as $band) {
+																echo '<option value="'.$band['id_bandeira'].'" data-id_operadora="'.$id_operadora.'" data-taxa="'.$band['taxa'].'" data-cobrarTaxa="'.$band['cobrarTaxa'].'">'.utf8_encode($band['titulo']).'</option>';
+															}
+															echo '</optgroup>';
+														}
+														?>
+													</select>
+												</dd></dl>
+											
+											</div>
+											`;
 
 
 					const pagamentosListar = () => {
@@ -1177,8 +1201,30 @@
 
 							pagamentos=parcelas;
 						}
-
 					});
+
+					$('.js-pagamentos').on('change','.js-id_formadepagamento',function(){
+						let id_formadepagamento  = $(this).val();
+						let tipo = $('select.js-id_formadepagamento option:checked').attr('data-tipo');
+						alert(tipo);return;
+						$('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
+
+						if(tipo=="credito") {
+							$('.js-parcelas,.js-creditoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa').parent().parent().show();
+						} else if(tipo=="debito") {
+							$('.js-debitoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa').parent().parent().show();
+						} else {
+							$('.js-identificador').parent().parent().show();
+
+							if(tipo=="permuta") {
+								$('.js-obs').parent().parent().show();
+							}
+						}
+						$('.js-valorCreditoDebito').val('');
+						$('.js-valorCreditoDebitoTaxa').val('');
+						$('.js-valor').trigger('change')
+		
+					})
 
 					$('.js-btn-aprovarTodosProcedimentos').click(function(){
 						if(procedimentos.length>0) {

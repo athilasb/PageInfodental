@@ -996,6 +996,7 @@
 					$where="WHERE lixo='0'";
 					if(isset($values['busca']) and !empty($values['busca'])) $where.=" and (nome like '%".utf8_decode($values['busca'])."%' or cpf like '%".cpf($values['busca'])."%' or id = '".addslashes($values['busca'])."')";
 					
+					$where.=" order by nome asc";
 					//echo $where;
 
 					?>
