@@ -1282,9 +1282,13 @@
 													</dd></dl>
 												</div>
 												<div class="colunas3">
+<<<<<<< HEAD
 													<dl style="display:none">
 														<dt>Bandeira</dt>
 														<dd>
+=======
+													<dl><dd>
+>>>>>>> c8778e2142d95335cd2921a36710eb7d3bda5635
 														<select class="js-debitoBandeira js-tipoPagamento">
 															<option value="">selecione</option>
 															<?php
@@ -1298,6 +1302,7 @@
 															?>
 														</select>
 													</dd></dl>
+<<<<<<< HEAD
 
 													<dl style="display:none">
 														<dt>Bandeira</dt>
@@ -1330,6 +1335,8 @@
 														<dt>Identificador</dt>
 														<dd><input type="text" class="js-identificador js-tipoPagamento" /></dd>
 													</dl>
+=======
+>>>>>>> c8778e2142d95335cd2921a36710eb7d3bda5635
 												</div>
 											
 											</div>
