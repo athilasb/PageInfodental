@@ -228,6 +228,12 @@
 					$_usuarios[$x->id]=$x;
 				}
 
+
+				$_profissionais=array();
+				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
+
+
 				$_status=array();
 				$sql->consult($_p."agenda_status","id,titulo,cor","");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
@@ -237,11 +243,47 @@
 				$sql->consult($_p."agenda","*",$where);
 				if($sql->rows) {
 
+					$registros=array();
+					$pacientesIds=array();
 					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$registros[]=$x;
+						$pacientesIds[]=$x->id_paciente;
+					}
+
+					$_pacientesAgendamentos=array();
+					$sql->consult($_p."agenda","*","where id_paciente IN (".implode(",",$pacientesIds).") and agenda_data>'".date('Y-m-d')."' and lixo=0 order by agenda_data");
+
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$cor='';
+						$iniciais='';
+
+						$aux = explode(",",$x->profissionais);
+						$profissionais=array();
+						foreach($aux as $id_profissional) {
+							if(!empty($id_profissional) and is_numeric($id_profissional)) {
+
+								if(isset($_profissionais[$id_profissional])) {
+									$cor=$_profissionais[$id_profissional]->calendario_cor;
+									$iniciais=$_profissionais[$id_profissional]->calendario_iniciais;
+
+									$profissionais[]=array('iniciais'=>$iniciais,'cor'=>$cor);
+								}
+							}
+
+						}
+
+						$_pacientesAgendamentos[$x->id_paciente][]=array('id_agenda'=>$x->id,
+																			'data'=>date('d/m/Y H:i',strtotime($x->agenda_data)),
+																			'cadeira'=>isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'',
+																			'profissionais'=>$profissionais);
+					}
+
+					//var_dump($_pacientesAgendamentos);die();
+
+					foreach($registros as $x) {
 						//var_dump($x);
 					
 						if($x->agendaPessoal==0 and isset($_pacientes[$x->id_paciente])) {
-
 
 							if($_pacientes[$x->id_paciente]->data_nascimento!="0000-00-00") {
 								$dob = new DateTime($_pacientes[$x->id_paciente]->data_nascimento);
@@ -332,9 +374,16 @@
 							else if($dias==1) $agendadoHa="Agendado&nbsp;<strong>ONTEM</strong>";
 							else $agendadoHa="agendou há&nbsp;<strong>$dias</strong>&nbsp;dias";
 							
+							$agendamentosFuturos=array();
+							if(isset($_pacientesAgendamentos[$x->id_paciente])) {
+								$agendamentosFuturos=$_pacientesAgendamentos[$x->id_paciente];
+							}
+
+
 							//	$pacienteNome=$_pacientes[$x->id_paciente]->nome;
-							$agendamentos[]=array('agendaPessoal'=>0,																										
-													'resourceId'=>$x->id_cadeira,'start'=>$dtStart,
+							$agendamentos[]=array('agendaPessoal'=>0,																										'agendamentosFuturos'=>$agendamentosFuturos,
+													'resourceId'=>$x->id_cadeira,
+													'start'=>$dtStart,
 													'end'=>$dtEnd,
 													'hora'=>$hora,
 													'horaFinal'=>$horaFinal,
@@ -647,6 +696,7 @@
 	var filtroStatus=``;
 	var filtroProfissional=``;
 	var filtroCadeira=``;
+
 	$(function(){
 		$('.m-produtos').next().show();	
 
@@ -675,6 +725,7 @@
 				$('.js-calendario-title').val(calendar.view.title);
 			}
 		});
+
 		$('select.js-view').change(function(){
 
 			let dtJS = new Date(calendar.getDate());
@@ -714,6 +765,7 @@
 
 			calendarioVisualizacaoData();
 		});
+
 		$('a.js-left').click(function(){ 
 			if(calendar.view.type=="resourceTimeGridFiveDay") {
 				let dtJS = new Date(calendar.getDate());
@@ -730,26 +782,32 @@
 			$('.js-calendario-title').val(calendar.view.title);
 			calendarioVisualizacaoData();
 		});
+
 		$('a.js-today').click(function(){
 			calendar.today();
 			calendarioVisualizacaoData();
 		});
+
 		$('.js-status').change(function(){
 			filtroStatus=$(this).val();
 			calendar.refetchEvents();
-		})
+		});
+
 		$('.js-cadeira').change(function(){
 			filtroCadeira=$(this).val();
 			calendar.refetchEvents();
-		})
+		});
+
 		$('.js-profissionais').change(function(){
 			filtroProfissional=$(this).val();
 			calendar.refetchEvents();
 		});
+
 		$('.js-btn-fechar').click(function(){
 			$('.cal-popup').hide();
 		});
 	});
+
 </script>
 
 <style>
@@ -856,20 +914,35 @@
 						<h1 class="js-nome"></h1>
 						<p class="js-idade"></p>
 						<p><span style="color:var(--cinza3);" class="js-id_paciente">#44</span> <span style="color:var(--cor1);"></span></p>
+						<p class="js-profissionaisInfo"></p>
 					</section>
 				</header>
+
 				<div class="abasPopover">
-					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-info').show();$(this).addClass('active');" class="active">Informações</a>
+					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-info').show();$(this).addClass('active');" class="active">Infos</a>
 					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-procedimentos').show();$(this).addClass('active');">Procedimentos</a>
 					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-obs').show();$(this).addClass('active');">Observações</a>
+					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-agendamentos').show();$(this).addClass('active');">Agendamentos</a>
 				</div>
+
 				<div class="paciente-info-grid js-grid js-grid-info">
 					
 				</div>
+
 				<div class="paciente-info-grid js-grid js-grid-procedimentos" style="display:none;">							
 				</div>
+
 				<div class="paciente-info-grid js-grid js-grid-obs" style="display:none;font-size:12px;color:#666">							
 				</div>
+
+				<div class="paciente-info-grid js-grid js-grid-agendamentos registros" style="display:none;font-size:12px;color:#666">
+					
+					<table style="width:370px;">
+						
+					</table>
+											
+				</div>
+
 				<div class="paciente-info-opcoes">
 					<select class="js-id_status">
 						<?php
@@ -900,7 +973,7 @@
 							.removeClass('cal-popup_top');
 					$('.js-id_status').attr('data-id',id_agenda);
 					let clickTop=obj.getBoundingClientRect().top+window.scrollY;
-					console.log(clickTop);
+					//console.log(clickTop);
 					let clickLeft=Math.round(obj.getBoundingClientRect().left);
 					let clickMargin=Math.round(obj.getBoundingClientRect().width/2);
 					$(obj).prev('.cal-popup')
@@ -927,11 +1000,44 @@
 					$('#cal-popup .js-grid-procedimentos').html(popViewInfos[id_agenda].procedimentosLista);
 					$('#cal-popup .js-grid-obs').html(popViewInfos[id_agenda].obs);
 					$('#cal-popup .js-id_status').val(popViewInfos[id_agenda].id_status);
+					$('#cal-popup .js-profissionaisInfo').html(popViewInfos[id_agenda].profissionais);
+
 					$('#cal-popup .js-hrefAgenda').attr('href',`box/boxAgendamento.php?id_unidade=${popViewInfos[id_agenda].id_unidade}&id_agenda=${popViewInfos[id_agenda].id_agenda}`);
 					$('#cal-popup .js-hrefPaciente').attr('href',`pg_contatos_pacientes_resumo.php?id_paciente=${popViewInfos[id_agenda].id_paciente}`);
 
 					$('#cal-popup .js-loading').show();
 					$('#cal-popup .paciente-info-header__foto').hide();
+
+					$('#cal-popup .js-grid-agendamentos table tr').remove();
+
+					let temAg=false;
+					if(popViewInfos[id_agenda].agendamentosFuturos.length>0) {
+
+						popViewInfos[id_agenda].agendamentosFuturos.forEach(x=>{
+
+							if(x.id_agenda!=id_agenda) {
+								temAg=true;
+								let prof = '';
+								if(x.profissionais.length>0) {
+									x.profissionais.forEach(p=>{
+										prof+=`<div class="cal-item-foto" style="float:left;"><span style="background:${p.cor}">${p.iniciais}</span></div>`;
+									});
+								}
+
+								$('#cal-popup .js-grid-agendamentos table').append(`<tr>
+																						<td>${x.data}</td>
+																						<td>${x.cadeira}</td>
+																						<td>${prof}</td>
+																					</tr>`);
+							}
+						});
+					}
+
+					if(temAg===false) {
+						$('#cal-popup .js-grid-agendamentos table').append(`<tr><td colspan=3><center>Nenhum agendamento futuro</center></td></tr>`);
+					}
+
+					
 
 					if(popViewInfos[id_agenda].foto.length>0) {
 						$('#cal-popup img.paciente-info-header__foto').attr({'src':popViewInfos[id_agenda].foto}).load(function(){
@@ -944,7 +1050,7 @@
 						$('#cal-popup .paciente-info-header__foto').hide();
 					}
 					
-					console.log('top: '+clickTop+' leftOriginal: '+obj.getBoundingClientRect().left+' left+w: '+clickLeft+' wid: '+obj.getBoundingClientRect().width);
+					//console.log('top: '+clickTop+' leftOriginal: '+obj.getBoundingClientRect().left+' left+w: '+clickLeft+' wid: '+obj.getBoundingClientRect().width);
 					
 				}
 				var calendar = '';
@@ -1120,6 +1226,7 @@
 							let statusColor = arg.event.extendedProps.statusColor;
 							let procedimentos = arg.event.extendedProps.procedimentos;
 							let profissionais = arg.event.extendedProps.profissionais;
+							let agendamentosFuturos = arg.event.extendedProps.agendamentosFuturos;
 							let id_agenda = arg.event.id;
 							let id_unidade = arg.event.extendedProps.id_unidade;
 							let infos = ``;
@@ -1165,8 +1272,6 @@
 						    }
 
 
-						   
-							
 						    popInfos = {};
 						    popInfos.nome = nome;
 						    popInfos.nomeCompleto = nomeCompleto;
@@ -1180,6 +1285,10 @@
 						    popInfos.id_agenda=id_agenda;
 						    popInfos.foto=foto.length>0?foto:'';
 						    popInfos.procedimentosLista=procedimentosLista;
+						    popInfos.agendamentosFuturos=agendamentosFuturos;
+						    popInfos.profissionais=profissionais;
+
+
 
 							popViewInfos[id_agenda] = popInfos;
 

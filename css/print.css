@@ -16,7 +16,7 @@ body {height:100vh; text-rendering: optimizeSpeed; -webkit-font-smoothing:antial
 
 .print-content {font-size:12pt;}
 
-.titulo1 {display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;}
+.titulo1 {display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;margin-top: 2rem;}
 .titulo1 h1 {font-size:20pt; text-transform:none; letter-spacing:3px; font-weight:normal; font-weight:normal; font-family:"Georgia";}
 .titulo1 p {font-size:9pt;}
 
@@ -42,3 +42,5 @@ body {height:100vh; text-rendering: optimizeSpeed; -webkit-font-smoothing:antial
 .prescricao__item h1 {font-size:12pt;}
 .prescricao__item span {flex:1; border-bottom:1px solid #000; margin:0 .5rem;}
 .prescricao__item h2 {font-size:12pt; font-weight:normal;}
+@page { size: auto;  margin: 0mm; }
+

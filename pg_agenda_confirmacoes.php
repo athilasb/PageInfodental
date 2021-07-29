@@ -456,7 +456,9 @@
 	# Agendamentos marcou/faltou
 		$where="where agenda_data>='".date('Y-m-d',strtotime(date('Y-m-d')." - 30 day"))." 00:00:00' and agenda_data<='".date('Y-m-d')." 23:59:59' and id_status IN (3,4) and lixo=0 order by agenda_data asc";
 		$registros=array();
+		
 		$sql->consult($_p."agenda","*",$where);
+		$pacientesIds=array(0);
 		while($x=mysqli_fetch_object($sql->mysqry)) {
 			$registros[]=$x;
 			$pacientesIds[]=$x->id_paciente;
@@ -465,7 +467,9 @@
 
 
 		$_pacientes=array();
-		$sql->consult($_p."pacientes","id,nome,telefone1","where id IN (".implode(",",$pacientesIds).")");
+		$where="where id IN (".implode(",",$pacientesIds).")";
+
+		$sql->consult($_p."pacientes","id,nome,telefone1",$where);
 		while($x=mysqli_fetch_object($sql->mysqry)) {
 			$_pacientes[$x->id]=$x;
 		}
@@ -479,11 +483,12 @@
 		}
 
 
-		$pacientesEmTratamentosIds=array();
+		$pacientesEmTratamentosIds=array(0);
 		$sql->consult($_p."pacientes_tratamentos_procedimentos","distinct id_paciente","where status_evolucao IN ('iniciar','iniciado') and lixo=0");
 		while($x=mysqli_fetch_object($sql->mysqry)) {
 			$pacientesEmTratamentosIds[$x->id_paciente]=$x->id_paciente;
 		}
+
 
 
 		$sql->consult($_p."pacientes","id,nome,telefone1","where id IN (".implode(",",$pacientesEmTratamentosIds).")");

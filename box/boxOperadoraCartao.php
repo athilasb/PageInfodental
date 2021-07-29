@@ -16,7 +16,7 @@
 
 			$operadora='';
 			if(isset($_POST['id_operadora']) and is_numeric($_POST['id_operadora'])) {
-				$sql->consult($_p."parametros_cartoes_bandeiras","*","where id='".$_POST['id_operadora']."'");
+				$sql->consult($_p."parametros_cartoes_operadoras","*","where id='".$_POST['id_operadora']."'");
 				if($sql->rows) {
 					$operadora=mysqli_fetch_object($sql->mysqry);
 				}
@@ -43,11 +43,15 @@
 				if(isset($_POST['bandeiras']) and is_array($_POST['bandeiras']) and in_array($b->id,$_POST['bandeiras'])) {
 
 					if(isset($_POST['recebeCredito_'.$b->id])) {
+
+						$semJuros=isset($_POST['semJuros_'.$b->id])?$_POST['semJuros_'.$b->id]:0;
+
 						for($i=1;$i<=24;$i++) {
 
 							if($_POST['creditoParcelas_'.$b->id]<$i) {
 								continue;
 							}
+							//if($semJuros<$i) continue;
 
 							$vsqlPeT[]=array("id_operadora"=>$id_operadora,
 											"id_bandeira"=>$b->id,
@@ -67,7 +71,6 @@
 							$sql->consult($_p."parametros_cartoes_taxas_semjuros","*","where id=$sql->ulid");
 							$taxaSemjuros=mysqli_fetch_object($sql->mysqry);
 						}
-						$semJuros=isset($_POST['semJuros_'.$b->id])?$_POST['semJuros_'.$b->id]:0;
 						$sql->update($_p."parametros_cartoes_taxas_semjuros","semjuros='".$semJuros."'","where id=$taxaSemjuros->id");
 					} 
 
@@ -148,7 +151,7 @@
 	$jsc = new Js();
 	$operadora='';
 	if(isset($_GET['id_operadora']) and is_numeric($_GET['id_operadora'])) {
-		$sql->consult($_p."parametros_cartoes_bandeiras","*","where id='".$_GET['id_operadora']."'");
+		$sql->consult($_p."parametros_cartoes_operadoras","*","where id='".$_GET['id_operadora']."'");
 		if($sql->rows) {
 			$operadora=mysqli_fetch_object($sql->mysqry);
 
@@ -216,7 +219,7 @@
 					data:data,
 					success:function(rtn) {
 						if(rtn.success) {
-							$.fancybox.close();
+							document.location.href='pg_configuracao_cartoes.php';
 						} else if(rtn.error) {
 							swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 						} else {
@@ -332,8 +335,7 @@
 								$(el).hide();
 							}
 						} else {
-								$(el).show();
-
+							$(el).show();
 						}
 					})
 				});
@@ -360,7 +362,7 @@
 			}
 		?>
 		<form method="post" class="form js-form-operadora">
-
+			
 			<fieldset>
 				<legend>Informações</legend>
 					<dl>
@@ -394,7 +396,7 @@
 						$taxaSemjuros='';
 
 						$sql->consult($_p."parametros_cartoes_taxas_semjuros","semjuros","where id_operadora=$operadora->id and id_bandeira=$v->id and lixo=0");
-					
+						$semJuros='';
 						if($sql->rows) {
 							$taxaSemjuros=mysqli_fetch_object($sql->mysqry);
 							$semJuros=$taxaSemjuros->semjuros;
@@ -486,7 +488,7 @@
 							?>
 							<tr class="js-tr-<?php echo $v->id;?>" style="display: <?php echo $parcelaDisplay;?>;">
 								<td><?php echo $i;?>x</td>
-								<td><input type="text" name="credito_taxa_<?php echo $i."_".$v->id;?>" maxlength="4" class="js-maskFloat" value="<?php echo number_format($parcelaTaxa,2,",","");?>" /></td>
+								<td><input type="text" name="credito_taxa_<?php echo $i."_".$v->id;?>" maxlength="4" class="js-maskFloat" value="<?php echo is_numeric($parcelaTaxa)?number_format($parcelaTaxa,2,",",""):'';?>" /></td>
 								<td><input type="text" name="credito_prazo_<?php echo $i."_".$v->id;?>" maxlength="3" class="js-maskNumber" value="<?php echo $parcelaPrazo;?>" /></td>
 								<?php /*<td><label><input type="checkbox" name="credito_cobrarCliente_<?php echo $i."_".$v->id;?>" value="1"<?php echo $parcelaCobrarCliente==1?" checked":"";?> /> cobrar cliente</label></td>*/?>
 							</tr>

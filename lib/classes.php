@@ -68,6 +68,11 @@
 	function unmaskCPF($cpf) {
 		return str_replace(".","",str_replace("-","",$cpf));
 	}
+	function maskTelefone($tel) {
+		$tel=preg_replace("/[^a-zA-Z0-9]+/", "", $tel);
+
+		return "(".substr($tel,0,2).") ".substr($tel,2,4)."-".substr($tel,6,4);
+	}
 	function invDate($data) {
 		if(!empty($data)) {
 			list($dia,$mes,$ano)=explode("/",$data);

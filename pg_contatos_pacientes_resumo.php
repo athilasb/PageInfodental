@@ -93,11 +93,27 @@
 					?>
 					<div class="paciente-info-grid">
 						<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-instagram"></i> <?php echo empty($paciente->instagram)?"-":'<a href="http://instagram.com/'.str_replace("@","",$paciente->instagram).'" target="_blank">'.utf8_encode($paciente->instagram.'</a>');?></p>
-						<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-phone"></i> <?php echo empty($paciente->telefone1)?"-":utf8_encode($paciente->telefone1);?></p>
-						<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-music"></i> <?php echo empty($paciente->musica)?"-":utf8_encode($paciente->musica);?></p>
-						<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-hand-pointing-right"></i> <?php echo $pacienteIndicacao;?></p>
-						<p class="paciente-info-grid__item" style="color:red;"><i class="iconify" data-icon="mdi-alert"></i> -</p>
-						<p class="paciente-info-grid__item" style="color:red;"><i class="iconify" data-icon="mdi-currency-usd-circle-outline"></i> -</p>
+						<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-phone"></i><?php echo empty($paciente->telefone1)?"-":utf8_encode($paciente->telefone1);?></p>
+						<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-music"></i><?php echo empty($paciente->musica)?"-":utf8_encode($paciente->musica);?></p>
+						<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-hand-pointing-right"></i><?php echo $pacienteIndicacao;?></p>
+						<?php
+						if($paciente->data!='0000-00-00 00:00:00') {
+							$dtCadastro = new DateTime($paciente->data);
+							$dtHoje = new DateTime();
+							$dif = $dtCadastro->diff($dtHoje);
+							$haPaciente="";
+
+							if($dif->y>0) $haPaciente.=" $dif->y ".($dif->y>1?"anos":"ano");
+							if($dif->m>0) $haPaciente.=" $dif->m  ".($dif->m>1?"meses":"mês");;
+							if($dif->d>0) $haPaciente.=" $dif->d ".($dif->d>1?"dias":"dia");;
+						?>
+						<p class="paciente-info-grid__item"><i class="iconify" data-icon="fa-solid:user-clock" data-height="12"></i> Paciente há <?php echo $haPaciente;?></p>
+						<?php
+						}
+						?>
+						
+						<?php /*<p class="paciente-info-grid__item" style="color:red;"><i class="iconify" data-icon="mdi-alert"></i> -</p>
+						<p class="paciente-info-grid__item" style="color:red;"><i class="iconify" data-icon="mdi-currency-usd-circle-outline"></i> -</p>*/?>
 					</div>
 				</div>
 			</div>
@@ -121,7 +137,7 @@
 							}
 
 							$_usuarios=array();
-							$sql->consult($_p."usuarios","*","WHERE id IN (".implode(",",$usuariosIds).")");
+							$sql->consult($_p."colaboradores","*","WHERE id IN (".implode(",",$usuariosIds).")");
 							while($x=mysqli_fetch_object($sql->mysqry)) {
 								$_usuarios[$x->id]=$x;
 							}
@@ -213,7 +229,7 @@
 				</div>
 			</div>
 			<?php
-			$where="WHERE id_paciente=$paciente->id and lixo=0 and status='aprovado'";
+			$where="WHERE id_paciente=$paciente->id and lixo=0";
 			$sql->consult($_p."pacientes_tratamentos","*",$where);
 
 			$registros=array();
@@ -286,10 +302,15 @@
 									$total++;
 								}
 								$perc=($total)==0?0:number_format(($finalizados/($total))*100,0,"","");
+
+
+								if($x->status=="PENDENTE") $x->status="Em Aberto";
+								else if($x->status=="APROVADO") $x->status="Aprovado";
+								else if($x->status=="CANCELADO") $x->status="Cancelado";
 						?>
 						<div class="paciente-etapas__item">
-							<h1 class="paciente__titulo1"><?php echo utf8_encode($x->titulo);?> <small>(<?php echo date('d/m/Y',strtotime($x->data));?>)</small></h1>
-							
+							<h1 class="paciente__titulo1"><?php echo utf8_encode($x->titulo);?> <small>(<?php echo date('d/m/Y',strtotime($x->data));?>)</small><br />
+							<p style="font-size:14px;"><?php echo $x->status;?></p></h1>
 							<div class="paciente-etapas-grid">
 								
 								<p>Procedimento <?php echo $finalizados."/".$total." - ".$perc."%";?></p>
@@ -311,28 +332,67 @@
 				</div>
 			</div>
 
-			<div class="box" style="overflow:hidden;">
-				<div class="paciente-fotos">
-					<h1 class="paciente__titulo1">Fotos</h1>
-					<?php 
-					/*<div class="paciente-fotos__slick">
-						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
-						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
-						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
-						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
-						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
-						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
-					</div>*/
-					?>
-
-						<div style="text-align: center;color:#CCC"><span class="iconify" data-icon="el:eye-close" data-inline="false" data-height="50"></span><br />Nenhum registro.</div>
-				</div>
-			</div>
-
 			<div class="box">
 				<div class="paciente-agenda">
 					<h1 class="paciente__titulo1">Agendamentos</h1>
-					<div class="paciente-scroll">						
+					<div class="paciente-scroll">		
+						<?php
+
+						$_cadeiras=array();
+						$sql->consult($_p."parametros_cadeiras","*","where lixo=0 order by ordem asc");
+						while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
+
+						$_status=array();
+						$sql->consult($_p."agenda_status","*","where lixo=0 order by titulo asc");
+						while($x=mysqli_fetch_object($sql->mysqry)) $_status[$x->id]=$x;
+
+						$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and lixo=0 order by agenda_data desc");
+						if($sql->rows) {
+						?>
+						<div class="reg">
+							<?php
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$statusCor='';
+
+								if(isset($_status[$x->id_status])) {
+									$statusCor=$_status[$x->id_status]->cor;
+								}
+							?>
+							<a href="<?php echo $tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;?>" class="reg-group">
+								<div class="reg-color" style="background-color:<?php echo $statusCor;?>"></div>
+								
+								<div class="reg-data" style="width:30%">
+									<p><?php echo date('d/m/Y H:i',strtotime($x->agenda_data));?></span></p>
+								</div>
+
+								<div class="reg-data" style="width:30%">
+									<p><?php echo isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'';?></p>
+								</div>
+								<?php
+								$profissionais="";
+								if(!empty($x->profissionais)) {
+									$profissionais='';
+									$aux=explode(",",$x->profissionais);
+									foreach($aux as $v) {
+										if(!empty($v) and is_numeric($v) and isset($_profissionais[$v])) {
+											//$profissionais.='<div class="cal-item-foto"><span style="background:'.$_profissionais[$v]->calendario_cor.'">'.$_profissionais[$v]->calendario_iniciais.'</span></div>';
+											$profissionais.='<div class="cal-item-foto" style="float:left;"><span style="background:'.$_profissionais[$v]->calendario_cor.'">'.$_profissionais[$v]->calendario_iniciais.'</span></div>';
+										}
+									}
+								}
+								?>
+								<div class="cal-item__fotos">
+									<?php echo $profissionais;?>
+								</div>
+							</a>
+							<?php
+							}
+							?>
+						</div>
+						<?php
+						}
+						/*?>
+
 						<table class="paciente-agenda-table">
 							<?php
 							$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and lixo=0 order by agenda_data desc");
@@ -360,10 +420,30 @@
 								}
 							}
 							?>
-						</table>
+						</table>*/?>
 					</div>
 				</div>
 			</div>
+
+			<div class="box" style="overflow:hidden;">
+				<div class="paciente-fotos">
+					<h1 class="paciente__titulo1">Fotos</h1>
+					<?php 
+					/*<div class="paciente-fotos__slick">
+						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
+						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
+						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
+						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
+						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
+						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
+					</div>*/
+					?>
+
+						<div style="text-align: center;color:#CCC"><span class="iconify" data-icon="el:eye-close" data-inline="false" data-height="50"></span><br />Nenhum registro.</div>
+				</div>
+			</div>
+
+			
 
 			<div class="box">
 				<div class="paciente-wp">

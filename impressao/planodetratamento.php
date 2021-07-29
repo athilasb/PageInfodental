@@ -1,180 +1,239 @@
 <?php
-include "print-header.php";
+	include "print-header.php";
+
+	$tratamento = $paciente = "";
+	if(isset($_GET['id'])) {
+		$sql->consult($_p."pacientes_tratamentos","*","where md5(id)='".addslashes($_GET['id'])."'");
+		if($sql->rows) {
+			$tratamento=mysqli_fetch_object($sql->mysqry);
+
+			$sql->consult($_p."pacientes","*","where id=$tratamento->id_paciente");
+			if($sql->rows) {
+				$paciente=mysqli_fetch_object($sql->mysqry);
+			}
+		}
+	}
+
+	$jsc = new Js();
+
+	if(empty($tratamento)) {
+		$jsc->alert("Tratamento não cadastrado!","document.location.href='../dashboard.php'");
+		die();
+	}
+
+	if(empty($paciente)) {
+		$jsc->alert("Paciente não cadastrado!","document.location.href='../dashboard.php'");
+		die();
+	}
+
+	$idade=idade($paciente->data_nascimento);
+
+	$procedimentos=array();
+	$pagamentos=array();
+	$procedimentosIds=array(0);
+	$valorTotal=$descontoTotal=0;
+
+
+	if($tratamento->status!="APROVADO") {
+		$procedimentosObj = json_decode($tratamento->procedimentos);
+		$pagamentosObj = json_decode($tratamento->pagamentos);
+
+		foreach($procedimentosObj as $x) {
+			$procedimentos[]=$x;
+			$procedimentosIds[$x->id_procedimento]=$x->id_procedimento;
+			$descontoTotal+=$x->desconto;
+		}
+		foreach($pagamentosObj as $x) {
+			$pagamentos[]=$x;
+			$valorTotal+=$x->valor;
+		}
+	} else {
+
+		$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento=$tratamento->id and lixo=0");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$procedimentos[]=$x;
+			$procedimentosIds[$x->id_procedimento]=$x->id_procedimento;
+		}
+
+		$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id_tratamento=$tratamento->id and lixo=0 and fusao=0");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$pagamentos[]=$x;
+		}
+
+	}
+
+	$_procedimentos=array();
+	$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$procedimentosIds).")");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_procedimentos[$x->id]=$x;
+	}
+
+	$_profissionais=array();
+	$sql->consult($_p."colaboradores","*","where cro<>'' order by nome asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_profissionais[$x->id]=$x;
+	}
+
+	$_formasDePagamento=array();
+	$sql->consult($_p."parametros_formasdepagamento","*","order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_formasDePagamento[$x->id]=$x;
+	}
+
+	$_status=array('aprovado'=>'Aprovado',
+					'naoAprovado'=>'Não Aprovado',
+					'aguardandoAprovacao'=>'Aguardando Aprovação',
+					'observado'=>'Observado');
+
 ?>
 			
 <header class="titulo1">
 	<h1>Plano de Tratamento</h1>
-	<p>01/01/2021</p>
+	<p><?php echo date('d/m/Y',strtotime($tratamento->data));?></p>
 </header>
 
 <div class="ficha">
 	<img src="../img/ilustra-perfil.png" alt="" width="80" height="80" class="ficha__foto" />
 	<table>
 		<tr>
-			<td colspan="2"><strong>Kroner Machado Costa</strong></td>
-			<td>Masculino</td>
+			<td colspan="2"><strong><?php echo utf8_encode($paciente->nome);?></strong></td>
+			<td><?php echo $paciente->sexo=="M"?"Masculino":"Feminino";?></td>
 		</tr>
 		<tr>
-			<td>30 anos</td>
-			<td>#4333</td>
-			<td>Paciente há 2 anos</td>
+			<td><?php echo $idade>1?"$idade anos":"$idade ano";?></td>
+			<td>#<?php echo $paciente->id;?></td>
+			<td>
+				<?php
+				if($paciente->data!='0000-00-00 00:00:00') {
+					$dtCadastro = new DateTime($paciente->data);
+					$dtHoje = new DateTime();
+					$dif = $dtCadastro->diff($dtHoje);
+				?>
+				Paciente há <?php echo $dif->days;?> dias
+				<?php
+				}
+				?>
+			</td>
 		</tr>
 	</table>
 </div>
 
-<div style="font-size:14pt; margin:2.5rem 0; text-align:center;">Status do Plano de Tratamento: <strong><i class="iconify" data-icon="ph-hourglass-high-fill"></i> Em aberto</strong></div>
+<div style="font-size:14pt; margin:2.5rem 0; text-align:center;">
+	Status do Plano de Tratamento: 
+	<?php
+	if($tratamento->status=="APROVADO") {
+	?>
+	<strong><i class="iconify" data-icon="el:ok"></i> Aprovado</strong>
+	<?php
+	} else if($tratamento->status=="PENDENTE") {
+	?>
+	<strong><i class="iconify" data-icon="ph-hourglass-high-fill"></i> Em aberto</strong>
+	<?php
+	} else if($tratamento->status=="CANCELADO") {
+	?>
+	<strong><i class="iconify" data-icon="topcoat:cancel"></i> Cancelado</strong>
+	<?php
+
+	}
+	?>
+</div>
 
 <header class="titulo2">
-	<h1>Listagem de Procedimentos</h1>
+	<h1>Listagem de Procedimentos (<?php echo count($procedimentos);?>)</h1>
 </header>
+
+<?php
+	foreach($procedimentos as $proc) { 
+		if(isset($_procedimentos[$proc->id_procedimento])) {
+			$procedimento=$_procedimentos[$proc->id_procedimento];
+?>
 <div class="box">
 	<table>
 		<tr>
 			<td colspan="3">
 				<h1>Procedimento</h1>
-				<p><strong>Sorriso Gengival</strong> - Mandíbula - Particular SD.</p>				
-				<p>Obs: Fazer a cirurgia com guia cirúrgico</p>
+				<p><strong><?php echo utf8_encode($procedimento->titulo);?></strong><?php echo !empty($proc->opcao)?" - ".utf8_encode($proc->opcao):"";?> - <?php echo utf8_encode($proc->plano);?></p>				
+				<?php echo (isset($proc->obs) and !empty($proc->obs))?"<p>".utf8_encode($proc->obs)."</p>":"";?>
 			</td>
 			<td>
 				<h1>Dentista</h1>
-				<p>Dr. Kroner Costa</p>
+				<p><?php echo isset($_profissionais[$proc->id_profissional])?utf8_encode($_profissionais[$proc->id_profissional]->nome):'-';?></p>
 			</td>
 		</tr>
 		<tr>
 			<td>
 				<h1>Status</h1>
-				<p>Aprovado</p>
+				<p><?php echo $_status[$proc->situacao];?></p>
 			</td>
 			<td>
 				<h1>Valor</h1>
-				<p>R$ 100,00</p>
+				<p>R$ <?php echo number_format($proc->valor,2,",",".");?></p>
 			</td>
 			<td>
 				<h1>Desconto</h1>
-				<p>R$ 10,00</p>
+				<p>R$ <?php echo number_format($proc->desconto,2,",",".");?></p>
 			</td>
 			<td>
 				<h1>Valor Corrigido</h1>
-				<p>R$ 90,00</p>
+				<p>R$ <?php echo number_format($proc->valor-$proc->desconto,2,",",".");?></p>
 			</td>
 		</tr>		
 	</table>
 </div>
-
-<div class="box">
-	<table>
-		<tr>
-			<td colspan="3">
-				<h1>Procedimento</h1>
-				<p><strong>Sorriso Gengival</strong> - Mandíbula - Particular SD.</p>				
-				<p>Obs: Fazer a cirurgia com guia cirúrgico</p>
-			</td>
-			<td>
-				<h1>Dentista</h1>
-				<p>Dr. Kroner Costa</p>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<h1>Status</h1>
-				<p>Aprovado</p>
-			</td>
-			<td>
-				<h1>Valor</h1>
-				<p>R$ 100,00</p>
-			</td>
-			<td>
-				<h1>Desconto</h1>
-				<p>R$ 10,00</p>
-			</td>
-			<td>
-				<h1>Valor Corrigido</h1>
-				<p>R$ 90,00</p>
-			</td>
-		</tr>		
-	</table>
-</div>
-
-<div class="box">
-	<table>
-		<tr>
-			<td colspan="3">
-				<h1>Procedimento</h1>
-				<p><strong>Sorriso Gengival</strong> - Mandíbula - Particular SD.</p>				
-				<p>Obs: Fazer a cirurgia com guia cirúrgico</p>
-			</td>
-			<td>
-				<h1>Dentista</h1>
-				<p>Dr. Kroner Costa</p>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<h1>Status</h1>
-				<p>Aprovado</p>
-			</td>
-			<td>
-				<h1>Valor</h1>
-				<p>R$ 100,00</p>
-			</td>
-			<td>
-				<h1>Desconto</h1>
-				<p>R$ 10,00</p>
-			</td>
-			<td>
-				<h1>Valor Corrigido</h1>
-				<p>R$ 90,00</p>
-			</td>
-		</tr>		
-	</table>
-</div>
-
+<?php
+		}
+	}
+?>
 <header class="titulo2">
 	<h1>Cronograma de Pagamento</h1>
 </header>
+
 <div class="box">
 	<table>		
 		<tr style="font-size:13pt">
 			<td>
 				<h1>Valor Total</h1>
-				<p>R$ 90,00</p>
+				<p>R$ <?php echo number_format($valorTotal,2,",",".");?></p>
 			</td>
 			<td>
 				<h1>Desconto Total</h1>
-				<p>R$ 10,00</p>
+				<p>R$ <?php echo number_format($descontoTotal,2,",",".");?></p>
 			</td>
-			<td></td>
-		</tr>		
+		</tr>	
+		<?php
+			$cont=1;
+			foreach($pagamentos as $pag) {
+		?>	
 		<tr>
-			<td>
+			<td style="width:30%">
 				<h1>Data Vencimento</h1>
-				<p>01/01/2020</p>
+				<p><?php echo $pag->vencimento;?></p>
 			</td>
-			<td>
-				<h1>Valor Parcela 01</h1>
-				<p>R$ 45,00</p>
+			<td style="width:30%">
+				<h1>Valor Parcela <?php echo $cont++;?></h1>
+				<p>R$ <?php echo number_format($pag->valor,2,",", ",");?></p>
 			</td>
-			<td>
+			<td style="width:30%">
 				<h1>Forma de Pagamento</h1>
-				<p>A definir</p>
+				<p>
+					<?php
+					if(isset($pag->id_formapagamento) and $pag->id_formapagamento>0 and isset($_formasDePagamento[$pag->id_formapagamento])) {
+						echo utf8_encode($_formasDePagamento[$pag->id_formapagamento]->titulo);
+
+						if($_formasDePagamento[$pag->id_formapagamento]->tipo=="credito") echo " - ".(!empty($pag->qtdParcelas)?$pag->qtdParcelas:1)."x";
+						if(isset($pag->identificador) and !empty($pag->identificador)) echo "<br />ID: ".utf8_encode($pag->identificador);
+					} else echo "a definir";
+					?>
+				</p>
 			</td>
 		</tr>
-		<tr>
-			<td>
-				<h1>Data Vencimento</h1>
-				<p>01/02/2020</p>
-			</td>
-			<td>
-				<h1>Valor Parcela 02</h1>
-				<p>R$ 45,00</p>
-			</td>
-			<td>
-				<h1>Forma de Pagamento</h1>
-				<p>A definir</p>
-			</td>
-		</td>
+		<?php
+			}
+		?>
+		
 	</table>
 </div>
+
 
 
 <?php
