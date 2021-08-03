@@ -172,6 +172,8 @@
 							while($x=mysqli_fetch_object($sql->mysqry)) {
 								$_procedimentos[$x->id]=$x;
 							}
+
+							$profissionaisJaListados=array();
 						?>
 						<div class="reg">
 							<?php
@@ -224,22 +226,30 @@
 											if($sql->rows) {
 												while($y=mysqli_fetch_object($sql->mysqry)) {
 													if(isset($_profissionais[$y->id_profissional])) {
-														$p=$_profissionais[$y->id_profissional];
-														$profissionalIniciais=$p->calendario_iniciais;
-														$profissionalCor=$p->calendario_cor;
+
+														if(!isset($profissionaisJaListados[$x->id_profissional])) {
+															$profissionaisJaListados[$x->id_profissional]=1;
+															$p=$_profissionais[$y->id_profissional];
+															$profissionalIniciais=$p->calendario_iniciais;
+															$profissionalCor=$p->calendario_cor;
 									?>
 									<span style="background:<?php echo empty($profissionalCor)?"#CCC":$profissionalCor;?>;color:#FFF;padding:10px;border-radius: 50%"><?php echo $profissionalIniciais;?></span>
 									<?php
+														}
 													}
 												}
 											}
 										} else {
 											if(isset($_profissionais[$x->id_profissional])) {
-												$calendario_cor = $_profissionais[$x->id_profissional]->calendario_cor;
-												$calendario_iniciais = $_profissionais[$x->id_profissional]->calendario_iniciais;
-									?>
+												if(!isset($profissionaisJaListados[$x->id_profissional])) {
+													$profissionaisJaListados[$x->id_profissional]=1;
+													$calendario_cor = $_profissionais[$x->id_profissional]->calendario_cor;
+													$calendario_iniciais = $_profissionais[$x->id_profissional]->calendario_iniciais;
+									?>	
 									<span style="background:<?php echo empty($calendario_cor)?"#CCC":$calendario_cor;?>;color:#FFF;padding:10px;border-radius: 50%"><?php echo $calendario_iniciais;?></span>
 									<?php
+												}
+											
 											}
 										}
 									?>
