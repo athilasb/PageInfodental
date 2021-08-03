@@ -89,6 +89,23 @@
 			
 <header class="titulo1">
 	<h1>Plano de Tratamento</h1>
+	<p style="font-size:1.25em;">
+		<?php
+		if($tratamento->status=="APROVADO") {
+		?>
+		<strong><i class="iconify" data-icon="el:ok"></i> Aprovado</strong>
+		<?php
+		} else if($tratamento->status=="PENDENTE") {
+		?>
+		<strong><i class="iconify" data-icon="ph-hourglass-high-fill"></i> Em aberto</strong>
+		<?php
+		} else if($tratamento->status=="CANCELADO") {
+		?>
+		<strong><i class="iconify" data-icon="topcoat:cancel"></i> Cancelado</strong>
+		<?php
+		}
+		?>
+	</p>
 	<p><?php echo date('d/m/Y',strtotime($tratamento->data));?></p>
 </header>
 
@@ -118,26 +135,6 @@
 	</table>
 </div>
 
-<div style="font-size:14pt; margin:2.5rem 0; text-align:center;">
-	Status do Plano de Tratamento: 
-	<?php
-	if($tratamento->status=="APROVADO") {
-	?>
-	<strong><i class="iconify" data-icon="el:ok"></i> Aprovado</strong>
-	<?php
-	} else if($tratamento->status=="PENDENTE") {
-	?>
-	<strong><i class="iconify" data-icon="ph-hourglass-high-fill"></i> Em aberto</strong>
-	<?php
-	} else if($tratamento->status=="CANCELADO") {
-	?>
-	<strong><i class="iconify" data-icon="topcoat:cancel"></i> Cancelado</strong>
-	<?php
-
-	}
-	?>
-</div>
-
 <header class="titulo2">
 	<h1>Listagem de Procedimentos (<?php echo count($procedimentos);?>)</h1>
 </header>
@@ -147,18 +144,14 @@
 		if(isset($_procedimentos[$proc->id_procedimento])) {
 			$procedimento=$_procedimentos[$proc->id_procedimento];
 ?>
-<div class="box">
+<div class="box" style="margin-bottom:-1px; border-radius:0 8px 0 0;">
 	<table>
 		<tr>
-			<td colspan="3">
+			<td colspan="4">
 				<h1>Procedimento</h1>
-				<p><strong><?php echo utf8_encode($procedimento->titulo);?></strong><?php echo !empty($proc->opcao)?" - ".utf8_encode($proc->opcao):"";?> - <?php echo utf8_encode($proc->plano);?></p>				
+				<p><strong><?php echo utf8_encode($procedimento->titulo);?></strong><?php echo !empty($proc->opcao)?" - ".utf8_encode($proc->opcao):"";?> - <?php echo utf8_encode($proc->plano);?> - <?php echo isset($_profissionais[$proc->id_profissional])?utf8_encode($_profissionais[$proc->id_profissional]->nome):'-';?></p>				
 				<?php echo (isset($proc->obs) and !empty($proc->obs))?"<p>".utf8_encode($proc->obs)."</p>":"";?>
-			</td>
-			<td>
-				<h1>Dentista</h1>
-				<p><?php echo isset($_profissionais[$proc->id_profissional])?utf8_encode($_profissionais[$proc->id_profissional]->nome):'-';?></p>
-			</td>
+			</td>			
 		</tr>
 		<tr>
 			<td>
@@ -184,7 +177,7 @@
 		}
 	}
 ?>
-<header class="titulo2">
+<header class="titulo2" style="margin-top:2rem;">
 	<h1>Cronograma de Pagamento</h1>
 </header>
 
