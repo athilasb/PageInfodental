@@ -337,7 +337,7 @@ a.registros-qtd__item {display:inline-block; color:#fff; background:var(--cor1);
 .paciente-info-header__foto {flex:0 0 84px; border-radius:100px; margin-right:1rem;}
 .paciente-info-header h1 {font-size:1.25em;}
 .paciente-info-header p {margin:.25rem 0;}
-.paciente-info-header__inner1 {flex:1; display:flex; justify-content:space-between; align-items:center;}
+.paciente-info-header__inner1 {flex:1; display:flex; justify-content:space-between; align-items:flex-start;}
 .paciente-info-grid {display:grid; grid-template-columns:1fr 1fr; grid-gap:.75rem;}
 .paciente-info-grid__item {display:flex; align-items: center; font-size:0.875em;}
 .paciente-info-grid .iconify {font-size:1.375em; margin-right:.5rem;}

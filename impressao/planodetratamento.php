@@ -144,7 +144,7 @@
 		if(isset($_procedimentos[$proc->id_procedimento])) {
 			$procedimento=$_procedimentos[$proc->id_procedimento];
 ?>
-<div class="box" style="margin-bottom:-1px; border-radius:0 8px 0 0;">
+<div class="box" style="margin-bottom:-1px; border-radius:0 0 0 0;">
 	<table>
 		<tr>
 			<td colspan="4">
