@@ -251,7 +251,7 @@
 					}
 
 					$_pacientesAgendamentos=array();
-					$sql->consult($_p."agenda","*","where id_paciente IN (".implode(",",$pacientesIds).") and agenda_data>'".date('Y-m-d')."' and lixo=0 order by agenda_data");
+					$sql->consult($_p."agenda","*","where id_paciente IN (".implode(",",$pacientesIds).") and agenda_data>'".date('Y-m-d')."' and id_status IN (1,2) and lixo=0 order by agenda_data");
 
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						$cor='';
@@ -381,7 +381,7 @@
 
 
 							//	$pacienteNome=$_pacientes[$x->id_paciente]->nome;
-							$agendamentos[]=array('agendaPessoal'=>0,																										'agendamentosFuturos'=>$agendamentosFuturos,
+							$agendamentos[]=array('agendaPessoal'=>0,																					'agendamentosFuturos'=>$agendamentosFuturos,
 													'resourceId'=>$x->id_cadeira,
 													'start'=>$dtStart,
 													'end'=>$dtEnd,

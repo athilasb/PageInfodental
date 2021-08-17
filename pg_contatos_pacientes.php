@@ -628,6 +628,9 @@
 			</form>
 	<?php
 	} else {
+		
+		require_once("includes/asidePaciente.php");
+	
 	?>
 
 		<section class="grid grid_2">
@@ -972,7 +975,7 @@
 			<!-- Lista -->
 			<section class="grid">
 				<div class="box">
-					<div class="filter">
+					<?php /*<div class="filter">
 
 						<div class="filter-group">
 							<div class="filter-button">
@@ -991,7 +994,7 @@
 							</form>
 						</div>
 
-					</div>
+					</div>*/?>
 					<?php
 					$where="WHERE lixo='0'";
 					if(isset($values['busca']) and !empty($values['busca'])) $where.=" and (nome like '%".utf8_decode($values['busca'])."%' or cpf like '%".cpf($values['busca'])."%' or id = '".addslashes($values['busca'])."')";
@@ -1010,12 +1013,17 @@
 							echo "<center>$msgSemResultado</center>";
 						} else {
 							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$cor="var(--cinza3)";
+								if(isset($_codigoBICores[$x->codigo_bi])) $cor=$_codigoBICores[$x->codigo_bi];
 						?>
 						<a href="pg_contatos_pacientes_resumo.php?id_paciente=<?php echo $x->id?>" class="reg-group">
-							<div class="reg-color" style="background-color:var(--cinza3)"></div>
+							<div class="reg-color" style="background-color:<?php echo $cor;?>"></div>
 							<div class="reg-data" style="flex:0 1 50%;">
 								<h1><?php echo strtoupperWLIB(utf8_encode($x->nome));?></h1>
 								<p>Código: <?php echo $x->id;?></p>
+							</div>
+							<div class="reg-data" style="flex:0 1 70px;">
+								<p><?php echo isset($_codigoBI[$x->codigo_bi])?$_codigoBI[$x->codigo_bi]:"";?></p>
 							</div>
 							<div class="reg-data" style="flex:0 1 70px;">
 								<p><?php echo $x->data_nascimento!="0000-00-00"?idade($x->data_nascimento)." anos":"";?></p>

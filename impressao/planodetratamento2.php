@@ -31,7 +31,7 @@
 	$procedimentos=array();
 	$pagamentos=array();
 	$procedimentosIds=array(0);
-	$valorTotal=$descontoTotal=$valorTotalSemDesconto=0;
+	$valorTotal=$descontoTotal=0;
 
 
 	if($tratamento->status!="APROVADO") {
@@ -42,7 +42,6 @@
 			$procedimentos[]=$x;
 			$procedimentosIds[$x->id_procedimento]=$x->id_procedimento;
 			$descontoTotal+=$x->desconto;
-			$valorTotalSemDesconto+=$x->valor;
 		}
 		foreach($pagamentosObj as $x) {
 			$pagamentos[]=$x;
@@ -87,26 +86,13 @@
 					'observado'=>'Observado');
 
 ?>
-			
+<script type="text/javascript">
+	$(function(){
+		window.print();
+	})
+</script>	
 <header class="titulo1">
 	<h1>Plano de Tratamento</h1>
-	<p style="font-size:1.25em;">
-		<?php
-		if($tratamento->status=="APROVADO") {
-		?>
-		<strong><i class="iconify" data-icon="el:ok"></i> Aprovado</strong>
-		<?php
-		} else if($tratamento->status=="PENDENTE") {
-		?>
-		<strong><i class="iconify" data-icon="ph-hourglass-high-fill"></i> Em aberto</strong>
-		<?php
-		} else if($tratamento->status=="CANCELADO") {
-		?>
-		<strong><i class="iconify" data-icon="topcoat:cancel"></i> Cancelado</strong>
-		<?php
-		}
-		?>
-	</p>
 	<p><?php echo date('d/m/Y',strtotime($tratamento->data));?></p>
 </header>
 
@@ -136,6 +122,26 @@
 	</table>
 </div>
 
+<div style="font-size:14pt; margin:2.5rem 0; text-align:center;">
+	Status do Plano de Tratamento: 
+	<?php
+	if($tratamento->status=="APROVADO") {
+	?>
+	<strong><i class="iconify" data-icon="el:ok"></i> Aprovado</strong>
+	<?php
+	} else if($tratamento->status=="PENDENTE") {
+	?>
+	<strong><i class="iconify" data-icon="ph-hourglass-high-fill"></i> Em aberto</strong>
+	<?php
+	} else if($tratamento->status=="CANCELADO") {
+	?>
+	<strong><i class="iconify" data-icon="topcoat:cancel"></i> Cancelado</strong>
+	<?php
+
+	}
+	?>
+</div>
+
 <header class="titulo2">
 	<h1>Listagem de Procedimentos (<?php echo count($procedimentos);?>)</h1>
 </header>
@@ -145,14 +151,18 @@
 		if(isset($_procedimentos[$proc->id_procedimento])) {
 			$procedimento=$_procedimentos[$proc->id_procedimento];
 ?>
-<div class="box" style="margin-bottom:-1px; border-radius:0 0 0 0;">
+<div class="box">
 	<table>
 		<tr>
-			<td colspan="4">
+			<td colspan="3">
 				<h1>Procedimento</h1>
-				<p><strong><?php echo utf8_encode($procedimento->titulo);?></strong><?php echo !empty($proc->opcao)?" - ".utf8_encode($proc->opcao):"";?> - <?php echo utf8_encode($proc->plano);?> - <?php echo isset($_profissionais[$proc->id_profissional])?utf8_encode($_profissionais[$proc->id_profissional]->nome):'-';?></p>				
+				<p><strong><?php echo utf8_encode($procedimento->titulo);?></strong><?php echo !empty($proc->opcao)?" - ".utf8_encode($proc->opcao):"";?> - <?php echo utf8_encode($proc->plano);?></p>				
 				<?php echo (isset($proc->obs) and !empty($proc->obs))?"<p>".utf8_encode($proc->obs)."</p>":"";?>
-			</td>			
+			</td>
+			<td>
+				<h1>Dentista</h1>
+				<p><?php echo isset($_profissionais[$proc->id_profissional])?utf8_encode($_profissionais[$proc->id_profissional]->nome):'-';?></p>
+			</td>
 		</tr>
 		<tr>
 			<td>
@@ -178,38 +188,21 @@
 		}
 	}
 ?>
-<header class="titulo2" style="margin-top:2rem;">
+<header class="titulo2">
 	<h1>Cronograma de Pagamento</h1>
 </header>
 
 <div class="box">
 	<table>		
 		<tr style="font-size:13pt">
-			<?php
-			if(count($pagamentosObj)==0) {
-			?>
 			<td>
 				<h1>Valor Total</h1>
-				<p>R$ <?php echo number_format($valorTotalSemDesconto,2,",",".");?></p>
-			</td>
-			<?php
-			} else {
-			?>
-			<td>
-				<h1>Valor Total</h1>
-				<p><strike>R$ <?php echo number_format($valorTotalSemDesconto,2,",",".");?></strike></p>
+				<p>R$ <?php echo number_format($valorTotal,2,",",".");?></p>
 			</td>
 			<td>
 				<h1>Desconto Total</h1>
 				<p>R$ <?php echo number_format($descontoTotal,2,",",".");?></p>
 			</td>
-			<td>
-				<h1>Valor Final</h1>
-				<p>R$ <?php echo number_format($valorTotal,2,",",".");?></p>
-			</td>
-			<?php
-			}
-			?>
 		</tr>	
 		<?php
 			$cont=1;
@@ -218,7 +211,7 @@
 		<tr>
 			<td style="width:30%">
 				<h1>Data Vencimento</h1>
-				<p><?php echo $pag->vencimento;?></p>
+				<p><?php echo date('d/m/Y',strtotime($pag->data_vencimento));?></p>
 			</td>
 			<td style="width:30%">
 				<h1>Valor Parcela <?php echo $cont++;?></h1>

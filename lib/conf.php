@@ -7,7 +7,7 @@
 
 	ksort($_usuariosTipos);
 
-	$_pacienteSituacao=array('NEUTRO'=>'NEUTRO','ATIVO'=>'ATIVO','EXCLUIDO'=>'EXCLUÍDO','PROPSECT'=>'PROPSECT');
+	$_pacienteSituacao=array('BI'=>'BI','EXCLUIDO'=>'EXCLUÍDO');
 
 	$_pacienteEstadoCivil=array('SOLTEIRO'=>'SOLTEIRO','CASADO'=>'CASADO','SEPARADO'=>'SEPARADO','CASADO'=>'CASADO','VIÚVO'=>'VIÚVO');
 
@@ -68,6 +68,29 @@
 	$_tiposFornecedores=array('FORNECEDOR'=>'FORNECEDOR',
 								'LABORATORIO'=>'LABORATÓRIO',
 								'CLINICA'=>'CLÍNICA RADIOLÓGICA');
+
+	/*$_codigoBI=array(1=>'Paciente Novo',
+						6=>'Paciente Antigo',
+						2=>'Prospect',
+						3=>'Tratamento',
+						4=>'Contenção',
+						5=>'Desativado',);*/
+
+	$_codigoBI=array(1=>'Novo',
+						2=>'Antigo',
+						3=>'Alto Potencial',
+						4=>'Em Tratamento',
+						5=>'Em Acompanhamento',
+						6=>'Baixo Potencial',
+						7=>'Desativado');
+
+	$_codigoBICores=array(1=>'#24e6c4',
+							2=>'#0b4946',
+							3=>'#fc7e09',
+							4=>'#55d429',
+							5=>'#0f8efe',
+							6=>'#fd4b3e',
+							7=>'#e7000e');
 
 	
 ?>

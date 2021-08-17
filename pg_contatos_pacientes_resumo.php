@@ -120,7 +120,7 @@
 
 			<div class="box" style="grid-column:span 2;grid-row:span 2">
 				<div class="paciente-evolucao" sty>
-					<h1 class="paciente__titulo1">Evolução</h1>
+					<h1 class="paciente__titulo1">Prontuário</h1>
 					<?php /*<a href="" class="paciente-evolucao__add"><i class="iconify" data-icon="mdi-plus-circle-outline"></i> Adicionar evolução</a>*/ ?>
 
 					<div class="paciente-scroll">

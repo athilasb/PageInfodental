@@ -84,6 +84,7 @@
 					$registros=array();
 					
 					$sql->consult($_p."agenda","*",$where);
+
 					$pacientesIds=array(0);
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						$registros[]=$x;
@@ -94,6 +95,7 @@
 
 					$_pacientes=array();
 					$where="where id IN (".implode(",",$pacientesIds).")";
+
 					$sql->consult($_p."pacientes","id,nome,telefone1,codigo_bi",$where);
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						$_pacientes[$x->id]=$x;
@@ -102,7 +104,7 @@
 					$_agendamentosFuturos=array();
 					$sql->consult($_p."agenda","*","where agenda_data>='".date('Y-m-d')." 00:00:00' and 
 															id_paciente IN (".implode(",",$pacientesIds).") and 
-															id_status IN (1,2,5) and lixo=0");
+															id_status IN (1,2) and lixo=0");
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						$_agendamentosFuturos[$x->id_paciente]=true;
 					}
@@ -123,7 +125,7 @@
 					}
 
 					$agendasDosUltimos6meses=array();
-					$sql->consult($_p."agenda","distinct id_paciente","where agenda_data > NOW() - INTERVAL 6 MONTH and id_status IN (5) and lixo=0 order by  agenda_data desc");
+					$sql->consult($_p."agenda","*","where agenda_data > NOW() - INTERVAL 6 MONTH and id_status IN (5) and lixo=0 order by  agenda_data desc");
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 
 						$agendasDosUltimos6meses[$x->id_paciente]=1;
@@ -131,19 +133,18 @@
 					}
 
 
-					$sql->consult($_p."pacientes","id,nome,telefone1,codigo_bi","where id IN (".implode(",",$pacientesEmTratamentosIds).") or id IN (".implode(",",$pacientesEmTratamentosSemHorarioIds).")");
+					$sql->consult($_p."pacientes","id,nome,telefone1,codigo_bi","where id IN (".implode(",",$pacientesEmTratamentosIds).")");
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						$_pacientes[$x->id]=$x;
 					}
 
 
 					$pacientesTratamentos=array();
-					$sql->consult($_p."agenda","distinct id_paciente","where agenda_data>='".date('Y-m-d')." 00:00:00' and 
+					$sql->consult($_p."agenda","distinct id_paciente","where data>='".date('Y-m-d')." 00:00:00' and 
 																				id_paciente IN (".implode(",",$pacientesEmTratamentosSemHorarioIds).") and 
 																				id_status IN (1,2) and lixo=0");
 					if($sql->rows) {
 						while($x=mysqli_fetch_object($sql->mysqry)) {
-							//echo $x->id_paciente." ";
 							unset($pacientesEmTratamentosSemHorarioIds[$x->id_paciente]);
 						}
 					}
@@ -151,9 +152,10 @@
 
 
 					$agendaTratamento=array();
-					foreach($pacientesEmTratamentosSemHorarioIds as $id_paciente) {
+					foreach($pacientesEmTratamentosIds as $id_paciente) {
 						if(isset($_pacientes[$id_paciente])) {
 							$paciente=$_pacientes[$id_paciente];
+
 							if(is_object($paciente)) {
 								$agendaTratamento[]=array('id_paciente'=>$paciente->id,
 															'nome'=>utf8_encode($paciente->nome),
@@ -181,9 +183,10 @@
 
 
 
+
 					foreach($registros as $x) {
 						if(isset($_pacientes[$x->id_paciente])) {
-							//echo $_pacientes[$x->id_paciente]->nome."\n";
+
 							$dataAg=date('d/m',strtotime($x->agenda_data));
 							$dia=" ".$diasExtenso[date('w',strtotime($x->agenda_data))];
 
@@ -205,7 +208,6 @@
 									if(!empty($p) and is_numeric($p)) $id_profissional=$p;
 								}
 							}
-
 
 
 							$agenda[]=(object) array('id_agenda'=>$x->id,
@@ -520,8 +522,6 @@
 
 				popViewInfos = [];
 
-				let qtdReagendar = 0;
-
 				agenda.forEach(x=>{
 
 					/*popInfos = {};
@@ -556,7 +556,7 @@
 					else if(x.dias>=7 && x.dias<30 && x.id_status != 'reagendar') {
 						cor = '#6C6C6C';
 					}
-					else if(x.dias>=30 && x.id_status != 'reagendar') {
+					else if(x.dias>30 && x.id_status != 'reagendar') {
 						cor = '#929292';
 					} else {
 						cor = '#fff';
@@ -566,9 +566,9 @@
 
 					if(x.telefone1.length<5) x.telefone1='';
 
+
 					let barra = ``;
 					if(x.id_status == 'reagendar') {
-						qtdReagendar++;
 						if(x.futuro === true) {
 							// barra = `<div style="background:purple;width:100%;padding:5px;border-radius:5px;"></div>`;
 							barra = `kanban-item_destaque`;
@@ -667,8 +667,6 @@
 														}).val(`${x.agenda_data}`);
 					$(`#kanban select.js-select-horario:last`).append(`<option value="${x.agenda_hora}">${x.agenda_hora}</option>`);
 				});
-				
-				$('.js-qtd-reagendar').html(qtdReagendar);
 			}	
 
 			const pacientesTratamento = () => {
@@ -1017,15 +1015,15 @@
 					</div>
 				</div>
 				
-				<?php /*<div class="kanban-item" style="background:<?php echo $s->cor;?>;color:var(--cor1);">
-					<h1 class="kanban-item__titulo">CONFIRMAR DEPOIS DE AMANHÃ<?php /* <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span>*?></h1>
+				<div class="kanban-item" style="background:<?php echo $s->cor;?>;color:var(--cor1);">
+					<h1 class="kanban-item__titulo">CONFIRMAR DEPOIS DE AMANHÃ<?php /* <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span>*/?></h1>
 					<div class="kanban-card js-kanban-status js-kanban-status-depoisDeAmanha" data-id_status="depoisDeAmanha" style="min-height: 100px;">
 						
 					</div>
-				</div>*/?>
+				</div>
 
 				<div class="kanban-item" style="background:#e1b8a5;color:var(--cor1);">
-					<h1 class="kanban-item__titulo">REAGENDAR DESMARCOU/AGENDOU <?php /* <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span>*/?></h1>
+					<h1 class="kanban-item__titulo">REAGENDAR DESMARCOU/AGENDOU<?php /* <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span>*/?></h1>
 					<div class="kanban-card js-kanban-status js-kanban-status-reagendar" data-id_status="reagendar" style="min-height: 100px;">
 						
 					</div>
@@ -1033,7 +1031,7 @@
 
 				<div class="kanban-item" style="background:#d49d83;color:var(--cor1);">
 					<h1 class="kanban-item__titulo">PACIENTES EM TRATAMENTO SEM HORÁRIO<?php /* <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span>*/?></h1>
-					<div class="kanban-card js-kanban-status js-kanban-status-semHorario" data-id_status="semHorario" style="min-height: 100px;">
+					<div class="kanban-card js-kanban-status js-kanban-status-semHorario" data-id_status="reagendar" style="min-height: 100px;">
 						
 					</div>
 				</div>
