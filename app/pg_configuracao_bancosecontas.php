@@ -154,7 +154,7 @@
 					<div class="colunas4 js-contacorrente" style="display: none">
 						<dl>
 							<dt>Agência</dt>
-							<dd><input type="text" name="agencia" value="<?php echo $values['conta'];?>"  /></dd>
+							<dd><input type="text" name="agencia" value="<?php echo $values['agencia'];?>"  /></dd>
 						</dl>
 						<dl>
 							<dt>Conta</dt>

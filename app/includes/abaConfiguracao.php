@@ -14,4 +14,5 @@
 	<li><a href="pg_configuracao_indicacoes.php?" class="main-nav__resumo-do-paciente<?php echo basename($_SERVER['PHP_SELF'])=="pg_configuracao_indicacoes.php"?" active":"";?>">Indicações</a></li>
 	<li><a href="pg_configuracao_cartoes.php?" class="main-nav__resumo-do-paciente<?php echo basename($_SERVER['PHP_SELF'])=="pg_configuracao_cartoes.php"?" active":"";?>">Cartões</a></li>
 	<li><a href="pg_configuracao_bancosecontas.php?" class="main-nav__resumo-do-paciente<?php echo basename($_SERVER['PHP_SELF'])=="pg_configuracao_bancosecontas.php"?" active":"";?>">Bancos e Contas</a></li>
+	<li><a href="pg_colaboradores.php?" class="main-nav__resumo-do-paciente<?php echo basename($_SERVER['PHP_SELF'])=="pg_colaboradores.php"?" active":"";?>">Colaboradores</a></li>
 </ul>

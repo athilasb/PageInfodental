@@ -22,11 +22,11 @@
 				}
 			}
 
-			$vSQL="titulo='".addslashes(utf8_decode($_POST['titulo']))."'";
+			$vSQL="titulo='".addslashes(utf8_decode($_POST['titulo']))."',id_banco='".addslashes(utf8_decode($_POST['id_banco']))."'";
 
 			if(is_object($operadora)) {
 				$vWHERE="where id=$operadora->id";
-				$sql->update($_p."parametros_cartoes_bandeiras",$vSQL,$vWHERE);
+				$sql->update($_p."parametros_cartoes_operadoras",$vSQL,$vWHERE);
 				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."parametros_cartoes_bandeiras',id_reg='".$operadora->id."'");
 				$id_operadora=$operadora->id;
 			} else {
@@ -114,23 +114,25 @@
 			$rtn=array('success'=>true);
 		} else if($_POST['ajax']=="operadoraRemover") {
 			if(isset($_POST['id_operadora']) and is_numeric($_POST['id_operadora'])) {
-				$sql->consult($_p."parametros_cartoes_bandeiras","*","where id='".$_POST['id_operadora']."'");
+				$sql->consult($_p."parametros_cartoes_operadoras","*","where id='".$_POST['id_operadora']."'");
+				//echo "where id='".$_POST['id_operadora']."' ->$sql->rows";
 				if($sql->rows) {
 					$operadora=mysqli_fetch_object($sql->mysqry);
 				}
 			}
 
+
 			if(isset($operadora) and is_object($operadora)) {
 				$vSQL="lixo=1";
 				$vWHERE="where id=$operadora->id";
-				$sql->update($_p."parametros_cartoes_bandeiras",$vSQL,$vWHERE);
+				$sql->update($_p."parametros_cartoes_operadoras",$vSQL,$vWHERE);
 
 				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vwhere='".addslashes($vWHERE)."',vsql='".addslashes($vSQL)."',tabela='".$_p."parametros_cartoes_bandeiras',id_reg='".$operadora->id."'");
 
 				$rtn=array('success'=>true);
 
 			} else {
-				$rtn=array('success'=>false,'error'=>'operadora não encontrada');
+				$rtn=array('success'=>false,'error'=>'Operadora não encontrada');
 			}
 		}
 
@@ -139,11 +141,18 @@
 		die();
 	}
 
-	$campos=explode(",","titulo");
+	$campos=explode(",","titulo,id_banco");
+
 	$_bandeirasDeCartao=array();
 	$sql->consult($_p."parametros_cartoes_bandeiras","*","where lixo=0 order by titulo");
 	while ($x=mysqli_fetch_object($sql->mysqry)) {
 		$_bandeirasDeCartao[$x->id]=$x;
+	}
+
+	$_bancos=array();
+	$sql->consult($_p."financeiro_bancosecontas","*","where lixo=0 order by titulo");
+	while ($x=mysqli_fetch_object($sql->mysqry)) {
+		$_bancos[$x->id]=$x;
 	}
 		
 	foreach($campos as $v) $values[$v]='';
@@ -178,7 +187,7 @@
 						success:function(rtn){
 							swal.close();  
 							if(rtn.success) {
-								$.fancybox.close();
+								document.location.reload();
 							} else if(rtn.error) {
 								swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 							} else {
@@ -369,6 +378,20 @@
 						<dt>Operadora</dt>
 						<dd>
 							<input type="text" name="titulo" value="<?php echo $values['titulo'];?>"  class="obg" />
+						</dd>
+					</dl>
+					<dl>
+						<dt>Banco/Conta</dt>
+						<dd>
+							<select name="id_banco" class="obg">
+								<option value="">-</option>
+							<?php
+							foreach($_bancos as $v) {
+								$sel=$v->id==$values['id_banco']?" selected":"";
+								echo '<option value="'.$v->id.'"'.$sel.'>'.utf8_encode($v->titulo).'</option>';
+							}
+							?>
+							</select>
 						</dd>
 					</dl>
 					<dl>

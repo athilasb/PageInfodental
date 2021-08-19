@@ -500,6 +500,7 @@
 <script>
 	var calendar = '';
 	var id_unidade=<?php echo $usrUnidade->id;?>;
+	var dataKanban = '';
 	
 	const verificaAgendamento = () => {
 		let profissionais = $('.js-form-agendamento select.js-profissionais').val();

@@ -22,54 +22,9 @@
 
 		<section class="grid ">
 
-			<?php /*<section class="grid">
-				<div class="box">
-					<div class="filter">
-
-						<div class="filter-group">
-							<div class="filter-button">
-								<a href="box/boxBandeiraCartao.php" data-fancybox data-type="ajax" data-height="300" data-padding="0" class="verde adicionar tooltip" title="adicionar"><i class="iconify" data-icon="bx-bx-plus"></i><span>Nova Bandeira</span></a>
-							</div>
-						</div>
-
-					</div>
-					<div class="reg">
-						<?php
-						$registros = array();
-						$sql->consultPagMto2($_p."parametros_cartoes_bandeiras","*",10,"WHERE lixo=0 order by titulo asc","",15,"pagina",$_page."?".$url."&pagina=");
-						if($sql->rows==0) {
-							$msgSemResultado="Nenhuma Bandeira";
-							if(isset($values['busca'])) $msgSemResultado="Nenhuma Bandeira encontrado";
-
-							echo "<center>$msgSemResultado</center>";
-						} else {
-							while($x=mysqli_fetch_object($sql->mysqry)) {
-								$registros[]=$x;
-						?>
-						<a href="box/boxBandeiraCartao.php?id_bandeira=<?php echo $x->id;?>" data-fancybox data-type="ajax" data-height="300" data-padding="0" class="reg-group">
-							<div class="reg-color" style="background-color:green;"></div>
-							<div class="reg-data" style="flex:0 1 50%;">
-								<h1><?php echo strtoupperWLIB(utf8_encode($x->titulo));?></h1>
-							</div>
-						</a>
-						<?php
-							}
-
-							if(isset($sql->myspaginacao) and !empty($sql->myspaginacao)) {
-							?>	
-						<div class="paginacao" style="margin-top: 30px;">
-							<p class="paginacao__item"><span>Página</span><?php echo $sql->myspaginacao;?></p>
-						</div>
-							<?php
-							}
-						}
-						?>
-					</div>
-
-				</div>
-			</section>*/?>
-
+		
 			<section class="grid">
+
 				<div class="box">
 					<div class="filter">
 

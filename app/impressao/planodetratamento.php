@@ -38,11 +38,14 @@
 		$procedimentosObj = json_decode($tratamento->procedimentos);
 		$pagamentosObj = json_decode($tratamento->pagamentos);
 
+
 		foreach($procedimentosObj as $x) {
 			$procedimentos[]=$x;
 			$procedimentosIds[$x->id_procedimento]=$x->id_procedimento;
-			$descontoTotal+=$x->desconto;
-			$valorTotalSemDesconto+=$x->valor;
+			if($x->situacao=="aprovado" or $x->situacao=="aguardandoAprovacao") {
+				$descontoTotal+=$x->desconto;
+				$valorTotalSemDesconto+=$x->valor*$x->quantidade;
+			}
 		}
 		foreach($pagamentosObj as $x) {
 			$pagamentos[]=$x;
@@ -50,16 +53,22 @@
 		}
 	} else {
 
+
 		$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento=$tratamento->id and lixo=0");
 		while($x=mysqli_fetch_object($sql->mysqry)) {
 			$procedimentos[]=$x;
 			$procedimentosIds[$x->id_procedimento]=$x->id_procedimento;
+			
+			$descontoTotal+=$x->desconto;
+			$valorTotalSemDesconto+=$x->valor;
 		}
 
 		$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id_tratamento=$tratamento->id and lixo=0 and fusao=0");
 		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$x->vencimento=date('d/m/Y',strtotime($x->data_vencimento));
 			$pagamentos[]=$x;
 		}
+
 
 	}
 
@@ -150,15 +159,29 @@
 		<tr>
 			<td colspan="4">
 				<h1>Procedimento</h1>
-				<p><strong><?php echo utf8_encode($procedimento->titulo);?></strong><?php echo !empty($proc->opcao)?" - ".utf8_encode($proc->opcao):"";?> - <?php echo utf8_encode($proc->plano);?> - <?php echo isset($_profissionais[$proc->id_profissional])?utf8_encode($_profissionais[$proc->id_profissional]->nome):'-';?></p>				
+				<p><strong><?php echo utf8_encode($procedimento->titulo);?></strong><?php echo !empty($proc->opcao)?" - ".utf8_encode($proc->opcao):"";?> - <?php echo utf8_encode($proc->plano);?><?php echo isset($_profissionais[$proc->id_profissional])?' - '.utf8_encode($_profissionais[$proc->id_profissional]->nome):'';?></p>				
 				<?php echo (isset($proc->obs) and !empty($proc->obs))?"<p>".utf8_encode($proc->obs)."</p>":"";?>
 			</td>			
 		</tr>
+
 		<tr>
 			<td>
 				<h1>Status</h1>
-				<p><?php echo $_status[$proc->situacao];?></p>
+				<p>
+					<?php 
+					echo $_status[$proc->situacao];
+					if($proc->situacao=="observado") {
+					 	echo '<b> - Este procedimento está apenas Notado e não consta no plano de tratamento</b>';
+					} else if($proc->situacao=="naoAprovado") {
+					 	echo '<b> - Este procedimento foi reprovado e não consta no plano de tratamento</b>';
+					}
+					?>
+						
+				</p>
 			</td>
+			<?php
+			if($proc->situacao=="aprovado" or $proc->situacao=="aguardandoAprovacao") {
+			?>
 			<td>
 				<h1>Valor</h1>
 				<p>R$ <?php echo number_format($proc->valor,2,",",".");?></p>
@@ -171,6 +194,24 @@
 				<h1>Valor Corrigido</h1>
 				<p>R$ <?php echo number_format($proc->valor-$proc->desconto,2,",",".");?></p>
 			</td>
+			<?php
+			} else {
+			/*?>
+			<td>
+				<h1>Valor</h1>
+				<p>R$ <?php echo number_format($proc->valor,2,",",".");?></p>
+			</td>
+			<td>
+				<h1>Desconto</h1>
+				<p>R$ <?php echo number_format($proc->desconto,2,",",".");?></p>
+			</td>
+			<td>
+				<h1>Valor Corrigido</h1>
+				<p><strike>R$ <?php echo number_format($proc->valor-$proc->desconto,2,",",".");?></strike></p>
+			</td>
+			<?php*/
+			}
+			?>
 		</tr>		
 	</table>
 </div>
@@ -186,7 +227,7 @@
 	<table>		
 		<tr style="font-size:13pt">
 			<?php
-			if(count($pagamentosObj)==0) {
+			if($descontoTotal==0) {
 			?>
 			<td>
 				<h1>Valor Total</h1>

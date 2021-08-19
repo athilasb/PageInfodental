@@ -1,0 +1,3098 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model lbox_api_log {
+  id           Int      @id @default(autoincrement())
+  data         DateTime
+  act          String
+  ip           String
+  json_entrada String
+  json_saida   String
+  metodo       String
+}
+
+model lbox_aplicativos {
+  id             Int                   @id @default(autoincrement())
+  titulo         String
+  lixo           Boolean
+  unidades       String
+  data           DateTime
+  tema           lbox_aplicativos_tema
+  logo           String
+  splashscreen   String
+  cor_principal  String
+  cor_secundaria String
+}
+
+model lbox_aplicativos_cardapio {
+  id             Int      @id @default(autoincrement())
+  ordem          Int
+  lixo           Boolean
+  id_aplicativo  Int
+  id_unidade     Int
+  id_produto     Int
+  valor          Float
+  pub            Int
+  pub_id_usuario Int
+  pub_data       DateTime
+}
+
+model lbox_aplicativos_cardapio_ordenacao {
+  id          Int                                      @id @default(autoincrement())
+  id_unidade  Int
+  id_registro Int
+  tipo        lbox_aplicativos_cardapio_ordenacao_tipo
+  ordem       Int
+}
+
+model lbox_aplicativos_formasdepagamento {
+  id                  Int      @id @default(autoincrement())
+  id_aplicativo       Int
+  id_unidade          Int
+  id_formadepagamento Int
+  pub                 Boolean
+  pub_data            DateTime
+  pub_id_usuario      Int
+}
+
+model lbox_aplicativos_horariosdelivery {
+  id         Int      @id @default(autoincrement())
+  lixo       Boolean
+  id_unidade Int
+  dia        Int
+  inicio     DateTime
+  fim        DateTime
+  data       DateTime
+}
+
+model lbox_aplicativos_impressoras {
+  id                      Int                               @id @default(autoincrement())
+  lixo                    Boolean
+  id_aplicativo           Int
+  id_unidade              Int
+  tipo                    lbox_aplicativos_impressoras_tipo
+  id_categoria_produto    Int
+  id_categoria_impressora Int
+}
+
+model lbox_aplicativos_introducao {
+  id               Int     @id @default(autoincrement())
+  id_aplicativo    Int
+  id_unidade       Int
+  titulo           String
+  texto            String
+  endereco         String
+  whatsapp         String
+  telefone         String
+  email            String
+  instagram        String
+  facebook         String
+  twitter          String
+  foursquare       String
+  trip_advisor     String
+  google           String
+  gerente_nome     String
+  gerente_email    String
+  gerente_foto     String
+  gerente_telefone String
+  delivery         Boolean
+  pedidosNaMesa    Boolean
+  retirarNaLoja    Boolean
+  filaDeEspera     Boolean
+  foto             String
+  pedido_minimo    Float
+  aceitar          Boolean
+  aceitar_pedidos  Int
+  lat              String
+  lng              String
+}
+
+model lbox_aplicativos_mensagens {
+  id            Int    @id @default(autoincrement())
+  id_aplicativo Int
+  id_mensagem   Int
+  mensagem      String
+}
+
+model lbox_aplicativos_mensagens_tipos {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo String
+}
+
+model lbox_aplicativos_taxadeentrega {
+  id            Int      @id @default(autoincrement())
+  data          DateTime
+  lixo          Boolean
+  lixo_data     DateTime
+  id_aplicativo Int
+  id_unidade    Int
+  titulo        String
+  valor         Float
+  coordenadas   String
+  indice        Int
+}
+
+model lbox_b2b {
+  id                 Int               @id @default(autoincrement())
+  lixo               Boolean
+  lixo_data          DateTime
+  data_b2b           DateTime
+  id_unidade         Int
+  operacao           lbox_b2b_operacao
+  cliente            String
+  tipo               lbox_b2b_tipo
+  id_cliente         Int
+  valor              Float
+  data               DateTime
+  id_usuario         Int
+  pagamentos         String
+  valor_frete        Float
+  motorista          String
+  motorista_telefone String
+  recebido           Boolean
+  id_entrada         Int
+}
+
+model lbox_b2b_itens {
+  id             Int     @id @default(autoincrement())
+  lixo           Boolean
+  id_b2b         Int
+  id_item        Int
+  quantidade     Float
+  valor          Float
+  desconto       Float
+  titulo         String
+  unidade_medida String
+}
+
+model lbox_cidades {
+  id      Int    @id @default(autoincrement())
+  codigo  Int
+  titulo  String
+  uf      String
+  capital Int
+}
+
+model lbox_clientes {
+  id                 Int                  @id @default(autoincrement())
+  tipo               lbox_clientes_tipo
+  lixo               Boolean
+  pub                Int
+  data               DateTime
+  nome               String
+  celular            String
+  prioritario        Boolean
+  whatsapp_avaliacao Boolean
+  whatsapp_novidades Boolean
+  id_usuario         Int
+  email              String
+  origem             lbox_clientes_origem
+  senha              String
+  foto               String
+  avaliacaoMedia     Float
+  cpf                String
+  ifood_id           Int
+  ifood_telefone     String
+  providerUID        String
+  data_efetivado     DateTime
+
+  @@index([celular], name: "celular")
+  @@index([ifood_id], name: "ifood_id")
+}
+
+model lbox_clientes_appprovider {
+  id         Int                                @id @default(autoincrement())
+  lixo       Boolean
+  data       DateTime
+  id_cliente Int
+  provider   lbox_clientes_appprovider_provider
+  uid        String
+  email      String
+}
+
+model lbox_clientes_appregistrations {
+  id           Int      @id @default(autoincrement())
+  data         DateTime
+  registration String
+  id_cliente   Int
+  lixo         Boolean
+  ip           String
+  lat          String
+  lng          String
+  os           String
+}
+
+model lbox_clientes_cartoes {
+  id         Int      @id @default(autoincrement())
+  data       DateTime
+  lixo       Boolean
+  titulo     String
+  cartao     String
+  nome       String
+  validade   String
+  ccv        String
+  id_cliente Int
+  token      String
+}
+
+model lbox_clientes_enderecos {
+  id          Int                               @id @default(autoincrement())
+  lixo        Boolean
+  data        DateTime
+  id_cliente  Int
+  titulo      String
+  cep         String
+  logradouro  String
+  numero      String
+  complemento String
+  bairro      String
+  cidade      String
+  id_cidade   Int
+  estado      String
+  lng         String
+  lat         String
+  referencia  String
+  place_id    String
+  categoria   lbox_clientes_enderecos_categoria
+}
+
+model lbox_clientes_visitas {
+  id                    Int      @id @default(autoincrement())
+  lixo                  Boolean
+  data                  DateTime
+  id_unidade            Int
+  id_cliente            Int
+  pessoas               Int
+  id_mesa               Int
+  id_mesa_usuario       Int
+  data_mesa             DateTime
+  data_liberou          DateTime
+  id_liberou            Int
+  prioritario           Boolean
+  consumacao            String
+  id_desistiu           Int
+  data_desistiu         DateTime
+  desistiu_aplicativo   Boolean
+  obs                   String
+  aplicativo            Boolean
+  balcao                Boolean
+  id_voltouParaFila     Int
+  data_voltouParaFila   DateTime
+  id_avaliacao          Int
+  avaliacao_finalizacao DateTime
+
+  @@index([data], name: "data")
+  @@index([id_cliente], name: "id_cliente")
+  @@index([id_desistiu], name: "id_desistiu")
+  @@index([id_liberou], name: "id_liberou")
+  @@index([id_unidade], name: "id_loja")
+  @@index([id_mesa], name: "id_mesa")
+  @@index([lixo], name: "lixo")
+}
+
+model lbox_clientes_visitas_comandas {
+  id                        Int      @id @default(autoincrement())
+  lixo                      Boolean
+  data                      DateTime
+  id_unidade                Int
+  id_visita                 Int
+  id_cliente                Int
+  id_caixa                  Int
+  fechada                   Int
+  fechada_data              DateTime
+  fechada_id_colaborador    Int
+  pagamento                 Boolean
+  reabertura_id_colaborador Int
+  reabertura_data           DateTime
+
+  @@index([fechada], name: "fechada")
+  @@index([id_caixa], name: "id_caixa")
+  @@index([id_unidade], name: "id_unidade")
+  @@index([id_visita], name: "id_visita")
+  @@index([pagamento], name: "pagamento")
+}
+
+model lbox_clientes_visitas_comandas_pagamentos {
+  id                    Int                                                   @id @default(autoincrement())
+  data                  DateTime
+  lixo                  Boolean
+  oculto                Boolean
+  id_comanda            Int
+  id_nfce               Int
+  id_unidade            Int
+  id_formapagamento     Int
+  valor                 Float
+  valor_taxa            Float
+  valor_total           Float
+  id_colaborador        Int
+  id_caixa              Int
+  pedidos               String
+  tipo_pessoa           lbox_clientes_visitas_comandas_pagamentos_tipo_pessoa
+  nome                  String
+  cpf                   String
+  cnpj                  String
+  nfceavulso            Boolean
+  nfceavulso_id_usuario Int
+
+  @@index([id_caixa], name: "id_caixa")
+  @@index([id_colaborador], name: "id_colaborador")
+  @@index([id_comanda], name: "id_comanda")
+  @@index([id_unidade], name: "id_unidade")
+}
+
+model lbox_clientes_visitas_comandas_pagamentos_itensavulsos {
+  id           Int      @id @default(autoincrement())
+  lixo         Boolean
+  data         DateTime
+  id_pagamento Int
+  id_produto   Int
+  quantidade   Int
+  valor        Float
+}
+
+model lbox_clientes_visitas_comandas_pedidos {
+  id                                            Int      @id @default(autoincrement())
+  data                                          DateTime
+  lixo                                          Boolean
+  oculto                                        Boolean
+  lixo_data                                     DateTime
+  lixo_desperdicio                              Int
+  lixo_id_colaborador                           Int
+  lixo_solicitacao                              Int
+  lixo_solicitacao_id_colaborador               Int
+  lixo_solicitacao_motivo                       Int
+  lixo_solicitacao_data                         DateTime
+  id_comanda                                    Int
+  id_unidade                                    Int
+  id_visita                                     Int
+  transferencias                                String
+  transferencia_id_mesa                         Int
+  transferencia_id_colaborador                  Int
+  id_cliente                                    Int
+  id_item_cardapio                              Int
+  valor                                         Float
+  dividido                                      Int
+  dividido_id_colaborador                       Int
+  id_dividido                                   Int
+  pagamento                                     Int
+  pagamentos                                    String
+  id_colaborador                                Int
+  obs                                           String
+  ponto                                         String
+  id_cozinha                                    Int
+  cozinha_data                                  DateTime
+  cozinha_id_colaborador                        Int
+  cozinha_solicitacao                           Int
+  cozinha_solicitacao_id_colaborador            Int
+  cozinha_solicitacao_data                      DateTime
+  cozinha_solicitacao_autorizada_id_colaborador Int
+  cozinha_solicitacao_autorizada_data           DateTime
+
+  @@index([dividido], name: "dividido")
+  @@index([id_cliente], name: "id_cliente")
+  @@index([id_comanda], name: "id_comanda")
+  @@index([id_cozinha], name: "id_cozinha")
+  @@index([id_dividido], name: "id_dividido")
+  @@index([id_item_cardapio], name: "id_item_cardapio")
+  @@index([id_unidade], name: "id_unidade")
+  @@index([id_visita], name: "id_visita")
+  @@index([lixo_id_colaborador], name: "lixo_id_colaborador")
+  @@index([pagamento], name: "pagamento")
+}
+
+model lbox_clientes_visitas_comandas_pedidos_adicionais {
+  id           Int     @id @default(autoincrement())
+  id_pedido    Int
+  id_visita    Int
+  id_cliente   Int
+  id_grupo     Int
+  id_adicional Int
+  valor        Float
+  lixo         Boolean
+
+  @@index([id_adicional], name: "id_adicional")
+  @@index([id_cliente], name: "id_cliente")
+  @@index([id_grupo], name: "id_grupo")
+  @@index([id_visita], name: "id_visita")
+}
+
+model lbox_clientes_visitas_comandas_pedidos_composicao {
+  id                        Int      @id @default(autoincrement())
+  data                      DateTime
+  lixo                      Boolean
+  id_pedido                 Int
+  id_produto                Int
+  id_produto_original       Int
+  quantidade                Float
+  id_categoria_substituicao Int
+  id_usuario                Int
+  valor_adicional           Float
+  unidade_medida            Int
+
+  @@index([id_pedido], name: "id_pedido")
+}
+
+model lbox_clientes_visitas_comandas_pedidos_cozinha {
+  id                    Int      @id @default(autoincrement())
+  lixo                  Boolean
+  data_pedido           DateTime
+  pedido_id_colaborador Int
+  data_cumim            DateTime
+  cumin_id_colaborador  Int
+  id_visita             Int
+  id_comanda            Int
+  id_unidade            Int
+  obs                   String
+  impressao             Boolean
+
+  @@index([cumin_id_colaborador], name: "cumin_id_colaborador")
+  @@index([id_comanda], name: "id_comanda")
+  @@index([id_unidade], name: "id_unidade")
+  @@index([id_visita], name: "id_visita")
+}
+
+model lbox_clientes_visitas_comandas_pedidos_motivoscancelamento {
+  id          Int     @id @default(autoincrement())
+  lixo        Boolean
+  titulo      String
+  desperdicio Boolean
+}
+
+model lbox_clientesb2b {
+  id                  Int                          @id @default(autoincrement())
+  lixo                Int
+  tipo_pessoa         lbox_clientesb2b_tipo_pessoa
+  razao_social        String
+  cnpj                String
+  responsavel         String
+  nome                String
+  cpf                 String
+  telefone1           String
+  telefone2           String
+  email               String
+  cep                 String
+  logradouro          String
+  numero              String
+  bairro              String
+  complemento         String
+  cidade              String
+  uf                  String
+  dias_compra         String
+  dias_entrega        String
+  dados_bancario      String
+  produtos_fornecidos String
+  unidades            String
+  nome_fantasia       String
+  inscricao_estadual  String
+  inscricao_municipal String
+  tipo_contribuinte   String
+}
+
+model lbox_colaboradores {
+  id                                 Int                     @id @default(autoincrement())
+  lixo                               Int
+  pub                                Boolean
+  unidades                           String
+  data                               DateTime
+  foto                               String
+  nome                               String
+  sexo                               lbox_colaboradores_sexo
+  cpf                                String
+  senha                              String
+  rg                                 String
+  rg_origem                          String
+  rg_dataexpedicao                   DateTime
+  rg_orgaoexpeditor                  String
+  pai                                String
+  mae                                String
+  idiomas                            String
+  data_nascimento                    DateTime
+  escolaridade                       String
+  estado_civil                       String
+  celular                            String
+  celular_whatsapp                   Boolean
+  telefone2                          String
+  email                              String
+  facebook                           String
+  instagram                          String
+  linkedin                           String
+  contratacao                        String
+  contratacao_antigo                 String
+  data_inicio                        DateTime
+  clt_tituloeleitor                  String
+  clt_tituloeleitor_zona             String
+  clt_tituloeleitor_sessao           String
+  clt_tituloeleitor_estado           String
+  clt_carteiratrabalho               String
+  clt_carteiratrabalho_serie         String
+  clt_carteiratrabalho_dataexpedicao DateTime
+  clt_pis                            String
+  clt_tipo                           String
+  estagio_faculdade                  String
+  estagio_curso                      String
+  estagio_contrato                   String
+  freelancer_apto                    Boolean
+  freelancer_apto_motivo             String
+  contratacao_status                 String
+  contratacao_dataadmissao           DateTime
+  contratacao_datademissao           DateTime
+  contratacao_demissao_motivo        String
+  contratacao_beneficios_vt          Int
+  id_valetransporte                  Int
+  contratacao_beneficios_ps          Int
+  contratacao_beneficios_po          Int
+  contratacao_remuneracao            Float
+  contratacao_gorjeta                Boolean
+  contratacao_assiduidade            Boolean
+  cep                                String
+  logradouro                         String
+  numero                             String
+  complemento                        String
+  bairro                             String
+  estado                             String
+  cidade                             Int
+  pagamento                          String
+  pagamento_transferencia_banco      String
+  pagamento_transferencia_agencia    String
+  pagamento_transferencia_conta      String
+  ponto                              String
+  id_unidade                         Int
+  id_cnpj                            Int
+  id_cnpj_servico                    Int
+  id_cnpj_servico_antigo             Int
+  turno                              String
+  turno_horario                      String
+  turno_escala                       String
+  carga_semanal                      String
+  intervalo_de                       DateTime
+  intervalo_ate                      DateTime
+  carga_intervalo                    Int
+  id_equipe                          Int
+  id_cargo                           Int
+  id_cargo_antigo                    Int
+  nacionalidade                      String
+  local_nascimento                   String
+  raca                               String
+  cnh                                String
+  cnh_categoria                      String
+  cnh_validade                       DateTime
+  reservista                         String
+  reservista_categoria               String
+  deficiencia_motora                 String
+  deficiencia_visual                 String
+  deficiencia_auditiva               String
+  dependentes_irrf                   String
+  dependentes_salariofamilia         String
+  dependentes_salariofamilia_filhos  String
+  segurodesemprego                   Boolean
+  tamanho_roupa                      String
+  tamanho_calcado                    String
+  residencia_propria                 Boolean
+  residencia_comprada_fgts           Boolean
+  residencia_reabilitado             Boolean
+  dependentes                        Boolean
+  dependentes_json                   String
+  conjuge_regime                     String
+  conjuge_dn                         DateTime
+  conjuge_nome                       String
+}
+
+model lbox_colaboradores_alteracaocargos {
+  id                 Int      @id @default(autoincrement())
+  lixo               Boolean
+  data_cargo         DateTime
+  data               DateTime
+  id_usuario         Int
+  id_colaborador     Int
+  id_cargo           Int
+  remuneracao        Float
+  id_cargo_antigo    Int
+  remuneracao_antiga Float
+  gorjeta            Int
+  gorjeta_antiga     Int
+  assiduidade        Int
+  assiduidade_antiga Int
+}
+
+model lbox_colaboradores_anexos {
+  id             Int      @id @default(autoincrement())
+  lixo           Boolean
+  titulo         String
+  arq            String
+  data           DateTime
+  obs            String
+  id_colaborador Int
+}
+
+model lbox_colaboradores_bancodehoras {
+  id                     Int      @id @default(autoincrement())
+  lixo                   Boolean
+  id_colaborador         Int
+  ano                    Int
+  mes                    Int
+  horas                  Int
+  pagar                  Boolean
+  atualizacao_data       DateTime
+  atualizacao_id_usuario Int
+}
+
+model lbox_colaboradores_beneficios {
+  id             Int      @id @default(autoincrement())
+  lixo           Boolean
+  data_inicio    DateTime
+  data_fim       DateTime
+  id_colaborador Int
+  id_beneficio   Int
+}
+
+model lbox_colaboradores_cargos {
+  id             Int      @id @default(autoincrement())
+  data           DateTime
+  lixo           Boolean
+  id_colaborador Int
+  id_cargo       Int
+  data_inicio    DateTime
+  data_fim       DateTime
+}
+
+model lbox_colaboradores_exames {
+  id             Int      @id @default(autoincrement())
+  id_colaborador Int
+  lixo           Boolean
+  data_exame     DateTime
+  exame          Int
+  obs            String
+}
+
+model lbox_colaboradores_ferias {
+  id                           Int      @id @default(autoincrement())
+  data                         DateTime @default(now())
+  lixo                         Boolean
+  id_colaborador               Int
+  data_inicio                  DateTime
+  data_fim                     DateTime
+  obs                          String
+  financeiro                   Boolean
+  pago                         Boolean
+  pago_data                    DateTime
+  pago_id_colaborador          Int
+  bruto                        Float
+  descontos                    Float
+  liquido                      Float
+  financeiro_bruto             Float
+  financeiro_descontos         Float
+  financeiro_liquido           Float
+  financeiro_id_formapagamento Int
+  arq                          String
+  data_vencimento              DateTime
+
+  @@index([id_colaborador], name: "id_colaborador")
+}
+
+model lbox_colaboradores_licencas {
+  id             Int      @id @default(autoincrement())
+  lixo           Boolean
+  id_colaborador Int
+  data_inicio    DateTime
+  data_fim       DateTime
+  obs            String
+}
+
+model lbox_colaboradores_ponto {
+  id              Int      @id @default(autoincrement())
+  lixo            Boolean
+  ip              String
+  entrada         DateTime
+  saida           DateTime
+  data_calendario DateTime
+  id_colaborador  Int
+  id_unidade      Int
+}
+
+model lbox_colaboradores_quadrosocietario {
+  id             Int   @id @default(autoincrement())
+  lixo           Int
+  id_unidade     Int
+  id_colaborador Int
+  percentual     Float
+  prolabore      Float
+}
+
+model lbox_colaboradores_regimes {
+  id                                 Int      @id @default(autoincrement())
+  lixo                               Boolean
+  data                               DateTime
+  id_usuario                         Int
+  id_status                          Int
+  id_cnpj                            Int
+  id_colaborador                     Int
+  regime                             String
+  data_admissao                      DateTime
+  data_demissao                      DateTime
+  rescisao_id_motivo                 Int
+  demissao_motivo                    String
+  clt_tituloeleitor                  String
+  clt_tituloeleitor_zona             String
+  clt_tituloeleitor_sessao           String
+  clt_tituloeleitor_estado           String
+  clt_carteiratrabalho               String
+  clt_carteiratrabalho_serie         String
+  clt_carteiratrabalho_dataexpedicao DateTime
+  clt_pis                            String
+  clt_tipo                           String
+  estagio_faculdade                  String
+  estagio_curso                      String
+  estagio_contrato                   String
+  freelancer_apto                    Boolean
+  freelancer_apto_motivo             String
+  assiduidade                        Boolean
+}
+
+model lbox_colaboradores_regimes_status {
+  id     Int     @id @default(autoincrement())
+  code   String
+  titulo String
+  lixo   Boolean
+  cor    String
+}
+
+model lbox_colaboradores_salarios {
+  id                Int      @id @default(autoincrement())
+  data              DateTime
+  id_colaborador    Int
+  assiduidade       Boolean
+  valetransporte    Boolean
+  id_valetransporte Int
+  data_inicio       DateTime
+  data_fim          DateTime
+  salario           Float
+  lixo              Int
+}
+
+model lbox_colaboradores_suspensao {
+  id             Int      @id @default(autoincrement())
+  lixo           Boolean
+  id_colaborador Int
+  data           DateTime
+  data_inicio    DateTime
+  data_fim       DateTime
+  obs            String
+}
+
+model lbox_colaboradores_treinamentos {
+  id                  Int      @id @default(autoincrement())
+  lixo                Boolean
+  id_colaborador      Int
+  id_treinamentocurso Int
+  status              String
+  obs                 String
+  data                DateTime
+}
+
+model lbox_compras {
+  id            Int      @id @default(autoincrement())
+  lixo          Boolean
+  id_cotacao    Int
+  id_fornecedor Int
+  data          DateTime
+  id_usuario    Int
+  id_unidade    Int
+  recebido      Boolean
+  id_entrada    Int
+}
+
+model lbox_compras_cotacoes {
+  id           Int      @id @default(autoincrement())
+  lixo         Boolean
+  data         DateTime
+  id_usuario   Int
+  id_unidade   Int
+  fechada      Int
+  fechada_data DateTime
+}
+
+model lbox_compras_cotacoes_itens {
+  id         Int     @id @default(autoincrement())
+  lixo       Boolean
+  id_cotacao Int
+  id_produto Int
+}
+
+model lbox_compras_cotacoes_itens_fornecedores {
+  id                 Int     @id @default(autoincrement())
+  lixo               Boolean
+  id_item            Int
+  id_produtodecompra Int
+  id_fornecedor      Int
+  quantidade         Float
+  id_produto         Int
+  valor              Float
+  obs                String
+  comprar            Boolean
+
+  @@index([id_fornecedor], name: "id_fornecedor")
+  @@index([id_item], name: "id_item")
+  @@index([id_produto], name: "id_produto")
+  @@index([id_produtodecompra], name: "id_produtodecompra")
+}
+
+model lbox_compras_itens {
+  id                 Int    @id @default(autoincrement())
+  lixo               Int
+  id_compra          Int
+  id_item_fornecedor Int
+  id_produtodecompra Int
+  quantidade         Float
+  id_produto         Int
+  valor              Float
+  obs                String
+}
+
+model lbox_compras_pedidoproducao {
+  id                       Int      @id @default(autoincrement())
+  lixo                     Boolean
+  data                     DateTime
+  data_producao            DateTime
+  id_unidade_abastecimento Int
+  id_unidade_producao      Int
+  id_usuario               Int
+  produzido                Boolean
+}
+
+model lbox_compras_pedidoproducao_itens {
+  id         Int     @id @default(autoincrement())
+  lixo       Boolean
+  id_pedido  Int
+  id_produto Int
+  quantidade Float
+}
+
+model lbox_delivery {
+  id            Int     @id @default(autoincrement())
+  lixo          Boolean
+  id_status     Int
+  id_cliente    Int
+  id_canal      Int
+  id_aplicativo Int
+  id_unidade    Int
+  id_endereco   Int
+}
+
+model lbox_delivery_caixas {
+  id                      Int                        @id @default(autoincrement())
+  pausado                 Boolean
+  lixo                    Int
+  data                    DateTime
+  data_caixa              DateTime
+  id_unidade              Int
+  id_aplicativo           Int
+  id_colaborador          Int
+  fundo_caixa             Float
+  fechado                 Boolean
+  fechado_data            DateTime
+  fechado_id_colaborador  Int
+  turno                   lbox_delivery_caixas_turno
+  validado                Int
+  validado_data           DateTime
+  validado_id_colaborador Int
+  taxa                    Float
+
+  @@index([data_caixa], name: "data_caixa")
+  @@index([fechado], name: "fechado")
+  @@index([id_colaborador], name: "id_colaborador")
+  @@index([id_unidade], name: "id_unidade")
+}
+
+model lbox_delivery_caixas_canais {
+  id           Int      @id @default(autoincrement())
+  lixo         Int
+  id_caixa     Int
+  id_canal     Int
+  pausado      Boolean
+  fechado      Boolean
+  id_fechado   Int
+  fechado_data DateTime
+  taxa         Float
+}
+
+model lbox_delivery_caixas_canais_fechamentos {
+  id                               Int      @id @default(autoincrement())
+  lixo                             Int
+  data                             DateTime
+  id_caixa                         Int
+  id_canal                         Int
+  id_formapagamento                Int
+  valor                            Float
+  id_colaborador                   Int
+  gerencia_valor                   Float
+  gerencia_justificativa           String
+  gerencia_correcao_data           DateTime
+  gerencia_correcao_gerente        Int
+  gerencia_validado                Int
+  gerencia_validado_data           DateTime
+  gerencia_validado_id_colaborador Int
+}
+
+model lbox_delivery_caixas_canais_financeiro {
+  id                      Int      @id @default(autoincrement())
+  lixo                    Boolean
+  data                    DateTime
+  id_caixa                Int
+  id_formapagamento       Int
+  valor                   Float
+  justificativa           Int
+  validado                Int
+  validado_data           DateTime
+  validado_id_colaborador Int
+  id_usuario              Int
+}
+
+model lbox_delivery_canais_unidades {
+  id                Int     @id @default(autoincrement())
+  id_canal          Int
+  id_unidade        Int
+  entregadorProprio Boolean
+}
+
+model lbox_delivery_entregadores {
+  id                              Int                             @id @default(autoincrement())
+  lixo                            Boolean
+  colaborador                     Boolean
+  id_colaborador                  Int
+  nome                            String
+  celular                         String
+  cpf                             String
+  data_nascimento                 DateTime
+  sexo                            lbox_delivery_entregadores_sexo
+  cnpj                            String
+  mae                             String
+  pai                             String
+  cep                             String
+  logradouro                      String
+  numero                          String
+  complemento                     String
+  bairro                          String
+  estado                          String
+  cidade                          Int
+  pagamento                       String
+  pagamento_transferencia_banco   String
+  pagamento_transferencia_agencia String
+  pagamento_transferencia_conta   String
+  telefone                        String
+  email                           String
+  unidades                        String
+}
+
+model lbox_delivery_pagamentos {
+  id                   Int      @id @default(autoincrement())
+  lixo                 Boolean
+  data                 DateTime
+  id_pedido            Int
+  id_unidade           Int
+  id_formapagamento    Int
+  id_cliente           Int
+  id_clienteCartao     Int
+  troco                Float
+  valor                Float
+  valorPagoPeloCliente Int
+  valor_total          Float
+  taxa_entrega         Float
+  json_ifood           String
+}
+
+model lbox_delivery_pedidos {
+  id                      Int                          @id @default(autoincrement())
+  data                    DateTime
+  lixo                    Boolean
+  oculto                  Boolean
+  id_canal                Int
+  id_unidade              Int
+  id_aplicativo           Int
+  id_caixa                Int
+  status                  lbox_delivery_pedidos_status
+  tipo                    lbox_delivery_pedidos_tipo
+  data_aceite             DateTime
+  id_aceite               Int
+  id_preaceite            Int
+  data_produzido          DateTime
+  id_produzido            Int
+  data_entregador         DateTime
+  id_entregador           Int
+  id_entregador_delivery  Int
+  data_finalizado         DateTime
+  id_finalizado           Int
+  data_cancelado          DateTime
+  id_cancelado            Int
+  id_motivo_cancelado     Int
+  cancelado_obs           String
+  entregadorRetorno_data  DateTime
+  entregadorRetorno_valor Float
+  id_cliente              Int
+  retirarBalcao           Boolean
+  id_endereco             Int
+  id_zona                 Int
+  zona_json               String
+  id_cozinha              Int
+  cozinha_id_colaborador  Int
+  cozinha_data            DateTime
+  valor                   Float
+  valor_frete             Float
+  obs                     String
+  entregadorProprio       Boolean
+  pagamentoFisico         Boolean
+  notaFiscalCPF           String
+  id_avaliacao            Int
+  avaliacao_finalizacao   DateTime
+  ifood_id                String
+  ifood_reference         Int
+  ifood_shortReference    Int
+  id_nfce                 Int
+
+  @@index([ifood_reference], name: "ifood_reference")
+}
+
+model lbox_delivery_pedidos_canais {
+  id              Int     @id @default(autoincrement())
+  lixo            Boolean
+  titulo          String
+  icone           String
+  tabela_cardapio String
+}
+
+model lbox_delivery_pedidos_cores {
+  id           Int     @id @default(autoincrement())
+  lixo         Boolean
+  id_unidade   Int
+  verde_de     Int
+  amarelo_de   Int
+  vermelho_de  Int
+  verde_ate    Int
+  amarelo_ate  Int
+  vermelho_ate Int
+}
+
+model lbox_delivery_pedidos_cozinha {
+  id                    Int      @id @default(autoincrement())
+  data_pedido           DateTime
+  pedido_id_colaborador Int
+  lixo                  Boolean
+  id_pedido             Int
+  id_unidade            Int
+  obs                   String
+}
+
+model lbox_delivery_pedidos_ifood_cancelamentos {
+  id           Int     @id @default(autoincrement())
+  ifood_codigo String
+  titulo       String
+  lixo         Boolean
+}
+
+model lbox_delivery_pedidos_ifood_vouchers {
+  id        Int      @id @default(autoincrement())
+  data      DateTime
+  id_pedido Int
+  ifood     Boolean
+  merchant  Boolean
+  valor     Float
+  target    String
+  lixo      Boolean
+}
+
+model lbox_delivery_pedidos_itens {
+  id               Int      @id @default(autoincrement())
+  lixo             Boolean
+  data             DateTime
+  id_pedido        Int
+  id_unidade       Int
+  id_item_cardapio Int
+  valor            Float
+  obs              String
+  ponto            String
+  quantidade       Int
+}
+
+model lbox_delivery_pedidos_itens_adicionais {
+  id           Int     @id @default(autoincrement())
+  id_item      Int
+  id_grupo     Int
+  id_adicional Int
+  adicional    String
+  valor        Float
+  lixo         Boolean
+}
+
+model lbox_delivery_pedidos_itens_composicao {
+  id                        Int     @id @default(autoincrement())
+  id_item                   Int
+  id_produto                Int
+  id_produto_original       Int
+  quantidade                Float
+  id_categoria_substituicao Int
+  valor_adicional           Float
+  lixo                      Boolean
+}
+
+model lbox_delivery_whatsapp {
+  id                  Int     @id @default(autoincrement())
+  lixo                Boolean
+  id_unidade          Int
+  id_whatsapp         Int
+  whatsapp_aceito     String
+  whatsapp_produzido  String
+  whatsapp_entregador String
+  whatsapp_avaliacao  String
+}
+
+model lbox_financeiro_balanco {
+  id           Int                          @id @default(autoincrement())
+  data         DateTime
+  lixo         Boolean
+  id_credor    Int
+  tipo         lbox_financeiro_balanco_tipo
+  id_unidade   Int
+  id_socio     Int
+  valor        Float
+  id_origem    Int
+  id_registro  Int
+  cronjob      Boolean
+  cronjob_data DateTime
+}
+
+model lbox_financeiro_bancos {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo String
+}
+
+model lbox_financeiro_categorias {
+  id           Int     @id @default(autoincrement())
+  lixo         Boolean
+  id_categoria Int
+  titulo       String
+  receita      Boolean
+  fixo         Boolean
+}
+
+model lbox_financeiro_conciliacoes {
+  id                      Int      @id @default(autoincrement())
+  lixo                    Int
+  data                    DateTime
+  id_transferencia        Int
+  id_extrato              Int
+  id_fluxo                Int
+  valor                   Float
+  multiplo                Boolean
+  movimentacaoConciliacao Boolean
+
+  @@index([data], name: "data")
+  @@index([id_fluxo], name: "id_conta")
+  @@index([id_extrato], name: "id_extrato")
+  @@index([id_transferencia], name: "id_transferencia")
+}
+
+model lbox_financeiro_entradas {
+  id              Int      @id @default(autoincrement())
+  data            DateTime
+  lixo            Int
+  lixo_data       DateTime
+  lixo_id_usuario Int
+  id_unidade      Int
+  id_fornecedor   Int
+  id_compra       Int
+  data_nota       DateTime
+  nfe             String
+  valor           Float
+  desconto        Float
+  anexo           String
+  id_b2b          Int
+  teste           Boolean
+}
+
+model lbox_financeiro_entradas_itens {
+  id                      Int                                 @id @default(autoincrement())
+  data                    DateTime
+  lixo                    Boolean
+  id_entrada              Int
+  id_despesa              Int
+  tipo                    lbox_financeiro_entradas_itens_tipo
+  quantidade              Float
+  valor                   Float
+  valorProdutoPadrao      Float
+  quantidadeProdutoPadrao Float
+  id_produto              Int
+  id_produtoPadrao        Int
+  pc_taxaconversao        Float
+  osp_id_categoria        Int
+  osp_serie               String
+  osp_locacao             String
+  osp_datagarantia        DateTime
+  osp_anexo               String
+}
+
+model lbox_financeiro_extrato {
+  id               Int      @id @default(autoincrement())
+  lixo             Boolean
+  data_extrato     DateTime
+  ajuste           Boolean
+  uniqueid         Int
+  checknumber      String
+  id_unidade       Int
+  descricao        String
+  valor            Float
+  tipo             String
+  id_conta         Int
+  id_despesa       Int
+  juros            Float
+  multa            Float
+  desconto         Float
+  obs              String
+  id_usuario       Int
+  id_fluxo_criacao Int
+  transferencia    Int
+  id_transferencia Int
+  id_ofx           Int
+
+  @@index([data_extrato], name: "data_extrato")
+  @@index([id_conta], name: "id_conta")
+  @@index([id_despesa], name: "id_despesa")
+  @@index([id_unidade], name: "id_empresa")
+  @@index([id_usuario], name: "id_usuario")
+  @@index([tipo], name: "tipo")
+  @@index([uniqueid], name: "uniqueid")
+  @@index([valor], name: "valor")
+}
+
+model lbox_financeiro_extrato_ofx {
+  id         Int      @id @default(autoincrement())
+  lixo       Boolean
+  data       DateTime
+  id_conta   Int
+  id_unidade Int
+  saldo      Float
+}
+
+model lbox_financeiro_fluxo {
+  id                         Int                        @id @default(autoincrement())
+  id_agrupamento             Int
+  id_agrupamento_conciliacao Boolean
+  data                       DateTime
+  lixo                       Boolean
+  id_origem                  Int
+  acerto                     Boolean
+  socio                      Boolean
+  id_registro                Int
+  id_registros               String
+  tipo                       lbox_financeiro_fluxo_tipo
+  data_vencimento            DateTime
+  pagamento                  Boolean
+  pagamento_id_colaborador   Int
+  data_efetivado             DateTime
+  id_formapagamento          Int
+  id_fornecedor              Int
+  id_colaborador             Int
+  id_clienteb2b              Int
+  id_unidade                 Int
+  id_unidade_pagcred         Int
+  id_despesa                 Int
+  id_caixa                   Int
+  id_caixadelivery           Int
+  id_categoria               Int
+  valor                      Float
+  valor_original             Float
+  anexo                      String
+  id_conciliacao             Int
+  obs                        String
+  descricao                  String
+  id_extrato_criacao         Int
+  juros                      Float
+  multa                      Float
+  desconto                   Float
+  taxa                       Float
+
+  @@index([data], name: "data")
+  @@index([data_efetivado], name: "data_efetivado")
+  @@index([data_vencimento], name: "data_vencimento")
+  @@index([id_agrupamento], name: "id_agrupamento")
+  @@index([id_formapagamento], name: "id_formapagamento")
+  @@index([id_origem], name: "id_origem")
+  @@index([id_registro], name: "id_registro")
+  @@index([id_unidade], name: "id_unidade")
+  @@index([valor], name: "valor")
+}
+
+model lbox_financeiro_fluxo_itens {
+  id           Int      @id @default(autoincrement())
+  lixo         Boolean
+  data         DateTime
+  id_fluxo     Int
+  valor        Float
+  id_categoria Int
+  ref_tabela   String
+  ref_id       Int
+  descricao    String
+}
+
+model lbox_financeiro_fluxo_origens {
+  id     Int    @id @default(autoincrement())
+  tabela String
+  titulo String
+}
+
+model lbox_financeiro_formasdepagamento {
+  id       Int                                    @id @default(autoincrement())
+  lixo     Boolean
+  titulo   String
+  b2b      Boolean
+  compras  Boolean
+  delivery Boolean
+  acerto   Boolean
+  dp       Boolean
+  socio    Boolean
+  tipo     lbox_financeiro_formasdepagamento_tipo
+  webmania String
+}
+
+model lbox_financeiro_formasderecebimento {
+  id                Int     @id @default(autoincrement())
+  id_formapagamento Int
+  lixo              Boolean
+  titulo            String
+  fixo              Boolean
+  ordem             Int
+  webmania          String
+  tipo              String
+}
+
+model lbox_financeiro_produtosdecompra {
+  id                      Int     @id @default(autoincrement())
+  lixo                    Boolean
+  titulo                  String
+  id_produto              Int
+  taxa_conversao          Float
+  unidades                String
+  id_categoria            Int
+  produto                 Boolean
+  unidade_medida          Int
+  inventariado            Boolean
+  manutencao              Boolean
+  id_periodicidade        Int
+  depreciacao             Int
+  outrosprodutoseservicos Int
+  b2b                     Boolean
+}
+
+model lbox_financeiro_vales {
+  id                     Int      @id @default(autoincrement())
+  data                   DateTime
+  data_vencimento        DateTime
+  id_cnpj                Int
+  lixo                   Boolean
+  id_colaborador         Int
+  valor                  Float
+  obs                    String
+  id_folhapagamento_item Int
+  id_formapagamento      Int
+}
+
+model lbox_financeiro_vts {
+  id                Int      @id @default(autoincrement())
+  lixo              Boolean
+  data              DateTime
+  data_vencimento   DateTime
+  id_unidade        Int
+  id_colaborador    Int
+  id_formapagamento Int
+  ano               Int
+  mes               Int
+  dias              Int
+  valor             Float
+}
+
+model lbox_fornecedores {
+  id                  Int                           @id @default(autoincrement())
+  lixo                Int
+  tipo_pessoa         lbox_fornecedores_tipo_pessoa
+  razao_social        String
+  cnpj                String
+  responsavel         String
+  nome                String
+  cpf                 String
+  telefone1           String
+  telefone2           String
+  email               String
+  cep                 String
+  logradouro          String
+  numero              String
+  bairro              String
+  complemento         String
+  cidade              String
+  uf                  String
+  dias_compra         String
+  dias_entrega        String
+  dados_bancario      String
+  produtos_fornecidos String
+  unidades            String
+}
+
+model lbox_fornecedores_diasdecompra {
+  id            Int     @id @default(autoincrement())
+  lixo          Boolean
+  id_fornecedor Int
+  dia_compra    Int
+  dias          Int
+}
+
+model lbox_fornecedores_produtosdecompra {
+  id                 Int      @id @default(autoincrement())
+  data               DateTime
+  id_fornecedor      Int
+  id_produtodecompra Int
+  lixo               Boolean
+}
+
+model lbox_gerenciamento_calendario {
+  id                       Int                                       @id @default(autoincrement())
+  data                     DateTime                                  @default(now())
+  lixo                     Int
+  data_calendario          DateTime
+  id_colaborador           Int
+  trabalhando              lbox_gerenciamento_calendario_trabalhando
+  id_trabalhando           Int
+  id_status                Int
+  id_status_antigo         Int
+  id_cargo                 Int
+  id_unidade               Int
+  id_ponto                 Int
+  id_criacao               Int
+  ponto_entrada            DateTime
+  ponto_saida              DateTime
+  freelancer_id_pagamento  Int
+  folgafree_id_colaborador Int
+  alteracao_id_usuario     Int
+  alteracao_data           DateTime
+  id_gorjeta               Int
+
+  @@index([data_calendario], name: "data_calendario")
+  @@index([id_colaborador], name: "id_colaborador")
+  @@index([ponto_entrada], name: "ponto_entrada")
+  @@index([ponto_saida], name: "ponto_saida")
+}
+
+model lbox_gerenciamento_calendario_status {
+  id     Int    @id @default(autoincrement())
+  titulo String
+  cor    String
+}
+
+model lbox_gerenciamento_sazonalidade {
+  id                Int      @id @default(autoincrement())
+  lixo              Int
+  titulo            String
+  data_sazonalidade DateTime
+  id_unidade        Int
+  id_tipo           Int
+}
+
+model lbox_gerenciamento_sazonalidade_tipos {
+  id      Int     @id @default(autoincrement())
+  titulo  String
+  cor     String
+  lixo    Boolean
+  ordem   Int
+  feriado Int
+}
+
+model lbox_ifood_cardapio {
+  id             Int                         @id @default(autoincrement())
+  lixo           Boolean
+  ordem          Int
+  id_unidade     Int
+  id_produto     Int
+  valor          Float
+  promocao       Boolean
+  valor_promocao Float
+  serving        lbox_ifood_cardapio_serving
+  pub            Boolean
+  pub_id_usuario Int
+  pub_data       DateTime
+  vegetarian     Boolean
+  vegan          Boolean
+  organic        Boolean
+  gluten_free    Boolean
+  sugar_free     Boolean
+  lac_free       Boolean
+}
+
+model lbox_ifood_cardapio_ordenacao {
+  id          Int                                @id @default(autoincrement())
+  id_unidade  Int
+  id_registro Int
+  tipo        lbox_ifood_cardapio_ordenacao_tipo
+  ordem       Int
+}
+
+model lbox_ifood_cardapio_sincronizacoes {
+  id         Int      @id @default(autoincrement())
+  lixo       Boolean
+  data       DateTime
+  id_usuario Int
+  id_unidade Int
+}
+
+model lbox_ifood_eventspolling {
+  id               Int      @id @default(autoincrement())
+  data             DateTime
+  atualizacao_data DateTime
+  ifood_createdAt  DateTime
+  ifood_id         String
+  ifood_reference  Int
+  ifood_isTest     Boolean
+  ifood_json       String
+}
+
+model lbox_ifood_eventspolling_cronjob {
+  id   Int      @id @default(autoincrement())
+  data DateTime
+}
+
+model lbox_ifood_eventspolling_historico {
+  id              Int      @id @default(autoincrement())
+  data            DateTime
+  ifood_reference Int
+  status          String
+}
+
+model lbox_ifood_eventspolling_placed {
+  id         Int      @id @default(autoincrement())
+  data       DateTime
+  id_unidade Int
+  json       String
+}
+
+model lbox_ifood_eventspolling_requisicoes {
+  id   Int      @id @default(autoincrement())
+  data DateTime
+}
+
+model lbox_ifood_formasdepagamento {
+  id                Int      @id @default(autoincrement())
+  data              DateTime
+  lixo              Boolean
+  ifood_name        String
+  ifood_code        String
+  ifood_prepaid     Boolean
+  id_formapagamento Int
+}
+
+model lbox_ifood_oauth {
+  id            Int      @id @default(autoincrement())
+  data          DateTime
+  data_validade DateTime
+  username      String
+  expires_in    Int
+  token_type    String
+  access_token  String
+}
+
+model lbox_impostos {
+  id              Int     @id @default(autoincrement())
+  id_unidade      Int
+  id_categoria    Int
+  codigo_webmania String
+  lixo            Boolean
+}
+
+model lbox_impostos_categorias {
+  id        Int     @id @default(autoincrement())
+  lixo      Boolean
+  titulo    String
+  descricao String
+}
+
+model lbox_impostos_cfop {
+  id     Int    @id @default(autoincrement())
+  titulo String
+}
+
+model lbox_impostos_cstcofins {
+  id     Int    @id @default(autoincrement())
+  titulo String
+}
+
+model lbox_impostos_cstpis {
+  id     Int    @id @default(autoincrement())
+  titulo String
+}
+
+model lbox_impostos_origemmercadoria {
+  id     Int    @id @default(autoincrement())
+  titulo String
+}
+
+model lbox_impostos_tributacaoicms {
+  id     Int    @id @default(autoincrement())
+  titulo String
+}
+
+model lbox_impressoras {
+  id                 Int     @id @default(autoincrement())
+  lixo               Boolean
+  id_categoria       Int
+  id_unidade         Int
+  ip                 String
+  impressora_da_fila Boolean
+}
+
+model lbox_impressoras_categorias {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo String
+}
+
+model lbox_impressoras_fila {
+  id                      Int                        @id @default(autoincrement())
+  lixo                    Boolean
+  data                    DateTime
+  impressao               Boolean
+  impressao_concluida     DateTime
+  impressao_erro          DateTime
+  atendente               String
+  id_visita               String
+  id_delivery_pedido      Int
+  mesa                    String
+  id_unidade              Int
+  tipo                    lbox_impressoras_fila_tipo
+  id_impressora_categoria Int
+  id_pedido_cozinha       Int
+  id_comanda              Int
+  id_usuario              Int
+  json                    String
+  obsComanda              String
+  taxa_servico            Float
+  taxa_entrega            Float
+  previsao_tempo          Int
+  previsao_data           DateTime
+  cumin_data              DateTime
+  cumin_id_colaborador    Int
+
+  @@index([data], name: "data")
+  @@index([id_delivery_pedido], name: "id_delivery_pedido")
+  @@index([id_unidade], name: "id_unidade")
+  @@index([id_visita], name: "id_visita")
+  @@index([impressao], name: "impressao")
+}
+
+model lbox_impressoras_impressoesConcluidas {
+  id           Int      @id @default(autoincrement())
+  data         DateTime
+  id_unidade   Int
+  id_impressao Int
+}
+
+model lbox_impressoras_situacao {
+  id         Int     @id @default(autoincrement())
+  id_unidade Int
+  imprimindo Boolean
+}
+
+model lbox_log {
+  id         Int           @id @default(autoincrement())
+  data       DateTime
+  id_usuario Int
+  tipo       lbox_log_tipo
+  vsql       String
+  vwhere     String
+  tabela     String
+  id_reg     Int
+  t          Boolean
+
+  @@index([id_reg], name: "id_reg")
+  @@index([id_usuario], name: "id_usuario")
+  @@index([tabela], name: "tabela")
+  @@index([tipo], name: "tipo")
+}
+
+model lbox_log_sessoes {
+  id         Int      @id @default(autoincrement())
+  id_usuario Int
+  data       DateTime
+  ip         String
+  pagina     String
+}
+
+model lbox_logins {
+  id         Int      @id @default(autoincrement())
+  erro       Int
+  data       DateTime
+  ip         String
+  login      String
+  senha      String
+  id_usuario Int
+}
+
+model lbox_lojas_areas {
+  id                      Int    @id @default(autoincrement())
+  lixo                    Int
+  id_unidade              Int
+  titulo                  String
+  id_impressora_categoria Int
+}
+
+model lbox_lojas_areas_mesas {
+  id            Int                           @id @default(autoincrement())
+  pub           Boolean
+  lixo          Int
+  id_unidade    Int
+  id_area       Int
+  titulo        String
+  tipo          lbox_lojas_areas_mesas_tipo
+  ativa         Boolean
+  status        lbox_lojas_areas_mesas_status
+  reservada     Boolean
+  reservada_obs String
+  id_visita     Int
+}
+
+model lbox_lojas_mapeamento {
+  id            Int                          @id @default(autoincrement())
+  data          DateTime
+  id_unidade    Int
+  id_mesa       Int
+  status        lbox_lojas_mapeamento_status
+  lixo          Boolean
+  reservada     Boolean
+  reservada_obs String
+  pub           Boolean
+
+  @@index([data], name: "data")
+  @@index([id_unidade], name: "id_loja")
+  @@index([id_mesa], name: "id_mesa")
+  @@index([lixo], name: "lixo")
+  @@index([pub], name: "pub")
+  @@index([status], name: "status")
+}
+
+model lbox_lojas_mapeamento_historico {
+  id         Int      @id @default(autoincrement())
+  data       DateTime
+  id_unidade Int
+  id_usuario Int
+  id_mesa    Int
+  id_cliente Int
+  acao       String
+  descricao  String
+}
+
+model lbox_menu {
+  id        Int               @id @default(autoincrement())
+  lixo      Boolean
+  titulo    String
+  ordem     Int
+  id_menu   Int
+  sistema   lbox_menu_sistema
+  pagina    String
+  subpagina String
+  blank     Boolean
+  icone     String
+}
+
+model lbox_pagamentos_nfce {
+  id           Int                         @id @default(autoincrement())
+  tipo         lbox_pagamentos_nfce_tipo
+  data         DateTime
+  id_usuario   Int
+  valor        Float
+  id_unidade   Int
+  id_pedido    Int
+  id_visita    Int
+  id_comanda   Int
+  erro         Boolean
+  erro_msg     String
+  cpfcnpj      String
+  uuid         String
+  status       lbox_pagamentos_nfce_status
+  nfe          String
+  serie        String
+  chave        String
+  xml          String
+  danfe        String
+  json_envio   String
+  json_retorno String
+
+  @@index([id_comanda], name: "id_comanda")
+  @@index([id_pedido], name: "id_pedido")
+  @@index([id_pedido], name: "id_pedido_2")
+  @@index([id_visita], name: "id_visita")
+  @@index([tipo], name: "tipo")
+}
+
+model lbox_parametros_colaboradores_bancos {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo String
+}
+
+model lbox_parametros_colaboradores_contratacao_po {
+  id    Int     @id @default(autoincrement())
+  lixo  Boolean
+  valor Float
+}
+
+model lbox_parametros_colaboradores_contratacao_ps {
+  id    Int     @id @default(autoincrement())
+  lixo  Boolean
+  valor Float
+}
+
+model lbox_parametros_colaboradores_contratacao_vt {
+  id    Int     @id @default(autoincrement())
+  lixo  Boolean
+  valor Float
+}
+
+model lbox_parametros_colaboradores_exames {
+  id       Int     @id @default(autoincrement())
+  lixo     Boolean
+  titulo   String
+  vigencia Boolean
+}
+
+model lbox_parametros_colaboradores_idiomas {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo String
+}
+
+model lbox_parametros_colaboradores_tiposdependentes {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo String
+}
+
+model lbox_parametros_colaboradores_treinamentosecursos {
+  id          Int     @id @default(autoincrement())
+  lixo        Boolean
+  obrigatorio Boolean
+  titulo      String
+  duracao     String
+}
+
+model lbox_parametros_rh_adicionalnoturno {
+  id         Int      @id @default(autoincrement())
+  id_unidade Int
+  de         DateTime
+  ate        DateTime
+  lixo       Boolean
+}
+
+model lbox_parametros_rh_beneficios {
+  id         Int                                @id @default(autoincrement())
+  lixo       Boolean
+  titulo     String
+  tipo       lbox_parametros_rh_beneficios_tipo
+  valor      Float
+  adesao     Float
+  editavel   Boolean
+  id_unidade Int
+}
+
+model lbox_parametros_rh_cargahoraria {
+  id          Int      @id @default(autoincrement())
+  lixo        Boolean
+  hora_inicio DateTime
+  hora_fim    DateTime
+}
+
+model lbox_parametros_rh_cargasemanal {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo Int
+}
+
+model lbox_parametros_rh_vt {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo String
+  valor  Float
+}
+
+model lbox_periodicidades {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo String
+  dias   Int
+}
+
+model lbox_producao_centrodeproducao {
+  id                       Int      @id @default(autoincrement())
+  id_unidade_producao      Int
+  id_unidade_abastecimento Int
+  data                     DateTime
+  lixo                     Boolean
+  id_produto               Int
+  venda_percentual         Boolean
+  valor_venda              Float
+  valor_nota               Float
+}
+
+model lbox_producao_diasdeabastecimento {
+  id                  Int    @id @default(autoincrement())
+  lixo                Int
+  id_unidade_producao Int
+  id_unidade          Int
+  contagem            String
+}
+
+model lbox_producao_ordens {
+  id                                Int      @id @default(autoincrement())
+  data_producao                     DateTime
+  lixo                              Boolean
+  id_unidade_producao               Int
+  id_produto                        Int
+  status                            Int
+  produzido_id_usuario              Int
+  produzido_data                    DateTime
+  produzido_qtd                     Float
+  produzido_valor                   Float
+  produzido_valorComposicaoOriginal Float
+  ordem                             Float
+  id_usuario                        Int
+  data                              DateTime
+  id_alteracao                      Int
+  alteracao_data                    DateTime
+  solicitadoProducao                Boolean
+  composicao_json                   String
+}
+
+model lbox_producao_ordens_composicao {
+  id              Int      @id @default(autoincrement())
+  lixo            Boolean
+  lixo_data       DateTime
+  lixo_id_usuario Int
+  id_ordem        Int
+  id_produto      Int
+  produto         String
+  tipo            String
+  proporcao       Int
+  quantidade      Float
+  quantidadeUnit  Float
+  id_complemento  Int
+  id_alteracao    Int
+  alteracao_data  DateTime
+  separado        Int
+  separado_id     Int
+  separado_data   DateTime
+  id_agrupamento  Int
+  adicionado      Int
+  adicionado_data DateTime
+}
+
+model lbox_producao_ordens_composicao_agrupamentos {
+  id                  Int      @id @default(autoincrement())
+  lixo                Boolean
+  data_producao       DateTime
+  id_unidade_producao Int
+  id_setor_producao   Int
+  id_produto          Int
+  separado_quantidade Float
+  separado_estoque    Float
+  sobra               Float
+  sobra_data          DateTime
+  sobra_id_usuario    Int
+}
+
+model lbox_producao_ordens_produzidoPor {
+  id                  Int                                            @id @default(autoincrement())
+  id_unidade_producao Int
+  data_producao       DateTime
+  produzidoPor        lbox_producao_ordens_produzidoPor_produzidoPor
+  id_usuario          Int
+  data                DateTime
+  alteracao_data      DateTime
+  id_alteracao        Int
+}
+
+model lbox_producao_ordens_produzidos {
+  id         Int      @id @default(autoincrement())
+  lixo       Boolean
+  id_ordem   Int
+  id_usuario Int
+  data       DateTime
+  quantidade Float
+}
+
+model lbox_producao_precosb2b {
+  id                  Int      @id @default(autoincrement())
+  id_unidade_producao Int
+  data                DateTime
+  lixo                Boolean
+  id_produto          Int
+  venda_percentual    Boolean
+  valor_venda         Float
+  valor_nota          Float
+}
+
+model lbox_producao_setoresdeproducao {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo String
+}
+
+model lbox_produtos {
+  id                        Int                @id @default(autoincrement())
+  lixo                      Boolean
+  tipo                      lbox_produtos_tipo
+  titulo                    String
+  unidade_medida            Int
+  codigo                    Int
+  contagem                  String
+  abastecimento             String
+  seguranca                 Int
+  valor_nota                Float
+  valor_transferencia       Float
+  valor_lojas               Float
+  valor_venda               Float
+  margem_lucro_ideal        Float
+  id_imposto                Int
+  id_setor_producao         Int
+  id_categoria              Int
+  composicao                String
+  tempo                     Int
+  texto_descricao           String
+  texto_alergico            String
+  texto_nutricional         String
+  texto_harmonizacao        String
+  ponto                     Boolean
+  adicional                 Boolean
+  quantidade                Float
+  valor_adicional           Float
+  id_categoria_substituicao Int
+  id_categoria_imposto      Int
+  ncm                       String
+  cest                      String
+  descricao                 String
+  id_setor                  Int
+}
+
+model lbox_produtos_categorias {
+  id                      Int      @id @default(autoincrement())
+  ordem                   Int
+  titulo                  String
+  lixo                    Boolean
+  radio_autorizacao       Boolean
+  radio_horario           Boolean
+  hora_inicio             DateTime
+  hora_final              DateTime
+  hora_inicio2            DateTime
+  hora_final2             DateTime
+  id_impressora_categoria Int
+  id_imposto_categoria    Int
+}
+
+model lbox_produtos_categoriasdesubstituicao {
+  id     Int     @id @default(autoincrement())
+  ordem  Int
+  lixo   Boolean
+  titulo String
+}
+
+model lbox_produtos_composicao {
+  id                    Int      @id @default(autoincrement())
+  lixo                  Boolean
+  id_produto            Int
+  id_produto_composicao Int
+  quantidade            Float
+  data                  DateTime
+}
+
+model lbox_produtos_estoque {
+  id                    Int                        @id @default(autoincrement())
+  lixo                  Int
+  lixo_id_usuario       Int
+  lixo_data             DateTime
+  lixo_obs              String
+  id_motivo_desperdicio Int
+  data                  DateTime
+  tipo                  lbox_produtos_estoque_tipo
+  quantidade            Float
+  valor                 Float
+  valor_log             Float
+  estoque_log           Float
+  valorAtual_log        Float
+  valorFormula          String
+  id_produto            Int
+  id_unidade            Int
+  id_origem             Int
+  id_registro           Int
+  descricao             String
+  id_usuario            Int
+  cronjob               Int
+  cronjob_data          DateTime
+  ajuste_valor          Boolean
+
+  @@index([data], name: "data")
+  @@index([descricao], name: "descricao")
+  @@index([id_origem], name: "id_origem")
+  @@index([id_produto], name: "id_produto")
+  @@index([id_registro], name: "id_registro")
+  @@index([id_unidade], name: "id_unidade")
+  @@index([tipo], name: "tipo")
+}
+
+model lbox_produtos_estoque_contagens {
+  id             Int      @id @default(autoincrement())
+  lixo           Boolean
+  data           DateTime
+  id_colaborador Int
+  id_produto     Int
+  id_unidade     Int
+  estoque        Float
+  divergencia    Float
+  contagem       Float
+  fechado        Boolean
+
+  @@index([id_produto], name: "id_produto")
+  @@index([id_unidade], name: "id_unidade")
+}
+
+model lbox_produtos_estoque_desperdicio {
+  id             Int      @id @default(autoincrement())
+  lixo           Boolean
+  data           DateTime
+  id_colaborador Int
+  id_produto     Int
+  id_unidade     Int
+  quantidade     Float
+  id_motivo      Int
+  id_pedido      Int
+}
+
+model lbox_produtos_estoque_inventario {
+  id             Int      @id @default(autoincrement())
+  lixo           Boolean
+  data           DateTime
+  id_colaborador Int
+  id_produto     Int
+  id_unidade     Int
+  estoque        Float
+  divergencia    Float
+  contagem       Float
+  fechado        Boolean
+
+  @@index([id_produto], name: "id_produto")
+  @@index([id_unidade], name: "id_unidade")
+}
+
+model lbox_produtos_estoque_origens {
+  id     Int    @id @default(autoincrement())
+  tabela String
+}
+
+model lbox_produtos_estoque_records {
+  id               Int      @id @default(autoincrement())
+  id_sazonalidade  Int
+  dia              Int
+  id_produto       Int
+  id_unidade       Int
+  record           Float
+  data_atualizacao DateTime
+
+  @@index([id_produto], name: "id_produto")
+  @@index([id_unidade], name: "id_unidade")
+}
+
+model lbox_produtos_estoque_saldo {
+  id_produto       Int
+  id_unidade       Int
+  saldo            Float
+  valor            Float
+  atualizacao_data DateTime
+
+  @@id([id_produto, id_unidade])
+}
+
+model lbox_produtos_estoque_saldo_mes {
+  ano              Int
+  mes              Int
+  id_produto       Int
+  id_unidade       Int
+  saldo            Float
+  valor            Float
+  atualizacao_data DateTime
+
+  @@id([ano, mes, id_produto, id_unidade])
+}
+
+model lbox_produtos_fotos {
+  id         Int      @id @default(autoincrement())
+  lixo       Boolean
+  data       DateTime
+  foto       String
+  id_produto Int
+}
+
+model lbox_produtos_gruposdeopcionais {
+  id          Int                                  @id @default(autoincrement())
+  lixo        Boolean
+  titulo      String
+  tipo        lbox_produtos_gruposdeopcionais_tipo
+  ordem       Int
+  obrigatorio Boolean
+  minimo      Int
+  maximo      Int
+  exibir      Boolean
+  produtos    String
+}
+
+model lbox_produtos_gruposdeopcionais_adicionais {
+  id        Int                                             @id @default(autoincrement())
+  lixo      Boolean
+  id_grupo  Int
+  tipo      lbox_produtos_gruposdeopcionais_adicionais_tipo
+  adicional String
+}
+
+model lbox_produtos_opcionais {
+  id         Int @id @default(autoincrement())
+  lixo       Int
+  id_produto Int
+  id_grupo   Int
+}
+
+model lbox_produtos_tipos_categoriaFinanceiro {
+  tipo         String @id
+  id_categoria Int
+}
+
+model lbox_produtos_unidademedidas {
+  id      Int    @id @default(autoincrement())
+  titulo  String
+  unidade String
+}
+
+model lbox_produtos_unidades {
+  id                Int     @id @default(autoincrement())
+  lixo              Boolean
+  id_unidade        Int
+  id_produto        Int
+  contagem          String
+  entrega           Int
+  vinculoPorEntrada Boolean
+}
+
+model lbox_produtos_videos {
+  id         Int      @id @default(autoincrement())
+  lixo       Boolean
+  data       DateTime
+  video      String
+  id_produto Int
+}
+
+model lbox_qualidade_avaliacoes {
+  id             Int      @id @default(autoincrement())
+  lixo           Boolean
+  id_unidade     Int
+  id_tema        Int
+  pub            Boolean
+  pub_data       DateTime
+  pub_id_usuario Int
+}
+
+model lbox_qualidade_avaliacoes_realizadas {
+  id              Int      @id @default(autoincrement())
+  lixo            Boolean
+  data            DateTime
+  ip              String
+  id_tipo         Int
+  id_registro     Int
+  id_unidade      Int
+  id_cliente      Int
+  finalizado_data DateTime
+
+  @@index([id_cliente], name: "id_cliente")
+}
+
+model lbox_qualidade_avaliacoes_realizadas_respostas {
+  id           Int      @id @default(autoincrement())
+  id_avaliacao Int
+  id_unidade   Int
+  id_cliente   Int
+  data         DateTime
+  lixo         Boolean
+  id_tema      Int
+  rating       Int
+
+  @@index([id_avaliacao], name: "id_avaliacao")
+}
+
+model lbox_qualidade_avaliacoes_realizadas_respostas_motivosnotabaixa {
+  id          Int @id @default(autoincrement())
+  id_resposta Int
+  id_motivo   Int
+  lixo        Int
+}
+
+model lbox_qualidade_avaliacoes_temas {
+  id                 Int      @id @default(autoincrement())
+  pub                Boolean
+  pub_data           DateTime
+  pub_id_colaborador Int
+  lixo               Boolean
+  id_tipo            Int
+  titulo             String
+  legenda            String
+  icone              String
+}
+
+model lbox_qualidade_avaliacoes_temas_motivosnotabaixa {
+  id         Int     @id @default(autoincrement())
+  lixo       Boolean
+  id_tema    Int
+  id_unidade Int
+  resposta   String
+}
+
+model lbox_qualidade_avaliacoes_tipos {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo String
+  tabela String
+  id_ref String
+}
+
+model lbox_rh_13 {
+  id                      Int                @id @default(autoincrement())
+  lixo                    Boolean
+  ano                     Int
+  id_colaborador          Int
+  id_cnpj                 Int
+  bruto                   Float
+  descontos               Float
+  parcela                 lbox_rh_13_parcela
+  pago                    Boolean
+  pago_id_colaborador     Int
+  pago_data               DateTime
+  financeiro_bruto        Float
+  financeiro_descontos    Float
+  financeiro_totalliquido Float
+}
+
+model lbox_rh_folhadepagamentos {
+  id         Int     @id @default(autoincrement())
+  lixo       Boolean
+  fechada    Boolean
+  ano        Int
+  mes        Int
+  id_unidade Int
+}
+
+model lbox_rh_folhadepagamentos_beneficios {
+  id             Int     @id @default(autoincrement())
+  id_item        Int
+  id_colaborador Int
+  id_beneficio   Int
+  valor          Float
+  lixo           Boolean
+}
+
+model lbox_rh_folhadepagamentos_itens {
+  id                       Int      @id @default(autoincrement())
+  lixo                     Boolean
+  financeiro               Boolean
+  pago                     Boolean
+  pago_data                DateTime
+  pago_id_colaborador      Int
+  id_folhadepagamento      Int
+  data                     DateTime
+  id_colaborador           Int
+  id_cnpj                  Int
+  regime                   String
+  id_regime                Int
+  regime_status            String
+  clt_tipo                 String
+  id_cnpj_servico          Int
+  data_admissao            DateTime
+  data_demissao            DateTime
+  turno                    String
+  id_cargo                 Int
+  carga_semanal            Int
+  salario_base             Float
+  turno_horario            Int
+  dias_trabalhados         Int
+  atestado_quantidade      Int
+  atestado_datas           String
+  faltas_quantidade        Int
+  faltas_datas             String
+  feriadoRemunerado        Int
+  horasSaldo               Int
+  horasSaldoErro           Boolean
+  horasSaldoErroMsg        String
+  adicionalNoturno         Int
+  gorjeta                  Float
+  valeMenor40              Float
+  salario_proporcional     Float
+  assiduidade              Float
+  produtividade            Float
+  comissao                 Float
+  valorFeriado             Float
+  valorHoraExtra           Float
+  valorAdicionalNoturno    Float
+  dsr                      Float
+  inss                     Float
+  desconto_vt              Float
+  irrf                     Float
+  contribuicaosocial       Float
+  valorFaltasDescontadas   Float
+  valorOutrasReceitas      Float
+  valorOutrosDescontos     Float
+  cor                      String
+  financeiro_totalbruto    Float
+  financeiro_totaldesconto Float
+  financeiro_totalliquido  Float
+  financeiro_valeSaldo     Float
+  id_rescisao              Int
+}
+
+model lbox_rh_rescisao {
+  id                             Int      @id @default(autoincrement())
+  lixo                           Boolean
+  data                           DateTime
+  id_colaborador                 Int
+  id_cnpj                        Int
+  data_aviso                     DateTime
+  data_afastamento               DateTime
+  data_vencimento                DateTime
+  id_motivo                      Int
+  id_tipo                        Int
+  financeiro                     Boolean
+  financeiro_bruto               Float
+  financeiro_descontos           Float
+  financeiro_totalliquido        Float
+  financeiro_id_formapagamento   Int
+  pago                           Boolean
+  pago_data                      DateTime
+  pago_id_colaborador            Int
+  feriasProporcionais            Float
+  feriasVencidas                 Float
+  tercoFerias                    Float
+  salarioProporcional            Float    @map("13salarioProporcional")
+  deducaoAvisoPrevioIndenizado   Float
+  salarioAvisoIndenizado         Float    @map("13salarioAvisoIndenizado")
+  feriasAvisoIndenizado          Float
+  outrasVerbas                   Float
+  pensaoAlimenticia              Float
+  reembolsoValeAlimentacao       Float
+  adiantamentoFerias             Float
+  valeAdiantamentoSalarial       Float
+  indenizacaoCLT                 Float
+  previdenciaSocial13            Float
+  irrf13                         Float
+  valeAdiantamento13             Float
+  emprestimoConsignacao          Float
+  valeAlimentacao                Float
+  contribuicaoPrevioComplementar Float
+  salario_proporcional           Float
+  assiduidade                    Float
+  produtividade                  Float
+  comissao                       Float
+  valorFeriado                   Float
+  valorHoraExtra                 Float
+  valorAdicionalNoturno          Float
+  dsr                            Float
+  inss                           Float
+  desconto_vt                    Float
+  irrf                           Float
+  contribuicaosocial             Float
+  valorFaltasDescontadas         Float
+  contribuicaoSindicalLaboral    Float
+  avisoPrevioIndenizado          Float
+  outrasDeducoes                 Float
+  arq                            String
+}
+
+model lbox_rh_rescisao_motivos {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo String
+}
+
+model lbox_rh_rescisao_tipos {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo String
+}
+
+model lbox_treinamentosecursos {
+  id          Int     @id @default(autoincrement())
+  lixo        Boolean
+  obrigatorio Boolean
+  titulo      String
+  duracao     String
+}
+
+model lbox_unidades {
+  id                                 Int     @id @default(autoincrement())
+  lixo                               Boolean
+  titulo                             String
+  unidade_tipo                       String
+  cnpj                               String
+  cep                                String
+  telefone                           String
+  whatsapp                           String
+  logradouro                         String
+  numero                             String
+  complemento                        String
+  bairro                             String
+  cidade                             Int
+  estado                             String
+  nome_fantasia                      String
+  razao_social                       String
+  inscricao_estadual                 String
+  dados_bancario                     String
+  taxa_servico                       Float
+  webmania_consumerkey               String
+  webmania_consumerkey_secret        String
+  webmania_accesstoken               String
+  webmania_accesstoken_secret        String
+  webmania_gorjeta                   String
+  gorjeta_taxaretencao               Float
+  producao_entrega                   Int
+  id_whatsapp                        Int
+  whatsapp_boasvindas                String
+  whatsapp_fechamento                String
+  whatsapp_chamarClienteFilaDeEspera String
+  whatsapp_filaDeEsperaProximo       String
+  whatsapp_chamarClienteVendaBalcao  String
+  cardapio                           String
+  lat                                String
+  lng                                String
+}
+
+model lbox_unidades_aplicativosterceiros {
+  id               Int     @id @default(autoincrement())
+  id_unidade       Int
+  ativo            Boolean
+  id_canal         Int
+  ifood_username   String
+  ifood_password   String
+  ifood_merchantid String
+  ifood_uid        String
+  taxa             Float
+}
+
+model lbox_unidades_bancosecontas {
+  id             Int                              @id @default(autoincrement())
+  lixo           Boolean
+  id_unidade     Int
+  titulo         String
+  tipo           lbox_unidades_bancosecontas_tipo
+  agencia        String
+  conta          String
+  conciliacaoofx Boolean
+  maquinaCartao  Boolean
+  taxa_credito   Float
+  taxa_debito    Float
+  taxa_online    Float
+}
+
+model lbox_unidades_cardapio {
+  id             Int      @id @default(autoincrement())
+  lixo           Boolean
+  id_unidade     Int
+  id_produto     Int
+  valor          Float
+  pub            Int
+  data           DateTime
+  alteracao_data DateTime
+  id_alteracao   Int
+  id_usuario     Int
+  copy           Int
+}
+
+model lbox_unidades_cargos {
+  id             Int     @id @default(autoincrement())
+  titulo         String
+  lixo           Boolean
+  permissoes     String
+  admin          Boolean
+  socio          Boolean
+  nivel          Int
+  escala         Boolean
+  frentedeloja   Int
+  recebe_gorjeta Boolean
+  id_equipe      Int
+}
+
+model lbox_unidades_equipe {
+  id     Int     @id @default(autoincrement())
+  lixo   Boolean
+  titulo String
+}
+
+model lbox_unidades_gorjeta {
+  id                    Int      @id @default(autoincrement())
+  data                  DateTime
+  lixo                  Boolean
+  id_unidade            Int
+  cargos                String
+  gorjeta               Float
+  caixa_pessoal         Boolean
+  distribuir_freelancer Float
+  deducao_freelancer    Float
+  percentual_trabalhado Int
+}
+
+model lbox_usuarios {
+  id         Int                @id @default(autoincrement())
+  lixo       Int
+  pub        Int
+  data       DateTime
+  nome       String
+  login      String
+  senha      String
+  tipo       lbox_usuarios_tipo
+  email      String
+  permissoes String
+  nunca_lixo Int
+  nuncalixo  Int
+  lojas      String
+}
+
+model lbox_vendas_caixas {
+  id                        Int                      @id @default(autoincrement())
+  lixo                      Int
+  data                      DateTime
+  data_caixa                DateTime
+  id_unidade                Int
+  id_colaborador            Int
+  id_caixa                  Int
+  fundo_caixa               Float
+  fechado                   Boolean
+  fechado_data              DateTime
+  fechado_id_colaborador    Int
+  turno                     lbox_vendas_caixas_turno
+  validado                  Int
+  validado_data             DateTime
+  validado_id_colaborador   Int
+  areas                     String
+  areas_todas               Boolean
+  financeiro_data           DateTime
+  financeiro_id_colaborador Int
+  gorjeta                   Boolean
+  gorjeta_naoreceberao      Boolean
+  gorjeta_id_calendario     Int
+  gorjeta_taxa              Float
+  valor                     Float
+  valor_taxa                Float
+
+  @@index([data_caixa], name: "data_caixa")
+  @@index([fechado], name: "fechado")
+  @@index([id_caixa], name: "id_caixa")
+  @@index([id_colaborador], name: "id_colaborador")
+  @@index([id_unidade], name: "id_unidade")
+}
+
+model lbox_vendas_caixas_fechamentos {
+  id                               Int      @id @default(autoincrement())
+  lixo                             Boolean
+  data                             DateTime
+  id_caixa                         Int
+  id_formapagamento                Int
+  valor                            Float
+  id_colaborador                   Int
+  gerencia_valor                   Float
+  gerencia_justificativa           String
+  gerencia_correcao_data           DateTime
+  gerencia_correcao_gerente        Int
+  gerencia_validado                Boolean
+  gerencia_validado_data           DateTime
+  gerencia_validado_id_colaborador Int
+  areas                            String
+  areas_todas                      Boolean
+}
+
+model lbox_vendas_caixas_financeiro {
+  id                      Int      @id @default(autoincrement())
+  data                    DateTime
+  lixo                    Boolean
+  id_caixa                Int
+  id_usuario              Int
+  id_formapagamento       Int
+  valor                   Float
+  valor_taxa              Float
+  justificativa           String
+  validado                Boolean
+  validado_data           DateTime
+  validado_id_colaborador Int
+}
+
+model lbox_vendas_caixas_gorjetas {
+  id               Int      @id @default(autoincrement())
+  data_caixa       DateTime
+  id_colaborador   Int
+  id_caixa_mae     Int
+  id_caixa         Int
+  valor            Float
+  lixo             Boolean
+  retaguarda       Boolean
+  data_atualizacao DateTime
+}
+
+model lbox_vendas_caixas_pagamentos {
+  id                      Int                                @id @default(autoincrement())
+  data                    DateTime
+  id_calendario           Int
+  id_freelancer           Int
+  id_caixa                Int
+  id_cargo                Int
+  id_financeiro_categoria Int
+  item                    String
+  valor                   Float
+  arq                     String
+  lixo                    Boolean
+  tipo                    lbox_vendas_caixas_pagamentos_tipo
+  id_produto              Int
+  quantidade              Float
+  unidade_medida          Int
+  pagoFinanceiro          Boolean
+
+  @@index([id_caixa], name: "id_caixa")
+  @@index([tipo], name: "tipo")
+}
+
+model lbox_whatsapp_disparos {
+  id    Int      @id @default(autoincrement())
+  data  DateTime
+  ativo Boolean
+  json  String
+  erro  String
+}
+
+model lbox_whatsapp_instancias {
+  id        Int     @id @default(autoincrement())
+  lixo      Boolean
+  numero    String
+  titulo    String
+  endpoint  String
+  instancia String
+  token     String
+  webhook   String
+}
+
+model lbox_whatsapp_mensagens {
+  id                 Int      @id @default(autoincrement())
+  data               DateTime
+  enviado            Boolean
+  erro               Boolean
+  data_erro          DateTime
+  erro_retorno       String
+  data_enviado       DateTime
+  id_cliente         Int
+  id_visita          Int
+  id_delivery_pedido Int
+  id_unidade         Int
+  id_tipo            Int
+  numero             Int
+  mensagem           String
+  lat                String
+  lng                String
+  retorno_json       String
+  lixo               Boolean
+}
+
+model lbox_whatsapp_mensagens_tipos {
+  id         Int                                @id @default(autoincrement())
+  titulo     String
+  tipo       lbox_whatsapp_mensagens_tipos_tipo
+  getProfile Int
+}
+
+enum lbox_aplicativos_tema {
+  dark
+  white
+}
+
+enum lbox_aplicativos_cardapio_ordenacao_tipo {
+  categoria
+}
+
+enum lbox_aplicativos_impressoras_tipo {
+  cardapio
+  nfce
+}
+
+enum lbox_b2b_operacao {
+  venda
+  transferencia
+}
+
+enum lbox_b2b_tipo {
+  produto
+  servico
+}
+
+enum lbox_clientes_tipo {
+  normal
+  ifood
+}
+
+enum lbox_clientes_origem {
+  recepcao
+  aplicativo
+  convidado
+  ifood
+}
+
+enum lbox_clientes_appprovider_provider {
+  EMPTY_ENUM_VALUE @map("")
+  facebook
+  gmail
+  apple
+}
+
+enum lbox_clientes_enderecos_categoria {
+  EMPTY_ENUM_VALUE @map("")
+  casa
+  trabalho
+}
+
+enum lbox_clientes_visitas_comandas_pagamentos_tipo_pessoa {
+  pf
+  pj
+}
+
+enum lbox_clientesb2b_tipo_pessoa {
+  pj
+  pf
+}
+
+enum lbox_colaboradores_sexo {
+  m
+  f
+}
+
+enum lbox_delivery_caixas_turno {
+  DIA
+  NOITE
+  MADRUGADA
+}
+
+enum lbox_delivery_entregadores_sexo {
+  m
+  f
+}
+
+enum lbox_delivery_pedidos_status {
+  aguardando
+  aceito
+  produzido
+  entregador
+  aretirar
+  finalizado
+  cancelado
+}
+
+enum lbox_delivery_pedidos_tipo {
+  DELIVERY
+  TAKEOUT
+}
+
+enum lbox_financeiro_balanco_tipo {
+  unidade
+  b2b_unidade
+  mes
+  acerto
+  b2b_socio
+  socio_aporte
+  socio_retirada
+}
+
+enum lbox_financeiro_entradas_itens_tipo {
+  pc
+  osp_ninventariado @map("osp-ninventariado")
+  osp_inventariado @map("osp-inventariado")
+}
+
+enum lbox_financeiro_fluxo_tipo {
+  fornecedor
+  colaborador
+  unidade
+  b2b_socio
+  b2b_unidade
+  b2b_clientesb2b
+  caixa_loja
+  caixa_delivery
+  outros
+  socio_aporte
+  socio_retirada
+}
+
+enum lbox_financeiro_formasdepagamento_tipo {
+  EMPTY_ENUM_VALUE @map("")
+  dinheiro
+  debito
+  credito
+  online
+  balanco
+  cortesia
+}
+
+enum lbox_fornecedores_tipo_pessoa {
+  pj
+  pf
+}
+
+enum lbox_gerenciamento_calendario_trabalhando {
+  eu
+  terceiro
+  casa
+}
+
+enum lbox_ifood_cardapio_serving {
+  NOT_APPLICABLE
+  SERVES_1
+  SERVES_2
+  SERVES_3
+  SERVES_4
+}
+
+enum lbox_ifood_cardapio_ordenacao_tipo {
+  categoria
+}
+
+enum lbox_impressoras_fila_tipo {
+  cozinha
+  comanda
+  nfce
+  delivery
+}
+
+enum lbox_log_tipo {
+  select
+  insert
+  update
+  delete
+}
+
+enum lbox_lojas_areas_mesas_tipo {
+  t2
+  t4
+  t6
+  t8
+  t8m
+}
+
+enum lbox_lojas_areas_mesas_status {
+  disponivel
+  ocupada
+  liberando
+  fechada
+  suja
+}
+
+enum lbox_lojas_mapeamento_status {
+  disponivel
+  ocupada
+  liberando
+  fechada
+  suja
+}
+
+enum lbox_menu_sistema {
+  administrativo
+  frentedeloja
+}
+
+enum lbox_pagamentos_nfce_tipo {
+  loja
+  delivery
+  avulso
+}
+
+enum lbox_pagamentos_nfce_status {
+  aprovado
+  reprovado
+  cancelado
+  processamento
+  contingencia
+}
+
+enum lbox_parametros_rh_beneficios_tipo {
+  PAGAR
+  RECEBER
+}
+
+enum lbox_producao_ordens_produzidoPor_produzidoPor {
+  EMPTY_ENUM_VALUE @map("")
+  producao
+  pedidos
+}
+
+enum lbox_produtos_tipo {
+  materiaprima
+  revenda
+  limpeza
+  interno
+  producaopropria
+  venda
+  embalagem
+}
+
+enum lbox_produtos_estoque_tipo {
+  baixa
+  contagem
+  entrada
+  mes
+}
+
+enum lbox_produtos_gruposdeopcionais_tipo {
+  produto
+  texto
+}
+
+enum lbox_produtos_gruposdeopcionais_adicionais_tipo {
+  produto
+  texto
+}
+
+enum lbox_rh_13_parcela {
+  primeira
+  segunda
+  unica
+}
+
+enum lbox_unidades_bancosecontas_tipo {
+  contacorrente
+  dinheiro
+  investimento
+}
+
+enum lbox_usuarios_tipo {
+  moderador
+  admin
+}
+
+enum lbox_vendas_caixas_turno {
+  DIA
+  NOITE
+  MADRUGADA
+}
+
+enum lbox_vendas_caixas_pagamentos_tipo {
+  freelancer
+  produto
+  outras
+}
+
+enum lbox_whatsapp_mensagens_tipos_tipo {
+  unidade
+  delivery
+}

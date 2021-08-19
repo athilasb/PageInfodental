@@ -673,6 +673,7 @@
 		else if(d==5) return "sex.";
 		else if(d==6) return "sáb.";
 	}
+
 	function unMes(m) {
 		m = m.toUpperCase();
 		if(m=="JANEIRO") return "0";
@@ -689,9 +690,6 @@
 		else if(m=="DEZEMBRO") return "11";
 	}
 	
-	function calendarTitle(data) {
-		//$('')
-	}
 
 	var filtroStatus=``;
 	var filtroProfissional=``;

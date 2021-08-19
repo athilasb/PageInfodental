@@ -29,7 +29,7 @@
 	<section class="filtros">
 		<div class="filter-group">
 			<div class="filter-button">
-				<a href="box/boxAgendamento.php?id_unidade=1" data-fancybox data-type="ajax" data-height="300" data-padding="0" class="verde adicionar tooltip" title="adicionar"><span>Novo Paciente</span></a>
+				<a href="pg_contatos_pacientes_dadospessoais.php" class="verde adicionar tooltip" title="adicionar"><span>Novo Paciente</span></a>
 			</div>
 		</div>
 

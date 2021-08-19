@@ -807,7 +807,12 @@
 					let id_pagamento = $(this).attr('data-id_pagamento');
 					$.fancybox.open({
 						type:`ajax`,
-						src:`box/boxPacientePagamentos.php?id_pagamento=${id_pagamento}`
+						src:`box/boxPacientePagamentos.php?id_pagamento=${id_pagamento}`,
+						opts: {
+							'beforeClose':function(){
+								document.location.reload();
+							}
+						}
 					});
 					return false;
 				});

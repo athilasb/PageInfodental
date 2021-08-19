@@ -1,0 +1,50 @@
+version: '3.3'
+services:
+  mysql:
+    image: 'mysql:8.0.22'
+    restart: on-failure
+    volumes:
+      - 'mysqldata:/var/lib/mysql'
+    environment:
+      MYSQL_ROOT_PASSWORD: infodental
+      MYSQL_DATABASE: infodental
+      MYSQL_USER: infodental
+      MYSQL_PASSWORD: infodental
+    command: mysqld --sql_mode=""
+    ports:
+      - '5306:3306'
+  web:
+    build: .
+    restart: on-failure
+    depends_on:
+      - mysql
+    volumes:
+      - ./app:/var/www/html
+      - ./prisma:/var/app
+    environment:
+      MYSQL_HOST: mysql:3306
+      TESTE: 1
+      MYSQL_USER: infodental
+      MYSQL_PASS: infodental
+      MYSQL_DB: infodental
+      DATABASE_URL: 'mysql://root:infodental@mysql:3306/vuca_life'
+      NAME: "infodental"
+      S3_BUCKET: "storage.infodental.dental"
+      S3_ACCESS_KEY: "0QEBARP8U3CVC8USS058"
+      S3_SECRET_KEY: "zZSoQstnGhrR2zjY0scmfVmPtEHMVkRAXYwTeSlU"
+      S3_ENDPOINT: "s3.us-west-1.wasabisys.com"
+      S3_REGION: "us-west-1"
+    ports:
+      - '5000:80'
+      - '5300:3000'
+  app:
+    depends_on:
+      - mysql
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    ports:
+      - '5080:80'
+    environment:
+      PMA_HOST: mysql:3306
+volumes:
+  mysqldata:

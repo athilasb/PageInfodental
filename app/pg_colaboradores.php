@@ -10,7 +10,9 @@
 	$values=$adm->get($_GET);
 ?>
 <section class="content">
-
+	<?php
+	require_once("includes/abaConfiguracao.php");
+	?>
 	<?php
 	$_table=$_p."colaboradores";
 	$_page=basename($_SERVER['PHP_SELF']);

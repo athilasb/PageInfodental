@@ -1,0 +1,21 @@
+{
+  "name": "prisma",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "@prisma/client": "^2.13.0"
+  },
+  "devDependencies": {
+    "@prisma/cli": "^2.13.0"
+  },
+  "scripts": {
+    "introspect": "prisma introspect",
+    "migrate-deploy": "prisma migrate deploy --preview-feature",
+    "migrate-dev": "prisma migrate dev --preview-feature",
+    "migrate": "prisma migrate dev --preview-feature",
+    "validate": "prisma validate"
+  },
+  "author": "",
+  "license": "ISC"
+}

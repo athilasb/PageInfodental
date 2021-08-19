@@ -140,9 +140,7 @@
 		$dataWH=date('Y-m-d');
 	}
 
-
-
-	$agenda=array();
+	$agenda=$registros=array();
 	$pacientesIds=$pacientesAtendidosIds=array(-1);
 	$sql->consult($_p."agenda","*","where agenda_data>='".$dataWH." 00:00:00' and agenda_data<='".$dataWH." 23:59:59' and lixo=0 order by agenda_data asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
@@ -384,6 +382,7 @@
 
 			});
 		</script>
+
 		<section class="grid">
 			<div class="kanban" id="kanban">
 				<?php
@@ -392,7 +391,8 @@
 				<div class="kanban-item" style="background:<?php echo $s->cor;?>;color:var(--cor1);">
 					<h1 class="kanban-item__titulo"><?php echo utf8_encode($s->titulo);?><?php /* <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span>*/?></h1>
 					<div class="kanban-card js-kanban-status js-kanban-status-<?php echo $s->id;?>" data-id_status="<?php echo $s->id;?>" style="min-height: 100px;">
-						<?php /*<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item">
+						<?php 
+						/*<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item">
 							<p class="kanban-card-dados__data">
 								<i class="iconify" data-icon="ph:calendar-blank"></i>
 								03/06 (quinta-feira) &bull; 09:00
@@ -427,7 +427,8 @@
 									<button type="submit" class="button button__full" style="background:var(--vermelho);">Cancelar</button>
 								</form>
 							</div>
-						</div>*/?>
+						</div>*/
+						?>
 					</div>
 				</div>
 				<?php

@@ -12,8 +12,8 @@
 																	),
 					),*/
 
-					'pacientes'=>array('pg_contatos_pacientes.php'=>'Pacientes','icone'=>'<i class="iconify" data-icon="ic-baseline-person"></i>','titulo'=>'Pacientes'),
-					'colaboradores'=>array('pg_colaboradores.php'=>'Colaboradores','icone'=>'<span class="iconify" data-icon="gridicons-multiple-users" data-inline="false"></span>','titulo'=>'Colaboradores'),
+					'pacientes'=>array('pg_contatos_pacientes.php'=>'Pacientes','icone'=>'<i class="iconify" data-icon="gridicons-multiple-users"></i>','titulo'=>'Pacientes'),
+					//'colaboradores'=>array('pg_colaboradores.php'=>'Colaboradores','icone'=>'<span class="iconify" data-icon="gridicons-multiple-users" data-inline="false"></span>','titulo'=>'Colaboradores'),
 					/*'configuracoes'=>array('pg_configuracao_anamnese_exames.php'=>'Configurações','icone'=>'<i class="iconify" data-icon="ic-outline-rocket"></i>','titulo'=>'Configurações'),
 					'estacionamento'=>array('pg_estacionamento.php'=>'Estacionamento', 'titulo' => 'Estacionamento'),
 					'caixa'=>array('pg_caixa.php'=>'Caixa', 'titulo' => 'Caixa'),*/
