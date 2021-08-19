@@ -909,9 +909,11 @@
 					<img src="" alt="" width="84" height="84" class="paciente-info-header__foto" style="" />
 					<img src="img/loading.gif" width="20" height="20" class="js-loading" style="margin:30px;">
 					<section class="paciente-info-header__inner1">
-						<h1 class="js-nome"></h1>
-						<p class="js-idade"></p>
-						<p><span style="color:var(--cinza3);" class="js-id_paciente">#44</span> <span style="color:var(--cor1);"></span></p>
+						<div>
+							<h1 class="js-nome"></h1>
+							<p class="js-idade"></p>
+							<p><span style="color:var(--cinza3);" class="js-id_paciente">#44</span> <span style="color:var(--cor1);"></span></p>
+						</div>
 						<p class="js-profissionaisInfo"></p>
 					</section>
 				</header>

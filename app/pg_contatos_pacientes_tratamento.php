@@ -1119,7 +1119,7 @@
 													<h1 class="js-procedimento"></h1>
 													<p class="js-regiao"></p>
 												</div>
-												<div class="js-valor">
+												<div class="js-valor" style="margin-left:auto;">
 													R$2.000,00
 												</div>
 												<div class="js-profissional">
