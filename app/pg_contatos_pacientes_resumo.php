@@ -291,6 +291,10 @@
 						<?php
 						if(count($registros)>0) {
 							foreach($registros as $x) {
+
+								$pagamentos=array();
+								if(isset($_pagamentos[$x->id])) $pagamentos=$_pagamentos[$x->id];
+
 								$procedimentos=array();
 								if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
 
@@ -302,6 +306,15 @@
 									$total++;
 								}
 								$perc=($total)==0?0:number_format(($finalizados/($total))*100,0,"","");
+
+								$abertos=0;
+								$finalizados=0;
+								foreach($pagamentos as $p) { 
+									if($p->pago==0) $abertos++;
+									else $finalizados++;
+								}
+								$percPag=($abertos+$finalizados)==0?0:number_format(($finalizados/($abertos+$finalizados))*100,0,"","");
+
 
 
 								if($x->status=="PENDENTE") $x->status="Em Aberto";
@@ -316,7 +329,7 @@
 								<p>Procedimento <?php echo $finalizados."/".$total." - ".$perc."%";?></p>
 								<div class="grafico-barra"><span style="width:<?php echo $perc;?>%">&nbsp;</span></div>
 								<p>Pagamento</p>
-								<div class="grafico-barra"><span style="width:0%">&nbsp;</span></div>
+								<div class="grafico-barra"><span style="width:<?php echo $percPag;?>%">&nbsp;</span></div>
 								
 							</div>
 						</div>
@@ -358,7 +371,7 @@
 									$statusCor=$_status[$x->id_status]->cor;
 								}
 							?>
-							<a href="<?php echo $tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;?>" class="reg-group">
+							<a href="<?php echo "pg_agenda.php?initDate=".date('d/m/Y',strtotime($x->agenda_data));?>" target="_blank" class="reg-group">
 								<div class="reg-color" style="background-color:<?php echo $statusCor;?>"></div>
 								
 								<div class="reg-data" style="width:30%">

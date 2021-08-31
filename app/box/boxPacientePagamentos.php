@@ -1,4 +1,3 @@
-
 <?php
 	require_once("../lib/conf.php");
 	$dir="../";
@@ -40,9 +39,9 @@
 
 
 				$dataPagamento = (isset($_POST['dataPagamento']) and !empty($_POST['dataPagamento']))?$_POST['dataPagamento']:"";
-				$dataVencimento = (isset($_POST['dataVencimento']) and !empty($_POST['dataVencimento']))?$_POST['dataVencimento']:"";
+				$dataVencimento = (isset($_POST['dataVencimento']) and !empty($_POST['dataVencimento']))?invDate($_POST['dataVencimento']):date('Y-m-d');
 				$valor = (isset($_POST['valor']) and !empty($_POST['valor']))?$_POST['valor']:"";
-				$valorParcela = (isset($_POST['valorParcela']) and !empty($_POST['valorParcela']))?valor($_POST['valorParcela']):0;
+				$valorParcela = (isset($_POST['valorParcela']) and !empty($_POST['valorParcela']))?($_POST['valorParcela']):0;
 				
 				$tipoBaixa = (isset($_POST['tipoBaixa']) and !empty($_POST['tipoBaixa']))?$_POST['tipoBaixa']:"";
 				$obs = (isset($_POST['obs']) and !empty($_POST['obs']))?$_POST['obs']:"";
@@ -54,8 +53,7 @@
 				$taxa = (isset($_POST['taxa']) and !empty($_POST['taxa']))?valor($_POST['taxa']):0;
 
 				$taxa = floatval($taxa);
-				
-
+	
 				$erro = '';
 
 				if(empty($erro)) {
@@ -75,8 +73,22 @@
 										parcelas='".$creditoParcelas."'";
 
 						} else if($formaDePagamento->tipo=="debito") {
+							$where="where id_operadora=$id_operadora and 
+											id_bandeira=$debitoBandeira and 
+											operacao='debito' and lixo=0";
+							$sql->consult($_p."parametros_cartoes_taxas","*",$where);
+
+							$prazo=0;
+							if($sql->rows) {
+								$x=mysqli_fetch_object($sql->mysqry);
+								
+								$prazo=$x->prazo;
+							}
+
+
+							$dtVencimento=date('Y-m-d',strtotime(date($dataVencimento)." + $prazo days")); 
 							$vSQLBaixa="data=now(),
-										data_vencimento='".invDate($dataVencimento)."',
+										data_vencimento='".($dtVencimento)."',
 										id_pagamento=$pagamento->id,
 										id_formadepagamento=$formaDePagamento->id,
 										tipoBaixa='".$tipoBaixa."',
@@ -88,7 +100,7 @@
 										id_usuario='".$usr->id."'";
 						} else {
 							$vSQLBaixa="data='".invDatetime($dataPagamento)."',
-										data_vencimento='".invDate($dataVencimento)."',
+										data_vencimento='".($dataVencimento)."',
 										id_pagamento=$pagamento->id,
 										id_formadepagamento=$formaDePagamento->id,
 										tipoBaixa='".$tipoBaixa."',
@@ -104,16 +116,23 @@
 					}
 					
 
-
 					if(isset($_POST['obs'])) $vSQLBaixa.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
 					
 					if($tipoBaixa=="pagamento" and $formaDePagamento->tipo=="credito") {
 
+						$_prazos=array();
+						$sql->consult($_p."parametros_cartoes_taxas","*","where id_operadora=$id_operadora and id_bandeira=$creditoBandeira and operacao='credito' and vezes='$creditoParcelas' and lixo=0");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_prazos[$x->parcela]=$x->prazo;
+						}
 
 
 						for($i=1;$i<=$creditoParcelas;$i++) {
-							$dtVencimento=date('Y-m-d'); // falta dinamizar
+							$prazo = isset($_prazos[$i])?$_prazos[$i]:0;
+
+							$dtVencimento=date('Y-m-d',strtotime(date($dataVencimento)." + $prazo days")); 
 							$vSQLComp=",data_vencimento='$dtVencimento',valor='$valorParcela',parcela='$i'";
+							//echo $dtVencimento."\n";
 						
 							$sql->add($_p."pacientes_tratamentos_pagamentos_baixas",$vSQLBaixa.$vSQLComp);
 						}
@@ -140,7 +159,7 @@
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 
 				$baixas[]=array("id_baixa"=>(int)$x->id,
-								"data"=>date('d/m/Y H:i',strtotime($x->data)),
+								"data"=>date('d/m/Y',strtotime($x->data_vencimento)),
 								"valor"=>(float)$x->valor,
 							  	"tipoBaixa"=>isset($_tipoBaixa[$x->tipoBaixa])?$_tipoBaixa[$x->tipoBaixa]:$x->tipoBaixa,
 							  	"id_formadepagamento"=>(int)$x->id_formadepagamento,
@@ -329,40 +348,44 @@
 			if($x->operacao=="credito") {
 				if(isset($creditoBandeiras[$x->id_operadora])) {
 
-					$parcelas=isset($_parcelas[$x->id_operadora][$x->id_bandeira])?$_parcelas[$x->id_operadora][$x->id_bandeira]:0;
+					//$parcelas=isset($_parcelas[$x->id_operadora][$x->id_bandeira])?$_parcelas[$x->id_operadora][$x->id_bandeira]:0;
 
-					$semJuros=0;
-					if(isset($_semJuros[$x->id_operadora][$bandeira->id])) $semJuros=$_semJuros[$x->id_operadora][$bandeira->id];
+					//$semJuros=0;
+					//if(isset($_semJuros[$x->id_operadora][$bandeira->id])) $semJuros=$_semJuros[$x->id_operadora][$bandeira->id];
 
 					$semJurosTexto="";
-					if($parcelas>0) {
-						$semJurosTexto.=" - em ate ".$parcelas."x";
-						if($semJuros>0) {
-							$semJurosTexto.=", sendo ate ".$semJuros."x sem juros";
-						} 
+					if($bandeira->parcelasAte>0) {
+						$semJurosTexto.=" - em ate ".$bandeira->parcelasAte."x";
+						//if($semJuros>0) {
+						//	$semJurosTexto.=", sendo ate ".$semJuros."x sem juros";
+						//} 
 					}
 
-					$_taxasCredito[$x->id_operadora][$bandeira->id][$x->parcela]=$x->taxa;
-					$_taxasCreditoSemJuros[$x->id_operadora][$bandeira->id][$x->parcela]=($semJuros>0 && $semJuros<$x->parcela)?1:0;
+					//echo $x->id_operadora."-".$x->id_bandeira."->".$x->parcela."->".$x->taxa."<BR>";
+					if($x->parcela==$x->vezes) {
+						$_taxasCredito[$x->id_operadora][$x->id_bandeira][$x->parcela]=(float)$x->taxa;
+					}
+				//	$_taxasCreditoSemJuros[$x->id_operadora][$bandeira->id][$x->parcela]=($semJuros>0 && $semJuros<$x->parcela)?1:0;
 
 
 
-					$creditoBandeiras[$x->id_operadora]['bandeiras'][$bandeira->id]=array('id_bandeira'=>$bandeira->id,
-																							'semJuros'=>$semJuros,
-																							'parcelas'=>$parcelas,
+					$creditoBandeiras[$x->id_operadora]['bandeiras'][$x->id_bandeira]=array('id_bandeira'=>$bandeira->id,
+																						//	'semJuros'=>$semJuros,
+																							'parcelas'=>$bandeira->parcelasAte,
 																							'taxa'=>$x->taxa,	
 																							'titulo'=>utf8_encode($bandeira->titulo).$semJurosTexto);
 				}
 			} else {
-
-				$debitoBandeiras[$x->id_operadora]['bandeiras'][$bandeira->id]=array('id_bandeira'=>$bandeira->id,
-																						'titulo'=>utf8_encode($bandeira->titulo),
-																						'taxa'=>$x->taxa,
-																						'cobrarTaxa'=>$x->cobrarCliente);
+				if($bandeira->aceitaDebito==1) {
+					$debitoBandeiras[$x->id_operadora]['bandeiras'][$x->id_bandeira]=array('id_bandeira'=>$bandeira->id,
+																							'titulo'=>utf8_encode($bandeira->titulo),
+																							'taxa'=>$x->taxa);
+				}
 			}
 
 		}
 	}
+
 
 
 	
@@ -545,6 +568,13 @@
 
 			$('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
 
+			$('.js-txt-vencimento').html('Pagamento');
+
+			if(tipo=="boleto" || tipo=="cheque") {
+
+				$('.js-txt-vencimento').html('Vencimento');
+			}
+
 			if(tipo=="credito") {
 				$('.js-parcelas,.js-creditoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa').parent().parent().show();
 			} else if(tipo=="debito") {
@@ -724,7 +754,7 @@
 					</dl>
 					
 					<dl>
-						<dt>Vencimento</dt>
+						<dt class="js-txt-vencimento">Pagamento</dt>
 						<dd><input type="text" class="js-vencimento js-tipoPagamento data" value="<?php echo date('d/m/Y');?>" /></dd>
 					</dl>
 					<dl>
@@ -769,6 +799,7 @@
 									}
 									echo '</optgroup>';
 								}
+								
 								?>
 							</select>
 						</dd>
@@ -789,15 +820,12 @@
 								$('select.js-parcelas option').remove();
 								
 								if($(this).val().length>0) {
-									let semJuros = eval($(this).find('option:checked').attr('data-semjuros'));
 									let parcelas = eval($(this).find('option:checked').attr('data-parcelas'));
-
+									//alert(parcelas);
 									if($.isNumeric(parcelas)) {
 										$('select.js-parcelas').append(`<option value="">-</option>`);
 										for(var i=1;i<=parcelas;i++) {
-											semjuros='';
-											if($.isNumeric(semJuros) && semJuros>=i) semjuros=` - sem juros`;
-											$('select.js-parcelas').append(`<option value="${i}">${i}x${semjuros}</option>`);
+											$('select.js-parcelas').append(`<option value="${i}">${i}x</option>`);
 										}
 									} else {
 										$('select.js-parcelas').append(`<option value="">erro</option>`);
@@ -857,7 +885,7 @@
 					<table class="js-table-baixas">
 						<tr>
 							<th></th>
-							<th>Data Pagamento</th>
+							<th>Data Recebimento</th>
 							<th>Tipo de Baixa</th>
 							<th>Forma/Obs.</th>
 							<th>Valor</th>

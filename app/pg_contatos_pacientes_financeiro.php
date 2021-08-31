@@ -139,6 +139,7 @@
 
 					// Pagamentos
 						if(isset($_POST['pagamentos'])  and !empty($_POST['pagamentos'])) {
+							 
 							$pagamentosJSON=json_decode($_POST['pagamentos']);
 							if(is_array($pagamentosJSON)) {
 								foreach($pagamentosJSON as $x) {
@@ -485,12 +486,14 @@
 						let id_operadora = $('select.js-creditoBandeira option:checked').attr('data-id_operadora');
 						let parcela = eval($('select.js-parcelas option:selected').val());
 
+				
+							//alert(id_operadora+' - '+id_bandeira+' -'+parcela);
 						if(id_operadora!==undefined && parcela!==undefined) {
 
 							let taxa = 0;
 							let cobrarTaxa = 0;
 							if(_taxasCredito[id_operadora][id_bandeira][parcela]) taxa=_taxasCredito[id_operadora][id_bandeira][parcela];
-							if(_taxasCreditoSemJuros[id_operadora][id_bandeira][parcela]) cobrarTaxa=eval(_taxasCreditoSemJuros[id_operadora][id_bandeira][parcela]);
+						//	if(_taxasCreditoSemJuros[id_operadora][id_bandeira][parcela]) cobrarTaxa=eval(_taxasCreditoSemJuros[id_operadora][id_bandeira][parcela]);
 							
 
 							if(cobrarTaxa==1) {
@@ -555,7 +558,7 @@
 										if(x.id_formadepagamento==2) {
 											pagamento=`${x.formaDePagamento}<font color=#999><br />Parcela ${x.parcela} de ${x.parcelas}</font>`;
 										} else {
-											pagamento=x.formaDePagamento;
+											pagamento=x.formaDePagamento; 
 										}
 									}
 								} else {
@@ -635,7 +638,7 @@
 				let valorParcela = unMoney($('.js-valorParcela').val())
 				let desconto = unMoney($('.js-valorDesconto').val());
 				let despesas = unMoney($('.js-valorDespesa').val());
-				let saldoPagar=(valorParcela-total);
+				let saldoPagar=(valorParcela-total).toFixed(2);
 				saldoPagar-=desconto;
 				saldoPagar+=despesas;
 
@@ -647,7 +650,7 @@
 				valorCorrigido+=despesas;
 
 				$('.js-valorCorrigido').val(number_format(valorCorrigido,2,",","."));
-
+				
 				if(saldoPagar<=0) {
 					$('.js-fieldset-pagamentos').hide();
 				} else {
@@ -934,6 +937,7 @@
 						<div class="js-procedimentos">	
 							<?php
 							$pagamentosJSON=array();
+
 							foreach($registros as $x) {
 								$opacity=1;
 								if(isset($_GET['unirPagamentos'])) {
@@ -951,11 +955,14 @@
 									$dataUltimoPagamento=date('d/m/Y',strtotime($_baixas[$x->id][count($_baixas[$x->id])-1]->data));
 
 									foreach($_baixas[$x->id] as $v) {
+									
+										$v->valor=number_format($v->valor,3,".","");
 										$saldoAPagar-=$v->valor;
 										$valorPago+=$v->valor;
 									}
 								}
 
+								$saldoAPagar=round(number_format($saldoAPagar,3,".",""));
 								$atraso=(strtotime($x->data_vencimento)-strtotime(date('Y-m-d')))/(60*60*24);
 
 							
@@ -997,7 +1004,7 @@
 														'vencido'=>$baixaVencida,
 														'pago'=>$b->pago,
 														'formaobs'=>$formaobs,
-														'valor'=>(float)number_format($v->valor,2,",","."));
+														'valor'=>(float)$v->valor);
 									}
 
 									if($baixaVencida===true) {
@@ -1059,6 +1066,7 @@
 								}
 								// possui baixa
 								else { 
+									//echo $saldoAPagar;
 									// se saldo = 0
 									if($saldoAPagar==0) {
 										$baixaVencida=false;
@@ -1099,6 +1107,7 @@
 											}
 										}
 									} else {
+
 									}
 
 								} 
@@ -1161,6 +1170,12 @@
 										<h1<?php echo ($statusInadimplente===true)?" style=\"background:var(--vermelho);\"":" ";?>>3</h1>
 										<p>
 										<?php
+										if($todasPagas) {
+											$sql->update($_p."pacientes_tratamentos_pagamentos","pago=1","where id=$x->id");
+										} else {
+											$sql->update($_p."pacientes_tratamentos_pagamentos","pago=0","where id=$x->id");
+										}
+
 										if($todasPagas) echo "Adimplente";
 										else if($statusInadimplente) echo "Inadimplente";
 										else echo "Adimplente/Inadimplente";

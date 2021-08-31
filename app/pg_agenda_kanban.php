@@ -161,20 +161,28 @@
 			$pacientesEvolucoes[$x->id_paciente][]=$x;
 		}
 	}
-
+	$_agendaStatus=array();
+	$sql->consult($_p."agenda_status","*","");
+	while ($x=mysqli_fetch_object($sql->mysqry)) {
+		// code...
+		$_agendaStatus[$x->id]=$x;
+	}
 
 	$_pacientes=array();
-	$sql->consult($_p."pacientes","id,nome,telefone1","where id IN (".implode(",",$pacientesIds).")");
+	$sql->consult($_p."pacientes","id,nome,telefone1,codigo_bi","where id IN (".implode(",",$pacientesIds).")");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_pacientes[$x->id]=$x;
 	}
 	foreach($registros as $x) {
 		if(isset($_pacientes[$x->id_paciente])) {
+			$paciente=$_pacientes[$x->id_paciente];
 
 			$dataAg=date('d/m',strtotime($x->agenda_data));
 			$dia=" ".$diasExtenso[date('w',strtotime($x->agenda_data))];
 
 			$agenda[]=(object) array('id_agenda'=>$x->id,
+										'id_paciente'=>$x->id_paciente,
+										'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?$_codigoBI[$paciente->codigo_bi]:'',
 										'data'=>$dataAg,
 										'hora'=>date('H:i',strtotime($x->agenda_data))." às ".date('H:i',strtotime($x->agenda_data)),
 										'id_status'=>$x->id_status,
@@ -262,15 +270,29 @@
 							evolucao = `kanban-item_erro`;
 						}
 					}
+
+					let html = ``;
 					
-					let html = `<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
-									<p class="kanban-card-dados__data">
-										<i class="iconify" data-icon="ph:calendar-blank"></i>
-										${x.data} &bull; ${x.hora}
-									</p>
-									<h1>${x.paciente}</h1>
-									<h2>${x.telefone1}</h2>
-								</a>`;
+					if(eval(x.id_status)==5) {
+						console.log(x);
+						html = `<div href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
+										
+										<h1>${x.paciente}</h1>
+										<h2>${x.statusBI}</h2>
+										<a href="pg_contatos_pacientes_resumo.php?id_paciente=${x.id_paciente}" target="_blank" class="js-hrefPaciente button button__sec"><i class="iconify" data-icon="bx:bxs-user"></i></a>
+									</div>`;
+
+					} else {
+						html = `<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
+										<p class="kanban-card-dados__data">
+											<i class="iconify" data-icon="ph:calendar-blank"></i>
+											${x.data} &bull; ${x.hora}
+										</p>
+										<h1>${x.paciente}</h1>
+										<h2>${x.telefone1}</h2>
+									</a>`;
+					}
+
 								<?php /*<div class="kanban-card-modal js-kanban-item-modal" style="display:none;">
 									<div class="kanban-card-modal__inner1">
 										<a class="kanban-card-modal__fechar" href="javascript:;" onclick="$(this).parent().parent().hide(); $('.js-reagendar, .js-cancelar').hide(); $('.js-opcoes').show();"><i class="iconify" data-icon="ph-x"></i></a>

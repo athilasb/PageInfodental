@@ -15,6 +15,16 @@
 	function numeroletras($rtn) {
 		return preg_replace("/[^a-zA-Z0-9]+/", "", $rtn);
 	}
+	
+	function maskCPF($cpf) {
+		$cpf=str_replace(".","",str_replace("-","",$cpf));
+		return substr($cpf,0,3).".".substr($cpf,3,3).".".substr($cpf,6,3)."-".substr($cpf,9,11); 
+	}
+	function maskCNPJ($cnpj) {
+		$cnpj=str_replace(".","",str_replace("/","",str_replace("-","",$cnpj)));
+
+		return substr($cnpj,0,2).".".substr($cnpj,2,3).".".substr($cnpj,5,3)."/".substr($cnpj,8,4)."-".substr($cnpj,12,2); 
+	}
 	function retornaMesNumero($mes) {
 		//Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
 		$mes=trim($mes);

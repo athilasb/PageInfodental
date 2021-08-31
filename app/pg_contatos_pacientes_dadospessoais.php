@@ -75,6 +75,31 @@
 			} else {
 				$rtn=array('success'=>false,'error'=>'Indicação não definida!');
 			}*/
+		} else if($_POST['ajax']=="verificarTelefone") {
+
+			$campo='';
+			if(isset($_POST['campo'])) {
+				if($_POST['campo']=="telefone1" or $_POST['campo']=="telefone2") $campo=$_POST['campo'];
+			}
+
+			$valor=(isset($_POST['valor']) and !empty($_POST['valor']))?$_POST['valor']:0;
+
+
+			if(!empty($campo) and !empty($valor)) {
+				$cadastros=array();
+				$sql->consult($_p."pacientes","id,nome","where (telefone1='".addslashes(telefone($valor))."' or telefone2='".addslashes(telefone($valor))."') and lixo=0");
+				if($sql->rows) {
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+
+						if(isset($_POST['id_paciente']) and $x->id==$_POST['id_paciente']) continue;
+						$cadastros[]=$x;
+					}
+				}
+				$rtn=array('success'=>true,'cadastros'=>$cadastros);
+			} else {
+				$rtn=array('success'=>false);
+			}
+
 		}
 
 		header("Content-type: application/json");
@@ -203,6 +228,7 @@
 			if(!empty($msgErro)) {
 				$jsc->jAlert($msgErro,"erro","");
 			} else {
+				$adm->biCategorizacao();
 				$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='".$_page."?id_paciente=".$id_reg."'");
 				die();
 			}
@@ -505,6 +531,36 @@
 						<script type="text/javascript">
 
 							$(function(){
+
+								$('input[name=telefone1],input[name=telefone2]').blur(function(){
+									let obj = $(this);
+									let id_paciente = <?php echo is_object($paciente)?$paciente->id:0;?>;
+									let campo = $(this).attr('name');
+									let val = $(this).val();
+									let data = `ajax=verificarTelefone&campo=${campo}&valor=${val}&id_paciente=${id_paciente}`;
+
+									$.ajax({
+										type:'POST',
+										data:data,
+										success:function(rtn) {
+											if(rtn.success) {
+												if(rtn.cadastros) {
+													if(rtn.cadastros.length>0) {
+
+														let cadastros = ``;
+														rtn.cadastros.forEach(x=>{
+															cadastros+=`<a href="pg_contatos_pacientes_dadospessoais.php?id_paciente=${x.id}" target="_blank"><u><span class="iconify" data-icon="bx:bx-user"></span> ${x.nome}</a></u><br />`;
+														});
+
+
+														swal({title: "Atenção!", html:true, text: `O(s) seguinte(s) paciente(s)<br />possui o mesmo telefone <b>${val}</b>:<br /><br />${cadastros}`, type:"warning", confirmButtonColor: "#424242"});
+
+													}
+												}
+											}
+										}
+									})
+								})
 
 								$('input[name=estrangeiro]').click(function(){
 

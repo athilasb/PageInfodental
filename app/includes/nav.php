@@ -39,10 +39,11 @@
 																		array('pg_landingpage_formulario.php'.$urlTema=>'Formulário')
 																	),
 					),*/
-					'financeiro'=>array('pg_landingpages.php'=>'Financeiro','icone'=>'<span class="iconify" data-icon="ic:baseline-attach-money" data-inline="false"></span>','submenu'=>array(
+					/*'financeiro'=>array('pg_landingpages.php'=>'Financeiro','icone'=>'<span class="iconify" data-icon="ic:baseline-attach-money" data-inline="false"></span>','submenu'=>array(
 																		array('pg_financeiro_fluxo.php'=>'Contas à Pagar'),
 																		array('pg_financeiro_fluxo.php?receber=1'=>'Contas à Receber'),
-																		array('pg_financeiro_movimentacao.php'=>'Movimentação Bancária'))),
+																		array('pg_financeiro_movimentacao.php'=>'Movimentação Bancária'))),*/
+					'financeiro'=>array('pg_financeiro_kanban.php'=>'Financeiro','icone'=>'<span class="iconify" data-icon="ic:baseline-attach-money" data-inline="false"></span>','titulo'=>'Financeiro'),
 					'landingpages'=>array('pg_landingpages.php'=>'Landing Pages','icone'=>'<span class="iconify" data-icon="ri:pages-fill" data-inline="false"></span>','titulo'=>'Landing Pages'),
 					'whatsapp'=>array('pg_whatsapp.php'=>'Whatsapp','icone'=>'<i class="iconify" data-icon="cib:whatsapp"></i>','titulo'=>'Whatsapp'),
 					//'usuarios'=>array('usuarios.php'=>'Usuários','icone'=>'<i class="iconify" data-icon="cib:open-access"></i>','titulo'=>'Usuários')

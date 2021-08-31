@@ -223,7 +223,7 @@
 				}
 
 				$_usuarios=array();
-				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
+				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where lixo=0 order by nome asc");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$_usuarios[$x->id]=$x;
 				}
@@ -274,6 +274,7 @@
 
 						$_pacientesAgendamentos[$x->id_paciente][]=array('id_agenda'=>$x->id,
 																			'data'=>date('d/m/Y H:i',strtotime($x->agenda_data)),
+																			'initDate'=>date('d/m/Y',strtotime($x->agenda_data)),
 																			'cadeira'=>isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'',
 																			'profissionais'=>$profissionais);
 					}
@@ -544,6 +545,15 @@
 
 	$_page=basename($_SERVER['PHP_SELF']);
 
+
+	$initDate='';
+	if(isset($_GET['initDate']) and !empty($_GET['initDate']) and strpos($_GET['initDate'], '/')!==false) {
+		list($dia,$mes,$ano)=explode("/",$_GET['initDate']);
+		if(checkdate($mes, $dia, $ano)) {
+			$initDate=$ano."-".$mes."-".$dia;
+		}
+	}
+
 ?>
 <script>
 	var calendar = '';
@@ -696,6 +706,10 @@
 	var filtroCadeira=``;
 
 	$(function(){
+
+		
+
+
 		$('.m-produtos').next().show();	
 
 		$('.js-calendario').datetimepicker({
@@ -920,7 +934,7 @@
 
 				<div class="abasPopover">
 					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-info').show();$(this).addClass('active');" class="active">Infos</a>
-					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-procedimentos').show();$(this).addClass('active');">Procedimentos</a>
+					<?php /*<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-procedimentos').show();$(this).addClass('active');">Procedimentos</a> */?>
 					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-obs').show();$(this).addClass('active');">Observações</a>
 					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-agendamentos').show();$(this).addClass('active');">Agendamentos</a>
 				</div>
@@ -1024,7 +1038,7 @@
 									});
 								}
 
-								$('#cal-popup .js-grid-agendamentos table').append(`<tr>
+								$('#cal-popup .js-grid-agendamentos table').append(`<tr onclick="window.open('pg_agenda.php?initDate=${x.initDate}')">
 																						<td>${x.data}</td>
 																						<td>${x.cadeira}</td>
 																						<td>${prof}</td>
@@ -1254,7 +1268,7 @@
 						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-hand-pointing-right"></i> -</p>`;
 
 						    if(agendadoPor) infos+=`<p class="paciente-info-grid__item" style="grid-column:span 2"><i class="iconify" data-icon="bi:calendar-check"></i> <span><strong>${agendadoPor}</strong> ${agendadoHa}</span></p>`;
-						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="bi:calendar-check"></i> -</p>`;
+						    else infos+=`<p class="paciente-info-grid__item" style="grid-column:span 2"><i class="iconify" data-icon="bi:calendar-check"></i> <span>${agendadoHa}</span></p>`;
 
 						    /*if(pontuacao.length>0) {
 						    	infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-star"></i> ${pontuacao} <span class="iconify" data-icon="fe:link-external" data-inline="false"></span></p>`;
@@ -1379,6 +1393,23 @@
 					       $('#cal-popup').hide();
 					    }
 					});
+
+					<?php
+					if(!empty($initDate)) {
+						list($ano,$mes,$dia)=explode("-",$initDate);
+
+					?>
+					let initDay='<?php echo $dia;?>';
+					let initMonth='<?php echo und2($mes-1);?>';
+					let initYear='<?php echo $ano;?>';
+					let newDt = new Date(initYear,initMonth,initDay);
+					calendar.gotoDate(newDt);
+				$('.js-calendario-title').val(calendar.view.title);
+					console.log(newDt);
+					<?php
+					}
+					?>
+
 				});
 
 			</script>

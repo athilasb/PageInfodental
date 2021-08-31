@@ -272,6 +272,18 @@
 		}
 	}
 
+
+	if(isset($_GET['agendaData']) and !empty($_GET['agendaData'])) {
+		list($_dia,$_mes,$_ano)=explode("/",$_GET['agendaData']);
+		if(checkdate($_mes, $_dia, $_ano)) {
+			$values['agenda_data']=$_dia."/".$_mes."/".$_ano;
+		}
+	
+	}
+	if(isset($_GET['agendaHora']) and !empty($_GET['agendaHora'])) {
+		$values['agenda_hora']=$_GET['agendaHora'];
+	}
+
 	$agenda='';
 	if(isset($_GET['id_agenda']) and is_numeric($_GET['id_agenda'])) {
 		$sql->consult($_p."agenda","*","where id=".$_GET['id_agenda']." and id_unidade=$unidade->id and lixo=0");
@@ -402,8 +414,9 @@
 				$(function(){ 
 					$('.js-btn-paciente').click(function(){
 						$.fancybox.close();
+						let urlComplemento = `agendaData=${$('input.agendaData').val()}&agendaHora=${$('input.agendaHora').val()}`;
 						$.fancybox.open({
-					        src: "box/boxAgendamento.php?id_unidade=<?php echo $unidade->id;?>",
+					        src: `box/boxAgendamento.php?id_unidade=<?php echo $unidade->id;?>&${urlComplemento}`,
 					        type: "ajax"
 					    });
 					})

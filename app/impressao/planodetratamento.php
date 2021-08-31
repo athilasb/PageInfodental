@@ -40,16 +40,19 @@
 
 
 		foreach($procedimentosObj as $x) {
-			$procedimentos[]=$x;
 			$procedimentosIds[$x->id_procedimento]=$x->id_procedimento;
 			if($x->situacao=="aprovado" or $x->situacao=="aguardandoAprovacao") {
 				$descontoTotal+=$x->desconto;
 				$valorTotalSemDesconto+=$x->valor*$x->quantidade;
+
+				$x->valorSemDesconto=$x->valor*$x->quantidade;
+
+				$valorTotal+=($x->valor*$x->quantidade)-$x->desconto;
 			}
+			$procedimentos[]=$x;
 		}
 		foreach($pagamentosObj as $x) {
 			$pagamentos[]=$x;
-			$valorTotal+=$x->valor;
 		}
 	} else {
 
@@ -60,7 +63,8 @@
 			$procedimentosIds[$x->id_procedimento]=$x->id_procedimento;
 			
 			$descontoTotal+=$x->desconto;
-			$valorTotalSemDesconto+=$x->valor;
+			$valorTotalSemDesconto+=$x->valorSemDesconto;
+			$valorTotal+=$x->valor;
 		}
 
 		$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id_tratamento=$tratamento->id and lixo=0 and fusao=0");
@@ -159,7 +163,11 @@
 		<tr>
 			<td colspan="4">
 				<h1>Procedimento</h1>
-				<p><strong><?php echo utf8_encode($procedimento->titulo);?></strong><?php echo !empty($proc->opcao)?" - ".utf8_encode($proc->opcao):"";?> - <?php echo utf8_encode($proc->plano);?><?php echo isset($_profissionais[$proc->id_profissional])?' - '.utf8_encode($_profissionais[$proc->id_profissional]->nome):'';?></p>				
+				<p><strong><?php echo utf8_encode($procedimento->titulo);?></strong>
+					<?php echo $proc->quantidade>1?" - Qtd. $proc->quantidade":"";?>
+					<?php echo !empty($proc->opcao)?" - ".utf8_encode($proc->opcao):"";?> - 
+					<?php echo utf8_encode($proc->plano);?>
+					<?php echo isset($_profissionais[$proc->id_profissional])?' - '.utf8_encode($_profissionais[$proc->id_profissional]->nome):'';?></p>				
 				<?php echo (isset($proc->obs) and !empty($proc->obs))?"<p>".utf8_encode($proc->obs)."</p>":"";?>
 			</td>			
 		</tr>
@@ -184,7 +192,7 @@
 			?>
 			<td>
 				<h1>Valor</h1>
-				<p>R$ <?php echo number_format($proc->valor,2,",",".");?></p>
+				<p>R$ <?php echo number_format($proc->valorSemDesconto,2,",",".");?></p>
 			</td>
 			<td>
 				<h1>Desconto</h1>
@@ -192,7 +200,7 @@
 			</td>
 			<td>
 				<h1>Valor Corrigido</h1>
-				<p>R$ <?php echo number_format($proc->valor-$proc->desconto,2,",",".");?></p>
+				<p>R$ <?php echo number_format(($proc->valorSemDesconto)-$proc->desconto,2,",",".");?></p>
 			</td>
 			<?php
 			} else {

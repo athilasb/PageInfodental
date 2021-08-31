@@ -3,18 +3,25 @@ class Mysql {
 	private $ms_server, $ms_login, $ms_senha, $ms_db;
 	public $mysqry, $rows;
 	
-	function __construct($chatpro=false) {
-		if($_SERVER['HTTP_HOST']=="127.0.0.1") {
-			$ms_server="localhost";
-			$ms_login="root";
-			$ms_senha="";
-			$ms_db="infodental";
-		} else {
+	function __construct($chatpro=false) { 
+		/*if($_SERVER['HTTP_HOST']=="studiodental.dental") {
 			$ms_server="localhost";
 			$ms_login="root";
 			$ms_senha="l1bdab110";
 			$ms_db="infodental";
-		}
+		} else {
+			$ms_server=$_ENV['MYSQL_HOST'];
+			$ms_login=$_ENV['MYSQL_USER'];
+			$ms_senha=$_ENV['MYSQL_PASS'];
+			$ms_db=$_ENV['MYSQL_DB'];
+		
+		}*/
+
+		$ms_server="localhost";
+		$ms_login="root";
+		$ms_senha="l1bdab110";
+		$ms_db="infodental";
+
 		
 		$this->connecting=mysqli_connect($ms_server, $ms_login, $ms_senha);
 		if(isset($chatpro) and $chatpro===true) {

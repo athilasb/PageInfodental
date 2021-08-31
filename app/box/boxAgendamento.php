@@ -411,6 +411,16 @@
 			$values['agenda_data']=$_dia."/".$_mes."/".$_ano;
 		}*/
 	}
+	if(isset($_GET['agendaData']) and !empty($_GET['agendaData'])) {
+		list($_dia,$_mes,$_ano)=explode("/",$_GET['agendaData']);
+		if(checkdate($_mes, $_dia, $_ano)) {
+			$values['agenda_data']=$_dia."/".$_mes."/".$_ano;
+		}
+	
+	}
+	if(isset($_GET['agendaHora']) and !empty($_GET['agendaHora'])) {
+		$values['agenda_hora']=$_GET['agendaHora'];
+	}
 
 	$agenda='';
 	if(isset($_GET['id_agenda']) and is_numeric($_GET['id_agenda'])) {
@@ -629,8 +639,10 @@
 				$(function(){ 
 					$('.js-btn-pessoal').click(function(){
 						$.fancybox.close();
+
+						let urlComplemento = `agendaData=${$('input.agendaData').val()}&agendaHora=${$('input.agendaHora').val()}`;
 						$.fancybox.open({
-					        src: "box/boxAgendamentoPessoal.php?id_unidade=<?php echo $unidade->id;?>",
+					        src: `box/boxAgendamentoPessoal.php?id_unidade=<?php echo $unidade->id;?>&${urlComplemento}`,
 					        type: "ajax"
 					    });
 					})
@@ -951,7 +963,7 @@
 				});
 			</script>
 
-			<fieldset>
+			<fieldset style="display:none">
 				<legend>Adicionar Procedimentos</legend>
 
 				<div class="box-filtros clearfix js-agenda-formProcedimento" style="display:">

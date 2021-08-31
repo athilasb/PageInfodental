@@ -24,10 +24,10 @@ services:
     environment:
       MYSQL_HOST: mysql:3306
       TESTE: 1
-      MYSQL_USER: infodental
+      MYSQL_USER: root
       MYSQL_PASS: infodental
-      MYSQL_DB: infodental
-      DATABASE_URL: 'mysql://root:infodental@mysql:3306/vuca_life'
+      MYSQL_DB: infodental 
+      DATABASE_URL: 'mysql://root:infodental@mysql:3306/infodental'
       NAME: "infodental"
       S3_BUCKET: "storage.infodental.dental"
       S3_ACCESS_KEY: "0QEBARP8U3CVC8USS058"

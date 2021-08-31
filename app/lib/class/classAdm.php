@@ -14,7 +14,7 @@
 			$multi=array('permissoes','unidade','camposEvolucao'),
 			$telefones=array('telefone','telefone1','telefone2','telefone3'),
 			$unmask=array('cpf','cnpj'),
-			$datas=array('data_nascimento','data_modelo','data_noticia','data_versao','data_reg','data_catalogo','vencimento','efetivado_data','responsavel_datanascimento');
+			$datas=array('data_nascimento','data_modelo','data_noticia','data_versao','data_reg','data_catalogo','vencimento','efetivado_data','responsavel_datanascimento','data_vencimento');
 		
 		
 		

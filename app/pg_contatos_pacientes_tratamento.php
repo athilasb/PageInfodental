@@ -46,6 +46,26 @@
 			} else {
 				$rtn=array('success'=>false,'error'=>'Procedimento/Unidade não definida(s)!');
 			}
+		} else if($_POST['ajax']=="persistirDesconto") {
+
+			$tratamento='';
+			if(isset($_POST['id_tratamento']) and is_numeric($_POST['id_tratamento'])) {
+				$sql->consult($_p."pacientes_tratamentos","*","where id='".addslashes($_POST['id_tratamento'])."' and lixo=0");
+				if($sql->rows) {
+					$tratamento=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+			if(is_object($tratamento)) {
+				$vsql="procedimentos='".addslashes(utf8_decode($_POST['procedimentos']))."',
+						pagamentos='".addslashes(utf8_decode($_POST['pagamentos']))."'";
+
+				$sql->update($_p."pacientes_tratamentos",$vsql,"where id=$tratamento->id");
+
+				$rtn=array('success'=>true);
+			} else {
+				$rtn=array('success'=>false,'error'=>'Tratamento não encontrado');
+			}
 		}
 
 		header("Content-type: application/json");
@@ -215,7 +235,7 @@
 			$values['procedimentos']="[]";
 			$values['pagamentos']="[]";
 
-			$sql->consult($_table,"id","where id_paciente=$paciente->id and lixo=0");
+			$sql->consult($_table,"id","where id_paciente=$paciente->id");
 			$values['titulo']="Plano de tratamento ".($sql->rows+1);
 
 			$cnt='';
@@ -240,6 +260,9 @@
 								$iniciaisCor=$profissional->calendario_cor;
 							}
 
+							$valor=$x->valorSemDesconto;
+							if($x->quantitativo==1) $valor*=$x->quantidade;
+
 							$procedimentos[]=array('id'=>$x->id,
 													'id_procedimento'=>(int)$x->id_procedimento,
 													'procedimento'=>utf8_encode($x->procedimento),
@@ -252,7 +275,7 @@
 													'id_opcao'=>(int)$x->id_opcao,
 													'opcao'=>utf8_encode($x->opcao),
 													'valorCorrigido'=>(float)$x->valor,
-													'valor'=>(float)$x->valorSemDesconto,
+													'valor'=>(float)$valor,
 													'desconto'=>(float)$x->desconto,
 													'obs'=>utf8_encode($x->obs),
 													'situacao'=>$x->situacao,
@@ -290,7 +313,6 @@
 				}
 			}
 
-
 			$tratamentoAprovado=(is_object($cnt) and $cnt->status=="APROVADO")?true:false;
 			
 			$creditoBandeiras=array();
@@ -310,11 +332,11 @@
 				$_semJuros[$x->id_operadora][$x->id_bandeira]=$x->semjuros;
 			}
 
-			$_parcelas=array();
+			/*$_parcelas=array();
 			$sql->consult($_p."parametros_cartoes_taxas","*","where operacao='credito' and lixo=0 order by parcela asc");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$_parcelas[$x->id_operadora][$x->id_bandeira]=$x->parcela;
-			}
+			}*/
 
 			$sql->consult($_p."parametros_cartoes_taxas","*","where lixo=0");
 			$_taxasCredito=$_taxasCreditoSemJuros=array();
@@ -326,27 +348,28 @@
 					if($x->operacao=="credito") {
 						if(isset($creditoBandeiras[$x->id_operadora])) {
 
-							$parcelas=isset($_parcelas[$x->id_operadora][$x->id_bandeira])?$_parcelas[$x->id_operadora][$x->id_bandeira]:0;
+							//$parcelas=isset($_parcelas[$x->id_operadora][$x->id_bandeira])?$_parcelas[$x->id_operadora][$x->id_bandeira]:0;
 
-							$semJuros=0;
-							if(isset($_semJuros[$x->id_operadora][$bandeira->id])) $semJuros=$_semJuros[$x->id_operadora][$bandeira->id];
+							//$semJuros=0;
+							//if(isset($_semJuros[$x->id_operadora][$bandeira->id])) $semJuros=$_semJuros[$x->id_operadora][$bandeira->id];
 
 							$semJurosTexto="";
-							if($parcelas>0) {
-								$semJurosTexto.=" - em ate ".$parcelas."x";
-								if($semJuros>0) {
-									$semJurosTexto.=", sendo ate ".$semJuros."x sem juros";
-								} 
+							if($bandeira->parcelasAte>0) {
+								$semJurosTexto.=" - em ate ".$bandeira->parcelasAte."x";
+								//if($semJuros>0) {
+								//	$semJurosTexto.=", sendo ate ".$semJuros."x sem juros";
+								//} 
 							}
-
-							$_taxasCredito[$x->id_operadora][$bandeira->id][$x->parcela]=$x->taxa;
-							$_taxasCreditoSemJuros[$x->id_operadora][$bandeira->id][$x->parcela]=($semJuros>0 && $semJuros<$x->parcela)?1:0;
+							if(!isset($_taxasCredito[$x->id_operadora][$bandeira->id][$x->parcela])) {
+								$_taxasCredito[$x->id_operadora][$bandeira->id][$x->parcela]=$x->taxa;
+							}
+							///$_taxasCreditoSemJuros[$x->id_operadora][$bandeira->id][$x->vezes][$x->parcela]=($semJuros>0 && $semJuros<$x->parcela)?1:0;
 
 
 
 							$creditoBandeiras[$x->id_operadora]['bandeiras'][$bandeira->id]=array('id_bandeira'=>$bandeira->id,
-																									'semJuros'=>$semJuros,
-																									'parcelas'=>$parcelas,
+																								//	'semJuros'=>$semJuros,
+																									'parcelas'=>$bandeira->parcelasAte,
 																									'taxa'=>$x->taxa,	
 																									'titulo'=>utf8_encode($bandeira->titulo).$semJurosTexto);
 						}
@@ -354,8 +377,7 @@
 
 						$debitoBandeiras[$x->id_operadora]['bandeiras'][$bandeira->id]=array('id_bandeira'=>$bandeira->id,
 																								'titulo'=>utf8_encode($bandeira->titulo),
-																								'taxa'=>$x->taxa,
-																								'cobrarTaxa'=>$x->cobrarCliente);
+																								'taxa'=>$x->taxa);
 					}
 
 				}
@@ -368,9 +390,9 @@
 					$sql->consult($_p."pacientes_tratamentos","*","where id_paciente=$paciente->id and titulo='".addslashes($_POST['titulo'])."' and lixo=0");
 					if($sql->rows) {
 						$x=mysqli_fetch_object($sql->mysqry);	
-						$processa=false;
-						$jsc->go("?form=1&id_paciente=$paciente->id&edita=$x->id");
-						die();
+						//$processa=false;
+						//$jsc->go("?form=1&id_paciente=$paciente->id&edita=$x->id");
+					//	die();
 					}
 				}
 
@@ -622,13 +644,40 @@
 										if(is_array($pagamentosJSON)) {
 											$vSQLBaixa=array();
 											foreach($pagamentosJSON as $x) {
-												
+
+												$taxasPrazos=array();
+
+												// se for credito
+												if(isset($x->id_formapagamento)) {
+													if($x->id_formapagamento==2 and isset($x->creditoBandeira) and isset($x->operadora) and isset($x->qtdParcelas)) {
+														$where="where id_bandeira='".$x->creditoBandeira."' and id_operadora='".$x->operadora."' and vezes='".$x->qtdParcelas."' and operacao='credito' and lixo=0";
+														$sql->consult($_p."parametros_cartoes_taxas","parcela,taxa,prazo",$where);
+														
+														if($sql->rows) {
+															while($t=mysqli_fetch_object($sql->mysqry)) {
+																$taxasPrazos[$t->parcela]=$t;
+															}
+														}
+													}
+													// se for debito
+													else if($x->id_formapagamento==3 and isset($x->debitoBandeira) and isset($x->operadora)) {
+														$where="where id_bandeira='".$x->debitoBandeira."' and id_operadora='".$x->operadora."' and operacao='debito' and lixo=0";
+														$sql->consult($_p."parametros_cartoes_taxas","parcela,taxa,prazo",$where);
+														
+														if($sql->rows) {
+															while($t=mysqli_fetch_object($sql->mysqry)) {
+																$taxasPrazos=$t;
+															}
+														}
+													}
+												}
 												
 												$vSQLPagamento="lixo=0,
 																id_paciente=$paciente->id,
 																id_tratamento=$id_tratamento,
 																id_unidade=$usrUnidade->id,
-										
+																id_formapagamento='".addslashes(isset($x->id_formapagamento)?$x->id_formapagamento:0)."',
+																qtdParcelas='".addslashes(isset($x->qtdParcelas)?$x->qtdParcelas:0)."',
 																data_vencimento='".addslashes(invDate($x->vencimento))."',
 																valor='".addslashes(($x->valor))."',";
 
@@ -664,18 +713,28 @@
 															$b = $_bandeiras[$x->creditoBandeira];
 
 															$id_bandeira=$b->id;
-															$id_operadora=0;
+															$id_operadora=$x->operadora;
 															
 
 															if(isset($x->qtdParcelas) and is_numeric($x->qtdParcelas)) {
 																$valorParcela=$x->valor/$x->qtdParcelas;
 																for($i=1;$i<=$x->qtdParcelas;$i++) {
 
+																	$prazo=$taxa=0;
+																	if(isset($taxasPrazos[$i])) {
+																		$prazo=$taxasPrazos[$i]->prazo;
+																		$taxa=$taxasPrazos[$i]->taxa;
+																	}
+
+																	$dtVencimento=date('Y-m-d',strtotime(invDate($x->vencimento)." + $prazo days"));
+
+
 																	$vSQLBaixa[]=array("id_pagamento"=>$id_tratamento_pagamento,
-																						"data_vencimento"=>$x->vencimento,
+																						"data_vencimento"=>$dtVencimento,
 																						"valor"=>$valorParcela,
 																						"id_formadepagamento"=>$f->id,
 																						"parcela"=>$i,
+																						"taxa"=>$taxa,
 																						"parcelas"=>$x->qtdParcelas,
 																						"id_bandeira"=>$id_bandeira,
 																						"id_operadora"=>$id_operadora,
@@ -689,12 +748,22 @@
 															$b = $_bandeiras[$x->debitoBandeira];
 
 															$id_bandeira=$b->id;
+															$id_operadora=$x->operadora;
+
+															$prazo=$taxa=0;
+															if(is_object($taxasPrazos)) {
+																$prazo=$taxasPrazos->prazo;
+																$taxa=$taxasPrazos->taxa;
+															}
+
+															$dtVencimento=date('Y-m-d',strtotime(invDate($x->vencimento)." + $prazo days"));
 															
 
 															$vSQLBaixa[]=array("id_pagamento"=>$id_tratamento_pagamento,
-																			"data_vencimento"=>$x->vencimento,
+																			"data_vencimento"=>$dtVencimento,
 																			"valor"=>$x->valor,
 																			"id_formadepagamento"=>$f->id,
+																			"taxa"=>$taxa,
 																			"id_bandeira"=>$id_bandeira,
 																			"id_operadora"=>$id_operadora,
 																			"tipo"=>"debito");
@@ -703,7 +772,7 @@
 														}
 													} else {
 														$vSQLBaixa[]=array("id_pagamento"=>$id_tratamento_pagamento,
-																			"data_vencimento"=>$x->vencimento,
+																			"data_vencimento"=>invDate($x->vencimento),
 																			"valor"=>$x->valor,
 																			"id_formadepagamento"=>$f->id,
 																			"tipo"=>"outros");
@@ -736,12 +805,14 @@
 														id_usuario=$usr->id,
 														tipoBaixa='pagamento',
 														valor='$x->valor',
+														taxa='".(isset($x->taxa)?$x->taxa:0)."',
 														id_formadepagamento='$x->id_formadepagamento',
-														data_vencimento='".invDate($x->data_vencimento)."',
+														data_vencimento='".($x->data_vencimento)."',
 														parcelas='$x->parcelas',
 														parcela='$x->parcela',
 														id_operadora='$x->id_operadora',
 														id_bandeira='$x->id_bandeira'";
+														//echo $vsql."<BR>";die();
 												if(is_object($baixa)) {
 													$sql->update($_p."pacientes_tratamentos_pagamentos_baixas",$vsql,"where id=$baixa->id");
 												} else {
@@ -781,7 +852,7 @@
 																	id_opcao='".addslashes($x->id_opcao)."',
 																	obs='".addslashes(utf8_decode($x->obs))."',
 																	opcao='".addslashes(utf8_decode($x->opcao))."',";
-												//echo $vSQLProcedimento."<BR>";
+												//echo $vSQLProcedimento."<BR>";die();
 												$procedimento='';
 												if(isset($x->id) and is_numeric($x->id)) {
 													$sql->consult($_table."_procedimentos","*","where id_tratamento=$id_tratamento and id=$x->id");
@@ -808,8 +879,8 @@
 									}
 							}
 
+							$adm->biCategorizacao();
 							if(empty($erro)) {
-								$adm->biCategorizacao();
 								$jsc->jAlert($msgOk,"sucesso","document.location.href='$_page?form=1&edita=$cnt->id&$url'");
 								die();
 							} else {
@@ -822,7 +893,6 @@
 							die();
 						}
 					} else {
-						$adm->biCategorizacao();
 						$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='".$_page."?form=1&edita=$id_tratamento&id_paciente=$paciente->id'");
 						die();
 					}
@@ -920,6 +990,7 @@
 				var tratamentoAprovado = <?php echo ($tratamentoAprovado===true)?1:0;?>;
 				var procedimentos = [];
 				var id_unidade = '<?php echo $usrUnidade->id;?>';
+				var id_tratamento = <?php echo is_object($cnt)?$cnt->id:0;?>;
 				var planosDosProcedimentos = JSON.parse(`<?php echo json_encode($planosDosProcedimentos);;?>`);
 				var pagamentos = JSON.parse(`<?php echo ($values['pagamentos']);;?>`);
 				var valorTotal = 0;
@@ -988,8 +1059,18 @@
 						procedimentos.forEach(x=> {
 							if(x.valorCorrigido!==undefined || x.valor!==undefined) {
 								if(x.situacao!='naoAprovado' && x.situacao!='observado') {
-									if(x.valorCorrigido) valorTotal+=$.isNumeric(x.valorCorrigido)?eval(x.valorCorrigido):unMoney(x.valorCorrigido);
-									else valorTotal+=$.isNumeric(x.valor)?eval(x.valor):unMoney(x.valor);
+
+
+									if(x.desconto>0) valorTotal+=$.isNumeric(x.valorCorrigido)?eval(x.valorCorrigido):unMoney(x.valorCorrigido);
+									else {
+										if(eval(x.quantitativo)==1) {
+
+											valorTotal+=$.isNumeric(x.valor)?eval(x.valor*x.quantidade):unMoney(x.valor*x.quantidade);
+										} else {
+											valorTotal+=$.isNumeric(x.valor)?eval(x.valor):unMoney(x.valor);
+
+										}
+									}
 								}
 								if(x.situacao=='aprovado') {
 									reprovarAtivo=false;
@@ -1097,36 +1178,24 @@
 						pagamentosListar();
 
 						
+						if(id_tratamento>0) {
+
+								let data = `ajax=persistirDesconto&id_tratamento=${id_tratamento}&procedimentos=${JSON.stringify(procedimentos)}&pagamentos=${JSON.stringify(pagamentos)}`;
+							
+								$.ajax({
+									type:"POST",
+									data:data,
+									success:function(rtn) {
+
+									}
+								})
+							}
 
 						$('.js-valorTotal').val(number_format(valorTotal,2,",","."));
 
 					}
 
 				// PROCEDIMENTOS
-					/*var procedimentosHMTL = `<tr class="js-procedimento-item">
-											<td class="js-procedimento"></td>
-											<td class="js-regiao"></td>
-											<td><?php echo $selectProfissional;?></td>
-											<td class="js-td-plano"></td>
-											<td><input type="text" value="" style="width:80px;" class="js-valor" /></td>
-											<td><?php echo $selectSituacaoOptions;?></td>	
-											<td class="js-td-obs"  style="font-size:1.25rem;" ></td>											
-											<td>${(tratamentoAprovado===1)?'':'<a href="javascript:;" style="font-size:1.25rem;" class="js-btn-removerProcedimento"><i class="iconify" data-icon="bx-bx-trash"></i></a>'}</td>
-										</tr>`;*/
-
-					<?php /*var procedimentosHMTL = `<a href="javascript:;" class="reg-group js-procedimento-item">
-												<div class="reg-data js-descricao">
-													<h1 class="js-procedimento"></h1>
-													<p class="js-regiao"></p>
-												</div>
-												<div class="js-valor" style="margin-left:auto;">
-													R$2.000,00
-												</div>
-												<div class="js-profissional">
-													
-												</div>
-											</a>`;*/?>
-
 				
 					var procedimentosHMTL = `<a href="javascript:;" class="reg-group js-procedimento-item">
 
@@ -1224,11 +1293,11 @@
 								$(`.js-procedimentos .js-procedimento-item:last`).click(function(){popView(this);})
 								$(`.js-procedimentos .js-procedimento:last`).html(x.procedimento);
 
+								let opcaoShow = x.opcao;
 								if(x.quantitativo==0 && x.opcao.length==2) {
-									x.opcao=`<span class="iconify" data-icon="la:tooth" data-height="13" style="color:var(--cor1)" data-inline="true"></span>${x.opcao}`;
+									opcaoShow=`<span class="iconify" data-icon="la:tooth" data-height="13" style="color:var(--cor1)" data-inline="true"></span> ${x.opcao}`;
 								}
-
-								$(`.js-procedimentos .js-regiao:last`).html(x.quantitativo==1?x.quantidade:x.opcao);
+								$(`.js-procedimentos .js-regiao:last`).html(x.quantitativo==1?`Qtd.: ${x.quantidade} - `:opcaoShow);
 								if(x.opcao.length==0) {
 									$(`.js-procedimentos .js-regiao:last`).append(`${x.plano}`);
 								} else {
@@ -1236,9 +1305,9 @@
 								}
 								if(x.situacao!="observado" && x.situacao!="naoAprovado") {
 									if(x.desconto) {
-										$(`.js-procedimentos .js-regiao:last`).append(` <span class="iconify" data-icon="dashicons:money-alt" data-width="15" style="color:var(--cor1)" data-inline="true"></span> <strike>${number_format(x.valor,2,",",".")}</strike> ${number_format(x.valorCorrigido?x.valorCorrigido:x.valor,2,",",".")}`);
+										$(`.js-procedimentos .js-regiao:last`).append(`<br /><span class="iconify" data-icon="dashicons:money-alt" data-width="15" style="color:var(--cor1)" data-inline="true"></span> <strike>${number_format((eval(x.quantitativo)==1?x.quantidade*x.valor:x.valor),2,",",".")}</strike> ${number_format(x.valorCorrigido,2,",",".")}`);
 									} else {
-										$(`.js-procedimentos .js-regiao:last`).append(` <span class="iconify" data-icon="dashicons:money-alt" data-width="15" style="color:var(--cor1)" data-inline="true"></span> ${number_format(x.valorCorrigido?x.valorCorrigido:x.valor,2,",",".")}`);
+										$(`.js-procedimentos .js-regiao:last`).append(`<br /><span class="iconify" data-icon="dashicons:money-alt" data-width="15" style="color:var(--cor1)" data-inline="true"></span> ${number_format(x.valorCorrigido?x.valorCorrigido:x.valor,2,",",".")}`);
 									}
 								} else {
 									$(`.js-procedimentos .js-regiao:last`).append('');
@@ -1248,6 +1317,8 @@
 								index++;
 								total+=x.valorCorrigido?(x.valorCorrigido):(x.valor);
 							});
+							
+							
 
 
 							atualizaValor(atualizacao,false);
@@ -1389,7 +1460,7 @@
 															foreach($debitoBandeiras as $id_operadora=>$x) {
 																echo '<optgroup label="'.utf8_encode($x['titulo']).'">';
 																foreach($x['bandeiras'] as $band) {
-																	echo '<option value="'.$band['id_bandeira'].'" data-id_operadora="'.$id_operadora.'" data-taxa="'.$band['taxa'].'" data-cobrarTaxa="'.$band['cobrarTaxa'].'">'.utf8_encode($band['titulo']).'</option>';
+																	echo '<option value="'.$band['id_bandeira'].'" data-id_operadora="'.$id_operadora.'"data-id_operadorabandeira="'.$id_operadora.$band['id_bandeira'].'" data-taxa="'.$band['taxa'].'" data-cobrarTaxa="'.$band['cobrarTaxa'].'">'.utf8_encode($band['titulo']).'</option>';
 																}
 																echo '</optgroup>';
 															}
@@ -1407,7 +1478,7 @@
 																foreach($creditoBandeiras as $id_operadora=>$x) {
 																	echo '<optgroup label="'.utf8_encode($x['titulo']).'">';
 																	foreach($x['bandeiras'] as $band) {
-																		echo '<option value="'.$band['id_bandeira'].'" data-id_operadora="'.$id_operadora.'" data-semjuros="'.$band['semJuros'].'" data-parcelas="'.$band['parcelas'].'" data-taxa="'.$band['taxa'].'">'.utf8_encode($band['titulo']).'</option>';
+																		echo '<option value="'.$band['id_bandeira'].'" data-id_operadora="'.$id_operadora.'" data-id_operadorabandeira="'.$id_operadora.$band['id_bandeira'].'" data-parcelas="'.$band['parcelas'].'" data-taxa="'.$band['taxa'].'">'.utf8_encode($band['titulo']).'</option>';
 																	}
 																	echo '</optgroup>';
 																}
@@ -1472,10 +1543,13 @@
 									if(tipo=="credito") {
 										parcelaProv=x.qtdParcelas;
 										//alert(parcelaProv);
-										$('.js-pagamento-item .js-creditoBandeira:last').val(x.creditoBandeira).trigger('change');
+										$('.js-pagamento-item .js-creditoBandeira:last').find(`option[data-id_operadorabandeira=${x.operadora}${x.creditoBandeira}]`).prop('selected',true);
+										$('.js-pagamento-item .js-creditoBandeira:last').trigger('change');
 									
 									} else if(tipo=="debito") {
-										$('.js-pagamento-item .js-debitoBandeira:last').val(x.debitoBandeira);//   .trigger('change');
+										$('.js-pagamento-item .js-debitoBandeira:last').find(`option[data-id_operadorabandeira=${x.operadora}${x.debitoBandeira}]`).prop('selected',true);
+
+										//$('.js-pagamento-item .js-debitoBandeira:last').val(x.debitoBandeira);//   .trigger('change');
 									}	
 								}
 							});
@@ -1522,10 +1596,11 @@
 
 							if(id_operadora!==undefined && parcela!==undefined) {
 
+
 								let taxa = 0;
 								let cobrarTaxa = 0;
 								if(_taxasCredito[id_operadora][id_bandeira][parcela]) taxa=_taxasCredito[id_operadora][id_bandeira][parcela];
-								if(_taxasCreditoSemJuros[id_operadora][id_bandeira][parcela]) cobrarTaxa=eval(_taxasCreditoSemJuros[id_operadora][id_bandeira][parcela]);
+								//if(_taxasCreditoSemJuros[id_operadora][id_bandeira][parcela]) cobrarTaxa=eval(_taxasCreditoSemJuros[id_operadora][id_bandeira][parcela]);
 								
 
 								/*if(cobrarTaxa==1) {
@@ -1630,6 +1705,13 @@
 							id_formapagamento = $(`.js-pagamentos .js-id_formadepagamento:eq(${i})`).val();
 							identificador = $(`.js-pagamentos .js-identificador:eq(${i})`).val();
 							creditoBandeira = $(`.js-pagamentos .js-creditoBandeira:eq(${i})`).val();
+							operadora=0;
+							if(id_formapagamento==2) {
+								operadora = $(`.js-pagamentos .js-creditoBandeira:eq(${i}) option:selected`).attr('data-id_operadora');
+							} else if(id_formapagamento==3) {
+								operadora = $(`.js-pagamentos .js-debitoBandeira:eq(${i}) option:selected`).attr('data-id_operadora');
+							}
+							
 							debitoBandeira = $(`.js-pagamentos .js-debitoBandeira:eq(${i})`).val();
 							qtdParcelas = $(`.js-pagamentos .js-parcelas:eq(${i})`).val();
 							valorAcumulado += val;
@@ -1641,6 +1723,7 @@
 							item.id_formapagamento=id_formapagamento;
 							item.identificador=identificador;
 							item.creditoBandeira=creditoBandeira;
+							item.operadora=operadora;
 							item.debitoBandeira=debitoBandeira;
 							item.qtdParcelas=qtdParcelas;
 
@@ -1924,7 +2007,7 @@
 							//else if(quantitativo==1 && (quantidade.length==0 || eval(quantidade)<=0 || eval(quantidade)>=99)) erro=`Defina a quantidade<br />(mín: 1, máx: 99)`;
 							else if(id_regiao>=2 && $(`.js-regiao-${id_regiao}-select`).val().length==0) erro=`Preencha a Região`
 							else if(id_plano.length==0) erro=`Selecione o Plano`;
-
+							else if(quantidade<=0) erro=`A quantidade não pode ser valor negativo!`; 
 							if(erro.length==0) {
 
 								let linhas=1;
@@ -1985,6 +2068,7 @@
 								$(`.js-id_procedimento`).val('').trigger('chosen:updated');
 								$(`.js-id_plano`).val('').trigger('chosen:updated');
 								$(`.js-id_profissional`).val('').trigger('chosen:updated');
+								
 								$(`.js-inpt-quantidade`).val(1).parent().parent().hide();
 								
 								$(`.js-regiao-${id_regiao}-select`).val([]).trigger('chosen:updated').parent().parent().hide();
@@ -2188,7 +2272,7 @@
 							$(`.js-id_profissional`).val('').trigger('chosen:updated');
 							$(`.js-inpt-quantidade`).val(1).parent().parent().hide();
 							$(`.js-regiao-${id_regiao}-select`).val([]).trigger('chosen:updated').parent().parent().hide();
-							
+							$(`.js-procedimento-obs`).val('');
 							$.fancybox.open({
 								src:'#modalProcedimento'
 							})
@@ -2505,14 +2589,14 @@
 								//$(`.js-procedimentos-descontos .js-procedimento-item:last`).css('border-left',`solid 10px ${corSituacao}`)
 								$(`.js-procedimentos-descontos .js-procedimento-item:last`).click(function(){popView(this);})
 								$(`.js-procedimentos-descontos .js-procedimento:last`).html(x.procedimento);
-								$(`.js-procedimentos-descontos .js-regiao:last`).html(x.quantitativo==1?x.quantidade:x.opcao);
+								$(`.js-procedimentos-descontos .js-regiao:last`).html(eval(x.quantitativo)==1?x.quantidade:x.opcao);
 								$(`.js-procedimentos-descontos .js-regiao:last`).append(` - ${x.plano}`);
 
 								if(x.quantitativo==0 && x.opcao.length==2) {
-									x.opcao=`<span class="iconify" data-icon="la:tooth" data-height="13" style="color:var(--cor1)" data-inline="true"></span>${x.opcao}`;
+									//x.opcao=`<span class="iconify" data-icon="la:tooth" data-height="13" style="color:var(--cor1)" data-inline="true"></span>${x.opcao}`;
 								}
 
-								$(`.js-procedimentos-descontos .js-regiao:last`).html(x.quantitativo==1?x.quantidade:x.opcao);
+								$(`.js-procedimentos-descontos .js-regiao:last`).html(x.quantitativo==1?`Qtd.: ${x.quantidade} - `:x.opcao);
 								if(x.opcao.length==0) {
 									$(`.js-procedimentos-descontos .js-regiao:last`).append(`${x.plano}`);
 								} else {
@@ -2521,7 +2605,7 @@
 
 								if(x.desconto) {
 									descontoPersistido+=x.desconto;
-									$(`.js-procedimentos-descontos .js-valor:last`).html(`<strike>${number_format(x.valor,2,",",".")}</strike><br />${number_format(x.valorCorrigido?x.valorCorrigido:x.valor,2,",",".")}`);
+									$(`.js-procedimentos-descontos .js-valor:last`).html(`<strike>${number_format((eval(x.quantitativo)==1?x.quantidade*x.valor:x.valor),2,",",".")}</strike><br />${number_format(x.valorCorrigido,2,",",".")}`);
 								} else {
 									$(`.js-procedimentos-descontos .js-valor:last`).html(number_format(x.valorCorrigido?x.valorCorrigido:x.valor,2,",","."));
 								}
@@ -2539,6 +2623,8 @@
 					//console.log(procedimentos);
 					$('textarea.js-json-procedimentos').val(JSON.stringify(procedimentos));
 
+
+					
 					atualizarValorDesconto();
 					
 				}
@@ -2554,10 +2640,14 @@
 					let cont = 0;
 					procedimentos.forEach(x=>{
 						if(x.situacao!="naoAprovado" && x.situacao!="observado") {
-								console.log(`- ${x.desconto} - ${x.situacao} ${cont} - ${$(`#boxDesconto .js-checkbox-descontos:eq(${cont})`).prop('checked')}`)
+								//console.log(`- ${x.desconto} - ${x.situacao} ${cont} - ${$(`#boxDesconto .js-checkbox-descontos:eq(${cont})`).prop('checked')}`)
 							if($(`#boxDesconto .js-checkbox-descontos:eq(${cont})`).prop('checked')===true) {
 								valorProcedimentos+=eval(x.valorCorrigido);
-								valorProcedimentosSemDesconto+=eval(x.valor);
+								if(eval(x.quantitativo)==1) {
+									valorProcedimentosSemDesconto+=eval(x.valor*eval(x.quantidade));
+								} else {
+									valorProcedimentosSemDesconto+=eval(x.valor);
+								}
 								descontoPersistido+=eval(x.desconto);
 							}
 							cont++;
@@ -2579,7 +2669,7 @@
 					}
 
 					let valorComDesconto = valorProcedimentos - descontoAplicado;
-					//console.log(valorProcedimentos+' '+valorDesconto+' '+desconto);
+					console.log(valorProcedimentos+' '+valorProcedimentosSemDesconto+' '+desconto);
 					if(valorProcedimentosSemDesconto!=valorProcedimentos) {
 						$('.js-btn-removerDesconto').parent().parent().show();
 						$('#boxDesconto .js-valorProcedimentos').html(`<strike>R$ ${number_format(valorProcedimentosSemDesconto,2,",",".")}</strike><br />R$ ${number_format(valorProcedimentos,2,",",".")}`);
@@ -2600,13 +2690,13 @@
 					$('#boxDesconto .js-btn-removerDesconto').click(function(){
 						let contProcedimento = 0;
 						procedimentos.forEach(x=>{
-							//console.log(cont+' '+x.situacao);
-						
-									procedimentos[contProcedimento].valorCorrigido=x.valor;
-									procedimentos[contProcedimento].desconto=0;
 
-									//console.log('desconto em '+cont+'\n'+procedimentos[contProcedimento].valor+' - '+desc)
-								
+							if(x.quantitativo==1) {
+								procedimentos[contProcedimento].valorCorrigido=x.valor*x.quantidade;
+							} else {
+								procedimentos[contProcedimento].valorCorrigido=x.valor;
+							}
+							procedimentos[contProcedimento].desconto=0;
 								
 							contProcedimento++;
 						});
@@ -2624,42 +2714,41 @@
 
 						let tipoDesconto = $('#boxDesconto .js-select-descontoEm').val();
 						let quantidadeDesconto = $('#boxDesconto .js-checkbox-descontos:checked').length;
-
+						let desconto = unMoney($(`#boxDesconto .js-input-desconto`).val());
+						console.log('Descontando '+desconto);
 						if(quantidadeDesconto==0) {
 							swal({title: "Erro", text: 'Selecione pelo menos um procedimento para aplicar desconto!', html:true, type:"error", confirmButtonColor: "#424242"});
 								
+						} else if(desconto==0 || desconto===undefined || desconto==='' || !desconto) {
+							swal({title: "Erro", text: 'Defina o desconto que deverá ser aplicado!', html:true, type:"error", confirmButtonColor: "#424242"});
 						} else {
-							let desconto = 0;
-							if(tipoDesconto=="dinheiro") {
-								desconto = unMoney($(`#boxDesconto .js-input-desconto`).val());
-								//desconto /= quantidadeDesconto;
+							let valorTotal = 0;
+							let cont = 0;
+							let qtdItensDesconto = 0;
 
-								// quantos % o desconto equivale ao valor total
-								let valorTotal = 0;
-								let cont = 0;
-
-								procedimentos.forEach(x=>{
-									//console.log(cont+' '+x.situacao);
-									if(x.situacao!="naoAprovado" && x.situacao!="observado") {
-										if($(`#boxDesconto .js-checkbox-descontos:eq(${cont})`).prop('checked')===true) {
-											valorTotal+=eval(x.valorCorrigido);
-										}
+							procedimentos.forEach(x=>{
+								//console.log(cont+' '+x.situacao);
+								if(x.situacao!="naoAprovado" && x.situacao!="observado") {
+									if($(`#boxDesconto .js-checkbox-descontos:eq(${cont})`).prop('checked')===true) {
+										valorTotal+=eval(x.valorCorrigido);
+										console.log(cont+' '+x.situacao+'->'+x.valorCorrigido);
+										qtdItensDesconto++;
 									}
 									cont++;
-								});
+								}
+							});
 
-								desconto = ((desconto/valorTotal)*100).toFixed(4);
-
-
-
-								
-
-							} else {
+							if(tipoDesconto!="dinheiro") {
 								desconto = unMoney($(`#boxDesconto .js-input-desconto`).val().replace('.',','));
+								desconto = (valorTotal*(desconto/100)).toFixed(2);
 							}
 
+							// calcula percentual do desconto em cima do valor total
+							let descontoParcentual = ((desconto/valorTotal)*100).toFixed(4);
 
 
+							console.log('Valor Total:'+valorTotal+' Desconto: '+desconto+' Perc:'+descontoParcentual);;
+							
 							if(desconto==0 || desconto===undefined || desconto==='' || !desconto) {
 								swal({title: "Erro", text: 'Defina o desconto que deverá ser aplicado!', html:true, type:"error", confirmButtonColor: "#424242"});
 								$(`#boxDesconto .js-input-desconto`).addClass('erro');
@@ -2672,11 +2761,22 @@
 										if($(`#boxDesconto .js-checkbox-descontos:eq(${cont})`).prop('checked')===true) {
 											let desc = 0;
 
-											descontoAplicar = desconto;
+											if(x.desconto>0) {
+												valorProc=procedimentos[contProcedimento].valorCorrigido;
+											} else {
+												valorProc=procedimentos[contProcedimento].valor;
+												if(eval(x.quantitativo)==1) valorProc*=eval(x.quantidade);
+											}
 
-											//if(tipoDesconto=="porcentual") {
-												descontoAplicar = procedimentos[contProcedimento].valorCorrigido*(desconto/100);
-											//}
+											equivalente = (valorProc/valorTotal).toFixed(4);
+											descontoAplicar = desconto*equivalente;
+
+											console.log(valorProc+' eq '+equivalente+' = '+descontoAplicar);
+
+											//descontoAplicar = desconto/qtdItensDesconto;
+
+
+
 
 											if(procedimentos[contProcedimento].desconto && $.isNumeric(procedimentos[contProcedimento].desconto)) {
 												desc=procedimentos[contProcedimento].desconto+descontoAplicar;
@@ -2684,11 +2784,15 @@
 												desc=descontoAplicar;
 											}
 											valorProc=procedimentos[contProcedimento].valor;
-											if(x.quantitativo) {
+											if(eval(x.quantitativo)==1) {
 												valorProc*=eval(x.quantidade);
+												procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
+												procedimentos[contProcedimento].desconto=desc;///eval(x.quantidade);
+											} else {
+
+												procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
+												procedimentos[contProcedimento].desconto=desc
 											}
-											procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
-											procedimentos[contProcedimento].desconto=desc
 
 											//console.log('desconto em '+cont+'\n'+procedimentos[contProcedimento].valor+' - '+desc)
 										}
@@ -2730,9 +2834,9 @@
 							$('#boxDesconto .js-input-desconto').maskMoney({symbol:'', allowZero:true, showSymbol:true, thousands:'.', decimal:',', symbolStay: true}).attr('maxlength',10);
 							
 						} else {
-							$('#boxDesconto .js-input-desconto').maskMoney({symbol:'', precision:1, suffix:'%', allowZero:true, showSymbol:true, thousands:'', decimal:'.', symbolStay: true}).attr('maxlength',5);
+							$('#boxDesconto .js-input-desconto').maskMoney({symbol:'', precision:1, suffix:'%', allowZero:true, showSymbol:true, thousands:'', decimal:'.', symbolStay: true}).attr('maxlength',6);
 						}
-						$('#boxDesconto .js-input-desconto').trigger('keyup')
+						$('#boxDesconto .js-input-desconto').trigger('keyup');
 					}).trigger('change');
 
 					$('#boxDesconto .js-input-desconto').keyup(function(){
@@ -3085,12 +3189,13 @@
 								
 								
 							</div>				
-							<div class="js-valor" style="width:20%;margin-right: 10px;">
+
+							<div class="js-valor" style="width:20%;margin-right: 120px;">
 								<?php
 								if($x->id_aprovado==0) {
 									echo "-";
 								} else {
-									if(count($procedimentos)==0) echo '<a href="javascript" class="tooltip" title="Nenhum procedimento foi aprovado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
+									if(count($procedimentos)==0) echo '';//<a href="javascript" class="tooltip" title="Nenhum procedimento foi aprovado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
 									else {
 										$total=0;
 										$finalizados=0;
@@ -3100,9 +3205,11 @@
 										}
 										$perc=($total)==0?0:number_format(($finalizados/($total))*100,0,"","");
 									?>
-									<div class="reg-bar" style="flex:0 1 120px;">
+									<div class="reg-bar" style="flex:0 1 10px;">
 										<p>Evolução - <?php echo $perc;?>% <?php echo $finalizados;?>/<?php echo $total;?></p>
-										<div class="reg-bar__container"><span style="width:<?php echo $perc;?>%">&nbsp;</span></div>
+										<div class="reg-bar__container">
+											<span style="width:<?php echo $perc;?>%">&nbsp;</span>
+										</div>
 									</div>
 									<?php
 									}
@@ -3118,9 +3225,9 @@
 									else {
 										$abertos=0;
 										$finalizados=0;
-										foreach($pagamentos as $p) {
-											//if($p->id_pago==0) $abertos++;
-										//	else $finalizados++;
+										foreach($pagamentos as $p) { 
+											if($p->pago==0) $abertos++;
+											else $finalizados++;
 										}
 										$perc=($abertos+$finalizados)==0?0:number_format(($finalizados/($abertos+$finalizados))*100,0,"","");
 									?>

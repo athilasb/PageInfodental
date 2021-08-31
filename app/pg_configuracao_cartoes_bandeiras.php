@@ -8,6 +8,7 @@
 		die();
 	}
 	$values=$adm->get($_GET);
+
 ?>
 <section class="content">
  
@@ -57,26 +58,56 @@
 		$jsc->jAlert("Selecione a operadora!","erro","document.location.href='pg_configuracao_cartoes.php'");
 		die();
 	}
-	$qtdParcelamento=6;
+	$qtdParcelamento=12;
+
+	$bandeira='';
+	if(isset($_GET['id_bandeira']) and is_numeric($_GET['id_bandeira'])) {
+		$sql->consult($_p."parametros_cartoes_bandeiras","*","where id='".$_GET['id_bandeira']."'");
+		if($sql->rows) {
+			$bandeira=mysqli_fetch_object($sql->mysqry);
+
+		}
+	}
+
+
 
 	if(isset($_POST['acao']) and $_POST['acao']=="wlib") {
 
 	
-
-
-		$bandeira='';
-		if(isset($_POST['id_bandeira']) and is_numeric($_POST['id_bandeira'])) {
-			$sql->consult($_p."parametros_cartoes_bandeiras","*","where id='".$_POST['id_bandeira']."'");
-			if($sql->rows) {
-				$bandeira=mysqli_fetch_object($sql->mysqry);
-
-			}
-		}
-
 		if(empty(($bandeira))) {
 			$jsc->jAlert("Selecione a Bandeira","erro","");
 		} else {
-		
+
+			// Persiste configuracoes da bandeira
+			$aceitaDebito = (isset($_POST['aceitaDebito']) and $_POST['aceitaDebito']==1)?1:0;
+			$vsql="parcelasAte='".$_POST['parcelasAte']."',aceitaDebito='$aceitaDebito'";
+			$sql->update($_p."parametros_cartoes_bandeiras",$vsql,"where id=$bandeira->id");
+
+			// Persiste Debito
+			if(isset($_POST['debito_taxa']) or isset($_POST['debito_prazo'])) {
+				$taxa=addslashes($_POST['debito_taxa']);
+				$prazo=addslashes($_POST['debito_prazo']);
+
+				$vsql = "id_bandeira=$bandeira->id,
+							id_operadora=$operadora->id,
+							operacao='debito',
+							taxa='$taxa',
+							prazo='$prazo'";
+
+				$vwhere = "where id_bandeira=$bandeira->id and id_operadora=$operadora->id and operacao='debito'";
+				$sql->consult($_p."parametros_cartoes_taxas","*",$vwhere);
+				if($sql->rows) {
+					$x=mysqli_fetch_object($sql->mysqry);
+					$sql->update($_p."parametros_cartoes_taxas",$vsql,$vwhere);
+				} else {
+
+					$sql->add($_p."parametros_cartoes_taxas",$vsql);
+				}
+			}
+
+
+
+			// Persiste Credito
 			for($i=1;$i<=$qtdParcelamento;$i++) {
 				for($p=1;$p<=$i;$p++) {
 					$taxa = isset($_POST["credito_".$i."_".$p."_taxa"])?$_POST["credito_".$i."_".$p."_taxa"]:'';
@@ -105,21 +136,10 @@
 				}
 			}
 		}
+
+		$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='?id_operadora=$operadora->id&id_bandeira=$bandeira->id'");
+		die();
 	}	
-
-
-	$vwhere="where id_operadora=$operadora->id and lixo=0";
-	$values=array();
-	$sql->consult($_p."parametros_cartoes_taxas","*",$vwhere);
-
-
-	if($sql->rows) {
-		while($x=mysqli_fetch_object($sql->mysqry)) {
-			$values[$x->operacao][$x->vezes][$x->parcela]=array('taxa'=>$x->taxa,
-																'prazo'=>$x->prazo);
-		}
-	}
-	echo json_encode($values);
 
 	?>
 
@@ -161,10 +181,10 @@
 						<dl class="dl2">
 							<dt>Bandeira</dt>
 							<dd>
-								<select name="id_bandeira">
+								<select name="id_bandeira" onchange="document.location.href='?id_operadora=<?php echo $operadora->id;?>&id_bandeira='+this.value">
 									<option>-</option>
 									<?php
-									foreach($_bandeiras as $v) echo '<option value="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
+									foreach($_bandeiras as $v) echo '<option value="'.$v->id.'"'.((is_object($bandeira) and $bandeira->id==$v->id)?'selected':'').'>'.utf8_encode($v->titulo).'</option>';
 									?>
 								</select>
 							</dd>
@@ -172,12 +192,12 @@
 						<dl>
 							<dt>Qtd. de Parcelas</dt>
 							<dd>
-								<select name="creditoParcelas_<?php echo $v->id;?>" class="js-parcelas" data-idBandeira="<?php echo $v->id;?>">
+								<select name="parcelasAte" class="js-parcelas" data-idBandeira="<?php echo $v->id;?>">
 									<option value="">-</option>
 									<?php
 									for($i=1;$i<=$qtdParcelamento;$i++) {
 									?>
-									<option value="<?php echo $i;?>"><?php echo $i."x";?></option>
+									<option value="<?php echo $i;?>"<?php echo ((is_object($bandeira) and $bandeira->parcelasAte==$i)?" selected":"");?>><?php echo $i."x";?></option>
 									<?php
 									}
 									?>
@@ -187,12 +207,18 @@
 								?>
 								<script type="text/javascript">
 									$(function(){
-										$('select[name=creditoParcelas_<?php echo $v->id;?>]').val(<?php echo isset($_infos[$operadora->id][$v->id]['credito'])?count($_infos[$operadora->id][$v->id]['credito']):0;?>).trigger('change');
+										$('select[name=creditoParcelas_<?php echo $v->id;?>]').val(<?php echo isset($_infos[$operadora->id][$v->id]['credito'])?count($_infos[$operadora->id][$v->id]['credito']):'';?>).trigger('change');
 									})
 								</script>
 								<?php	
 								}
 								?>
+							</dd>
+						</dl>
+						<dl>
+							<dt>&nbsp;</dt>
+							<dd>
+								<label><input type="checkbox" name="aceitaDebito" value="1"<?php echo (is_object($bandeira) and $bandeira->aceitaDebito==1)?" checked": "";?> /> Aceita Débito</label>
 							</dd>
 						</dl>
 
@@ -212,12 +238,40 @@
 						</dl>*/?>
 					</div>
 
+					<?php
+					if(is_object($bandeira)) {
 
+						$values=array();
+
+						$vwhere="where id_operadora=$operadora->id and id_bandeira=$bandeira->id and lixo=0 and operacao='debito'";
+						$sql->consult($_p."parametros_cartoes_taxas","*",$vwhere);
+						if($sql->rows) {
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$values[$x->operacao]=array('taxa'=>$x->taxa,'prazo'=>$x->prazo);
+							}
+						}
+
+						$vwhere="where id_operadora=$operadora->id and id_bandeira=$bandeira->id and lixo=0";
+						$sql->consult($_p."parametros_cartoes_taxas","*",$vwhere);
+
+						if($sql->rows) {
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$values[$x->operacao][$x->vezes][$x->parcela]=array('taxa'=>$x->taxa,
+																					'prazo'=>$x->prazo);
+							}
+						}
+
+
+					?>
 					<table>
 						<tr>
+							<?php
+							if($bandeira->aceitaDebito==1) {
+							?>
 							<th style="width:100px">Débito</th>
 							<?php
-							for($vezes=1;$vezes<=$qtdParcelamento;$vezes++) {
+							}
+							for($vezes=1;$vezes<=$bandeira->parcelasAte;$vezes++) {
 							?>
 							<th style="width:100px">Crédito <?php echo $vezes;?>x</th>
 							<?php
@@ -226,21 +280,28 @@
 						</tr>
 
 						<tr>
+							<?php
+							if($bandeira->aceitaDebito==1) {
+							?>
 							<td valign="top"> 
 								<div style="display:flex">
 									<span>1x</span>&nbsp;
-									<input type="text" name="debito_1_taxa" />&nbsp;
-									<input type="text" name="debito_1_prazo" />
+									<input type="text" name="debito_taxa" value="<?php echo $values['debito']['taxa'];?>" />&nbsp;
+									<input type="text" name="debito_prazo" value="<?php echo $values['debito']['prazo'];?>" />
 								</div>
 							</td>
 							<?php
-							for($vezes=1;$vezes<=$qtdParcelamento;$vezes++) {
+							}
+							for($vezes=1;$vezes<=$bandeira->parcelasAte;$vezes++) {
 							?>
 							<td valign="top">
 								<?php
 								for($parcela=1;$parcela<=$vezes;$parcela++) {
 									$vTaxa = isset($values['credito'][$vezes][$parcela]) ? $values['credito'][$vezes][$parcela]['taxa'] : 0;
 									$vPrazo = isset($values['credito'][$vezes][$parcela]) ? $values['credito'][$vezes][$parcela]['prazo'] : 0;
+
+									//if($vPrazo==0) $vPrazo=(30*$parcela)+1;
+									//if($vTaxa==0) $vTaxa=2.6;
 								?>
 								<div style="display:flex">
 									<span><?php echo $parcela;?>x</span>&nbsp;
@@ -256,6 +317,9 @@
 							?>
 						</tr>
 					</table>
+					<?php
+					}
+					?>
 					
 				</fieldset>
 			</form>
