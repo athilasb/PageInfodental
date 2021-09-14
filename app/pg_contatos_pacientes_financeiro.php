@@ -936,9 +936,24 @@
 
 						<div class="js-procedimentos">	
 							<?php
+
+							$parcelasTratamentos=array();
+							foreach($registros as $x) {
+								if(!isset($parcelasTratamentos[$x->id_tratamento])) {
+									$parcelasTratamentos[$x->id_tratamento]=0;
+								}
+								$parcelasTratamentos[$x->id_tratamento]++;
+							}
+
+
+
 							$pagamentosJSON=array();
 
+							$numeroParcela=array();
 							foreach($registros as $x) {
+
+
+
 								$opacity=1;
 								if(isset($_GET['unirPagamentos'])) {
 									if(isset($pagamentosComBaixas[$x->id])) { 
@@ -1128,7 +1143,7 @@
 	
 
 							?>
-							<a href="javascript:;" class="reg-group js-procedimento-item" data-id_pagamento="<?php echo $x->id;?>" style="border-left:solid 10px var(--cor1);opacity: <?php echo $opacity;?>" <?php if(!isset($_GET['unirPagamentos'])) {?>onclick="popView(this);"<?php } ?>>
+							<a href="javascript:;" class="reg-group js-procedimento-item" data-id_pagamento="<?php echo $x->id;?>" style="opacity: <?php echo $opacity;?>" <?php if(!isset($_GET['unirPagamentos'])) {?>onclick="popView(this);"<?php } ?>>
 							
 								<?php
 								if(isset($_GET['unirPagamentos'])) {
@@ -1139,7 +1154,7 @@
 								<?php	
 								}
 								?>
-								<div class="reg-data js-descricao" style="width:30%;">
+								<div class="reg-data js-descricao" style="width:20%;">
 									<h1 class="js-procedimento">
 										<?php  
 										if($x->fusao>0) {
@@ -1185,8 +1200,16 @@
 									
 								</div>						
 
-								<div class="js-descricao" style="width:20%;">
-									
+								<div class="reg-data" style="width:20%;">
+									<h1>R$<?php echo number_format($x->valor,2,",",".");?></h1>
+									<?php 
+									if(isset($parcelasTratamentos[$x->id_tratamento])) {
+										if(!isset($numeroParcela[$x->id_tratamento])) $numeroParcela[$x->id_tratamento]=1;
+									?>
+									<p class="">Parcela <?php echo $numeroParcela[$x->id_tratamento]++;?>/<?php echo ($parcelasTratamentos[$x->id_tratamento]);?></p>
+									<?php
+									}
+									?>
 								</div>
 
 								<?php /*<div class="js-descricao" style="width:20%">

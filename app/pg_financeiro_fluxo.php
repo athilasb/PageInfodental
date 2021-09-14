@@ -77,7 +77,7 @@
 	if(isset($_GET['form'])) {
 
 		$cnt='';
-		$campos=explode(",","data_vencimento,valor,descricao,id_categoria,credor_pagante,id_fornecedor,id_colaborador,id_paciente,id_formapagamento,data_emissao,tipo");
+		$campos=explode(",","data_vencimento,valor,descricao,id_categoria,credor_pagante,id_fornecedor,id_colaborador,id_paciente,id_formapagamento,data_emissao,tipo,custo_fixo,custo_recorrente");
 		
 		foreach($campos as $v) $values[$v]='';
 		$values['data_emissao']=date('d/m/Y');
@@ -121,6 +121,7 @@
 												id_formapagamento='".addslashes(isset($p->id_formadepagamento)?$p->id_formadepagamento:0)."',
 												identificador='".addslashes(isset($p->identificador)?$p->identificador:'')."',
 												parcela='$i',
+												qtdParcelas='".count($pagamentosJSON)."',
 												id_usuario=$usr->id";
 					
 						$sql->consult($_p."financeiro_fluxo","*","where data_vencimento='".invDate($p->vencimento)."' and valor='".$p->valor."' and parcela='".$i."' and id_usuario=$usr->id");
@@ -553,8 +554,10 @@
 								const tipoProcessa = () => { 
 									if($(`input[name=tipo]:checked`).val()=="produto") {
 										$('select[name=id_categoria]').removeClass('obg').parent().parent().hide();
+										$('input[name=custo_recorrente],input[name=custo_fixo]').parent().parent().parent().hide();
 									} else {
 										$('select[name=id_categoria]').addClass('obg').parent().parent().show();
+										$('input[name=custo_recorrente],input[name=custo_fixo]').parent().parent().parent().show();
 
 									}
 								}
@@ -565,12 +568,14 @@
 									});
 								})
 							</script>
+
 							<dl>
 								<dd>
 									<label><input type="radio" name="tipo" value="produto"<?php echo $values['tipo']=="produto"?" checked":"";?> /> Produto Odontológico</label>
 									<label><input type="radio" name="tipo" value="outrosprodutos"<?php echo $values['tipo']=="outrosprodutos"?" checked":"";?> /> Outros Produtos/Serviços Gerais</label>
 								</dd>
 							</dl>
+
 							<dl class="dl2">
 								<dt>Categoria</dt>
 								<dd>
@@ -590,6 +595,20 @@
 									</select>
 								</dd>
 							</dl>
+
+							<div class="colunas3">
+
+								<dl>
+									<dd>
+										<label><input type="checkbox" name="custo_fixo"<?php echo $values['custo_fixo']==1?" checked":"";?> /> Custo Fixo</label>
+									</dd>
+								</dl>
+								<dl>
+									<dd>
+										<label><input type="checkbox" name="custo_recorrente"<?php echo $values['custo_recorrente']==1?" checked":"";?> /> Custo Recorrente</label>
+									</dd>
+								</dl>
+							</div>
 
 
 							
@@ -963,6 +982,7 @@
 						$registros=array();
 						$fornecedoresIds=$colaboradoresIds=$pacientesIds=array(-1);
 						while($x=mysqli_fetch_object($sql->mysqry)) {
+
 							$registros[]=$x;
 							if($x->credor_pagante=="fornecedor") $fornecedoresIds[]=$x->id_fornecedor;
 							else if($x->credor_pagante=="colaborador") $colaboradoresIds[]=$x->id_colaborador;
@@ -1069,6 +1089,9 @@
 
 						<div class="reg-data" style="flex:0 1 70px;">
 							<h1>R$ <?php echo number_format($x->valor,2,",",".");?></h1>
+							<p>
+								Parcela <?php echo $x->parcela."/".$x->qtdParcelas;?>
+							</p>
 						</div>
 						
 					</a>

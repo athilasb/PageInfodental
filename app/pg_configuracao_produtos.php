@@ -17,6 +17,10 @@
 	$_especialidades=array();
 	$sql->consult($_p."parametros_especialidades","*","where lixo=0 order by titulo asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_especialidades[$x->id]=$x;
+
+	$_produtosMarcas=array();
+	$sql->consult($_p."produtos_marcas","*","where lixo=0 order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_produtosMarcas[$x->id]=$x;
 	
 	$_unidadesMedidas=array();
 	$sql->consult($_p."produtos_unidadesmedidas","*","where lixo=0 order by titulo asc");
@@ -34,7 +38,7 @@
 	<?php
 	if(isset($_GET['form'])) {
 		$cnt='';
-		$campos=explode(",","titulo,id_especialidade,unidade_medida,embalagem");
+		$campos=explode(",","titulo,id_especialidade,unidade_medida,embalagem,id_marca");
 		
 		foreach($campos as $v) $values[$v]='';
 
@@ -148,7 +152,18 @@
 							<dd><input type="text" name="titulo" value="<?php echo $values['titulo'];?>" class="obg" /></dd>
 						</dl>
 
-						<dl class="dl2">
+						<dl>
+							<dt>Marca</dt>
+							<dd>
+								<select name="id_marca" class="obg">
+									<option value="">-</option>
+									<?php
+									foreach($_produtosMarcas as $v) echo '<option value="'.$v->id.'"'.($values['="">-</']==$v->id?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
+									?>
+								</select>
+							</dd>
+						</dl>
+						<dl>
 							<dt>Especialidade</dt>
 							<dd>
 								<select name="id_especialidade" class="obg">
@@ -190,11 +205,21 @@
 					const variacoesLista = () => {
 
 						$('.js-variacoes-lista .js-item').remove();
-
+						let nomeProduto = $('input[name=titulo]').val();
+						let marcaProduto = $('select[name=id_marca] option:selected').text();
 						variacoes.forEach(x=> {
 							$('.js-variacoes-lista').append(`<a href="javascript:;" class="reg-group js-item">
-																<div class="reg-color" style="background-color:green;"></div>
-																<div class="reg-data" style="flex:0 1 50%;">
+																<div class="reg-color" style=""></div
+																>
+															
+																<div class="reg-data" style="">
+																	<h1>
+																		${nomeProduto}
+																	</h1>
+																	<p>${marcaProduto}</p>
+																</div>
+
+																<div class="reg-data" style="">
 																	<h1>
 																		${x.titulo}
 																	</h1>
@@ -211,6 +236,11 @@
 					}
 
 					$(function(){
+
+						$('select[name=id_marca],input[name=titulo]').change(function(){
+							variacoesLista();
+						});
+
 						$('.js-btn-addVariacao').click(function(){
 
 							let titulo = $('input.js-titulo').val();

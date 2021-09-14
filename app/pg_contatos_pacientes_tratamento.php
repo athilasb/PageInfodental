@@ -1751,10 +1751,13 @@
 							valorParcela=valorRestante/numeroParcelasRestantes;
 
 							for(i=(index+1);i<numeroParcelas;i++) {
-								let item = {};
-								item.vencimento=pagamentos[i].vencimento;
-								item.valor=valorParcela;
-								parcelas.push(item);
+
+								if(pagamentos[i]) {
+	 								let item = {};
+									item.vencimento=pagamentos[i].vencimento;
+									item.valor=valorParcela;
+									parcelas.push(item);
+								}
 
 							}
 
@@ -2747,6 +2750,8 @@
 							let descontoParcentual = ((desconto/valorTotal)*100).toFixed(4);
 
 
+							//alert(descontoParcentual+' '+desconto);
+
 							console.log('Valor Total:'+valorTotal+' Desconto: '+desconto+' Perc:'+descontoParcentual);;
 							
 							if(desconto==0 || desconto===undefined || desconto==='' || !desconto) {
@@ -2768,7 +2773,7 @@
 												if(eval(x.quantitativo)==1) valorProc*=eval(x.quantidade);
 											}
 
-											equivalente = (valorProc/valorTotal).toFixed(4);
+											equivalente = (valorProc/valorTotal).toFixed(8);
 											descontoAplicar = desconto*equivalente;
 
 											console.log(valorProc+' eq '+equivalente+' = '+descontoAplicar);
