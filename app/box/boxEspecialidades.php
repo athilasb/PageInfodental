@@ -9,11 +9,19 @@
 	
 	$campos=explode(",","titulo");
 
-
 	if(isset($_POST['ajax'])) {
 		$rtn=array();
 
 		if($_POST['ajax']=="listar") {
+
+			$id_especialidade=0;
+			if(isset($_POST['id_procedimento']) and is_numeric($_POST['id_procedimento'])) {
+				$sql->consult($_p."parametros_procedimentos","*","where id='".addslashes($_POST['id_procedimento'])."' and lixo=0");
+				if($sql->rows) {
+					$x=mysqli_fetch_object($sql->mysqry);
+					$id_especialidade = $x->id_especialidade;
+				}
+			}
 			
 			$lista=array();
 			$sql->consult($_table,"*","where lixo=0 order by titulo asc");
@@ -23,7 +31,7 @@
 				}
 			}
 
-			$rtn=array('success'=>true,'lista'=>$lista);
+			$rtn=array('success'=>true,'lista'=>$lista,'id_especialidade'=>$id_especialidade);
 
 		} else if($_POST['ajax']=="persistir") {
 
@@ -99,9 +107,11 @@
 ?>
 <script type="text/javascript">
 	var lista = [];
+	var id_procedimento = <?php echo isset($_GET['id_procedimento'])?addslashes($_GET['id_procedimento']):0;?>;
+	var id_especialidade = 0;
 
-	const atualizar = () => {
-		let data = `ajax=listar`;
+	function atualizar(){
+		let data = `ajax=listar&id_procedimento=${id_procedimento}`;
 		$.ajax({
 			type:"POST",
 			data:data,
@@ -109,6 +119,7 @@
 			success:function(rtn){ 
 				if(rtn.success) {
 					lista=rtn.lista;
+					id_especialidade=rtn.id_especialidade;
 					listar();
 				} else if(rtn.error) {
 					swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -122,9 +133,11 @@
 		});
 	}
 
-	const listar = () => {
+	function listar(){
 
 		$('table.js-table-registros tr.js-item').remove();
+		$('select[name=id_especialidade]').find('option').remove();
+		$('select[name=id_especialidade]').append(`<option value="">-</option>`);
 
 		lista.forEach(x=>{
 			let html = `<tr class="js-item">
@@ -136,10 +149,12 @@
 						</tr>`;
 
 			$('.js-table-registros').append(html);
+			$('select[name=id_especialidade]').append(`<option value="${x.id}">${x.titulo}</option>`);
 		});
+		$('select[name=id_especialidade]').find(`option[value=${id_especialidade}]`).prop('selected',true);
 	}
 
-	const deletar = (id) => {
+	function deletar(id) {
 		let data = `ajax=deletar&id=${id}`;
 
 		$.ajax({

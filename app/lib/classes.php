@@ -15,7 +15,10 @@
 	function numeroletras($rtn) {
 		return preg_replace("/[^a-zA-Z0-9]+/", "", $rtn);
 	}
-	
+	function numero($numero) {
+		return preg_replace('/\D/','',$numero);
+	}
+
 	function maskCPF($cpf) {
 		$cpf=str_replace(".","",str_replace("-","",$cpf));
 		return substr($cpf,0,3).".".substr($cpf,3,3).".".substr($cpf,6,3)."-".substr($cpf,9,11); 
@@ -40,6 +43,15 @@
 		elseif($mes== "Oct") return "10";
 		elseif($mes== "Nov") return "11";
 		elseif($mes== "Dec") return "12";
+	}
+	function invDate2($data) {
+		if(!empty($data)) {
+			list($ano,$mes,$dia)=explode("-",$data);
+			if(isset($dia) and !empty($dia) and isset($mes) and !empty($mes) and isset($ano) and !empty($ano)) {
+				if(@checkdate($mes,$dia,$ano)) return trim($dia)."/".trim($mes)."/".trim($ano);
+				else return "00/00/0000";
+			} else return "00/00/00000";
+		} else return "00/00/0000";
 	}
 	function phoneCheck($tel) {
 		$tel=preg_replace('/\D/','',$tel);

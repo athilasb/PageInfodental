@@ -132,7 +132,7 @@
 							}
 
 							$_usuarios=array();
-							$sql->consult($_p."usuarios","*","WHERE id IN (".implode(",",$usuariosIds).")");
+							$sql->consult($_p."colaboradores","*","WHERE id IN (".implode(",",$usuariosIds).")");
 							while($x=mysqli_fetch_object($sql->mysqry)) {
 								$_usuarios[$x->id]=$x;
 							}
@@ -182,7 +182,7 @@
 										$tipo = $_tiposEvolucao[$x->id_tipo];
 							?>
 							<a href="<?php echo $tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;?>" class="reg-group">
-								<div class="reg-color" style="background-color:green;"></div>
+								<div class="reg-color" style=""></div>
 								<div class="reg-data" style="width:5%">
 									<i class="iconify" data-icon="<?php echo $tipo->icone;?>"></i>
 								</div>
@@ -191,11 +191,11 @@
 									<p><strong><?php echo utf8_encode($tipo->tituloSingular);?></strong></p>
 								</div>
 
-								<div class="reg-data" style="width:10%;color:#">
-									<p><b><?php echo date('d/m/Y',strtotime($x->data_evolucao));?></b></p>
+								 <?php /*<div class="reg-data" style="width:5%;color:#">
+									<p><b><?php echo $x->data_evolucao!="0000-00-00"?date('d/m/Y',strtotime($x->data_evolucao)):"";?></b></p>
 								</div>
 
-								<div class="reg-data" style="width:30%;">
+								<div class="reg-data" style="width:10%;">
 									<p>
 										<?php 
 											if($x->id_tipo==2 or $x->id_tipo==3) {
@@ -212,15 +212,19 @@
 											}
 										?>
 									</p>
-								</div>
+								</div>*/?>
 
-								<div class="reg-data" style="width: 25%;">
-									<p><?php echo isset($_profissionais[$x->id_usuario])?utf8_encode($_profissionais[$x->id_usuario]->nome):'-';?></p>
-								</div>
-
-								<div class="reg-data" style="width: 25%;">
+								<div class="reg-data" style="width: 55%;">
 									<?php
+										$autor=isset($_usuarios[$x->id_usuario])?utf8_encode($_usuarios[$x->id_usuario]->nome):'Desconhecido';
+									?>
+									<p><span class="iconify" data-icon="bi:check-all"></span> <?php echo "<b>".$autor."</b> deu baixa em ";?>
+										<b><?php echo date('d/m/Y',strtotime($x->data));?> - <?php echo date('H:i',strtotime($x->data));?></b></p>
+								</div>
 
+								<div class="reg-data" style="width: 5%;">
+									<?php
+										$profissionaisJaListados=array();
 										if($tipo->id == 2) {
 											$sql->consult($_p."pacientes_evolucoes_procedimentos","*","where id_evolucao=$x->id and lixo=0");
 											if($sql->rows) {

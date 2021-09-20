@@ -186,7 +186,7 @@
 										$tipo = $_tiposEvolucao[$x->id_tipo];
 							?>
 							<a href="<?php echo $tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;?>" class="reg-group">
-								<div class="reg-color" style="background-color:green;"></div>
+								<div class="reg-color" style="background-color:;"></div>
 								<div class="reg-data" style="width:5%">
 									<i class="iconify" data-icon="<?php echo $tipo->icone;?>"></i>
 								</div>
@@ -210,13 +210,14 @@
 									</p>
 								</div>
 
-								<div class="reg-data" style="width:10%;color:#">
-									<p><b><?php echo date('d/m/Y',strtotime($x->data));?></b></p>
-									<p><?php echo date('H:i',strtotime($x->data));?></p>
-								</div>
-
-								<div class="reg-data" style="width: 25%;">
-									<p><?php echo isset($_usuarios[$x->id_usuario])?utf8_encode($_usuarios[$x->id_usuario]->nome):'-';?></p>
+								<div class="reg-data" style="width:60%;color:#">
+									<?php
+										$autor=isset($_usuarios[$x->id_usuario])?utf8_encode($_usuarios[$x->id_usuario]->nome):'Desconhecido';
+									?>
+									<p>
+										<span class="iconify" data-icon="bi:check-all"></span> <?php echo "<b>".$autor."</b> deu baixa em ";?>
+										<b><?php echo date('d/m/Y',strtotime($x->data));?> - <?php echo date('H:i',strtotime($x->data));?></b>
+									</p>
 								</div>
 
 							</a>

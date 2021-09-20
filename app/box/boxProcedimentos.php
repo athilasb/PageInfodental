@@ -558,7 +558,17 @@
 								foreach($_especialidades as $v) echo '<option value="'.$v->id.'"'.($values['id_especialidade']==$v->id?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
 								?>
 							</select>
+							<?php
+								if(is_object($procedimento)) {
+							?>
+							<a href="box/boxEspecialidades.php?id_procedimento=<?php echo $procedimento->id;?>" class="button button__sec tooltip" data-fancybox data-type="ajax" title="Gerenciar Especialidades" style="float:left;margin-left:5px;"><span class="iconify" data-icon="octicon:gear"></span></a>
+							<?php
+								} else {
+							?>
 							<a href="box/boxEspecialidades.php" class="button button__sec tooltip" data-fancybox data-type="ajax" title="Gerenciar Especialidades" style="float:left;margin-left:5px;"><span class="iconify" data-icon="octicon:gear"></span></a>
+							<?php
+								}
+							?>
 						</dd>
 					</dl>
 					<dl class="dl2">

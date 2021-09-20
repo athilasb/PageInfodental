@@ -158,9 +158,20 @@
 								<select name="id_marca" class="obg">
 									<option value="">-</option>
 									<?php
-									foreach($_produtosMarcas as $v) echo '<option value="'.$v->id.'"'.($values['="">-</']==$v->id?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
+									foreach($_produtosMarcas as $v) echo '<option value="'.$v->id.'"'.($values['id_marca']==$v->id?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
 									?>
 								</select>
+								<?php
+								if(is_object($cnt)) {
+								?>
+								<a href="box/boxMarcas.php?id_produto=<?php echo $cnt->id;?>" class="button button__sec tooltip" data-fancybox data-type="ajax" title="Gerenciar Marcas" style="float:left;margin-left:5px;"><span class="iconify" data-icon="octicon:gear"></span></a>
+								<?php
+									} else {
+								?>
+								<a href="box/boxMarcas.php" class="button button__sec tooltip" data-fancybox data-type="ajax" title="Gerenciar Marcas" style="float:left;margin-left:5px;"><span class="iconify" data-icon="octicon:gear"></span></a>
+								<?php
+									}
+								?>
 							</dd>
 						</dl>
 						<dl>

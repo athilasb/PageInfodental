@@ -34,6 +34,7 @@
 		
 		foreach($campos as $v) $values[$v]='';
 		$values['tipo_pessoa']='PF';
+
 		
 		if(isset($_GET['edita']) and is_numeric($_GET['edita'])) {
 			$sql->consult($_table,"*","where id='".$_GET['edita']."'");
@@ -48,41 +49,68 @@
 		}
 
 		if(isset($_POST['acao']) and $_POST['acao']=="wlib") {
-			$vSQL=$adm->vSQL($campos,$_POST);
-			$values=$adm->values;
-			$processa=true;
 
-			$dadosBancario=utf8_decode($_POST['dados_bancario']);
-			$vSQL.="dados_bancario='".$dadosBancario."',";
-			//echo $vSQL;die();
-			if($processa===true) {	
-				if(is_object($cnt)) {
-					$vSQL=substr($vSQL,0,strlen($vSQL)-1);
-					$vWHERE="where id='".$cnt->id."'";
-					$sql->update($_table,$vSQL,$vWHERE);
-					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
-					$id_reg=$cnt->id;
+			$erro='';
+			if(empty($cnt) or (($_POST['tipo_pessoa']=='PF' and $cnt->cpf!=numero($_POST['cpf'])) or ($_POST['tipo_pessoa']=='PJ' and $cnt->cnpj!=numero($_POST['cnpj'])))) {
+
+				$vSQL=$adm->vSQL($campos,$_POST);
+				$values=$adm->values;
+
+				if($_POST['tipo_pessoa']=="PF") {
+					$where="WHERE tipo_pessoa='PF' and cpf='".addslashes(numero($_POST['cpf']))."'";
+					$msgErro="Já existe cadastro com este CPF";
 				} else {
-					$vSQL=substr($vSQL,0,strlen($vSQL)-1);
-					//echo $vSQL;die();
-					$sql->add($_table,$vSQL);
-					$id_reg=$sql->ulid;
-					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$sql->ulid."'");
-
-
-					$id_procedimento=$id_reg;
-					
+					$where="WHERE tipo_pessoa='PJ' and cnpj='".addslashes(numero($_POST['cnpj']))."'";
+					$msgErro="Já existe cadastro com este CNPJ";
 				}
 
-				$msgErro='';
-				if(!empty($msgErro)) {
-					$jsc->jAlert($msgErro,"erro","");
-				} else {
-					$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='".$_page."?".$url."'");
-					die();
+				if(is_object($cnt)) $where.=" and id<>$cnt->id";
+				$where.=" and lixo=0";
+				//echo $where;die();
+				$sql->consult($_table,"id",$where);
+				if($sql->rows) {
+					$erro=$msgErro;
+				} 
+			} 
+
+			if(empty($erro)) {
+				$processa=true;
+
+				$dadosBancario=utf8_decode($_POST['dados_bancario']);
+				$vSQL.="dados_bancario='".$dadosBancario."',";
+				//echo $vSQL;die();
+				if($processa===true) {	
+					if(is_object($cnt)) {
+						$vSQL=substr($vSQL,0,strlen($vSQL)-1);
+						$vWHERE="where id='".$cnt->id."'";
+						$sql->update($_table,$vSQL,$vWHERE);
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
+						$id_reg=$cnt->id;
+					} else {
+						$vSQL=substr($vSQL,0,strlen($vSQL)-1);
+						//echo $vSQL;die();
+						$sql->add($_table,$vSQL);
+						$id_reg=$sql->ulid;
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$sql->ulid."'");
+
+
+						$id_procedimento=$id_reg;
+						
+					}
+
+					$msgErro='';
+					if(!empty($msgErro)) {
+						$jsc->jAlert($msgErro,"erro","");
+					} else {
+						$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='".$_page."?".$url."'");
+						die();
+					}
 				}
+			} else {
+				$jsc->jAlert($erro,"erro","");
 			}
 		}
+
 	?>
 	<script type="text/javascript">
 
@@ -510,7 +538,7 @@
 		if(isset($values['id_especialidade']) and is_numeric($values['id_especialidade'])) $where.=" and id_especialidade='".$values['id_especialidade']."'";
 		if(isset($values['id_subcategoria']) and is_numeric($values['id_subcategoria'])) $where.=" and id_subcategoria='".$values['id_subcategoria']."'";
 		
-		$sql->consult($_table,"*",$where." order by id");
+		$sql->consult($_table,"*,IF(tipo_pessoa='PJ',razao_social,nome_fantasia) as titulo",$where." order by titulo");
 		
 	?>
 
@@ -528,7 +556,7 @@
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 				?>
 				<a href="pg_configuracao_fornecedores.php?form=1&edita=<?php echo $x->id;?>" class="reg-group">
-					<div class="reg-color" style="background-color:green;"></div>
+					<div class="reg-color" style=";"></div>
 					<div class="reg-data" style="flex:0 1 50%;">
 						<h1>
 							<?php

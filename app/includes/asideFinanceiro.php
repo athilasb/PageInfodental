@@ -30,11 +30,11 @@
 
 		<div class="filter-group filter-group_right" >
 			<div class="filter-links">
+				<a href="pg_financeiro_movimentacao_saldo.php" class="js-btn-status<?php echo basename($_SERVER['PHP_SELF'])=="pg_financeiro_movimentacao_saldo.php"?" active":"";?>">Movimentação Bancária</a>
 				<a href="pg_financeiro_fluxo.php" data-status="APROVADO" class="js-btn-status<?php echo basename($_SERVER['PHP_SELF'])=="pg_financeiro_fluxo.php"?" active":"";?>">Lista</a>
 				<a href="pg_financeiro_kanban.php" data-status="APROVADO" class="js-btn-status<?php echo basename($_SERVER['PHP_SELF'])=="pg_financeiro_kanban.php"?" active":"";?>">Kanban</a>
 			</div>
 		</div>
-
 		
 	</section>
 	<?php

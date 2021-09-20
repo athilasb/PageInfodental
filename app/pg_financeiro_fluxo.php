@@ -8,6 +8,8 @@
 		die();
 	}
 	$values=$adm->get($_GET);
+	$financeiro = new Financeiro(array('prefixo'=>$_p,'usr'=>$usr));
+	$financeiro->adm=$adm;
 
 
 	$_fornecedores=array();
@@ -76,7 +78,7 @@
 	
 	if(isset($_GET['form'])) {
 
-		$cnt='';
+		$cnt=$extrato='';
 		$campos=explode(",","data_vencimento,valor,descricao,id_categoria,credor_pagante,id_fornecedor,id_colaborador,id_paciente,id_formapagamento,data_emissao,tipo,custo_fixo,custo_recorrente");
 		
 		foreach($campos as $v) $values[$v]='';
@@ -92,6 +94,9 @@
 				
 				$values=$adm->values($campos,$cnt);
 				$values['data']=$cnt->dataf;
+				
+				// Se o fluxo estiver conciliada;
+				$extrato=$financeiro->fluxoConciliado($cnt->id);
 
 			} else {
 				$jsc->jAlert("Informação não encontrada!","erro","document.location.href='".$_page."'");
@@ -103,38 +108,51 @@
 			$vSQL=$adm->vSQL($campos,$_POST);
 			$values=$adm->values;
 
-			if(isset($_POST['pagamentos']) and !empty($_POST['pagamentos'])) {
-				$pagamentosJSON=json_decode($_POST['pagamentos']);
-				
-				if(is_array($pagamentosJSON)) {
-					$i=1;
-					foreach($pagamentosJSON as $p) {
-						if(!is_numeric($p->valor)) continue;
 
-						if($_receber==1) {
-							$p->valor=$p->valor<0?$p->valor*-1:$p->valor;
-						} else {
-							$p->valor=$p->valor>0?$p->valor*-1:$p->valor;
-						}
-						$vSQLPagamento=$vSQL."data_vencimento='".invDate($p->vencimento)."',
-												valor='".$p->valor."',
-												id_formapagamento='".addslashes(isset($p->id_formadepagamento)?$p->id_formadepagamento:0)."',
-												identificador='".addslashes(isset($p->identificador)?$p->identificador:'')."',
-												parcela='$i',
-												qtdParcelas='".count($pagamentosJSON)."',
-												id_usuario=$usr->id";
-					
-						$sql->consult($_p."financeiro_fluxo","*","where data_vencimento='".invDate($p->vencimento)."' and valor='".$p->valor."' and parcela='".$i."' and id_usuario=$usr->id");
-						$x=$sql->rows?mysqli_fetch_object($sql->mysqry):"";
+			if(empty($cnt)) {
+				if(isset($_POST['pagamentos']) and !empty($_POST['pagamentos'])) {
+					$pagamentosJSON=json_decode($_POST['pagamentos']);
+					if(is_array($pagamentosJSON)) {
+						$i=1;
+						foreach($pagamentosJSON as $p) {
+							if(!is_numeric($p->valor)) continue;
 
-						if(is_object($x)) {
-							$sql->update($_p."financeiro_fluxo",$vSQLPagamento,"where id=$x->id");
-						} else {
-							$sql->add($_p."financeiro_fluxo",$vSQLPagamento.",data=now()");
+							if($_receber==1) {
+								$p->valor=$p->valor<0?$p->valor*-1:$p->valor;
+							} else {
+								$p->valor=$p->valor>0?$p->valor*-1:$p->valor;
+							}
+							$vSQLPagamento=$vSQL."data_vencimento='".invDate($p->vencimento)."',
+													valor='".$p->valor."',
+													id_formapagamento='".addslashes(isset($p->id_formadepagamento)?$p->id_formadepagamento:0)."',
+													identificador='".addslashes(isset($p->identificador)?$p->identificador:'')."',
+													parcela='$i',
+													qtdParcelas='".count($pagamentosJSON)."',
+													id_usuario=$usr->id";
+						
+							$sql->consult($_p."financeiro_fluxo","*","where data_vencimento='".invDate($p->vencimento)."' and valor='".$p->valor."' and parcela='".$i."' and id_usuario=$usr->id");
+							$x=$sql->rows?mysqli_fetch_object($sql->mysqry):"";
+
+							if(is_object($x)) {
+								$sql->update($_p."financeiro_fluxo",$vSQLPagamento,"where id=$x->id");
+							} else {
+								$sql->add($_p."financeiro_fluxo",$vSQLPagamento.",data=now()");
+							}
+							$i++;
 						}
-						$i++;
 					}
 				}
+			} else {
+
+				$vSQL=substr($vSQL,0,strlen($vSQL)-1);
+				$vWHERE="where id='".$cnt->id."'";
+				$sql->update($_table,$vSQL,$vWHERE);
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
+				$id_reg=$cnt->id;
+
+				$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='?".$url."'");
+			
+				
 			}
 
 		
@@ -155,6 +173,13 @@
 			$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='".$_page."?".$url."'");
 			die();
 		};
+
+
+		if(is_object($cnt) and isset($_GET['deleta']) and is_numeric($_GET['deleta'])) {
+
+		}
+
+		//var_dump($values);
 	?>
 		<script type="text/javascript">
 			var valorTotal = 0;
@@ -317,6 +342,10 @@
 
 			$(function(){
 				
+				$('.js-btn-fechar').click(function(){
+					$('.cal-popup').hide();
+						});
+						
 				$('input.money').maskMoney({symbol:'', allowZero:true, showSymbol:true, thousands:'.', decimal:',', symbolStay: true});
 				<?php
 				if($_receber==0) {
@@ -455,6 +484,7 @@
 
 			});	
 		</script>
+
 		<section class="grid">
 			<div class="box">
 
@@ -464,7 +494,7 @@
 					<div class="filter">
 						<div class="filter-group">
 							<div class="filter-button">
-								<a href="<?php echo $_page;?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
+								<a href="<?php echo $_page."?".$url;?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
 							</div>
 						</div>
 						<div class="filter-group filter-group_right">
@@ -510,7 +540,13 @@
 										<option value=""></option>
 										<?php
 										foreach($_fornecedores as $x) {
-											echo '<option value="'.$x->id.'"'.($values['id_fornecedor']==$x->id?' selected':'').'>'.utf8_encode($x->titulo).' - '.(strlen($x->cnpjcpf)==11?maskCPF($x->cnpjcpf):maskCNPJ($x->cnpjcpf)).'</option>';
+
+											if(!empty($x->cnpjcpf)) {
+												$fCPFCNPJ=strlen($x->cnpjcpf)==11?maskCPF($x->cnpjcpf):maskCNPJ($x->cnpjcpf);
+											} else {
+												$fCPFCNPJ='';
+											}
+											echo '<option value="'.$x->id.'"'.($values['id_fornecedor']==$x->id?' selected':'').'>'.utf8_encode($x->titulo).$fCPFCNPJ.'</option>';
 										}
 										?>
 									</select>
@@ -535,13 +571,37 @@
 
 								<dl>
 									<dt>Valor Total</dt>
-									<dd><input type="text" name="valor_total" value="" class="obg money"></dd>
+									<dd><input type="text" name="valor_total" value="<?php echo $values['valor'];?>" class="obg money"></dd>
 								</dl>
 
 								<dl>
 									<dt>Data de Emissão</dt>
 									<dd><input type="text" name="data_emissao" value="<?php echo $values['data_emissao'];?>" class="obg datecalendar data"></dd>
 								</dl>
+
+								<?php
+								if(is_object($cnt)) {
+								?>
+								<dl>
+									<dt>Data de Vencimento</dt>
+									<dd><input type="text" name="data_vencimento" value="<?php echo $values['data_vencimento'];?>" class="obg datecalendar data"></dd>
+								</dl>
+								<dl>
+									<dt>Forma de Pagamento</dt>
+									<dd>
+										<select name="id_formapagamento">
+											<option value="">-</option>
+											<?php
+											foreach($_formasDePagamentos as $x) {
+												echo '<option value="'.$x->id.'"'.($values['id_formapagamento']==$x->id?' selected':'').'>'.utf8_encode($x->titulo).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+								<?php
+								}
+								?>
 
 							</div>
 
@@ -600,12 +660,12 @@
 
 								<dl>
 									<dd>
-										<label><input type="checkbox" name="custo_fixo"<?php echo $values['custo_fixo']==1?" checked":"";?> /> Custo Fixo</label>
+										<label><input type="checkbox" name="custo_fixo" value="1"<?php echo $values['custo_fixo']==1?" checked":"";?> /> Custo Fixo</label>
 									</dd>
 								</dl>
 								<dl>
 									<dd>
-										<label><input type="checkbox" name="custo_recorrente"<?php echo $values['custo_recorrente']==1?" checked":"";?> /> Custo Recorrente</label>
+										<label><input type="checkbox" name="custo_recorrente" value="1"<?php echo $values['custo_recorrente']==1?" checked":"";?> /> Custo Recorrente</label>
 									</dd>
 								</dl>
 							</div>
@@ -613,7 +673,9 @@
 
 							
 						</fieldset>												
-						
+						<?php
+						if(empty($cnt)) {
+						?>
 						<fieldset style="margin:0;">
 							<legend><span class="badge">2</span> Defina o Financeiro</legend>
 
@@ -643,70 +705,169 @@
 							</div>
 								
 						</fieldset>
+						<?php
+						} else {
+							if(is_array($extrato)) {
+						?>
+						<fieldset>
+							<legend>Conciliada com Movimentação Bancária</legend>
+							
+							<div class="registros">
+								<table class="tablesorter">
+									<tr>
+										<th>Data</th>
+										<th>Nº Doc</th>
+										<th>Descrição</th>
+										<th>Unidade</th>
+										<th>Conta</th>
+										<th>Valor</th>
+										<th style="width:50px;">Ação</th>
+									</tr>
+									<?php
+									$total=0;
+									foreach($extrato as $x) {
+									// /	$total+=$x->valor;
+									?>
+									<tr>
+										<td><?php echo $x->dataf;?></td>
+										<td><?php echo !empty($x->checknumber)?utf8_encode($x->checknumber):"-";?></td>
+										<td><?php echo utf8_encode($x->descricao);?></td>
+										<td><?php echo isset($_contas[$x->id_conta])?utf8_encode($_unidades[$_contas[$x->id_conta]->id_unidade]->titulo):"-";?></td>
+										<td><?php echo isset($_contas[$x->id_conta])?utf8_encode($_contas[$x->id_conta]->titulo):"-";?></td>
+										<td style="text-align: right"><font color="<?php echo $x->valor>=0?"green":"red";?>"><?php echo number_format($x->valor,2,",",".");?></font></td>
+										<td><a href="pg_financeiro_movimentacao.php?id_conta=<?php echo $x->id_conta;?>&form=1&edita=<?php echo $x->id;?>" target="_blank" class="button" style="color:#FFF"><span class="iconify" data-icon="bx:bx-search-alt"></span></a></td>
+									</tr>
+									<?php
+									}
+									if($cnt->juros!=0) {
+										$total-=$cnt->juros;
+									?>
+									<tr>
+										<td><?php echo date('d/m/Y',strtotime($cnt->data));?></td>
+										<td>-</td>
+										<td>JUROS</td>
+										<td>-</td>
+										<td>-</td>
+										<td style="text-align: right"><font color="<?php echo $cnt->juros>=0?"green":"red";?>"><?php echo number_format($cnt->juros,2,",",".");?></font></td>
+										<td>-</td>
+									</tr>
+									<?php
+									}
+									if($cnt->multa!=0) {
+										$total-=$cnt->multa;
+									?>
+									<tr>
+										<td><?php echo date('d/m/Y',strtotime($cnt->data));?></td>
+										<td>-</td>
+										<td>MULTA</td>
+										<td>-</td>
+										<td>-</td>
+										<td style="text-align: right"><font color="<?php echo $cnt->multa>=0?"green":"red";?>"><?php echo number_format($cnt->multa,2,",",".");?></font></td>
+										<td>-</td>
+									</tr>
+									<?php
+									}
+									if($cnt->desconto!=0) {
+										$total-=$cnt->desconto;
+									?>
+									<tr>
+										<td><?php echo date('d/m/Y',strtotime($cnt->data));?></td>
+										<td>-</td>
+										<td>DESCONTO</td>
+										<td>-</td>
+										<td>-</td>
+										<td style="text-align: right"><font color="<?php echo $cnt->desconto>=0?"green":"red";?>"><?php echo number_format($cnt->desconto,2,",",".");?></font></td>
+										<td>-</td>
+									</tr>
+									<?php
+									}
+									if($cnt->taxa!=0) {
+										$total-=$cnt->valor-$cnt->valor_original;
+									?>
+									<tr>
+										<td><?php echo date('d/m/y',strtotime($cnt->data));?></td>
+										<td>-</td>
+										<td>TAXA - <?php echo $cnt->taxa?>%</td>
+										<td>-</td>
+										<td>-</td>
+										<td style="text-align: right"><font color="red"><?php echo number_format($cnt->valor-$cnt->valor_original,2,",",".");?></font></td>
+										<td>-</td>
+									</tr>
+									<?php
+									}
+									?>
+								</table>
+								
+							</div>
+						</fieldset>
+						<?php	
+							}
+						}
+						?>
 						
 					</div>
 
 
-					<?php /*<fieldset>
-						<legend><?php echo $_receber==1?"Conta à Receber":"Conta à Pagar";?></legend>
-						<div class="colunas6">
-							<dl>
-								<dt>Vencimento</dt>
-								<dd><input type="text" name="data_vencimento" value="<?php echo $values['data_vencimento'];?>" class="obg data datecalendar"></dd>
-							</dl>
-							<dl>
-								<dt>Valor</dt>
-								<dd><input type="text" name="valor" value="<?php echo $values['valor'];?>" class="obg money"></dd>
-							</dl>
-							<dl class="dl2">
-								<dt>Forma de Pagamento</dt>
-								<dd>
-									<select name="id_formapagamento" class="" placeholder="Forma de Pagamento">
-										<option value="">-</option>
-										<?php
-										foreach($_formasDePagamentos as $k=>$v) {
-										?>
-										<option value="<?php echo $k;?>"<?php echo $values['id_formapagamento']==$k?" selected":"";?>><?php echo utf8_encode($v->titulo);?></option>
-										<?php	
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
-						</div>
-						<div class="colunas6">
-							<dl class="dl2">
-								<dt>Categoria <a href="pg_configuracoes_categorias.php" target="_blank" class="botao"><span class="iconify" data-icon="akar-icons:circle-plus"></span></a></dt>
-								<dd>
-									<select name="id_categoria" class="obg chosen">
-										<option value=""></option>
-										<?php
-										foreach($_categoriasFinanceiroCategorias as $c)  {
-											if(isset($_categoriasFinanceiroSubcategorias[$c->id])) {
-												echo '<optgroup label="'.utf8_encode($c->titulo).'">';
-												foreach($_categoriasFinanceiroSubcategorias[$c->id] as $v) {
-													echo '<option value="'.$v->id.'"'.($values['id_categoria']==$v->id?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
-												}
-												echo '</optgroup>';
-											}
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
-							<dl class="dl4">
-								<dt>Descriçao</dt>
-								<dd><input type="text" name="descricao" value="<?php echo $values['descricao'];?>" /></dd>
-							</dl>
-						</div>
-					</fieldset>*/?>
+					
 				</form>
 			</div>
 		</section>
 	<?php
 	} else {
 
+		if(isset($_POST['efetivar']) and is_numeric($_POST['efetivar'])) {
+			$sql->consult($_p. "financeiro_fluxo","*","where id='".$_POST['efetivar']."'");
+			if($sql->rows) {
+				$fluxo=mysqli_fetch_object($sql->mysqry);
 
+				if($fluxo->pagamento==1) {
+					$jsc->jAlert("Esta conta já foi efetivada!","erro","");
+				} else {
+					if($fluxo->custo_recorrente==1) {
+						$proximoVencimento=date("Y-m-d", strtotime("+1 month", strtotime($fluxo->data_vencimento)));
+						$vSQL="data=now(),
+								data_emissao=now(),
+								id_origem=$fluxo->id_origem,
+								id_registro=$fluxo->id_registro,
+								id_formapagamento=$fluxo->id_formapagamento,
+								credor_pagante='$fluxo->credor_pagante',
+								id_paciente=$fluxo->id_paciente,
+								id_fornecedor=$fluxo->id_fornecedor,
+								id_colaborador=$fluxo->id_colaborador,
+								valor='$fluxo->valor',
+								descricao='".addslashes($fluxo->descricao)."',
+								id_usuario=$fluxo->id_usuario,
+								tipo='".addslashes($fluxo->tipo)."',
+								custo_recorrente='".$fluxo->custo_recorrente."',
+								custo_fixo='".$fluxo->custo_fixo."',
+								id_recorrente='".$fluxo->id."',
+								data_vencimento='".$proximoVencimento."'";
+							//	echo $vSQL;die();
+						
+						$sql->consult($_table,"*","where id_recorrente='".$fluxo->id."' and lixo=0");
+						if($sql->rows==0) {
+							$sql->add($_table,$vSQL);
+						} else {
+							$sql->update($_table,$vSQL,"where id_recorrente='".$fluxo->id."' and lixo=0");
+						}
+					}
+					
+					$sql->update($_table,"pagamento=1,pagamento_id_colaborador=$usr->id,data_efetivado='".invDate($_POST['data_efetivado'])."'","where id='".$fluxo->id."'");
+				}
+			} else {
+				$jsc->jAlert("Conta não encontrada!","erro", "");
+			}
+		}  else if(isset($_POST['conciliar']) and is_numeric($_POST['conciliar'])) {
+			//var_dump($_POST['conciliar']);die();
+
+			// metodo concilia Dinheiro, Cartao/Online (acumulativo) e outros
+			if($financeiro->contaConciliar($_POST)) {
+				$jsc->go($_page."?".$url);
+			} else {
+				$jsc->jAlert($financeiro->erro,"erro","");
+			}
+		}
+ 
 		if(!isset($values['data_inicio']) or empty($values['data_inicio'])) {
 			$values['data_inicioWH']=date('Y-m-01');
 			$values['data_inicio']=date('01/m/Y');
@@ -778,15 +939,16 @@
 					<a href="javascript:;" class="cal-popup__fechar js-btn-fechar"><i class="iconify" data-icon="mdi-close"></i></a>
 					<section class="paciente-info">
 						<header class="paciente-info-header">
-							<section class="paciente-info-header__inner1">
-								<h1 class="js-titulo">Teste teste</h1>
-								<p style="color:var(--cinza4);"><span class="js-vencimento">09/09/2021</span></p>
+							<section class="">
+								<h1 class="js-titulo"></h1>
+								<p style="color:var(--cinza4);"><span class="js-vencimento"></span></p>
 							</section>
 						</header>
 						<input type="hidden" class="js-index" />
 
 						<div class="abasPopover">
 							<a href="javascript:;" class="js-pop-informacoes" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-info').show();$(this).addClass('active');" class="active">Informações</a>
+							<a href="javascript:;" class="js-pop-descricao" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-descricao').show();$(this).addClass('active');" class="active">Descrição</a>
 							
 						</div>
 
@@ -794,64 +956,33 @@
 							
 							<dl>
 								<dt>Categoria</dt>
-								<dd><input type="text" class="js-parcela" value="" readonly /></dd>
+								<dd><input type="text" class="js-categoria" value="" readonly /></dd>
 							</dl>
 							<dl>
 								<dt>Valor</dt>
-								<dd><input type="text" class="js-desconto" value="" readonly /></dd>
+								<dd><input type="text" class="js-valor" value="" readonly /></dd>
 							</dl>
 							<dl>
-								<dt>Beneficiário</dt>
-								<dd><input type="text" class="js-desconto" value="" readonly /></dd>
+								<dt>Fixo</dt>
+								<dd><input type="text" class="js-fixo" value="" readonly /></dd>
+							</dl>
+							<dl>
+								<dt>Recorrente</dt>
+								<dd><input type="text" class="js-recorrente" value="" readonly /></dd>
 							</dl>
 							
 						</div>
 
-						<div class="paciente-info-grid js-grid js-grid-baixas registros" style="font-size: 12px;display:none;">
-							
+						<div class="paciente-info-grid js-grid js-grid-descricao registros" style="font-size: 12px;display:none;"></div>
 
-							<table style="grid-column:span 2;">
-								<thead>
-									<tr>
-										<th style="width:5%"></th>
-										<th>Pgto.</th>
-										<th>Forma/Obs.</th>
-										<th>Valor</th>
-									</tr>
-								</thead>
-								<tbody class="js-baixas">
-
-								</tbody>
-							</table>
-
-								
-						</div>
-
-						<div class="paciente-info-grid js-grid js-grid-pagamentos registros" style="font-size: 12px;display:none;">
-							
-
-							<table style="grid-column:span 2;">
-								<thead>
-									<tr>
-										<th>Data</th>
-										<th>Plano</th>
-										<th>Valor</th>
-									</tr>
-								</thead>
-								<tbody class="js-subpagamentos">
-
-								</tbody>
-							</table>
-
-								
-						</div>
-
-
-						<div class="paciente-info-opcoes">
-							<a href="javascript:;" target="_blank" class="js-btn-pagamento button ">Programação de Pagamentos</a>
-							
-						</div>
+						
 					</section>
+
+					<div class="paciente-info-opcoes">
+						<a href="javascript:;" class="js-btn-editar button">Editar</a>
+						<a href="javascript:;" target="_blank" data-fancybox data-type="ajax" class="js-btn-pagar button">Pagar</a>
+						<a href="javascript:;" target="_blank" data-fancybox data-type="ajax" class="js-btn-conciliar button">Conciliar</a>
+					</div>
 	    		</section>
 
 				<script type="text/javascript">
@@ -860,7 +991,31 @@
 						$('.js-pop-informacoes').click();
 
 						index=$(obj).index();
+						id=$(`div.reg a:eq(${index})`).find('.js-id').val();
+						$('#cal-popup .js-titulo').html($(`div.reg a:eq(${index})`).find('.js-titulo').html());
+						$('#cal-popup .js-vencimento').html($(`div.reg a:eq(${index})`).find('.js-vencimento').html());
+						$('#cal-popup .js-categoria').val($(`div.reg a:eq(${index})`).find('.js-categoria').val());
+						$('#cal-popup .js-valor').val($(`div.reg a:eq(${index})`).find('.js-valor').val());
+						$('#cal-popup .js-recorrente').val($(`div.reg a:eq(${index})`).find('.js-recorrente').val());
+						$('#cal-popup .js-fixo').val($(`div.reg a:eq(${index})`).find('.js-fixo').val());
+						$('#cal-popup .js-grid-descricao').html($(`div.reg a:eq(${index})`).find('.js-descricao').val());
 
+						pagamento = $(`div.reg a:eq(${index})`).find('.js-pagamento').val();
+						conciliado = $(`div.reg a:eq(${index})`).find('.js-conciliado').val();
+
+						if(pagamento==1) {
+							$('.js-btn-pagar').hide();
+
+							if(conciliado==1) {
+								$('#cal-popup .js-btn-conciliar').hide();
+							} else {
+
+								$('#cal-popup .js-btn-conciliar').show();
+							}
+						} else {
+							$('#cal-popup .js-btn-pagar').show();
+							$('#cal-popup .js-btn-conciliar').hide();
+						}
 
 						$('#cal-popup')
 								.removeClass('cal-popup_left')
@@ -883,74 +1038,19 @@
 						$('#cal-popup').css({'top':clickTop,'left':clickLeft,'margin-left': clickMargin});
 						$('#cal-popup').show();
 
-						return true;
 
-						$('#cal-popup .js-baixas tr').remove();
-
-						if(pagamentos[index].baixas && pagamentos[index].baixas.length>0) {
-							pagamentos[index].baixas.forEach(x=> {
-
-								if(x.pago==1) {
-									icon = `<span class="iconify" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
-								} else {
-									if(x.vencido) {
-										icon = `<span class="iconify" data-icon="icons8:cancel" data-inline="true" style="color:red"></span>`;
-									} else {
-										icon = `<span class="iconify" data-icon="bx:bx-hourglass" data-inline="true" style="color:orange"></span>`;
-									}
-								}
-
-								$('.js-baixas').append(`<tr>
-															<td>${icon}</td>
-															<td>${x.data}</td>
-															<td>${x.formaobs}</td>
-															<td>${number_format(x.valor,2,",",".")}</td>
-														</tr>`);
-								});
-						} else {
-							$('.js-baixas').append(`<tr><td colspan="4"><center>Nehnuma programação de pagamento</center></td></tr>`);
-						}
-
-
-						$('#cal-popup .js-subpagamentos tr').remove();
-						if(pagamentos[index].subpagamentos && pagamentos[index].subpagamentos.length>0) {
-							pagamentos[index].subpagamentos.forEach(x=> {
-								$('.js-subpagamentos').append(`<tr>
-																	<td>${x.vencimento}</td>
-																	<td>${x.titulo}</td>
-																	<td>${number_format(x.valor,2,",",".")}</td>
-																</tr>`);
-							});
-
-							$('.js-subpagamentos').append(`<tr>
-																<td colspan="3"><center><a href="javascript:;" class="js-desfazerUniao" data-id_pagamento="${pagamentos[index].id_parcela}"><span class="iconify" data-icon="eva:undo-fill" data-inline="false"></span> Desfazer união</a></center></td>
-															</tr>`)
-
-							$('.js-pop-agrupamento').show();
-						} else {
-							$('.js-pop-agrupamento').hide();
-							$('.js-subpagamentos').append(`<tr><td colspan="3"><center>Este pagamento não possui união</center></td></tr>`);
-						}
-
-						
-						$('#cal-popup .js-titulo').html(pagamentos[index].titulo);
-						$('#cal-popup .js-vencimento').html(`Vencto: ${pagamentos[index].vencimento}`);
-						$('#cal-popup .js-desconto').val(number_format(pagamentos[index].valorDesconto,2,",","."))
-						$('#cal-popup .js-parcela').val(number_format(pagamentos[index].valorParcela,2,",","."));
-						$('#cal-popup .js-despesa').val(number_format(pagamentos[index].valorDespesa,2,",","."))
-						$('#cal-popup .js-corrigido').val(number_format(pagamentos[index].valorCorrigido,2,",","."))
-						$('#cal-popup .js-pago').val(number_format(pagamentos[index].valorPago,2,",","."))
-						$('#cal-popup .js-btn-pagamento').attr('data-id_pagamento',pagamentos[index].id_parcela)
-
-						$('#cal-popup .js-apagar').val(number_format(pagamentos[index].valorCorrigido-pagamentos[index].valorPago,2,",","."))
-						//$('#cal-popup .js-btn-descontoAplicartEmTodos').prop('checked',popViewInfos[index].descontoAplicartEmTodos==1?true:false)
-						
-						$('#cal-popup .js-index').val(index);
-					
+						$('#cal-popup .js-btn-editar').attr('href',`?form=1&edita=${id}&<?php echo $url;?>`);
+						$('#cal-popup .js-btn-pagar').attr('href',`box/boxFinanceiroEfetivar.php?id=${id}`);
+						$('#cal-popup .js-btn-conciliar').attr('href',`box/boxConciliacao.php?id=${id}`);
 						
 					}
 
 					$(function(){
+
+						$('.js-btn-fechar').click(function(){
+							$('.cal-popup').hide();
+						});
+						
 						$(document).mouseup(function(e)  {
 						    var container = $("#cal-popup");
 						    if (!container.is(e.target) && container.has(e.target).length === 0) $('#cal-popup').hide();
@@ -976,18 +1076,52 @@
 				<div class="reg">
 					<?php
 					$sql->consultPagMto2($_table,"*",10,$where,"",15,"pagina",$_page."?".$url."&pagina=");
-					if($sql->rows==0) {
+					//echo $where;
+					$registros=array();
+					$fluxosIDs=array();
+					$fornecedoresIds=$colaboradoresIds=$pacientesIds=array(-1);
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$registros[]=$x;
+						$fluxosIDs[]=$x->id;
+
+						if($x->credor_pagante=="fornecedor") $fornecedoresIds[]=$x->id_fornecedor;
+						else if($x->credor_pagante=="colaborador") $colaboradoresIds[]=$x->id_colaborador;
+						else if($x->credor_pagante=="paciente") $pacientesIds[]=$x->id_paciente;
+
+					}
+
+
+
+
+					$contasConciliadas=$contasConciliadasID=array();
+					if(count($fluxosIDs)>0) {
+						$sql2=new Mysql();
+						$sql->consult($_p."financeiro_conciliacoes","*","where id_fluxo in (".implode(",",$fluxosIDs).") and lixo=0");
+						if($sql->rows) {
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$contasConciliadas[$x->id_fluxo][]=$x;
+								$contasConciliadasID[]=$x->id_extrato;
+								if($x->multiplo==1) {
+									$sql2->consult($_p."financeiro_conciliacoes","*","where id_extrato='".$x->id_extrato."' and lixo=0");
+									$extratosConciliados[$x->id_fluxo]=$sql2->rows;
+								}
+							}
+						}
+					} 
+					$conciliadasBanco=array();
+					if(isset($contasConciliadas) and count($contasConciliadasID)>0) {
+						$sql->consult($_p."financeiro_extrato","*","where id in (".implode(",",$contasConciliadasID).") and lixo=0");
+						if($sql->rows) {
+							while($x=mysqli_fetch_object($sql->mysqry)) { 
+								$conciliadasBanco[$x->id]=$x;
+							}
+						}
+					} 
+
+					if(count($registros)==0) {
 						echo "<center>Nenhuma registro</center>";
 					} else {
-						$registros=array();
-						$fornecedoresIds=$colaboradoresIds=$pacientesIds=array(-1);
-						while($x=mysqli_fetch_object($sql->mysqry)) {
-
-							$registros[]=$x;
-							if($x->credor_pagante=="fornecedor") $fornecedoresIds[]=$x->id_fornecedor;
-							else if($x->credor_pagante=="colaborador") $colaboradoresIds[]=$x->id_colaborador;
-							else if($x->credor_pagante=="paciente") $pacientesIds[]=$x->id_paciente;
-						}
+					
 
 						$_fornecedores=array();
 						$sql->consult($_p. "parametros_fornecedores","id,IF(tipo_pessoa='PJ',razao_social,nome) as titulo","where id IN (".implode(",",$fornecedoresIds).") order by titulo asc");
@@ -1018,14 +1152,28 @@
 								if(isset($_pacientes[$x->id_paciente])) $credorPagante=utf8_encode($_pacientes[$x->id_paciente]->nome);
 							}
 
-
+							$_conciliado=0;
+							if($x->pagamento==1 and isset($contasConciliadas[$x->id])) {
+								$_conciliado=1;
+							}
 
 					?>
 					<a href="javascript:;" class="reg-group" onclick="popView(this);">
-						<div class="reg-color" style="background-color:var(--cinza3)"></div>
+
+						<input type="hidden" class="js-categoria" value="<?php echo isset($_categoriasFinanceiro[$x->id_categoria])?utf8_encode($_categoriasFinanceiro[$x->id_categoria]->titulo):'-';?>" />
+						<input type="hidden" class="js-id" value="<?php echo $x->id;?>" />
+						<input type="hidden" class="js-valor" value="<?php echo number_format($x->valor,2,",",".");?>" />
+						<input type="hidden" class="js-recorrente" value="<?php echo $x->custo_recorrente==1?"Sim":"Não";?>" />
+						<input type="hidden" class="js-fixo" value="<?php echo $x->custo_fixo==1?"Sim":"Não";?>" />
+						<input type="hidden" class="js-descricao" value="<?php echo !empty($x->descricao)?utf8_encode($x->descricao):'-';?>" />
+						<input type="hidden" class="js-pagamento" value="<?php echo $x->pagamento;?>" />
+						<input type="hidden" class="js-conciliado" value="<?php echo $_conciliado;?>" />
+
+						<div class="reg-color" style=""></div>
 						<div class="reg-data" style="flex:0 1 30%;">
-							<h1><?php echo $credorPagante;?></h1>
-							<p>Vencimento: <?php echo date('d/m/Y',strtotime($x->data_vencimento));?></p>
+							<h1 class="js-titulo"><?php echo $credorPagante;?></h1>
+							<p class="js-vencimento">Forma de Pag.: <?php echo isset($_formasDePagamentos[$x->id_formapagamento])?utf8_encode($_formasDePagamentos[$x->id_formapagamento]->titulo):'-';?></p>
+							<p class="js-vencimento">Vencimento: <?php echo date('d/m/Y',strtotime($x->data_vencimento));?></p>
 						</div>
 						<div class="reg-steps" style="margin:0 auto;">
 
@@ -1072,16 +1220,25 @@
 							} else {
 							?>
 							<div class="reg-steps__item active">
-								<h1 style="background:<?php echo $cor['promessa'];?>;color:#FFF">2</h1>
+								<h1 style="background:<?php echo ($x->pagamento==1 or $_conciliado==1)?"var(--verde)":$cor['promessa'];?>;color:#FFF">2</h1>
 								<p>Promessa de Pagamento</p>									
 							</div>
-
+							<?php
+								if($_conciliado==0) {
+							?>
 							<div class="reg-steps__item">
-								<h1 style="background:var(--verde);color:#FFF;">3</h1>
+								<h1 style="background:var(--azul);color:#FFF;">3</h1>
 								<p>Pago</p>									
 							</div>
-
 							<?php
+								} else {
+							?>
+							<div class="reg-steps__item">
+								<h1 style="background:var(--verde);color:#FFF;">3</h1>
+								<p>Conciliado</p>									
+							</div>
+							<?php		
+								}
 							}
 							?>
 							
