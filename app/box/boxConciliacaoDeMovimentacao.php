@@ -141,7 +141,7 @@
 				if(desconto<0) $(this).val(number_format((desconto*-1),2,",","."));
 				if(multa>0) $(this).val(number_format((multa*-1),2,",","."));
 				if(juros>0) $(this).val(number_format((juros*-1),2,",","."));
-				console.log(multa);
+				
 			}
 			
 			
@@ -263,7 +263,7 @@
 
 					$sql->consult($_p."financeiro_fluxo","*,date_format(data_vencimento,'%d/%m/%Y') as dataf",$where." order by data_vencimento desc");
 
-					echo $where."->".$sql->rows;
+					//echo $where."->".$sql->rows;
 					$registros=$registrosID=array();
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						$registros[$x->id]=$x;
@@ -331,7 +331,7 @@
 							<tr>
 								<th style="width:10px;"></th>
 								<th style="width:80px;">Vencimento</th>
-								<th style="width:250px">Unidade</th>
+								<?php /*<th style="width:250px">Unidade</th>*/?>
 								<th style="width:150px;">Origem</th>
 								<th><?php echo $cnt->valor>0?"Pagante":"Credor";?></th>
 								<th style="width:120px">Valor (R$)</th>
@@ -349,7 +349,7 @@
 						<tr class="mov" style="cursor: pointer">
 							<td><input type="radio" name="id_fluxo" value="<?php echo $x->id;?>" class="js-fluxo-unico" data-valor="<?php echo $_valor;?>" /></td>
 							<td><?php echo date('d/m/Y',strtotime($x->data_vencimento));?></td>
-							<td><?php echo utf8_encode($_unidades[$x->id_unidade]->titulo);?></td>
+							<?php /*<td><?php echo utf8_encode($_unidades[$x->id_unidade]->titulo);?></td>*/?>
 							<td>
 								<?php 
 								if($x->id_origem>0) {
@@ -387,7 +387,7 @@
 			</fieldset>
 			
 			<fieldset id="field-multiplo" class="modal-content" style="display:none; background:var(--cinza1);">
-				<lenged>Conta <span style="font-weight:normal;">(<?php echo invDate2($dataInicio);?> até <?php echo invDate2($dataFim);?>)</span></lenged>
+				<legend>Fluxos <span style="font-weight:normal;">(<?php echo invDate2($dataInicio);?> até <?php echo invDate2($dataFim);?>)</span></legend>
 				
 				<?php
 				$dataInicio=date('Y-m-d',strtotime("-120 day",strtotime($cnt->data_extrato)));
@@ -422,7 +422,7 @@
 				}
 				?>
 				<div class="colunas4">				
-					<dl>
+					<?php /*<dl>
 						<dt>Unidade</dt>
 						<dd>
 							<select name="id_unidade" class="js-sel-unidade">
@@ -434,7 +434,7 @@
 								?>
 							</select>
 						</dd>
-					</dl>
+					</dl>*/?>
 					<dl class="dl2">
 						<dt>Busca</dt>
 						<dd><input type="text" class="js-busca" /></dd>
@@ -455,12 +455,12 @@
 							    }).hide();
 							});
 
-							$('select.js-sel-unidade').change(function(){
+							/*$('select.js-sel-unidade').change(function(){
 								$('.js-extrato').hide();
 								if($(this).val().length>0) {
 									$(`.js-extrato-${$(this).val()}`).show();
 								}
-							}).trigger('change');
+							}).trigger('change');*/
 							
 					})
 				</script>
@@ -469,10 +469,8 @@
 					<table class="tablesorter">
 						<thead>
 							<tr>
-
 								<th style="width:10px;"></th>
 								<th style="width:80px;">Vencimento</th>
-								<th style="width:250px">Unidade</th>
 								<th style="width:150px;">Origem</th>
 								<th><?php echo $cnt->valor>0?"Pagante":"Credor";?></th>
 								<th style="width:120px">Valor (R$)</th>
@@ -480,14 +478,13 @@
 						</thead>
 						<tbody>
 							<?php
-							if(count($registros)==0) echo "<tr><td colspan=6><center>Nenhum movimento bancário encontrado</center></td></tr>";
+							if(count($registros)==0) echo "<tr><td colspan=6><center>Nenhum fluxo encontrado</center></td></tr>";
 							foreach($registros as $x) {
 								$_valor=$x->valor;
 							?>
 							<tr class="js-extrato js-extrato-<?php echo $x->id_unidade;?>" style="cursor: pointer">
 							<td><center><input type="checkbox" name="id_fluxo[]" value="<?php echo $x->id;?>" class="js-fluxo" data-valor="<?php echo $_valor;?>" /></center></td>
 							<td><?php echo date('d/m/Y',strtotime($x->data_vencimento));?></td>
-							<td><?php echo utf8_encode($_unidades[$x->id_unidade]->titulo);?></td>
 							<td>
 								<?php 
 								if($x->id_origem>0) {

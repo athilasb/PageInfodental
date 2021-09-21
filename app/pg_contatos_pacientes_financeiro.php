@@ -455,7 +455,6 @@
 					$dataUltimoPagamento=date('d/m/Y',strtotime($_baixas[$x->id][count($_baixas[$x->id])-1]->data));
 
 			   		foreach($_baixas[$x->id] as $v) {
-
 						$valor['valorRecebido']+=$v->valor;
 						//$saldoAPagar-=$v->valor;
 						//$valorPago+=$v->valor;
@@ -568,8 +567,10 @@
 								if(x.tipoBaixa=="DESCONTO") {
 									desconto+=x.valor;
 								}
-								else if(x.tipoBaixa=="DESPESA") despesas+=x.valor;
-								else {
+
+								else if(x.tipoBaixa=="DESPESA") {
+									despesas+=x.valor;
+								} else {
 
 									total+=x.valor;
 								}
@@ -578,6 +579,8 @@
 
 								if(x.pago==1) {
 									icon = `<span class="iconify" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
+
+									btns=`<a href="javascript:;" class="js-estornoPagamento button button__sec tooltip" data-id_baixa="${x.id_baixa}" style="color:#FFF;background:red" title="Estornar Pagamento"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
 
 								} else {
 									btns=`<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" style="color:#FFF;" title="Estorno"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
@@ -1019,7 +1022,7 @@
 														'vencido'=>$baixaVencida,
 														'pago'=>$b->pago,
 														'formaobs'=>$formaobs,
-														'valor'=>(float)$v->valor);
+														'valor'=>(float)$b->valor);
 									}
 
 									if($baixaVencida===true) {

@@ -226,6 +226,29 @@
 
 		}
 
+		else if($_POST['ajax']=="baixaEstornarPagamento") {
+
+			if(is_object($pagamento)) {
+				$baixa='';
+				if(isset($_POST['id_baixa']) && is_numeric($_POST['id_baixa'])) {
+					$sql->consult($_p."pacientes_tratamentos_pagamentos_baixas","*","where id='".$_POST['id_baixa']."' and id_pagamento=$pagamento->id");
+					if($sql->rows) {
+						$baixa=mysqli_fetch_object($sql->mysqry);
+					}
+				} 
+
+				if(is_object($baixa)) {
+					$sql->update($_p."pacientes_tratamentos_pagamentos_baixas","pago=0,pago_data=now(),pago_id_usuario=$usr->id","where id=$baixa->id");
+					$rtn=array('success'=>true);
+				} else {
+					$rtn=array('success'=>false,'error'=>'Baixa não encontrada!');
+				}
+			} else {
+				$rtn=array('success'=>false,'error'=>'Pagamento não encontrado!');
+			}
+
+		}
+
 		else if($_POST['ajax']=="unirPagamentos") {
 			if(isset($_POST['pagamentos']) and is_array($_POST['pagamentos'])) {
 				if(count($_POST['pagamentos'])>=2) {
@@ -310,7 +333,6 @@
 
 	$saldoAPagar=$pagamento->valor;
  	
-
 	$creditoBandeiras=array();
 	$debitoBandeiras=array();
 
@@ -386,9 +408,6 @@
 		}
 	}
 
-
-
-	
 ?>
 <script type="text/javascript">
 	id_pagamento = <?php echo $pagamento->id;?>;
@@ -646,6 +665,47 @@
 			
 		});
 
+		$('.js-table-baixas').on('click','.js-estornoPagamento',function(){
+
+			
+			let id_baixa = $(this).attr('data-id_baixa')
+			let data = `ajax=baixaEstornarPagamento&id_baixa=${id_baixa}&id_pagamento=${id_pagamento}`;
+
+			swal({
+				title:"Atenção", 
+				text: "Você tem certeza que deseja estornar este pagamento?",
+				type: "warning",
+				showCancelButton: true, 
+				confirmButtonColor: "#DD6B55",
+				confirmButtonText: "Sim!",
+				cancelButtonText: "Não",
+				closeOnConfirm: true,
+				closeOnCancel: true }
+				,function(isConfirm){   
+					if (isConfirm) {
+						$.ajax({
+							type:"POST",
+							url:'box/<?php echo basename($_SERVER['PHP_SELF']);?>',
+							data:data,
+							success:function(rtn) {
+								if(rtn.success) {
+									baixasAtualizar();
+								} else if(rtn.error) {
+									swal({title: "Erro!", text: rtn.error,  html:true,type:"error", confirmButtonColor: "#424242"});
+								} else {
+									swal({title: "Erro!", text: "Algum erro ocorreu durante o estorno desta baixa!",  html:true,type:"error", confirmButtonColor: "#424242"});
+								}
+							},
+							error:function() {
+								swal({title: "Erro!", text: "Algum erro ocorreu durante o estorno desta baixa!",  html:true,type:"error", confirmButtonColor: "#424242"});
+							}
+						});
+					}
+				});
+
+			
+		});
+
 		$('.js-table-baixas').on('click','.js-pagar',function(){
 			let id_baixa = $(this).attr('data-id_baixa')
 			$.fancybox.open({
@@ -658,12 +718,8 @@
 		
 		baixasAtualizar();
 	});
-
-	
-
-
-
 </script>
+
 <section class="modal" style="height:auto; width:950px;">
 
 	<header class="modal-header">

@@ -76,6 +76,16 @@
 	$_receber=(isset($_GET['receber']) and $_GET['receber']==1)?1:0;
 
 	
+	if(isset($_GET['desconciliar']) and is_numeric($_GET['desconciliar'])) {
+
+		if($financeiro->contaDesconciliar($_GET['desconciliar'])) {
+			if(isset($values['edita']) and is_numeric($values['edita'])) $url.="&form=1&edtia=".$values['edita'];
+			$jsc->go($_page."?".$url);
+		} else {
+			$jsc->jAlert($financeiro->erro,"erro","");
+		}
+	}
+
 	if(isset($_GET['form'])) {
 
 		$cnt=$extrato='';
@@ -725,8 +735,20 @@
 									</tr>
 									<?php
 									$total=0;
+									$descontosMultasJuros=array();
 									foreach($extrato as $x) {
-									// /	$total+=$x->valor;
+
+										if($x->juros!=0) $descontosMultasJuros[]=array('data'=>$x->data_extrato,
+																						'titulo'=>'JUROS',
+																						'valor'=>$x->juros);
+
+										if($x->multa!=0) $descontosMultasJuros[]=array('data'=>$x->data_extrato,
+																						'titulo'=>'MULTA',
+																						'valor'=>$x->multa);
+
+										if($x->desconto!=0) $descontosMultasJuros[]=array('data'=>$x->data_extrato,
+																							'titulo'=>'DESCONTO',
+																							'valor'=>$x->desconto);
 									?>
 									<tr>
 										<td><?php echo $x->dataf;?></td>
@@ -738,6 +760,20 @@
 										<td><a href="pg_financeiro_movimentacao.php?id_conta=<?php echo $x->id_conta;?>&form=1&edita=<?php echo $x->id;?>" target="_blank" class="button" style="color:#FFF"><span class="iconify" data-icon="bx:bx-search-alt"></span></a></td>
 									</tr>
 									<?php
+									}
+									foreach($descontosMultasJuros as $x) {
+										$x=(object)$x;
+									?>
+									<tr>
+										<td><?php echo date('d/m/Y',strtotime($cnt->data));?></td>
+										<td>-</td>
+										<td><?php echo $x->titulo;?> do MOVIMENTO</td>
+										<td>-</td>
+										<td>-</td>
+										<td style="text-align: right"><font color="<?php echo $x->valor>=0?"green":"red";?>"><?php echo number_format($x->valor,2,",",".");?></font></td>
+										<td>-</td>
+									</tr>
+									<?php	
 									}
 									if($cnt->juros!=0) {
 										$total-=$cnt->juros;
@@ -980,8 +1016,8 @@
 
 					<div class="paciente-info-opcoes">
 						<a href="javascript:;" class="js-btn-editar button">Editar</a>
-						<a href="javascript:;" target="_blank" data-fancybox data-type="ajax" class="js-btn-pagar button">Pagar</a>
-						<a href="javascript:;" target="_blank" data-fancybox data-type="ajax" class="js-btn-conciliar button">Conciliar</a>
+						<a href="javascript:;" data-fancybox data-type="ajax" class="js-btn-pagar button">Pagar</a>
+						<a href="javascript:;" data-fancybox data-type="ajax" class="js-btn-conciliar button">Conciliar</a><a href="javascript:;" class="js-btn-desconciliar button">Desconciliar</a>
 					</div>
 	    		</section>
 
@@ -1003,11 +1039,14 @@
 						pagamento = $(`div.reg a:eq(${index})`).find('.js-pagamento').val();
 						conciliado = $(`div.reg a:eq(${index})`).find('.js-conciliado').val();
 
+						$('#cal-popup .js-btn-desconciliar').hide();
+						
 						if(pagamento==1) {
 							$('.js-btn-pagar').hide();
 
 							if(conciliado==1) {
 								$('#cal-popup .js-btn-conciliar').hide();
+								$('#cal-popup .js-btn-desconciliar').show().attr('href',`?desconciliar=${id}&<?php echo $url;?>`);
 							} else {
 
 								$('#cal-popup .js-btn-conciliar').show();
@@ -1041,7 +1080,7 @@
 
 						$('#cal-popup .js-btn-editar').attr('href',`?form=1&edita=${id}&<?php echo $url;?>`);
 						$('#cal-popup .js-btn-pagar').attr('href',`box/boxFinanceiroEfetivar.php?id=${id}`);
-						$('#cal-popup .js-btn-conciliar').attr('href',`box/boxConciliacao.php?id=${id}`);
+						$('#cal-popup .js-btn-conciliar').attr('href',`box/boxConciliacaoDeFluxo.php?id=${id}`);
 						
 					}
 
@@ -1076,7 +1115,7 @@
 				<div class="reg">
 					<?php
 					$sql->consultPagMto2($_table,"*",10,$where,"",15,"pagina",$_page."?".$url."&pagina=");
-					//echo $where;
+					echo $where."->".$sql->rows;;
 					$registros=array();
 					$fluxosIDs=array();
 					$fornecedoresIds=$colaboradoresIds=$pacientesIds=array(-1);

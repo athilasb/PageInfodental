@@ -50,7 +50,18 @@
 
 	$_receber=(isset($_GET['receber']) and $_GET['receber']==1)?1:0;
 
-	
+
+	if(isset($_GET['desconciliar']) and is_numeric($_GET['desconciliar'])) {// and ($conta->tipo!="contacorrente" or $usrCargo->admin==1)) {
+			
+		if($financeiro->extratoDesconciliar($_GET['desconciliar'])) {
+			if(isset($values['edita']) and is_numeric($values['edita'])) $url.="&form=1&edtia=".$values['edita'];
+			$jsc->go($_page."?".$url);
+			die();
+		} else {
+			$jsc->jAlert($financeiro->erro,"erro","");
+		}
+	}
+
 	if(isset($_GET['form'])) {
 
 		$cnt='';
@@ -126,6 +137,17 @@
 		if(is_object($cnt) and isset($_GET['deleta']) and is_numeric($_GET['deleta'])) {
 
 		}
+		$permissaoEdicao=true;
+
+			if($conta->tipo=="contacorrente") {
+				if(is_object($cnt) or is_array($conta) or is_array($transferencia)) {
+					$permissaoEdicao=false;
+				}
+			} else {
+				if((is_object($cnt) and $cnt->ajuste==0) or is_array($conta) or is_array($transferencia)) {
+					$permissaoEdicao=false;
+				}
+			}
 
 		//var_dump($values);
 	?>
@@ -297,64 +319,205 @@
 							?>
 
 							
-						</fieldset>			
+						</fieldset>		
+
+						<?php
+						if(is_object($cnt)) {
+							if(is_array($fluxos)) {
+						?>
+						<fieldset>
+							<legend>Conciliada com Conta a <?php echo $cnt->valor>0?"Receber":"Pagar";?></legend>
+
+							<div class="registros">
+								<table class="tablesorter">
+									<tr>
+										<th style="width:60px;">Data</th>
+										<th>Referência</th>
+										<th>Descrição</th>
+										<th style="width:120px;">Valor</th>
+										<th style="width:50px;">Ação</th>
+									</tr>
+									<?php
+									$total=0;
+									if($cnt->valor>0) $funcao="receber";
+									else $funcao="pagar";
+									$aux=1;
+									$descontosMultasJuros=array();
+									foreach($fluxos as $x) {
+
+										if($x->juros!=0) $descontosMultasJuros[]=array('data'=>$x->data_efetivado,
+																						'titulo'=>'JUROS',
+																						'valor'=>$x->juros);
+
+										if($x->multa!=0) $descontosMultasJuros[]=array('data'=>$x->data_efetivado,
+																						'titulo'=>'MULTA',
+																						'valor'=>$x->multa);
+
+										if($x->desconto!=0) $descontosMultasJuros[]=array('data'=>$x->data_efetivado,
+																							'titulo'=>'DESCONTO',
+																							'valor'=>$x->desconto);
+										$total+=$x->valor;
+									?>
+									<tr>
+										<td><?php echo $x->dataf;?></td>
+										<td>
+											<?php
+											$fornecedores='';
+											$fornecedores.=$financeiro->getPaganteCredor($x->id).", ";
+											$fornecedores=substr($fornecedores,0,strlen($fornecedores)-2);
+											echo $fornecedores;
+											?>
+										</td>
+										<td><?php echo !empty($x->descricao)?utf8_encode($x->descricao):'-';?></td>
+										<td style="text-align: right"><font color="<?php echo $x->valor>=0?"green":"red";?>"><?php echo number_format($x->valor,2,",",".");?></font></td>
+										<td>
+											<a href="pg_financeiro_fluxo.php?form=1&funcao=<?php echo $funcao."&edita=".$x->id;?>" class="button" target="_blank" style="color:#FFF"><span class="iconify" data-icon="bx:bx-search-alt"></span></a>
+
+										</td>
+									</tr>
+									<?php
+										foreach($descontosMultasJuros as $x) {
+											$x=(object)$x;
+										?>
+										<tr>
+											<td><?php echo date('d/m/Y',strtotime($cnt->data));?></td>
+											<td>-</td>
+											<td><?php echo $x->titulo;?> do FLUXO</td>
+											<td>-</td>
+											<td>-</td>
+											<td style="text-align: right"><font color="<?php echo $x->valor>=0?"green":"red";?>"><?php echo number_format($x->valor,2,",",".");?></font></td>
+											<td>-</td>
+										</tr>
+										<?php	
+										}
+										if($x->juros!=0) {
+											$total-=$x->juros;
+										?>
+										<tr>
+											<td><?php echo invDate2($cnt->data_extrato);?></td>
+											<td>JUROS</td>
+											<td>-</td>
+											<td style="text-align: right"><font color="<?php echo $cnt->juros>=0?"green":"red";?>"><?php echo number_format($x->juros,2,",",".");?></font></td>
+											<td>-</td>
+										</tr>
+										<?php
+										}
+										if($x->multa!=0) {
+											$total-=$x->multa;
+										?>
+										<tr>
+											<td><?php echo invDate2($cnt->data_extrato);?></td>
+											<td>MULTA</td>
+											<td>-</td>
+											<td style="text-align: right"><font color="<?php echo $x->multa>=0?"green":"red";?>"><?php echo number_format($x->multa,2,",",".");?></font></td>
+											<td>-</td>
+										</tr>
+										<?php
+										}
+										if($x->desconto!=0) {
+											$total-=$x->desconto;
+										?>
+										<tr>
+											<td><?php echo invDate2($cnt->data_extrato);?></td>
+											<td>DESCONTO</td>
+											<td>-</td>
+											<td style="text-align: right"><font color="<?php echo $x->desconto>=0?"green":"red";?>"><?php echo number_format($x->desconto,2,",",".");?></font></td>
+											<td>-</td>
+										</tr>
+										<?php
+										}
+									}
+									if($cnt->juros!=0) {
+										$total-=$cnt->juros;
+									?>
+									<tr>
+										<td><?php echo invDate2($cnt->data_extrato);?></td>
+										<td>JUROS</td>
+											<td>-</td>
+										<td style="text-align: right"><font color="<?php echo $cnt->juros>=0?"green":"red";?>"><?php echo number_format($cnt->juros,2,",",".");?></font></td>
+										<td>-</td>
+									</tr>
+									<?php
+									}
+									if($cnt->multa!=0) {
+										$total-=$cnt->multa;
+									?>
+									<tr>
+										<td><?php echo invDate2($cnt->data_extrato);?></td>
+										<td>MULTA</td>
+											<td>-</td>
+										<td style="text-align: right"><font color="<?php echo $cnt->multa>=0?"green":"red";?>"><?php echo number_format($cnt->multa,2,",",".");?></font></td>
+										<td>-</td>
+									</tr>
+									<?php
+									}
+									if($cnt->desconto!=0) {
+										$total-=$cnt->desconto;
+									?>
+									<tr>
+										<td><?php echo invDate2($cnt->data_extrato);?></td>
+										<td>DESCONTO</td>
+										<td>-</td>
+										<td style="text-align: right"><font color="<?php echo $cnt->desconto>=0?"green":"red";?>"><?php echo number_format($cnt->desconto,2,",",".");?></font></td>
+										<td>-</td>
+									</tr>
+									<?php
+									}
+									?>
+
+								</table>
+
+							</div>
+						</fieldset>
+						<?php
+							} else if(is_array($transferencia)) {
+								$_bancosEContas=array();
+								$sql->consult($_p."unidades_bancosecontas","*","where lixo=0");
+								if($sql->rows) {
+									while($x=mysqli_fetch_object($sql->mysqry)) {
+										$_bancosEContas[$x->id]=$x;
+									}
+								}
+						?>
+						<fieldset>
+							<legend>Movimento Transferido</legend>
+
+							<div class="box-registros">
+								<table class="tablesorter">
+									<tr>
+										<th>Data</th>
+										<th>Banco</th>
+										<th>Descrição</th>
+										<th>Categoria</th>
+										<th>Clienete/Fornecedor</th>
+										<th>Valor</th>
+										<th>Ação</th>
+									</tr>
+									<?php
+									foreach($transferencia as $x) {
+									?>
+									<tr>
+										<td><?php echo $x->dataf;?></td>
+										<td><?php echo utf8_encode($_bancosEContas[$x->id_banco]->titulo);?></td>
+										<td><?php echo utf8_encode($x->descricao);?></td>
+										<td><font color="<?php echo $x->valor>=0?"green":"red";?>"><?php echo number_format($x->valor,2,",",".");?></font></td>
+										<td><a href="movimentobancario.php?acao=form&id_banco=<?php echo $x->id_banco;?>&edita=<?php echo $x->id;?>" target="_blank" class="botao"><i class="icon-search"></i></a></td>
+									</tr>
+									<?php
+									}
+									?>
+
+								</table>
+
+							</div>
+						</fieldset>
+						<?php
+							}
+						}
+						?>	
 						
 					</div>
 
-
-					<?php /*<fieldset>
-						<legend><?php echo $_receber==1?"Conta à Receber":"Conta à Pagar";?></legend>
-						<div class="colunas6">
-							<dl>
-								<dt>Vencimento</dt>
-								<dd><input type="text" name="data_vencimento" value="<?php echo $values['data_vencimento'];?>" class="obg data datecalendar"></dd>
-							</dl>
-							<dl>
-								<dt>Valor</dt>
-								<dd><input type="text" name="valor" value="<?php echo $values['valor'];?>" class="obg money"></dd>
-							</dl>
-							<dl class="dl2">
-								<dt>Forma de Pagamento</dt>
-								<dd>
-									<select name="id_formapagamento" class="" placeholder="Forma de Pagamento">
-										<option value="">-</option>
-										<?php
-										foreach($_formasDePagamentos as $k=>$v) {
-										?>
-										<option value="<?php echo $k;?>"<?php echo $values['id_formapagamento']==$k?" selected":"";?>><?php echo utf8_encode($v->titulo);?></option>
-										<?php	
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
-						</div>
-						<div class="colunas6">
-							<dl class="dl2">
-								<dt>Categoria <a href="pg_configuracoes_categorias.php" target="_blank" class="botao"><span class="iconify" data-icon="akar-icons:circle-plus"></span></a></dt>
-								<dd>
-									<select name="id_categoria" class="obg chosen">
-										<option value=""></option>
-										<?php
-										foreach($_categoriasFinanceiroCategorias as $c)  {
-											if(isset($_categoriasFinanceiroSubcategorias[$c->id])) {
-												echo '<optgroup label="'.utf8_encode($c->titulo).'">';
-												foreach($_categoriasFinanceiroSubcategorias[$c->id] as $v) {
-													echo '<option value="'.$v->id.'"'.($values['id_categoria']==$v->id?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
-												}
-												echo '</optgroup>';
-											}
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
-							<dl class="dl4">
-								<dt>Descriçao</dt>
-								<dd><input type="text" name="descricao" value="<?php echo $values['descricao'];?>" /></dd>
-							</dl>
-						</div>
-					</fieldset>*/?>
 				</form>
 			</div>
 		</section>
@@ -402,6 +565,15 @@
 				}
 			} else {
 				$jsc->jAlert("Conta não encontrada!","erro", "");
+			}
+		} else if(isset($_POST['conciliar']) and is_numeric($_POST['conciliar'])) {
+
+			// metodo concilia Fluxo ao movimento
+			if($financeiro->movimentoConciliar($_POST)) {
+				//echo "ok";
+				$jsc->go($_page."?".$url);
+			} else {
+				$jsc->jAlert($financeiro->erro,"erro","");
 			}
 		}
  
@@ -462,7 +634,8 @@
 
 					<center>
 						<a href="javascript:;" class="js-btn-editar button">Editar</a>
-						<a href="javascript:;" data-fancybox data-type="ajax" class="js-btn-conciliar button">Conciliar</a>
+						<?php /*<a href="javascript:;" data-fancybox data-type="ajax" class="js-btn-conciliar button">Conciliar</a>*/?>
+						<a href="javascript:;" class="js-btn-desconciliar button">Desconciliar</a>
 					</center>
 	    		</section>
 
@@ -503,9 +676,13 @@
 
 						$('#cal-popup .js-btn-editar').attr('href',`?form=1&edita=${id}&<?php echo $url;?>`);
 						$('#cal-popup .js-btn-conciliar').hide().attr('href',`javascript:;`);
+						$('#cal-popup .js-btn-desconciliar').hide();
 
 						if(conciliado==0) {
-							$('#cal-popup .js-btn-conciliar').show().attr('href',`box/boxExtratoConciliacao.php?id=${id}`);
+							$('#cal-popup .js-btn-conciliar').show().attr('href',`box/boxConciliacaoDeMovimentacao.php?id=${id}`);
+						} else {
+
+							$('#cal-popup .js-btn-desconciliar').show().attr('href',`?desconciliar=${id}&<?php echo $url;?>`);
 						}
 						
 					}

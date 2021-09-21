@@ -18,11 +18,13 @@
 
 	// promessa de pagamento
 	$regs=array();
+	$pagamentosIds=array(0);
 	$sql->consult($_p."pacientes_tratamentos_pagamentos","*","WHERE data_vencimento>=now() and pago=0 and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$pacientesIds[$x->id_paciente]=$x->id_paciente;
 		$tratamentosIds[$x->id_tratamento]=$x->id_tratamento;
 		$regs[]=$x;
+		$pagamentosIds[]=$x->id;
 	}
 
 
@@ -44,6 +46,19 @@
 		$regsAdi[]=$x;
 	}
 
+	// baixas
+	$_baixas=array();
+	$sql->consult($_p."pacientes_tratamentos_pagamentos_baixas","*","where id_pagamento IN (".implode(",",$pagamentosIds).") and lixo=0");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		if(!isset($_baixas[$x->id_pagamento])) {
+			$_baixas[$x->id_pagamento]=array('valor'=>0,
+												'baixas'=>array());
+		}
+
+		$_baixas[$x->id_pagamento]['valor']+=$x->valor;
+		$_baixas[$x->id_pagamento]['baixas'][]=$x;
+	}
+
 
 	$_pacientes=array();
 	$sql->consult($_p."pacientes","id,nome","where id IN (".implode(",",$pacientesIds).")");
@@ -58,11 +73,12 @@
 		$_tratamentos[$x->id]=$x;
 	}
 
-
+	$_receberNoDia=array();
 	$_inadimplentes=array();
 	$_inadimplentesIds=array();
 	foreach($regsIn as $x) {
 		if(isset($_pacientes[$x->id_paciente]) && isset($_tratamentos[$x->id_tratamento])) {
+
 			$_inadimplentesIds[$x->id_paciente]=1;
 			$paciente=$_pacientes[$x->id_paciente];
 			$plano=$_tratamentos[$x->id_tratamento];
@@ -70,12 +86,19 @@
 			$aux = explode(" ",$paciente->nome);
 
 			$pacienteNome=$aux[0]." ".$aux[count($aux)-1];
+
+			if(isset($_baixas[$x->id])) {
+				var_dump($_baixas[$x->id]);
+			} else {
+
 		
-			$_inadimplentes[]=array('id_paciente'=>$paciente->id,
-										'paciente'=>utf8_encode($pacienteNome),
-										'plano'=>utf8_encode($plano->titulo),
-										'data_vencimento'=>date('d/m/Y',strtotime($x->data_vencimento)),
-										'valor'=>$x->valor);
+				$_inadimplentes[]=array('id_paciente'=>$paciente->id,
+											'paciente'=>utf8_encode($pacienteNome),
+											'plano'=>utf8_encode($plano->titulo),
+											'data_vencimento'=>date('d/m/Y',strtotime($x->data_vencimento)),
+											'valor'=>$x->valor,
+											'baixa'=>0);
+			}
 		}
 	
 	}
@@ -90,12 +113,41 @@
 			$aux = explode(" ",$paciente->nome);
 
 			$pacienteNome=$aux[0]." ".$aux[count($aux)-1];
-		
-			$_promessaDePagamento[]=array('id_paciente'=>$paciente->id,
-										'paciente'=>utf8_encode($pacienteNome),
-										'plano'=>utf8_encode($plano->titulo),
-										'data_vencimento'=>date('d/m/Y',strtotime($x->data_vencimento)),
-										'valor'=>$x->valor);
+
+			//echo $x->valor.": <BR><BR>";
+
+			if(isset($_baixas[$x->id]) and $_baixas[$x->id]['valor']==$x->valor) {
+				$baixa=$_baixas[$x->id];
+				foreach($baixa['baixas'] as $b) {
+			
+
+					if(strtotime($b->data_vencimento)==strtotime(date('Y-m-d'))) {
+						$_receberNoDia[]=array('id_paciente'=>$paciente->id,
+												'paciente'=>utf8_encode($pacienteNome),
+												'plano'=>utf8_encode($plano->titulo),
+												'data_vencimento'=>date('d/m/Y',strtotime($b->data_vencimento)),
+												'valor'=>$b->valor,
+												'baixa'=>1);
+					} else if(strtotime($b->data_vencimento)<strtotime(date('Y-m-d'))) {
+						$_inadimplentes[]=array('id_paciente'=>$paciente->id,
+												'paciente'=>utf8_encode($pacienteNome),
+												'plano'=>utf8_encode($plano->titulo),
+												'data_vencimento'=>date('d/m/Y',strtotime($b->data_vencimento)),
+												'valor'=>$b->valor,
+												'baixa'=>1);
+					}
+
+					
+				}
+			} else {
+
+				$_promessaDePagamento[]=array('id_paciente'=>$paciente->id,
+											'paciente'=>utf8_encode($pacienteNome),
+											'plano'=>utf8_encode($plano->titulo),
+											'data_vencimento'=>date('d/m/Y',strtotime($x->data_vencimento)),
+											'valor'=>$x->valor,
+											'baixa'=>0);
+			}
 		}
 	
 	}
@@ -184,7 +236,7 @@
 									</div>
 								</div>`;
 
-					$(`#kanban .js-kanban-status-semAgendamento`).append(html);
+					//$(`#kanban .js-kanban-status-semAgendamento`).append(html);
 				})
 			}	
 
@@ -283,6 +335,7 @@
 							<h1><?php echo $x->paciente." - ".$x->id_paciente;?></h1>
 							<h2><?php echo $x->plano;?></h2>
 							<h2><?php echo $x->data_vencimento;?> - <?php echo number_format($x->valor,2,",",".");?></h2>
+							<?php echo $x->baixa==1?"baixa":"";?>
 						</a>
 						<?php
 						}
@@ -301,6 +354,7 @@
 							<h1><?php echo $x->paciente." - ".$x->id_paciente;?></h1>
 							<h2><?php echo $x->plano;?></h2>
 							<h2><?php echo $x->data_vencimento;?> - <?php echo number_format($x->valor,2,",",".");?></h2>
+							<?php echo $x->baixa==1?"baixa":"";?>
 						</a>
 						<?php
 						}
@@ -309,7 +363,7 @@
 				</div>
 				
 				<div class="kanban-item" style="background:#53d429;color:var(--cor1);">
-					<h1 class="kanban-item__titulo">Adimplente (<?php echo count($_adimplentes);?>)</h1>
+					<h1 class="kanban-item__titulo">À receber do dia (<?php echo count($_adimplentes);?>)</h1>
 					<div class="kanban-card" style="min-height: 100px;">
 						<?php
 						foreach($_adimplentes as $x) {
@@ -327,9 +381,20 @@
 				</div>
 				
 				<div class="kanban-item" style="background:#f6ac09;color:var(--cor1);">
-					<h1 class="kanban-item__titulo">Conta a Pagar</h1>
+					<h1 class="kanban-item__titulo">À pagar do dia</h1>
 					<div class="kanban-card" style="min-height: 100px;">
-						
+						<?php
+						foreach($_receberNoDia as $x) {
+							$x=(object)$x;
+						?>
+						<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
+							<h1><?php echo $x->paciente." - ".$x->id_paciente;?></h1>
+							<h2><?php echo $x->plano;?></h2>
+							<h2><?php echo $x->data_vencimento;?> - <?php echo number_format($x->valor,2,",",".");?></h2>
+						</a>
+						<?php
+						}
+						?>
 					</div>
 				</div>
 				
