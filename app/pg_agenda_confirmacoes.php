@@ -1000,7 +1000,17 @@
 
 			});
 		</script>
+
+		<section class="nav2">
+			<a href="javascript:;" class="active tooltip" title="Legenda"><i class="iconify" data-icon="bx:bx-check"></i></a>
+			<a href="javascript:;" class="tooltip" title="Legenda"><i class="iconify" data-icon="gridicons-multiple-users"></i></a>
+			<a href="javascript:;" class="tooltip" title="Legenda"><i class="iconify" data-icon="bx:bx-dollar-circle"></i></a>
+			<a href="javascript:;" class="tooltip" title="Legenda"><i class="iconify" data-icon="bx:bx-filter-alt"></i></a>
+			
+		</section>
+
 		<section class="grid">
+
 			<div class="kanban" id="kanban">
 				
 				<div class="kanban-item" style="background:<?php echo $s->cor;?>;color:var(--cor1);">
