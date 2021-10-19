@@ -241,14 +241,27 @@
 			}
 
 			$_procedimentos=array();
-			$procedimentosIds=array(-1);
-			$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and lixo=0");
+			$_procedimentosAprovado=array();
+			$procedimentosIds=$tratamentosProcedimentosIDs=array(-1);
+			$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and situacao='aprovado' and lixo=0");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
-				if($x->situacao=="aprovado") {
-					$_procedimentos[$x->id_tratamento][]=$x;
+				$tratamentosProcedimentosIDs[]=$x->id;
+				$_procedimentosAprovado[$x->id]=$x;
+			}
+
+			$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIDs).") and lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				if(isset($_procedimentosAprovado[$x->id_tratamento_procedimento])) {
+					$p=$_procedimentosAprovado[$x->id_tratamento_procedimento];
+				
+					if($x->status_evolucao=="finalizado") {
+						$_procedimentosFinalizados[$p->id_tratamento][]=$x;
+					} 
+					$_todosProcedimentos[$p->id_tratamento][]=$x;
 					$procedimentosIds[]=$x->id_procedimento;
 				}
 			}
+
 
 			$_procedimentosObj=array();
 			$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$procedimentosIds).")");
@@ -299,14 +312,11 @@
 								$procedimentos=array();
 								if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
 
-								$total=0;
-								$finalizados=0;
-								foreach($procedimentos as $p) {
-									if($p->status_evolucao=='finalizado') $finalizados++;
-									
-									$total++;
-								}
+								$total=isset($_todosProcedimentos[$x->id])?count($_todosProcedimentos[$x->id]):0;
+								$finalizados=isset($_procedimentosFinalizados[$x->id])?count($_procedimentosFinalizados[$x->id]):0;
 								$perc=($total)==0?0:number_format(($finalizados/($total))*100,0,"","");
+
+								
 
 								$abertos=0;
 								$finalizados=0;

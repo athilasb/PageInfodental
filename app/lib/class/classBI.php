@@ -25,9 +25,18 @@
 
 
 			$_evolucoes=array();
+			$tratamentosProcedimentosIds=array(0);
 			$sql->consult($_p."pacientes_tratamentos_procedimentos","id,id_paciente,id_tratamento,status_evolucao","where data > NOW() - INTERVAL 24 MONTH and situacao='aprovado' and id_tratamento>0 and lixo=0");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$_evolucoes[$x->id_paciente][$x->id_tratamento][]=$x;
+				$tratamentosProcedimentosIds[]=$x->id;
+			}
+
+
+			$_tratamentosAprovadosEvolucao=array();
+			$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIds).")");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_tratamentosAprovadosEvolucao[$x->id_tratamento_procedimento][]=$x;
 			}
 
 			// Agendamentos
@@ -43,7 +52,7 @@
 			$_pacientes=array();
 			$pacientesIds=array();
 			$sql->consult($_p."pacientes","*","where lixo=0");
-			echo $sql->rows." pacientes <br >";
+			//echo $sql->rows." pacientes <br >";
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 
 				$diasDeCadastro = floor((strtotime(date('Y-m-d H:i:s')) - strtotime(date($x->data)))/(60*60*24));
@@ -69,7 +78,7 @@
 					}
 				}
 
-				$agendamentos=isset($_agenda[$p->id])?count($_agenda[$p->id]):0;
+				$agendamentos=isset($_agenda[$x->id])?count($_agenda[$x->id]):0;
 
 				$_pacientes[]=array('id'=>$x->id,
 									'codigo_bi'=>$x->codigo_bi,
@@ -125,9 +134,21 @@
 						if(isset($_tratamentosAprovadosPacientes[$p->id])) {
 							foreach($_tratamentosAprovadosPacientes[$p->id] as $t) {
 
+								// procedimentos de tratamentos aprovados
 								if(isset($_evolucoes[$p->id][$t->id])) {
 									foreach($_evolucoes[$p->id][$t->id] as $e) {
-										if($e->status_evolucao!="finalizado") {
+
+										// evolucao de procedimentos de tratamentos aprovados
+										if(isset($_tratamentosAprovadosEvolucao[$e->id])) {
+											foreach($_tratamentosAprovadosEvolucao[$e->id] as $ev) {
+												if($ev->status_evolucao!="finalizado") {
+													$tratamentoConcluido=false;
+													break;
+												}
+											}
+											if($tratamentoConcluido===false) break;
+
+										} else {
 											$tratamentoConcluido=false;
 											break;
 										}
@@ -153,8 +174,20 @@
 						foreach($_tratamentosAprovadosPacientes[$p->id] as $t) {
 							if(isset($_evolucoes[$p->id][$t->id])) {
 								foreach($_evolucoes[$p->id][$t->id] as $e) {
-									if($e->status_evolucao!="finalizado") {
+
+									// evolucao de procedimentos de tratamentos aprovados
+									if(isset($_tratamentosAprovadosEvolucao[$e->id])) {
+										foreach($_tratamentosAprovadosEvolucao[$e->id] as $ev) {
+											if($ev->status_evolucao!="finalizado") {
+												$tratamentoConcluido=false;
+												break;
+											}
+										}
+										if($tratamentoConcluido===false) break;
+										
+									} else {
 										$tratamentoConcluido=false;
+										break;
 									}
 								}
 							} else $tratamentoConcluido=false;
@@ -205,15 +238,15 @@
 
 				
 
-				echo $p->nome.": $categoriaBI";
+				//echo $p->nome.": $categoriaBI";
 
 				if($p->codigo_bi!=$categoriaBI) {
 					$sql->update($_p."pacientes","codigo_bi='$categoriaBI'","where id=$p->id");
 
-					echo " -> refresh";
+					//echo " -> refresh";
 				}
 
-				echo "<BR>";
+				//echo "<BR>";
 
 			}
 

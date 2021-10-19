@@ -43,6 +43,7 @@
 			$procedimentosIds[$x->id_procedimento]=$x->id_procedimento;
 			if($x->situacao=="aprovado" or $x->situacao=="aguardandoAprovacao") {
 				$descontoTotal+=$x->desconto;
+
 				$valorTotalSemDesconto+=$x->valor*$x->quantidade;
 
 				$x->valorSemDesconto=$x->valor*$x->quantidade;
@@ -61,10 +62,11 @@
 		while($x=mysqli_fetch_object($sql->mysqry)) {
 			$procedimentos[]=$x;
 			$procedimentosIds[$x->id_procedimento]=$x->id_procedimento;
-			
-			$descontoTotal+=$x->desconto;
-			$valorTotalSemDesconto+=$x->valorSemDesconto;
-			$valorTotal+=$x->valor;
+			if($x->situacao=="aprovado" or $x->situacao=="aguardandoAprovacao") {
+				$descontoTotal+=$x->desconto;
+				$valorTotalSemDesconto+=$x->valorSemDesconto;
+				$valorTotal+=$x->valor;
+			}
 		}
 
 		$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id_tratamento=$tratamento->id and lixo=0 and fusao=0");

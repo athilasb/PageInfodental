@@ -7,7 +7,7 @@
 		$sql = new Mysql();
 
 		$localIP = '';// getHostByName(getHostName());
-		$cpf=addslashes($_POST['auth_cpf']);
+		$cpf=addslashes(numero($_POST['auth_cpf']));
 		$senha=sha1($_POST['auth_senha']);
 
 		$sql->consult($_p."colaboradores","*","where cpf='".$cpf."' and senha='".$senha."' and permitir_acesso='1' and lixo='0'");	

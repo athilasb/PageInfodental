@@ -243,7 +243,7 @@
 																</div>
 															</a>`);
 						});
-							$('textarea[name=variacoes]').val(JSON.stringify(variacoes))
+						$('textarea[name=variacoes]').val(JSON.stringify(variacoes))
 					}
 
 					$(function(){
@@ -251,6 +251,30 @@
 						$('select[name=id_marca],input[name=titulo]').change(function(){
 							variacoesLista();
 						});
+
+						$('.js-btn-removerVariacao').click(function(){
+
+							let titulo = $('input.js-titulo').val();
+							let estoqueMin = $('input.js-estoqueMin').val();
+							let referencia = $('input.js-referencia').val();
+							let index = $('input.js-index').val();
+							let id_variacao = $('input.js-id_variacao').val();
+
+							let item = { titulo, estoqueMin, referencia, id_variacao };
+
+							if($.isNumeric(eval(index))) {
+								variacoes[eval(index)]=item;
+							} else {
+								variacoes.push(item);
+							}
+							
+
+							$('.js-btn-removerVariacao').hide();
+							$('.js-titulo,.js-estoqueMin,.js-referencia,.js-index,.js-id_variacao').val('');
+
+
+							variacoesLista();
+						});	
 
 						$('.js-btn-addVariacao').click(function(){
 
@@ -268,6 +292,8 @@
 								variacoes.push(item);
 							}
 							
+
+							$('.js-btn-removerVariacao').hide();
 							$('.js-titulo,.js-estoqueMin,.js-referencia,.js-index,.js-id_variacao').val('');
 
 
@@ -279,14 +305,14 @@
 							
 
 							let info = variacoes[index];
-
+							$('.js-btn-removerVariacao').show();
 							$('.js-titulo').val(info.titulo);
 							$('.js-estoqueMin').val(info.estoqueMin);
 							$('.js-referencia').val(info.referencia);
 							$('.js-id_variacao').val(info.id_variacao?info.id_variacao:'');
 							$('.js-index').val(index);
 						});
-
+						$('.js-btn-removerVariacao').hide();
 						variacoesLista();
 					});
 				</script>
@@ -310,7 +336,8 @@
 						<dl>
 							<dt>&nbsp;</dt>
 							<dd>
-								<a href="javascript:;" class="button js-btn-addVariacao" style="background:var(--verde);"><span>Salvar</span></a>
+								<a href="javascript:;" class="button js-btn-addVariacao" style="background:var(--verde);"><span>Adicionar</span></a>
+								<a href="javascript:;" class="button js-btn-removerVariacao" style="background:var(--vermelho);"><span>Excluir</span></a>
 							</dd>
 						</dl>
 					</div>

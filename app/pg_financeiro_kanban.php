@@ -16,10 +16,16 @@
 	$pacientesIds=array(-1);
 	$traatmentosIds=array(-1);
 
+	$totais=array('promessa'=>0,
+					'inadimplentes'=>0,
+					'receber'=>0,
+					'pagar'=>0,
+					'vencidas'=>0);
+
 	// promessa de pagamento
 	$regs=array();
 	$pagamentosIds=array(0);
-	$sql->consult($_p."pacientes_tratamentos_pagamentos","*","WHERE data_vencimento>=now() and pago=0 and lixo=0");
+	$sql->consult($_p."pacientes_tratamentos_pagamentos","*","WHERE data_vencimento>=current_date() and pago=0 and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$pacientesIds[$x->id_paciente]=$x->id_paciente;
 		$tratamentosIds[$x->id_tratamento]=$x->id_tratamento;
@@ -30,7 +36,7 @@
 
 	// inadimplentes
 	$regsIn=array();
-	$sql->consult($_p."pacientes_tratamentos_pagamentos","*","WHERE data_vencimento<now() and pago=0 and lixo=0");
+	$sql->consult($_p."pacientes_tratamentos_pagamentos","*","WHERE data_vencimento<'".date('Y-m-d')."' and pago=0 and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$pacientesIds[$x->id_paciente]=$x->id_paciente;
 		$tratamentosIds[$x->id_tratamento]=$x->id_tratamento;
@@ -51,20 +57,10 @@
 	$sql->consult($_p."pacientes_tratamentos_pagamentos_baixas","*","where id_pagamento IN (".implode(",",$pagamentosIds).") and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		if(!isset($_baixas[$x->id_pagamento])) {
-			$_baixas[$x->id_pagamento]=array('valor'=>0,
-												'baixas'=>array());
+			$_baixas[$x->id_pagamento]=array('valor'=>0,'baixas'=>array());
 		}
-
 		$_baixas[$x->id_pagamento]['valor']+=$x->valor;
 		$_baixas[$x->id_pagamento]['baixas'][]=$x;
-	}
-
-
-	$_pacientes=array();
-	$sql->consult($_p."pacientes","id,nome","where id IN (".implode(",",$pacientesIds).")");
-
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_pacientes[$x->id]=$x;
 	}
 
 	$_tratamentos=array(); 
@@ -73,13 +69,37 @@
 		$_tratamentos[$x->id]=$x;
 	}
 
+
+	$fornecedoresIds=$colaboradoresIds=array(0);
+	$regsContas=array();
+	$sql->consult($_p."financeiro_fluxo","*","WHERE valor<0 and data_vencimento<='".date('Y-m-d')."' and lixo=0");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$regsContas[]=$x;
+		if($x->credor_pagante=="fornecedor") $fornecedoresIds[]=$x->id_fornecedor;
+		else if($x->credor_pagante=="paciente") $pacientesIds[]=$x->id_paciente;
+		else if($x->credor_pagante=="colaborador") $colaboradoresIds[]=$x->id_colaborador;
+	}
+
+	$_fornecedores=array();
+	$sql->consult($_p."parametros_fornecedores","id,IF(tipo_pessoa='pj',razao_social,nome) as titulo","where id IN (".implode(",",$fornecedoresIds).")");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_fornecedores[$x->id]=$x;
+
+	$_colaboradores=array();
+	$sql->consult($_p."colaboradores","id,nome","where id IN (".implode(",",$colaboradoresIds).")");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_colaboradores[$x->id]=$x;
+
+	$_pacientes=array();
+	$sql->consult($_p."pacientes","id,nome","where id IN (".implode(",",$pacientesIds).")");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_pacientes[$x->id]=$x;
+
+
 	$_receberNoDia=array();
 	$_inadimplentes=array();
 	$_inadimplentesIds=array();
 	foreach($regsIn as $x) {
 		if(isset($_pacientes[$x->id_paciente]) && isset($_tratamentos[$x->id_tratamento])) {
 
-			$_inadimplentesIds[$x->id_paciente]=1;
+			$_inadimplentesIds[$x->id]=1;
 			$paciente=$_pacientes[$x->id_paciente];
 			$plano=$_tratamentos[$x->id_tratamento];
 
@@ -90,8 +110,7 @@
 			if(isset($_baixas[$x->id])) {
 				var_dump($_baixas[$x->id]);
 			} else {
-
-		
+				$totais['inadimplentes']+=$x->valor;
 				$_inadimplentes[]=array('id_paciente'=>$paciente->id,
 											'paciente'=>utf8_encode($pacienteNome),
 											'plano'=>utf8_encode($plano->titulo),
@@ -105,7 +124,11 @@
 
 	$_promessaDePagamento=array();
 	foreach($regs as $x) {
-		if(isset($_inadimplentesIds[$x->id_paciente])) continue;
+
+		
+		if(isset($_inadimplentesIds[$x->id])) { 
+			continue;
+		}
 		if(isset($_pacientes[$x->id_paciente]) && isset($_tratamentos[$x->id_tratamento])) {
 			$paciente=$_pacientes[$x->id_paciente];
 			$plano=$_tratamentos[$x->id_tratamento];
@@ -114,14 +137,13 @@
 
 			$pacienteNome=$aux[0]." ".$aux[count($aux)-1];
 
-			//echo $x->valor.": <BR><BR>";
-
 			if(isset($_baixas[$x->id]) and $_baixas[$x->id]['valor']==$x->valor) {
 				$baixa=$_baixas[$x->id];
 				foreach($baixa['baixas'] as $b) {
 			
 
 					if(strtotime($b->data_vencimento)==strtotime(date('Y-m-d'))) {
+						$totais['receber']+=$b->valor;
 						$_receberNoDia[]=array('id_paciente'=>$paciente->id,
 												'paciente'=>utf8_encode($pacienteNome),
 												'plano'=>utf8_encode($plano->titulo),
@@ -129,6 +151,8 @@
 												'valor'=>$b->valor,
 												'baixa'=>1);
 					} else if(strtotime($b->data_vencimento)<strtotime(date('Y-m-d'))) {
+						$totais['inadimplentes']+=$b->valor;
+					
 						$_inadimplentes[]=array('id_paciente'=>$paciente->id,
 												'paciente'=>utf8_encode($pacienteNome),
 												'plano'=>utf8_encode($plano->titulo),
@@ -139,22 +163,44 @@
 
 					
 				}
-			} else {
+			} else { 
+				if(strtotime($x->data_vencimento)==strtotime(date('Y-m-d'))) {
 
-				$_promessaDePagamento[]=array('id_paciente'=>$paciente->id,
-											'paciente'=>utf8_encode($pacienteNome),
-											'plano'=>utf8_encode($plano->titulo),
-											'data_vencimento'=>date('d/m/Y',strtotime($x->data_vencimento)),
-											'valor'=>$x->valor,
-											'baixa'=>0);
+					$totais['receber']+=$x->valor;
+					$_receberNoDia[]=array('id_paciente'=>$paciente->id,
+												'paciente'=>utf8_encode($pacienteNome),
+												'plano'=>utf8_encode($plano->titulo),
+												'data_vencimento'=>date('d/m/Y',strtotime($x->data_vencimento)),
+												'valor'=>$x->valor,
+												'baixa'=>0);
+
+				} else if(strtotime($x->data_vencimento)<strtotime(date('Y-m-d'))) {
+
+					
+					$totais['inadimplentes']+=$x->valor;
+					$_inadimplentes[]=array('id_paciente'=>$paciente->id,
+												'paciente'=>utf8_encode($pacienteNome),
+												'plano'=>utf8_encode($plano->titulo),
+												'data_vencimento'=>date('d/m/Y',strtotime($x->data_vencimento)),
+												'valor'=>$x->valor,
+												'baixa'=>0);
+				} else {
+					$totais['promessa']+=$x->valor;
+					$_promessaDePagamento[]=array('id_paciente'=>$paciente->id,
+												'paciente'=>utf8_encode($pacienteNome),
+												'plano'=>utf8_encode($plano->titulo),
+												'data_vencimento'=>date('d/m/Y',strtotime($x->data_vencimento)),
+												'valor'=>$x->valor,
+												'baixa'=>0);
+				
+				}
 			}
-		}
-	
+		} 
 	}
 
 	$_adimplentes=array();
-	foreach($regsIn as $x) {
-		if(isset($_inadimplentesIds[$x->id_paciente])) continue;
+	foreach($regsIn as $x) { 
+		if(isset($_inadimplentesIds[$x->id])) continue;
 		if(isset($_pacientes[$x->id_paciente]) && isset($_tratamentos[$x->id_tratamento])) {
 		
 			$paciente=$_pacientes[$x->id_paciente];
@@ -170,14 +216,50 @@
 										'data_vencimento'=>date('d/m/Y',strtotime($x->data_vencimento)),
 										'valor'=>$x->valor);
 		}
-	
 	}
+
+	$_contasPagarHoje=$_contasVencidas=array();
+	foreach($regsContas as $x) {
+
+		$pagante = "-";
+		if($x->credor_pagante=="fornecedor" and isset($_fornecedores[$x->id_fornecedor])) {
+			$pagante=utf8_encode($_fornecedores[$x->id_fornecedor]->titulo);
+		} 
+		else if($x->credor_pagante=="paciente" and isset($_pacientes[$x->id_paciente])) {
+			$pagante=utf8_encode($_pacientes[$x->id_paciente]->nome);
+		} 
+		else if($x->credor_pagante=="colaborador" and isset($_colaboradores[$x->id_colaborador])) {
+			$pagante=utf8_encode($_colaboradores[$x->id_colaborador]->nome);
+		}
+
+		if(strtotime(date('Y-m-d'))>strtotime($x->data_vencimento)) {
+			$totais['vencidas']+=$x->valor;
+			$_contasVencidas[]=array('data_vencimento'=>date('d/m/Y', strtotime($x->data_vencimento)),
+									'descricao'=>$x->descricao,
+									'pagante'=>$pagante,
+									'valor'=>(double)$x->valor);
+		} else if(strtotime(date('Y-m-d'))==strtotime($x->data_vencimento)) {
+			$totais['pagar']+=$x->valor;
+			$_contasPagarHoje[]=array('data_vencimento'=>date('d/m/Y', strtotime($x->data_vencimento)),
+									'descricao'=>$x->descricao,
+									'pagante'=>$pagante,
+									'valor'=>(double)$x->valor);
+		} 
+	}
+
+	$_contasEBancos=array();
+	$sql->consult($_p."financeiro_bancosecontas","*","where lixo=0 order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_contasEBancos[$x->id]=$x;
+	}
+
 ?>
 
 	<section class="content">  
 
 		<?php
-		require_once("includes/asideFinanceiro.php");
+		require_once("includes/nav2.php");
+		//require_once("includes/asideFinanceiro.php");
 		?>
 
 		<script type="text/javascript">
@@ -240,8 +322,6 @@
 				})
 			}	
 
-			
-
 			const d2 = (num) => {
 				return num <=9 ? `0${num}`:num;
 			}
@@ -278,7 +358,8 @@
 				$('.js-calendario-title').val(dataFormatada);
 
 				
-				/*var droppable = $(".js-kanban-status").dad({
+				/*
+				var droppable = $(".js-kanban-status").dad({
 					placeholderTarget: ".js-kanban-item"
 				});
 
@@ -296,7 +377,8 @@
 							}
 						}
 					})
-		        });*/
+		        });
+		        */
 
 				$('a.js-right').click(function(){
 					let aux = data.split('-');
@@ -325,7 +407,7 @@
 			<div class="kanban" id="kanban">
 				
 				<div class="kanban-item" style="background:#f9de27;color:var(--cor1);">
-					<h1 class="kanban-item__titulo">Promesssa de Pagamento (<?php echo count($_promessaDePagamento);?>)</h1>
+					<h1 class="kanban-item__titulo"><span class="iconify" data-icon="akar-icons:circle-plus" data-height="20"></span>&nbsp;&nbsp;&nbsp;Promesssa de Pagagamento<br />R$ <?php echo number_format($totais['promessa'],2,",",".");?></h1>
 					<div class="kanban-card" style="min-height: 100px;">
 						<?php
 						foreach($_promessaDePagamento as $x) {
@@ -344,7 +426,7 @@
 				</div>
 				
 				<div class="kanban-item" style="background:#fd4b3e;color:var(--cor1);">
-					<h1 class="kanban-item__titulo">Inadimplente (<?php echo count($_inadimplentes);?>)</h1>
+					<h1 class="kanban-item__titulo"><span class="iconify" data-icon="akar-icons:circle-plus" data-height="20"></span>&nbsp;&nbsp;&nbsp;Inadimplente<br />R$ <?php echo number_format($totais['inadimplentes'],2,",",".");?></h1>
 					<div class="kanban-card" style="min-height: 100px;">
 						<?php
 						foreach($_inadimplentes as $x) {
@@ -363,25 +445,7 @@
 				</div>
 				
 				<div class="kanban-item" style="background:#53d429;color:var(--cor1);">
-					<h1 class="kanban-item__titulo">À receber do dia (<?php echo count($_adimplentes);?>)</h1>
-					<div class="kanban-card" style="min-height: 100px;">
-						<?php
-						foreach($_adimplentes as $x) {
-							$x=(object)$x;
-						?>
-						<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
-							<h1><?php echo $x->paciente." - ".$x->id_paciente;?></h1>
-							<h2><?php echo $x->plano;?></h2>
-							<h2><?php echo $x->data_vencimento;?> - <?php echo number_format($x->valor,2,",",".");?></h2>
-						</a>
-						<?php
-						}
-						?>
-					</div>
-				</div>
-				
-				<div class="kanban-item" style="background:#f6ac09;color:var(--cor1);">
-					<h1 class="kanban-item__titulo">À pagar do dia</h1>
+					<h1 class="kanban-item__titulo"><span class="iconify" data-icon="akar-icons:circle-plus" data-height="20"></span>&nbsp;&nbsp;&nbsp;À receber do dia<br />R$ <?php echo number_format($totais['receber'],2,",",".");?></h1>
 					<div class="kanban-card" style="min-height: 100px;">
 						<?php
 						foreach($_receberNoDia as $x) {
@@ -398,17 +462,64 @@
 					</div>
 				</div>
 				
-				<div class="kanban-item" style="background:#e7000e;color:var(--cor1);">
-					<h1 class="kanban-item__titulo">Conta Vencidas</h1>
+				<div class="kanban-item" style="background:#f6ac09;color:var(--cor1);">
+					<h1 class="kanban-item__titulo"><span class="iconify" data-icon="akar-icons:circle-minus" data-height="20"></span>&nbsp;&nbsp;&nbsp;À pagar do dia<br />R$ <?php echo number_format($totais['pagar'],2,",",".");?></h1>
 					<div class="kanban-card" style="min-height: 100px;">
-						
+						<?php
+						foreach($_contasPagarHoje as $x) {
+							$x=(object)$x;
+						?>
+						<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
+							<h1><?php echo $x->pagante;?></h1>
+							<h2><?php echo $x->descricao;?></h2>
+							<h2><?php echo $x->data_vencimento;?> - <?php echo number_format($x->valor,2,",",".");?></h2>
+						</a>
+						<?php
+						}
+						?>
 					</div>
 				</div>
 				
-				<div class="kanban-item" style="background:#20a602;color:var(--cor1);">
-					<h1 class="kanban-item__titulo">Conta Pagas</h1>
+				<div class="kanban-item" style="background:#e7000e;color:var(--cor1);">
+					<h1 class="kanban-item__titulo"><span class="iconify" data-icon="akar-icons:circle-minus" data-height="20"></span>&nbsp;&nbsp;&nbsp;Conta Vencidas<br />R$ <?php echo number_format($totais['vencidas'],2,",",".");?></h1>
 					<div class="kanban-card" style="min-height: 100px;">
-						
+						<?php
+						foreach($_contasVencidas as $x) {
+							$x=(object)$x;
+						?>
+						<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
+							<h1><?php echo $x->pagante;?></h1>
+							<h2><?php echo $x->descricao;?></h2>
+							<h2><?php echo $x->data_vencimento;?> - <?php echo number_format($x->valor,2,",",".");?></h2>
+						</a>
+						<?php
+						}
+						?>
+					</div>
+				</div>
+				
+				<div class="kanban-item" style="background:none">
+					<h1 class="kanban-item__titulo" style="color:#000">Bancos e Contas</h1>
+					<div class="kanban-card" style="min-height: 100px;">
+						<?php
+						foreach($_contasEBancos as $x) {
+							$saldo=0;
+							$sql->consult($_p."financeiro_extrato","sum(valor) as total","where id_conta=$x->id and lixo=0");
+							if($sql->rows) {
+								$t=mysqli_fetch_object($sql->mysqry);
+								$saldo=$t->total;
+							}
+						?>
+						<a href="javascript:;" class="kanban-card-dados js-kanban-item" style="background:#118fff;">
+							<h1 style="color:#FFF">
+								<?php echo utf8_encode($x->titulo);?>:
+								<br />
+								<?php echo number_format($saldo,2, ",",".");?>
+							</h1>
+						</a>
+						<?php
+						}
+						?>
 					</div>
 				</div>
 				

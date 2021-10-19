@@ -4,8 +4,8 @@
 	$_menu=array('dashboard'=>array('dashboard.php'=>'Dashboard','icone'=>'<i class="iconify" data-icon="ic-outline-dashboard"></i>'),
 					'agenda'=>array('pg_agenda.php'=>'Agenda','icone'=>'<i class="iconify" data-icon="ic-outline-date-range"></i>'),
 
-					'funil_leads'=>array('pg_funil_leads.php'=>'Funil de Leads','icone'=>'<span class="iconify" data-icon="la:funnel-dollar"></span>'),
-					'agenda_confirmacoes'=>array('pg_agenda_confirmacoes.php'=>'Confirmações','icone'=>'<span class="iconify" data-icon="akar-icons:check"></span>'),
+					/*'funil_leads'=>array('pg_funil_leads.php'=>'Funil de Leads','icone'=>'<span class="iconify" data-icon="la:funnel-dollar"></span>'),*/
+					/*'agenda_confirmacoes'=>array('pg_agenda_confirmacoes.php'=>'Confirmações','icone'=>'<span class="iconify" data-icon="akar-icons:check"></span>'),*/
 					/*'contatos'=>array('titulo'=>'Contatos','icone'=>'<i class="iconify" data-icon="ic-baseline-person"></i>','submenu'=>array(
 																		array('pg_contatos_pacientes.php'=>'Pacientes'),
 																		array('javascipt:;'=>'Prospect')
@@ -43,7 +43,7 @@
 																		array('pg_financeiro_fluxo.php'=>'Contas à Pagar'),
 																		array('pg_financeiro_fluxo.php?receber=1'=>'Contas à Receber'),
 																		array('pg_financeiro_movimentacao.php'=>'Movimentação Bancária'))),*/
-					'financeiro'=>array('pg_financeiro_kanban.php'=>'Financeiro','icone'=>'<span class="iconify" data-icon="ic:baseline-attach-money" data-inline="false"></span>','titulo'=>'Financeiro'),
+					'financeiro'=>array('pg_financeiro_fluxo.php'=>'Financeiro','icone'=>'<span class="iconify" data-icon="ic:baseline-attach-money" data-inline="false"></span>','titulo'=>'Financeiro'),
 					'landingpages'=>array('pg_landingpages.php'=>'Landing Pages','icone'=>'<span class="iconify" data-icon="ri:pages-fill" data-inline="false"></span>','titulo'=>'Landing Pages'),
 					'whatsapp'=>array('pg_whatsapp.php'=>'Whatsapp','icone'=>'<i class="iconify" data-icon="cib:whatsapp"></i>','titulo'=>'Whatsapp'),
 					//'usuarios'=>array('usuarios.php'=>'Usuários','icone'=>'<i class="iconify" data-icon="cib:open-access"></i>','titulo'=>'Usuários')
@@ -95,7 +95,7 @@
 				if(!isset($v['submenu'])) {
 					foreach($v as $k=>$n) {
 			?>
-				<li class="nav__item"><a href="<?php echo $k;?>"><?php echo $v['icone'];?></a></li>
+				<li class="nav__item"><a href="<?php echo $k;?>" class="<?php echo basename($_SERVER['PHP_SELF'])==$k?"active":"";?>"><?php echo $v['icone'];?></a></li>
 			<?php		
 						break;
 					}

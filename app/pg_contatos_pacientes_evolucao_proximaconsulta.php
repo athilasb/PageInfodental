@@ -60,10 +60,18 @@
 
 	if(isset($_POST['acao'])) {
 
+		$profissionais='';
+		if(isset($_POST['profissionais']) and is_array($_POST['profissionais'])) {
+			$profissionais=implode(",",$_POST['profissionais']);
+		}
 
+		$vSQL="pconsulta_data='".addslashes(invDate($_POST['agenda_data']))."',
+				pconsulta_tempo='".addslashes(($_POST['agenda_duracao']))."',
+				pconsulta_profissionais=',".$profissionais.",',
+				obs='".addslashes(utf8_decode($_POST['obs']))."'";
 		if(is_object($evolucao)) {
 			$id_evolucao=$evolucao->id;
-			$sql->update($_p."pacientes_evolucoes","obs='".addslashes(utf8_decode($_POST['obs']))."'","where id=$id_evolucao");
+			$sql->update($_p."pacientes_evolucoes",$vSQL,"where id=$id_evolucao");
 		} else {
 			// id_tipo = 8 -> Proxima consulta
 			$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
@@ -73,13 +81,12 @@
 			if($sql->rows) {
 				$e=mysqli_fetch_object($sql->mysqry);
 				$id_evolucao=$e->id;
-				$sql->update($_p."pacientes_evolucoes","obs='".addslashes(utf8_decode($_POST['obs']))."'","where id=$id_evolucao");
+				$sql->update($_p."pacientes_evolucoes",$vSQL,"where id=$id_evolucao");
 			} else {
-				$sql->add($_p."pacientes_evolucoes","data=now(),
+				$sql->add($_p."pacientes_evolucoes",$vSQL.",data=now(),
 														id_tipo=8,
 														id_paciente=$paciente->id,
-														id_usuario=$usr->id,
-														obs='".addslashes(utf8_decode($_POST['obs']))."'");
+														id_usuario=$usr->id");
 				$id_evolucao=$sql->ulid;
 			}
 		}
@@ -94,7 +101,7 @@
 
 
 
-		$agendaData='';
+		/*$agendaData='';
 		if(isset($_POST['agenda_data']) and !empty($_POST['agenda_data'])) {
 			list($_dia,$_mes,$_ano)=explode("/",$_POST['agenda_data']);
 			if(checkdate($_mes, $_dia, $_ano)) {
@@ -126,7 +133,7 @@
 		} else {
 
 			$sql->update($_p."agenda",$vSQLAgenda,"where id=$evolucaoAgenda->id");
-		}
+		}*/
 
 
 		$jsc->jAlert("Evolução salva com sucesso!","sucesso","document.location.href='pg_contatos_pacientes_evolucao.php?id_paciente=$paciente->id'");
@@ -200,7 +207,7 @@
 							<div class="colunas6">
 								<dl>
 									<dt>Próximo dia</dt>
-									<dd><input type="text" name="agenda_data" class="datecalendar obg" autocomplete="off" value="<?php echo is_object($evolucaoAgenda)?date('d/m/Y',strtotime($evolucaoAgenda->agenda_data)):'';?>" /></dd>
+									<dd><input type="text" name="agenda_data" class="datecalendar obg" autocomplete="off" value="<?php echo is_object($evolucao)?date('d/m/Y',strtotime($evolucao->pconsulta_data)):'';?>" /></dd>
 								</dl>
 								<dl>
 									<dt>Tempo de cadeira</dt>
@@ -209,10 +216,10 @@
 											<?php
 											$possuiDuracao=false;
 											foreach($optAgendaDuracao as $v) {
-												echo '<option value="'.$v.'"'.((is_object($evolucaoAgenda) and $evolucaoAgenda->agenda_duracao==$v)?' selected':'').'>'.$v.'</option>';
+												echo '<option value="'.$v.'"'.((is_object($evolucao) and $evolucao->pconsulta_tempo==$v)?' selected':'').'>'.$v.'</option>';
 											}
 
-											if(!empty($values['agenda_duracao']) and $possuiDuracao===false) echo '<option value="'.$values['agenda_duracao'].'" selected>'.$values['agenda_duracao'].'</option>';
+											//if(!empty($values['agenda_duracao']) and $possuiDuracao===false) echo '<option value="'.$values['agenda_duracao'].'" selected>'.$values['agenda_duracao'].'</option>';
 											?>
 										</select><div class="input-info">min</div>
 									</dd>
@@ -223,6 +230,7 @@
 										<select name="profissionais[]" class="chosen noupper" data-placeholder="Profissionais..." multiple>
 										<option value=""></option>
 										<?php
+										if(is_object($evolucao) and !empty($evolucao->pconsulta_profissionais)) $values['profissionais']=explode(",",$evolucao->pconsulta_profissionais);
 										foreach($_profissionais as $p) {
 											echo '<option value="'.$p->id.'"'.(in_array($p->id, $values['profissionais'])?' selected':'').'>'.utf8_encode($p->nome).'</option>';
 										}
@@ -231,7 +239,7 @@
 									</dd>
 								</dl>
 							</div>
-							<script type="text/javascript">
+							<?php /*<script type="text/javascript">
 								var procedimentos = <?php echo (is_object($evolucaoAgenda) and !empty($evolucaoAgenda->procedimentos))?"JSON.parse('".$evolucaoAgenda->procedimentos."')":"[]";?>;
 
 									const agendaProcedimentosRemover = (index) => {
@@ -479,7 +487,7 @@
 										</dd>
 									</dl>
 									<dl class="js-procedimento-btnOk" style="display: none">
-										<?php /* <dd><a href="javascript:;" class="button button__sec"><i class="iconify" data-icon="bx-bx-plus"></i></a></dd> */ ?>
+										<?php /* <dd><a href="javascript:;" class="button button__sec"><i class="iconify" data-icon="bx-bx-plus"></i></a></dd> * ?>
 										<dd>
 											<a href="javascript:;" class="button"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar</a>
 										</dd>
@@ -497,7 +505,7 @@
 										<th style="width:110px;"></th>
 									</tr>
 								</table>
-							</div>
+							</div>*/?>
 						</fieldset>
 
 						<fieldset>

@@ -528,7 +528,7 @@
 											$valorProcedimento=number_format($valorProcedimento,2,".","");
 
 											//echo $valorPagamento." ".$valorProcedimento." = ".abs($valorPagamento - $valorProcedimento);die();
-											if(!(abs($valorPagamento - $valorProcedimento) < 0.00000001)) {
+											if(!(abs($valorPagamento - $valorProcedimento) < 0.50000001)) {
 												$erro="Defina as parcelas de pagamento!";
 											} 
 										}
@@ -574,6 +574,12 @@
 													$pagamentosFusaoIds[$x->id_fusao]=$x->id_fusao;
 												}
 
+												// retorna procedimentos de evolucao
+												$tratamentosProdecimentosIds=array(0);
+												$sql->consult($_table."_procedimentos","id","where id_tratamento=$cnt->id");
+												while($x=mysqli_fetch_object($sql->mysqry)) $tratamentosProdecimentosIds[]=$x->id;
+
+												$sql->update($_table."_procedimentos_evolucao","lixo=1","where id_tratamento_procedimento IN (".implode(",",$tratamentosProdecimentosIds).")");
 
 												$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$cnt->id");
 												$sql->update($_table."_pagamentos","lixo=1","where id_tratamento=$cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
@@ -620,6 +626,12 @@
 											}
 
 
+											// retorna procedimentos de evolucao
+											$tratamentosProcedimentosIds=array(0);
+											$sql->consult($_table."_procedimentos","id","where id_tratamento=$cnt->id");
+											while($x=mysqli_fetch_object($sql->mysqry)) $tratamentosProcedimentosIds[]=$x->id;
+
+											$sql->update($_table."_procedimentos_evolucao","lixo=1","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIds).")");
 
 											$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$cnt->id");
 											$sql->update($_table."_pagamentos","lixo=1","where id_tratamento=$cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
@@ -830,6 +842,9 @@
 										$procedimetosJSON=!empty($_POST['procedimentos'])?json_decode($_POST['procedimentos']):array();
 										//echo json_encode($procedimetosJSON);die();
 										if(is_array($procedimetosJSON)){ 
+
+
+											$procedimentosEvolucao=array();
 											foreach($procedimetosJSON as $x) {
 												
 
@@ -874,6 +889,43 @@
 													$id_tratamento_procedimento=$sql->ulid;
 													$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQLProcedimento)."',tabela='".$_table."_procedimentos',id_reg='".$id_tratamento_procedimento."'");
 												}
+
+												if($id_tratamento_procedimento>0) {
+
+													for($i=1;$i<=$x->quantidade;$i++) {
+														$procedimentosEvolucao[]=array('id_tratamento_procedimento'=>$id_tratamento_procedimento,
+																						'id_paciente'=>$paciente->id,
+																						'id_procedimento'=>$x->id_procedimento,
+																						'id_profissional'=>$x->id_profissional,
+																						'status_evolucao'=>'iniciar',
+																						'numeroTotal'=>$x->quantidade,
+																						'numero'=>$i);
+													}
+												}
+
+											}
+
+											// cria os procedimentos de evolucao
+											foreach($procedimentosEvolucao as $x) {
+												$x=(object)$x;
+
+												$vSQL="id_tratamento_procedimento=$x->id_tratamento_procedimento,
+														id_paciente=$x->id_paciente,
+														id_procedimento=$x->id_procedimento,
+														id_profissional=$x->id_profissional,
+														status_evolucao='$x->status_evolucao',
+														numeroTotal='$x->numeroTotal',
+														numero='$x->numero'";
+												//echo $vSQL;die();
+
+												$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento='$x->id_tratamento_procedimento' and numero='$x->numero' and numeroTotal='$x->numeroTotal' and lixo=0");
+												if($sql->rows) {
+													$reg=mysqli_fetch_object($sql->mysqry);
+													
+													$sql->add($_p."pacientes_tratamentos_procedimentos_evolucao",$vSQL,"where id=$reg->id");
+												} else {
+													$sql->add($_p."pacientes_tratamentos_procedimentos_evolucao",$vSQL);
+												}
 											}
 										}
 									}
@@ -893,6 +945,7 @@
 							die();
 						}
 					} else {
+						$adm->biCategorizacao();
 						$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='".$_page."?form=1&edita=$id_tratamento&id_paciente=$paciente->id'");
 						die();
 					}
@@ -3098,12 +3151,32 @@
 				$tratamentosIDs[]=$x->id;
 			}
 
-			$_procedimentos=array();
+			$_procedimentosAprovado=array();
+			$procedimentosIds=$tratamentosProcedimentosIDs=array(-1);
 			$sql->consult($_table."_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and lixo=0");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
-				if($x->situacao=="aprovado") {
-					$_procedimentos[$x->id_tratamento][]=$x;
+				$tratamentosProcedimentosIDs[]=$x->id;
+				$_procedimentosAprovado[$x->id]=$x;
+			}
+
+			$procedimentosIds=array(0);
+			$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIDs).") and lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				if(isset($_procedimentosAprovado[$x->id_tratamento_procedimento])) {
+					$p=$_procedimentosAprovado[$x->id_tratamento_procedimento];
+				
+					if($x->status_evolucao=="finalizado") {
+						$_procedimentosFinalizados[$p->id_tratamento][]=$x;
+					} 
+					$_todosProcedimentos[$p->id_tratamento][]=$x;
+					$procedimentosIds[]=$x->id_procedimento;
 				}
+			}
+
+			$_procedimentos=array();
+			$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$procedimentosIds).")");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_procedimentos[$x->id]=$x;
 			}
 
 
@@ -3200,15 +3273,11 @@
 								if($x->id_aprovado==0) {
 									echo "-";
 								} else {
-									if(count($procedimentos)==0) echo '';//<a href="javascript" class="tooltip" title="Nenhum procedimento foi aprovado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
-									else {
-										$total=0;
-										$finalizados=0;
-										foreach($procedimentos as $p) {
-											if($p->status_evolucao=='finalizado') $finalizados++;
-											$total++;
-										}
+								
+										$total=isset($_todosProcedimentos[$x->id])?count($_todosProcedimentos[$x->id]):0;
+										$finalizados=isset($_procedimentosFinalizados[$x->id])?count($_procedimentosFinalizados[$x->id]):0;
 										$perc=($total)==0?0:number_format(($finalizados/($total))*100,0,"","");
+
 									?>
 									<div class="reg-bar" style="flex:0 1 10px;">
 										<p>Evolução - <?php echo $perc;?>% <?php echo $finalizados;?>/<?php echo $total;?></p>
@@ -3217,7 +3286,7 @@
 										</div>
 									</div>
 									<?php
-									}
+									
 								}
 								?>
 							</div>

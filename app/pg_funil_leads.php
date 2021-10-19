@@ -26,50 +26,70 @@
 	}
 
 
-	$leads=array('semAgendamento'=>array());
+	$_pacientes=array('novos'=>array(),
+						'novosIds'=>array(0),
+						'aguardandoAprovacao'=>array(),
+						'retorno'=>array());
+	$sql->consult($_p."pacientes","id,nome,telefone1","where codigo_bi=1 and lixo=0");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_pacientes['novos'][]=$x;
+		$_pacientes['novosIds'][]=$x->id;
+	}
 
-	# Leads sem Agendamentos
+	$sql->consult($_p."agenda","*","where id_paciente in (".implode(",",$_pacientes['novosIds']).")");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$pacientesNovosComAgendamento[$x->id_paciente]=1;
+		if($x->id_status==5) $pacientesNovosAtendidos[$x->id_paciente]=1;
+	}
 
-		$pacientesNovosIds=array();
-		$where="WHERE data > NOW() - INTERVAL 300 DAY";
-		$sql->consult($_p."pacientes","*",$where);
-		while($x=mysqli_fetch_object($sql->mysqry)) {
-			$pacientesNovosIds[$x->id]=$x->id;
-		}
+	$pacientesComTratamentosIds=array(0);
+	$_pacientesTratamentos=array();
+	$tratamentosIds=array(0);
 
-		$sql->consult($_p."agenda","*","where id_paciente IN (".implode(",",$pacientesNovosIds).")");
-		if($sql->rows) {
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				unset($pacientesNovosIds[$x->id_paciente]);
+	$_tratamentosProcedimentos=array();
+	$aguardandoAprovacaoAReceber=0;
+	$sql->consult($_p."pacientes_tratamentos","*","where lixo=0 and status='PENDENTE' and lixo=0");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$pacientesComTratamentosIds[]=$x->id_paciente;
+		$_pacientesTratamentos[$x->id_paciente][]=$x;
+		$tratamentosIds[]=$x->id;
+
+		if(!empty($x->procedimentos)) {
+			$proc=json_decode($x->procedimentos);
+			foreach($proc as $p) {
+				if(!isset($_tratamentosProcedimentos[$x->id_paciente])) $_tratamentosProcedimentos[$x->id_paciente]=0;
+				$_tratamentosProcedimentos[$x->id_paciente]+=$p->valorCorrigido;
+				$aguardandoAprovacaoAReceber+=$p->valorCorrigido;
 			}
 		}
+	}
 
-		$_pacientes=array();
-		$sql->consult($_p."pacientes","*","");
-		while($x=mysqli_fetch_object($sql->mysqry)) {
-			$_pacientes[$x->id]=$x;
-		}
 
-		foreach($pacientesNovosIds as $id_paciente) {
-			if(isset($_pacientes[$id_paciente])) {
-				$paciente=$_pacientes[$id_paciente];
 
-				$leads['semAgendamento'][]=array('id_paciente'=>$paciente->id,
-													'nome'=>utf8_encode($paciente->nome),
-													'telefone1'=>utf8_encode($paciente->telefone1) );
-			}
-		}
+	$sql->consult($_p."pacientes","id,nome,telefone1","where id IN (".implode(",",$pacientesComTratamentosIds).") and lixo=0");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_pacientes['aguardandoAprovacao'][]=$x;
+	}
 
-		
+	$pacientesAtendidosIds=array(0);
+	$sql->consult($_p."agenda","distinct id_paciente","where id_status=5 and id_paciente in (".implode(",",$_pacientes['novosIds']).") and lixo=0");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$pacientesAtendidosIds[]=$x->id_paciente;
+	}
 
-	
+	$sql->consult($_p."pacientes","id,nome,telefone1","where id IN (".implode(",",$pacientesAtendidosIds).") and lixo=0");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_pacientes['retorno'][]=$x;
+	}
+
+
+
 ?>
 
 	<section class="content">  
 
 		<?php
-		$agendaConfirmacao=true;
-		require_once("includes/asideAgenda.php");
+		require_once("includes/nav2.php");
 		?>
 
 		<script type="text/javascript">
@@ -217,64 +237,74 @@
 				
 				<div class="kanban-item" style="background:<?php echo $s->cor;?>;color:var(--cor1);">
 					<h1 class="kanban-item__titulo">LEAD SEM AGENDAMENTO<span class="tooltip" title="Paciente novo sem agendamento"><i class="iconify" data-icon="ph:question"></i></span></h1>
-					<div class="kanban-card js-kanban-status js-kanban-status-semAgendamento" data-id_status="semAgendamento" style="min-height: 100px;">
-						<?php /*<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item">
-							<p class="kanban-card-dados__data">
-								<i class="iconify" data-icon="ph:calendar-blank"></i>
-								03/06 (quinta-feira) &bull; 09:00
-							</p>
-							<h1>Cláudia de Paula Gomes</h1>
-							<h2>(62) 98450-2332</h2>
+					<div class="kanban-card" style="min-height: 100px;">
+						<?php
+						foreach($_pacientes['novos'] as $p) {
+							if(isset($pacientesNovosComAgendamento[$p->id])) continue;
+						?>
+							<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item">
+							<h1><?php echo utf8_encode($p->nome);?> <?php echo $p->id;?></h1>
+							<h2><?php echo $p->telefone1;?></h2>
 						</a>
-						<div class="kanban-card-modal" style="display:none;">
-							<div class="kanban-card-modal__inner1">
-								<a class="kanban-card-modal__fechar" href="javascript:;" onclick="$(this).parent().parent().hide(); $('.js-reagendar, .js-cancelar').hide(); $('.js-opcoes').show();"><i class="iconify" data-icon="ph-x"></i></a>
-								<h1>Ana Paula Toniazzo</h1>
-								<h2>(62) 98450-2332</h2>
-								<h2>Anestesia</h2>
-							</div>
-							<div class="kanban-card-modal__inner2 js-opcoes">
-								<a href="javascript:;" class="button button__full" style="background-color:var(--verde);">Confirmar agendamento</a>
-								<a href="javascript:;" onclick="$(this).parent().hide(); $(this).parent().nextAll('.js-reagendar').show();" class="button button__full" style="background-color:var(--amarelo);">Reagendar</a>
-								<a href="javascript:;" onclick="$(this).parent().hide(); $(this).parent().nextAll('.js-cancelar').show();" class="button button__full" style="background-color:var(--vermelho);">Cancelar Agendamento</a>
-							</div>
-							<div class="kanban-card-modal__inner2 js-reagendar" style="display:none;">
-								<form>
-									<input type="text" name="" class="datecalendar" placeholder="06/04/2021" />
-									<select name=""><option value="">Profissional...</option></select>
-									<select name=""><option value="">Cadeira...</option></select>
-									<select name=""><option value="">Horas disponíveis...</option></select>
-									<button type="submit" class="button button__full" style="background:var(--amarelo);">Reagendar</button>
-								</form>
-							</div>
-							<div class="kanban-card-modal__inner2 js-cancelar" style="display:none;">
-								<form>
-									<textarea name="" rows="4" placeholder="Descreva o motivo do cancelamento..."></textarea>
-									<button type="submit" class="button button__full" style="background:var(--vermelho);">Cancelar</button>
-								</form>
-							</div>
-						</div>*/?>
+						<?php	
+						}
+						?>
 					</div>
 				</div>
 				
 				<div class="kanban-item" style="background:<?php echo $s->cor;?>;color:var(--cor1);">
 					<h1 class="kanban-item__titulo">LEAD COM AGENDAMENTO <span class="tooltip" title="Paciente que nunca "><i class="iconify" data-icon="ph:question"></i></span></h1>
-					<div class="kanban-card js-kanban-status js-kanban-status-comAgendamento" data-id_status="comAgendamento" style="min-height: 100px;">
-						
+					<div class="kanban-card"style="min-height: 100px;">
+						<?php
+						foreach($_pacientes['novos'] as $p) {
+							if(isset($pacientesNovosComAgendamento[$p->id])) {
+								if(isset($pacientesNovosAtendidos[$p->id])) continue;
+						?>
+							<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item">
+							<h1><?php echo utf8_encode($p->nome);?> <?php echo $p->id;?></h1>
+							<h2><?php echo $p->telefone1;?></h2>
+						</a>
+						<?php	
+							}
+						}
+						?>
 					</div>
 				</div>
 				
 				<div class="kanban-item" style="background:<?php echo $s->cor;?>;color:var(--cor1);">
 					<h1 class="kanban-item__titulo">LEAD PARA RETORNO <span class="tooltip" title="Paciente foi na consulta e precisa"><i class="iconify" data-icon="ph:question"></i></span></h1>
-					<div class="kanban-card js-kanban-status js-kanban-status-comAgendamento" data-id_status="comAgendamento" style="min-height: 100px;">
-						
+					<div class="kanban-card" style="min-height: 100px;">
+						<?php
+						foreach($_pacientes['retorno'] as $p) {
+						?>
+							<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item">
+							<h1><?php echo utf8_encode($p->nome);?> <?php echo $p->id;?></h1>
+							<h2><?php echo $p->telefone1;?></h2>
+						</a>
+						<?php	
+							
+						}
+						?>
 					</div>
 				</div>
 				
 				<div class="kanban-item" style="background:<?php echo $s->cor;?>;color:var(--cor1);">
-					<h1 class="kanban-item__titulo">AGUARDANDO APROVAÇÃO<span class="tooltip" title="Paciente foi na consulta e precisa"><i class="iconify" data-icon="ph:question"></i></span></h1>
-					<div class="kanban-card js-kanban-status js-kanban-status-comAgendamento" data-id_status="comAgendamento" style="min-height: 100px;">
-						
+					<h1 class="kanban-item__titulo">AGUARDANDO APROVAÇÃO<br />R$<?php echo number_format($aguardandoAprovacaoAReceber,2,",",".");?><span class="tooltip" title="Paciente foi na consulta e precisa"><i class="iconify" data-icon="ph:question"></i></span></h1>
+					<div class="kanban-card" style="min-height: 100px;">
+						<?php
+						foreach($_pacientes['aguardandoAprovacao'] as $p) {
+							$valor=isset($_tratamentosProcedimentos[$p->id])?$_tratamentosProcedimentos[$p->id]:0;
+							
+						?>
+							<a href="pg_contatos_pacientes_tratamento.php?id_paciente=<?php echo $p->id;?>" target="_blank" class="kanban-card-dados">
+							<h1><?php echo utf8_encode($p->nome);?> <?php echo $p->id;?></h1>
+							<h2><?php echo $p->telefone1;?></h2>
+							<h2>Tratamentos: <?php echo count($_pacientesTratamentos[$p->id]);?></h2>
+							<h2>Valor: <?php echo number_format($valor,2,",",".");?></h2>
+						</a>
+						<?php	
+						}
+						?>
 					</div>
 				</div>
 				

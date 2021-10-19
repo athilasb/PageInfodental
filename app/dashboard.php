@@ -1,9 +1,14 @@
 <?php
-include "includes/header.php";
-include "includes/nav.php";
+	include "includes/header.php";
+	include "includes/nav.php";
+
+
 ?>
 
 <section class="content">
+	<?php 
+		require_once("includes/nav2.php");
+	?>
 
 	<section class="grid grid_3">
 		<div class="box">

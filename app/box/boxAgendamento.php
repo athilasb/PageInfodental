@@ -1,4 +1,4 @@
-	<?php
+<?php
 	require_once("../lib/conf.php");
 	$dir="../";
 	require_once("../usuarios/checa.php");
@@ -168,10 +168,42 @@
 						else $vSQL.=",emAtendimento=0";
 
 
+						$idStatusNovo=((isset($_POST['id_status']) and is_numeric($_POST['id_status']))?$_POST['id_status']:'');
 						if(is_object($agenda)) {
 							$vWHERE="where id=$agenda->id";
 							$sql->update($_p."agenda",$vSQL,$vWHERE);
 							$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."agenda',id_reg='".$agenda->id."'");
+
+
+							if($agenda->id_status!=$_POST['id_status']) {
+								$vSQLHistorico="data=now(),
+										id_usuario=$usr->id,
+										evento='agendaStatus',
+										id_paciente=$agenda->id_paciente,
+										id_agenda=$agenda->id,
+										id_status_antigo=$agenda->id_status,
+										id_status_novo=".$idStatusNovo.",
+										descricao=''";
+								$sql->add($_p."pacientes_historico",$vSQLHistorico);
+							}
+
+
+							$agendaAlterado=invDate($_POST['agenda_data'])." ".$_POST['agenda_hora'].":00";
+
+							if(strtotime($agenda->agenda_data)!=strtotime($agendaAlterado)) {
+								$vSQLHistorico="data=now(),
+									id_usuario=$usr->id,
+									evento='agendaHorario',
+									id_paciente=$agenda->id_paciente,
+									id_agenda=$agenda->id,
+									agenda_data_antigo='$agenda->agenda_data',
+									agenda_data_novo='$agendaAlterado',
+									id_status_novo=".$idStatusNovo.",
+									descricao=''";
+								$sql->add($_p."pacientes_historico",$vSQLHistorico);
+							}
+
+
 						} else {
 							/*$sql->consult($_p."agenda","*","where agenda_data='".$agendaData."' and id_paciente=$paciente->id and id_unidade=$unidade->id");
 							if($sql->rows) {
@@ -184,6 +216,17 @@
 								$sql->add($_p."agenda",$vSQL);
 								$id_agenda=$sql->ulid;
 								$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$id_agenda."'");
+
+								$idPaciente=((isset($_POST['id_paciente']) && is_numeric($_POST['id_paciente']))?$_POST['id_paciente']:'');
+								$vSQLHistorico="data=now(),
+									id_usuario=$usr->id,
+									evento='agendaNovo',
+									id_paciente=".$idPaciente.",
+									id_agenda=$id_agenda,
+									id_status_antigo=0,
+									id_status_novo=".$idStatusNovo.",
+									descricao=''";
+								$sql->add($_p."pacientes_historico",$vSQLHistorico);
 							//}
 						}
 
@@ -243,6 +286,16 @@
 					$sql->update($_p."agenda",$vSQL,$vWHERE);
 
 					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vwhere='".addslashes($vWHERE)."',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$agenda->id."'");
+
+					$vSQLHistorico="data=now(),
+									id_usuario=$usr->id,
+									id_paciente=$agenda->id_paciente,
+									id_agenda=$agenda->id,
+									evento='agendaStatus',
+									id_status_antigo=$agenda->id_status,
+									id_status_novo=$agendaStatus->id,
+									descricao=''";
+					$sql->add($_p."pacientes_historico",$vSQLHistorico);
 
 					$rtn=array('success'=>true);
 
@@ -399,6 +452,11 @@
 	$values['agenda_duracao']=60;
 	$values['agenda_data']=date('d/m/Y');
 	$values['agenda_hora']=date('H:i');
+
+
+	if(empty($values['id_cadeira']) and isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira'])) {
+		$values['id_cadeira']=$_GET['id_cadeira'];
+	}
 
 
 	if(isset($_GET['data_agenda']) and !empty($_GET['data_agenda'])) {
@@ -782,11 +840,11 @@
 					<?php
 					if(is_object($agenda)) {
 						$dias=round((strtotime(date('Y-m-d H:i:s'))-strtotime($agenda->data))/(60 * 60 * 24));
-						$sql->consult($_p."usuarios","id,nome","where id='".$agenda->id_usuario."'");
+						$sql->consult($_p."colaboradores","id,nome","where id='".$agenda->id_usuario."'");
 						$autor='';
 						if($sql->rows) {
 							$x=mysqli_fetch_object($sql->mysqry);
-							$autor=" por <strong>".$x->nome."</strong>";
+							$autor=" por <strong>".utf8_encode($x->nome)."</strong>";
 						}
 						if($dias==0) $agendadoHa="Agendado <strong>HOJE</strong>$autor";
 						else if($dias==1) $agendadoHa="Agendado <strong>ONTEM</strong>$autor";
@@ -801,12 +859,12 @@
 					<?php
 					}
 					?>
-					<dl class="js-statusConfirmado">
+					<?php /*<dl class="js-statusConfirmado">
 						<dd><label><input type="checkbox" name="clienteChegou" value="1"<?php echo $values['clienteChegou']==1?" checked":"";?> /> Cliente chegou</label></dd>
 					</dl>
 					<dl class="js-statusConfirmado">
 						<dd><label><input type="checkbox" name="emAtendimento" value="1"<?php echo $values['emAtendimento']==1?" checked":"";?> /> Em Atendimento</label></dd>
-					</dl>
+					</dl>*/?>
 				</div>	
 				
 			</fieldset>

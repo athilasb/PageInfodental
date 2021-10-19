@@ -374,7 +374,7 @@
 		
 		function url($get) {
 
-			$noURL=explode(",","fichadocliente,edita,pagina,ancoraanexo,csv,deleta,desconciliar,form,pagina,alterarUnidade,deletaPaciente,unirPagamentos,abrirAnamnese");
+			$noURL=explode(",","fichadocliente,edita,pagina,ancoraanexo,csv,deleta,desconciliar,form,pagina,alterarUnidade,deletaPaciente,deletaTratamento,unirPagamentos,abrirAnamnese");
 
 			$url="";
 			if(is_array($get)) {

@@ -134,6 +134,21 @@
 				$vSQL.=",data_atualizacao=now(),id_usuario=$usr->id";
 
 				$sql->update($_p."agenda",$vSQL,"where id=$agenda->id");
+
+				$agendaAlterado=$novaData;
+				if(strtotime($agenda->agenda_data)!=strtotime($agendaAlterado)) {
+					$vSQLHistorico="data=now(),
+						id_usuario=$usr->id,
+						evento='agendaHorario',
+						id_paciente=$agenda->id_paciente,
+						id_agenda=$agenda->id,
+						agenda_data_antigo='$agenda->agenda_data',
+						agenda_data_novo='$agendaAlterado',
+						descricao=''";
+					$sql->add($_p."pacientes_historico",$vSQLHistorico);
+				}
+
+
 				$rtn=array('success'=>true);
 			}
 		} else if($_POST['ajax']=="persistirNovoHorario") {
@@ -161,6 +176,22 @@
 				}
 				//echo $vSQL;
 				$sql->update($_p."agenda",$vSQL,"where id=$agenda->id");
+
+
+				$agendaAlterado=$_POST['start'];
+				if(strtotime($agenda->agenda_data)!=strtotime($agendaAlterado)) {
+					$vSQLHistorico="data=now(),
+						id_usuario=$usr->id,
+						evento='agendaHorario',
+						id_paciente=$agenda->id_paciente,
+						id_agenda=$agenda->id,
+						agenda_data_antigo='$agenda->agenda_data',
+						agenda_data_novo='$agendaAlterado',
+						id_status_novo=".$idStatusNovo.",
+						descricao=''";
+					$sql->add($_p."pacientes_historico",$vSQLHistorico);
+				}
+
 				$rtn=array('success'=>true);
 			}
 		}
@@ -245,9 +276,11 @@
 
 					$registros=array();
 					$pacientesIds=array();
+					$agendasIds=array(0);
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						$registros[]=$x;
 						$pacientesIds[]=$x->id_paciente;
+						$agendasIds[]=$x->id;
 					}
 
 					$_pacientesAgendamentos=array();
@@ -256,6 +289,7 @@
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						$cor='';
 						$iniciais='';
+
 
 						$aux = explode(",",$x->profissionais);
 						$profissionais=array();
@@ -280,6 +314,37 @@
 					}
 
 					//var_dump($_pacientesAgendamentos);die();
+
+
+					$_historico=array();
+					$sql->consult($_p."pacientes_historico","*","where id_agenda IN (".implode(",",$agendasIds).") and lixo=0 order by data desc");
+					//echo $sql->rows;
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+
+						if(isset($_usuarios[$x->id_usuario])) {
+
+							if($x->evento=="agendaHorario") {
+									$_historico[$x->id_agenda][]=array('usr'=>utf8_encode($_usuarios[$x->id_usuario]->nome),
+																		'dt'=>date('d/m H:i',strtotime($x->data)),
+																		'ev'=>'horario',
+																		'nvDt'=>date('d/m H:i',strtotime($x->agenda_data_novo)),
+																		'antDt'=>date('d/m H:i',strtotime($x->agenda_data_antigo))
+																	);
+
+							} else {
+								if(isset($_status[$x->id_status_novo])) {
+									$_historico[$x->id_agenda][]=array('usr'=>utf8_encode($_usuarios[$x->id_usuario]->nome),
+																		'dt'=>date('d/m H:i',strtotime($x->data)),
+																		'ev'=>'status',
+																		'desc'=>utf8_encode($x->descricao),
+																		'sts'=>utf8_encode($_status[$x->id_status_novo]->titulo),
+																		'novo'=>$x->evento=="agendaNovo",
+																		'cor'=>$_status[$x->id_status_novo]->cor
+																	);
+								}
+							}
+						}
+					}
 
 					foreach($registros as $x) {
 						//var_dump($x);
@@ -411,6 +476,7 @@
 													'agendadoPor'=>$agendadoPor,
 													'obs'=>empty($x->obs)?"-":utf8_encode($x->obs),
 													'id'=>$x->id,
+													'historico'=>isset($_historico[$x->id])?$_historico[$x->id]:array(),
 													'id_unidade'=>$x->id_unidade);
 						} else if($x->agendaPessoal==1) {
 
@@ -498,6 +564,7 @@
 													'agendadoHa'=>$agendadoHa,
 													'procedimentos'=>array(),
 													'id'=>$x->id,
+													'historico'=>isset($_historico[$x->id])?$_historico[$x->id]:array(),
 													'obs'=>empty($x->obs)?"-":utf8_encode($x->obs),
 													'id_unidade'=>$x->id_unidade);
 						}
@@ -917,7 +984,7 @@
 		//echo $filtro;
 		?>
 		<section id="cal-popup" class="cal-popup cal-popup_paciente cal-popup_top cal-popup_alt" style="left:703px; top:338px; margin-left:303px;display: none">
-			<a href="javascript:;" class="cal-popup__fechar js-btn-fechar"><i class="iconify" data-icon="mdi-close"></i></a>
+			<?php /*<a href="javascript:;" class="cal-popup__fechar js-btn-fechar"><i class="iconify" data-icon="mdi-close"></i></a>*/?>
 			<section class="paciente-info">
 				<header class="paciente-info-header">
 					<img src="" alt="" width="84" height="84" class="paciente-info-header__foto" style="" />
@@ -935,8 +1002,9 @@
 				<div class="abasPopover">
 					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-info').show();$(this).addClass('active');" class="active">Infos</a>
 					<?php /*<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-procedimentos').show();$(this).addClass('active');">Procedimentos</a> */?>
-					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-obs').show();$(this).addClass('active');">Observações</a>
+					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-obs').show();$(this).addClass('active');">Descrição</a>
 					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-agendamentos').show();$(this).addClass('active');">Agendamentos</a>
+					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-historico').show();$(this).addClass('active');">Histórico</a>
 				</div>
 
 				<div class="paciente-info-grid js-grid js-grid-info">
@@ -955,6 +1023,9 @@
 						
 					</table>
 											
+				</div>
+
+				<div class="paciente-info-grid js-grid js-grid-historico" style="display:none;font-size:12px;color:#666;grid-template-columns:1fr;max-height:300px; overflow-y:auto">							
 				</div>
 
 				<div class="paciente-info-opcoes">
@@ -1051,6 +1122,28 @@
 						$('#cal-popup .js-grid-agendamentos table').append(`<tr><td colspan=3><center>Nenhum agendamento futuro</center></td></tr>`);
 					}
 
+					$('#cal-popup .js-grid-historico').html(``);
+					if(popViewInfos[id_agenda].historico.length>0) {
+						popViewInfos[id_agenda].historico.forEach(x=>{
+							console.log(x.ev);
+							if(x.ev=="horario") {
+								$('#cal-popup .js-grid-historico').append(`<div class="hist-lista-item hist-lista-item_lab" style="max-width:95%;font-size:12px;">
+																				<h1>${x.usr} em ${x.dt}</h1>
+																				<h2>horário alterado de <strong style="background:var(--cor1);">${x.antDt}</strong> para <strong style="background:var(--cor1);">${x.nvDt}</strong></h2>
+																			</div>`);
+
+							} else {
+								$('#cal-popup .js-grid-historico').append(`<div class="hist-lista-item hist-lista-item_lab" style="max-width:95%;font-size:12px;">
+																				<h1>${x.usr} em ${x.dt}</h1>
+																				<p>${x.desc}</p>
+																				<h2>${x.novo==1?'agendamento criado com status':'status alterado para'} <strong style="background:${x.cor};">${x.sts}</strong></h2>
+																			</div>`);
+							}
+						});
+
+					} else {
+						$('#cal-popup .js-grid-historico').html(`<center>Sem histórico</center>`);
+					}
 					
 
 					if(popViewInfos[id_agenda].foto.length>0) {
@@ -1145,11 +1238,14 @@
 					    resources: <?php echo json_encode($_cadeirasJSON);?>,
 					    resourceOrder: 'ordem,titulo',
 						dateClick: function(info) {
+							if($('#cal-popup').is(':visible')===false) {
+								let id_cadeira = info.resource._resource.id;
+								$.fancybox.open({
+									src  : `box/boxAgendamento.php?id_unidade=${id_unidade}&data_agenda=${info.dateStr}&id_cadeira=${id_cadeira}`,
+									type : 'ajax',
+								});
+							}
 							$('#cal-popup').hide();
-							$.fancybox.open({
-								src  : `box/boxAgendamento.php?id_unidade=${id_unidade}&data_agenda=${info.dateStr}`,
-								type : 'ajax',
-							});
 						},
 						eventResize:function(e) {
 							let id = e.event.id;
@@ -1244,6 +1340,7 @@
 							let id_agenda = arg.event.id;
 							let id_unidade = arg.event.extendedProps.id_unidade;
 							let infos = ``;
+							let historico = arg.event.extendedProps.historico;
 
    							
    							linkFichaPaciente=``;
@@ -1301,6 +1398,7 @@
 						    popInfos.procedimentosLista=procedimentosLista;
 						    popInfos.agendamentosFuturos=agendamentosFuturos;
 						    popInfos.profissionais=profissionais;
+						    popInfos.historico=historico;
 
 
 
@@ -1365,7 +1463,7 @@
 							return { html: eventHTML }
 						},
 						dayHeaderContent: function (arg) {
-							console.log(calendar.view.type);
+							//console.log(calendar.view.type);
 							let dt = arg.date;
 							let html = ``;
 							if(calendar.view.type=="dayGridMonth") {
@@ -1387,10 +1485,11 @@
 				$(function(){
 					$(document).mouseup(function(e)  {
 					    var container = $("#cal-popup");
+					    var containerCalendar = $("#calendar");
+
 					    // if the target of the click isn't the container nor a descendant of the container
-					    if (!container.is(e.target) && container.has(e.target).length === 0) 
-					    {
-					       $('#cal-popup').hide();
+					    if ((!container.is(e.target) && container.has(e.target).length === 0) && (!containerCalendar.is(e.target) && containerCalendar.has(e.target).length === 0)) {
+					   		$('#cal-popup').hide();
 					    }
 					});
 

@@ -92,5 +92,18 @@
 							6=>'#fd4b3e',
 							7=>'#e7000e');
 
+	$_selectSituacaoOptions=array('iniciar'=>array('titulo'=>'NÃO INICIADO','cor'=>'orange'),
+											'iniciado'=>array('titulo'=>'EM TRATAMENTO','cor'=>'blue'),
+											'finalizado'=>array('titulo'=>'FINALIZADO','cor'=>'green'),
+											'cancelado'=>array('titulo'=>'CANCELADO','cor'=>'red'),
+											//'cancelado'=>array('titulo'=>'CANCELADO');
+										);
+
+	//$selectSituacaoOptions='<select class="js-situacao">';
+	$selectSituacaoOptions='';
+	foreach($_selectSituacaoOptions as $key=>$value) {
+		$selectSituacaoOptions.='<option value="'.$key.'" data-cor="'.$value['cor'].'">'.$value['titulo'].'</option>';
+	}
+
 	
 ?>
