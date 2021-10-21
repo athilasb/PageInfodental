@@ -114,17 +114,17 @@
 				cor=`orange`;
 
 				steps = `<div class="reg-steps__item active">
-							<h1 style="background:var(--amarelo)">1</h1>
+							<h1 style="color:var(--amarelo)">1</h1>
 							<p>A Iniciar</p>									
 						</div>
 
 						<div class="reg-steps__item active">
-							<h1 style="background:#999">2</h1>
+							<h1 style="color:silver">2</h1>
 							<p>Em Tratamento</p>									
 						</div>
 
 						<div class="reg-steps__item active">
-							<h1 style="background:#999">3</h1>
+							<h1 style="color:silver">3</h1>
 							<p>Finalizado/Cancelado</p>									
 						</div>`;
 
@@ -133,17 +133,17 @@
 				cor=`blue`;
 
 				steps = `<div class="reg-steps__item active">
-							<h1 style="background:var(--verde)">1</h1>
+							<h1 style="color:var(--verde)">1</h1>
 							<p>A Iniciar</p>									
 						</div>
 
 						<div class="reg-steps__item active">
-							<h1 style="background:var(--verde)">2</h1>
+							<h1 style="color:var(--verde)">2</h1>
 							<p>Em Tratamento</p>									
 						</div>
 
 						<div class="reg-steps__item active">
-							<h1 style="background:#999">3</h1>
+							<h1 style="color:silver">3</h1>
 							<p>Finalizado/Cancelado</p>									
 						</div>`;
 			} else if(x.statusEvolucao=='finalizado') {
@@ -151,34 +151,34 @@
 				cor=`green`;
 
 				steps = `<div class="reg-steps__item active">
-							<h1 style="background:var(--verde)">1</h1>
+							<h1 style="color:var(--verde)">1</h1>
 							<p>A Iniciar</p>									
 						</div>
 
 						<div class="reg-steps__item active">
-							<h1 style="background(var--verde)">2</h1>
+							<h1 style="color:var(--verde)">2</h1>
 							<p>Em Tratamento</p>									
 						</div>
 
 						<div class="reg-steps__item active">
-							<h1 style="background:var(--verde);">3</h1>
+							<h1 style="color:var(--verde);">3</h1>
 							<p>Finalizado</p>									
 						</div>`;
 			} else if(x.statusEvolucao=='cancelado') {
 				cor=`red`;
 				status=`Cancelado`;
 				steps = `<div class="reg-steps__item active">
-							<h1 style="background:var(--verde)">1</h1>
+							<h1 style="color:var(--verde)">1</h1>
 							<p>A Iniciar</p>									
 						</div>
 
 						<div class="reg-steps__item active">
-							<h1 style="background(var--verde)">2</h1>
+							<h1 style="color:var(--verde)">2</h1>
 							<p>Em Tratamento</p>									
 						</div>
 
 						<div class="reg-steps__item active">
-							<h1 style="background:var(--vermelho);">3</h1>
+							<h1 style="color:var(--vermelho);">3</h1>
 							<p>Cancelado</p>									
 						</div>`;
 			}

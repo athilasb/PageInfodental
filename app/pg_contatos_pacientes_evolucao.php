@@ -335,21 +335,235 @@
 		?>
 			<section class="grid">
 				<section class="box">
-					<fieldset>
-						<legend> Escolha o tipo da evolução</legend>
-						<?php /*<div class="filter">
-							<div class="filter-group">
-								<div class="filter-button">
-									<a href="<?php echo $_page."?form=1&$url";?>" class="verde"><i class="iconify" data-icon="bx-bx-plus"></i><span>adicionar evolução</span></a>
-								</div>
+
+					<div class="filter">
+						<div class="filter-group">
+							<div class="filter-title">
+								<span><i class="iconify" data-icon="bx:bx-plus-circle"></i> Adicionar Evolução</span>
 							</div>
-						</div>*/
+						</div>
+					</div>
 
+					<?php /*<div class="filter">
+						<div class="filter-group">
+							<div class="filter-button">
+								<a href="<?php echo $_page."?form=1&$url";?>" class="verde"><i class="iconify" data-icon="bx-bx-plus"></i><span>adicionar evolução</span></a>
+							</div>
+						</div>
+					</div>*/
+					require_once("includes/evolucaoMenu.php");
+					?>
+					
+				</section>
+
+				<script>
+					$(function() {
+						$('.js-ficha-botao-resumo').click(function() {
+							$('.legend-abas a').removeClass('active');
+							$(this).addClass('active');
+							$('.js-ficha').hide();
+							$('#js-ficha-resumo').show();
+						});
+						$('.js-ficha-botao-completo').click(function() {
+							$('.legend-abas a').removeClass('active');
+							$(this).addClass('active');
+							$('.js-ficha').hide();
+							$('#js-ficha-completo').show();
+						});
+					});
+				</script>
+
+				<section class="box">
+					<fieldset>
+						<legend>Ficha do Paciente <div class="legend-abas"><a href="javascript:;" class="active js-ficha-botao-resumo">Resumo</a><a href="javascript:;" class="js-ficha-botao-completo">Completo</a></div></legend>
 						
+						<div id="js-ficha-resumo" class="js-ficha">
+							<?php
+								$profissionaisJaListados=array();
+							?>
+							<div class="reg">
+								<?php
+									if(count($evolucaoRegistros)==0) echo '<center>Nenhuma evolução foi lançada!</center>';
+									foreach($evolucaoRegistros as $x) {
+										if(isset($_tiposEvolucao[$x->id_tipo])) {
+											$tipo = $_tiposEvolucao[$x->id_tipo];
 
+											if($x->id_tipo==1) $tipo->tituloSingular="Anamnese";
+											if($x->id_tipo==2) $tipo->tituloSingular="Procedimento";
+											
+											$url=$tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;
+											
+											if($x->lixo==1) {
+												$style="opacity:0.3;";
+											} else {
+												$style="";
 
-						require_once("includes/evolucaoMenu.php");
-						?>
+											}
+								?>
+								<a href="<?php echo $url;?>" class="reg-group" style="<?php echo $style;?>">
+									<div class="reg-color" style=""></div>
+									<div class="reg-data" style="width:5%">
+										<i class="iconify" data-icon="<?php echo $tipo->icone;?>"></i>
+									</div>
+
+									<div class="reg-data" style="width:70%">
+										<p><strong><?php echo utf8_encode($tipo->tituloSingular);?></strong></p>
+									</div>
+
+									<div class="reg-data" style="width:25%">
+										<?php
+											$autor=isset($_usuarios[$x->id_usuario])?utf8_encode($_usuarios[$x->id_usuario]->nome):'Desconhecido';
+										?>
+										<p style="font-size:10px;"><span class="iconify" data-icon="bi:check-all"></span> <span style="color: var(--cor1)"><?php echo date('d/m/Y',strtotime($x->data));?> - <?php echo date('H:i',strtotime($x->data));?></span><br /><?php echo $autor;?>
+											</p>
+									</div>
+								</a>
+								<?php
+										}
+									}
+								?>
+							</div>
+						</div>
+						<div id="js-ficha-completo" class="js-ficha" style="display:none;">
+							
+							<fieldset>
+								<legend><strong style="font-size:0.75em;">19/10/2021</strong></legend>
+								
+								<div class="grid grid_3">
+									<div class="reg" style="grid-column:span 2; overflow-y:auto; max-height:220px;">
+										<a href="javascript:;" class="reg-group">
+											<div class="reg-data js-titulo" style="flex:0 1 300px"><h1>Prótese Sobre Dente - Porcelana (Lente, Faceta, Coroa) </h1><p>31 - Particular SD</p></div>
+											<div class="reg-steps js-steps" style="margin:0 auto;"><div class="reg-steps__item active">
+												<h1 style="color:var(--verde)">1</h1>
+												<p>A Iniciar</p>									
+											</div>
+											<div class="reg-steps__item active">
+												<h1 style="color:var(--verde)">2</h1>
+												<p>Em Tratamento</p>									
+											</div>
+											<div class="reg-steps__item active">
+												<h1 style="color:silver">3</h1>
+												<p>Finalizado/Cancelado</p>									
+											</div></div>
+											<div class="reg-user">
+												<span style="background: rgb(68, 255, 0);">KM</span>
+											</div>
+										</a>
+									</div>
+									<div  style="overflow-y:auto; max-height:220px;">
+										<div class="hist-lista-item hist-lista-item_lab">
+											<h1>DR.KRONER MACHADO COSTA em 03/09/2021 09:43</h1>
+											<p>Sessão de preparo e escaneamento. </p>
+										</div>
+									</div>
+								</div>
+							</fieldset>
+
+							<fieldset>
+								<legend><strong style="font-size:0.75em;">17/10/2021</strong></legend>
+								
+								<div class="grid grid_3">
+									<div class="reg" style="grid-column:span 2; overflow-y:auto; max-height:220px;">
+										<a href="javascript:;" class="reg-group">
+											<div class="reg-data js-titulo" style="flex:0 1 300px"><h1>Prótese Sobre Dente - Porcelana (Lente, Faceta, Coroa) </h1><p>31 - Particular SD</p></div>
+											<div class="reg-steps js-steps" style="margin:0 auto;"><div class="reg-steps__item active">
+												<h1 style="color:var(--verde)">1</h1>
+												<p>A Iniciar</p>									
+											</div>
+											<div class="reg-steps__item active">
+												<h1 style="color:var(--verde)">2</h1>
+												<p>Em Tratamento</p>									
+											</div>
+											<div class="reg-steps__item active">
+												<h1 style="color:silver">3</h1>
+												<p>Finalizado/Cancelado</p>									
+											</div></div>
+											<div class="reg-user">
+												<span style="background: rgb(68, 255, 0);">KM</span>
+											</div>
+										</a>
+										<a href="javascript:;" class="reg-group">
+											<div class="reg-data js-titulo" style="flex:0 1 300px"><h1>Prótese Sobre Dente - Porcelana (Lente, Faceta, Coroa) </h1><p>31 - Particular SD</p></div>
+											<div class="reg-steps js-steps" style="margin:0 auto;"><div class="reg-steps__item active">
+												<h1 style="color:var(--verde)">1</h1>
+												<p>A Iniciar</p>									
+											</div>
+											<div class="reg-steps__item active">
+												<h1 style="color:var(--verde)">2</h1>
+												<p>Em Tratamento</p>									
+											</div>
+											<div class="reg-steps__item active">
+												<h1 style="color:silver">3</h1>
+												<p>Finalizado/Cancelado</p>									
+											</div></div>
+											<div class="reg-user">
+												<span style="background: rgb(68, 255, 0);">KM</span>
+											</div>
+										</a>
+										<a href="javascript:;" class="reg-group">
+											<div class="reg-data js-titulo" style="flex:0 1 300px"><h1>Prótese Sobre Dente - Porcelana (Lente, Faceta, Coroa) </h1><p>31 - Particular SD</p></div>
+											<div class="reg-steps js-steps" style="margin:0 auto;"><div class="reg-steps__item active">
+												<h1 style="color:var(--verde)">1</h1>
+												<p>A Iniciar</p>									
+											</div>
+											<div class="reg-steps__item active">
+												<h1 style="color:var(--verde)">2</h1>
+												<p>Em Tratamento</p>									
+											</div>
+											<div class="reg-steps__item active">
+												<h1 style="color:silver">3</h1>
+												<p>Finalizado/Cancelado</p>									
+											</div></div>
+											<div class="reg-user">
+												<span style="background: rgb(68, 255, 0);">KM</span>
+											</div>
+										</a>
+										<a href="javascript:;" class="reg-group">
+											<div class="reg-data js-titulo" style="flex:0 1 300px"><h1>Prótese Sobre Dente - Porcelana (Lente, Faceta, Coroa) </h1><p>31 - Particular SD</p></div>
+											<div class="reg-steps js-steps" style="margin:0 auto;"><div class="reg-steps__item active">
+												<h1 style="color:var(--verde)">1</h1>
+												<p>A Iniciar</p>									
+											</div>
+											<div class="reg-steps__item active">
+												<h1 style="color:var(--verde)">2</h1>
+												<p>Em Tratamento</p>									
+											</div>
+											<div class="reg-steps__item active">
+												<h1 style="color:silver">3</h1>
+												<p>Finalizado/Cancelado</p>									
+											</div></div>
+											<div class="reg-user">
+												<span style="background: rgb(68, 255, 0);">KM</span>
+											</div>
+										</a>
+									</div>
+									<div style="overflow-y:auto; max-height:220px;">
+										<div class="hist-lista-item hist-lista-item_lab">
+											<h1>DR.KRONER MACHADO COSTA em 03/09/2021 09:43</h1>
+											<p>Sessão de preparo e escaneamento. </p>
+										</div>
+										<div class="hist-lista-item hist-lista-item_lab">
+											<h1>DR.KRONER MACHADO COSTA em 03/09/2021 09:43</h1>
+											<p>Sessão de preparo e escaneamento. </p>
+										</div>
+										<div class="hist-lista-item hist-lista-item_lab">
+											<h1>DR.KRONER MACHADO COSTA em 03/09/2021 09:43</h1>
+											<p>Sessão de preparo e escaneamento. </p>
+										</div>
+										<div class="hist-lista-item hist-lista-item_lab">
+											<h1>DR.KRONER MACHADO COSTA em 03/09/2021 09:43</h1>
+											<p>Sessão de preparo e escaneamento. </p>
+										</div>
+										<div class="hist-lista-item hist-lista-item_lab">
+											<h1>DR.KRONER MACHADO COSTA em 03/09/2021 09:43</h1>
+											<p>Sessão de preparo e escaneamento. </p>
+										</div>
+									</div>
+								</div>
+							</fieldset>
+
+						</div>
+					
 					</fieldset>
 						<?php
 							$tratamentosIds=array(-1);
@@ -383,172 +597,62 @@
 								$_procedimentos[$x->id]=$x;
 							}
 						?>
-					<fieldset style="">
-						<legend>Procedimentos a Iniciar (<?php echo count($_procedimentosAprovadosASerEvoluido);?>)</legend>
-							<?php
-							if(count($_procedimentosAprovadosASerEvoluido)==0) {
-								echo '<center>Nenhum procedimento aprovado a iniciar</center>';
-							} else {
-							?>
-							<div class="reg">
-								<?php
-								foreach($_procedimentosAprovadosASerEvoluido as $v) {
-									$disabled='';
-									if(isset($procedimentosAEvoluirIds) and in_array($v->id,$procedimentosAEvoluirIds)) $disabled=" disabled";;
-									if(isset($_procedimentos[$v->id_procedimento])) {
-										$procedimento=$_procedimentos[$v->id_procedimento];
-										$profissionalIniciais='';
-										$profissionalCor='#ccc';
-										if(isset($_profissionais[$v->id_profissional])) {
-											$p=$_profissionais[$v->id_profissional];
-											$profissionalIniciais=$p->calendario_iniciais;
-											$profissionalCor=$p->calendario_cor;
-
-										}
-										$complemento='';
-										if($v->numeroTotal>1) $complemento.=' - '.utf8_encode($v->numero."/".$v->numeroTotal);
-
-										//	id_tratamento_procedimento => Procedimento de tratamento aprovado
-										if(isset($_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento])) {
-											$procedimentoAprovado=$_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento];
-											if(!empty($procedimentoAprovado->opcao)) $complemento.=" - ".utf8_encode($procedimentoAprovado->opcao)
-												;
-										?>
-										<a href="<?php echo $tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;?>" class="reg-group">
-											<div class="reg-color" style=""></div>
-
-											<div class="reg-data" style="width:100%">
-												<p><strong><?php echo utf8_encode($procedimento->titulo).$complemento;?></strong></p>
-											</div>
-										</a>
-										<?php
-										
-										}
-									}
-								}
-
-								?>
-							</div>
-							<?php
-							}
-							?>
-					</fieldset>
 					<div class="grid grid_2">
-						<fieldset >
-							<legend>Ficha do Paciente</legend>
-
-							<?php
-								
-
-								$profissionaisJaListados=array();
-							?>
-							<div class="reg">
+						<fieldset style="">
+							<legend>Procedimentos a Iniciar (<?php echo count($_procedimentosAprovadosASerEvoluido);?>)</legend>
 								<?php
-									if(count($evolucaoRegistros)==0) echo '<center>Nenhuma evolução foi lançada!</center>';
-									foreach($evolucaoRegistros as $x) {
-										if(isset($_tiposEvolucao[$x->id_tipo])) {
-											$tipo = $_tiposEvolucao[$x->id_tipo];
-
-											if($x->id_tipo==1 or $x->id_tipo==2) $tipo->tituloSingular="Procedimento";
-											
-												$url=$tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;
-											if($x->lixo==1) {
-												$style="opacity:0.3;";
-											} else {
-												$style="";
-
-											}
+								if(count($_procedimentosAprovadosASerEvoluido)==0) {
+									echo '<center>Nenhum procedimento aprovado a iniciar</center>';
+								} else {
 								?>
-								<a href="<?php echo $url;?>" class="reg-group" style="<?php echo $style;?>">
-									<div class="reg-color" style=""></div>
-									<div class="reg-data" style="width:5%">
-										<i class="iconify" data-icon="<?php echo $tipo->icone;?>"></i>
-									</div>
+								<div class="reg">
+									<?php
+									foreach($_procedimentosAprovadosASerEvoluido as $v) {
+										$disabled='';
+										if(isset($procedimentosAEvoluirIds) and in_array($v->id,$procedimentosAEvoluirIds)) $disabled=" disabled";;
+										if(isset($_procedimentos[$v->id_procedimento])) {
+											$procedimento=$_procedimentos[$v->id_procedimento];
+											$profissionalIniciais='';
+											$profissionalCor='#ccc';
+											if(isset($_profissionais[$v->id_profissional])) {
+												$p=$_profissionais[$v->id_profissional];
+												$profissionalIniciais=$p->calendario_iniciais;
+												$profissionalCor=$p->calendario_cor;
 
-									<div class="reg-data" style="width:70%">
-										<p><strong><?php echo utf8_encode($tipo->tituloSingular);?></strong></p>
-									</div>
-
-									 <?php /*<div class="reg-data" style="width:5%;color:#">
-										<p><b><?php echo $x->data_evolucao!="0000-00-00"?date('d/m/Y',strtotime($x->data_evolucao)):"";?></b></p>
-									</div>
-
-									<div class="reg-data" style="width:10%;">
-										<p>
-											<?php 
-												if($x->id_tipo==2 or $x->id_tipo==3) {
-													echo isset($registrosProcedimentos[$x->id])?count($registrosProcedimentos[$x->id]):0;
-												} else if($x->id_tipo==6) {
-													echo isset($_exames[$x->id])?count($_exames[$x->id]):0;
-
-												} else if($x->id_tipo==7) {
-
-													echo (isset($_receitas[$x->id])?count($_receitas[$x->id]):0);
-
-												} else {
-													echo 1;
-												}
-											?>
-										</p>
-									</div>*/?>
-
-									<div class="reg-data" style="width:25%">
-										<?php
-											$autor=isset($_usuarios[$x->id_usuario])?utf8_encode($_usuarios[$x->id_usuario]->nome):'Desconhecido';
-										?>
-										<p style="font-size:10px;"><span class="iconify" data-icon="bi:check-all"></span> <span style="color: var(--cor1)"><?php echo date('d/m/Y',strtotime($x->data));?> - <?php echo date('H:i',strtotime($x->data));?></span><br /><?php echo $autor;?>
-											</p>
-									</div>
-
-									<?php /*<div class="reg-data" style="width: 5%;">
-										<?php
-											$profissionaisJaListados=array();
-											if($tipo->id == 2) {
-												$sql->consult($_p."pacientes_evolucoes_procedimentos","*","where id_evolucao=$x->id and lixo=0");
-												if($sql->rows) {
-													while($y=mysqli_fetch_object($sql->mysqry)) {
-														if(isset($_profissionais[$y->id_profissional])) {
-
-															if(!isset($profissionaisJaListados[$x->id_profissional])) {
-																$profissionaisJaListados[$x->id_profissional]=1;
-																$p=$_profissionais[$y->id_profissional];
-																$profissionalIniciais=$p->calendario_iniciais;
-																$profissionalCor=$p->calendario_cor;
-										?>
-										<span style="background:<?php echo empty($profissionalCor)?"#CCC":$profissionalCor;?>;color:#FFF;padding:10px;border-radius: 50%"><?php echo $profissionalIniciais;?></span>
-										<?php
-															}
-														}
-													}
-												}
-											} else {
-												if(isset($_profissionais[$x->id_profissional])) {
-													if(!isset($profissionaisJaListados[$x->id_profissional])) {
-														$profissionaisJaListados[$x->id_profissional]=1;
-														$calendario_cor = $_profissionais[$x->id_profissional]->calendario_cor;
-														$calendario_iniciais = $_profissionais[$x->id_profissional]->calendario_iniciais;
-										?>	
-										<span style="background:<?php echo empty($calendario_cor)?"#CCC":$calendario_cor;?>;color:#FFF;padding:10px;border-radius: 50%"><?php echo $calendario_iniciais;?></span>
-										<?php
-													}
-												
-												}
 											}
-										?>
-									</div>*/?>
-								</a>
-								<?php
+											$complemento='';
+											if($v->numeroTotal>1) $complemento.=' - '.utf8_encode($v->numero."/".$v->numeroTotal);
+
+											//	id_tratamento_procedimento => Procedimento de tratamento aprovado
+											if(isset($_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento])) {
+												$procedimentoAprovado=$_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento];
+												if(!empty($procedimentoAprovado->opcao)) $complemento.=" - ".utf8_encode($procedimentoAprovado->opcao)
+													;
+											?>
+											<a href="<?php echo $tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;?>" class="reg-group">
+												<div class="reg-color" style=""></div>
+
+												<div class="reg-data" style="width:100%">
+													<p><strong><?php echo utf8_encode($procedimento->titulo).$complemento;?></strong></p>
+												</div>
+											</a>
+											<?php
+											
+											}
 										}
 									}
+
+									?>
+								</div>
+								<?php
+								}
 								?>
-							</div>
-						
 						</fieldset>
+
 						<fieldset style="">
 							<legend>Procedimentos Evoluídos</legend>
-
-								<div class="reg js-div-procedimentos">
-								</div>
+							<div class="reg js-div-procedimentos">
+							</div>
 						</fieldset>
 					</div>
 
