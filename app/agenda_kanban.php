@@ -663,7 +663,7 @@
 				let aux = val.split(' ');
 				aux[1]=unMes(aux[1]);
 				let data = `${aux[2]}-${(aux[1])}-${aux[0]}`;
-				console.log(data);
+				//console.log(data);
 				let dtJS = new Date(aux[2],aux[1],aux[0]);
 				let newDt = new Date(aux[2],aux[1],aux[0]);
 				if($('select.js-view').val()=="resourceTimeGridOneDay") {

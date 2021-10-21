@@ -239,7 +239,8 @@ $(function() {
 
 	$('.js-deletar').click(function(){
 		var href=$(this).attr('href');
-		swal({   title: "Atenção",   text: "Você tem certeza que deseja remover este registro?",   type: "warning",   showCancelButton: true,   confirmButtonColor: "#DD6B55",   confirmButtonText: "Sim!",   cancelButtonText: "Não",   closeOnConfirm: false,   closeOnCancel: false }, function(isConfirm){   if (isConfirm) {    document.location.href=href;   } else {   swal.close();   } });
+		let msg = $(this).attr('data-msg')?$(this).attr('data-msg'):"Você tem certeza que deseja remover este registro?";
+		swal({   title: "Atenção",   text: msg,   type: "warning",   showCancelButton: true,   confirmButtonColor: "#DD6B55",   confirmButtonText: "Sim!",   cancelButtonText: "Não",   closeOnConfirm: false,   closeOnCancel: false }, function(isConfirm){   if (isConfirm) {    document.location.href=href;   } else {   swal.close();   } });
 		
 		return false;
 	});

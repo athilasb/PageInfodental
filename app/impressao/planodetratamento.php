@@ -190,6 +190,9 @@
 				</p>
 			</td>
 			<?php
+			if($proc->quantitativo==1) {
+				$proc->valorSemDesconto*=$proc->quantidade;
+			}
 			if($proc->situacao=="aprovado" or $proc->situacao=="aguardandoAprovacao") {
 			?>
 			<td>

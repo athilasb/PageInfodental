@@ -246,16 +246,18 @@
 
 	$selectProfissional='<select class="js-profissional"><option value="">-</option>';
 	foreach($_profissionais as $p) {
-	
-											
 		$selectProfissional.='<option value="'.$p->id.'" data-iniciais="'.$p->calendario_iniciais.'" data-iniciaisCor="'.$p->calendario_cor.'">'.utf8_encode($p->nome).'</option>';
 	}
 	$selectProfissional.='</select>';
 
 
 	$tratamentosIds=array(-1);
+	$_tratamentos=array();
 	$sql->consult($_p."pacientes_tratamentos","*","where id_paciente=$paciente->id and  status='APROVADO' and lixo=0");
-	while($x=mysqli_fetch_object($sql->mysqry)) $tratamentosIds[]=$x->id;
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$tratamentosIds[]=$x->id;
+		$_tratamentos[$x->id]=$x;
+	}
 
 	$procedimentosIds=array(-1);
 	$_procedimentosAprovadosASerEvoluido=array();
@@ -275,7 +277,11 @@
 	$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIds).") and status_evolucao NOT IN ('cancelado','finalizado') and lixo=0");
 
 	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_procedimentosAprovadosASerEvoluido[$x->id]=$x;
+		if(isset($_procedimentosDeTratamentosAprovados[$x->id_tratamento_procedimento])) {
+			$procAprovado=$_procedimentosDeTratamentosAprovados[$x->id_tratamento_procedimento];
+
+			$_procedimentosAprovadosASerEvoluido[$procAprovado->id_tratamento][$x->id]=$x;
+		}
 	}
 
 	$_procedimentos=array();
@@ -289,7 +295,7 @@
 	$evolucaoProcedimentos=array();
 	$historicoGeral=array();
 	if(isset($_GET['edita']) and is_numeric($_GET['edita'])) {	
-		$sql->consult($_p."pacientes_evolucoes","*","where id='".$_GET['edita']."' and lixo=0");
+		$sql->consult($_p."pacientes_evolucoes","*","where id='".$_GET['edita']."'");
 		if($sql->rows) {
 			$evolucao=mysqli_fetch_object($sql->mysqry);
 
@@ -443,11 +449,12 @@
 	}
 
 
+
+
 	
 	if(isset($_POST['acao'])) {
 
 
-		//var_dump($_POST);die();
 
 		if(isset($_POST['procedimentos']) and !empty($_POST['procedimentos'])) {
 			$procedimentosJSON = json_decode($_POST['procedimentos']);
@@ -456,7 +463,6 @@
 			$procedimentosEvoluidos=array();
 			$procedimentosAvulsos=array();
 			$erro='';
-
 
 			foreach($procedimentosJSON as $v) {
 
@@ -494,7 +500,6 @@
 
 
 			if(empty($erro)) {
-
 				if(count($procedimentosEvoluidos)>0 or count($procedimentosAvulsos)>0) {
 
 
@@ -620,6 +625,8 @@
 							}
 						}
 
+						//var_dump($obj);die();
+
 						$vSQLProc="data=now(),
 									id_paciente=$paciente->id,
 									id_evolucao=$id_evolucao,
@@ -631,6 +638,8 @@
 									status='".addslashes($procedimentoEvolucao->statusEvolucao)."',
 									id_plano='$procedimentoAprovado->id_plano',
 									id_opcao='$procedimentoAprovado->id_opcao',
+									numero='$procedimentoAEvoluir->numero',
+									numeroTotal='$procedimentoAEvoluir->numeroTotal',
 									opcao='$procedimentoAprovado->opcao'";
 
 						
@@ -640,8 +649,11 @@
 																								id_evolucao=$id_evolucao and 
 																								id_procedimento=$procedimentoAprovado->id_procedimento and 
 																								id_opcao=$procedimentoAprovado->id_opcao and 
+																								numero='$procedimentoAEvoluir->numero' and 
+																								numeroTotal='$procedimentoAEvoluir->numeroTotal' and 
+
 																								id_tratamento='".addslashes($procedimentoAprovado->id_tratamento)."'");	
-							 //echo $vSQLProc." ----> ".($sql->rows)."<BR>";;
+							// echo $vSQLProc." ----> ".($sql->rows)."<BR>";;
 							if($sql->rows) {
 								$x=mysqli_fetch_object($sql->mysqry);
 								$sql->update($_p."pacientes_evolucoes_procedimentos",$vSQLProc,"where id=$x->id");
@@ -681,6 +693,12 @@
 		} else {
 			$jsc->jAlert("Adicione pelo menos um procedimento para adicionar à Evolução","erro","");
 		}
+	} else if(is_object($evolucao)) {
+		if(isset($_GET['deleta'])) {
+			$sql->update($_p."pacientes_evolucoes","lixo=1,lixo_data=now(),lixo_id_colaborador=$usr->id","where id=$evolucao->id");
+			$jsc->jAlert("Evolução cancelada com sucesso!","sucesso","document.location.href='pg_contatos_pacientes_evolucao.php?id_paciente=$paciente->id'");
+			die();
+		}
 	}
 
 	//var_dump($evolucaoProcedimentos);
@@ -710,9 +728,23 @@
 					</div>
 					<div class="filter-group filter-group_right">
 						<div class="filter-button">
-							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+							<?php
+							if($evolucao->lixo==1) {
+								$colaborador='Desconhecido';
+								$sql->consult($_p."colaboradores","id,nome","where id=$evolucao->lixo_id_colaborador");
+								if($sql->rows) {
+									$x=mysqli_fetch_object($sql->mysqry);
+									$colaborador=utf8_encode($x->nome);
+								}
+								echo "Evolução excluída em <b>".date('d/m/Y H:i',strtotime($evolucao->lixo_data))."</b>&nbsp;por&nbsp;<b>".$colaborador."</b>";
+							} else {
+							?>
+							<a href="<?php echo "?edita=$evolucao->id&deleta=1&".$url;?>" class="js-deletar" data-msg="Tem certeza que deseja remover esta evolução?"><i class="iconify" data-icon="bx-bx-trash"></i></a>
 							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
 							<a href="javascript:;" class="azul js-btn-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+							<?php
+							}
+							?>
 						</div>
 					</div>
 				</div>
@@ -729,7 +761,9 @@
 
 							<fieldset style="grid-column:span 2">
 								<legend><?php echo empty($evolucao)?'<span class="badge">1</span> Selecione o procedimento':'Procedimentos';?></legend>
-								
+								<?php
+								if(empty($evolucao) or $evolucao->lixo==0) {
+								?>
 								<div class="colunas4">
 
 									<dl>
@@ -740,44 +774,49 @@
 										<dd>
 											<select name="" class="chosen2 js-sel-procedimento" data-placeholder="Selecione o procedimento..." multiple>
 												<option value=""></option>
-							<?php
-							foreach($_procedimentosAprovadosASerEvoluido as $v) {
-								$disabled='';
-								if(isset($procedimentosAEvoluirIds) and in_array($v->id,$procedimentosAEvoluirIds)) $disabled=" disabled";;
-								if(isset($_procedimentos[$v->id_procedimento])) {
-									$procedimento=$_procedimentos[$v->id_procedimento];
-									$profissionalIniciais='';
-									$profissionalCor='#ccc';
-									if(isset($_profissionais[$v->id_profissional])) {
-										$p=$_profissionais[$v->id_profissional];
-										$profissionalIniciais=$p->calendario_iniciais;
-										$profissionalCor=$p->calendario_cor;
+												<?php
+												foreach($_procedimentosAprovadosASerEvoluido as $id_tratamento=>$regs) {
 
-									}
-									$complemento='';
-									if($v->numeroTotal>1) $complemento.=' - '.utf8_encode($v->numero."/".$v->numeroTotal);
+													echo '<optgroup label="'.utf8_encode($_tratamentos[$id_tratamento]->titulo).'">';
+													foreach($regs as $v) {
+														$disabled='';
+														if(isset($procedimentosAEvoluirIds) and in_array($v->id,$procedimentosAEvoluirIds)) $disabled=" disabled";;
+														if(isset($_procedimentos[$v->id_procedimento])) {
+															$procedimento=$_procedimentos[$v->id_procedimento];
+															$profissionalIniciais='';
+															$profissionalCor='#ccc';
+															if(isset($_profissionais[$v->id_profissional])) {
+																$p=$_profissionais[$v->id_profissional];
+																$profissionalIniciais=$p->calendario_iniciais;
+																$profissionalCor=$p->calendario_cor;
 
-									//	id_tratamento_procedimento => Procedimento de tratamento aprovado
-									if(isset($_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento])) {
-										$procedimentoAprovado=$_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento];
-										if(!empty($procedimentoAprovado->opcao)) $complemento.=" - ".utf8_encode($procedimentoAprovado->opcao)
-											;
-										echo '<option value="'.$v->id.'" 
-														data-id_procedimento="'.$v->id_procedimento.'" 
-														data-numero="'.$v->numero.'" 
-														data-numeroTotal="'.$v->numeroTotal.'" 
-														data-opcao="'.utf8_encode($procedimentoAprovado->opcao).'" 
-														data-plano="'.utf8_encode($procedimentoAprovado->plano).'" 
-														data-profissionalCor="'.$profissionalCor.'" 
-														data-id_profissional="'.$v->id_profissional.'" 
-														data-profissionalIniciais="'.$profissionalIniciais.'"  
-														data-statusEvolucao="'.$v->status_evolucao.'" 
-														data-titulo="'.utf8_encode($procedimento->titulo).'" 
-														data-id_tratamento_procedimento="'.$procedimentoAprovado->id.'"'.$disabled.'>'.utf8_encode($procedimento->titulo).$complemento.'</option>';
-									}
-								}
-							}
-							?>
+															}
+															$complemento='';
+															if($v->numeroTotal>1) $complemento.=' - '.utf8_encode($v->numero."/".$v->numeroTotal);
+
+															//	id_tratamento_procedimento => Procedimento de tratamento aprovado
+															if(isset($_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento])) {
+																$procedimentoAprovado=$_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento];
+																if(!empty($procedimentoAprovado->opcao)) $complemento.=" - ".utf8_encode($procedimentoAprovado->opcao)
+																	;
+																echo '<option value="'.$v->id.'" 
+																				data-id_procedimento="'.$v->id_procedimento.'" 
+																				data-numero="'.$v->numero.'" 
+																				data-numeroTotal="'.$v->numeroTotal.'" 
+																				data-opcao="'.utf8_encode($procedimentoAprovado->opcao).'" 
+																				data-plano="'.utf8_encode($procedimentoAprovado->plano).'" 
+																				data-profissionalCor="'.$profissionalCor.'" 
+																				data-id_profissional="'.$v->id_profissional.'" 
+																				data-profissionalIniciais="'.$profissionalIniciais.'"  
+																				data-statusEvolucao="'.$v->status_evolucao.'" 
+																				data-titulo="'.utf8_encode($procedimento->titulo).'" 
+																				data-id_tratamento_procedimento="'.$procedimentoAprovado->id.'"'.$disabled.'>'.utf8_encode($procedimento->titulo).$complemento.'</option>';
+															}
+														}
+													}
+													echo '</optgroup>';
+												}
+												?>
 											</select>
 										</dd>
 									</dl>
@@ -791,6 +830,9 @@
 										<dd></dd>
 									</dl>
 								</div>
+								<?php
+								}
+								?>
 
 								<textarea name="procedimentos" style="display:none;"></textarea>
 
@@ -826,8 +868,11 @@
 									</div>*/?>
 								</div>
 
-								<dl style="height:100%;">
-									<dd style="height:100%;">
+								<?php
+								if(empty($evolucao) or $evolucao->lixo==0) {
+								?>
+								<dl>
+									<dd>
 										<textarea class="js-historicoGeral" style="height:80px;" class="noupper"></textarea>
 									</dd>
 								</dl>
@@ -836,6 +881,9 @@
 										<a href="javascript:;" class="button button__full js-obsGeral-add"><i class="iconify" data-icon="ic-baseline-add"></i> Adicionar</a>
 									</dd>
 								</dl>	
+								<?php
+								}
+								?>
 
 								<textarea name="historicoGeral" style="display:none"></textarea>
 							</fieldset>

@@ -59,6 +59,13 @@
 			<h1><?php echo utf8_encode($paciente->nome);?></h1>
 			<p><?php echo idade($paciente->data_nascimento);?> anos</p>
 			<p><span style="color:var(--cinza3);">#<?php echo $paciente->id;?></span>
+			<?php
+			if(isset($_codigoBI[$paciente->codigo_bi])) {
+			?>
+			<p><span style="background:var(--cinza4);color:#FFF;padding:4px;border-radius: 5px;"><?php echo $_codigoBI[$paciente->codigo_bi];?></span>
+			<?php
+			}
+			?>
 		</div>		
 	</div>
 	<?php /*<div class="filtros-acoes">

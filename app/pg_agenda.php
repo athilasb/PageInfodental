@@ -466,6 +466,8 @@
 													'musica'=>utf8_encode($_pacientes[$x->id_paciente]->musica),
 													'situacao'=>utf8_encode($_pacientes[$x->id_paciente]->situacao),
 													'id_status'=>$x->id_status,
+													'statusBI'=>isset($_codigoBI[$_pacientes[$x->id_paciente]->codigo_bi])?utf8_encode($_codigoBI[$_pacientes[$x->id_paciente]->codigo_bi]):"",
+													//'statusBI'=>$_pacientes[$x->id_paciente]->codigo_bi,
 													'idade'=>$idade,
 													'profissionais'=>$profissionais,
 													'color'=>'#FFF',
@@ -561,6 +563,7 @@
 													'color'=>'#FFF',
 													'statusColor'=>(isset($_status[$x->id_status])?$_status[$x->id_status]->cor:''),
 													'pontuacao'=>0,
+													'statusBI'=>'',
 													'agendadoHa'=>$agendadoHa,
 													'procedimentos'=>array(),
 													'id'=>$x->id,
@@ -993,6 +996,7 @@
 						<div>
 							<h1 class="js-nome"></h1>
 							<p class="js-idade"></p>
+							<p class="js-statusBI"><span  style="background:var(--cinza4);color:#FFF;padding:5px;border-radius: 5px;"></span></p>
 							<p><span style="color:var(--cinza3);" class="js-id_paciente">#44</span> <span style="color:var(--cor1);"></span></p>
 						</div>
 						<p class="js-profissionaisInfo"></p>
@@ -1078,7 +1082,8 @@
 					
 					$('#cal-popup').css({'top':clickTop,'left':clickLeft,'margin-left': clickMargin});
 					$('#cal-popup').show();
-					$('#cal-popup .js-nome').html(popViewInfos[id_agenda].nomeCompleto);
+					$('#cal-popup .js-nome').html(popViewInfos[id_agenda].nome);
+					$('#cal-popup .js-statusBI span').html(popViewInfos[id_agenda].statusBI);
 					$('#cal-popup .js-idade').html(popViewInfos[id_agenda].idade.length>0?`${popViewInfos[id_agenda].idade} anos`:``);
 					$('#cal-popup .js-id_paciente').html(`#${popViewInfos[id_agenda].id_paciente}`);
 					$('#cal-popup .js-grid-info').html(popViewInfos[id_agenda].infos);
@@ -1341,6 +1346,7 @@
 							let id_unidade = arg.event.extendedProps.id_unidade;
 							let infos = ``;
 							let historico = arg.event.extendedProps.historico;
+							let statusBI = arg.event.extendedProps.statusBI;
 
    							
    							linkFichaPaciente=``;
@@ -1399,6 +1405,7 @@
 						    popInfos.agendamentosFuturos=agendamentosFuturos;
 						    popInfos.profissionais=profissionais;
 						    popInfos.historico=historico;
+						    popInfos.statusBI=statusBI;
 
 
 

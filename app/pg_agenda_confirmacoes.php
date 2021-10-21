@@ -161,6 +161,14 @@
 						$_pacientes[$x->id]=$x;
 					}
 
+					$pacienteObs=array();
+					$sql->consult($_p."pacientes_historico","*","where id_paciente IN (".implode(",",$pacientesEmTratamentosSemHorarioIds).") and evento='observacao' and lixo=0 order by data desc");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						if(!isset($pacienteObs[$x->id_paciente])) {
+							$pacienteObs[$x->id_paciente]=$x;
+						}
+					}
+
 
 					$pacientesTratamentos=array();
 					$sql->consult($_p."agenda","distinct id_paciente","where agenda_data>='".date('Y-m-d')." 00:00:00' and 
@@ -173,14 +181,26 @@
 						}
 					}
 
-
+					$_historicoStatus=array();
+					$sql->consult($_p."pacientes_historico_status","*","");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$_historicoStatus[$x->id]=$x;
+					}
 
 					$agendaTratamento=array();
 					foreach($pacientesEmTratamentosSemHorarioIds as $id_paciente) {
 						if(isset($_pacientes[$id_paciente])) {
 							$paciente=$_pacientes[$id_paciente];
 							if(is_object($paciente)) {
+								$corObs="";
+								if(isset($pacienteObs[$paciente->id])) {
+									if(isset($_historicoStatus[$pacienteObs[$paciente->id]->id_obs])) {
+										$h=$_historicoStatus[$pacienteObs[$paciente->id]->id_obs];
+										$corObs=$h->cor;
+									}
+								}
 								$agendaTratamento[]=array('id_paciente'=>$paciente->id,
+															'corObs'=>$corObs,
 															'nome'=>utf8_encode($paciente->nome),
 															'telefone1'=>$paciente->telefone1);
 							}
@@ -679,6 +699,46 @@
 			} else {
 				$rtn=array('success'=>false,'error'=>$erro);
 			}			
+		} else if($_POST['ajax']=="naoQueroAgendar") {
+			$paciente = '';
+			if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+				$sql->consult($_p."pacientes","*","where id='".$_POST['id_paciente']."'");
+				if($sql->rows) { 
+					$paciente=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+			$obs = isset($_POST['obs'])?$_POST['obs']:'';
+
+			$status='';
+			if(isset($_POST['id_status']) and is_numeric($_POST['id_status'])) {
+				$sql->consult($_p."pacientes_historico_status","*","where id='".$_POST['id_status']."'");
+				if($sql->rows) {
+					$status=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+			$erro='';
+			if(empty($paciente)) $erro='Paciente não encontrado!';
+			else if(empty($status)) $erro='Motivo não selecionado!';
+			
+			if(empty($erro)) {
+				$vSQL="data=now(),
+						evento='observacao',
+						id_paciente=$paciente->id,
+						id_agenda=0,
+						id_obs=$status->id,
+						descricao='".addslashes(utf8_decode($obs))."',
+						id_usuario=$usr->id";
+
+				$sql->add($_p."pacientes_historico",$vSQL);
+
+				$rtn=array('success'=>true);
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
+
+
 		}
 
 		header("Content-type: application/json");
@@ -1116,11 +1176,15 @@
 						
 					}
 						// barra = `<div style="background:${cor};width:100%;padding:5px;border-radius:5px;"></div>`;
+
+					let style = '';
+					if(x.corObs.length>0) style = ` style="background:${x.corObs};color:#FFF !important;"`;
+
 				
-					let html = `<a href="javascript:;" onclick="popView(this,${x.id_paciente});" class="kanban-card-dados js-kanban-item" data-id="${x.id_paciente}">
+					let html = `<a href="javascript:;" onclick="popView(this,${x.id_paciente});" class="kanban-card-dados js-kanban-item" data-id="${x.id_paciente}"${style}>
 									${barra}
-									<h1>${x.nome}</h1>
-									<h2>${x.telefone1}</h2>
+									<h1${style}>${x.nome}</h1>
+									<h2${style}>${x.telefone1}</h2>
 								</a>`;
 								
 
@@ -1321,6 +1385,7 @@
 			$(function(){
 
 				$('#cal-popup').on('click','.js-gridbtn-naoQueroAgendar',function(){
+					//alert('a');
 					let id_paciente = $('#cal-popup .js-input-id_paciente').val();
 					let id_status = $(this).parent().find('.js-select-historicoStatus').val();
 					let obs = $(this).parent().find('.js-textarea-obs').val();
@@ -1329,12 +1394,15 @@
 					if(id_status.length==0) {
 						erro = 'Preencha o campo de Status';
 						$(this).parent().find('.js-input-data').addClass('erro');
-					} else if(tempo.length==0) {
+					} else if(obs.length==0) {
 						erro = 'Preencha o campo de Observações';
-						$(this).parent().find('.js-input-tempo').addClass('erro');
+						$(this).parent().find('.js-textarea-obs').addClass('erro');
 					}
 
 					if(erro.length===0) {
+
+						 $(this).parent().find('.js-select-historicoStatus').val('');
+						 $(this).parent().find('.js-textarea-obs').val('');
 
 						let data=`ajax=naoQueroAgendar&id_paciente=${id_paciente}&id_status=${id_status}&obs=${obs}`;
 
@@ -1342,11 +1410,19 @@
 							type:"POST",
 							data:data,
 							success:function(rtn) {
-
+								if(rtn.success) {
+									agendaAtualizar();
+								} else if(rtn.error) { 
+									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+								} else {
+									swal({title: "Erro!", text: "Algum erro ocorreu durante o registro da observação.", type:"error", confirmButtonColor: "#424242"});
+								}
 							},
 							error:function(){
-
+								swal({title: "Erro!", text: "Algum erro ocorreu durante o registro da observação.", type:"error", confirmButtonColor: "#424242"});
 							}
+						}).done(function(){
+							$('#cal-popup').hide();
 						})
 
 					} else {
@@ -1674,14 +1750,14 @@
 
 			<div class="kanban" id="kanban">
 				
-				<div class="kanban-item" style="background:<?php echo $s->cor;?>;color:var(--cor1);">
+				<div class="kanban-item" style="color:var(--cor1);">
 					<h1 class="kanban-item__titulo">CONFIRMAR HOJE<?php /* <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span>*/?></h1>
 					<div class="kanban-card js-kanban-status js-kanban-status-hoje" data-id_status="hoje" style="min-height: 100px;">
 					
 					</div>
 				</div>
 				
-				<div class="kanban-item" style="background:<?php echo $s->cor;?>;color:var(--cor1);">
+				<div class="kanban-item" style="color:var(--cor1);">
 					<h1 class="kanban-item__titulo">CONFIRMAR AMANHÃ<?php /* <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span>*/?></h1>
 					<div class="kanban-card js-kanban-status js-kanban-status-amanha" data-id_status="amanha" style="min-height: 100px;">
 						

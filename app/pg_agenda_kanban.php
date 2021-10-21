@@ -42,12 +42,13 @@
 				}
 
 				$_pacientes=array();
-				$sql->consult($_p."pacientes","id,nome,telefone1","where id IN (".implode(",",$pacientesIds).")");
+				$sql->consult($_p."pacientes","id,nome,telefone1,codigo_bi","where id IN (".implode(",",$pacientesIds).")");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$_pacientes[$x->id]=$x;
 				}
 				foreach($registros as $x) {
 					if(isset($_pacientes[$x->id_paciente])) {
+						$paciente=$_pacientes[$x->id_paciente];
 
 						$dataAg=date('d/m',strtotime($x->agenda_data));
 						$dia=" ".$diasExtenso[date('w',strtotime($x->agenda_data))];
@@ -56,6 +57,8 @@
 													'data'=>$dataAg.$dia,
 													'hora'=>date('H:i',strtotime($x->agenda_data)),
 													'id_status'=>$x->id_status,
+													'id_paciente'=>$paciente->id,
+													'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?$_codigoBI[$paciente->codigo_bi]:'',
 													'paciente'=>ucwords(strtolowerWLIB(utf8_encode($_pacientes[$x->id_paciente]->nome))),
 													'telefone1'=>mask($_pacientes[$x->id_paciente]->telefone1),
 													'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0
@@ -274,7 +277,7 @@
 					let html = ``;
 					
 					if(eval(x.id_status)==5) {
-						console.log(x);
+						//console.log(x);
 						html = `<div href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
 										
 										<h1>${x.paciente}</h1>

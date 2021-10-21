@@ -471,7 +471,7 @@
 
 			<div class="box">
 				<div class="paciente-wp">
-					<h1 class="paciente__titulo1">Histórico WhatsApp</h1>
+					<h1 class="paciente__titulo1">Histórico</h1>
 					<script>
 						$(function() {
 							//$(".paciente-wp__inner1").scrollTop($(".paciente-wp__inner1")[0].scrollHeight);

@@ -68,6 +68,7 @@
 				<option value="">STUDIO DENTAL - GYN SHOP</option>
 			</select>*/?>
 			<a href="pg_configuracao_anamnese_exames.php" class="header-controles__config"><i class="iconify" data-icon="ic-baseline-settings"></i></a>
+			<a href="usuarios/sair.php" class="header-controles__config"><span class="iconify" data-icon="carbon:logout"></span></a>
 			<a href="" class="header-controles__usuario"><img src="img/ilustra-perfil.png" alt="" width="120" height="120" /></a>
 		</section>
 

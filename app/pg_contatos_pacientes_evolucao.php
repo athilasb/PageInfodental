@@ -147,7 +147,7 @@
 			$usuariosIds=array(-1);
 			$prodecimentosIds=array(-1);
 			$_evolucoes=array();
-			$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id and lixo=0 order by data desc");
+			$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id order by data desc");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$_evolucoes[$x->id]=$x;
 				$evolucaoRegistros[]=$x;
@@ -450,8 +450,16 @@
 											$tipo = $_tiposEvolucao[$x->id_tipo];
 
 											if($x->id_tipo==1 or $x->id_tipo==2) $tipo->tituloSingular="Procedimento";
+											
+												$url=$tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;
+											if($x->lixo==1) {
+												$style="opacity:0.3;";
+											} else {
+												$style="";
+
+											}
 								?>
-								<a href="<?php echo $tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;?>" class="reg-group">
+								<a href="<?php echo $url;?>" class="reg-group" style="<?php echo $style;?>">
 									<div class="reg-color" style=""></div>
 									<div class="reg-data" style="width:5%">
 										<i class="iconify" data-icon="<?php echo $tipo->icone;?>"></i>
