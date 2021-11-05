@@ -624,7 +624,7 @@
 		}
 	}
 
-?>
+?> 
 <script>
 	var calendar = '';
 	var id_unidade=<?php echo $usrUnidade->id;?>;
