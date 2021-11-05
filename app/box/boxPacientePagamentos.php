@@ -255,6 +255,7 @@
 
 					$uniaoIds=array();
 					$valor=0;
+					$id_tratamento=0;
 					$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id IN (".implode(",",$_POST['pagamentos']).")");
 					if($sql->rows) {
 						while($x=mysqli_fetch_object($sql->mysqry)) {
@@ -262,6 +263,7 @@
 							$uniaoIds[]=$x->id;
 							$id_paciente=$x->id_paciente;
 							$id_unidade=$x->id_unidade;
+							$id_tratamento=$x->id_tratamento;
 						}
 					}
 
@@ -270,6 +272,7 @@
 								data_vencimento='".(isset($_POST['dataVencimento'])?invDate($_POST['dataVencimento']):now())."',
 								id_usuario=$usr->id,
 								id_unidade=$id_unidade,
+								id_tratamento=$id_tratamento,
 								id_paciente=$id_paciente,
 								valor='".$valor."',
 								fusao=1";

@@ -11,7 +11,6 @@
 
 		historicoListar(index);
 
-
 		if(procedimentos[index].id_tratamento_procedimento===undefined) {
 			$('#cal-popup .abasPopover').find('a:eq(1),a:eq(2)').hide();
 			$('#cal-popup .abasPopover').find('a:eq(0)').click();
@@ -99,7 +98,7 @@
 
 		$('.js-procedimento').remove();
 
-		console.log(procedimentos);
+		//console.log(procedimentos);
 		procedimentos.forEach(x=>{
 
 			//$('.js-sel-procedimento').find(`option[value=${x.id_procedimento}]`).prop('disabled',true);

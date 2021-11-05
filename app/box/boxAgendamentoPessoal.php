@@ -106,18 +106,18 @@
 							$sql->update($_p."agenda",$vSQL,$vWHERE);
 							$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."agenda',id_reg='".$agenda->id."'");
 						} else {
-							$sql->consult($_p."agenda","*","where agenda_data='".$agendaData."' and profissionais=',$profissional->id,' and agendaPessoal=1 and id_unidade=$unidade->id");
+							/*$sql->consult($_p."agenda","*","where agenda_data='".$agendaData."' and profissionais=',$profissional->id,' and agendaPessoal=1 and id_unidade=$unidade->id");
 							if($sql->rows) {
 								$agenda=mysqli_fetch_object($sql->mysqry);
 								$vWHERE="where id=$agenda->id";
 								$sql->update($_p."agenda",$vSQL,$vWHERE);
 								$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."agenda',id_reg='".$agenda->id."'");
-							} else {
+							} else {*/
 								$vSQL.=",data=now(),id_usuario=$usr->id";
 								$sql->add($_p."agenda",$vSQL);
 								$id_agenda=$sql->ulid;
 								$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$id_agenda."'");
-							}
+							//}
 						}
 
 						$rtn=array('success'=>true);
@@ -264,6 +264,7 @@
 	}
 	$values['agenda_data']=date('d/m/Y');
 	$values['agenda_hora']=date('H:i');
+	$values['agenda_hora_final']=date('H:i',strtotime(date('Y-m-d H:i')." + 1 hour"));
 
 	if(isset($_GET['data_agenda']) and !empty($_GET['data_agenda'])) {
 		list($_ano,$_mes,$_dia)=explode("-",$_GET['data_agenda']);
@@ -282,6 +283,7 @@
 	}
 	if(isset($_GET['agendaHora']) and !empty($_GET['agendaHora'])) {
 		$values['agenda_hora']=$_GET['agendaHora'];
+		$values['agenda_hora_final']=date('H:i',strtotime(date('Y-m-d '.$values['agenda_hora'])." + 1 hour"));
 	}
 
 	$agenda='';
@@ -336,12 +338,31 @@
 	var id_agenda = '<?php echo is_object($agenda)?$agenda->id:'';?>';
 	$(function(){
 
-		$('.agendaData').datetimepicker({
+		/*$('.agendaData').datetimepicker({
 			timepicker:false,
 			format:'d/m/Y',
 			scrollMonth:false,
 			scrollTime:false,
 			scrollInput:false,
+		});*/
+
+		jQuery('#date_timepicker_start').datetimepicker({
+			format:'d/m/Y',
+			onShow:function( ct ){
+				this.setOptions({
+					maxDate:jQuery('#date_timepicker_end').val()?jQuery('#date_timepicker_end').val():false
+				})
+			},
+			timepicker:false
+		});
+		jQuery('#date_timepicker_end').datetimepicker({
+			format:'d/m/Y',
+			onShow:function( ct ){
+				this.setOptions({
+					minDate:jQuery('#date_timepicker_start').val()?jQuery('#date_timepicker_start').val():false
+				})
+			},
+			timepicker:false
 		});
 
 		$('.agendaHora').datetimepicker({
@@ -467,7 +488,7 @@
 					<dl>
 						<dd>
 							<div class="input-icon"><i class="iconify" data-icon="uil-clock-two"></i></div>
-							<input type="text" name="agenda_data" class="agendaData obg js-agenda-verifica" value="<?php echo $values['agenda_data'];?>" autocomplete="off" placeholder="Data (início)" />
+							<input type="text" name="agenda_data" id="date_timepicker_start" class="agendaData obg js-agenda-verifica" value="<?php echo $values['agenda_data'];?>" autocomplete="off" placeholder="Data (início)" />
 						</dd>
 					</dl>
 					<dl>
@@ -476,7 +497,7 @@
 					<dl>
 						<dd>
 							<div class="input-icon"><i class="iconify" data-icon="uil-clock-eight"></i></div>
-							<input type="text" name="agenda_data_final" class="agendaData" value="<?php echo $values['agenda_data_final'];?>" autocomplete="off" placeholder="Data (fim)" />
+							<input type="text" name="agenda_data_final" id="date_timepicker_end" class="agendaData" value="<?php echo $values['agenda_data_final'];?>" autocomplete="off" placeholder="Data (fim)" />
 						</dd>
 					</dl>
 					<dl>

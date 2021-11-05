@@ -16,7 +16,10 @@
 	<div class="filter-group filter-group_right">
 		<div class="filter-button">
 			<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
-			<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+			<?php
+			if(isset($buttonPrint)) echo $buttonPrint;
+			?>
+			
 			<a href="javascript:;" class="azul js-btn-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
 		</div>
 	</div>

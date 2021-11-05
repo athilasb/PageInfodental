@@ -25,12 +25,21 @@
 	// promessa de pagamento
 	$regs=array();
 	$pagamentosIds=array(0);
+	$_fusaoComposicoes=array();
 	$sql->consult($_p."pacientes_tratamentos_pagamentos","*","WHERE data_vencimento>=current_date() and pago=0 and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
+	//	echo $x->id."-> ";
 		$pacientesIds[$x->id_paciente]=$x->id_paciente;
 		$tratamentosIds[$x->id_tratamento]=$x->id_tratamento;
-		$regs[]=$x;
-		$pagamentosIds[]=$x->id;
+
+		if($x->id_fusao==0) {
+			$regs[]=$x;
+			$pagamentosIds[]=$x->id;
+		}
+		// se for composicao de fusao
+		else {
+			$_fusaoComposicoes[$x->id_fusao][$x->id_tratamento]=$x;
+		}
 	}
 
 
@@ -125,13 +134,27 @@
 	$_promessaDePagamento=array();
 	foreach($regs as $x) {
 
-		
 		if(isset($_inadimplentesIds[$x->id])) { 
 			continue;
 		}
-		if(isset($_pacientes[$x->id_paciente]) && isset($_tratamentos[$x->id_tratamento])) {
+		if(isset($_pacientes[$x->id_paciente]) && (isset($_tratamentos[$x->id_tratamento]) or $x->fusao==1))  {
 			$paciente=$_pacientes[$x->id_paciente];
-			$plano=$_tratamentos[$x->id_tratamento];
+			$plano=isset($_tratamentos[$x->id_tratamento])?$_tratamentos[$x->id_tratamento]:(object)array('titulo'=>'');
+
+			// se for fusao
+			if($x->fusao==1) {
+				$fusaoTratamentos='<i class="iconify" data-icon="codicon:group-by-ref-type" data-height="18" data-inline="true"></i> ';
+
+				// retorna tratamentos de cada pagamento que compoe a fusao
+				if(isset($_fusaoComposicoes[$x->id])) {
+					foreach ($_fusaoComposicoes[$x->id] as $c) {
+						if(isset($_tratamentos[$c->id_tratamento])) {
+							$fusaoTratamentos.=($_tratamentos[$c->id_tratamento]->titulo).",  ";
+						}
+					}
+				}
+				$plano->titulo=!empty($fusaoTratamentos)?substr($fusaoTratamentos,0,strlen($fusaoTratamentos)-3):"";
+			}
 
 			$aux = explode(" ",$paciente->nome);
 
@@ -143,6 +166,7 @@
 			
 
 					if(strtotime($b->data_vencimento)==strtotime(date('Y-m-d'))) {
+					
 						$totais['receber']+=$b->valor;
 						$_receberNoDia[]=array('id_paciente'=>$paciente->id,
 												'paciente'=>utf8_encode($pacienteNome),
@@ -164,8 +188,9 @@
 					
 				}
 			} else { 
+				//echo $x->id."<BR>";
 				if(strtotime($x->data_vencimento)==strtotime(date('Y-m-d'))) {
-
+					//echo $pacienteNome."->".$x->id."<BR>";
 					$totais['receber']+=$x->valor;
 					$_receberNoDia[]=array('id_paciente'=>$paciente->id,
 												'paciente'=>utf8_encode($pacienteNome),
@@ -195,7 +220,7 @@
 				
 				}
 			}
-		} 
+		}
 	}
 
 	$_adimplentes=array();

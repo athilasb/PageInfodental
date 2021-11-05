@@ -803,7 +803,7 @@
 																				data-id_procedimento="'.$v->id_procedimento.'" 
 																				data-numero="'.$v->numero.'" 
 																				data-numeroTotal="'.$v->numeroTotal.'" 
-																				data-opcao="'.utf8_encode($procedimentoAprovado->opcao).'" 
+																				data-opcao="'.strip_tags(utf8_encode($procedimentoAprovado->opcao)).'" 
 																				data-plano="'.utf8_encode($procedimentoAprovado->plano).'" 
 																				data-profissionalCor="'.$profissionalCor.'" 
 																				data-id_profissional="'.$v->id_profissional.'" 

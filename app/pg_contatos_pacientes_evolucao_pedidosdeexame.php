@@ -536,6 +536,8 @@
 			<div class="box">
 
 				<?php
+
+				
 				if(empty($evolucao)) {
 					$exibirEvolucaoNav=1;
 					require_once("includes/evolucaoMenu.php");
@@ -550,7 +552,9 @@
 					<div class="filter-group filter-group_right">
 						<div class="filter-button">
 							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
-							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+
+							<a href="impressao/pedidodeexame.php?id=<?php echo md5($evolucao->id);?>" target="_blank"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+							
 							<a href="javascript:;" class="azul js-btn-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
 						</div>
 					</div>

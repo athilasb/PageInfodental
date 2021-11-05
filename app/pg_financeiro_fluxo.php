@@ -1115,7 +1115,7 @@
 				<div class="reg">
 					<?php
 					$sql->consultPagMto2($_table,"*",10,$where,"",15,"pagina",$_page."?".$url."&pagina=");
-					echo $where."->".$sql->rows;;
+					//echo $where."->".$sql->rows;;
 					$registros=array();
 					$fluxosIDs=array();
 					$fornecedoresIds=$colaboradoresIds=$pacientesIds=array(-1);
@@ -1217,20 +1217,19 @@
 						<div class="reg-steps" style="margin:0 auto;">
 
 							<div class="reg-steps__item active">
-								<h1 style="background:var(--verde);">1</h1>
+								<h1 style="color:var(--verde);">1</h1>
 								<p>Parcela lançada</p>									
 							</div>
 
 							<?php
-
-							$cor['promessa']='';
+							$cor['promessa']='var(--silver);';
 							if($x->id_formapagamento>0) $cor['promessa']='var(--verde);';
 							else $cor['promessa']='var(--amarelo);';
 
 							if($x->pagamento==0) {
 							?>
 							<div class="reg-steps__item active">
-								<h1 style="background:<?php echo $cor['promessa'];?>;color:#FFF">2</h1>
+								<h1 style="color:<?php echo $cor['promessa'];?>;">2</h1>
 								<p>Promessa de Pagamento</p>									
 							</div>
 
@@ -1240,7 +1239,7 @@
 
 							?>
 							<div class="reg-steps__item">
-								<h1 style="background:var(--vermelho);color:#FFF">3</h1>
+								<h1 style="color:var(--vermelho);">3</h1>
 								<p>Vencido</p>									
 							</div>
 							<?php
@@ -1259,21 +1258,21 @@
 							} else {
 							?>
 							<div class="reg-steps__item active">
-								<h1 style="background:<?php echo ($x->pagamento==1 or $_conciliado==1)?"var(--verde)":$cor['promessa'];?>;color:#FFF">2</h1>
+								<h1 style="color:<?php echo ($x->pagamento==1 or $_conciliado==1)?"var(--verde)":$cor['promessa'];?>;color:#FFF">2</h1>
 								<p>Promessa de Pagamento</p>									
 							</div>
 							<?php
 								if($_conciliado==0) {
 							?>
 							<div class="reg-steps__item">
-								<h1 style="background:var(--azul);color:#FFF;">3</h1>
+								<h1 style="color:var(--azul);color:#FFF;">3</h1>
 								<p>Pago</p>									
 							</div>
 							<?php
 								} else {
 							?>
 							<div class="reg-steps__item">
-								<h1 style="background:var(--verde);color:#FFF;">3</h1>
+								<h1 style="color:var(--verde);color:#FFF;">3</h1>
 								<p>Conciliado</p>									
 							</div>
 							<?php		

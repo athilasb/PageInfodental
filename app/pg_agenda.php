@@ -459,7 +459,7 @@
 													'id_paciente'=>$x->id_paciente,
 													'duracao'=>$x->agenda_duracao."m",
 													'indicacao'=>'',
-													'title'=>$str->res($pacienteNome,20),
+													'title'=>($pacienteNome),
 													'nomeCompleto'=>$pacienteNome,
 													'telefone1'=>!empty($_pacientes[$x->id_paciente]->telefone1)?mask($_pacientes[$x->id_paciente]->telefone1):'',
 													'instagram'=>utf8_encode($_pacientes[$x->id_paciente]->instagram),
@@ -1092,6 +1092,23 @@
 					$('#cal-popup .js-id_status').val(popViewInfos[id_agenda].id_status);
 					$('#cal-popup .js-profissionaisInfo').html(popViewInfos[id_agenda].profissionais);
 
+					console.log(popViewInfos[id_agenda]);
+					if(popViewInfos[id_agenda].agendaPessoal && popViewInfos[id_agenda].agendaPessoal==1) {
+						$('#cal-popup .js-statusBI').hide();
+						$('#cal-popup .js-idade').hide();
+						$('#cal-popup .js-id_paciente,.js-statusBI,.js-idade,.js-id_status,.js-hrefPaciente').hide();
+						$('.js-hrefAgenda').addClass('button__full');
+						$('#cal-popup .abasPopover a:eq(0),#cal-popup .abasPopover a:eq(2),#cal-popup .abasPopover a:eq(3)').hide();
+						$('#cal-popup .abasPopover a:eq(1)').click();
+					} else {
+						$('#cal-popup .js-statusBI').show();
+						$('.js-hrefAgenda').removeClass('button__full');
+						$('#cal-popup .js-idade').show();
+						$('#cal-popup .js-id_paciente,.js-statusBI,.js-idade,.js-id_status,.js-hrefPaciente').show();
+						$('#cal-popup .abasPopover a').show();
+						$('#cal-popup .abasPopover a:eq(0)').click();
+					}
+
 					$('#cal-popup .js-hrefAgenda').attr('href',`box/boxAgendamento.php?id_unidade=${popViewInfos[id_agenda].id_unidade}&id_agenda=${popViewInfos[id_agenda].id_agenda}`);
 					$('#cal-popup .js-hrefPaciente').attr('href',`pg_contatos_pacientes_resumo.php?id_paciente=${popViewInfos[id_agenda].id_paciente}`);
 
@@ -1101,7 +1118,7 @@
 					$('#cal-popup .js-grid-agendamentos table tr').remove();
 
 					let temAg=false;
-					if(popViewInfos[id_agenda].agendamentosFuturos.length>0) {
+					if(popViewInfos[id_agenda].agendamentosFuturos && popViewInfos[id_agenda].agendamentosFuturos.length>0) {
 
 						popViewInfos[id_agenda].agendamentosFuturos.forEach(x=>{
 
@@ -1406,6 +1423,7 @@
 						    popInfos.profissionais=profissionais;
 						    popInfos.historico=historico;
 						    popInfos.statusBI=statusBI;
+						    popInfos.agendaPessoal=agendaPessoal;
 
 
 

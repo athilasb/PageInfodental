@@ -14,7 +14,7 @@
 		$_formasDePagamento[$x->id]=$x;
 		$optionFormasDePagamento.='<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
 	}
-
+ 
 	$_planos=array();
 	$sql->consult($_p."parametros_planos","*","where lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
@@ -401,8 +401,9 @@
 			</form>
 		<?php
 		} else {
-			$where="WHERE id_paciente=$paciente->id and id_fusao=0 and lixo=0 order by data desc, id desc";
-			$sql->consult($_table,"*",$where);
+			$where="WHERE id_paciente=$paciente->id and id_fusao=0 and lixo=0 order by data asc, id asc";
+			$sql->consult($_p."pacientes_tratamentos_pagamentos","*",$where);
+		
 
 			$valor=array('aReceber'=>0,
 						'valorRecebido'=>0,
@@ -414,7 +415,10 @@
 			$pagamentosIDs=array(-1);
 			$pagamentosUnidos=array(-1);
 			while($x=mysqli_fetch_object($sql->mysqry)) {
-				if($x->id_fusao==0) $registros[]=$x;
+				if($x->id_fusao==0) {
+					//echo $x->valor."<BR>";
+					$registros[]=$x;
+				}
 				$tratamentosIDs[]=$x->id_tratamento;
 				$pagamentosIDs[$x->id]=$x->id;
 
@@ -426,8 +430,8 @@
 				if($atraso<0) {
 					$valor['valoresVencido']+=$x->valor;
 				}
-
 			}
+
 
 			$_subpagamentos=array();
 			$sql->consult($_table,"*","where id_fusao IN (".implode(",",$pagamentosUnidos).") and lixo=0");
@@ -449,18 +453,28 @@
 			while($x=mysqli_fetch_object($sql->mysqry)) $_tratamentos[$x->id]=$x;
 
 			foreach($registros as $x) {
+
 				if(isset($_baixas[$x->id])) {
 
-					
+					$valorAReceber=$x->valor;
+					//echo $valorAReceber."->";
 					$dataUltimoPagamento=date('d/m/Y',strtotime($_baixas[$x->id][count($_baixas[$x->id])-1]->data));
 
 			   		foreach($_baixas[$x->id] as $v) {
-						$valor['valorRecebido']+=$v->valor;
+			   			if($v->pago==1) {
+			   				//echo " - $v->valor";
+			   				$valorAReceber-=$v->valor;
+							$valor['valorRecebido']+=$v->valor;
+						}
 						//$saldoAPagar-=$v->valor;
 						//$valorPago+=$v->valor;
 						//$descontos+=$v->desconto;
 						//$multas+=$v->multas;
 					}
+					//echo " = $valorAReceber<BR> ";
+					$valor['aReceber']+=$valorAReceber;
+				} else {
+					$valor['aReceber']+=$x->valor;
 				}
 			}
 
@@ -796,6 +810,25 @@
 						}) 
 					}
 				});
+
+				$('.js-checkbox-pagamentos').click(function(){
+					let id_tratamento = $(this).attr('data-id_tratamento');
+					if($(this).prop('checked')==true) {
+						$('.js-checkbox-pagamentos').hide();
+						$(`.js-checkbox-pagamentos[data-id_tratamento=${id_tratamento}]`).show();
+						$(`.js-checkbox-pagamentos-disabled`).show();
+						$(`.js-checkbox-pagamentos-disabled[data-id_tratamento=${id_tratamento}]`).hide();
+					} else {
+						if($(`.js-checkbox-pagamentos:checked`).length>0) {
+
+						} else {
+
+							$('.js-checkbox-pagamentos').show();
+							$(`.js-checkbox-pagamentos-disabled`).hide();
+						}
+					}
+				});
+
 				<?php
 				} 
 				?>
@@ -1152,7 +1185,14 @@
 								if(isset($_GET['unirPagamentos'])) {
 								?>
 								<div class="js-descricao" style="width:5%;">
-									<input type="checkbox" name="pagamentos[]" class="js-checkbox-pagamentos" value="<?php echo $x->id;?>" />
+									<?php
+									if($x->fusao==0 and !isset($pagamentosComBaixas[$x->id])) {
+									?>
+									<input type="checkbox" name="pagamentos[]" class="js-checkbox-pagamentos" data-id_tratamento="<?php echo $x->id_tratamento;?>" value="<?php echo $x->id;?>" />
+									<span class="iconify js-checkbox-pagamentos-disabled" data-icon="fxemoji:cancellationx" style="opacity:0.2;display:none;" data-id_tratamento="<?php echo $x->id_tratamento;?>"></span>
+									<?php
+									} else echo '<span class="iconify" data-icon="fxemoji:cancellationx" style="opacity:0.2"></span>';
+									?>
 								</div>
 								<?php	
 								}
@@ -1175,17 +1215,45 @@
 								<div class="reg-steps" style="margin:0 auto;">
 
 									<div class="reg-steps__item active">
-										<h1 style="background:var(--verde);">1</h1>
+										<h1 style="color:var(--verde);">1</h1>
 										<p>Em Aberto</p>									
 									</div>
 
+									<?php
+									if($todasPagas===true or $statusPromessa===true) {
+										$promessaCor="var(--verde);";
+									} else if($statusInadimplente===true) {
+										$promessaCor="var(--vermelho);";
+									}  else {
+										$promessaCor="var(--amarelo)";
+									}
+									?>
 									<div class="reg-steps__item active">
-										<h1<?php echo ($statusPromessa===true)?"":" style=\"background:var(--amarelo);\"";?>>2</h1>
+										<h1 style="color:<?php echo $promessaCor;?>">2</h1>
 										<p>Promessa de Pagamento</p>									
 									</div>
-
-									<div class="reg-steps__item<?php echo ($statusInadimplente==true or $todasPagas===true)?" active":"";?>">
-										<h1<?php echo ($statusInadimplente===true)?" style=\"background:var(--vermelho);\"":" ";?>>3</h1>
+									<?php
+									if($statusInadimplente==true) {
+									?>
+									<div class="reg-steps__item">
+										<h1 style="color:var(--vermelho);">3</h1>
+										<p>
+										<?php
+										if($todasPagas) {
+											$sql->update($_p."pacientes_tratamentos_pagamentos","pago=1","where id=$x->id");
+										} else {
+											$sql->update($_p."pacientes_tratamentos_pagamentos","pago=0","where id=$x->id");
+										}
+										echo "Inadimplente";
+										?>
+										</p>									
+									</div>
+									<?php
+									}
+									else if($todasPagas===true) {
+									?>
+									<div class="reg-steps__item">
+										<h1 style="color:var(--verde);">3</h1>
 										<p>
 										<?php
 										if($todasPagas) {
@@ -1194,12 +1262,31 @@
 											$sql->update($_p."pacientes_tratamentos_pagamentos","pago=0","where id=$x->id");
 										}
 
-										if($todasPagas) echo "Adimplente";
-										else if($statusInadimplente) echo "Inadimplente";
-										else echo "Adimplente/Inadimplente";
+										echo "Adimplente";
 										?>
 										</p>									
 									</div>
+									<?php
+									} else {
+									?>
+									<div class="reg-steps__item">
+										<h1 style="color:silver">3</h1>
+										<p>
+										<?php
+										if($todasPagas) {
+											$sql->update($_p."pacientes_tratamentos_pagamentos","pago=1","where id=$x->id");
+										} else {
+											$sql->update($_p."pacientes_tratamentos_pagamentos","pago=0","where id=$x->id");
+										}
+
+										echo "Adimplente/Inadimplente";
+										?>
+										</p>									
+									</div>
+									<?php
+									}
+									?>
+									
 									
 								</div>						
 

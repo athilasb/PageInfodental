@@ -24,6 +24,8 @@
 				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
 				while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
 
+				
+
 
 				# Agendamentos a confirmar (hj, amanha e depois de amanha): id_status=1 -> a confirmar
 					$where="where agenda_data>='".$dataWH." 00:00:00' and agenda_data<='".date('Y-m-d',strtotime($dataWH." + 2 day"))." 23:59:59' and id_status=1 and lixo=0 order by agenda_data asc";
@@ -158,6 +160,7 @@
 
 					$sql->consult($_p."pacientes","id,nome,telefone1,codigo_bi","where id IN (".implode(",",$pacientesEmTratamentosIds).") or id IN (".implode(",",$pacientesEmTratamentosSemHorarioIds).")");
 					while($x=mysqli_fetch_object($sql->mysqry)) {
+
 						$_pacientes[$x->id]=$x;
 					}
 
@@ -174,9 +177,10 @@
 					$sql->consult($_p."agenda","distinct id_paciente","where agenda_data>='".date('Y-m-d')." 00:00:00' and 
 																				id_paciente IN (".implode(",",$pacientesEmTratamentosSemHorarioIds).") and 
 																				id_status IN (1,2) and lixo=0");
+
 					if($sql->rows) {
 						while($x=mysqli_fetch_object($sql->mysqry)) {
-							//echo $x->id_paciente." ";
+							//echo $x->id_paciente."-";
 							unset($pacientesEmTratamentosSemHorarioIds[$x->id_paciente]);
 						}
 					}
@@ -278,7 +282,6 @@
 														'id_cadeira'=>$x->id_cadeira,
 														'id_status'=>'reagendar',
 														'hora'=>date('H:i',strtotime($x->agenda_data))." às ".date('H:i',strtotime($x->agenda_data." + $x->agenda_duracao minutes")),
-													
 														'paciente'=>ucwords(strtolowerWLIB(utf8_encode($_pacientes[$x->id_paciente]->nome))),
 														'telefone1'=>mask($_pacientes[$x->id_paciente]->telefone1),
 														'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0,
@@ -298,7 +301,7 @@
 			} else {
 				$rtn=array('success'=>false,'error'=>'Data inválida!');
 			}
-		} else if ($_POST['ajax']=="alterarStatus") {
+		} /*else if ($_POST['ajax']=="alterarStatus") {
 
 			$agenda = '';
 			if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
@@ -337,7 +340,7 @@
 			} else {	
 				$rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
 			}
-		} else if($_POST['ajax']=="confirmarAgendamento") {
+		} */ else if($_POST['ajax']=="confirmarAgendamento") {
 			$agenda = '';
 			if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
 				$sql->consult($_p."agenda","*","where id='".$_POST['id_agenda']."'");
@@ -737,7 +740,73 @@
 			} else {
 				$rtn=array('success'=>false,'error'=>$erro);
 			}
+		} else if($_POST['ajax']=="historico") {
 
+			$paciente = '';
+			if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+				$sql->consult($_p."pacientes","*","where id='".$_POST['id_paciente']."'");
+				if($sql->rows) { 
+					$paciente=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+
+			if(is_object($paciente)) {
+
+				$_usuarios=array();
+				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where lixo=0 order by nome asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_usuarios[$x->id]=$x;
+				}
+
+				$_historicoStatus=array();
+				$sql->consult($_p."pacientes_historico_status","*","");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_historicoStatus[$x->id]=$x;
+				}
+
+				$_historico=array();
+				$sql->consult($_p."pacientes_historico","*","where id_paciente=$paciente->id and evento='observacao' and lixo=0 order by data desc");
+			
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+
+					if(isset($_usuarios[$x->id_usuario])) {
+
+						$_historico[]=array('usr'=>utf8_encode($_usuarios[$x->id_usuario]->nome),
+															'dt'=>date('d/m H:i',strtotime($x->data)),
+															'ev'=>'observacao',
+															'obs'=>isset($_historicoStatus[$x->id_obs])?utf8_encode($_historicoStatus[$x->id_obs]->titulo):"",
+															'desc'=>utf8_encode($x->descricao)
+														);
+
+
+						/*if($x->evento=="agendaHorario") {
+								$_historico[]=array('usr'=>utf8_encode($_usuarios[$x->id_usuario]->nome),
+																	'dt'=>date('d/m H:i',strtotime($x->data)),
+																	'ev'=>'horario',
+																	'nvDt'=>date('d/m H:i',strtotime($x->agenda_data_novo)),
+																	'antDt'=>date('d/m H:i',strtotime($x->agenda_data_antigo))
+																);
+
+						} else {
+							if(isset($_status[$x->id_status_novo])) {
+								$_historico[]=array('usr'=>utf8_encode($_usuarios[$x->id_usuario]->nome),
+																	'dt'=>date('d/m H:i',strtotime($x->data)),
+																	'ev'=>'status',
+																	'desc'=>utf8_encode($x->descricao),
+																	'sts'=>utf8_encode($_status[$x->id_status_novo]->titulo),
+																	'novo'=>$x->evento=="agendaNovo",
+																	'cor'=>$_status[$x->id_status_novo]->cor
+																);
+							}
+						}*/
+					}
+				}
+
+				$rtn=array('success'=>true,'historico'=>$_historico);
+			} else {
+				$rtn=array('success'=>false,'error'=>'Paciente não encontrado!'); 
+			}
 
 		}
 
@@ -941,6 +1010,45 @@
 
 			var agendaInteligencia = [];
 
+
+			const historicoConsulta = (id_paciente) => {
+
+				$('#cal-popup .js-grid-historico').html(`<center>Carregando...</center>`);
+				let dataAjax = `ajax=historico&id_paciente=${id_paciente}`;
+				$.ajax({
+					type:"POST",
+					data:dataAjax,
+					success:function(rtn) {
+						if(rtn.success) {
+							let historico = rtn.historico;
+							$('#cal-popup .js-grid-historico').html(``);
+							if(historico.length>0) {
+								historico.forEach(x=>{
+									
+									$('#cal-popup .js-grid-historico').append(`<div class="hist-lista-item hist-lista-item_lab" style="max-width:95%;font-size:12px;">
+																						<h1>${x.usr} em ${x.dt}</h1>
+																						<p><b>${x.obs}</b></p>
+																						<p>${x.desc}</p>
+																					</div>`);
+									
+								});
+
+							} else {
+								$('#cal-popup .js-grid-historico').html(`<center>Sem histórico</center>`);
+							}
+						} else if(rtn.error) {
+
+						} else {
+
+						}
+					},
+					error:function(){
+
+					}
+				})
+
+			}
+
 			const agendaAtualizar = () => {
 
 				let dataAjax = `ajax=agenda&data=${data}`;
@@ -950,8 +1058,9 @@
 					success:function(rtn) {
 						if(rtn.success) {
 							agenda=rtn.agenda;
-							agendaTratamento=rtn.agendaTratamento
-							agendaInteligencia=rtn.agendaInteligencia
+							agendaTratamento=rtn.agendaTratamento;
+							agendaInteligencia=rtn.agendaInteligencia;
+							//historico = rtn.historico;
 							agendaListar();
 							pacientesTratamento();
 							pacientesInteligencia();
@@ -1190,7 +1299,6 @@
 
 					$(`#kanban .js-kanban-status-semHorario`).append(html);
 				})
-
 			}
 
 			const pacientesInteligencia = () => {
@@ -1271,7 +1379,6 @@
 
 					$(`#kanban .js-kanban-status-inteligencia`).append(html);
 				})
-
 			}
 
 			const d2 = (num) => {
@@ -1330,13 +1437,14 @@
 					$(`#${box} .js-select-horario option`).remove();
 					$(`#${box} .js-select-horario`).append(`<option value="">Complete os campos</option>`);
 				}
-
 			}
 
 			var popViewInfos = [];
 
 			const popView = (obj,id_paciente) => {
 
+
+				historicoConsulta(id_paciente);
 
 				let nomeCompleto = $(obj).find('h1').html();
 
@@ -1378,8 +1486,6 @@
 				$('#cal-popup .js-input-id_paciente').val(id_paciente);
 
 				$('#cal-popup .js-btn-agendar').click();
-
-
 			}
 
 			$(function(){

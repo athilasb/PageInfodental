@@ -1,7 +1,7 @@
 /* reset */
 html, button, input, textarea, select, figure, article, section, aside, header, footer, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, ins, kbd, q, s, samp, small, strike, strong, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend {margin: 0; padding: 0; border: 0; outline: 0; font-size: 100%; vertical-align: baseline; background: transparent; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box;}select {background:url(../img/select-icon.png) no-repeat right center; -webkit-appearance:none; -moz-appearance:none; appearance:none; border-radius:0;}a {color:inherit; text-decoration:none;}img {border:0;}ol, ul {list-style: none;}blockquote, q {quotes: none;}blockquote:before, blockquote:after, q:before, q:after {content: ''; content: none;}:focus {outline: 0;}ins {text-decoration: none;}del {text-decoration: line-through;}table {border-collapse: collapse; border-spacing: 0;}html, body {height:100%;}
 
-body {height:100vh; text-rendering: optimizeSpeed; -webkit-font-smoothing:antialiased; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; font-size:14px; color:var(--cinza5); background:var(--cinza1);}
+body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font-smoothing:antialiased; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; font-size:14px; color:var(--cinza5); background:var(--cinza1);}
 
 .print-table {width:19cm; margin:0 auto;}
 .print-table-header {height:1.8cm;}
@@ -16,11 +16,11 @@ body {height:100vh; text-rendering: optimizeSpeed; -webkit-font-smoothing:antial
 
 .print-content {font-size:12pt;}
 
-.titulo1 {display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;margin-top: 2rem;}
+.titulo1 {display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; margin-top: 2rem;}
 .titulo1 h1 {font-size:20pt; text-transform:none; letter-spacing:3px; font-weight:normal; font-weight:normal; font-family:"Georgia";}
 .titulo1 p {font-size:9pt;}
 
-.titulo2 {display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem;}
+.titulo2 {display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; padding:8px;}
 .titulo2 h1 {font-size:15pt; line-height:1; font-weight:bold; color:gray; text-transform:none;}
 .titulo2 h2 {font-size:13pt; line-height:1; font-weight:normal; color:gray;}
 
@@ -28,6 +28,7 @@ body {height:100vh; text-rendering: optimizeSpeed; -webkit-font-smoothing:antial
 .print-table table th {text-align:left; padding:8px;}
 .print-table table td {padding:8px;}
 .print-table table td h1 {font-size:7pt; text-transform:uppercase; margin-bottom:.25rem;}
+.print-table table td p {line-height:1;}
 .print-table table td a {border-bottom:1px solid #000;}
 .print-table table td small {font-size:0.813em;}
 
@@ -35,12 +36,15 @@ body {height:100vh; text-rendering: optimizeSpeed; -webkit-font-smoothing:antial
 .ficha__foto {display:block; flex:0 0 75px; width:75px; height:75px; object-fit:cover; border-radius:15px; margin-right:1rem;}
 
 .box {border:1px solid #ddd; padding:10px; border-radius:0 20px 20px 20px; font-size:10pt; margin-bottom:1.5rem;}
+.box_empty {border:0; padding:0;}
 
 .prescricao {padding:8px; margin-bottom:.5rem;}
 .prescricao:last-child {margin-bottom:0;}
-.prescricao__item {display:flex; margin-bottom:.375rem;}
-.prescricao__item h1 {font-size:12pt;}
-.prescricao__item span {flex:1; border-bottom:1px solid #000; margin:0 .5rem;}
-.prescricao__item h2 {font-size:12pt; font-weight:normal;}
-@page { size: auto;  margin: 0mm; }
+.prescricao__item {display:flex; margin-bottom:.25rem;}
+/*.prescricao__item h1 {font-size:12pt;}*/
+.prescricao__item span {flex:1; border-bottom:1px solid #000; margin:0 .5rem 5px .5rem; line-height:8px;}
+.prescricao__item h2 {font-weight:normal;}
 
+.no-padding td {padding:4px !important;}
+
+@page { size: auto;  margin: 0mm; }

@@ -85,6 +85,113 @@
 
 
 ?>
+	<section id="cal-popup" class="cal-popup cal-popup_paciente cal-popup_top cal-popup_alt" style="left:703px; top:338px; margin-left:303px;display: none">
+			<?php /*<a href="javascript:;" class="cal-popup__fechar js-btn-fechar"><i class="iconify" data-icon="mdi-close"></i></a>*/?>
+			<section class="paciente-info">
+				<header class="paciente-info-header">
+					<section class="paciente-info-header__inner1">
+						<div>
+							<h1 class="js-nome"></h1>
+							<p class="js-idade"></p>
+							<p><span style="color:var(--cinza3);" class="js-id_paciente">#44</span> <span style="color:var(--cor1);"></span></p>
+						</div>
+					</section>
+				</header>
+
+				<div class="abasPopover">
+					<a href="javascript:;" class="js-aba-agendamento" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-agendamento').show();$(this).addClass('active');$('.js-grid-agendamento-agendar').show();">Agendamento</a>
+					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-proximaConsulta').show();$(this).addClass('active');">Próxima Consulta</a>
+					<a href="javascript:;" onclick="$(this).parent().parent().find('a').removeClass('active');$(this).parent().parent().find('.js-grid').hide();$(this).parent().parent().find('.js-grid-historico').show();$(this).addClass('active');" class="active">Histórico</a>
+				</div>
+
+				<input type="hidden" class="js-input-id_paciente" />
+
+				<div class="paciente-info-grid js-grid js-grid-agendamento-agendar" style="font-size: 12px;">
+					<dl>
+						<dt>Data</dt>
+						<dd>
+							<input type="text" class="js-input-data data datecalendar" placeholder="escolha a nova data" />
+						</dd>
+					</dl>
+					<dl>
+						<dt>Tempo</dt>
+						<dd>
+							<select class="js-select-tempo">
+								<option value="">Tempo...</option>
+								<?php
+								echo $selectTempo;
+								?>
+							</select>
+						</dd>
+					</dl>
+					<dl>
+						<dt>Profissional</dt>
+						<dd>
+							<select class="js-select-profissional">
+								<option value="">Profissional...</option>
+								<?php
+								echo $selectProfissional;
+								?>
+							</select>
+						</dd>
+					</dl>
+					<dl>
+						<dt>Cadeira</dt>
+						<dd>
+							<select class="js-select-cadeira">
+								<option value="">Cadeira...</option>
+								<?php
+								echo $selectCadeira;
+								?>
+							</select>
+						</dd>
+					</dl>
+					<dl>
+						<dt>Horário</dt>
+						<dd>
+							<select class="js-select-horario">
+
+							</select>
+						</dd>
+					</dl>
+					<button type="button" class="button button__full js-gridbtn-agendar" style="background:var(--amarelo);">Agendar</button>
+				</div>
+
+				<div class="paciente-info-grid js-grid js-grid-agendamento-naoQueroAgendar" style="display: none;grid-template-columns:1fr">
+					<dl>
+						<dd>
+							<select class="js-select-historicoStatus">
+								<?php
+								foreach($_historicoStatus as $s) {
+								?>
+								<option value="<?php echo $s->id;?>"><?php echo utf8_encode($s->titulo);?></option>
+								<?php	
+								}
+								?>
+							</select>
+						</dd>
+					</dl>
+					<textarea name="" rows="4" class="js-textarea-obs" placeholder="Descreva o motivo..."></textarea>
+					<button type="button" class="button button__full js-gridbtn-naoQueroAgendar" style="background:;">Salvar</button>
+				</div>
+
+				<div class="paciente-info-grid js-grid js-grid-proximaConsulta" style="display:none;">
+
+				</div>
+
+				<div class="paciente-info-grid js-grid js-grid-historico" style="display:none;font-size:12px;color:#666;grid-template-columns:1fr;max-height:300px; overflow-y:auto;">	
+				</div>
+
+				<div class="paciente-info-opcoes">
+					<a href="javascript:;" class="button button__full js-btn-agendar" data-id_agenda="${x.id_agenda}" style="background-color:var(--verde);">Quero agendar</a>
+
+					<a href="javascript:;" class="button button__full js-btn-naoQueroAgendar" data-id_agenda="${x.id_agenda}" style="background-color:var(--vermelho);">Não quero agendar</a>
+
+					<a href="javascript:;" target="_blank" class="js-hrefPaciente button button__sec"><i class="iconify" data-icon="bx:bxs-user"></i></a>
+				</div>
+			</section>
+		</section>
+	<section class="content"> 
 
 	<section class="content">  
 
@@ -232,6 +339,7 @@
 
 			});
 		</script>
+
 		<section class="grid">
 			<div class="kanban" id="kanban">
 				

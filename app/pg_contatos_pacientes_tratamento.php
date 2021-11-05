@@ -542,6 +542,7 @@
 											$msgOk="Plano de Tratamento foi <b>APROVADO</b> com sucesso!";
 										} else {
 											$erro="Este tratamento já está APROVADO";
+											$persistir=false;
 										}
 									}
 								}
@@ -645,6 +646,7 @@
 										$persistir=false;
 									}
 								}
+
 
 
 							// Persiste informações
@@ -1293,42 +1295,42 @@
 								if(x.situacao=="aprovado") {
 									corSituacao="green";
 									steps = `<div class="reg-steps__item active">
-													<h1 style="background:var(--verde);">1</h1>
+													<h1 style="color:var(--verde);">1</h1>
 													<p>Aguardando Aprovação</p>									
 												</div>
 
 												<div class="reg-steps__item active">
-													<h1 style="background:var;">2</h1>
+													<h1 style="color:var(--verde);">2</h1>
 													<p>Aprovado</p>									
 												</div>`;
 								}
 								else if(x.situacao=="naoAprovado") {
 									corSituacao="red";
 									steps = `<div class="reg-steps__item active">
-													<h1 style="background:var(--verde);">1</h1>
+													<h1 style="color:var(--verde);">1</h1>
 													<p>Aguardando Aprovação</p>									
 												</div>
 
 												<div class="reg-steps__item active">
-													<h1 style="background:var(--vermelho);">2</h1>
+													<h1 style="color:var(--vermelho);">2</h1>
 													<p>Reprovado</p>									
 												</div>`;
 								}
 								else if(x.situacao=="observado") {
 									corSituacao="orange";
 									steps = `<div class="reg-steps__item active">
-													<h1 style="background:#999;">1</h1>
+													<h1 style="color:#999;">1</h1>
 													<p>Notado</p>									
 												</div>`;
 								} 	else {
 									corSituacao="red";
 									steps = `<div class="reg-steps__item active">
-													<h1 style="background:var(--verde);">1</h1>
+													<h1 style="color:var(--verde);">1</h1>
 													<p>Aguardando Aprovação</p>									
 												</div>
 
 												<div class="reg-steps__item active">
-													<h1 style="background:#999;">2</h1>
+													<h1 style="color:#999;">2</h1>
 													<p>Aprovado/Reprovado</p>									
 												</div>`;
 								}
@@ -3180,10 +3182,51 @@
 			}
 
 
-			$_pagamentos=array();
-			$sql->consult($_table."_pagamentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and lixo=0");
+			$sql->consult($_table."_pagamentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and id_fusao=0 and lixo=0");
+			$pagRegs=array();
+			$pagamentosIds=array(0);
 			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$_pagamentos[$x->id_tratamento][]=$x;
+				$pagamentosIds[]=$x->id;
+				$pagRegs[]=$x;
+			}
+
+			$_baixas=array();
+			$sql->consult($_p."pacientes_tratamentos_pagamentos_baixas","*","where id_pagamento IN (".implode(",",$pagamentosIds).") and lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_baixas[$x->id_pagamento][]=$x;
+			}
+
+
+			$_pagamentos=array();
+			foreach($pagRegs as $x) {
+
+				// se possui baixa
+				if(isset($_baixas[$x->id])) {
+
+					$valorTotal=$x->valor;
+					$valorBaixas=0;
+					foreach($_baixas[$x->id] as $b) {
+						$_pagamentos[$x->id_tratamento][]=array('pago'=>$b->pago,
+																'tipo'=>'baixa',
+																'valor'=>$b->valor);
+						$valorBaixas+=$b->valor;
+					}
+
+					// restante que falta dar baixa
+					if($valorTotal>$valorBaixas) {
+						$_pagamentos[$x->id_tratamento][]=array('pago'=>0,
+																'tipos'=>'restante',
+																'valor'=>$valorTotal-$valorBaixas);
+
+					}
+
+				} else {
+
+					$_pagamentos[$x->id_tratamento][]=array('pago'=>$x->pago,
+															'tipo'=>'parcela '.$x->id,
+															'valor'=>$x->valor);
+					
+				}
 			}
 
 		?>
@@ -3229,36 +3272,36 @@
 								if($x->status=="PENDENTE") {
 								?>
 								<div class="reg-steps__item active">
-									<h1 style="background:var(--laranja);">1</h1>
+									<h1 style="color:var(--laranja);">1</h1>
 									<p>Aguardando Aprovação</p>									
 								</div>
 
 								<div class="reg-steps__item active">
-									<h1  style="background:#ccc;">2</h1>
+									<h1  style="color:#ccc;">2</h1>
 									<p>Aprovado/Reprovado</p>									
 								</div>
 								<?php
 								} else if($x->status=="APROVADO") {
 								?>
 								<div class="reg-steps__item active">
-									<h1 style="background:var(--verde);">1</h1>
+									<h1 style="color:var(--verde);">1</h1>
 									<p>Aguardando Aprovação</p>									
 								</div>
 
 								<div class="reg-steps__item active">
-									<h1  style="background:var(--verde);">2</h1>
+									<h1  style="color:var(--verde);">2</h1>
 									<p>Aprovado</p>									
 								</div>
 								<?php
 								}  else if($x->status=="CANCELADO") {
 								?>
 								<div class="reg-steps__item active">
-									<h1 style="background:var(--verde);">1</h1>
+									<h1 style="color:var(--verde);">1</h1>
 									<p>Aguardando Aprovação</p>									
 								</div>
 
 								<div class="reg-steps__item active">
-									<h1  style="background:var(--vermelho);">2</h1>
+									<h1  style="color:var(--vermelho);">2</h1>
 									<p>Reprovado</p>									
 								</div>
 								<?php
@@ -3274,13 +3317,30 @@
 									echo "-";
 								} else {
 								
+										$pagamentos=array();
+										if(isset($_pagamentos[$x->id])) $pagamentos=$_pagamentos[$x->id];
+
+										$procedimentos=array();
+										if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
+
 										$total=isset($_todosProcedimentos[$x->id])?count($_todosProcedimentos[$x->id]):0;
 										$finalizados=isset($_procedimentosFinalizados[$x->id])?count($_procedimentosFinalizados[$x->id]):0;
 										$perc=($total)==0?0:number_format(($finalizados/($total))*100,0,"","");
 
+
+
+										$pagPago=$pagTotal=0;
+										foreach($pagamentos as $p) { 
+											$p=(object)$p;
+											if($p->pago==1) $pagPago+=$p->valor;
+
+											$pagTotal+=$p->valor;
+										}
+										$percPag=($pagTotal)==0?0:number_format(($pagPago/($pagTotal))*100,0,"","");
+
 									?>
 									<div class="reg-bar" style="flex:0 1 10px;">
-										<p>Evolução - <?php echo $perc;?>% <?php echo $finalizados;?>/<?php echo $total;?></p>
+										<p>Evolução<br /><span style="color: var(--cinza3);font-size:12px;"><?php echo "Realizado <b>".$finalizados."</b> de <b>".$total."</b> - ".$perc."%";?></span></p>
 										<div class="reg-bar__container">
 											<span style="width:<?php echo $perc;?>%">&nbsp;</span>
 										</div>
@@ -3297,17 +3357,11 @@
 								} else {
 									if(count($pagamentos)==0) echo '';//<a href="javascript" class="tooltip" title="Nenhum pagamento foi adicionado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
 									else {
-										$abertos=0;
-										$finalizados=0;
-										foreach($pagamentos as $p) { 
-											if($p->pago==0) $abertos++;
-											else $finalizados++;
-										}
-										$perc=($abertos+$finalizados)==0?0:number_format(($finalizados/($abertos+$finalizados))*100,0,"","");
+										
 									?>
 									<div class="reg-bar" style="flex:0 1 120px;">
-										<p>Pagamento - <?php echo $perc;?>%</p>
-										<div class="reg-bar__container"><span style="width:<?php echo $perc;?>%">&nbsp;</span></div>
+										<p>Pagamento<br /><span style="color: var(--cinza3);font-size:12px;"><?php echo "Recebido <b>".number_format($pagPago,2,",",".")."</b> de <b>".number_format($pagTotal,2,",",".")."</b> - ".$percPag."%";?></span></p>
+										<div class="reg-bar__container"><span style="width:<?php echo $percPag;?>%">&nbsp;</span></div>
 									</div>
 									<?php
 									}

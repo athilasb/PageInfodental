@@ -27,9 +27,7 @@
 
 
 	$selectProfissional='<select class="js-profissional"><option value="">-</option>';
-	foreach($_profissionais as $p) {
-	
-											
+	foreach($_profissionais as $p) {		
 		$selectProfissional.='<option value="'.$p->id.'" data-iniciais="'.$p->calendario_iniciais.'" data-iniciaisCor="'.$p->calendario_cor.'">'.utf8_encode($p->nome).'</option>';
 	}
 	$selectProfissional.='</select>';
