@@ -407,155 +407,74 @@
 				</div>
 			</div>
 
-			<div class="box">
-				<div class="paciente-agenda">
-					<h1 class="paciente__titulo1">Agendamentos</h1>
-					<div class="paciente-scroll">		
-						<?php
-
-						$_cadeiras=array();
-						$sql->consult($_p."parametros_cadeiras","*","where lixo=0 order by ordem asc");
-						while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
-
-						$_status=array();
-						$sql->consult($_p."agenda_status","*","where lixo=0 order by titulo asc");
-						while($x=mysqli_fetch_object($sql->mysqry)) $_status[$x->id]=$x;
-
-						$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and lixo=0 order by agenda_data desc");
-						if($sql->rows) {
-						?>
-						<div class="reg">
-							<?php
-							while($x=mysqli_fetch_object($sql->mysqry)) {
-								$statusCor='';
-
-								if(isset($_status[$x->id_status])) {
-									$statusCor=$_status[$x->id_status]->cor;
-								}
-							?>
-							<a href="<?php echo "pg_agenda.php?initDate=".date('d/m/Y',strtotime($x->agenda_data));?>" target="_blank" class="reg-group">
-								<div class="reg-color" style="background-color:<?php echo $statusCor;?>"></div>
-								
-								<div class="reg-data" style="width:30%">
-									<p><?php echo date('d/m/Y H:i',strtotime($x->agenda_data));?></span></p>
-								</div>
-
-								<div class="reg-data" style="width:30%">
-									<p><?php echo isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'';?></p>
-								</div>
-								<?php
-								$profissionais="";
-								if(!empty($x->profissionais)) {
-									$profissionais='';
-									$aux=explode(",",$x->profissionais);
-									foreach($aux as $v) {
-										if(!empty($v) and is_numeric($v) and isset($_profissionais[$v])) {
-											//$profissionais.='<div class="cal-item-foto"><span style="background:'.$_profissionais[$v]->calendario_cor.'">'.$_profissionais[$v]->calendario_iniciais.'</span></div>';
-											$profissionais.='<div class="cal-item-foto" style="float:left;"><span style="background:'.$_profissionais[$v]->calendario_cor.'">'.$_profissionais[$v]->calendario_iniciais.'</span></div>';
-										}
-									}
-								}
-								?>
-								<div class="cal-item__fotos">
-									<?php echo $profissionais;?>
-								</div>
-							</a>
-							<?php
-							}
-							?>
-						</div>
-						<?php
-						}
-						/*?>
-
-						<table class="paciente-agenda-table">
-							<?php
-							$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and lixo=0 order by agenda_data desc");
-							if($sql->rows) {
-								while($x=mysqli_fetch_object($sql->mysqry)) {
-							?>
-							<tr>
-								<td><?php echo date('d/m/y',strtotime($x->agenda_data));?><br /><span style="color:var(--cinza4);"><?php echo date('H:i',strtotime($x->agenda_data));?></span></td>
-								<td>
-									<?php
-									$profissionais="-";
-									if(!empty($x->profissionais)) {
-										$profissionais='';
-										$aux=explode(",",$x->profissionais);
-										foreach($aux as $v) {
-											if(!empty($v) and is_numeric($v) and isset($_profissionais[$v])) $profissionais.=utf8_encode($_profissionais[$v]->nome).", ";
-										}
-									}
-									echo substr($profissionais,0,strlen($profissionais)-2);
-									?>
-								</td>
-								<td><i class="iconify" data-icon="mdi-calendar-month" style="color:var(--cinza4)"></i></td>
-							</tr>
-							<?php
-								}
-							}
-							?>
-						</table>*/?>
+			<div class="hist2 box" style="grid-column:span 3">
+				<aside>
+					<h1 class="paciente__titulo1">Histórico</h1>										
+					<div class="grid-links grid-links_sm">
+						<a href="pg_contatos_pacientes_evolucao_anamnese.php?id_paciente=6596" class="active">
+							<i class="iconify" data-icon="mdi:format-list-bulleted"></i>
+							<p>Todos</p>
+						</a>
+						<a href="pg_contatos_pacientes_evolucao_anamnese.php?id_paciente=6596">
+							<i class="iconify" data-icon="mdi:chat-processing-outline"></i>
+							<p>Relacionamento</p>
+						</a>
+						<a href="pg_contatos_pacientes_evolucao_anamnese.php?id_paciente=6596">
+							<i class="iconify" data-icon="mdi:calendar-check"></i>
+							<p>Agendamentos</p>
+						</a>
+						<a href="pg_contatos_pacientes_evolucao_anamnese.php?id_paciente=6596">
+							<i class="iconify" data-icon="mdi:finance"></i>
+							<p>Financeiro</p>
+						</a>						
 					</div>
-				</div>
-			</div>
-
-			<div class="box" style="overflow:hidden;">
-				<div class="paciente-fotos">
-					<h1 class="paciente__titulo1">Fotos</h1>
-					<?php 
-					/*<div class="paciente-fotos__slick">
-						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
-						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
-						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
-						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
-						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
-						<a href="../infodental2/img/ilustra-fotos.jpg" data-fancybox="galeria" class="paciente-fotos__item"><img src="../infodental2/img/ilustra-fotos.jpg" alt="" width="208" height="178" class="paciente-fotos__foto" /></a>
-					</div>*/
-					?>
-
-					<div style="text-align: center;color:#CCC"><span class="iconify" data-icon="el:eye-close" data-inline="false" data-height="50"></span><br />Nenhum registro.</div>
-				</div>
-			</div>
-
-			
-
-			<div class="box">
-				<div class="paciente-wp">
-					<h1 class="paciente__titulo1">Histórico</h1>
-					<script>
-						$(function() {
-							//$(".paciente-wp__inner1").scrollTop($(".paciente-wp__inner1")[0].scrollHeight);
-						});
-					</script>
-					<?php /*<div class="paciente-scroll paciente-wp__inner1">
-						<div class="paciente-wp__item">
-							<p class="paciente-wp__msg">Bom dia Dr. Kronner</p>
-							<p class="paciente-wp__data">18/04/2020 • 09:40</p>
+				</aside>
+				<article>
+					<div class="hist2-item">
+						<div class="hist2-item__inner1">
+							<div class="hist2-item__icone"><i class="iconify" data-icon="mdi:chat-processing-outline"></i></div>
 						</div>
-						<div class="paciente-wp__item">
-							<p class="paciente-wp__msg">Obrigado pelo cuidado que vocês tiveram comigo!</p>
-							<p class="paciente-wp__data">18/04/2020 • 09:40</p>
+						<div class="hist2-item__inner2">
+							<div class="hist2-item__dados">
+								<h1>11/10/2021 09:30 - Dr. Kroner Machado Costa</h1>
+								<p><strong>Não consegui contato:</strong> tentei entrar em contato em todos os números várias vezes</p>
+							</div>							
 						</div>
-						<div class="paciente-wp__item paciente-wp__item_autor">
-							<p class="paciente-wp__msg">Imagina! A gente que agradece</p>
-							<p class="paciente-wp__data">18/04/2020 • 09:40</p>
+					</div>
+					<div class="hist2-item">
+						<div class="hist2-item__inner1">
+							<div class="hist2-item__icone"><i class="iconify" data-icon="mdi:calendar-check"></i></div>
 						</div>
-						<div class="paciente-wp__item">
-							<p class="paciente-wp__msg">Bom dia Dr. Kronner</p>
-							<p class="paciente-wp__data">18/04/2020 • 09:40</p>
+						<div class="hist2-item__inner2">
+							<div class="hist2-item__dados">
+								<h1>11/10/2021 09:30 - Dr. Kroner Machado Costa</h1>
+								<p><strong>Agendado para 09/12/2021 08:00</strong> - Consultório 3 - Dr. Simone Helena dos Santos <span style="background:#fc8008">sala de espera</span></p>
+								<a href="javascript:;" onclick="$(this).parent().next('.hist2-item__detalhes').slideToggle('fast');" class="button button__alt button__sm"><i class="iconify" data-icon="mdi:chevron-down"></i> mais detalhes</a>
+							</div>
+							<div class="hist2-item__detalhes" style="display:none;">
+								<div class="hist2-item__dados">
+									<h1>11/10/2021 09:30 - Dr. Kroner Machado Costa</h1>
+									<p><strong>Agendado para 09/12/2021 08:00</strong> - Consultório 3 - Dr. Simone Helena dos Santos <span style="background:#1182ea">confirmado</span></p>
+								</div>
+								<div class="hist2-item__dados">
+									<h1>11/10/2021 09:30 - Dr. Kroner Machado Costa</h1>
+									<p><strong>Agendado para 09/12/2021 08:00</strong> - Consultório 3 - Dr. Simone Helena dos Santos <span style="background:#545559">à confirmar</span></p>
+								</div>
+							</div>
 						</div>
-						<div class="paciente-wp__item">
-							<p class="paciente-wp__msg">Obrigado pelo cuidado que vocês tiveram comigo!</p>
-							<p class="paciente-wp__data">18/04/2020 • 09:40</p>
+					</div>
+					<div class="hist2-item">
+						<div class="hist2-item__inner1">
+							<div class="hist2-item__icone"><i class="iconify" data-icon="mdi:finance"></i></div>
 						</div>
-						<div class="paciente-wp__item paciente-wp__item_autor">
-							<p class="paciente-wp__msg">Imagina! A gente que agradece</p>
-							<p class="paciente-wp__data">18/04/2020 • 09:40</p>
+						<div class="hist2-item__inner2">
+							<div class="hist2-item__dados">
+								<h1>11/10/2021 09:30 - Dr. Kroner Machado Costa</h1>
+								<p><strong>Inadimplente - R$15.217,50</strong><br />Reabilitação Full - Pedro</p>
+							</div>
 						</div>
-					</div>*/?>
-					<div style="text-align: center;color:#CCC"><span class="iconify" data-icon="el:eye-close" data-inline="false" data-height="50"></span><br />Nenhum registro.</div>
-				</div>
+					</div>
+				</article>
 			</div>
 
 		</section>
