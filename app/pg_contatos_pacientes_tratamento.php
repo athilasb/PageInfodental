@@ -157,6 +157,8 @@
 				$sql->update($_table,$vsql,$vwhere);
 				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vsql)."',vwhere='".addslashes($vwhere)."',tabela='".$_table."',id_reg='".$x->id."'");
 
+				$sql->update($_table."_pagamentos","lixo=1,lixo_obs=6,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$x->id and id_paciente=$paciente->id and id_unidade=$usrUnidade->id");
+
 				$adm->biCategorizacao();
 				$jsc->jAlert("Tratamento excluído com sucesso!","sucesso","document.location.href='pg_contatos_pacientes_tratamento.php?id_paciente=".$paciente->id."'");
 			}
@@ -398,6 +400,9 @@
 
 				
 				if($processa===true) {	
+
+
+					var_dump($_POST);
 					// persiste as informacoes do tratamento
 					if($_POST['acao']=="salvar") {
 						$vSQL=$adm->vSQL($campos,$_POST);
@@ -421,7 +426,7 @@
 
 							if($tratamentoAprovado===false) {
 								$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$id_tratamento and id_paciente=$paciente->id and id_unidade=$usrUnidade->id");
-								$sql->update($_table."_pagamentos","lixo=1","where id_tratamento=$id_tratamento and id_paciente=$paciente->id and id_unidade=$usrUnidade->id");
+								$sql->update($_table."_pagamentos","lixo=1,lixo_obs=1,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$id_tratamento and id_paciente=$paciente->id and id_unidade=$usrUnidade->id");
 							}
 						} else {
 							$vSQL.="data=now(),id_paciente=$paciente->id";
@@ -583,7 +588,7 @@
 												$sql->update($_table."_procedimentos_evolucao","lixo=1","where id_tratamento_procedimento IN (".implode(",",$tratamentosProdecimentosIds).")");
 
 												$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$cnt->id");
-												$sql->update($_table."_pagamentos","lixo=1","where id_tratamento=$cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
+												$sql->update($_table."_pagamentos","lixo=1,lixo_obs='2 $cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")',lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
 												//$sql->update($_table,"pagamentos=''","where id=$cnt->id");
 
 											}
@@ -628,14 +633,14 @@
 
 
 											// retorna procedimentos de evolucao
-											$tratamentosProcedimentosIds=array(0);
+											$tratamentosProcedimentosIds=array(-1);
 											$sql->consult($_table."_procedimentos","id","where id_tratamento=$cnt->id");
 											while($x=mysqli_fetch_object($sql->mysqry)) $tratamentosProcedimentosIds[]=$x->id;
 
 											$sql->update($_table."_procedimentos_evolucao","lixo=1","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIds).")");
 
 											$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$cnt->id");
-											$sql->update($_table."_pagamentos","lixo=1","where id_tratamento=$cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
+											$sql->update($_table."_pagamentos","lixo=1,lixo_obs=3,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
 											//$sql->update($_table,"pagamentos=''","where id=$cnt->id");
 										} else {
 											$erro="Este tratamento já está REPROVADO";
@@ -1622,13 +1627,14 @@
 						pagamentosListar();
 					}
 					$(document).mouseup(function(e)  {
-						    var container = $("#cal-popup");
-						    // if the target of the click isn't the container nor a descendant of the container
-						    if (!container.is(e.target) && container.has(e.target).length === 0) 
-						    {
-						       $('#cal-popup').hide();
-						    }
-						});
+					    let container = $("#cal-popup");
+					    // if the target of the click isn't the container nor a descendant of the container
+					    if (!container.is(e.target) && container.has(e.target).length === 0) 
+					    {
+					       $('#cal-popup').hide();
+					    }
+
+					});
 				
 				const creditoDebitoValorParcela = (obj) => {
 
@@ -2122,7 +2128,6 @@
 
 									procedimentos.push(item);
 								}
-
 								$(`.js-id_procedimento`).val('').trigger('chosen:updated');
 								$(`.js-id_plano`).val('').trigger('chosen:updated');
 								$(`.js-id_profissional`).val('').trigger('chosen:updated');
@@ -2152,7 +2157,8 @@
 								}
 								$(`.js-regiao`).hide();
 								$(`.js-regiao-${id_regiao}`).show();
-								$(`.js-regiao-${id_regiao}`).find('select').chosen({hide_results_on_select:false,allow_single_deselect:true});
+								//$(`.js-regiao-${id_regiao}`).find('select').chosen({hide_results_on_select:false,allow_single_deselect:true});
+								$(`.js-regiao-${id_regiao}`).find('select').select2({  allowClear:true,closeOnSelect: false,dropdownParent: $("#modalProcedimento")});
 
 								$(`.js-procedimento-btnOk`).show();
 								let data = `ajax=planos&id_unidade=${id_unidade}&id_procedimento=${id_procedimento}`;
@@ -2170,7 +2176,8 @@
 													$('.js-id_plano').append(`<option value="${x.id}" data-valor="${x.valor}">${x.titulo}</option>`);
 												});
 											}
-											$('.js-id_plano').trigger('chosen:updated')
+											//$(".js-id_plano").select2({dropdownParent: $("#modalProcedimento")});
+											//$('.js-id_plano').trigger('chosen:updated')
 										}
 									},
 								})
@@ -2319,7 +2326,7 @@
 								pagamentosListar();
 								$('.js-pagamentos-quantidade').val(1)
 							} else {
-								alert('erro')
+								alert('erro');
 							}
 						});
 
@@ -2332,7 +2339,14 @@
 							$(`.js-regiao-${id_regiao}-select`).val([]).trigger('chosen:updated').parent().parent().hide();
 							$(`.js-procedimento-obs`).val('');
 							$.fancybox.open({
-								src:'#modalProcedimento'
+								src:'#modalProcedimento',
+								afterLoad:function(){
+									$(".js-id_procedimento,.js-id_plano,.js-id_profissional").select2({dropdownParent: $("#modalProcedimento")});
+								},
+								afterClose:function(){
+
+									$(".js-id_procedimento,.js-id_plano,.js-id_profissional").select2('destroy');
+								}
 							})
 						})
 
@@ -2351,6 +2365,7 @@
 						pagamentosListar();
 
 					desativarCampos();
+
 
 					$('#modalProcedimento').hide();
 
@@ -3038,8 +3053,7 @@
 							<dl class="dl3">
 								<dt>Procedimento</dt>
 								<dd>
-									<select class="js-id_procedimento chosen">
-										<option value=""></option>
+									<select class="js-id_procedimento">
 										<?php
 										foreach($_procedimentos as $p) {
 											echo '<option value="'.$p->id.'" data-id_regiao="'.$p->id_regiao.'" data-regiao="'.(isset($_regioes[$p->id_regiao])?utf8_encode($_regioes[$p->id_regiao]->titulo):"-").'" data-quantitativo="'.($p->quantitativo==1?1:0).'">'.utf8_encode($p->titulo).'</option>';
@@ -3056,7 +3070,6 @@
 								<dt>Arcada(s)</dt>
 								<dd>
 									<select class="js-regiao-2-select" multiple>
-										<option value=""></option>
 										<?php
 										if(isset($_regioesOpcoes[2])) {
 											foreach($_regioesOpcoes[2] as $o) {
@@ -3071,7 +3084,6 @@
 								<dt>Quadrante(s)</dt>
 								<dd>
 									<select class="js-regiao-3-select" multiple>
-										<option value=""></option>
 										<?php
 										if(isset($_regioesOpcoes[3])) {
 											foreach($_regioesOpcoes[3] as $o) {
@@ -3086,7 +3098,6 @@
 								<dt>Dente(s)</dt>
 								<dd>
 									<select class="js-regiao-4-select" multiple>
-										<option value=""></option>
 										<?php
 										if(isset($_regioesOpcoes[4])) {
 											foreach($_regioesOpcoes[4] as $o) {
@@ -3103,7 +3114,7 @@
 								<dl class="dl2">
 									<dt>Plano</dt>
 									<dd>
-										<select class="js-id_plano chosen">
+										<select class="js-id_plano">
 										</select>
 									</dd>
 								</dl>
@@ -3112,7 +3123,7 @@
 								<dl class="dl2">
 									<dt>Profissional</dt>
 									<dd>
-										<select class="js-id_profissional chosen">
+										<select class="js-id_profissional">
 											<option value="" data-iniciais="" data-iniciaisCor=""></option>
 											<?php
 											foreach($_profissionais as $x) {

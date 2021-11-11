@@ -71,7 +71,8 @@
 <script type="text/javascript" src="js/jquery.moment.js"></script>
 <script type="text/javascript" src="js/jquery.autocomplete.js"></script>
 <script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
-
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script type="text/javascript" src="ckeditor/ckeditor.js"></script>
 <script type="text/javascript" src="ckfinder/ckfinder.js"></script>
 <script type="text/javascript">

@@ -160,6 +160,7 @@ $(function() {
 
 	$(".chosen").chosen({allow_single_deselect:true});
 
+	//$('.chosen').select2();
 	$(".tablesorter").tablesorter(); 
 
 	$(".js-collapse").toggle(function() {

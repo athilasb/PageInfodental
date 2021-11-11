@@ -533,6 +533,7 @@
 	var id_agenda = '<?php echo is_object($agenda)?$agenda->id:'';?>';
 
 	$(function(){
+
 		verificaAgendamento();
 
 		$('select[name=id_paciente]').change(function(){
@@ -559,6 +560,7 @@
 		});
 
 		$('.chosen').chosen({hide_results_on_select:false,allow_single_deselect:true});
+		$('.select2').select2({dropdownParent: $(".modal")});
 
 		$('.agendaData').datetimepicker({
 			timepicker:false,
@@ -780,7 +782,7 @@
 					<dl class="dl3">
 						<dd>
 							<div class="input-icon"><i class="iconify" data-icon="uil-user"></i></div>
-							<select name="id_paciente" class="chosen obg" data-placeholder="PACIENTE">
+							<select name="id_paciente" class="select2 obg" data-placeholder="PACIENTE">
 								<option value=""></option>
 								<?php
 								foreach($_pacientes as $p) {

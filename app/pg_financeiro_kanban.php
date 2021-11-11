@@ -221,7 +221,7 @@
 				}
 			}
 		}
-	}
+	} 
 
 	$_adimplentes=array();
 	foreach($regsIn as $x) { 
@@ -285,9 +285,12 @@
 		<?php
 		require_once("includes/nav2.php");
 		//require_once("includes/asideFinanceiro.php");
+		$dataWH=$data=date('Y-m-d');
+		$leads=array();
 		?>
 
-		<script type="text/javascript">
+		<?php 
+		/*<script type="text/javascript">
 
 			var data = '<?php echo $dataWH;?>';
 			var popViewInfos = [];
@@ -378,7 +381,7 @@
 					}
 				});
 
-				leadsListar();
+				//leadsListar();
 
 				$('.js-calendario-title').val(dataFormatada);
 
@@ -403,7 +406,7 @@
 						}
 					})
 		        });
-		        */
+		        *
 
 				$('a.js-right').click(function(){
 					let aux = data.split('-');
@@ -426,7 +429,7 @@
 				});
 
 			});
-		</script>
+		</script>*/ ?>
 
 		<section class="grid">
 			<div class="kanban" id="kanban">
@@ -435,12 +438,12 @@
 					<h1 class="kanban-item__titulo"><span class="iconify" data-icon="akar-icons:circle-plus" data-height="20"></span>&nbsp;&nbsp;&nbsp;Promesssa de Pagagamento<br />R$ <?php echo number_format($totais['promessa'],2,",",".");?></h1>
 					<div class="kanban-card" style="min-height: 100px;">
 						<?php
-						foreach($_promessaDePagamento as $x) {
+						foreach($_promessaDePagamento as $x) { //break;
 							$x=(object)$x;
 						?>
-						<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
+						<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item">
 							<h1><?php echo $x->paciente." - ".$x->id_paciente;?></h1>
-							<h2><?php echo $x->plano;?></h2>
+							<?php /*<h2><?php echo $x->plano;?></h2>*/?>
 							<h2><?php echo $x->data_vencimento;?> - <?php echo number_format($x->valor,2,",",".");?></h2>
 							<?php echo $x->baixa==1?"baixa":"";?>
 						</a>
@@ -454,7 +457,7 @@
 					<h1 class="kanban-item__titulo"><span class="iconify" data-icon="akar-icons:circle-plus" data-height="20"></span>&nbsp;&nbsp;&nbsp;Inadimplente<br />R$ <?php echo number_format($totais['inadimplentes'],2,",",".");?></h1>
 					<div class="kanban-card" style="min-height: 100px;">
 						<?php
-						foreach($_inadimplentes as $x) {
+						foreach($_inadimplentes as $x) { 
 							$x=(object)$x;
 						?>
 						<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">

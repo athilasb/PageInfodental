@@ -70,7 +70,7 @@
 
 						if($tratamentoAprovado===false) {
 							$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$id_tratamento and id_paciente=$paciente->id and id_unidade=$usrUnidade->id");
-							$sql->update($_table."_pagamentos","lixo=1","where id_tratamento=$id_tratamento and id_paciente=$paciente->id and id_unidade=$usrUnidade->id");
+							$sql->update($_table."_pagamentos","lixo=1,lixo_obs=4,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$id_tratamento and id_paciente=$paciente->id and id_unidade=$usrUnidade->id");
 						}
 					} else {
 						$vSQL.="data=now(),id_paciente=$paciente->id";
@@ -308,7 +308,7 @@
 									<dl>
 										<dt>Plano</dt>
 										<dd>
-											<select class="js-id_plano chosen">
+											<select class="js-id_plano">
 											</select>
 										</dd>
 									</dl>
@@ -427,7 +427,10 @@
 				if($x->fusao==0) $valor['valorTotal']+=$x->valor;
 				$atraso=(strtotime($x->data_vencimento)-strtotime(date('Y-m-d')))/(60*60*24);
 
-				if($atraso<0) {
+
+				if($atraso<0 and $x->pago==0) {
+
+					//echo $x->data_vencimento." ".date('Y-m-d')." -> $x->valor<br />";
 					$valor['valoresVencido']+=$x->valor;
 				}
 			}
@@ -900,18 +903,27 @@
 						<div class="filter-data">
 							<h1>Valor À Receber</h1>
 							<h2>R$ <?php echo number_format($valor['aReceber'],2,",",".");?></h2>
+							<?php
+							if($valor['valoresVencido']>0) {
+							?>
+							<p style="color:red;font-size: 12px;">
+								<b>Vencidos: R$ <?php echo number_format($valor['valoresVencido'],2,",",".");?></b>
+							</p>
+							<?php
+							}
+							?>
 						</div>					
 					</div>	
+					<?php /*<div class="filter-group">
+						<div class="filter-data">
+							<h1>Valores Vencidos</h1>
+							<h2>R$ <?php echo number_format($valor['valoresVencido'],2,",",".");?></h2>
+						</div>					
+					</div>	*/?>
 					<div class="filter-group">
 						<div class="filter-data">
 							<h1>Valor Recebido</h1>
 							<h2>R$ <?php echo number_format($valor['valorRecebido'],2,",",".");?></h2>
-						</div>					
-					</div>	
-					<div class="filter-group">
-						<div class="filter-data">
-							<h1>Valores Vencidos</h1>
-							<h2>R$ <?php echo number_format($valor['valoresVencido'],2,",",".");?></h2>
 						</div>					
 					</div>	
 					<div class="filter-group">

@@ -34,7 +34,7 @@
 
 
 			$_tratamentosAprovadosEvolucao=array();
-			$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIds).")");
+			$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIds).") and lixo=0");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$_tratamentosAprovadosEvolucao[$x->id_tratamento_procedimento][]=$x;
 			}
@@ -123,7 +123,7 @@
 					if($p->tratamentos['aguardando']>0) {
 						$categoriaBI=3;
 					}
-					//if($categoriaBI>0) echo $p->nome."-> ".$p->tratamentos['aguardando']." - ".$categoriaBI."<BR>";
+				//	if($categoriaBI>0) echo $p->nome."-> ".$p->tratamentos['aguardando']." - ".$categoriaBI."<BR>";
 				}
 				//continue;
 
@@ -142,6 +142,7 @@
 										if(isset($_tratamentosAprovadosEvolucao[$e->id])) {
 											foreach($_tratamentosAprovadosEvolucao[$e->id] as $ev) {
 												if($ev->status_evolucao!="finalizado") {
+													//echo "$ev->id $ev->status_evolucao ";
 													$tratamentoConcluido=false;
 													break;
 												}
@@ -162,7 +163,7 @@
 
 						if($tratamentoConcluido===false) $categoriaBI=4;
 					}
-					//if($categoriaBI>0) echo $p->nome."-> ".$p->tratamentos['aguardando']." - ".$categoriaBI."<BR>";
+					//if($categoriaBI>0) echo $p->nome."-> ".$p->tratamentos['aguardando']." - ".$categoriaBI." (".($tratamentoConcluido?1:0).")<BR>";
 				}
 
 				# 5 - Paciente em Acompanhamento

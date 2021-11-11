@@ -300,7 +300,7 @@
 					$sql->consult($_p."pacientes_tratamentos_pagamentos_baixas","*","where id_pagamento=$pagamento->id and lixo=0");
 					if($sql->rows==0) {
 						$sql->update($_p."pacientes_tratamentos_pagamentos","id_fusao=0","where id_fusao=$pagamento->id");
-						$sql->update($_p."pacientes_tratamentos_pagamentos","lixo=1","where id=$pagamento->id");
+						$sql->update($_p."pacientes_tratamentos_pagamentos","lixo=1,lixo_obs=5,lixo_data=now(),lixo_id_usuario=$usr->id","where id=$pagamento->id");
 						$rtn=array('success'=>true);
 					} else {
 						$rtn=array('success'=>false,'error'=>'Estorne todas as baixas desta parcela para desfazer a união!');
