@@ -402,7 +402,6 @@
 				if($processa===true) {	
 
 
-					var_dump($_POST);
 					// persiste as informacoes do tratamento
 					if($_POST['acao']=="salvar") {
 						$vSQL=$adm->vSQL($campos,$_POST);
@@ -554,7 +553,6 @@
 
 							// PENDENTE
 								else if($_POST['status']=="PENDENTE") {
-
 									if($pagamentosBaixas==0) {
 										if($cnt->status=="APROVADO" || $cnt->status=="CANCELADO") {
 
@@ -588,7 +586,7 @@
 												$sql->update($_table."_procedimentos_evolucao","lixo=1","where id_tratamento_procedimento IN (".implode(",",$tratamentosProdecimentosIds).")");
 
 												$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$cnt->id");
-												$sql->update($_table."_pagamentos","lixo=1,lixo_obs='2 $cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")',lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
+												$sql->update($_table."_pagamentos","lixo=1,lixo_obs='2 $cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")',lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$cnt->id");// or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
 												//$sql->update($_table,"pagamentos=''","where id=$cnt->id");
 
 											}

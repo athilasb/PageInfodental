@@ -423,14 +423,100 @@
 							</div>
 						</div>
 						<div id="js-ficha-completo" class="js-ficha" style="display:none;">
-							
+							<?php
+							$evolucaoData=array();
+							$evolucaoIds=array('procedimentos'=>array(0));
+
+
+							$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id and lixo=0 and id_tipo IN (2,3) order by data_evolucao desc");
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								if(!isset($evolucaoData[$x->data_evolucao])) {
+									$evolucaoData[$x->data_evolucao]=array();
+								}
+
+								$evolucaoData[$x->data_evolucao][]=$x;
+
+								if($x->id_tipo==2 or $x->id_tipo==3) {
+									$evolucaoIds['procedimentos'][]=$x->id;
+								}
+							}
+
+							$procedimentosIds=array(0);
+							$planosIds=array(0);
+							$sql->consult($_p."pacientes_evolucoes_procedimentos","*","where id_evolucao IN (".implode(",",$evolucaoIds['procedimentos']).")");
+							if($sql->rows) {
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+									$_evolucaoProcedimentos[$x->id_evolucao][]=$x;
+									$procedimentosIds[]=$x->id_procedimento;
+									$planosIds[]=$x->id_plano;
+									$procedimentosAEvoluirIds[]=$x->id_procedimento_aevoluir;
+								}
+							}
+
+							$_procedimentos=array();
+							$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$procedimentosIds).")");
+							if($sql->rows) {
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+									$_procedimentos[$x->id]=$x;
+								}
+							}	
+$_procedimentosAEvoluir=array();
+				$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id IN (".implode(',',$procedimentosAEvoluirIds).") and lixo=0");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$tratamentosProdecimentosIds[]=$x->id;
+					$_procedimentosAEvoluir[$x->id]=$x;
+				}
+				var_dump($_procedimentosAEvoluir);
+
+
+							foreach($evolucaoData as $dt=>$ev) {
+							?>
 							<fieldset>
-								<legend><strong style="font-size:0.75em;">19/10/2021</strong></legend>
-								
+								<legend><strong style="font-size:0.75em;"><?php echo date('d/m/Y',strtotime($dt));?></strong></legend>
+								<?php
+								foreach($ev as $e) {
+
+									# Procedimentos Tratamento / Avulso
+									if(isset($_evolucaoProcedimentos[$e->id])) {
+										foreach($_evolucaoProcedimentos[$e->id] as $x) {
+											if(isset($_procedimentos[$x->id_procedimento])) {
+												$procedimento=$_procedimentos[$x->id_procedimento];
+
+												$plano="";
+												if(isset($_planos[$x->id_plano])) {
+													$plano=utf8_encode($_planos[$x->id_plano]->titulo);
+												}
+
+												$profissionalIniciais='';
+												if(isset($_profissionais[$x->id_profissional])) {
+													$pro=$_profissionais[$x->id_profissional];
+													$profissionalIniciais='<span style="background:'.$pro->calendario_cor.';">'.$pro->calendario_iniciais.'</span>';
+												} else {
+
+													$profissionalIniciais='<span style="background:;"><span class="iconify" data-icon="bi:person-fill" data-inline="false"></span></span>';
+												}
+
+								?>
 								<div class="grid grid_3">
 									<div class="reg" style="grid-column:span 2; overflow-y:auto; max-height:220px;">
-										<a href="javascript:;" class="reg-group">
-											<div class="reg-data js-titulo" style="flex:0 1 300px"><h1>Prótese Sobre Dente - Porcelana (Lente, Faceta, Coroa) </h1><p>31 - Particular SD</p></div>
+										<a href="pg_contatos_pacientes_evolucao_procedimentos.php?form=1&id_paciente=<?php echo $paciente->id;?>&edita=<?php echo $e->id;?>" class="reg-group">
+											<div class="reg-data js-titulo" style="flex:0 1 300px">
+												<h1><?php echo utf8_encode($procedimento->titulo);?></h1>
+												<p>
+													<?php 
+													$comp='';
+													if(!empty($x->opcao)) $comp=utf8_encode($x->opcao);
+													if(!empty($plano)) {
+														if(empty($comp)) $comp=$plano;
+														else $comp.=" - ".$plano;
+													}
+													echo $comp;
+													?>
+												</p>
+											</div>
+											<?php
+											if(isset($_procedimentosAEvoluir[$x->id_procedimento_aevoluir])) {
+											?>
 											<div class="reg-steps js-steps" style="margin:0 auto;"><div class="reg-steps__item active">
 												<h1 style="color:var(--verde)">1</h1>
 												<p>A Iniciar</p>									
@@ -444,8 +530,11 @@
 												<p>Finalizado/Cancelado</p>									
 											</div></div>
 											<div class="reg-user">
-												<span style="background: rgb(68, 255, 0);">KM</span>
+												<?php echo $profissionalIniciais;?>
 											</div>
+											<?php
+											}
+											?>
 										</a>
 									</div>
 									<div  style="overflow-y:auto; max-height:220px;">
@@ -455,110 +544,17 @@
 										</div>
 									</div>
 								</div>
+								<?php
+											}
+										}	
+									}
+								}
+								?>
 							</fieldset>
+							<?php
+							}
+							?>
 
-							<fieldset>
-								<legend><strong style="font-size:0.75em;">17/10/2021</strong></legend>
-								
-								<div class="grid grid_3">
-									<div class="reg" style="grid-column:span 2; overflow-y:auto; max-height:220px;">
-										<a href="javascript:;" class="reg-group">
-											<div class="reg-data js-titulo" style="flex:0 1 300px"><h1>Prótese Sobre Dente - Porcelana (Lente, Faceta, Coroa) </h1><p>31 - Particular SD</p></div>
-											<div class="reg-steps js-steps" style="margin:0 auto;"><div class="reg-steps__item active">
-												<h1 style="color:var(--verde)">1</h1>
-												<p>A Iniciar</p>									
-											</div>
-											<div class="reg-steps__item active">
-												<h1 style="color:var(--verde)">2</h1>
-												<p>Em Tratamento</p>									
-											</div>
-											<div class="reg-steps__item active">
-												<h1 style="color:silver">3</h1>
-												<p>Finalizado/Cancelado</p>									
-											</div></div>
-											<div class="reg-user">
-												<span style="background: rgb(68, 255, 0);">KM</span>
-											</div>
-										</a>
-										<a href="javascript:;" class="reg-group">
-											<div class="reg-data js-titulo" style="flex:0 1 300px"><h1>Prótese Sobre Dente - Porcelana (Lente, Faceta, Coroa) </h1><p>31 - Particular SD</p></div>
-											<div class="reg-steps js-steps" style="margin:0 auto;"><div class="reg-steps__item active">
-												<h1 style="color:var(--verde)">1</h1>
-												<p>A Iniciar</p>									
-											</div>
-											<div class="reg-steps__item active">
-												<h1 style="color:var(--verde)">2</h1>
-												<p>Em Tratamento</p>									
-											</div>
-											<div class="reg-steps__item active">
-												<h1 style="color:silver">3</h1>
-												<p>Finalizado/Cancelado</p>									
-											</div></div>
-											<div class="reg-user">
-												<span style="background: rgb(68, 255, 0);">KM</span>
-											</div>
-										</a>
-										<a href="javascript:;" class="reg-group">
-											<div class="reg-data js-titulo" style="flex:0 1 300px"><h1>Prótese Sobre Dente - Porcelana (Lente, Faceta, Coroa) </h1><p>31 - Particular SD</p></div>
-											<div class="reg-steps js-steps" style="margin:0 auto;"><div class="reg-steps__item active">
-												<h1 style="color:var(--verde)">1</h1>
-												<p>A Iniciar</p>									
-											</div>
-											<div class="reg-steps__item active">
-												<h1 style="color:var(--verde)">2</h1>
-												<p>Em Tratamento</p>									
-											</div>
-											<div class="reg-steps__item active">
-												<h1 style="color:silver">3</h1>
-												<p>Finalizado/Cancelado</p>									
-											</div></div>
-											<div class="reg-user">
-												<span style="background: rgb(68, 255, 0);">KM</span>
-											</div>
-										</a>
-										<a href="javascript:;" class="reg-group">
-											<div class="reg-data js-titulo" style="flex:0 1 300px"><h1>Prótese Sobre Dente - Porcelana (Lente, Faceta, Coroa) </h1><p>31 - Particular SD</p></div>
-											<div class="reg-steps js-steps" style="margin:0 auto;"><div class="reg-steps__item active">
-												<h1 style="color:var(--verde)">1</h1>
-												<p>A Iniciar</p>									
-											</div>
-											<div class="reg-steps__item active">
-												<h1 style="color:var(--verde)">2</h1>
-												<p>Em Tratamento</p>									
-											</div>
-											<div class="reg-steps__item active">
-												<h1 style="color:silver">3</h1>
-												<p>Finalizado/Cancelado</p>									
-											</div></div>
-											<div class="reg-user">
-												<span style="background: rgb(68, 255, 0);">KM</span>
-											</div>
-										</a>
-									</div>
-									<div style="overflow-y:auto; max-height:220px;">
-										<div class="hist-lista-item hist-lista-item_lab">
-											<h1>DR.KRONER MACHADO COSTA em 03/09/2021 09:43</h1>
-											<p>Sessão de preparo e escaneamento. </p>
-										</div>
-										<div class="hist-lista-item hist-lista-item_lab">
-											<h1>DR.KRONER MACHADO COSTA em 03/09/2021 09:43</h1>
-											<p>Sessão de preparo e escaneamento. </p>
-										</div>
-										<div class="hist-lista-item hist-lista-item_lab">
-											<h1>DR.KRONER MACHADO COSTA em 03/09/2021 09:43</h1>
-											<p>Sessão de preparo e escaneamento. </p>
-										</div>
-										<div class="hist-lista-item hist-lista-item_lab">
-											<h1>DR.KRONER MACHADO COSTA em 03/09/2021 09:43</h1>
-											<p>Sessão de preparo e escaneamento. </p>
-										</div>
-										<div class="hist-lista-item hist-lista-item_lab">
-											<h1>DR.KRONER MACHADO COSTA em 03/09/2021 09:43</h1>
-											<p>Sessão de preparo e escaneamento. </p>
-										</div>
-									</div>
-								</div>
-							</fieldset>
 
 						</div>
 					

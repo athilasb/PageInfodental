@@ -79,13 +79,13 @@
 
 	<li><a href="pg_contatos_pacientes_evolucao.php?<?php echo "id_paciente=$paciente->id";?>" class="main-nav__evolucao-e-laboratorio<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_evolucao.php"?" active":"";?>">Prontuário</a></li>
 
-	<li><a href="pg_contatos_pacientes_laboratorio.php?<?php echo "id_paciente=$paciente->id";?>" class="main-nav__laboratorio<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_laboratorio.php"?" active":"";?>">Laboratório</a></li>
+	<?php /*<li><a href="pg_contatos_pacientes_laboratorio.php?<?php echo "id_paciente=$paciente->id";?>" class="main-nav__laboratorio<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_laboratorio.php"?" active":"";?>">Laboratório</a></li>*/?>
 
 	<li><a href="pg_contatos_pacientes_tratamento.php?<?php echo "id_paciente=$paciente->id";?>" class="main-nav__tratamento<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_tratamento.php"?" active":"";?>">Plano de Tratamento</a></li>
 
 	<li><a href="pg_contatos_pacientes_financeiro.php?<?php echo "id_paciente=$paciente->id";?>" class="main-nav__financeiro<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_financeiro.php"?" active":"";?>">Financeiro</a></li>
 
-	<li><a href="javascript:;" class="main-nav__programa-de-fidelidade<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_programadefidelidade.php"?" active":"";?>">Programa de Fidelidade</a></li>
+	<?php /*<li><a href="javascript:;" class="main-nav__programa-de-fidelidade<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_programadefidelidade.php"?" active":"";?>">Programa de Fidelidade</a></li>*/?>
 	
 	<li><a href="javascript:;" class="main-nav__arquivo-e-documentos<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_arquivoedocumentos.php"?" active":"";?>">Arquivos</a></li>
 

@@ -401,6 +401,18 @@
 			</form>
 		<?php
 		} else {
+
+			if(isset($_GET['id_pagamento']) and is_numeric($_GET['id_pagamento'])) {
+				$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id='".$_GET['id_pagamento']."' and id_paciente=$paciente->id");
+				if($sql->rows) {
+					$pag=mysqli_fetch_object($sql->mysqry);
+
+					$sql->update($_p."pacientes_tratamentos_pagamentos","lixo=1,lixo_data=now(),lixo_obs='excluido'","where id=$pag->id");
+
+
+				}
+			}
+
 			$where="WHERE id_paciente=$paciente->id and id_fusao=0 and lixo=0 order by data asc, id asc";
 			$sql->consult($_p."pacientes_tratamentos_pagamentos","*",$where);
 		
@@ -858,6 +870,28 @@
 					});
 					return false;
 				});
+
+				$('#cal-popup').on('click','.js-btn-pagamento-excluir',function(){
+					let id_pagamento = pagamentos[index].id_parcela;
+					swal({
+						title: "Atenção",
+						text: "Você tem certeza que deseja remover este registro?",
+						type: "warning",
+						showCancelButton: true,
+						confirmButtonColor: "#DD6B55",
+						confirmButtonText: "Sim!",
+						cancelButtonText: "Não",
+						closeOnConfirm:false,
+						closeOnCancel: false }, 
+						function(isConfirm){   
+							if (isConfirm) {   
+								document.location.href='?<?php echo "id_paciente=$paciente->id&id_pagamento=";?>'+id_pagamento;
+							} else {   
+								swal.close();   
+							} 
+						});
+
+				})
 
 
 				$('.js-btn-fechar').click(function(){
@@ -1435,7 +1469,8 @@
 
 
 						<div class="paciente-info-opcoes">
-							<a href="javascript:;" target="_blank" class="js-btn-pagamento button ">Programação de Pagamentos</a>
+							<a href="javascript:;" target="_blank" class="js-btn-pagamento button">Programação de Pagamentos</a>
+							<a href="javascript:;" class="js-btn-pagamento-excluir button button__sec">Excluir</a>
 							
 						</div>
 					</section>
