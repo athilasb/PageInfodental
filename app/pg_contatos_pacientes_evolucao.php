@@ -161,7 +161,7 @@
 				$_usuarios[$x->id]=$x;
 			}
 
-			$tratamentoProdecimentosIds=$procedimentosAEvoluirIds=array(-1);
+			$tratamentoProcedimentosIds=$procedimentosAEvoluirIds=array(-1);
 			$registrosProcedimentos=array();
 			$registrosEvolucoesProcedimentos=array();
 			$sql->consult($_p."pacientes_evolucoes_procedimentos","*","where id_paciente=$paciente->id and lixo=0 order by data desc");
@@ -177,17 +177,17 @@
 			}
 
 			// Procedimentos a Evoluir
-				$tratamentosProdecimentosIds=array(0); // procedimentos aprovados (pacientes_tratamentos_procedimentos)
+				$tratamentosProcedimentosIds=array(0); // procedimentos aprovados (pacientes_tratamentos_procedimentos)
 				$_procedimentosAEvoluir=array();
 				$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id IN (".implode(',',$procedimentosAEvoluirIds).") and lixo=0");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$tratamentosProdecimentosIds[]=$x->id;
+					$tratamentosProcedimentosIds[]=$x->id;
 					$_procedimentosAEvoluir[$x->id]=$x;
 				}
 
 				// Procedimentos Aprovados
 				$_tratamentosProcedimentosAprovados=array(-1);
-				$where="where id IN (".implode(",",$tratamentosProdecimentosIds).") and id_paciente=$paciente->id and lixo=0";
+				$where="where id IN (".implode(",",$tratamentosProcedimentosIds).") and id_paciente=$paciente->id and lixo=0";
 				$sql->consult($_p."pacientes_tratamentos_procedimentos","*",$where);
 				while($x=mysqli_fetch_object($sql->mysqry)) $_tratamentosProcedimentosAprovados[$x->id]=$x;
 
@@ -310,7 +310,7 @@
 			
 
 			$_tratamentoProcedimentos=array();
-			$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id IN (".implode(",",$tratamentoProdecimentosIds).")");
+			$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id IN (".implode(",",$tratamentoProcedimentosIds).")");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$prodecimentosIds[]=$x->id_procedimento;
 				$_tratamentoProcedimentos[$x->id]=$x;
@@ -460,100 +460,201 @@
 									$_procedimentos[$x->id]=$x;
 								}
 							}	
-$_procedimentosAEvoluir=array();
-				$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id IN (".implode(',',$procedimentosAEvoluirIds).") and lixo=0");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$tratamentosProdecimentosIds[]=$x->id;
-					$_procedimentosAEvoluir[$x->id]=$x;
-				}
-				var_dump($_procedimentosAEvoluir);
+
+							$_procedimentosAEvoluir=array();
+							$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id IN (".implode(',',$procedimentosAEvoluirIds).") and lixo=0");
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$tratamentosProcedimentosIds[]=$x->id;
+								$_procedimentosAEvoluir[$x->id]=$x;
+							}
+
+							$_evolucaoHistoricos=array();
+							$tratamentosProcedimentosIds=array(0);
+							$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao_historico","*","where id_evolucao IN (".implode(",",$evolucaoIds['procedimentos']).")");
+							if($sql->rows) {
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+									$_evolucaoHistoricos[$x->id_evolucao][]=$x;
+									$tratamentosProcedimentosIds[]=$x->id_tratamento_procedimento;
+								}
+							}
+
+							$_tratamentosProcedimentos=array();
+							$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id IN (".implode(",",$tratamentosProcedimentosIds).")");
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$_tratamentosProcedimentos[$x->id]=$x;
+							}
 
 
 							foreach($evolucaoData as $dt=>$ev) {
 							?>
 							<fieldset>
 								<legend><strong style="font-size:0.75em;"><?php echo date('d/m/Y',strtotime($dt));?></strong></legend>
-								<?php
-								foreach($ev as $e) {
-
-									# Procedimentos Tratamento / Avulso
-									if(isset($_evolucaoProcedimentos[$e->id])) {
-										foreach($_evolucaoProcedimentos[$e->id] as $x) {
-											if(isset($_procedimentos[$x->id_procedimento])) {
-												$procedimento=$_procedimentos[$x->id_procedimento];
-
-												$plano="";
-												if(isset($_planos[$x->id_plano])) {
-													$plano=utf8_encode($_planos[$x->id_plano]->titulo);
-												}
-
-												$profissionalIniciais='';
-												if(isset($_profissionais[$x->id_profissional])) {
-													$pro=$_profissionais[$x->id_profissional];
-													$profissionalIniciais='<span style="background:'.$pro->calendario_cor.';">'.$pro->calendario_iniciais.'</span>';
-												} else {
-
-													$profissionalIniciais='<span style="background:;"><span class="iconify" data-icon="bi:person-fill" data-inline="false"></span></span>';
-												}
-
-								?>
+								
 								<div class="grid grid_3">
 									<div class="reg" style="grid-column:span 2; overflow-y:auto; max-height:220px;">
-										<a href="pg_contatos_pacientes_evolucao_procedimentos.php?form=1&id_paciente=<?php echo $paciente->id;?>&edita=<?php echo $e->id;?>" class="reg-group">
-											<div class="reg-data js-titulo" style="flex:0 1 300px">
-												<h1><?php echo utf8_encode($procedimento->titulo);?></h1>
-												<p>
-													<?php 
-													$comp='';
-													if(!empty($x->opcao)) $comp=utf8_encode($x->opcao);
-													if(!empty($plano)) {
-														if(empty($comp)) $comp=$plano;
-														else $comp.=" - ".$plano;
+
+										<?php
+										foreach($ev as $e) {
+
+											# Procedimentos Tratamento / Avulso
+											if(isset($_evolucaoProcedimentos[$e->id])) {
+												foreach($_evolucaoProcedimentos[$e->id] as $x) {
+													if(isset($_procedimentos[$x->id_procedimento])) {
+														$procedimento=$_procedimentos[$x->id_procedimento];
+
+														$plano="";
+														if(isset($_planos[$x->id_plano])) {
+															$plano=utf8_encode($_planos[$x->id_plano]->titulo);
+														}
+
+														$profissionalIniciais='';
+														if(isset($_profissionais[$x->id_profissional])) {
+															$pro=$_profissionais[$x->id_profissional];
+															$profissionalIniciais='<span style="background:'.$pro->calendario_cor.';">'.$pro->calendario_iniciais.'</span>';
+														} else {
+
+															$profissionalIniciais='<span style="background:;"><span class="iconify" data-icon="bi:person-fill" data-inline="false"></span></span>';
+														}
+
+												?>
+												<a href="pg_contatos_pacientes_evolucao_procedimentos.php?form=1&id_paciente=<?php echo $paciente->id;?>&edita=<?php echo $e->id;?>" class="reg-group">
+													<div class="reg-data js-titulo" style="flex:0 1 300px">
+														<h1><?php echo utf8_encode($procedimento->titulo);?></h1>
+														<p>
+															<?php 
+															$comp='';
+															if(!empty($x->opcao)) $comp=utf8_encode($x->opcao);
+															if(!empty($plano)) {
+																if(empty($comp)) $comp=$plano;
+																else $comp.=" - ".$plano;
+															}
+															echo $comp;
+															?>
+														</p>
+													</div>
+													<?php
+													if(isset($_procedimentosAEvoluir[$x->id_procedimento_aevoluir])) {
+														$pEv=$_procedimentosAEvoluir[$x->id_procedimento_aevoluir];
+														if($pEv->status_evolucao=='iniciar') {
+															$steps = '<div class="reg-steps__item active">
+																		<h1 style="color:var(--amarelo)">1</h1>
+																		<p>A Iniciar</p>									
+																	</div>
+
+																	<div class="reg-steps__item active">
+																		<h1 style="color:silver">2</h1>
+																		<p>Em Tratamento</p>									
+																	</div>
+
+																	<div class="reg-steps__item active">
+																		<h1 style="color:silver">3</h1>
+																		<p>Finalizado/Cancelado</p>									
+																	</div>';
+
+														} else if($pEv->status_evolucao=='iniciado') {
+															
+															$steps = '<div class="reg-steps__item active">
+																		<h1 style="color:var(--verde)">1</h1>
+																		<p>A Iniciar</p>									
+																	</div>
+
+																	<div class="reg-steps__item active">
+																		<h1 style="color:var(--verde)">2</h1>
+																		<p>Em Tratamento</p>									
+																	</div>
+
+																	<div class="reg-steps__item active">
+																		<h1 style="color:silver">3</h1>
+																		<p>Finalizado/Cancelado</p>									
+																	</div>';
+														} else if($pEv->status_evolucao=='finalizado') {
+															
+															$steps = '<div class="reg-steps__item active">
+																		<h1 style="color:var(--verde)">1</h1>
+																		<p>A Iniciar</p>									
+																	</div>
+
+																	<div class="reg-steps__item active">
+																		<h1 style="color:var(--verde)">2</h1>
+																		<p>Em Tratamento</p>									
+																	</div>
+
+																	<div class="reg-steps__item active">
+																		<h1 style="color:var(--verde);">3</h1>
+																		<p>Finalizado</p>									
+																	</div>';
+														} else if($pEv->status_evolucao=='cancelado') {
+															$steps = '<div class="reg-steps__item active">
+																		<h1 style="color:var(--verde)">1</h1>
+																		<p>A Iniciar</p>									
+																	</div>
+
+																	<div class="reg-steps__item active">
+																		<h1 style="color:var(--verde)">2</h1>
+																		<p>Em Tratamento</p>									
+																	</div>
+
+																	<div class="reg-steps__item active">
+																		<h1 style="color:var(--vermelho);">3</h1>
+																		<p>Cancelado</p>									
+																	</div> ';
+														}
+														echo $steps;
 													}
-													echo $comp;
 													?>
-												</p>
-											</div>
-											<?php
-											if(isset($_procedimentosAEvoluir[$x->id_procedimento_aevoluir])) {
-											?>
-											<div class="reg-steps js-steps" style="margin:0 auto;"><div class="reg-steps__item active">
-												<h1 style="color:var(--verde)">1</h1>
-												<p>A Iniciar</p>									
-											</div>
-											<div class="reg-steps__item active">
-												<h1 style="color:var(--verde)">2</h1>
-												<p>Em Tratamento</p>									
-											</div>
-											<div class="reg-steps__item active">
-												<h1 style="color:silver">3</h1>
-												<p>Finalizado/Cancelado</p>									
-											</div></div>
-											<div class="reg-user">
-												<?php echo $profissionalIniciais;?>
-											</div>
-											<?php
+
+													<div class="reg-user">
+														<?php echo $profissionalIniciais;?>
+													</div>
+													<?php
+													
+													?>
+												</a>
+												<?php
+													}
+												}
 											}
-											?>
-										</a>
+										}
+									?>
 									</div>
+									
 									<div  style="overflow-y:auto; max-height:220px;">
+										<?php
+										foreach($ev as $e) {
+											if(isset($_evolucaoHistoricos[$e->id])) {
+												foreach($_evolucaoHistoricos[$e->id] as $h) {
+
+													$procedimento='';
+													if($h->id_tratamento_procedimento>0) {
+														if(isset($_tratamentosProcedimentos[$h->id_tratamento_procedimento])) {
+															$tp=$_tratamentosProcedimentos[$h->id_tratamento_procedimento];
+															$procedimento="<b>".utf8_encode($tp->procedimento);
+
+															if(!empty($tp->opcao)) $procedimento.=" - ".utf8_encode($tp->opcao);
+
+															$procedimento.="</b><br />";
+														}
+													}
+													
+										?>
 										<div class="hist-lista-item hist-lista-item_lab">
-											<h1>DR.KRONER MACHADO COSTA em 03/09/2021 09:43</h1>
-											<p>Sessão de preparo e escaneamento. </p>
+											<h1><?php echo utf8_encode($h->usuario)." em ".date('d/m/Y H:i',strtotime($h->data));?></h1>
+											<p><?php echo $procedimento." ".utf8_encode($h->obs);?></p>
 										</div>
+										<?php
+												}
+											}
+										}
+										?>
+										
 									</div>
 								</div>
-								<?php
-											}
-										}	
-									}
-								}
-								?>
+								
 							</fieldset>
 							<?php
 							}
 							?>
+							
 
 
 						</div>

@@ -403,8 +403,73 @@
 						<?php	
 						}
 						?>
-					</div>					
+					</div>	
+
 				</div>
+			</div>
+
+			<div class="hist2 box" style="grid-column:span 3">
+			
+						<aside>
+					<h1 class="paciente__titulo1">Histórico</h1>			
+						<?php
+
+						$_cadeiras=array();
+						$sql->consult($_p."parametros_cadeiras","*","where lixo=0 order by ordem asc");
+						while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
+
+						$_status=array();
+						$sql->consult($_p."agenda_status","*","where lixo=0 order by titulo asc");
+						while($x=mysqli_fetch_object($sql->mysqry)) $_status[$x->id]=$x;
+
+						$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and lixo=0 order by agenda_data desc");
+						if($sql->rows) {
+						?>
+						<div class="reg">
+							<?php
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$statusCor='';
+
+								if(isset($_status[$x->id_status])) {
+									$statusCor=$_status[$x->id_status]->cor;
+								}
+							?>
+							<a href="<?php echo "pg_agenda.php?initDate=".date('d/m/Y',strtotime($x->agenda_data));?>" target="_blank" class="reg-group">
+								<div class="reg-color" style="background-color:<?php echo $statusCor;?>"></div>
+
+								<div class="reg-data" style="width:30%">
+									<p><?php echo date('d/m/Y H:i',strtotime($x->agenda_data));?></span></p>
+								</div>
+
+								<div class="reg-data" style="width:30%">
+									<p><?php echo isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'';?></p>
+								</div>
+								<?php
+								$profissionais="";
+								if(!empty($x->profissionais)) {
+									$profissionais='';
+									$aux=explode(",",$x->profissionais);
+									foreach($aux as $v) {
+										if(!empty($v) and is_numeric($v) and isset($_profissionais[$v])) {
+											//$profissionais.='<div class="cal-item-foto"><span style="background:'.$_profissionais[$v]->calendario_cor.'">'.$_profissionais[$v]->calendario_iniciais.'</span></div>';
+											$profissionais.='<div class="cal-item-foto" style="float:left;"><span style="background:'.$_profissionais[$v]->calendario_cor.'">'.$_profissionais[$v]->calendario_iniciais.'</span></div>';
+										}
+									}
+								}
+								?>
+								<div class="cal-item__fotos">
+									<?php echo $profissionais;?>
+								</div>
+							</a>
+							<?php
+							}
+							?>
+						</div>
+						<?php
+						}
+						?>
+					</aside>
+				
 			</div>
 
 			<div class="hist2 box" style="grid-column:span 3">
