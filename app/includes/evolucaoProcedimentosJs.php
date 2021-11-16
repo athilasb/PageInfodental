@@ -383,88 +383,100 @@
 		$('.js-btn-fechar').click(function(){$('.cal-popup').hide();})
 
 		$('.js-btn-add').click(function(){
+			let loading = $(this).attr('data-loading');
 
-			$('select.js-sel-procedimento option:selected').each(function(index,el) {
-				<?php /*
-				let id_procedimento = $('select.js-sel-procedimento').val();
-				let numero = $('select.js-sel-procedimento option:selected').attr('data-numero');
-				let numeroTotal = $('select.js-sel-procedimento option:selected').attr('data-numeroTotal');
-				let opcao = $('select.js-sel-procedimento option:selected').attr('data-opcao');
-				let plano = $('select.js-sel-procedimento option:selected').attr('data-plano');
-				let titulo = $('select.js-sel-procedimento option:selected').attr('data-titulo');
-				let id_profissional = $('select.js-sel-procedimento option:selected').attr('data-id_profissional');
-				let profissionalIniciais = $('select.js-sel-procedimento option:selected').attr('data-profissionalIniciais');
-				let id_tratamento_procedimento = $('select.js-sel-procedimento option:selected').attr('data-id_tratamento_procedimento');
-				let profissionalCor = $('select.js-sel-procedimento option:selected').attr('data-profissionalCor');
-				let statusEvolucao = $('select.js-sel-procedimento option:selected').attr('data-statusEvolucao');
-				let obs = ``;
-				*/?>
-				let data = `ajax=historico&id_procedimento_aevoluir=${$(el).val()}`;
-				$.ajax({
-					type:"POST",
-					data:data,
-					success:function(rtn) {
-						if(rtn.success) { 
-							
-							let id_procedimento_aevoluir = $(el).val();
-							let id_procedimento = $(el).attr('data-id_procedimento');
-							let numero = $(el).attr('data-numero');
-							let numeroTotal = $(el).attr('data-numeroTotal');
-							let opcao = $(el).attr('data-opcao');
-							let plano = $(el).attr('data-plano');
-							let titulo = $(el).attr('data-titulo');
-							let id_profissional = $(el).attr('data-id_profissional');
-							let profissionalIniciais = $(el).attr('data-profissionalIniciais');
-							let id_tratamento_procedimento = $(el).attr('data-id_tratamento_procedimento');
-							let profissionalCor = $(el).attr('data-profissionalCor');
-							let statusEvolucao = $(el).attr('data-statusEvolucao');
-							let obs = ``;
-							let historico = rtn.historico;
-							
-							let dt = new Date();
-							let dia = dt.getDate();
-							let mes = dt.getMonth();
-							let min = dt.getMinutes();
-							let hrs = dt.getHours();
-							mes++
-							mes=mes<=9?`0${mes}`:mes;
-							dia=dia<=9?`0${dia}`:dia;
-							min=min<=9?`0${min}`:min;
-							hrs=hrs<=9?`0${hrs}`:hrs;
-							let data = `${dia}/${mes}/${dt.getFullYear()} ${dt.getHours()}:${dt.getMinutes()}`;
+			if(loading==0) {
+				$(this).html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+				$(this).attr('data-loading',1);
 
-							if(id_procedimento_aevoluir.length>0) {
-								let item = { id_procedimento_aevoluir,
-												 id_procedimento, 
-												opcao, 
-												plano, 
-												titulo, 
-												profissionalCor, 
-												profissionalIniciais, 
-												statusEvolucao, 
-												autor, 
-												id_usuario, 
-												data, 
-												obs,
-												id_profissional,
-												id_tratamento_procedimento,
-												numero,
-												numeroTotal,
-												historico
-											}
+				$('select.js-sel-procedimento option:selected').each(function(index,el) {
+					<?php /*
+					let id_procedimento = $('select.js-sel-procedimento').val();
+					let numero = $('select.js-sel-procedimento option:selected').attr('data-numero');
+					let numeroTotal = $('select.js-sel-procedimento option:selected').attr('data-numeroTotal');
+					let opcao = $('select.js-sel-procedimento option:selected').attr('data-opcao');
+					let plano = $('select.js-sel-procedimento option:selected').attr('data-plano');
+					let titulo = $('select.js-sel-procedimento option:selected').attr('data-titulo');
+					let id_profissional = $('select.js-sel-procedimento option:selected').attr('data-id_profissional');
+					let profissionalIniciais = $('select.js-sel-procedimento option:selected').attr('data-profissionalIniciais');
+					let id_tratamento_procedimento = $('select.js-sel-procedimento option:selected').attr('data-id_tratamento_procedimento');
+					let profissionalCor = $('select.js-sel-procedimento option:selected').attr('data-profissionalCor');
+					let statusEvolucao = $('select.js-sel-procedimento option:selected').attr('data-statusEvolucao');
+					let obs = ``;
+					*/?>
+					let data = `ajax=historico&id_procedimento_aevoluir=${$(el).val()}`;
+					$.ajax({
+						type:"POST",
+						data:data,
+						success:function(rtn) {
+							if(rtn.success) { 
+								
+								let id_procedimento_aevoluir = $(el).val();
+								let id_procedimento = $(el).attr('data-id_procedimento');
+								let numero = $(el).attr('data-numero');
+								let numeroTotal = $(el).attr('data-numeroTotal');
+								let opcao = $(el).attr('data-opcao');
+								let plano = $(el).attr('data-plano');
+								let titulo = $(el).attr('data-titulo');
+								let id_profissional = $(el).attr('data-id_profissional');
+								let profissionalIniciais = $(el).attr('data-profissionalIniciais');
+								let id_tratamento_procedimento = $(el).attr('data-id_tratamento_procedimento');
+								let profissionalCor = $(el).attr('data-profissionalCor');
+								let statusEvolucao = $(el).attr('data-statusEvolucao');
+								let obs = ``;
+								let historico = rtn.historico;
+								
+								let dt = new Date();
+								let dia = dt.getDate();
+								let mes = dt.getMonth();
+								let min = dt.getMinutes();
+								let hrs = dt.getHours();
+								mes++
+								mes=mes<=9?`0${mes}`:mes;
+								dia=dia<=9?`0${dia}`:dia;
+								min=min<=9?`0${min}`:min;
+								hrs=hrs<=9?`0${hrs}`:hrs;
+								let data = `${dia}/${mes}/${dt.getFullYear()} ${dt.getHours()}:${dt.getMinutes()}`;
 
-								item.avulso=0;
-								procedimentos.push(item); 
-								procedimentosListar();
+								if(id_procedimento_aevoluir.length>0) {
+									let item = { id_procedimento_aevoluir,
+													 id_procedimento, 
+													opcao, 
+													plano, 
+													titulo, 
+													profissionalCor, 
+													profissionalIniciais, 
+													statusEvolucao, 
+													autor, 
+													id_usuario, 
+													data, 
+													obs,
+													id_profissional,
+													id_tratamento_procedimento,
+													numero,
+													numeroTotal,
+													historico
+												}
 
-					 			$('.js-sel-procedimento').find(`option[value=${id_procedimento_aevoluir}]`).prop('disabled',true);
-					 			$('select.js-sel-procedimento').val('').trigger('chosen:updated');
+									item.avulso=0;
+									procedimentos.push(item); 
+									procedimentosListar();
+
+						 			$('.js-sel-procedimento').find(`option[value=${id_procedimento_aevoluir}]`).prop('disabled',true);
+						 			$('select.js-sel-procedimento').val('').trigger('chosen:updated');
+							 			
+									$('.js-btn-add').html('Adicionar');
+									$('.js-btn-add').attr('data-loading',0)
+								}
+							} else {
+								$('.js-btn-add').html('Adicionar');
+								$('.js-btn-add').attr('data-loading',0)
 							}
-						}
-					},
-				})
-				
-			});
+						},
+					})
+					
+				});
+			}
 
 
 			

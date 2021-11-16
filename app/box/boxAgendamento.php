@@ -619,45 +619,63 @@
 
 		$('.js-salvar').click(function(){
 
-			let erro=false;
-			$('form .obg').each(function(index,elem){
-				//console.log($(this).attr('name'));
-				if($(this).attr('name')!==undefined && $(this).val().length==0) {
-					$(elem).addClass('erro');
-					erro=true;
-				}
-			});
+			let loading = $(this).attr('data-loading');
 
-			if(erro===true) {
-				swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
+			if(loading==0) {
+				$(this).html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+				$(this).attr('data-loading',1);
 				
-			} else {
-				
-				let campos = $('form.js-form-agendamento').serialize();
-				let profissionais = $('form.js-form-agendamento .js-profissionais').val();
 
-				let data = `ajax=agendamentoPersistir&id_unidade=${id_unidade}&id_agenda=${id_agenda}&profissionais=${profissionais}&${campos}`;
-
-				$.ajax({
-					type:'POST',
-					url:'box/boxAgendamento.php',
-					data:data,
-					success:function(rtn) {
-						if(rtn.success) {
-							$.fancybox.close();
-							calendar.refetchEvents();
-							//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
-						} else if(rtn.error) {
-							swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-						} else {
-							swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
-						}
-					},
-					error:function(){
-						swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+				let erro=false;
+				$('form .obg').each(function(index,elem){
+					//console.log($(this).attr('name'));
+					if($(this).attr('name')!==undefined && $(this).val().length==0) {
+						$(elem).addClass('erro');
+						erro=true;
 					}
-				})
+				});
 
+				if(erro===true) {
+					swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
+					$('.js-salvar').html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
+					$('.js-salvar').attr('data-loading',0);
+				} else {
+					
+					let campos = $('form.js-form-agendamento').serialize();
+					let profissionais = $('form.js-form-agendamento .js-profissionais').val();
+
+					let data = `ajax=agendamentoPersistir&id_unidade=${id_unidade}&id_agenda=${id_agenda}&profissionais=${profissionais}&${campos}`;
+
+					$.ajax({
+						type:'POST',
+						url:'box/boxAgendamento.php',
+						data:data,
+						success:function(rtn) {
+							if(rtn.success) {
+								$.fancybox.close();
+								calendar.refetchEvents();
+								//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
+							} else if(rtn.error) {
+								swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+
+								$('.js-salvar').html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
+								$('.js-salvar').attr('data-loading',0);
+							} else {
+								swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+
+								$('.js-salvar').html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
+								$('.js-salvar').attr('data-loading',0);
+							}
+						},
+						error:function(){
+							swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+									
+							$('.js-salvar').html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
+							$('.js-salvar').attr('data-loading',0);
+						}
+					})
+
+				}
 			}
 			return false;
 		});
@@ -720,7 +738,7 @@
 					<?php if(is_object($agenda)) {?><a href="javascript:;" class="js-remover"><i class="iconify" data-icon="bx-bx-trash"></i></a><?php }?>
 					<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
 				</div> */ ?>
-				<a href="javascript:;" class="azul js-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+				<a href="javascript:;" class="azul js-salvar" data-loading="0"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
 				<?php
 				if(is_object($agenda)) {
 				?>

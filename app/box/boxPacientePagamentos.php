@@ -440,106 +440,122 @@
 		$('input.money').maskMoney({symbol:'', allowZero:true, showSymbol:true, thousands:'.', decimal:',', symbolStay: true});
 
 		$('.js-btn-addPagamento').click(function(){
-			let tipoPagamento = $('.js-id_formadepagamento option:checked').attr('data-tipo');
-
-			saldoAPagar = unMoney($('.js-saldoPagar').val());
-			
-			let tipoBaixa = $('input[name=tipoBaixa]:checked').val();
-
-			if(tipoBaixa=="despesa" || tipoBaixa=="desconto" || tipoPagamento!==undefined) {
-
-				let dataPagamento = $('input.js-dataPagamento').val();
-				let dataVencimento = $('input.js-vencimento').val();
-				let valor = ($('input.js-valor').val().length>0 && unMoney($('input.js-valor').val())>0)?unMoney($('input.js-valor').val()):'';
-				let id_formadepagamento = $('.js-id_formadepagamento').val();
-				let obs = $('input.js-obs').val();
-				let debitoBandeira=$('select.js-debitoBandeira').val();
-				let creditoBandeira=$('select.js-creditoBandeira').val();
-				let creditoParcelas=$('select.js-parcelas').val();
-				let id_operadora=0;
-				let taxa=0;
-
-				let erro = '';
-
-				if(tipoBaixa=='pagamento') {
-					if(tipoPagamento=='credito') {
-						if(dataVencimento.length==0) erro= 'Defina a <b>Data do Vencimento</b>';
-						else if(valor.length==0) erro= 'Defina o <b>Valor do Pagamento</b>';
-						else if(creditoBandeira.length==0) erro= 'Selecione a <b>Bandeira</b> do Cartão de Crédito';
-						else if(creditoParcelas.length==0) erro= 'Selecione o <b>Nº de Parcelas</b> do Cartão de Crédito';
-
-						id_operadora=$('select.js-creditoBandeira option:selected').attr('data-id_operadora');
-						taxa=$('input.js-valorCreditoDebitoTaxa').val().replace(/[^\d,-.]+/g,'');
-						valorParcela=$('input.js-valorCreditoDebito').val().replace(/[^\d,-.]+/g,'');
-
-					} else if(tipoPagamento=='debito') {
-						if(dataVencimento.length==0) erro= 'Defina a <b>Data do Vencimento</b>';
-						else if(valor.length==0) erro= 'Defina o <b>Valor do Pagamento</b>';
-						else if(debitoBandeira.length==0) erro= 'Selecione a <b>Bandeira</b> do Cartão de Débito';
-						
-						id_operadora=$('select.js-debitoBandeira option:selected').attr('data-id_operadora');
-						taxa=$('input.js-valorCreditoDebitoTaxa').val().replace(/[^\d,-.]+/g,'');
-						valorParcela=$('input.js-valorCreditoDebito').val().replace(/[^\d,-.]+/g,'');
-
-					} else {
-
-						id_operadora=0;
-						taxa=0;
-						valorParcela=$('input.js-valor').val().replace(/[^\d,-.]+/g,'');
-
-						if(dataVencimento.length==0) erro= 'Defina a <b>Data do Vencimento</b>';
-						else if(valor.length==0) erro= 'Defina o <b>Valor do Pagamento</b>';
-					}
-				} else if(tipoBaixa=='desconto' || tipoBaixa=='despesa') {
-					if(dataPagamento.length==0) erro= 'Defina a <b>Data do Pagamento</b>';
-					else if(valor.length==0) erro= 'Defina o <b>Valor</b>';
-					else if(obs.length==0) erro= 'Digite uma <b>Observação</b>';
-					valorParcela=$('input.js-valor').val().replace(/[^\d,-.]+/g,'');
-				}
 
 
+			let loading = $(this).attr('data-loading');
 
-				if(dataPagamento.length==0) erro='Defina a <b>Data</b>';
-				else if(tipoBaixa.length==0) erro='Defina o <b>Tipo de Baixa</b>';
-				else if(valor.length==0) erro= 'Defina o <b>Valor</b> a ser pago';
-				else if(tipoBaixa=="pagamento" && id_formadepagamento.length==0) erro='Defina a <b>Forma de Pagamento</b>';
-				else if(saldoAPagar<=0) erro=`Não existe mais débitos!`; 
-				else if(saldoAPagar<unMoney(valorParcela)) erro=`O valor não pode ser maior que <b>${number_format(saldoAPagar,2,",",".")}`;
-			
-				if(erro.length==0) {
-					//return;
-					let data = `ajax=pagamentoBaixa&tipoBaixa=${tipoBaixa}&id_pagamento=${id_pagamento}&dataPagamento=${dataPagamento}&dataVencimento=${dataVencimento}&valor=${valor}&id_formadepagamento=${id_formadepagamento}&debitoBandeira=${debitoBandeira}&creditoBandeira=${creditoBandeira}&creditoParcelas=${creditoParcelas}&obs=${obs}&id_operadora=${id_operadora}&taxa=${taxa}&valorParcela=${unMoney(valorParcela)}`;
+			if(loading==0) {
+				$(this).html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+				$(this).attr('data-loading',1);
+
+				let tipoPagamento = $('.js-id_formadepagamento option:checked').attr('data-tipo');
+
+				saldoAPagar = unMoney($('.js-saldoPagar').val());
 				
-					$.ajax({
-						type:"POST",
-						url:'box/<?php echo basename($_SERVER['PHP_SELF']);?>',
-						data:data,
-						success:function(rtn) {
-							if(rtn.success) {
-								baixas=rtn.baixas;
-								baixasAtualizar();
-								$('.js-dataPagamento').val('<?php echo date('d/m/Y');?>');
-								$('.js-valor').val('');
-								$('.js-desconto').val('');
-								$('.js-id_formadepagamento').val('');
-								$('.js-obs').val('');
-								if(saldoAPagar<=0) $('.js-form-pagamentos').hide();
+				let tipoBaixa = $('input[name=tipoBaixa]:checked').val();
 
-							} else if(rtn.error) {
-								swal({title: "Erro!", text: rtn.error,  html:true,type:"error", confirmButtonColor: "#424242"});
-							} else {
+				if(tipoBaixa=="despesa" || tipoBaixa=="desconto" || tipoPagamento!==undefined) {
+
+					let dataPagamento = $('input.js-dataPagamento').val();
+					let dataVencimento = $('input.js-vencimento').val();
+					let valor = ($('input.js-valor').val().length>0 && unMoney($('input.js-valor').val())>0)?unMoney($('input.js-valor').val()):'';
+					let id_formadepagamento = $('.js-id_formadepagamento').val();
+					let obs = $('input.js-obs').val();
+					let debitoBandeira=$('select.js-debitoBandeira').val();
+					let creditoBandeira=$('select.js-creditoBandeira').val();
+					let creditoParcelas=$('select.js-parcelas').val();
+					let id_operadora=0;
+					let taxa=0;
+
+					let erro = '';
+
+					if(tipoBaixa=='pagamento') {
+						if(tipoPagamento=='credito') {
+							if(dataVencimento.length==0) erro= 'Defina a <b>Data do Vencimento</b>';
+							else if(valor.length==0) erro= 'Defina o <b>Valor do Pagamento</b>';
+							else if(creditoBandeira.length==0) erro= 'Selecione a <b>Bandeira</b> do Cartão de Crédito';
+							else if(creditoParcelas.length==0) erro= 'Selecione o <b>Nº de Parcelas</b> do Cartão de Crédito';
+
+							id_operadora=$('select.js-creditoBandeira option:selected').attr('data-id_operadora');
+							taxa=$('input.js-valorCreditoDebitoTaxa').val().replace(/[^\d,-.]+/g,'');
+							valorParcela=$('input.js-valorCreditoDebito').val().replace(/[^\d,-.]+/g,'');
+
+						} else if(tipoPagamento=='debito') {
+							if(dataVencimento.length==0) erro= 'Defina a <b>Data do Vencimento</b>';
+							else if(valor.length==0) erro= 'Defina o <b>Valor do Pagamento</b>';
+							else if(debitoBandeira.length==0) erro= 'Selecione a <b>Bandeira</b> do Cartão de Débito';
+							
+							id_operadora=$('select.js-debitoBandeira option:selected').attr('data-id_operadora');
+							taxa=$('input.js-valorCreditoDebitoTaxa').val().replace(/[^\d,-.]+/g,'');
+							valorParcela=$('input.js-valorCreditoDebito').val().replace(/[^\d,-.]+/g,'');
+
+						} else {
+
+							id_operadora=0;
+							taxa=0;
+							valorParcela=$('input.js-valor').val().replace(/[^\d,-.]+/g,'');
+
+							if(dataVencimento.length==0) erro= 'Defina a <b>Data do Vencimento</b>';
+							else if(valor.length==0) erro= 'Defina o <b>Valor do Pagamento</b>';
+						}
+					} else if(tipoBaixa=='desconto' || tipoBaixa=='despesa') {
+						if(dataPagamento.length==0) erro= 'Defina a <b>Data do Pagamento</b>';
+						else if(valor.length==0) erro= 'Defina o <b>Valor</b>';
+						else if(obs.length==0) erro= 'Digite uma <b>Observação</b>';
+						valorParcela=$('input.js-valor').val().replace(/[^\d,-.]+/g,'');
+					}
+
+
+
+					if(dataPagamento.length==0) erro='Defina a <b>Data</b>';
+					else if(tipoBaixa.length==0) erro='Defina o <b>Tipo de Baixa</b>';
+					else if(valor.length==0) erro= 'Defina o <b>Valor</b> a ser pago';
+					else if(tipoBaixa=="pagamento" && id_formadepagamento.length==0) erro='Defina a <b>Forma de Pagamento</b>';
+					else if(saldoAPagar<=0) erro=`Não existe mais débitos!`; 
+					else if(saldoAPagar<unMoney(valorParcela)) erro=`O valor não pode ser maior que <b>${number_format(saldoAPagar,2,",",".")}`;
+				
+					if(erro.length==0) {
+						//return;
+						let data = `ajax=pagamentoBaixa&tipoBaixa=${tipoBaixa}&id_pagamento=${id_pagamento}&dataPagamento=${dataPagamento}&dataVencimento=${dataVencimento}&valor=${valor}&id_formadepagamento=${id_formadepagamento}&debitoBandeira=${debitoBandeira}&creditoBandeira=${creditoBandeira}&creditoParcelas=${creditoParcelas}&obs=${obs}&id_operadora=${id_operadora}&taxa=${taxa}&valorParcela=${unMoney(valorParcela)}`;
+					
+						$.ajax({
+							type:"POST",
+							url:'box/<?php echo basename($_SERVER['PHP_SELF']);?>',
+							data:data,
+							success:function(rtn) {
+								if(rtn.success) {
+									baixas=rtn.baixas;
+									baixasAtualizar();
+									$('.js-dataPagamento').val('<?php echo date('d/m/Y');?>');
+									$('.js-valor').val('');
+									$('.js-desconto').val('');
+									$('.js-id_formadepagamento').val('');
+									$('.js-obs').val('');
+									if(saldoAPagar<=0) $('.js-form-pagamentos').hide();
+
+								} else if(rtn.error) {
+									swal({title: "Erro!", text: rtn.error,  html:true,type:"error", confirmButtonColor: "#424242"});
+								} else {
+									swal({title: "Erro!", text: "Algum erro ocorreu durante a baixa deste pagamento!",  html:true,type:"error", confirmButtonColor: "#424242"});
+								}
+							},
+							error:function() {
 								swal({title: "Erro!", text: "Algum erro ocorreu durante a baixa deste pagamento!",  html:true,type:"error", confirmButtonColor: "#424242"});
 							}
-						},
-						error:function() {
-							swal({title: "Erro!", text: "Algum erro ocorreu durante a baixa deste pagamento!",  html:true,type:"error", confirmButtonColor: "#424242"});
-						}
-					});
+						}).done(function(){
+							$('.js-btn-addPagamento').html('adicionar baixa');
+							$('.js-btn-addPagamento').attr('data-loading',0);
+						});
+					} else {
+						swal({title: "Erro!", text: erro,  html:true,type:"error", confirmButtonColor: "#424242"});
+						$('.js-btn-addPagamento').html('adicionar baixa');
+						$('.js-btn-addPagamento').attr('data-loading',0);
+					}
 				} else {
-					swal({title: "Erro!", text: erro,  html:true,type:"error", confirmButtonColor: "#424242"});
+					swal({title: "Erro!", text: "Define a <b>Forma de Pagamento</b>",  html:true,type:"error", confirmButtonColor: "#424242"});	
+					$('.js-btn-addPagamento').html('adicionar baixa');
+					$('.js-btn-addPagamento').attr('data-loading',0);	
 				}
-			} else {
-				swal({title: "Erro!", text: "Define a <b>Forma de Pagamento</b>",  html:true,type:"error", confirmButtonColor: "#424242"});		
 			}
 		});
 		var descontoAntigo = $('.js-valorDesconto').val();
@@ -931,7 +947,7 @@
 				</div>
 
 				<dl>
-					<dd><a href="javascript:;" class="button__full button js-btn-addPagamento">adicionar baixa</a></dd>
+					<dd><a href="javascript:;" class="button__full button js-btn-addPagamento" data-loading="0">adicionar baixa</a></dd>
 				</dl>
 
 				

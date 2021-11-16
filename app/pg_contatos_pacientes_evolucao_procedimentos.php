@@ -822,7 +822,7 @@
 									</dl>
 									<dl>
 										<dd>
-											<button type="button" class="button js-btn-add">Adicionar</button>
+											<button type="button" class="button js-btn-add" data-loading="0">Adicionar</button>
 											<button type="button" class="button js-btn-addProcedimento">Avulso</button>
 										</dd>
 									</dl>
