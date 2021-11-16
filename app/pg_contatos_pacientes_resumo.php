@@ -414,7 +414,7 @@
 
 			<div class="box">
 				
-				<h1 class="paciente__titulo1">Histórico</h1>			
+				<h1 class="paciente__titulo1">Agendamentos</h1>			
 				<?php
 
 				$_cadeiras=array();
