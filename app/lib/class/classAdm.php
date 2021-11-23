@@ -341,7 +341,7 @@
 		
 		function get($get) {
 			
-			$str = new String();
+			$str = new StringW();
 			
 			$datas=array('data','data_inicio','data_fim');
 			$multi=array('status_multi','status_produto_multi','status_ged_multi','status_entrega_multi');

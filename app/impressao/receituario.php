@@ -1,5 +1,79 @@
-<?php
-include "print-header.php";
+	<?php
+	include "print-header.php";
+	$evolucao = $paciente = $clinica = $solicitante = "";
+	$receituario = array();
+	if(isset($_GET['id'])) {
+		$sql->consult($_p."pacientes_evolucoes","*","where md5(id)='".addslashes($_GET['id'])."' and id_tipo=7");
+		if($sql->rows) {
+			$evolucao=mysqli_fetch_object($sql->mysqry);
+
+
+			$sql->consult($_p."colaboradores","id,nome","where id=$evolucao->id_usuario");
+			if($sql->rows) {
+				$solicitante=mysqli_fetch_object($sql->mysqry);
+			}
+
+			$sql->consult($_p."parametros_fornecedores","*","where lixo=0 and tipo='CLINICA' order by razao_social, nome asc");
+			if($sql->rows) {
+				$clinica=mysqli_fetch_object($sql->mysqry);
+			}
+
+			$sql->consult($_p."pacientes","*","where id=$evolucao->id_paciente");
+			if($sql->rows) {
+				$paciente=mysqli_fetch_object($sql->mysqry);
+			}
+
+			$sql->consult($_p."pacientes_evolucoes_receitas","*","where id_evolucao=$evolucao->id and lixo=0");
+			
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$receituario[]=$x;
+			}
+
+		}
+	}
+
+
+	$jsc = new Js();
+
+	if(empty($evolucao)) {
+		$jsc->alert("Pedido de exame não cadastrado!","document.location.href='../dashboard.php'");
+		die();
+	}
+
+	if(empty($paciente)) {
+		$jsc->alert("Paciente não encontrado!","document.location.href='../dashboard.php'");
+		die();
+	}
+	if(empty($clinica)) {
+		$jsc->alert("Clínica não encontrada!","document.location.href='../dashboard.php'");
+		die();
+	}
+	if(count($receituario)==0) {
+		$jsc->alert("Nenhum receituário foi solicitado!","document.location.href='../dashboard.php'");
+		die();
+	}
+	if(empty($solicitante)) {
+		$jsc->alert("Solicitante não encontrado","document.location.href='../dashboard.php'");
+		die();
+	}
+
+	$idade=idade($paciente->data_nascimento);
+
+	$endereco="";
+
+	if(!empty($clinica->logradouro)) $endereco=utf8_encode($clinica->logradouro);
+	if(!empty($clinica->numero)) $endereco.=", ".utf8_encode($clinica->logradouro);
+	if(!empty($clinica->complemento)) $endereco.=", ".utf8_encode($clinica->complemento);
+	if(!empty($clinica->bairro)) $endereco.=",  ".utf8_encode($clinica->bairro);
+	if(!empty($clinica->id_cidade) and is_numeric($clinica->id_cidade) and $clinica->id_cidade>0) {
+		$sql->consult($_p."cidades","*","where id=$clinica->id_cidade");
+		if($sql->rows) {
+			$c=mysqli_fetch_object($sql->mysqry);
+			$endereco.=", ".utf8_encode($c->titulo);
+			if(!empty($clinica->estado)) $endereco.="-".$clinica->estado;
+		}
+	}
+
 ?>
 			
 <header class="titulo1">
@@ -11,15 +85,15 @@ include "print-header.php";
 		<tr>
 			<td>
 				<h1>PACIENTE</h1>
-				<p>Kroner Machado Costa</p>
+				<p><?php echo utf8_encode($paciente->nome);?></p>
 			</td>
 			<td>
 				<h1>IDADE</h1>
-				<p>30 anos</p>
+				<p><?php echo $idade>1?"$idade anos":"$idade ano";?></p>
 			</td>
 			<td>
 				<h1>SEXO</h1>
-				<p>Masculino</p>
+				<p><?php echo $paciente->sexo=="M"?"Masculino":"Feminino";?></p>
 			</td>
 		</tr>
 	</table>
@@ -29,22 +103,22 @@ include "print-header.php";
 	<h1>Prescrição</h1>
 </header>
 <div class="box box_empty">
+	<?php
+	$cont=1;
+	foreach($receituario as $x) {
+	?>
 	<div class="prescricao">
 		<div class="prescricao__item">
-			<h1>01) Amoxilina 500mg</h1>
+			<h1><?php echo $cont++;?>) <?php echo utf8_encode($x->medicamento);?></h1>
 			<span></span>
-			<h2>21 comprimidos</h2>
+			<h2><?php echo $x->quantidade." ".(isset($_medicamentosTipos[$x->tipo])?$_medicamentosTipos[$x->tipo]:$x->tipo);?></h2>
 		</div>
-		<p class="prescricao__obs">Tomar 1 comprimido via oral a cada 8 horas durante 7 dias.</p>
+		<p class="prescricao__obs"><?php echo utf8_encode($x->posologia);?></p>
 	</div>
-	<div class="prescricao">
-		<div class="prescricao__item">
-			<h1>02) Azitromicina</h1>
-			<span></span>
-			<h2>5 comprimidos</h2>
-		</div>
-		<p class="prescricao__obs">Tomar 1 comprimido via oral a cada 8 horas durante 7 dias.</p>
-	</div>
+	<?php
+	}
+	?>
+	
 </div>
 
 <div class="box" style="margin-top:2.5rem;">

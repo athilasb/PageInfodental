@@ -19,7 +19,7 @@ class Mysql {
 
 		$ms_server="localhost";
 		$ms_login="andre";
-		$ms_senha="andre0099@";
+		$ms_senha="l8e3RSk7aYZQmJuZ";
 		$ms_db="infodental";
 
 		

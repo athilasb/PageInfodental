@@ -4,7 +4,7 @@
 		require_once("lib/conf.php");
 		require_once("lib/classes.php");
 		if(isset($_COOKIE[$_p.'adm_cpf']) and isset($_COOKIE[$_p.'adm_senha']) and isset($_COOKIE[$_p.'adm_id'])) {
-			$str = new String();		
+			$str = new StringW();		
 			$sql = new Mysql();
 			$sql->consult($_p."colaboradores","*","where id='".$str->protege($_COOKIE[$_p.'adm_id'])."' and 
 																	cpf='".$str->protege($_COOKIE[$_p.'adm_cpf'])."' and 
@@ -22,7 +22,7 @@
 		require_once("usuarios/checa.php");
 		
 		$sql=new Mysql();
-		$str=new String();
+		$str=new StringW();
 		$jsc=new Js();
 
 		$adm = new Adm($_p);

@@ -204,7 +204,7 @@
 		require_once("lib/conf.php");
 		require_once("usuarios/checa.php");
 		$sql2=new Mysql();
-		$str=new String();
+		$str=new StringW();
 		$rtn=array();
 		if($_GET['ajax']=="agenda") {
 

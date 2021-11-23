@@ -50,7 +50,7 @@
 		}
 		function filtra($url) {
 			$where="where lixo='0' ";
-			$str=new String();
+			$str=new StringW();
 			if(is_array($url)) {
 				foreach($url as $v) {
 					if($v['type']=="ref" and $v['valor']) {

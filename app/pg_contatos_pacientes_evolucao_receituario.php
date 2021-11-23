@@ -22,6 +22,10 @@
 				$rtn=array('success'=>false,'error'=>'Posologia não definida');
 			} else {
 				$vSQL="titulo='".addslashes(utf8_decode($medicamento))."',
+						quantidade='".addslashes(utf8_decode($quantidade))."',
+						tipo='".addslashes(utf8_decode($tipo))."',
+						posologia='".addslashes(utf8_decode($posologia))."',
+						controleespecial='".((isset($_POST['controleespecial']) and $_POST['controleespecial']==1)?1:0)."',
 						lixo=0";
 
 				$sql->add($_p."medicamentos",$vSQL);
@@ -65,7 +69,11 @@
 	$_medicamentos=array();
 	$sql->consult($_p."medicamentos","*","where lixo=0 order by titulo");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_medicamentos[]=array('id'=>$x->id,'titulo'=>utf8_encode($x->titulo));
+		$_medicamentos[]=array('id'=>$x->id,
+								 'titulo'=>utf8_encode($x->titulo),
+								 'quantidade'=>utf8_encode($x->quantidade),
+								 'tipo'=>utf8_encode($x->tipo),
+								 'posologia'=>utf8_encode($x->posologia));
 	}
 
 	$_medicamentosTipos=array('ampola'=>'Ampola(s)',
@@ -179,14 +187,7 @@
 						} else {
 							$sql->update($_p."pacientes_evolucoes_receitas",$vSQLReceita,"where id=$evProc->id");
 						}
-
-
-						
-
-						
-
-					}	
-
+					}
 					$jsc->jAlert("Evolução salva com sucesso!","sucesso","document.location.href='pg_contatos_pacientes_evolucao.php?id_paciente=$paciente->id'");
 					die();
 				} else {
@@ -201,9 +202,6 @@
 			$jsc->jAlert("Adicione pelo menos um pedido de exame para adicionar à Evolução","erro","");
 		}
 	}
-
-
-
 	?>
 	<section class="content">
 		
@@ -230,8 +228,11 @@
 						list: {
 							match: {enabled: true},
 							onChooseEvent: function (){
-								val = $(".js-input-medicamento").getSelectedItemData().realName;
-								console.log(val);
+								let obj = $(".js-input-medicamento").getSelectedItemData();
+
+								$('.js-input-quantidade').val($(".js-input-medicamento").getSelectedItemData().quantidade);
+								$('.js-input-tipo').val($(".js-input-medicamento").getSelectedItemData().tipo);
+								$('.js-input-posologia').val($(".js-input-medicamento").getSelectedItemData().posologia);
 							}
 						},
 						  template: {
@@ -265,7 +266,7 @@
 					<div class="filter-group filter-group_right">
 						<div class="filter-button">
 							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
-							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+							<a href="impressao/receituario.php?id=<?php echo md5($evolucao->id);?>" target="_blank"><i class="iconify" data-icon="bx-bx-printer"></i></a>
 							<a href="javascript:;" class="azul js-btn-salvar"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
 						</div>
 					</div>

@@ -6,7 +6,7 @@
 		require_once("../lib/conf.php");
 		require_once("../usuarios/checa.php");
 		$sql = new Mysql();
-		$str = new String();
+		$str = new StringW();
 		$sql->consult($_p."servicos_submenu","*","where id_menu='".$_POST['id_menu']."' and lixo=0 order by titulo asc");
 		if($sql->rows) {
 			

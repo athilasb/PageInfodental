@@ -1,5 +1,5 @@
 <?php
-class String {
+class StringW {
 	function subs($textov,$sim) {
 		if($sim) $texto=nl2br($textov);
 		else $texto=$textov;
@@ -27,7 +27,7 @@ class String {
 	function description($str,$num=200) {
 		$str=str_replace("\r\n","",$str);
 		$str=strip_tags($str);
-		$strProc = new String();
+		$strProc = new StringW();
 		return $strProc->res($str,$num);
 	}
 	function replacer($rpc,$texto) {

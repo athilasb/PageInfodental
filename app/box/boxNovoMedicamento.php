@@ -6,7 +6,7 @@
 	$_medicamentosTipos=array('ampola'=>'Ampola(s)',
 							 'caixa'=>'Caixa(s)',
 							 'comprimido'=>'Comprimido(s)',
-							 'fraco'=>'Fraco(s)',
+							 'frasco'=>'Frasco(s)',
 							 'pacote'=>'Pacote(s)',
 							 'tubo'=>'Tubo(s)',
 							 'capsula'=>'Capsula(s)');
@@ -103,6 +103,8 @@
 			<dl>
 				<dt>Posologia</dt>
 				<dd><input type="text" name="posologia" value="" class="obg" autocomplete="off" /></dd>
+			</dl>
+				<dd><label><input type="checkbox" name="controleespecial" value="1" /> Medicamento de controle especial</label></dd>
 			</dl>
 			
 		</form>
