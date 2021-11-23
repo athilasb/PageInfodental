@@ -159,7 +159,7 @@
 						} else if(in_array($v,$_noupper)) { 
 							$rtn.=$v."='".utf8_decode(($post[$v]))."',";
 						} else if(in_array($v,$_telefones)) { 
-							$rtn.=$v."='".telefone($post[$v])."',";
+							$rtn.=$v."='".telefone($post[$v])."',"; 
 						} else if(in_array($v,$_unmask)) { 
 							$rtn.=$v."='".str_replace(".","",str_replace("-","",str_replace("/","",str_replace("_","",$post[$v]))))."',";
 						} else if(in_array($v,$_multi)) { 

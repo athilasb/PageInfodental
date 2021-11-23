@@ -245,7 +245,7 @@
 																'id_procedimento'=>$x->id_procedimento,
 																'id_profissional'=>$x->id_profissional,
 																'obs'=>utf8_encode($x->obs),
-																'opcao'=>utf8_encode($x->opcao),
+																'opcao'=>addslashes(utf8_encode($x->opcao)),
 																'plano'=>isset($_planos[$x->id_plano])?utf8_encode($_planos[$x->id_plano]->titulo):'-',
 																'profissionalCor'=>$profissionalCor,
 																'profissionalIniciais'=>$profissionalIniciais,
@@ -278,7 +278,6 @@
 
 							//echo $p->nome." ".$profissionalIniciais."->".$profissionalCor.'<BR>';
 
-
 							$evolucaoProcedimentos['e'.$x->id]=array('id'=>$x->id,
 															'autor'=>$autor,
 															'data'=>date('d/m/Y',strtotime($x->data)),
@@ -286,7 +285,7 @@
 															'id_procedimento'=>$x->id_procedimento,
 															'id_profissional'=>$x->id_profissional,
 															'obs'=>utf8_encode($x->obs),
-															'opcao'=>utf8_encode($x->opcao),
+															'opcao'=>addslashes(utf8_encode($x->opcao)),
 															'id_opcao'=>utf8_encode($x->id_opcao),
 															'id_plano'=>utf8_encode($x->id_plano),
 															'plano'=>isset($_planos[$x->id_plano])?utf8_encode($_planos[$x->id_plano]->titulo):'-',

@@ -415,6 +415,8 @@
 			<div class="box">
 				
 				<h1 class="paciente__titulo1">Agendamentos</h1>			
+
+				<div class="paciente-scroll" style="padding-left: 23px;">
 				<?php
 
 				$_cadeiras=array();
@@ -467,48 +469,291 @@
 					<?php
 					}
 					?>
+					</div>
 				</div>
 				<?php
 				}
 				?>
 									
 			</div>
+			<style type="text/css">
+				.hist2-item__dados .data {
+					padding: 5px;
+					color: #FFF;
+					background:var(--cor1);
+					font-weight: bold;
+					border-radius: 8px;
+				}
+			</style>
+			<script type="text/javascript">
+				$(function(){
+					$('.js-historico-filtro').click(function(){
+						let tipo = $(this).attr('data-tipo');
 
+						$('.js-historico-filtro').removeClass('active');
+						$(this).addClass('active');
+
+						$('.js-evento').hide();
+						if(tipo=="todos") {
+
+							$('.js-evento').fadeIn();
+						} else if(tipo=="relacionamento") {
+							$('.js-evento-relacionamento').fadeIn();
+						} else if(tipo=="agendamento") {
+							$('.js-evento-agendamento').fadeIn();
+
+						}
+					})
+				});
+			</script>
 			<div class="hist2 box" style="grid-column:span 2">
 				<aside>
 					<h1 class="paciente__titulo1">Histórico</h1>										
 					<div class="grid-links grid-links_sm">
-						<a href="pg_contatos_pacientes_evolucao_anamnese.php?id_paciente=6596" class="active">
+						<a href="javascript:;" class="js-historico-filtro active" data-tipo="todos">
 							<i class="iconify" data-icon="mdi:format-list-bulleted"></i>
 							<p>Todos</p>
 						</a>
-						<a href="pg_contatos_pacientes_evolucao_anamnese.php?id_paciente=6596">
+						<a href="javascript:;" class="js-historico-filtro" data-tipo="relacionamento">
 							<i class="iconify" data-icon="mdi:chat-processing-outline"></i>
 							<p>Relacionamento</p>
 						</a>
-						<a href="pg_contatos_pacientes_evolucao_anamnese.php?id_paciente=6596">
+						<a href="javascript:;" class="js-historico-filtro" data-tipo="agendamento">
 							<i class="iconify" data-icon="mdi:calendar-check"></i>
 							<p>Agendamentos</p>
 						</a>
-						<a href="pg_contatos_pacientes_evolucao_anamnese.php?id_paciente=6596">
+						<a href="javascript:;" class="js-historico-filtro" data-tipo="financeiro">
 							<i class="iconify" data-icon="mdi:finance"></i>
 							<p>Financeiro</p>
 						</a>						
 					</div>
 				</aside>
 				<article>
-					<div class="hist2-item">
-						<div class="hist2-item__inner1">
-							<div class="hist2-item__icone"><i class="iconify" data-icon="mdi:chat-processing-outline"></i></div>
+
+					<div class="paciente-scroll" style="padding-left: 23px;">
+					<?php
+					$_colaboradores=array();
+					$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,calendario_cor","");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$_colaboradores[$x->id]=$x;
+					}
+
+					$_historicoStatus=array();
+					$sql->consult($_p."pacientes_historico_status","*","");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$_historicoStatus[$x->id]=$x;
+					}
+
+					$_agendaStatus=array();
+					$sql->consult($_p."agenda_status","*","");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$_agendaStatus[$x->id]=$x;
+					}
+
+					$registros=array();
+					$agendasIds=array();
+					$sql->consult($_p."pacientes_historico","*","where id_paciente=$paciente->id and lixo=0 order by data desc");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$registros[]=$x;
+						if($x->id_agenda>0) $agendasIds[$x->id_agenda]=$x->id_agenda;
+					}
+
+					$_agendas=$_profissionais=array();
+					if(count($agendasIds)>0) {
+						$sql->consult($_p."agenda","id,id_cadeira,profissionais,agenda_data,id_status,lixo","where id IN (".implode(",",$agendasIds).") and lixo=0");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_agendas[$x->id]=$x;
+
+						}
+					}
+
+					$registrosComAgendamento=$registrosSemAgendamento=array();
+					$agrupamentoAgenda=array();
+
+					foreach($registros as $x) {
+
+						if($x->id_agenda>0) {
+							if(isset($agrupamentoAgenda[$x->id_agenda])) {
+								$agrupamentoAgenda[$x->id_agenda]['grupo'][]=$x;
+							} else {
+								$agrupamentoAgenda[$x->id_agenda]=array('ultimaAgenda'=>$x,'grupo'=>array($x));
+							}
+						} else {
+							$registrosSemAgendamento[strtotime($x->data)]=$x;
+						}
+
+					}
+
+					foreach($agrupamentoAgenda as $idAg=>$regs) {
+						if(isset($_agendas[$regs['ultimaAgenda']->id_agenda])) {
+							$agendamento=($_agendas[$regs['ultimaAgenda']->id_agenda]);
+							$id=strtotime($agendamento->agenda_data);//.$x->id;
+
+
+							$registrosComAgendamento[$id]=$regs;
+						}
+					}
+
+					//var_dump($agrupamentoAgenda);
+
+					$registrosPorOrdem=array();
+					foreach($registrosComAgendamento as $id=>$x) {
+						$registrosPorOrdem[$id]=$x;
+					}
+
+					foreach($registrosSemAgendamento as $id=>$x) {
+						$registrosPorOrdem[$id]=$x;
+					}
+
+					krsort($registrosPorOrdem);
+
+
+					foreach($registrosPorOrdem as $e) {
+
+						$subagendas='';
+						if(is_array($e) and isset($e['ultimaAgenda'])) {
+							$x=$e['ultimaAgenda'];
+							$subagendas=$e['grupo'];
+						} else {
+							$x=$e;
+						}
+
+						$style="";
+						$evento='';
+						if($x->evento=="agendaStatus" or $x->evento=="agendaHorario" or $x->evento=="agendaNovo") {
+							$evento="agendamento";
+							$icone='<i class="iconify" data-icon="mdi:calendar-check"></i>';
+							$agenda=$cadeira=$profissionais=$profissionaisIniciais='';
+							if(isset($_agendas[$x->id_agenda])) {
+								$agenda=$_agendas[$x->id_agenda];
+								if(isset($_cadeiras[$agenda->id_cadeira])) {
+									$cadeira=$_cadeiras[$agenda->id_cadeira];
+								}
+								$style='style="background:'.$_status[$agenda->id_status]->cor.';color:#FFF;"';
+
+								$aux=explode(",",$agenda->profissionais);
+								foreach($aux as $idP) {
+									if(!empty($idP) and is_numeric($idP) and isset($_colaboradores[$idP])) {
+										$profissionais.=utf8_encode($_colaboradores[$idP]->nome).", ";
+										$profissionaisIniciais.='<div class="cal-item-foto" style="float:left;"><span style="background:'.$_colaboradores[$idP]->calendario_cor.'">'.$_colaboradores[$idP]->calendario_iniciais.'</span></div>';
+									}
+								}
+								if(!empty($profissionais)) $profissionais=substr($profissionais,0,strlen($profissionais)-2);
+								
+
+								$dataTimeline=date('d/m H:i',strtotime($agenda->agenda_data));
+							}
+
+							if(empty($agenda) or empty($cadeira)) continue;
+							
+						} else if($x->evento=="observacao" || $x->evento=="relacionamento") {
+							$evento="relacionamento";
+							$icone='<i class="iconify" data-icon="mdi:chat-processing-outline"></i>';
+							$dataTimeline=date('d/m H:i',strtotime($x->data));
+						}
+						?>
+						<div class="hist2-item js-evento js-evento-<?php echo $evento;?>">
+							<div class="hist2-item__inner1">
+								<div class="hist2-item__icone"<?php echo $style;?>><?php echo $icone;?></div>
+							</div>
+							<div class="hist2-item__inner2">
+								<div class="hist2-item__dados">
+									<?php
+									$obs=utf8_encode($x->descricao);
+									if($x->evento=="agendaHorario" or $x->evento=="agendaStatus" or $x->evento=="agendaNovo") {
+									?>
+									<a style="display:flex;justify-content:space-between;align-items:center;">
+										<h1><?php echo date('d/m/Y<\b\r \/\>H:i',strtotime($agenda->agenda_data));?></h1>
+										<p><?php echo utf8_encode($_cadeiras[$agenda->id_cadeira]->titulo);?></p>
+										<div class="cal-item__fotos">
+											<?php echo $profissionaisIniciais;?>
+										</div>
+									</a>
+									<?php
+									}
+									else if($x->evento=="observacao" || $x->evento=="relacionamento") {
+									?>
+									<h1><?php echo $dataTimeline;?><?php echo isset($_colaboradores[$x->id_usuario])?" - ".utf8_encode($_colaboradores[$x->id_usuario]->nome):"";?></h1>
+									<?php
+										if($x->id_obs>0 and isset($_historicoStatus[$x->id_obs])) {
+											$obs="<strong>".utf8_encode($_historicoStatus[$x->id_obs]->titulo)."</strong><br />".$obs;
+										} 
+									}
+									if(!empty($obs)) {
+									?>
+									<p><?php echo $obs;?></p>
+									<?php
+									}
+									if(is_array($subagendas) and count($subagendas)>0) {
+									?>
+									<a href="javascript:;" onclick="$(this).parent().next('.hist2-item__detalhes').slideToggle('fast');" class="button button__alt button__sm"><i class="iconify" data-icon="mdi:chevron-down"></i> mais detalhes</a>
+									<?php	
+									}
+									?>
+								</div>	
+								<?php
+								if(is_array($subagendas) and count($subagendas)>0) {
+								?>
+								<div class="hist2-item__detalhes" style="display:none;">
+								<?php
+									foreach($subagendas as $s) {
+										if($s->evento=="agendaStatus" or $s->evento=="agendaHorario" or $s->evento=="agendaNovo") {
+											$agenda=$cadeira=$profissionais='';
+											if(isset($_agendas[$s->id_agenda])) {
+												$agenda=$_agendas[$s->id_agenda];
+												if(isset($_cadeiras[$agenda->id_cadeira])) {
+													$cadeira=$_cadeiras[$agenda->id_cadeira];
+												}
+
+												$aux=explode(",",$agenda->profissionais);
+												foreach($aux as $idP) {
+													if(!empty($idP) and is_numeric($idP) and isset($_colaboradores[$idP])) {
+														$profissionais.=utf8_encode($_colaboradores[$idP]->nome).", ";
+													}
+												}
+												if(!empty($profissionais)) $profissionais=substr($profissionais,0,strlen($profissionais)-2);
+												$dataTimeline=date('d/m H:i',strtotime($agenda->agenda_data));
+											}
+
+											if(empty($agenda) or empty($cadeira)) continue;
+											
+										} 
+								?>
+									<div class="hist2-item__dados">
+									<h1><?php echo $dataTimeline;?><?php echo isset($_colaboradores[$s->id_usuario])?" - ".utf8_encode($_colaboradores[$s->id_usuario]->nome):"";?></h1>
+										<?php
+										if($s->evento=="agendaHorario") {
+										?>
+										<p>Horário alterado de <span class="data"><?php echo date('d/m H:i',strtotime($s->agenda_data_antigo));?></span> para <span class="data"><?php echo date('d/m H:i',strtotime($s->agenda_data_novo));?></span> <br /><?php echo utf8_encode($cadeira->titulo);?><?php echo !empty($profissionais)?" - ".$profissionais:"";?></p>
+										<?php
+										}
+										else if($s->evento=="agendaStatus") {
+										?>
+										<p>Alterou status de <span class="data" style="background:<?php echo $_agendaStatus[$s->id_status_antigo]->cor;?>"><?php echo utf8_encode($_agendaStatus[$s->id_status_antigo]->titulo);?></span> para <span class="data" style="background:<?php echo $_agendaStatus[$s->id_status_novo]->cor;?>"><?php  echo utf8_encode($_agendaStatus[$s->id_status_novo]->titulo);?></span></p>
+										<?php
+										} 
+										else if($s->evento=="agendaNovo") {
+										?>
+										<p>Criou novo agendamento com status <span class="data" style="background:<?php echo $_agendaStatus[$s->id_status_novo]->cor;?>"><?php  echo utf8_encode($_agendaStatus[$s->id_status_novo]->titulo);?></span></p>
+										<?php
+										}
+										?>
+									</div>
+								<?php
+									}
+								?>
+								</div>
+								<?php
+								}
+								?>						
+							</div>
 						</div>
-						<div class="hist2-item__inner2">
-							<div class="hist2-item__dados">
-								<h1>11/10/2021 09:30 - Dr. Kroner Machado Costa</h1>
-								<p><strong>Não consegui contato:</strong> tentei entrar em contato em todos os números várias vezes</p>
-							</div>							
-						</div>
-					</div>
-					<div class="hist2-item">
+					<?php
+					}
+					?>
+					
+					
+					<?php /*<div class="hist2-item">
 						<div class="hist2-item__inner1">
 							<div class="hist2-item__icone"><i class="iconify" data-icon="mdi:calendar-check"></i></div>
 						</div>
@@ -540,7 +785,9 @@
 								<p><strong>Inadimplente - R$15.217,50</strong><br />Reabilitação Full - Pedro</p>
 							</div>
 						</div>
-					</div>
+					</div>*/?>
+				</div>
+					
 				</article>
 			</div>
 

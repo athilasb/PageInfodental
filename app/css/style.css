@@ -540,6 +540,8 @@ a.registros-qtd__item {display:inline-block; color:#fff; background:var(--cor1);
 .hist2-item__dados h1 {font-size:14px; color:var(--cinza4); margin-bottom:.5rem;}
 .hist2-item__dados p {font-size:1rem; margin-bottom:.5rem;}
 .hist2-item__dados span {display:inline-block; font-size:0.813em; padding:.25rem; border-radius:4px; color:#fff; background:var(--cinza3);}
+
+.hist2-item__dados .cal-item-foto span {font-size: 100%;display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:var(--cor1); color:#fff; border-radius:30px;}
 .hist2-item__detalhes {border-left:1px dashed var(--cinza3); padding:1rem 0 0 1.5rem; margin-left:1rem;}
 .hist2-item__detalhes .hist2-item__dados {margin-bottom:1rem;}
 .hist2-item__detalhes .hist2-item__dados:last-child {margin-bottom:0;}

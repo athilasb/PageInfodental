@@ -3164,7 +3164,7 @@
 
 			$_procedimentosAprovado=array();
 			$procedimentosIds=$tratamentosProcedimentosIDs=array(-1);
-			$sql->consult($_table."_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and lixo=0");
+			$sql->consult($_table."_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and situacao='aprovado' and lixo=0");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$tratamentosProcedimentosIDs[]=$x->id;
 				$_procedimentosAprovado[$x->id]=$x;
@@ -3172,10 +3172,11 @@
 
 			$procedimentosIds=array(0);
 			$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIDs).") and lixo=0");
+
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				if(isset($_procedimentosAprovado[$x->id_tratamento_procedimento])) {
 					$p=$_procedimentosAprovado[$x->id_tratamento_procedimento];
-				
+					//echo $x->id_tratamento_procedimento."<BR>";
 					if($x->status_evolucao=="finalizado") {
 						$_procedimentosFinalizados[$p->id_tratamento][]=$x;
 					} 
@@ -3183,7 +3184,6 @@
 					$procedimentosIds[]=$x->id_procedimento;
 				}
 			}
-
 			$_procedimentos=array();
 			$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$procedimentosIds).")");
 			while($x=mysqli_fetch_object($sql->mysqry)) {

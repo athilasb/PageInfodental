@@ -18,8 +18,8 @@ class Mysql {
 		}*/
 
 		$ms_server="localhost";
-		$ms_login="root";
-		$ms_senha="l1bdab110";
+		$ms_login="andre";
+		$ms_senha="andre0099@";
 		$ms_db="infodental";
 
 		
@@ -33,7 +33,6 @@ class Mysql {
 	function colunas($ms_table) {
 		$columns="SHOW COLUMNS FROM $ms_table";
 		$this->mysqry=mysqli_query($this->connecting, $columns) or die(mysqli_error($this->connecting));
-		
 	}
 	function del($ms_table,$ms_arg) {
 		$deleting="DELETE from $ms_table $ms_arg";

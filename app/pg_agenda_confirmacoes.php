@@ -147,6 +147,7 @@
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						$pacientesDeInteligencia[]=$x->id;
 						$pacientesEmTratamentosIds[$x->id]=$x->id;
+						$pacientesEmContencaoSemHorarioIds[$x->id]=$x->id;
 					}
 
 					$agendasDosUltimos6meses=array();
@@ -166,6 +167,12 @@
 
 					$pacienteObs=array();
 					$sql->consult($_p."pacientes_historico","*","where id_paciente IN (".implode(",",$pacientesEmTratamentosSemHorarioIds).") and evento='observacao' and lixo=0 order by data desc");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						if(!isset($pacienteObs[$x->id_paciente])) {
+							$pacienteObs[$x->id_paciente]=$x;
+						}
+					}
+					$sql->consult($_p."pacientes_historico","*","where id_paciente IN (".implode(",",$pacientesEmContencaoSemHorarioIds).") and evento='observacao' and lixo=0 order by data desc");
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						if(!isset($pacienteObs[$x->id_paciente])) {
 							$pacienteObs[$x->id_paciente]=$x;
@@ -214,14 +221,29 @@
 
 					$agendaInteligencia=array();
 					foreach($pacientesDeInteligencia as $id_paciente) {
-						if(isset($agendasDosUltimos6meses[$id_paciente])) continue;
+						
+						if(isset($agendasDosUltimos6meses[$id_paciente])) {
+							//echo $id_paciente."\n";
+							continue;
+						}
 						if(isset($_pacientes[$id_paciente])) {
 							$paciente=$_pacientes[$id_paciente];
 
 							if(is_object($paciente)) {
 								if($paciente->codigo_bi==7) continue; // excluidos
 								$ag=isset($_ulAg[$paciente->id])?$_ulAg[$paciente->id]:'';
+
+
+								$corObs="";
+								if(isset($pacienteObs[$paciente->id])) {
+									if(isset($_historicoStatus[$pacienteObs[$paciente->id]->id_obs])) {
+										$h=$_historicoStatus[$pacienteObs[$paciente->id]->id_obs];
+										$corObs=$h->cor;
+									}
+								}
+
 								$agendaInteligencia[]=array('id_paciente'=>$paciente->id,
+															'corObs'=>$corObs,
 															'nome'=>utf8_encode($paciente->nome).(is_object($ag)?'<br />'.$ag->agenda_data:''),
 															'telefone1'=>$paciente->telefone1);
 							}
@@ -980,7 +1002,7 @@
 
 					<a href="javascript:;" class="button button__full js-btn-naoQueroAgendar" data-id_agenda="${x.id_agenda}" style="background-color:var(--vermelho);">Não quero agendar</a>
 
-					<a href="javascript:;" target="_blank" class="js-hrefPaciente button button__sec"><i class="iconify" data-icon="bx:bxs-user"></i></a>
+					<a href="javascript:;" class="js-hrefPaciente button button__sec"><i class="iconify" data-icon="bx:bxs-user"></i></a>
 				</div>
 			</section>
 		</section>
@@ -1342,11 +1364,15 @@
 						
 					}
 						// barra = `<div style="background:${cor};width:100%;padding:5px;border-radius:5px;"></div>`;
+
+
+					let style = '';
+					if(x.corObs.length>0) style = ` style="background:${x.corObs};color:#FFF !important;"`;
 				
-					let html = `<a href="javascript:;"  onclick="popView(this,${x.id_paciente});" class="kanban-card-dados js-kanban-item" data-id="${x.id_paciente}">
+					let html = `<a href="javascript:;"  onclick="popView(this,${x.id_paciente});" class="kanban-card-dados js-kanban-item" data-id="${x.id_paciente}"${style}>
 									${barra}
-									<h1>${x.nome}</h1>
-									<h2>${x.telefone1}</h2>
+									<h1${style}>${x.nome}</h1>
+									<h2${style}>${x.telefone1}</h2>
 								</a>`;
 								<?php /*<div class="kanban-card-modal js-kanban-item-modal" style="display:none;">
 									<div class="kanban-card-modal__inner1">
@@ -1536,8 +1562,8 @@
 							text: erro,
 							type:"error",
 							confirmButtonColor: "#424242"},function(){
-								$(`.js-kanban-item-${id_agenda}`).click();
-								$(`.js-btn-reagendar-${id_agenda}`).click();
+								//$(`.js-kanban-item-${id_agenda}`).click();
+							//	$(`.js-btn-reagendar-${id_agenda}`).click();
 							});
 					}
 
@@ -1557,6 +1583,11 @@
 					$('#cal-popup .js-grid-agendamento-naoQueroAgendar').hide();
 					$('#cal-popup .js-grid-agendamento-agendar').show();
 
+				});
+
+				$('#cal-popup').on('click','.js-hrefPaciente',function(){
+					let id_paciente = $('.js-input-id_paciente').val();
+					window.open(`pg_contatos_pacientes_resumo.php?id_paciente=${id_paciente}`)
 				});
 
 				$('#cal-popup').on('click','.js-btn-naoQueroAgendar',function(){
@@ -1632,8 +1663,8 @@
 								text: erro,
 								type:"error",
 								confirmButtonColor: "#424242"},function(){
-									$(`.js-kanban-item-${id_agenda}`).click();
-									$(`.js-btn-reagendar-${id_agenda}`).click();
+									//$(`.js-kanban-item-${id_agenda}`).click();
+									//$(`.js-btn-reagendar-${id_agenda}`).click();
 								});
 					}
 
@@ -1642,9 +1673,10 @@
 				$(document).mouseup(function(e)  {
 				    var container = $("#cal-popup");
 				    var containerCalendar = $(".xdsoft_datetimepicker");
+				    var showSweetAlert = $(".showSweetAlert");
 
 				    // if the target of the click isn't the container nor a descendant of the container
-				    if ((!container.is(e.target) && container.has(e.target).length === 0) && (!containerCalendar.is(e.target) && containerCalendar.has(e.target).length === 0)) {
+				    if ((!container.is(e.target) && container.has(e.target).length === 0) && (!containerCalendar.is(e.target) && containerCalendar.has(e.target).length === 0) && (!showSweetAlert.is(e.target) && showSweetAlert.has(e.target).length === 0)) {
 				   		$('#cal-popup').hide();
 				    }
 				});
