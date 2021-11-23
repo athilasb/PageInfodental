@@ -71,104 +71,269 @@
 			});
 		</script>
 
-		
 		<section class="grid">
 			<div class="box">
 
 				<?php
+				
 				$exibirEvolucaoNav=1;
 				require_once("includes/evolucaoMenu.php");
 				?>
 
-				<section class="js-evolucao-adicionar" id="evolucao-servicos-de-laboratorio">
-					
-					<form class="form">
-						<div class="grid grid_3">
-
-							<fieldset style="grid-column:span 2">
-								<legend><span class="badge">1</span> Selecione os serviços</legend>
-
-								<div class="colunas2">
-									<dl>
-										<dd>
-											<select name="">
-												<option value=""></option>
-												<option value="">Serviço 1</option>
-												<option value="">Serviço 2</option>
-											</select>
-										</dd>
-									</dl>
-									<dl>
-										<dd><button type="submit" class="button">Adicionar</button></dd>
-									</dl>
-								</div>
-
-								<div class="reg" style="margin-top:2rem;">
-
-									<a href="javascript:;" class="reg-group">
-										<div class="reg-color" style="background-color:palegreen"></div>
-										<div class="reg-data" style="flex:0 1 300px">
-											<h1>SERVIÇO 1</h1>
-											<p>MANDÍBULA - PARTICULAR-SD</p>
-										</div>
-										<div class="reg-data">
-											<p>APROVADO</p>
-										</div>									
-										<div class="reg-user">
-											<span style="background:blueviolet">KP</span>
-										</div>
-									</a>
-
-									<a href="javascript:;" class="reg-group">
-										<div class="reg-color" style="background-color:palegreen"></div>
-										<div class="reg-data" style="flex:0 1 300px">
-											<h1>SERVIÇO 2</h1>
-											<p>MANDÍBULA - PARTICULAR-SD</p>
-										</div>
-										<div class="reg-data">
-											<p>APROVADO</p>
-										</div>									
-										<div class="reg-user">
-											<span style="background:blueviolet">KP</span>
-										</div>
-									</a>
-
-									<a href="javascript:;" class="reg-group">
-										<div class="reg-color" style="background-color:palegreen"></div>
-										<div class="reg-data" style="flex:0 1 300px">
-											<h1>GENTIVECTOMIA + GENGIVOPLASTIA</h1>
-											<p>MANDÍBULA - PARTICULAR-SD</p>
-										</div>
-										<div class="reg-data">
-											<p>APROVADO</p>
-										</div>									
-										<div class="reg-user">
-											<span style="background:blueviolet">KP</span>
-										</div>
-									</a>
-
-								</div>
-
-							</fieldset>
-
-							<fieldset>
-								<legend><span class="badge">2</span> Preencha o histórico</legend>
-
-								<dl style="height:100%;">
-									<dd style="height:100%;"><textarea name="" style="height:100%;" class="noupper"></textarea></dd>
-								</dl>
-							</fieldset>
-
-
+				<div class="filter">
+					<div class="filter-group">
+						<div class="filter-button">
+							<a href="<?php echo $_page."?".$url;?>"><i class="iconify" data-icon="bx-bx-left-arrow-alt"></i></a>
 						</div>
-					</form>
+					</div>
+					<div class="filter-group">
+						<div class="filter-input">
+							<input type="text" name="" placeholder="título do serviço" />								
+						</div>
+					</div>
+					<div class="filter-group">
+						<div class="filter-input">
+							<select name=""><option value="">laboratório</option></select>
+						</div>
+					</div>
+					<div class="filter-group">
+						<div class="filter-input">
+							<select name=""><option value="">cirurgião dentista</option></select>
+						</div>
+					</div>
+					<div class="filter-group filter-group_right">
+						<div class="filter-data">
+							<h1>Valor Total</h1>
+							<h2>R$ 3.540,00</h2>
+						</div>					
+					</div>		
+					<div class="filter-group">
+						<div class="filter-button">
+							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-trash"></i></a>
+							<a href="javascript:;"><i class="iconify" data-icon="bx-bx-printer"></i></a>
+							<a href="javascript:;" class="azul"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+							<a href="javascript:;" class="verde"><i class="iconify" data-icon="bx-bxs-paper-plane"></i><span>enviar para laboratório</span></a>
+						</div>
+					</div>
+				</div>
 
-				</section>
-				
+				<form class="form">
+					<div class="grid grid_2">
+						<fieldset>
+							<legend><span class="badge">1</span>Selecione os serviços</legend>
+							<dl>
+								<dt>Procedimento</dt>
+								<dd>
+									<select name="" class="chosen">
+										<option value="">Porcelana Injetada</option>
+										<option value="">Porcelana Fresada</option>
+										<option value="">Scan Service</option>
+									</select>
+								</dd>
+							</dl>
+							<dl>
+								<dt>Dente(s)</dt>
+								<dd>
+									<select name="" class="chosen">
+										<option value="">21</option>
+										<option value="">22</option>
+										<option value="">23</option>
+									</select>
+								</dd>
+							</dl>
+							<dl>
+								<dt>Descrição</dt>
+								<dd>
+									<input type="text" name="" />
+									<button type="submit" class="button">adicionar</button>
+								</dd>
+							</dl>
 
-			</div>				
-		</section>
+							<div class="reg" style="margin-top:2rem;">
+
+								<a href="javascript:;" class="reg-group">
+									<div class="reg-color" style="background-color:palegreen"></div>
+									<div class="reg-data" style="flex:0 1 300px">
+										<h1>PORCELANA INJETADA</h1>
+										<p>21, 22, 24</p>
+									</div>
+									<div class="reg-data">
+										<p>R$ 1.022,00</p>
+									</div>										
+								</a>
+
+								<a href="javascript:;" class="reg-group">
+									<div class="reg-color" style="background-color:palegreen"></div>
+									<div class="reg-data" style="flex:0 1 300px">
+										<h1>SCAN SERVICE</h1>
+										<p>Enviar com urgência</p>
+									</div>
+									<div class="reg-data">
+										<p>R$ 600,00</p>
+									</div>										
+								</a>
+							</div>
+
+						</fieldset>
+						<fieldset>
+							<legend><span class="badge">2</span>Descrição Geral</legend>
+							<dl style="height:100%;">
+								<dd style="height:100%;"><textarea name="" style="height:100%;" class="noupper"></textarea></dd>
+							</dl>
+						</fieldset>
+						<fieldset>
+							<legend><span class="badge">3</span>Adicione arquivos</legend>
+							<div class="colunas">
+								<dl>
+									<dt>Localizar</dt>
+									<dd><input type="file" name="" /></dd>
+								</dl>
+								<dl>
+									<dt>Conteúdo</dt>
+									<dd>
+										<select name="">
+											<optgroup label="Modelos Digitais">
+												<option value="">Modelo de Trabalho</option>
+												<option value="">Modelo de Referência</option>
+												<option value="">Modelo Antagonista</option>
+												<option value="">Outro modelo digital...</option>
+											</optgroup>
+											<optgroup label="Fotos">
+												<option value="">Sorriso</option>
+												<option value="">Cor do Substrato</option>
+												<option value="">Cor final</option>												
+											</optgroup>
+											<optgroup label="Outros arquivos">
+												<option value="">Outro...</option>										
+											</optgroup>
+										</select>
+										<button type="submit" class="button">enviar</button>
+									</dd>
+								</dl>
+							</div>
+							<div class="reg" style="margin-top:2rem;">
+
+								<div class="reg-group">
+									<div class="reg-color" style="background-color:palegreen"></div>
+									<div class="reg-data" style="flex:0 1 300px">
+										<h1>fotos.zip</h1>
+									</div>
+									<div class="reg-data">
+										<p>Fotos / Sorriso</p>
+									</div>
+									<div class="reg-icon">
+										<a href=""><i class="iconify" data-icon="bx-bx-download"></i></a>
+										<a href=""><i class="iconify" data-icon="bx-bx-trash"></i></a>
+									</div>
+								</div>
+								<div class="reg-group">
+									<div class="reg-color" style="background-color:palegreen"></div>
+									<div class="reg-data" style="flex:0 1 300px">
+										<h1>modelo_antagonista.crc</h1>
+									</div>
+									<div class="reg-data">
+										<p>Modelos / Modelo Antagonista</p>
+									</div>
+									<div class="reg-icon">
+										<a href=""><i class="iconify" data-icon="bx-bx-download"></i></a>
+										<a href=""><i class="iconify" data-icon="bx-bx-trash"></i></a>
+									</div>
+								</div>
+
+							</div>
+						</fieldset>
+						<fieldset>
+							<legend><span class="badge">4</span>Checklist</legend>
+
+							<div class="colunas">
+								<dl>
+									<dt>Adicionar</dt>
+									<dd>
+										<select name="">
+											<optgroup label="Modelos">
+												<option value="">Modelo de Trabalho</option>
+												<option value="">Modelo de Referência</option>
+												<option value="">Modelo Antagonista</option>
+												<option value="">Outro...</option>
+											</optgroup>
+											<optgroup label="Componentes">
+												<option value="">Análogos</option>
+												<option value="">Parafusos</option>
+												<option value="">Links</option>												
+												<option value="">Transfer</option>												
+											</optgroup>
+											<optgroup label="Fotos">
+												<option value="">Sorriso</option>
+												<option value="">Cor do Substrato</option>
+												<option value="">Cor final</option>												
+											</optgroup>
+											
+										</select>
+									</dd>
+								</dl>
+								<dl>
+									<dt>Tipo</dt>
+									<dd>
+										<label><input type="radio" name="tipo" value="digital" checked />digital</label>
+										<label><input type="radio" name="tipo" value="analógico" />analógico</label>
+										<button type="submit" class="button">adicionar</button>
+									</dd>
+								</dl>
+							</div>
+
+							<div class="reg" style="margin-top:2rem;">
+
+								<div class="reg-group">
+									<div class="reg-color" style="background-color:red"></div>
+									<div class="reg-data" style="flex:0 1 300px">
+										<h1>Fotos / Sorriso</h1>
+										<p>Digital</p>
+									</div>
+									<div class="reg-icon">
+										<a href=""><i class="iconify" data-icon="bx-bx-trash"></i></a>
+									</div>
+								</div>
+								<div class="reg-group">
+									<div class="reg-color" style="background-color:red"></div>
+									<div class="reg-data" style="flex:0 1 300px">
+										<h1>Modelos / Modelo Antagonista</h1>
+										<p>Digital</p>
+									</div>
+									<div class="reg-icon">
+										<a href=""><i class="iconify" data-icon="bx-bx-trash"></i></a>
+									</div>
+								</div>
+								<div class="reg-group">
+									<div class="reg-color" style="background-color:blue"></div>
+									<div class="reg-data" style="flex:0 1 300px">
+										<h1>Componentes / Análogos</h1>
+										<p>Analógico</p>
+									</div>
+									<div class="reg-icon">
+										<a href=""><i class="iconify" data-icon="bx-bx-trash"></i></a>
+									</div>
+								</div>
+								<div class="reg-group">
+									<div class="reg-color" style="background-color:blue"></div>
+									<div class="reg-data" style="flex:0 1 300px">
+										<h1>Componentes / Parafusos</h1>
+										<p>Analógico</p>
+									</div>
+									<div class="reg-icon">
+										<a href=""><i class="iconify" data-icon="bx-bx-trash"></i></a>
+									</div>
+								</div>
+							</div>
+
+						</fieldset>
+					</div>		
+				</form>
 			
+			</div>
+		</section>
+
+
+				
 		</section>
 		
 <?php

@@ -110,6 +110,8 @@
 						if(isset($_POST[$v])) $values[$v]=$_POST[$v];
 					}
 
+					if(isset($_POST['foto']) and !empty($_POST['foto'])) $vSQL.="foto='".$_POST['foto']."',";
+
 					
 					$vSQL.="id_alteracao=$usr->id,alteracao_data=now()";
 					$vWHERE="where id='".$cnt->id."'";
@@ -153,24 +155,56 @@
 				<dd><input type="text" name="titulo" class="noupper obg" value="<?php echo $values['titulo'];?>" /></dd>
 			</dl>
 
-			<?php
-			if(is_object($cnt)) {
-				$ft=$_dir.$cnt->id.".".$cnt->foto;
-				if(file_exists($ft)) {
-
-				
-			?>
-			<dl>
-				<dd><a href="<?php echo $ft;?>" data-fancybox><img src="<?php echo $ft;?>" width="200" style="border: solid 1px #CCC;padding:2px;" /></a></dd>
+			<dl>	
+				<?php
+					if(is_object($cnt)) {
+						if(!empty($cnt->foto)) {
+							$ft='https://res.cloudinary.com/infodental/image/upload/'.$cnt->foto;
+							$ftThumb='https://res.cloudinary.com/infodental/image/upload/c_thumb,w_100/'.$cnt->foto;
+							echo "<a href=\"".$ft."\" data-fancybox><img src=\"".$ftThumb."\" /></a>";
+						} else {
+							echo "<span class=\"botao\"><i class=\"icon-cancel\"></i> Sem imagem</span>";
+						}
+					}
+				?>
 			</dl>
-			<?php	
-				}
-			}
-			?>
 			<dl>
-				<dt>Banner</dt>
-				<dd><input type="file" name="foto" class="<?php echo empty($cnt)?"obg":"";?>" /></dd>
-				<dd><label><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true"></span> Dimensão: <?php echo $_width."x".$_height;?></label></dd>
+				<dt><span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span>&nbsp;&nbsp;Dimensão: <?php echo $_width."x".$_height;?></dt>
+				<dd>
+					<button id="upload_widget" onclick="return false;" class="cloudinary-button">Procurar foto</button>
+					<input type="hidden" name="foto" id="js-cloudinary" class="<?php echo is_object($cnt)?"":"obg";?>" />
+					<script>
+						var myWidget = cloudinary.createUploadWidget({
+						  cloudName: 'infodental',
+						  language: 'pt',
+						  text: {
+						    "pt": {
+						        "local": {
+									"browse": "Carregar arquivo",
+									"main_title": "Enviar Arquivos",
+									"dd_title_single": "Carregue e solte a imagem aqui",
+									"dd_title_multi": "Carregue e solte imagens aqui",
+									"drop_title_single": "Solte a foto para carregar",
+									"drop_title_multiple": "Solte as fotos para carregar"
+								}
+						    }
+						  },
+						  multiple: false,
+						  sources: ["local"],
+						  folder: 'captacao',
+						  uploadPreset: 'ir9b4eem'}, (error, result) => {
+						    if (!error && result && result.event === "success") {
+						      console.log('Done! Here is the image info: ', result.info);
+						      $("#js-cloudinary").val(result.info.path);
+						    }
+						  }
+						)
+
+						document.getElementById("upload_widget").addEventListener("click", function(){
+						    myWidget.open();
+						}, false);
+					</script>
+				</dd>
 			</dl>
 			
 			<dl>

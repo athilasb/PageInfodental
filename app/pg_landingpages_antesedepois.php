@@ -44,6 +44,11 @@
 		$values=$adm->values;
 		$processa=true;
 
+		if(isset($_POST['foto_antes1']) and !empty($_POST['foto_antes1'])) $vSQL.="foto_antes1='".$_POST['foto_antes1']."',";
+		if(isset($_POST['foto_depois1']) and !empty($_POST['foto_depois1'])) $vSQL.="foto_depois1='".$_POST['foto_depois1']."',";
+		if(isset($_POST['foto_antes2']) and !empty($_POST['foto_antes2'])) $vSQL.="foto_antes2='".$_POST['foto_antes2']."',";
+		if(isset($_POST['foto_depois2']) and !empty($_POST['foto_depois2'])) $vSQL.="foto_depois2='".$_POST['foto_depois2']."',";
+
 		if($processa===true) {	
 		
 			if(is_object($cnt)) {
@@ -122,36 +127,223 @@
 
 					</div>
 
-					<?php
-					foreach($fotos as $k => $v) {
-						if(is_object($cnt) and isset($cnt->$k)) {
-							$ft = $v['dir'].$cnt->id.".".$cnt->$k;
-							if(file_exists($ft)) {	
-					?>
-					<dl>
-						<dd><a href="<?php echo $ft;?>" data-fancybox><img src="<?php echo $ft;?>" width="200" style="border: solid 1px #CCC;padding:2px;" /></a></dd>
+					<dl>	
+						<?php
+							if(is_object($cnt)) {
+								if(!empty($cnt->foto_antes1)) {
+									$ft='https://res.cloudinary.com/infodental/image/upload/'.$cnt->foto_antes1;
+									$ftThumb='https://res.cloudinary.com/infodental/image/upload/c_thumb,w_100,g_face/'.$cnt->foto_antes1;
+									echo "<a href=\"".$ft."\" data-fancybox><img src=\"".$ftThumb."\" /></a>";
+								} else {
+									echo "<span class=\"botao\"><i class=\"icon-cancel\"></i> Sem imagem</span>";
+								}
+							}
+						?>
 					</dl>
-					<?php	
-						}
-					}
-					?>
 					<dl>
-						<dt><?php echo $v['titulo'];?> <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span>&nbsp;&nbsp;Dimensão: <?php echo $_width."x".$_height;?></dt>
-						<dd><input type="file" name="<?php echo $k;?>" class="<?php echo empty($cnt)?$v['class']:"";?>" /></dd>
-					</dl>
-					<?php
-							if(!empty($v['legenda'])) {
-					?>
-					<dl>
-						<dt><?php echo $v['titulo_legenda'];?> <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
+						<dt>1° Foto Antes <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span>&nbsp;&nbsp;Dimensão: 800x</dt>
 						<dd>
-							<input type="text" name="<?php echo $v['legenda'];?>" value="<?php echo $values[$v['legenda']];?>" class="<?php echo $v['class'];?>"/>
+							<button id="foto_antes1" onclick="return false;" class="cloudinary-button">Procurar foto</button>
+							<input type="hidden" name="foto_antes1" id="js-foto_antes1" class="" />
+							<script>
+								var foto_antes1 = cloudinary.createUploadWidget({
+								  cloudName: 'infodental',
+								  language: 'pt',
+								  text: {
+								    "pt": {
+								        "local": {
+											"browse": "Carregar arquivo",
+											"main_title": "Enviar Arquivos",
+											"dd_title_single": "Carregue e solte a imagem aqui",
+											"dd_title_multi": "Carregue e solte imagens aqui",
+											"drop_title_single": "Solte a foto para carregar",
+											"drop_title_multiple": "Solte as fotos para carregar"
+										}
+								    }
+								  },
+								  multiple: false,
+								  sources: ["local"],
+								  folder: 'antesedepois',
+								  uploadPreset: 'ir9b4eem'}, (error, result) => {
+								    if (!error && result && result.event === "success") {
+								      console.log('Done! Here is the image info: ', result.info);
+								      $("#js-foto_antes1").val(result.info.path);
+								    }
+								  }
+								)
+
+								document.getElementById("foto_antes1").addEventListener("click", function(){
+								    foto_antes1.open();
+								}, false);
+							</script>
 						</dd>
 					</dl>
-					<?php
+					<dl>	
+						<?php
+							if(is_object($cnt)) {
+								if(!empty($cnt->foto_depois1)) {
+									$ft='https://res.cloudinary.com/infodental/image/upload/'.$cnt->foto_depois1;
+									$ftThumb='https://res.cloudinary.com/infodental/image/upload/c_thumb,w_100,g_face/'.$cnt->foto_depois1;
+									echo "<a href=\"".$ft."\" data-fancybox><img src=\"".$ftThumb."\" /></a>";
+								} else {
+									echo "<span class=\"botao\"><i class=\"icon-cancel\"></i> Sem imagem</span>";
+								}
 							}
-						}
-					?>
+						?>
+					</dl>
+					<dl>
+						<dt>1° Foto Depois <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span>&nbsp;&nbsp;Dimensão: 800x</dt>
+						<dd>
+							<button id="foto_depois1" onclick="return false;" class="cloudinary-button">Procurar foto</button>
+							<input type="hidden" name="foto_depois1" id="js-foto_depois1" class="" />
+							<script>
+								var foto_depois1 = cloudinary.createUploadWidget({
+								  cloudName: 'infodental',
+								  language: 'pt',
+								  text: {
+								    "pt": {
+								        "local": {
+											"browse": "Carregar arquivo",
+											"main_title": "Enviar Arquivos",
+											"dd_title_single": "Carregue e solte a imagem aqui",
+											"dd_title_multi": "Carregue e solte imagens aqui",
+											"drop_title_single": "Solte a foto para carregar",
+											"drop_title_multiple": "Solte as fotos para carregar"
+										}
+								    }
+								  },
+								  multiple: false,
+								  sources: ["local"],
+								  folder: 'antesedepois',
+								  uploadPreset: 'ir9b4eem'}, (error, result) => {
+								    if (!error && result && result.event === "success") {
+								      console.log('Done! Here is the image info: ', result.info);
+								      $("#js-foto_depois1").val(result.info.path);
+								    }
+								  }
+								)
+
+								document.getElementById("foto_depois1").addEventListener("click", function(){
+								    foto_depois1.open();
+								}, false);
+							</script>
+						</dd>
+					</dl>
+					<dl>
+						<dt>Nome Paciente <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
+						<dd>
+							<input type="text" name="nome_paciente1" value="<?php echo $values['nome_paciente1'];?>" class="obg"/>
+						</dd>
+					</dl>
+					<dl>	
+						<?php
+							if(is_object($cnt)) {
+								if(!empty($cnt->foto_antes2)) {
+									$ft='https://res.cloudinary.com/infodental/image/upload/'.$cnt->foto_antes2;
+									$ftThumb='https://res.cloudinary.com/infodental/image/upload/c_thumb,w_100,g_face/'.$cnt->foto_antes2;
+									echo "<a href=\"".$ft."\" data-fancybox><img src=\"".$ftThumb."\" /></a>";
+								} else {
+									echo "<span class=\"botao\"><i class=\"icon-cancel\"></i> Sem imagem</span>";
+								}
+							}
+						?>
+					</dl>
+					<dl>
+						<dt>2° Foto Antes <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span>&nbsp;&nbsp;Dimensão: 800x</dt>
+						<dd>
+							<button id="foto_antes2" onclick="return false;" class="cloudinary-button">Procurar foto</button>
+							<input type="hidden" name="foto_antes2" id="js-foto_antes2" class="" />
+							<script>
+								var foto_antes2 = cloudinary.createUploadWidget({
+								  cloudName: 'infodental',
+								  language: 'pt',
+								  text: {
+								    "pt": {
+								        "local": {
+											"browse": "Carregar arquivo",
+											"main_title": "Enviar Arquivos",
+											"dd_title_single": "Carregue e solte a imagem aqui",
+											"dd_title_multi": "Carregue e solte imagens aqui",
+											"drop_title_single": "Solte a foto para carregar",
+											"drop_title_multiple": "Solte as fotos para carregar"
+										}
+								    }
+								  },
+								  multiple: false,
+								  sources: ["local"],
+								  folder: 'antesedepois',
+								  uploadPreset: 'ir9b4eem'}, (error, result) => {
+								    if (!error && result && result.event === "success") {
+								      console.log('Done! Here is the image info: ', result.info);
+								      $("#js-foto_antes2").val(result.info.path);
+								    }
+								  }
+								)
+
+								document.getElementById("foto_antes2").addEventListener("click", function(){
+								    foto_antes2.open();
+								}, false);
+							</script>
+						</dd>
+					</dl>
+					<dl>	
+						<?php
+							if(is_object($cnt)) {
+								if(!empty($cnt->foto_depois2)) {
+									$ft='https://res.cloudinary.com/infodental/image/upload/'.$cnt->foto_depois2;
+									$ftThumb='https://res.cloudinary.com/infodental/image/upload/c_thumb,w_100,g_face/'.$cnt->foto_depois2;
+									echo "<a href=\"".$ft."\" data-fancybox><img src=\"".$ftThumb."\" /></a>";
+								} else {
+									echo "<span class=\"botao\"><i class=\"icon-cancel\"></i> Sem imagem</span>";
+								}
+							}
+						?>
+					</dl>
+					<dl>
+						<dt>2° Foto Depois <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span>&nbsp;&nbsp;Dimensão: 800x</dt>
+						<dd>
+							<button id="foto_depois2" onclick="return false;" class="cloudinary-button">Procurar foto</button>
+							<input type="hidden" name="foto_depois2" id="js-foto_depois2" class="" />
+							<script>
+								var foto_depois2 = cloudinary.createUploadWidget({
+								  cloudName: 'infodental',
+								  language: 'pt',
+								  text: {
+								    "pt": {
+								        "local": {
+											"browse": "Carregar arquivo",
+											"main_title": "Enviar Arquivos",
+											"dd_title_single": "Carregue e solte a imagem aqui",
+											"dd_title_multi": "Carregue e solte imagens aqui",
+											"drop_title_single": "Solte a foto para carregar",
+											"drop_title_multiple": "Solte as fotos para carregar"
+										}
+								    }
+								  },
+								  multiple: false,
+								  sources: ["local"],
+								  folder: 'antesedepois',
+								  uploadPreset: 'ir9b4eem'}, (error, result) => {
+								    if (!error && result && result.event === "success") {
+								      console.log('Done! Here is the image info: ', result.info);
+								      $("#js-foto_depois2").val(result.info.path);
+								    }
+								  }
+								)
+
+								document.getElementById("foto_depois2").addEventListener("click", function(){
+								    foto_depois2.open();
+								}, false);
+							</script>
+						</dd>
+					</dl>
+					<dl>
+						<dt>Nome Paciente <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
+						<dd>
+							<input type="text" name="nome_paciente2" value="<?php echo $values['nome_paciente2'];?>" class=""/>
+						</dd>
+					</dl>
+					
 				</div>
 			</section>
 

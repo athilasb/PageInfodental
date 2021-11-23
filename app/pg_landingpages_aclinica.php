@@ -43,6 +43,10 @@
 		$values=$adm->values;
 		$processa=true;
 
+		if(isset($_POST['foto1']) and !empty($_POST['foto1'])) $vSQL.="foto1='".$_POST['foto1']."',";
+		if(isset($_POST['foto2']) and !empty($_POST['foto2'])) $vSQL.="foto2='".$_POST['foto2']."',";
+		if(isset($_POST['foto3']) and !empty($_POST['foto3'])) $vSQL.="foto3='".$_POST['foto3']."',";
+
 		if($processa===true) {	
 		
 			if(is_object($cnt)) {
@@ -126,32 +130,178 @@
 							<input type="text" name="nome" value="<?php echo $values['nome'];?>" class="obg"/>
 						</dd>
 					</dl>
-					<?php
-					foreach($fotos as $k => $v) {
-						if(is_object($cnt) and isset($cnt->$k)) {
-							$ft = $v['dir'].$cnt->id.".".$cnt->$k;
-							if(file_exists($ft)) {	
-					?>
-					<dl>
-						<dd><a href="<?php echo $ft;?>" data-fancybox><img src="<?php echo $ft;?>" width="200" style="border: solid 1px #CCC;padding:2px;" /></a></dd>
-					</dl>
-					<?php	
-						}
-					}
-					?>
-					<dl>
-						<dt><?php echo $v['titulo'];?> <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span>&nbsp;&nbsp;Dimensão: <?php echo $_width."x".$_height;?></dt>
-						<dd><input type="file" name="<?php echo $k;?>" class="<?php echo empty($cnt)?$v['class']:"";?>" /></dd>
+					<dl>	
+						<?php
+							if(is_object($cnt)) {
+								if(!empty($cnt->foto1)) {
+									$ft='https://res.cloudinary.com/infodental/image/upload/'.$cnt->foto1;
+									$ftThumb='https://res.cloudinary.com/infodental/image/upload/c_thumb,w_100,g_face/'.$cnt->foto1;
+									echo "<a href=\"".$ft."\" data-fancybox><img src=\"".$ftThumb."\" /></a>";
+								} else {
+									echo "<span class=\"botao\"><i class=\"icon-cancel\"></i> Sem imagem</span>";
+								}
+							}
+						?>
 					</dl>
 					<dl>
-						<dt><?php echo $v['titulo_legenda'];?> <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
+						<dt>Foto 1 <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span>&nbsp;&nbsp;Dimensão: 750x</dt>
 						<dd>
-							<input type="text" name="<?php echo $v['legenda'];?>" value="<?php echo $values[$v['legenda']];?>" class="<?php echo $v['class'];?>"/>
+							<button id="foto1" onclick="return false;" class="cloudinary-button">Procurar foto</button>
+							<input type="hidden" name="foto1" id="js-foto1" class="" />
+							<script>
+								var foto1 = cloudinary.createUploadWidget({
+								  cloudName: 'infodental',
+								  language: 'pt',
+								  text: {
+								    "pt": {
+								        "local": {
+											"browse": "Carregar arquivo",
+											"main_title": "Enviar Arquivos",
+											"dd_title_single": "Carregue e solte a imagem aqui",
+											"dd_title_multi": "Carregue e solte imagens aqui",
+											"drop_title_single": "Solte a foto para carregar",
+											"drop_title_multiple": "Solte as fotos para carregar"
+										}
+								    }
+								  },
+								  multiple: false,
+								  sources: ["local"],
+								  folder: 'aclinica',
+								  uploadPreset: 'ir9b4eem'}, (error, result) => {
+								    if (!error && result && result.event === "success") {
+								      console.log('Done! Here is the image info: ', result.info);
+								      $("#js-foto1").val(result.info.path);
+								    }
+								  }
+								)
+
+								document.getElementById("foto1").addEventListener("click", function(){
+								    foto1.open();
+								}, false);
+							</script>
 						</dd>
 					</dl>
-					<?php
-						}
-					?>
+					<dl>
+						<dt>Descrição <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
+						<dd>
+							<input type="text" name="legenda1" value="<?php echo $values['legenda1'];?>" class="obg" />
+						</dd>
+					</dl>
+					<dl>	
+						<?php
+							if(is_object($cnt)) {
+								if(!empty($cnt->foto2)) {
+									$ft='https://res.cloudinary.com/infodental/image/upload/'.$cnt->foto2;
+									$ftThumb='https://res.cloudinary.com/infodental/image/upload/c_thumb,w_100,g_face/'.$cnt->foto2;
+									echo "<a href=\"".$ft."\" data-fancybox><img src=\"".$ftThumb."\" /></a>";
+								} else {
+									echo "<span class=\"botao\"><i class=\"icon-cancel\"></i> Sem imagem</span>";
+								}
+							}
+						?>
+					</dl>
+					<dl>
+						<dt>Foto 2 <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span>&nbsp;&nbsp;Dimensão: 750x</dt>
+						<dd>
+							<button id="foto2" onclick="return false;" class="cloudinary-button">Procurar foto</button>
+							<input type="hidden" name="foto2" id="js-foto2" class="" />
+							<script>
+								var foto2 = cloudinary.createUploadWidget({
+								  cloudName: 'infodental',
+								  language: 'pt',
+								  text: {
+								    "pt": {
+								        "local": {
+											"browse": "Carregar arquivo",
+											"main_title": "Enviar Arquivos",
+											"dd_title_single": "Carregue e solte a imagem aqui",
+											"dd_title_multi": "Carregue e solte imagens aqui",
+											"drop_title_single": "Solte a foto para carregar",
+											"drop_title_multiple": "Solte as fotos para carregar"
+										}
+								    }
+								  },
+								  multiple: false,
+								  sources: ["local"],
+								  folder: 'aclinica',
+								  uploadPreset: 'ir9b4eem'}, (error, result) => {
+								    if (!error && result && result.event === "success") {
+								      console.log('Done! Here is the image info: ', result.info);
+								      $("#js-foto2").val(result.info.path);
+								    }
+								  }
+								)
+
+								document.getElementById("foto2").addEventListener("click", function(){
+								    foto2.open();
+								}, false);
+							</script>
+						</dd>
+					</dl>
+					<dl>
+						<dt>Descrição <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
+						<dd>
+							<input type="text" name="legenda2" value="<?php echo $values['legenda2'];?>" class="" />
+						</dd>
+					</dl>
+					<dl>	
+						<?php
+							if(is_object($cnt)) {
+								if(!empty($cnt->foto2)) {
+									$ft='https://res.cloudinary.com/infodental/image/upload/'.$cnt->foto2;
+									$ftThumb='https://res.cloudinary.com/infodental/image/upload/c_thumb,w_100,g_face/'.$cnt->foto2;
+									echo "<a href=\"".$ft."\" data-fancybox><img src=\"".$ftThumb."\" /></a>";
+								} else {
+									echo "<span class=\"botao\"><i class=\"icon-cancel\"></i> Sem imagem</span>";
+								}
+							}
+						?>
+					</dl>
+					<dl>
+						<dt>Foto 3 <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span>&nbsp;&nbsp;Dimensão: 750x</dt>
+						<dd>
+							<button id="foto3" onclick="return false;" class="cloudinary-button">Procurar foto</button>
+							<input type="hidden" name="foto3" id="js-foto3" class="" />
+							<script>
+								var foto3 = cloudinary.createUploadWidget({
+								  cloudName: 'infodental',
+								  language: 'pt',
+								  text: {
+								    "pt": {
+								        "local": {
+											"browse": "Carregar arquivo",
+											"main_title": "Enviar Arquivos",
+											"dd_title_single": "Carregue e solte a imagem aqui",
+											"dd_title_multi": "Carregue e solte imagens aqui",
+											"drop_title_single": "Solte a foto para carregar",
+											"drop_title_multiple": "Solte as fotos para carregar"
+										}
+								    }
+								  },
+								  multiple: false,
+								  sources: ["local"],
+								  folder: 'aclinica',
+								  uploadPreset: 'ir9b4eem'}, (error, result) => {
+								    if (!error && result && result.event === "success") {
+								      console.log('Done! Here is the image info: ', result.info);
+								      $("#js-foto3").val(result.info.path);
+								    }
+								  }
+								)
+
+								document.getElementById("foto3").addEventListener("click", function(){
+								    foto3.open();
+								}, false);
+							</script>
+						</dd>
+					</dl>
+					<dl>
+						<dt>Descrição <span class="iconify" data-icon="bi:info-circle-fill" data-inline="true" style="color: #98928E;"></span></dt>
+						<dd>
+							<input type="text" name="legenda3" value="<?php echo $values['legenda3'];?>" class="" />
+						</dd>
+					</dl>
+					
 				</div>
 			</section>
 
