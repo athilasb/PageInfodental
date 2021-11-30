@@ -561,8 +561,9 @@ a.registros-qtd__item {display:inline-block; color:#fff; background:var(--cor1);
 
 .oport {flex:1; display:flex; flex-direction:column; overflow:hidden;}
 .oport header {margin-bottom:1rem;}
-.oport header h1 {font-size:1.25rem; color:var(--cor1); font-weight:normal; text-align:center;}
+.oport header h1 {font-size:1rem; color:var(--cor1); font-weight:normal; text-align:center;}
 .oport article {flex:1; overflow-y:auto; border-radius:12px; box-shadow:inset 2px 2px 4px var(--cinza2); border:1px solid var(--cinza2); padding:.5rem; display:flex; flex-direction:column;}
-.oport-item {display:flex; align-items:center; gap:.5rem; background:var(--cinza1); color:var(--cinza4); border-radius:7px; padding:0 1rem; margin-bottom:.5rem;}
-.oport-item__foto {width:50px; height:50px; object-fit:cover; border-radius:7px 0 0 7px; margin-left:-1rem;}
+.oport-item {display:flex; align-items:center; gap:.375rem; background:var(--cinza1); color:var(--cinza4); border-radius:7px; padding:0 .5rem; margin-bottom:.5rem;}
+.oport-item__foto {width:44px; height:50px; object-fit:cover; border-radius:7px 0 0 7px; margin-left:-.5rem;}
 .oport-item .iconify {flex-shrink:0; font-size:1.5rem; margin-left:auto;}
+.oport-item h1 {font-size:0.75em;}
