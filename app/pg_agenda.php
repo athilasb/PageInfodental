@@ -1,5 +1,4 @@
 <?php
-
 	if(isset($_POST['ajax'])) {
 		require_once("lib/conf.php");
 		require_once("usuarios/checa.php");
@@ -447,7 +446,7 @@
 
 
 							$futuro=0;
-							if(strtotime($x->agenda_data)>strtotime(date('Y-m-d H:i:s'))) $futuro=1;
+							if(strtotime(date('Y-m-d',strtotime($x->agenda_data)))>strtotime(date('Y-m-d'))) $futuro=1;
 
 							//	$pacienteNome=$_pacientes[$x->id_paciente]->nome;
 							$agendamentos[]=array('agendaPessoal'=>0,																					'agendamentosFuturos'=>$agendamentosFuturos,
@@ -1135,9 +1134,11 @@
 
 
 					if(popViewInfos[id_agenda].futuro==1) {
-						//$('#cal-popup .js-id_status').find('option[value=7],option[value=6],option[value=5],option[value=3]').prop('disabled',true);
+						//alert('futuro');
+						$('#cal-popup .js-id_status').find('option[value=7],option[value=6],option[value=5],option[value=3]').prop('disabled',true);
 					} else {
-						//$('#cal-popup .js-id_status option').prop('disabled',false);
+						//alert('nao nao');
+						$('#cal-popup .js-id_status option').prop('disabled',false);
 					}
 
 					let temAg=false;

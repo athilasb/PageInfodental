@@ -28,6 +28,15 @@
 		$_tiposEvolucao[$x->id]=$x;
 	}
 
+
+	$_cadeiras=array();
+	$sql->consult($_p."parametros_cadeiras","*","where lixo=0 order by ordem asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
+
+	$_status=array();
+	$sql->consult($_p."agenda_status","*","where lixo=0 order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_status[$x->id]=$x;
+
 ?>
 <script>
 	$(function(){
@@ -56,7 +65,7 @@
 		require_once("includes/abaPaciente.php");
 		?>
 		
-		<section class="grid grid_3" style="padding-bottom:0;">
+		<section class="grid grid_2" style="padding-bottom:0;">
 			
 			<div class="box">
 				<div class="paciente-info">
@@ -118,236 +127,101 @@
 				</div>
 			</div>
 
-			<div class="box" style="grid-column:span 2;grid-row:span 2">
-				<div class="paciente-evolucao" sty>
-					<h1 class="paciente__titulo1">Prontuário</h1>
-					<?php /*<a href="" class="paciente-evolucao__add"><i class="iconify" data-icon="mdi-plus-circle-outline"></i> Adicionar evolução</a>*/ ?>
 
-					<div class="paciente-scroll">
-						<?php
-							$registros=array();
-							$evolucoesIds=array(-1);
-							$usuariosIds=array(-1);
-							$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id and lixo=0 order by data desc");
-							while($x=mysqli_fetch_object($sql->mysqry)) {
-								$registros[]=$x;
-								$usuariosIds[]=$x->id_usuario;
-								if($x->id_tipo==2 or $x->id_tipo==3 or $x->id_tipo==6 or $x->id_tipo==7) $evolucoesIds[]=$x->id;
-
-							}
-
-							$_usuarios=array();
-							$sql->consult($_p."colaboradores","*","WHERE id IN (".implode(",",$usuariosIds).")");
-							while($x=mysqli_fetch_object($sql->mysqry)) {
-								$_usuarios[$x->id]=$x;
-							}
-
-							$tratamentoProdecimentosIds=array(-1);
-							$registrosProcedimentos=array();
-							$sql->consult($_p."pacientes_evolucoes_procedimentos","*","where id_paciente=$paciente->id and id_evolucao IN (".implode(",",$evolucoesIds).") and lixo=0 order by data desc");
-							while($x=mysqli_fetch_object($sql->mysqry)) {
-								$evolucoesIds[]=$x->id;
-								$registrosProcedimentos[$x->id_evolucao][]=$x;
-							}
-							
-
-							$prodecimentosIds=array(-1);
-							$_tratamentoProcedimentos=array();
-							$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id IN (".implode(",",$tratamentoProdecimentosIds).")");
-							while($x=mysqli_fetch_object($sql->mysqry)) {
-								$prodecimentosIds[]=$x->id_procedimento;
-								$_tratamentoProcedimentos[$x->id]=$x;
-							}
-
-
-							$_exames=array();
-							$sql->consult($_p."pacientes_evolucoes_pedidosdeexames","id,id_evolucao","where id_paciente=$paciente->id and id_evolucao IN (".implode(",",$evolucoesIds).") and lixo=0 order by data desc");
-							while($x=mysqli_fetch_object($sql->mysqry)) {
-								$_exames[$x->id_evolucao][]=$x;
-							}
-
-							$_receitas=array();
-							$sql->consult($_p."pacientes_evolucoes_receitas","id,id_evolucao","where id_paciente=$paciente->id and id_evolucao IN (".implode(",",$evolucoesIds).") and lixo=0 order by data desc");
-							while($x=mysqli_fetch_object($sql->mysqry)) {
-								$_receitas[$x->id_evolucao][]=$x;
-							} 
-
-							$_procedimentos=array();
-							$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$prodecimentosIds).")");
-							while($x=mysqli_fetch_object($sql->mysqry)) {
-								$_procedimentos[$x->id]=$x;
-							}
-						?>
-
-						<div class="reg">
-							<?php
-								foreach($registros as $x) {
-									if(isset($_tiposEvolucao[$x->id_tipo])) {
-										$tipo = $_tiposEvolucao[$x->id_tipo];
-							?>
-							<a href="<?php echo $tipo->pagina."?form=1&id_paciente=$paciente->id&edita=".$x->id;?>" class="reg-group">
-								<div class="reg-color" style="background-color:;"></div>
-								<div class="reg-data" style="width:5%">
-									<i class="iconify" data-icon="<?php echo $tipo->icone;?>"></i>
-								</div>
-
-								<div class="reg-data" style="width:30%">
-									<p><strong><?php echo utf8_encode($tipo->tituloSingular);?></strong></p>
-									<p>Qtd.: <?php 
-										if($x->id_tipo==2 or $x->id_tipo==3) {
-											echo isset($registrosProcedimentos[$x->id])?count($registrosProcedimentos[$x->id]):0;
-										} else if($x->id_tipo==6) {
-											echo isset($_exames[$x->id])?count($_exames[$x->id]):0;
-
-										} else if($x->id_tipo==7) {
-
-											echo (isset($_receitas[$x->id])?count($_receitas[$x->id]):0);
-
-										} else {
-											echo 1;
-										}
-										?>
-									</p>
-								</div>
-
-								<div class="reg-data" style="width:60%;color:#">
-									<?php
-										$autor=isset($_usuarios[$x->id_usuario])?utf8_encode($_usuarios[$x->id_usuario]->nome):'Desconhecido';
-									?>
-									<p>
-										<span class="iconify" data-icon="bi:check-all"></span> <?php echo "<b>".$autor."</b> deu baixa em ";?>
-										<b><?php echo date('d/m/Y',strtotime($x->data));?> - <?php echo date('H:i',strtotime($x->data));?></b>
-									</p>
-								</div>
-
-							</a>
-							<?php
-									}
-								}
-							?>
-						</div>
-					</div>
-				</div>
-			</div>
 			<?php
-			$where="WHERE id_paciente=$paciente->id and lixo=0";
-			$sql->consult($_p."pacientes_tratamentos","*",$where);
+				$where="WHERE id_paciente=$paciente->id and lixo=0";
+				$sql->consult($_p."pacientes_tratamentos","*",$where);
 
-			$registros=array();
-			$tratamentosIDs=array(0);
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$registros[]=$x;
-				$tratamentosIDs[]=$x->id;
-			}
+				$registros=array();
+				$tratamentosIDs=array(0);
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$registros[]=$x;
+					$tratamentosIDs[]=$x->id;
+				}
 
-			$_procedimentos=array();
-			$_procedimentosAprovado=array();
-			$procedimentosIds=$tratamentosProcedimentosIDs=array(-1);
-			$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and situacao='aprovado' and lixo=0");
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$tratamentosProcedimentosIDs[]=$x->id;
-				$_procedimentosAprovado[$x->id]=$x;
-			}
+				$_procedimentos=array();
+				$_procedimentosAprovado=array();
+				$procedimentosIds=$tratamentosProcedimentosIDs=array(-1);
+				$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and situacao='aprovado' and lixo=0");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$tratamentosProcedimentosIDs[]=$x->id;
+					$_procedimentosAprovado[$x->id]=$x;
+				}
 
-			$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIDs).") and lixo=0");
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				if(isset($_procedimentosAprovado[$x->id_tratamento_procedimento])) {
-					$p=$_procedimentosAprovado[$x->id_tratamento_procedimento];
+
+				$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIDs).") and lixo=0");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					if(isset($_procedimentosAprovado[$x->id_tratamento_procedimento])) {
+						$p=$_procedimentosAprovado[$x->id_tratamento_procedimento];
+					
+						if($x->status_evolucao=="finalizado") {
+							$_procedimentosFinalizados[$p->id_tratamento][]=$x;
+						} 
+						$_todosProcedimentos[$p->id_tratamento][]=$x;
+						$procedimentosIds[]=$x->id_procedimento;
+					}
+				}
+
+
+				$_procedimentosObj=array();
+				$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$procedimentosIds).")");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_procedimentosObj[$x->id]=$x;
+				}
+
+
 				
-					if($x->status_evolucao=="finalizado") {
-						$_procedimentosFinalizados[$p->id_tratamento][]=$x;
-					} 
-					$_todosProcedimentos[$p->id_tratamento][]=$x;
-					$procedimentosIds[]=$x->id_procedimento;
+				$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and id_fusao=0 and lixo=0");
+				$pagRegs=array();
+				$pagamentosIds=array(0);
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$pagamentosIds[]=$x->id;
+					$pagRegs[]=$x;
 				}
-			}
 
-
-			$_procedimentosObj=array();
-			$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$procedimentosIds).")");
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$_procedimentosObj[$x->id]=$x;
-			}
-
-
-			
-			$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and id_fusao=0 and lixo=0");
-			$pagRegs=array();
-			$pagamentosIds=array(0);
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$pagamentosIds[]=$x->id;
-				$pagRegs[]=$x;
-			}
-
-			$_baixas=array();
-			$sql->consult($_p."pacientes_tratamentos_pagamentos_baixas","*","where id_pagamento IN (".implode(",",$pagamentosIds).") and lixo=0");
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$_baixas[$x->id_pagamento][]=$x;
-			}
-
-
-			$_pagamentos=array();
-			foreach($pagRegs as $x) {
-
-				// se possui baixa
-				if(isset($_baixas[$x->id])) {
-
-					$valorTotal=$x->valor;
-					$valorBaixas=0;
-					foreach($_baixas[$x->id] as $b) {
-						$_pagamentos[$x->id_tratamento][]=array('pago'=>$b->pago,
-																'tipo'=>'baixa',
-																'valor'=>$b->valor);
-						$valorBaixas+=$b->valor;
-					}
-
-					// restante que falta dar baixa
-					if($valorTotal>$valorBaixas) {
-						$_pagamentos[$x->id_tratamento][]=array('pago'=>0,
-																'tipos'=>'restante',
-																'valor'=>$valorTotal-$valorBaixas);
-
-					}
-
-				} else {
-
-					$_pagamentos[$x->id_tratamento][]=array('pago'=>$x->pago,
-															'tipo'=>'parcela '.$x->id,
-															'valor'=>$x->valor);
-					
+				$_baixas=array();
+				$sql->consult($_p."pacientes_tratamentos_pagamentos_baixas","*","where id_pagamento IN (".implode(",",$pagamentosIds).") and lixo=0");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_baixas[$x->id_pagamento][]=$x;
 				}
-			}
 
 
-			/*
-			<script>
-				$(function(){
-					
-					var ctx = document.getElementById('grafico1').getContext('2d');
-					var grafico1 = new Chart(ctx, {    
-					    type: 'doughnut',
-					    options: {
-					    	legend: {display:false},
-					    	cutoutPercentage:70,
-					    },
-					    data: {
-					        labels: ["Procedimento 1","Procedimento 2","Procedimento 3", "Procedimento 4"],
-					        datasets: [{
-					            data: [10,20,20,50],
-					            backgroundColor: ['rgba(211,142,105,1)','rgba(239,198,155,1)','rgba(93,109,112,1)','rgba(72,74,71,1)','rgba(138,176,171,1)'],						            
-					        }]
-					    },
-					});		
-				});				
-				</script>
-				*/
+				$_pagamentos=array();
+				foreach($pagRegs as $x) {
+
+					// se possui baixa
+					if(isset($_baixas[$x->id])) {
+
+						$valorTotal=$x->valor;
+						$valorBaixas=0;
+						foreach($_baixas[$x->id] as $b) {
+							$_pagamentos[$x->id_tratamento][]=array('pago'=>$b->pago,
+																	'tipo'=>'baixa',
+																	'valor'=>$b->valor);
+							$valorBaixas+=$b->valor;
+						}
+
+						// restante que falta dar baixa
+						if($valorTotal>$valorBaixas) {
+							$_pagamentos[$x->id_tratamento][]=array('pago'=>0,
+																	'tipos'=>'restante',
+																	'valor'=>$valorTotal-$valorBaixas);
+
+						}
+
+					} else {
+
+						$_pagamentos[$x->id_tratamento][]=array('pago'=>$x->pago,
+																'tipo'=>'parcela '.$x->id,
+																'valor'=>$x->valor);
+						
+					}
+				}
+
 			?>
 			<div class="box" style="overflow:hidden;">
 				<div class="paciente-etapas">
-					<?php
-
-		
-					?>
+					
 					<div class="paciente-etapas__slick">
 						<?php
 
@@ -412,70 +286,7 @@
 
 		<section class="grid grid_3">
 
-			<div class="box">
-				
-				<h1 class="paciente__titulo1">Agendamentos</h1>			
-
-				<div class="paciente-scroll" style="padding-left: 23px;">
-				<?php
-
-				$_cadeiras=array();
-				$sql->consult($_p."parametros_cadeiras","*","where lixo=0 order by ordem asc");
-				while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
-
-				$_status=array();
-				$sql->consult($_p."agenda_status","*","where lixo=0 order by titulo asc");
-				while($x=mysqli_fetch_object($sql->mysqry)) $_status[$x->id]=$x;
-
-				$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and lixo=0 order by agenda_data desc");
-				if($sql->rows) {
-				?>
-				<div class="reg">
-					<?php
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$statusCor='';
-
-						if(isset($_status[$x->id_status])) {
-							$statusCor=$_status[$x->id_status]->cor;
-						}
-					?>
-					<a href="<?php echo "pg_agenda.php?initDate=".date('d/m/Y',strtotime($x->agenda_data));?>" target="_blank" class="reg-group">
-						<div class="reg-color" style="background-color:<?php echo $statusCor;?>"></div>
-
-						<div class="reg-data" style="width:30%">
-							<p><?php echo date('d/m/Y H:i',strtotime($x->agenda_data));?></span></p>
-						</div>
-
-						<div class="reg-data" style="width:30%">
-							<p><?php echo isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'';?></p>
-						</div>
-						<?php
-						$profissionais="";
-						if(!empty($x->profissionais)) {
-							$profissionais='';
-							$aux=explode(",",$x->profissionais);
-							foreach($aux as $v) {
-								if(!empty($v) and is_numeric($v) and isset($_profissionais[$v])) {
-									//$profissionais.='<div class="cal-item-foto"><span style="background:'.$_profissionais[$v]->calendario_cor.'">'.$_profissionais[$v]->calendario_iniciais.'</span></div>';
-									$profissionais.='<div class="cal-item-foto" style="float:left;"><span style="background:'.$_profissionais[$v]->calendario_cor.'">'.$_profissionais[$v]->calendario_iniciais.'</span></div>';
-								}
-							}
-						}
-						?>
-						<div class="cal-item__fotos">
-							<?php echo $profissionais;?>
-						</div>
-					</a>
-					<?php
-					}
-					?>
-					</div>
-				</div>
-				<?php
-				}
-				?>
-									
-			</div>
+			
 			<style type="text/css">
 				.hist2-item__dados .data {
 					padding: 5px;
