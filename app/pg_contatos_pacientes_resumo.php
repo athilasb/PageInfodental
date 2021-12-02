@@ -65,7 +65,7 @@
 		require_once("includes/abaPaciente.php");
 		?>
 		
-		<section class="grid grid_2" style="padding-bottom:0;">
+		<section class="grid grid_3" style="padding-bottom:0;">
 			
 			<div class="box">
 				<div class="paciente-info">
@@ -127,166 +127,6 @@
 				</div>
 			</div>
 
-
-			<?php
-				$where="WHERE id_paciente=$paciente->id and lixo=0";
-				$sql->consult($_p."pacientes_tratamentos","*",$where);
-
-				$registros=array();
-				$tratamentosIDs=array(0);
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$registros[]=$x;
-					$tratamentosIDs[]=$x->id;
-				}
-
-				$_procedimentos=array();
-				$_procedimentosAprovado=array();
-				$procedimentosIds=$tratamentosProcedimentosIDs=array(-1);
-				$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and situacao='aprovado' and lixo=0");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$tratamentosProcedimentosIDs[]=$x->id;
-					$_procedimentosAprovado[$x->id]=$x;
-				}
-
-
-				$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIDs).") and lixo=0");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					if(isset($_procedimentosAprovado[$x->id_tratamento_procedimento])) {
-						$p=$_procedimentosAprovado[$x->id_tratamento_procedimento];
-					
-						if($x->status_evolucao=="finalizado") {
-							$_procedimentosFinalizados[$p->id_tratamento][]=$x;
-						} 
-						$_todosProcedimentos[$p->id_tratamento][]=$x;
-						$procedimentosIds[]=$x->id_procedimento;
-					}
-				}
-
-
-				$_procedimentosObj=array();
-				$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$procedimentosIds).")");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_procedimentosObj[$x->id]=$x;
-				}
-
-
-				
-				$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and id_fusao=0 and lixo=0");
-				$pagRegs=array();
-				$pagamentosIds=array(0);
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$pagamentosIds[]=$x->id;
-					$pagRegs[]=$x;
-				}
-
-				$_baixas=array();
-				$sql->consult($_p."pacientes_tratamentos_pagamentos_baixas","*","where id_pagamento IN (".implode(",",$pagamentosIds).") and lixo=0");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_baixas[$x->id_pagamento][]=$x;
-				}
-
-
-				$_pagamentos=array();
-				foreach($pagRegs as $x) {
-
-					// se possui baixa
-					if(isset($_baixas[$x->id])) {
-
-						$valorTotal=$x->valor;
-						$valorBaixas=0;
-						foreach($_baixas[$x->id] as $b) {
-							$_pagamentos[$x->id_tratamento][]=array('pago'=>$b->pago,
-																	'tipo'=>'baixa',
-																	'valor'=>$b->valor);
-							$valorBaixas+=$b->valor;
-						}
-
-						// restante que falta dar baixa
-						if($valorTotal>$valorBaixas) {
-							$_pagamentos[$x->id_tratamento][]=array('pago'=>0,
-																	'tipos'=>'restante',
-																	'valor'=>$valorTotal-$valorBaixas);
-
-						}
-
-					} else {
-
-						$_pagamentos[$x->id_tratamento][]=array('pago'=>$x->pago,
-																'tipo'=>'parcela '.$x->id,
-																'valor'=>$x->valor);
-						
-					}
-				}
-
-			?>
-			<div class="box" style="overflow:hidden;">
-				<div class="paciente-etapas">
-					
-					<div class="paciente-etapas__slick">
-						<?php
-
-
-						if(count($registros)>0) {
-							foreach($registros as $x) {
-
-								$pagamentos=array();
-								if(isset($_pagamentos[$x->id])) $pagamentos=$_pagamentos[$x->id];
-
-								$procedimentos=array();
-								if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
-
-								$total=isset($_todosProcedimentos[$x->id])?count($_todosProcedimentos[$x->id]):0;
-								$finalizados=isset($_procedimentosFinalizados[$x->id])?count($_procedimentosFinalizados[$x->id]):0;
-								$perc=($total)==0?0:number_format(($finalizados/($total))*100,0,"","");
-
-
-
-								$pagPago=$pagTotal=0;
-								foreach($pagamentos as $p) { 
-									$p=(object)$p;
-									if($p->pago==1) $pagPago+=$p->valor;
-
-									$pagTotal+=$p->valor;
-								}
-								$percPag=($pagTotal)==0?0:number_format(($pagPago/($pagTotal))*100,0,"","");
-							
-
-
-
-								if($x->status=="PENDENTE") $x->status="Em Aberto";
-								else if($x->status=="APROVADO") $x->status="Aprovado";
-								else if($x->status=="CANCELADO") $x->status="Cancelado";
-						?>
-						<div class="paciente-etapas__item">
-							<h1 class="paciente__titulo1"><?php echo utf8_encode($x->titulo);?> <small>(<?php echo date('d/m/Y',strtotime($x->data));?>)</small><br />
-							<p style="font-size:14px;"><?php echo $x->status;?></p></h1>
-							<div class="paciente-etapas-grid">
-								
-								<p>Evolução<br /><span style="color: var(--cinza3);font-size:12px;"><?php echo "Realizado <b>".$finalizados."</b> de <b>".$total."</b> - ".$perc."%";?></span></p>
-								<div class="grafico-barra"><span style="width:<?php echo $perc;?>%">&nbsp;</span></div>
-								<p>Pagamento<br /><span style="color: var(--cinza3);font-size:12px;"><?php echo "Recebido <b>".number_format($pagPago,2,",",".")."</b> de <b>".number_format($pagTotal,2,",",".")."</b> - ".$percPag."%";?></span></p>
-								<div class="grafico-barra"><span style="width:<?php echo $percPag;?>%">&nbsp;</span></div>
-								
-							</div>
-						</div>
-						<?php
-							}
-						} else {
-						?>
-						<div style="text-align: center;color:#CCC"><span class="iconify" data-icon="el:eye-close" data-inline="false" data-height="50"></span><br />Nenhum plano de tratamento</div>
-						<?php	
-						}
-						?>
-					</div>	
-
-				</div>
-			</div>
-
-		</section>
-
-		<section class="grid grid_3">
-
-			
 			<style type="text/css">
 				.hist2-item__dados .data {
 					padding: 5px;
@@ -317,7 +157,7 @@
 					})
 				});
 			</script>
-			<div class="hist2 box" style="grid-column:span 2">
+			<div class="hist2 box" style="grid-column:span 2; grid-row:span 2; min-height:calc(100vh - 290px);">
 				<aside>
 					<h1 class="paciente__titulo1">Histórico</h1>										
 					<div class="grid-links grid-links_sm">
@@ -601,6 +441,163 @@
 					
 				</article>
 			</div>
+
+
+			<?php
+				$where="WHERE id_paciente=$paciente->id and lixo=0";
+				$sql->consult($_p."pacientes_tratamentos","*",$where);
+
+				$registros=array();
+				$tratamentosIDs=array(0);
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$registros[]=$x;
+					$tratamentosIDs[]=$x->id;
+				}
+
+				$_procedimentos=array();
+				$_procedimentosAprovado=array();
+				$procedimentosIds=$tratamentosProcedimentosIDs=array(-1);
+				$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and situacao='aprovado' and lixo=0");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$tratamentosProcedimentosIDs[]=$x->id;
+					$_procedimentosAprovado[$x->id]=$x;
+				}
+
+
+				$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIDs).") and lixo=0");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					if(isset($_procedimentosAprovado[$x->id_tratamento_procedimento])) {
+						$p=$_procedimentosAprovado[$x->id_tratamento_procedimento];
+					
+						if($x->status_evolucao=="finalizado") {
+							$_procedimentosFinalizados[$p->id_tratamento][]=$x;
+						} 
+						$_todosProcedimentos[$p->id_tratamento][]=$x;
+						$procedimentosIds[]=$x->id_procedimento;
+					}
+				}
+
+
+				$_procedimentosObj=array();
+				$sql->consult($_p."parametros_procedimentos","*","where id IN (".implode(",",$procedimentosIds).")");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_procedimentosObj[$x->id]=$x;
+				}
+
+
+				
+				$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and id_fusao=0 and lixo=0");
+				$pagRegs=array();
+				$pagamentosIds=array(0);
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$pagamentosIds[]=$x->id;
+					$pagRegs[]=$x;
+				}
+
+				$_baixas=array();
+				$sql->consult($_p."pacientes_tratamentos_pagamentos_baixas","*","where id_pagamento IN (".implode(",",$pagamentosIds).") and lixo=0");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_baixas[$x->id_pagamento][]=$x;
+				}
+
+
+				$_pagamentos=array();
+				foreach($pagRegs as $x) {
+
+					// se possui baixa
+					if(isset($_baixas[$x->id])) {
+
+						$valorTotal=$x->valor;
+						$valorBaixas=0;
+						foreach($_baixas[$x->id] as $b) {
+							$_pagamentos[$x->id_tratamento][]=array('pago'=>$b->pago,
+																	'tipo'=>'baixa',
+																	'valor'=>$b->valor);
+							$valorBaixas+=$b->valor;
+						}
+
+						// restante que falta dar baixa
+						if($valorTotal>$valorBaixas) {
+							$_pagamentos[$x->id_tratamento][]=array('pago'=>0,
+																	'tipos'=>'restante',
+																	'valor'=>$valorTotal-$valorBaixas);
+
+						}
+
+					} else {
+
+						$_pagamentos[$x->id_tratamento][]=array('pago'=>$x->pago,
+																'tipo'=>'parcela '.$x->id,
+																'valor'=>$x->valor);
+						
+					}
+				}
+
+			?>
+			<div class="box" style="overflow:hidden;">
+				<div class="paciente-etapas">
+					
+					<div class="paciente-etapas__slick">
+						<?php
+
+
+						if(count($registros)>0) {
+							foreach($registros as $x) {
+
+								$pagamentos=array();
+								if(isset($_pagamentos[$x->id])) $pagamentos=$_pagamentos[$x->id];
+
+								$procedimentos=array();
+								if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
+
+								$total=isset($_todosProcedimentos[$x->id])?count($_todosProcedimentos[$x->id]):0;
+								$finalizados=isset($_procedimentosFinalizados[$x->id])?count($_procedimentosFinalizados[$x->id]):0;
+								$perc=($total)==0?0:number_format(($finalizados/($total))*100,0,"","");
+
+
+
+								$pagPago=$pagTotal=0;
+								foreach($pagamentos as $p) { 
+									$p=(object)$p;
+									if($p->pago==1) $pagPago+=$p->valor;
+
+									$pagTotal+=$p->valor;
+								}
+								$percPag=($pagTotal)==0?0:number_format(($pagPago/($pagTotal))*100,0,"","");
+							
+
+
+
+								if($x->status=="PENDENTE") $x->status="Em Aberto";
+								else if($x->status=="APROVADO") $x->status="Aprovado";
+								else if($x->status=="CANCELADO") $x->status="Cancelado";
+						?>
+						<div class="paciente-etapas__item">
+							<h1 class="paciente__titulo1"><?php echo utf8_encode($x->titulo);?> <small>(<?php echo date('d/m/Y',strtotime($x->data));?>)</small><br />
+							<p style="font-size:14px;"><?php echo $x->status;?></p></h1>
+							<div class="paciente-etapas-grid">
+								
+								<p>Evolução<br /><span style="color: var(--cinza3);font-size:12px;"><?php echo "Realizado <b>".$finalizados."</b> de <b>".$total."</b> - ".$perc."%";?></span></p>
+								<div class="grafico-barra"><span style="width:<?php echo $perc;?>%">&nbsp;</span></div>
+								<p>Pagamento<br /><span style="color: var(--cinza3);font-size:12px;"><?php echo "Recebido <b>".number_format($pagPago,2,",",".")."</b> de <b>".number_format($pagTotal,2,",",".")."</b> - ".$percPag."%";?></span></p>
+								<div class="grafico-barra"><span style="width:<?php echo $percPag;?>%">&nbsp;</span></div>
+								
+							</div>
+						</div>
+						<?php
+							}
+						} else {
+						?>
+						<div style="text-align: center;color:#CCC"><span class="iconify" data-icon="el:eye-close" data-inline="false" data-height="50"></span><br />Nenhum plano de tratamento</div>
+						<?php	
+						}
+						?>
+					</div>	
+
+				</div>
+			</div>
+
+			
 
 		</section>
 	
