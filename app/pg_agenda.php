@@ -242,8 +242,8 @@
 				$where="where agenda_data>='".$data_inicio." 00:00:00' and agenda_data<='".$data_fim."' and id_unidade=$unidade->id and lixo=0";
 
 				if(isset($_GET['id_status']) and is_numeric($_GET['id_status'])) $where.=" and id_status='".$_GET['id_status']."'";
-				if(isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira'])) $where.=" and id_cadeira='".$_GET['id_cadeira']."'";
-				if(isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional'])) $where.=" and profissionais like '%,".$_GET['id_profissional'].",%'";
+				if(isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira']) and $_GET['id_cadeira']>0) $where.=" and id_cadeira='".$_GET['id_cadeira']."'";
+				if(isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional']) and $_GET['id_profissional']>0) $where.=" and profissionais like '%,".$_GET['id_profissional'].",%'";
 				if(isset($_GET['busca']) and !empty($_GET['busca'])) {
 					$sql->consult($_p."pacientes","*","where nome like '%".addslashes($_GET['busca'])."%'");
 					if($sql->rows) {
@@ -270,7 +270,7 @@
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$_status[$x->id]=$x;
 				}
-
+			//	echo $where;
 				$sql->consult($_p."agenda","*",$where);
 				if($sql->rows) {
 
@@ -446,6 +446,9 @@
 							}
 
 
+							$futuro=0;
+							if(strtotime($x->agenda_data)>strtotime(date('Y-m-d H:i:s'))) $futuro=1;
+
 							//	$pacienteNome=$_pacientes[$x->id_paciente]->nome;
 							$agendamentos[]=array('agendaPessoal'=>0,																					'agendamentosFuturos'=>$agendamentosFuturos,
 													'resourceId'=>$x->id_cadeira,
@@ -455,6 +458,7 @@
 													'horaFinal'=>$horaFinal,
 													'nomeIniciais'=>$nomeIniciais,
 													'foto'=>$ftPaciente,
+													'futuro'=>$futuro,
 													'cadeira'=>$cadeira,
 													'id_paciente'=>$x->id_paciente,
 													'duracao'=>$x->agenda_duracao."m",
@@ -553,6 +557,7 @@
 													'id_paciente'=>0,
 													'duracao'=>$x->agenda_duracao."m",
 													'indicacao'=>'',
+													'futuro'=>'',
 													'title'=>'Agendamento Pessoal',
 													'telefone1'=>'',
 													'instagram'=>'',
@@ -617,6 +622,9 @@
 
 
 	$initDate='';
+
+	if(isset($_GET['data']) and !empty($_GET['data'])) $_GET['initDate']=$_GET['data'];
+
 	if(isset($_GET['initDate']) and !empty($_GET['initDate']) and strpos($_GET['initDate'], '/')!==false) {
 		list($dia,$mes,$ano)=explode("/",$_GET['initDate']);
 		if(checkdate($mes, $dia, $ano)) {
@@ -628,6 +636,10 @@
 <script>
 	var calendar = '';
 	var id_unidade=<?php echo $usrUnidade->id;?>;
+
+	var filtroStatus=``;
+	var filtroProfissional = <?php echo (isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional']))?$_GET['id_profissional']:0;?>;
+	var filtroCadeira = <?php echo (isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira']))?$_GET['id_cadeira']:0;?>;
 	
 	const verificaAgendamento = () => {
 		let profissionais = $('.js-form-agendamento select.js-profissionais').val();
@@ -771,9 +783,6 @@
 	}
 	
 
-	var filtroStatus=``;
-	var filtroProfissional=``;
-	var filtroCadeira=``;
 
 	$(function(){
 
@@ -877,10 +886,12 @@
 
 		$('.js-cadeira').change(function(){
 			filtroCadeira=$(this).val();
+			id_cadeira=$(this).val();
 			calendar.refetchEvents();
 		});
 
 		$('.js-profissionais').change(function(){
+			id_profissional=$(this).val();
 			filtroProfissional=$(this).val();
 			calendar.refetchEvents();
 		});
@@ -980,8 +991,8 @@
 		$filtro='';
 
 		if(isset($values['id_status']) and isset($_status[$values['id_status']])) $filtro.="&id_status=".$values['id_status'];
-		if(isset($values['id_profissional']) and isset($_profissionais[$values['id_profissional']])) $filtro.="&id_profissional=".$values['id_profissional'];
-		if(isset($values['id_cadeira']) and isset($_cadeiras[$values['id_cadeira']])) $filtro.="&id_cadeira=".$values['id_cadeira'];
+		//if(isset($values['id_profissional']) and isset($_profissionais[$values['id_profissional']])) $filtro.="&id_profissional=".$values['id_profissional'];
+		//if(isset($values['id_cadeira']) and isset($_cadeiras[$values['id_cadeira']])) $filtro.="&id_cadeira=".$values['id_cadeira'];
 		if(isset($values['busca']) and !empty($values['busca'])) $filtro.="&busca=".$values['busca'];
 
 		//echo $filtro;
@@ -996,7 +1007,7 @@
 						<div>
 							<h1 class="js-nome"></h1>
 							<p class="js-idade"></p>
-							<p class="js-statusBI"><span  style="background:var(--cinza4);color:#FFF;padding:5px;border-radius: 5px;"></span></p>
+							
 							<p><span style="color:var(--cinza3);" class="js-id_paciente">#44</span> <span style="color:var(--cor1);"></span></p>
 						</div>
 						<p class="js-profissionaisInfo"></p>
@@ -1109,13 +1120,25 @@
 						$('#cal-popup .abasPopover a:eq(0)').click();
 					}
 
-					$('#cal-popup .js-hrefAgenda').attr('href',`box/boxAgendamento.php?id_unidade=${popViewInfos[id_agenda].id_unidade}&id_agenda=${popViewInfos[id_agenda].id_agenda}`);
+					if(popViewInfos[id_agenda].agendaPessoal && popViewInfos[id_agenda].agendaPessoal==1) {
+						$('#cal-popup .js-hrefAgenda').attr('href',`box/boxAgendamentoPessoal.php?id_unidade=${popViewInfos[id_agenda].id_unidade}&id_agenda=${popViewInfos[id_agenda].id_agenda}`);
+					} else {
+						$('#cal-popup .js-hrefAgenda').attr('href',`box/boxAgendamento.php?id_unidade=${popViewInfos[id_agenda].id_unidade}&id_agenda=${popViewInfos[id_agenda].id_agenda}`);
+					}
+
 					$('#cal-popup .js-hrefPaciente').attr('href',`pg_contatos_pacientes_resumo.php?id_paciente=${popViewInfos[id_agenda].id_paciente}`);
 
 					$('#cal-popup .js-loading').show();
 					$('#cal-popup .paciente-info-header__foto').hide();
 
 					$('#cal-popup .js-grid-agendamentos table tr').remove();
+
+
+					if(popViewInfos[id_agenda].futuro==1) {
+						//$('#cal-popup .js-id_status').find('option[value=7],option[value=6],option[value=5],option[value=3]').prop('disabled',true);
+					} else {
+						//$('#cal-popup .js-id_status option').prop('disabled',false);
+					}
 
 					let temAg=false;
 					if(popViewInfos[id_agenda].agendamentosFuturos && popViewInfos[id_agenda].agendamentosFuturos.length>0) {
@@ -1364,6 +1387,7 @@
 							let infos = ``;
 							let historico = arg.event.extendedProps.historico;
 							let statusBI = arg.event.extendedProps.statusBI;
+							let futuro = arg.event.extendedProps.futuro;
 
    							
    							linkFichaPaciente=``;
@@ -1372,8 +1396,10 @@
 							if(profissionais.length!=0) profissionais = `<div class="cal-item__fotos">${profissionais}</div>`; 
 							
 
-						    if(instagram.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-instagram"></i> ${instagram}</p>`;
-						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-instagram"></i> -</p>`;
+						    //if(instagram.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-instagram"></i> ${instagram}</p>`;
+						    //else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-instagram"></i> -</p>`;
+
+						    infos+=`<p class="js-statusBI"><span style="background:var(--cinza4);color:#FFF;padding:5px;border-radius: 5px;">${statusBI}</span></p>`;
 
 						    if(telefone1.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-phone"></i> ${telefone1}</p>`;
 						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-phone"></i> -</p>`;
@@ -1424,6 +1450,7 @@
 						    popInfos.historico=historico;
 						    popInfos.statusBI=statusBI;
 						    popInfos.agendaPessoal=agendaPessoal;
+						    popInfos.futuro=futuro;
 
 
 

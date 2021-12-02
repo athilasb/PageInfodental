@@ -715,10 +715,13 @@
 			</ul>		
 			<script type="text/javascript">
 				$(function(){ 
+					var id_cadeira = <?php echo (isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira']))?$_GET['id_cadeira']:0;?>;
+					var id_profissional = <?php echo (isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional']))?$_GET['id_profissional']:0;?>;
+					
 					$('.js-btn-pessoal').click(function(){
 						$.fancybox.close();
 
-						let urlComplemento = `agendaData=${$('input.agendaData').val()}&agendaHora=${$('input.agendaHora').val()}`;
+						let urlComplemento = `agendaData=${$('input.agendaData').val()}&agendaHora=${$('input.agendaHora').val()}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}`;
 						$.fancybox.open({
 					        src: `box/boxAgendamentoPessoal.php?id_unidade=<?php echo $unidade->id;?>&${urlComplemento}`,
 					        type: "ajax"

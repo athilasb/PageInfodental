@@ -15,11 +15,20 @@
 			}
 
 
+			$id_profissional=(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional']))?$_POST['id_profissional']:0;
+			$id_cadeira=(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira']))?$_POST['id_cadeira']:0;
+
+
+
 			if(!empty($data)) {
 
 				$agenda=array();
 				$pacientesIds=$pacientesAtendidosIds=array(-1);
-				$sql->consult($_p."agenda","*","where agenda_data>='".$data." 00:00:00' and agenda_data<='".$data." 23:59:59' and lixo=0 order by agenda_data asc");
+				$where="where agenda_data>='".$data." 00:00:00' and agenda_data<='".$data." 23:59:59' and lixo=0";
+				if($id_profissional>0) $where.=" and profissionais like '%,$id_profissional,%'";
+				if($id_cadeira>0) $where.=" and id_cadeira = '$id_cadeira'";
+				$sql->consult($_p."agenda","*",$where." order by agenda_data asc");
+
 				$registros=array();
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$registros[]=$x;
@@ -145,7 +154,10 @@
 
 	$agenda=$registros=array();
 	$pacientesIds=$pacientesAtendidosIds=array(-1);
-	$sql->consult($_p."agenda","*","where agenda_data>='".$dataWH." 00:00:00' and agenda_data<='".$dataWH." 23:59:59' and lixo=0 order by agenda_data asc");
+	$where="where agenda_data>='".$dataWH." 00:00:00' and agenda_data<='".$dataWH." 23:59:59' and lixo=0";
+	if(isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional']) and $_GET['id_profissional']>0) $where.=" and profissionais like '%,".$_GET['id_profissional'].",%'";
+	if(isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira']) and $_GET['id_cadeira']>0) $where.=" and id_cadeira=".$_GET['id_cadeira'];
+	$sql->consult($_p."agenda","*",$where." order by agenda_data asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$registros[]=$x;
 		$pacientesIds[]=$x->id_paciente;
@@ -208,8 +220,11 @@
 		<script type="text/javascript">
 
 			var data = '<?php echo $dataWH;?>';
+			var dataAgenda = '<?php echo date('d/m/Y',strtotime($dataWH));?>';
 			var popViewInfos = [];
 			let dataAux = new Date("<?php echo $data;?>");
+			var id_profissional = <?php echo (isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional']))?$_GET['id_profissional']:0;?>;
+			var id_cadeira = <?php echo (isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira']))?$_GET['id_cadeira']:0;?>;
 
 			const meses = ["jan.", "fev.", "mar.", "abr.", "mai.", "jun.", "jul.","ago.","set.","out.","nov.","dez."];
 			const dias = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
@@ -220,7 +235,7 @@
 
 			const agendaAtualizar = () => {
 
-				let dataAjax = `ajax=agenda&data=${data}`;
+				let dataAjax = `ajax=agenda&data=${data}&id_profissional=${id_profissional}&id_cadeira=${id_cadeira}`;
 				$.ajax({
 					type:"POST",
 					data:dataAjax,
@@ -341,6 +356,7 @@
 
 
 				data = `${dtObj.getFullYear()}-${d2(dtObj.getMonth()+1)}-${d2(dtObj.getDate())}`;
+				dataAgenda = `${dtObj.getDate()}/${d2(dtObj.getMonth()+1)}/${d2(dtObj.getFullYear())}`;
 
 				agendaAtualizar();
 
@@ -349,6 +365,17 @@
 
 
 			$(function(){
+
+				$('.js-profissionais').change(function(){
+					id_profissional=$(this).val();
+					agendaAtualizar();
+				});
+
+				$('.js-cadeira').change(function(){
+					id_cadeira=$(this).val();
+					agendaAtualizar();
+				});
+
 
 				$('.js-calendario').datetimepicker({
 					timepicker:false,

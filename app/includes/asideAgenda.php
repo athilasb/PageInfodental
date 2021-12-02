@@ -35,8 +35,8 @@
 
 		<div class="filter-group filter-group_right">
 			<div class="filter-links">
-				<a href="pg_agenda.php" data-status="APROVADO" class="js-btn-status<?php echo basename($_SERVER['PHP_SELF'])=="pg_agenda.php"?" active":"";?>">Agenda</a>
-				<a href="javascript:;" data-status="APROVADO" class="js-btn-agendaKanban js-btn-status<?php echo basename($_SERVER['PHP_SELF'])=="pg_agenda_kanban.php"?" active":"";?>">Kanban</a>
+				<a href="javascript:;" class="js-btn-agenda js-btn-status<?php echo basename($_SERVER['PHP_SELF'])=="pg_agenda.php"?" active":"";?>">Agenda</a>
+				<a href="javascript:;" class="js-btn-agendaKanban js-btn-status<?php echo basename($_SERVER['PHP_SELF'])=="pg_agenda_kanban.php"?" active":"";?>">Kanban</a>
 			</div>
 		</div>
 		<script type="text/javascript">
@@ -54,10 +54,24 @@
 
 				    return [day, month, year].join('/');
 				}
+				<?php
+				if(basename($_SERVER['PHP_SELF'])=="pg_agenda.php") {
+				?>
 				$('.js-btn-agendaKanban').click(function(){
-					let data =formatDate(calendar.getDate());;
-					document.location.href=`pg_agenda_kanban.php?data=${data}`
-				})
+					let data =formatDate(calendar.getDate());
+					document.location.href=`pg_agenda_kanban.php?data=${data}&id_profissional=${filtroProfissional}&id_cadeira=${filtroCadeira}`;	
+				});
+				<?php
+				} else {
+				?>
+				$('.js-btn-agenda').click(function(){
+					document.location.href=`pg_agenda.php?data=${dataAgenda}&id_profissional=${id_profissional}&id_cadeira=${id_cadeira}`;	
+				});
+				<?php	
+				}
+				?>
+
+
 			})
 		</script>
 

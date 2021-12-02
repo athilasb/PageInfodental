@@ -265,6 +265,7 @@
 	$values['agenda_data']=date('d/m/Y');
 	$values['agenda_hora']=date('H:i');
 	$values['agenda_hora_final']=date('H:i',strtotime(date('Y-m-d H:i')." + 1 hour"));
+	$values['id_cadeira']=(isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira']))?$_GET['id_cadeira']:0;
 
 	if(isset($_GET['data_agenda']) and !empty($_GET['data_agenda'])) {
 		list($_ano,$_mes,$_dia)=explode("-",$_GET['data_agenda']);
@@ -337,6 +338,39 @@
 
 	var id_agenda = '<?php echo is_object($agenda)?$agenda->id:'';?>';
 	$(function(){
+
+		$('.js-remover').click(function(){
+
+
+			swal({   title: "Atenção",   text: "Você tem certeza que deseja remover este registro?",   type: "warning",   showCancelButton: true,   confirmButtonColor: "#DD6B55",   confirmButtonText: "Sim!",   cancelButtonText: "Não",   closeOnConfirm: false,   closeOnCancel: false }, function(isConfirm){   
+				if (isConfirm) { 
+
+					let data = `ajax=agendamentoRemover&id_agenda=${id_agenda}&id_unidade=${id_unidade}`;   
+					$.ajax({
+						type:"POST",
+						url:'box/boxAgendamento.php',
+						data:data,
+						success:function(rtn){
+							swal.close();  
+							if(rtn.success) {
+
+								$.fancybox.close();
+								calendar.refetchEvents();
+								//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
+							} else if(rtn.error) {
+								swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+							} else {
+								swal({title: "Erro!", text: "Agendamento não removido. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+							}
+						},
+						error:function(){
+							swal.close();  
+							swal({title: "Erro!", text: "Agendamento não removido. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+						}
+					})
+				} else {   swal.close();   } });
+
+		})
 
 		/*$('.agendaData').datetimepicker({
 			timepicker:false,
@@ -450,8 +484,16 @@
 			<?php
 			}
 			?>
-			<div class="filtros-acoes">
-				<button type="button" class="principal js-salvar"><i class="iconify" data-icon="bx-bx-check"></i></button>
+			<div class="filtros-acoes  filter-button">
+				<?php /*<button type="button" class="principal js-salvar"><i class="iconify" data-icon="bx-bx-check"></i></button>*/?>
+				<a href="javascript:;" class="azul js-salvar" data-loading="0"><i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span></a>
+				<?php
+				if(is_object($agenda)) {
+				?>
+				<button type="button" class="js-remover"><i class="iconify" data-icon="bx-bx-trash"></i></button>
+				<?php
+				} 
+				?>
 			</div>
 		</div>
 	</header>
