@@ -1,4 +1,31 @@
 <?php
+	if(isset($_GET['ajax'])) {
+		if($_GET['ajax']=="medicamentos") {
+
+			require_once("lib/conf.php");
+			require_once("usuarios/checa.php");
+
+			$sql = new Mysql();
+
+			$_medicamentos=array();
+			$sql->consult($_p."medicamentos","*","where lixo=0 order by titulo");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_medicamentos[]=array('id'=>$x->id,
+										 'titulo'=>utf8_encode($x->titulo),
+										 'quantidade'=>utf8_encode($x->quantidade),
+										 'tipo'=>utf8_encode($x->tipo),
+										 'posologia'=>utf8_encode($x->posologia),
+										 'controleespecial'=>utf8_encode($x->controleespecial));
+			}
+
+			header("Content-type: json/application");
+			echo json_encode($_medicamentos);
+		}
+
+
+		die();
+	}
+
 	if(isset($_POST['ajax'])) {
 		require_once("lib/conf.php");	
 		require_once("usuarios/checa.php");
@@ -92,6 +119,7 @@
 			$evolucao=mysqli_fetch_object($sql->mysqry);
 
 			$sql->consult($_p."pacientes_evolucoes_receitas","*","where id_evolucao=$evolucao->id and lixo=0");
+			
 			if($sql->rows) {
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$evolucaoReceita[]=array('id_evolucao_receita'=>$x->id,
@@ -99,7 +127,9 @@
 											'tipo'=>$x->tipo,
 											'tipoTitulo'=>isset($_medicamentosTipos[$x->tipo])?$_medicamentosTipos[$x->tipo]:$x->tipo,
 											'quantidade'=>utf8_encode($x->quantidade),
-											'posologia'=>utf8_encode($x->posologia));;
+											'posologia'=>utf8_encode($x->posologia),
+											'id'=>utf8_encode($x->id_medicamento),
+											'controleespecial'=>utf8_encode($x->controleespecial));;
 				}
 
  			} 
@@ -115,7 +145,6 @@
 
 			$receitasJSON = json_decode($_POST['receitas']);
 
-			
 
 
 			if(empty($erro)) {
@@ -158,13 +187,16 @@
 					foreach($receitasJSON as $obj) {
 						$obj=(object)$obj;
 
+
 						$vSQLReceita="data=now(),
 									id_paciente=$paciente->id,
 									id_evolucao=$id_evolucao,
 									medicamento='".addslashes(utf8_decode($obj->medicamento))."',
 									quantidade='".addslashes(utf8_decode($obj->quantidade))."',
 									posologia='".addslashes(utf8_decode($obj->posologia))."',
-									tipo='".addslashes(utf8_decode($obj->tipo))."'";
+									tipo='".addslashes(utf8_decode($obj->tipo))."',
+									id_medicamento='".addslashes(utf8_decode($obj->id))."',
+									controleespecial='".addslashes(utf8_decode($obj->controleespecial))."'";
 						$evProc='';
 						if(isset($obj->id_evolucao_receita) and is_numeric($obj->id_evolucao_receita)) {
 							$sql->consult($_p."pacientes_evolucoes_receitas","*","where id=$obj->id_evolucao_receita and id_paciente=$paciente->id and lixo=0");
@@ -223,7 +255,10 @@
 				});
 
 				var options = {
-						data: <?php echo json_encode($_medicamentos);?>,
+						<?php /*//data: <?php echo json_encode($_medicamentos);?>,*/?>
+						url:function() {
+							return "?ajax=medicamentos";
+						},
 						getValue: "titulo",
 						list: {
 							match: {enabled: true},
@@ -233,6 +268,8 @@
 								$('.js-input-quantidade').val($(".js-input-medicamento").getSelectedItemData().quantidade);
 								$('.js-input-tipo').val($(".js-input-medicamento").getSelectedItemData().tipo);
 								$('.js-input-posologia').val($(".js-input-medicamento").getSelectedItemData().posologia);
+								$('.js-input-id').val($(".js-input-medicamento").getSelectedItemData().id);
+								$('.js-input-controleespecial').val($(".js-input-medicamento").getSelectedItemData().controleespecial);
 							}
 						},
 						  template: {
@@ -352,6 +389,8 @@
 							let tipo = $('.js-input-tipo').val();
 							let tipoTitulo = $('.js-input-tipo option:selected').text();
 							let posologia = $('.js-input-posologia').val();
+							let controleespecial = $('.js-input-controleespecial').val();
+							let id = $('.js-input-id').val();
 
 							let erro = ``;
 							if(medicamento.length==0) erro='Digite o Medicamento!';
@@ -366,6 +405,8 @@
 												tipoTitulo,
 												posologia,
 												id_usuario,
+												id,
+												controleespecial
 											}
 								receitas.push(item);
 								receitasListar();
@@ -464,6 +505,13 @@
 									</dl>
 								</div>
 								<div class="">
+
+									<dl class="dl3">
+										<dd>
+											<input type="text" class="js-input-controleespecial "  />
+											<input type="text" class="js-input-id"  />
+										</dd>
+									</dl>
 
 									<dl class="dl3">
 										<dt>Posologia</dt>

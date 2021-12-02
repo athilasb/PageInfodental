@@ -17,7 +17,8 @@
 			let medicamento = $('input[name=medicamento]').val();
 			let posologia = $('input[name=posologia]').val();
 			let quantidade = $('input[name=quantidade]').val();
-			let tipo = $('select[name=tipo]').val();
+			let tipo = $('select[name=tipo]').val(); 
+			let controleespecial = $('select[name=controleespecial]').prop('checked')===true?1:0; 
 
 			if(medicamento.length==0) {
 				$('input[name=medicamento]').addClass('obg');

@@ -1,4 +1,4 @@
-	<?php
+<?php
 	include "print-header.php";
 	$evolucao = $paciente = $clinica = $solicitante = "";
 	$receituario = array();
@@ -23,10 +23,11 @@
 				$paciente=mysqli_fetch_object($sql->mysqry);
 			}
 
+			$controleEspecial=false;
 			$sql->consult($_p."pacientes_evolucoes_receitas","*","where id_evolucao=$evolucao->id and lixo=0");
-			
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$receituario[]=$x;
+				if($x->controleespecial==1) $controleEspecial=true;
 			}
 
 		}
@@ -77,7 +78,7 @@
 ?>
 			
 <header class="titulo1">
-	<h1 style="margin:auto">Receituário Simples</h1>
+	<h1 style="margin:auto"><?php echo $controleEspecial===true?"Receituário Especial":"Receituário Simples";?></h1>
 </header>
 
 <div class="box box_empty">
@@ -120,7 +121,6 @@
 	?>
 	
 </div>
-
 <div class="box" style="margin-top:2.5rem;">
 	<table>
 		<tr>
@@ -167,6 +167,74 @@
 		</tr>
 	</table>
 </div>
+
+<?php
+	if($controleEspecial===true) {
+?>
+<div style="display:grid; grid-template-columns:1fr 1fr; grid-gap:1.5rem;">
+	<div style="flex:1; border:1px solid silver; border-radius:12px; padding:.5rem;">
+
+		<header class="titulo2">
+			<h1 style="font-size:1em;">Identificação do Comprador</h1>
+		</header>
+		<table class="no-padding">
+			<tr>
+				<td><h1>Nome completo</h1></td>
+			</tr>
+			<tr>
+				<td><h1>RG</h1></td>
+				<td><h1>Órgão Emissor</h1></td>
+			</tr>
+			<tr>
+				<td style="vertical-align:top; height:60px;"><h1>Endereço Completo</h1></td>
+			</tr>
+			<tr>
+				<td><h1>Cidade</h1></td>
+				<td><h1>UF</h1></td>
+			</tr>
+			<tr>
+				<td><h1>Telefone</h1></td>
+			</tr>
+		</table>
+
+	</div>
+	<div style="flex:1; border:1px solid silver; border-radius:12px; padding:.5rem;">
+
+		<header class="titulo2">
+			<h1 style="font-size:1em;">Identificação do Fornecedor</h1>
+		</header>
+		<table class="no-padding">
+			<tr>
+				<td colspan="2"><h1>Nome Farmacêutico(a)</h1></td>
+			</tr>
+			<tr>
+				<td><h1>CPF</h1></td>
+				<td><h1>UF</h1></td>
+			</tr>
+			<tr>
+				<td><h1>Nome Farmácia</h1></td>
+			</tr>
+			<tr>
+				<td><h1>Endereço</h1></td>
+			</tr>
+			<tr>
+				<td><h1>Cidade</h1></td>
+				<td><h1>UF</h1></td>
+			</tr>
+			<tr>
+				<td><h1>CNPJ</h1></td>
+				<td><h1>Telefone</h1></td>
+			</tr>
+			<tr>
+				<td colspan="2" style="vertical-align:bottom; height:50px; text-align:center;"><h1>ASSINATURA FARMACÊUTICO(A)</h1></td>
+			</tr>
+		</table>
+
+	</div>
+</div>
+<?php	
+	}
+?>
 
 <?php
 include "print-footer.php";
