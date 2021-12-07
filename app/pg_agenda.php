@@ -580,6 +580,22 @@
 
 				$rtn=array('success'=>true,'agendamentos'=>$agendamentos);
 			}
+		} else if($_GET['ajax']=="buscaPaciente") {
+			$where="WHERE 1=2";
+			if(isset($_GET['search']) and !empty($_GET['search'])) {
+				$where="where nome like '%".$_GET['search']."%' or telefone1 like '%".$_GET['search']."%' or cpf like '%".$_GET['search']."%' and lixo=0";
+			}
+			
+			$sql->consult($_p."pacientes","nome,id,telefone1,cpf",$where." order by nome asc");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$rtn['items'][]=array('id'=>$x->id,
+										'text'=>utf8_encode($x->nome),
+										'nome'=>utf8_encode($x->nome),
+										'telefone'=>utf8_encode($x->telefone1),
+										'cpf'=>utf8_encode($x->cpf));
+			}
+
+
 		}
 		header("Content-type: application/json");
 		echo json_encode($rtn);
@@ -1544,6 +1560,17 @@
 					    if ((!container.is(e.target) && container.has(e.target).length === 0) && (!containerCalendar.is(e.target) && containerCalendar.has(e.target).length === 0)) {
 					   		$('#cal-popup').hide();
 					    }
+
+					    if($(".select2-container").is(":visible")) {
+						    container3 = $('.select2-dropdown');
+						    container4 = $('.select2-container');
+
+						    // if the target of the click isn't the container nor a descendant of the container
+						    if ((!container3.is(e.target) && container3.has(e.target).length === 0) && 
+						    	(!container4.is(e.target) && container4.has(e.target).length === 0)) {
+						   		$('select[name=id_paciente]').select2('close');
+						    }
+						}
 					});
 
 					<?php

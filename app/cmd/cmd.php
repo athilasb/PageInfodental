@@ -89,7 +89,7 @@
 
 					$sql->consult($_p."agenda","*","where agenda_data='".$dataF."' and id_paciente=$id_paciente");
 					if($sql->rows==0) {
-						$sql->add($_p."agenda",$vSQL);
+						//$sql->add($_p."agenda",$vSQL);
 					}
 				}
 			}

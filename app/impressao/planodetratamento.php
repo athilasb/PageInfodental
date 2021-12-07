@@ -64,8 +64,12 @@
 			$procedimentosIds[$x->id_procedimento]=$x->id_procedimento;
 			if($x->situacao=="aprovado" or $x->situacao=="aguardandoAprovacao") {
 				$descontoTotal+=$x->desconto;
-				$valorTotalSemDesconto+=$x->valorSemDesconto;
-				$valorTotal+=$x->valor;
+
+				$valorTotalSemDesconto+=$x->valor*$x->quantidade;
+
+				$x->valorSemDesconto=$x->valor*$x->quantidade;
+
+				$valorTotal+=($x->valor*$x->quantidade)-$x->desconto;
 			}
 		}
 
@@ -276,7 +280,7 @@
 			</td>
 			<td style="width:30%">
 				<h1>Valor Parcela <?php echo $cont++;?></h1>
-				<p>R$ <?php echo number_format($pag->valor,2,",", ",");?></p>
+				<p>R$ <?php echo number_format($pag->valor,2,",", ".");?></p>
 			</td>
 			<td style="width:30%">
 				<h1>Forma de Pagamento</h1>

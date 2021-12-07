@@ -59,8 +59,12 @@
 			if(is_object($tratamento)) {
 				$vsql="procedimentos='".addslashes(utf8_decode($_POST['procedimentos']))."',
 						pagamentos='".addslashes(utf8_decode($_POST['pagamentos']))."'";
+				$vwhere="where id=$tratamento->id";
 
-				$sql->update($_p."pacientes_tratamentos",$vsql,"where id=$tratamento->id");
+				$sql->update($_p."pacientes_tratamentos",$vsql,$vwhere);
+				
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vsql)."',vwhere='".addslashes($vwhere)."',tabela='".$_p."pacientes_tratamentos',id_reg='".$tratamento->id."'");
+
 
 				$rtn=array('success'=>true);
 			} else {
@@ -263,7 +267,7 @@
 							}
 
 							$valor=$x->valorSemDesconto;
-							if($x->quantitativo==1) $valor*=$x->quantidade;
+							//if($x->quantitativo==1) $valor*=$x->quantidade;
 
 							$procedimentos[]=array('id'=>$x->id,
 													'id_procedimento'=>(int)$x->id_procedimento,
@@ -276,7 +280,7 @@
 													'quantidade'=>(int)$x->quantidade,
 													'id_opcao'=>(int)$x->id_opcao,
 													'opcao'=>utf8_encode($x->opcao),
-													'valorCorrigido'=>(float)$x->valor,
+													'valorCorrigido'=>(float)($x->quantitativo==1?$x->quantidade*$x->valor:$x->valor)-$x->desconto,
 													'valor'=>(float)$valor,
 													'desconto'=>(float)$x->desconto,
 													'obs'=>utf8_encode($x->obs),
@@ -864,7 +868,7 @@
 																	id_profissional='".addslashes($x->id_profissional)."',
 																	profissional='".addslashes(utf8_decode($x->profissional))."',
 																	situacao='".addslashes($x->situacao)."',
-																	valor='".addslashes($x->valorCorrigido)."',
+																	valor='".addslashes($x->valor)."',
 																	desconto='".addslashes($x->desconto)."',
 																	valorSemDesconto='".addslashes($x->valor)."',
 																	quantitativo='".addslashes($x->quantitativo)."',
@@ -955,8 +959,6 @@
 						die();
 					}
 				}
-
-
 
 			}
 		?>	
@@ -1119,7 +1121,11 @@
 								if(x.situacao!='naoAprovado' && x.situacao!='observado') {
 
 
-									if(x.desconto>0) valorTotal+=$.isNumeric(x.valorCorrigido)?eval(x.valorCorrigido):unMoney(x.valorCorrigido);
+									if(x.desconto>0) {
+										valorTotal+=$.isNumeric(x.valorCorrigido)?eval(x.valorCorrigido):unMoney(x.valorCorrigido);
+
+										//if(eval(x.quantitativo)==1) valorTotal*=x.quantidade;
+									}
 									else {
 										if(eval(x.quantitativo)==1) {
 
@@ -1237,7 +1243,6 @@
 
 						
 						if(id_tratamento>0) {
-
 								let data = `ajax=persistirDesconto&id_tratamento=${id_tratamento}&procedimentos=${JSON.stringify(procedimentos)}&pagamentos=${JSON.stringify(pagamentos)}`;
 							
 								$.ajax({
@@ -1614,7 +1619,7 @@
 
 							if(pagamentos.length==1) $('.js-pagamento-item .js-valor:last').prop('disabled',true);
 						}
-						console.log(pagamentos);
+						//console.log(pagamentos);
 						$('textarea.js-json-pagamentos').val(JSON.stringify(pagamentos))
 						//atualizaValor();
 						desativarCampos();
@@ -2167,7 +2172,7 @@
 										if(rtn.success) { 
 											$('.js-id_plano option').remove();
 											$('.js-id_plano').append(`<option value=""></option>`);
-											console.log(rtn.planos);
+											//console.log(rtn.planos);
 											if(rtn.planos) {
 
 												rtn.planos.forEach(x=> {
@@ -2338,6 +2343,7 @@
 							$(`.js-procedimento-obs`).val('');
 							$.fancybox.open({
 								src:'#modalProcedimento',
+
 								afterLoad:function(){
 									$(".js-id_procedimento,.js-id_plano,.js-id_profissional").select2({dropdownParent: $("#modalProcedimento")});
 								},
@@ -2363,6 +2369,26 @@
 						pagamentosListar();
 
 					desativarCampos();
+
+					$(document).mouseup(function(e)  {
+
+						if($(".select2-container").is(":visible")) {
+						    var container = $('.select2-dropdown');
+						    var container2 = $('.select2-container');
+
+						    // if the target of the click isn't the container nor a descendant of the container
+						    if ((!container.is(e.target) && container.has(e.target).length === 0) && 
+						    	(!container2.is(e.target) && container2.has(e.target).length === 0)) {
+						   		$('.js-id_procedimento').select2('close');
+						   		$('.js-id_plano').select2('close');
+						   		$('.js-id_profissional').select2('close');
+						   		if($('.js-regiao-1-select').data('select2')) $('.js-regiao-1-select').select2('close');
+						   		if($('.js-regiao-2-select').data('select2')) $('.js-regiao-2-select').select2('close');
+						   		if($('.js-regiao-3-select').data('select2')) $('.js-regiao-3-select').select2('close');
+						   		if($('.js-regiao-4-select').data('select2')) $('.js-regiao-4-select').select2('close');
+						    }
+						}
+					});
 
 
 					$('#modalProcedimento').hide();
@@ -2786,7 +2812,7 @@
 						let tipoDesconto = $('#boxDesconto .js-select-descontoEm').val();
 						let quantidadeDesconto = $('#boxDesconto .js-checkbox-descontos:checked').length;
 						let desconto = unMoney($(`#boxDesconto .js-input-desconto`).val());
-						console.log('Descontando '+desconto);
+						//console.log('Descontando '+desconto);
 						if(quantidadeDesconto==0) {
 							swal({title: "Erro", text: 'Selecione pelo menos um procedimento para aplicar desconto!', html:true, type:"error", confirmButtonColor: "#424242"});
 								

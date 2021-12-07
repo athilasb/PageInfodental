@@ -560,7 +560,65 @@
 		});
 
 		$('.chosen').chosen({hide_results_on_select:false,allow_single_deselect:true});
-		$('.select2').select2({dropdownParent: $(".modal")});
+
+		function formatTemplate(state) {
+			 if (!state.id) {
+			    return state.text;
+			  }
+			  //console.log(state);
+			  var baseUrl = "/user/pages/images/flags";
+
+			  infoComplementar=``;
+			  infoComplementar+= !! state.cpf ? ` - CPF: ${state.cpf}` : '';
+			  infoComplementar+= !! state.telefone ? ` - Tel.: ${state.telefone}` : '';
+
+			  var $state = $(
+			    '<span><img src="img/ilustra-perfil.png" style="width:30px;height:30px;border-radius:50px;" /> ' + state.text + infoComplementar + '</span>'
+			  );
+			  return $state;
+		}
+
+		function formatTemplateSelection(state) {
+			 if (!state.id) {
+			    return state.text;
+			  }
+			  //console.log(state);
+			  var baseUrl = "/user/pages/images/flags";
+
+			  infoComplementar=``;
+			  infoComplementar+= !! state.cpf ? ` - CPF: ${state.cpf}` : '';
+			  infoComplementar+= !! state.telefone ? ` - Tel.: ${state.telefone}` : '';
+
+			  var $state = $(
+			    '<span><img src="img/ilustra-perfil.png" style="width:30px;height:30px;border-radius:50px;" /> ' + state.text + infoComplementar + '</span>'
+			  );
+			  return $state;
+		}
+
+		$('select[name=id_paciente]').select2({
+			ajax: {
+				url: 'pg_agenda.php?ajax=buscaPaciente',
+				data: function (params) {
+					var query = {
+						search: params.term,
+						type: 'public'
+					}
+
+					// Query parameters will be ?search=[term]&type=public
+					return query;
+				},
+				 processResults: function (data) {
+				      // Transforms the top-level key of the response object from 'items' to 'results'
+				      return {
+				        results: data.items
+				      };
+				    }
+				  
+			},
+			templateResult:formatTemplate,
+		//	templateSelection:formatTemplateSelection,
+			dropdownParent: $(".modal")
+		});
 
 		$('.agendaData').datetimepicker({
 			timepicker:false,
@@ -806,9 +864,19 @@
 							<select name="id_paciente" class="select2 obg" data-placeholder="PACIENTE">
 								<option value=""></option>
 								<?php
-								foreach($_pacientes as $p) {
-									echo '<option value="'.$p->id.'"'.($values['id_paciente']==$p->id?' selected':'').' data-telefone="'.$p->telefone1.'">'.utf8_encode($p->nome).'</option>';
+								if(is_object($agenda)) {
+									$sql->consult($_p."pacientes","id,nome","where id=$agenda->id_paciente");
+									if($sql->rows) {
+										$paciente=mysqli_fetch_object($sql->mysqry);
+								?>
+								<option value="<?php echo $paciente->id;?>" selected><?php echo utf8_encode($paciente->nome);?></option>
+								<?php
+
+									}
 								}
+								/*foreach($_pacientes as $p) {
+									echo '<option value="'.$p->id.'"'.($values['id_paciente']==$p->id?' selected':'').' data-telefone="'.$p->telefone1.'">'.utf8_encode($p->nome).'</option>';
+								}*/
 								?>
 							</select>
 							<a href="box/boxNovoPaciente.php" data-fancybox data-type="ajax" class="button button__sec"><i class="iconify" data-icon="bx-bx-plus"></i></a>
