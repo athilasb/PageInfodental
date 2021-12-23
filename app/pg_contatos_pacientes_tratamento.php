@@ -169,10 +169,10 @@
 		}
 
 	}
-	$_selectSituacaoOptions=array('aguardandoAprovacao'=>array('titulo'=>'AGUARDANDO APROVAÇÃO','cor'=>'blue'),
+	$_selectSituacaoOptions=array(//'aguardandoAprovacao'=>array('titulo'=>'AGUARDANDO APROVAÇÃO','cor'=>'blue'),
 											'aprovado'=>array('titulo'=>'APROVADO','cor'=>'green'),
 											'naoAprovado'=>array('titulo'=>'REPROVADO','cor'=>'red'),
-											'observado'=>array('titulo'=>'NOTADO','cor'=>'orange'),
+										//	'observado'=>array('titulo'=>'NOTADO','cor'=>'orange'),
 											//'cancelado'=>array('titulo'=>'CANCELADO');
 										);
 
@@ -196,7 +196,7 @@
 		$planosDosProcedimentos[$x->id_procedimento][]=array("id"=>$x->id_plano,"titulo"=>utf8_encode($_planos[$x->id_plano]->titulo));
 	}
 
-	$campos=explode(",","titulo");
+	$campos=explode(",","titulo,id_profissional");
 	foreach($campos as $v) $values[$v]='';
 
 	if(is_object($paciente)) {
@@ -235,7 +235,7 @@
 		<?php
 		if(isset($_GET['form'])) {
 
-			$campos=explode(",","titulo");
+			$campos=explode(",","titulo,id_profissional");
 			
 			foreach($campos as $v) $values[$v]='';
 			$values['procedimentos']="[]";
@@ -257,14 +257,14 @@
 						$sql->consult($_table."_procedimentos","*",$where);
 						while($x=mysqli_fetch_object($sql->mysqry)) {
 
-							$profissional=isset($_profissionais[$x->id_profissional])?$_profissionais[$x->id_profissional]:'';
+							/*$profissional=isset($_profissionais[$x->id_profissional])?$_profissionais[$x->id_profissional]:'';
 							$iniciaisCor='';
 							$iniciais='?';
 							if(is_object($profissional)) {
 								$iniciais=$profissional->calendario_iniciais;
 
 								$iniciaisCor=$profissional->calendario_cor;
-							}
+							}*/
 
 							$valor=$x->valorSemDesconto;
 							//if($x->quantitativo==1) $valor*=$x->quantidade;
@@ -272,7 +272,7 @@
 							$procedimentos[]=array('id'=>$x->id,
 													'id_procedimento'=>(int)$x->id_procedimento,
 													'procedimento'=>utf8_encode($x->procedimento),
-													'id_profissional'=>(int)$x->id_profissional,
+													//'id_profissional'=>(int)$x->id_profissional,
 													'profissional'=>utf8_encode($x->profissional),
 													'id_plano'=>(int)$x->id_plano,
 													'plano'=>utf8_encode($x->plano),
@@ -284,9 +284,9 @@
 													'valor'=>(float)$valor,
 													'desconto'=>(float)$x->desconto,
 													'obs'=>utf8_encode($x->obs),
-													'situacao'=>$x->situacao,
-													'iniciais'=>$iniciais,
-													'iniciaisCor'=>$iniciaisCor);
+													'situacao'=>$x->situacao);
+													/*'iniciais'=>$iniciais,
+													'iniciaisCor'=>$iniciaisCor);*/
 						}
 						if($cnt->status=="APROVADO") {
 							$values['procedimentos']=json_encode($procedimentos);
@@ -415,7 +415,9 @@
 							$vSQL.="procedimentos='".addslashes(utf8_decode($_POST['procedimentos']))."',";
 							$vSQL.="pagamentos='".addslashes(utf8_decode($_POST['pagamentos']))."',";
 						}
+						//echo $vSQL;die();
 
+						$idProfissional=(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional']))?$_POST['id_profissional']:0;
 
 						if(isset($_POST['parcelas']) and is_numeric($_POST['parcelas'])) $vSQL.="parcelas='".$_POST['parcelas']."',";
 						if(isset($_POST['pagamento'])) $vSQL.="pagamento='".$_POST['pagamento']."',";
@@ -438,6 +440,8 @@
 							$id_tratamento=$sql->ulid;
 							$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$id_tratamento."'");
 						}
+
+						$sql->update($_table."_procedimentos","id_profissional=$idProfissional","where id_tratamento=$id_tratamento");
 					}
 					if(isset($_POST['status']) and !empty($_POST['status'])) {
 
@@ -495,11 +499,11 @@
 														$persistir=false;
 														break;
 													}
-													if($x->situacao=="aprovado" and ($x->id_profissional==0 or empty($x->id_profissional))) {
+													/*if($x->situacao=="aprovado" and ($x->id_profissional==0 or empty($x->id_profissional))) {
 														$erro='Para aprovar o tratamento, é necessário selecionar o Profissional para todos os procedimentos aprovados';
 														$persistir=false;
 														break;
-													}
+													}*/
 												}
 											}
 										};
@@ -658,6 +662,7 @@
 
 							// Persiste informações
 							if($persistir===true) { 
+
 
 								// Pagamentos
 									if(isset($_POST['pagamentos'])  and !empty($_POST['pagamentos'])) {
@@ -865,9 +870,9 @@
 																	procedimento='".addslashes(utf8_decode($x->procedimento))."',
 																	id_plano='".addslashes($x->id_plano)."',
 																	plano='".addslashes(utf8_decode($x->plano))."',
-																	id_profissional='".addslashes($x->id_profissional)."',
 																	profissional='".addslashes(utf8_decode($x->profissional))."',
 																	situacao='".addslashes($x->situacao)."',
+																	id_profissional='".$idProfissional."',
 																	valor='".addslashes($x->valor)."',
 																	desconto='".addslashes($x->desconto)."',
 																	valorSemDesconto='".addslashes($x->valor)."',
@@ -876,6 +881,7 @@
 																	id_opcao='".addslashes($x->id_opcao)."',
 																	obs='".addslashes(utf8_decode($x->obs))."',
 																	opcao='".addslashes(utf8_decode($x->opcao))."',";
+																	//id_profissional='".addslashes($x->id_profissional)."',
 												//echo $vSQLProcedimento."<BR>";die();
 												$procedimento='';
 												if(isset($x->id) and is_numeric($x->id)) {
@@ -905,7 +911,7 @@
 														$procedimentosEvolucao[]=array('id_tratamento_procedimento'=>$id_tratamento_procedimento,
 																						'id_paciente'=>$paciente->id,
 																						'id_procedimento'=>$x->id_procedimento,
-																						'id_profissional'=>$x->id_profissional,
+																						'id_profissional'=>$idProfissional,
 																						'status_evolucao'=>'iniciar',
 																						'numeroTotal'=>$x->quantidade,
 																						'numero'=>$i);
@@ -921,7 +927,7 @@
 												$vSQL="id_tratamento_procedimento=$x->id_tratamento_procedimento,
 														id_paciente=$x->id_paciente,
 														id_procedimento=$x->id_procedimento,
-														id_profissional=$x->id_profissional,
+														id_profissional=$idProfissional,
 														status_evolucao='$x->status_evolucao',
 														numeroTotal='$x->numeroTotal',
 														numero='$x->numero'";
@@ -982,10 +988,10 @@
 
 					<div class="paciente-info-grid js-grid js-grid-info" style="font-size: 12px;">		
 						
-						<dl style="grid-column:span 2;">
+						<?php /*<dl style="grid-column:span 2;">
 							<dt>Profissional</dt>
 							<dd><?php echo $selectProfissional;?></dd>
-						</dl>
+						</dl>*/?>
 
 						<dl>
 
@@ -1260,7 +1266,7 @@
 
 				// PROCEDIMENTOS
 				
-					var procedimentosHMTL = `<a href="javascript:;" class="reg-group js-procedimento-item">
+					/*var procedimentosHMTL = `<a href="javascript:;" class="reg-group js-procedimento-item">
 
 												<div class="reg-data js-descricao">
 													<h1 class="js-procedimento"></h1>
@@ -1276,6 +1282,22 @@
 												<div class="js-profissional">
 													
 												</div>
+												
+
+												
+											</a>`;*/
+
+					var procedimentosHMTL = `<a href="javascript:;" class="reg-group js-procedimento-item">
+
+												<div class="reg-data js-descricao">
+													<h1 class="js-procedimento"></h1>
+													<p class="js-plano"></p>
+												</div>
+
+												
+												<div class="js-regiao"></div>						
+
+												<div class="js-valor"></div>	
 												
 
 												
@@ -1295,87 +1317,45 @@
 							procedimentos.forEach(x=> {
 								popViewInfos[index] = x;
 
-								btnExcluir='';
-								if(tratamentoAprovado===1 && x.situacao=="aprovado") btnExcluir='Ex';
-
-								let corSituacao="blue";
-								let steps = ``;
-								if(x.situacao=="aprovado") {
-									corSituacao="green";
-									steps = `<div class="reg-steps__item active">
-													<h1 style="color:var(--verde);">1</h1>
-													<p>Aguardando Aprovação</p>									
-												</div>
-
-												<div class="reg-steps__item active">
-													<h1 style="color:var(--verde);">2</h1>
-													<p>Aprovado</p>									
-												</div>`;
-								}
-								else if(x.situacao=="naoAprovado") {
-									corSituacao="red";
-									steps = `<div class="reg-steps__item active">
-													<h1 style="color:var(--verde);">1</h1>
-													<p>Aguardando Aprovação</p>									
-												</div>
-
-												<div class="reg-steps__item active">
-													<h1 style="color:var(--vermelho);">2</h1>
-													<p>Reprovado</p>									
-												</div>`;
-								}
-								else if(x.situacao=="observado") {
-									corSituacao="orange";
-									steps = `<div class="reg-steps__item active">
-													<h1 style="color:#999;">1</h1>
-													<p>Notado</p>									
-												</div>`;
-								} 	else {
-									corSituacao="red";
-									steps = `<div class="reg-steps__item active">
-													<h1 style="color:var(--verde);">1</h1>
-													<p>Aguardando Aprovação</p>									
-												</div>
-
-												<div class="reg-steps__item active">
-													<h1 style="color:#999;">2</h1>
-													<p>Aprovado/Reprovado</p>									
-												</div>`;
-								}
-
-								if(eval(x.id_profissional)>0) {
-									iniciais=`<div class="cal-item-foto"><span style="background:${x.iniciaisCor}">${x.iniciais}</span></div>`;
-								} else {
-									iniciais=`<div class="cal-item-foto"><span style=""><span class="iconify" data-icon="bi:person-fill" data-inline="false"></span></span></div>`
-								}
+								
 
 								$(`.js-procedimentos`).append(procedimentosHMTL);
-								$(`.js-procedimentos .js-steps:last`).append(steps);
 								$(`.js-procedimentos .js-procedimento-item:last`).attr('data-situacao',x.situacao);
 								//$(`.js-procedimentos .js-procedimento-item:last`).css('border-left',`solid 10px ${corSituacao}`)
 								$(`.js-procedimentos .js-procedimento-item:last`).click(function(){popView(this);})
 								$(`.js-procedimentos .js-procedimento:last`).html(x.procedimento);
 
+
+
 								let opcaoShow = x.opcao;
 								if(x.quantitativo==0 && x.opcao.length==2) {
 									opcaoShow=`<span class="iconify" data-icon="la:tooth" data-height="13" style="color:var(--cor1)" data-inline="true"></span> ${x.opcao}`;
 								}
-								$(`.js-procedimentos .js-regiao:last`).html(x.quantitativo==1?`Qtd.: ${x.quantidade} - `:opcaoShow);
+								$(`.js-procedimentos .js-regiao:last`).html(x.quantitativo==1?`Qtd.: ${x.quantidade}`:opcaoShow);
 								if(x.opcao.length==0) {
-									$(`.js-procedimentos .js-regiao:last`).append(`${x.plano}`);
+									$(`.js-procedimentos .js-plano:last`).append(`${x.plano}`);
 								} else {
-									$(`.js-procedimentos .js-regiao:last`).append(` - ${x.plano}`);
+									$(`.js-procedimentos .js-plano:last`).append(`${x.plano}`);
 								}
 								if(x.situacao!="observado" && x.situacao!="naoAprovado") {
 									if(x.desconto) {
-										$(`.js-procedimentos .js-regiao:last`).append(`<br /><span class="iconify" data-icon="dashicons:money-alt" data-width="15" style="color:var(--cor1)" data-inline="true"></span> <strike>${number_format((eval(x.quantitativo)==1?x.quantidade*x.valor:x.valor),2,",",".")}</strike> ${number_format(x.valorCorrigido,2,",",".")}`);
+										$(`.js-procedimentos .js-valor:last`).append(`<span class="iconify" data-icon="dashicons:money-alt" data-width="15" style="color:var(--cor1)" data-inline="true"></span> <strike>${number_format((eval(x.quantitativo)==1?x.quantidade*x.valor:x.valor),2,",",".")}</strike><br /> ${number_format(x.valorCorrigido,2,",",".")}`);
 									} else {
-										$(`.js-procedimentos .js-regiao:last`).append(`<br /><span class="iconify" data-icon="dashicons:money-alt" data-width="15" style="color:var(--cor1)" data-inline="true"></span> ${number_format(x.valorCorrigido?x.valorCorrigido:x.valor,2,",",".")}`);
+										$(`.js-procedimentos .js-valor:last`).append(`<span class="iconify" data-icon="dashicons:money-alt" data-width="15" style="color:var(--cor1)" data-inline="true"></span><br /> ${number_format(x.valorCorrigido?x.valorCorrigido:x.valor,2,",",".")}`);
 									}
 								} else {
 									$(`.js-procedimentos .js-regiao:last`).append('');
 								}
-								$(`.js-procedimentos .js-profissional:last`).html(iniciais);
+
+
+
+								if(x.situacao=="aprovado") {
+									$(`.js-procedimentos .js-procedimento-item:last`).css('opacity',1);
+								} else if(x.situacao=="naoAprovado") {
+									$(`.js-procedimentos .js-procedimento-item:last`).css('opacity',0.3);
+								}
+
+								//$(`.js-procedimentos .js-profissional:last`).html(iniciais);
 								//console.log(x);
 								index++;
 								total+=x.valorCorrigido?(x.valorCorrigido):(x.valor);
@@ -2056,9 +2036,9 @@
 							let plano = $(`.js-id_plano option:selected`).text();
 							let quantitativo = $(`.js-id_procedimento option:selected`).attr('data-quantitativo');
 							let quantidade = $(`.js-inpt-quantidade`).val();
-							let situacao = `aguardandoAprovacao`;
+							let situacao = `aprovado`;
 							let obs = $('.js-procedimento-obs').val();
-							let id_profissional = $('.js-id_profissional').val();
+							//let id_profissional = $('.js-id_profissional').val();
 							let iniciais = $('.js-id_profissional option:selected').attr('data-iniciais');
 							let iniciaisCor = $('.js-id_profissional option:selected').attr('data-iniciaisCor');
 							let valorCorrigido=valor;
@@ -2102,7 +2082,7 @@
 									item.valorCorrigido=valorCorrigido;
 									item.descontoAplicarEmTodos=0;
 									item.quantitativo=quantitativo;
-									item.id_profissional=id_profissional;
+									//item.id_profissional=id_profissional;
 									item.iniciais=iniciais
 									item.iniciaisCor=iniciaisCor;
 									let dt = new Date();
@@ -2133,7 +2113,7 @@
 								}
 								$(`.js-id_procedimento`).val('').trigger('chosen:updated');
 								$(`.js-id_plano`).val('').trigger('chosen:updated');
-								$(`.js-id_profissional`).val('').trigger('chosen:updated');
+								//$(`.js-id_profissional`).val('').trigger('chosen:updated');
 								
 								$(`.js-inpt-quantidade`).val(1).parent().parent().hide();
 								
@@ -2232,14 +2212,13 @@
 
 						});
 
-						$('#cal-popup').on('change','.js-profissional',function(){
+						/*$('#cal-popup').on('change','.js-profissional',function(){
 							let index = $('#cal-popup .js-index').val();
 							procedimentos[index].id_profissional=$(this).val();
 							procedimentos[index].iniciais=$(this).find('option:selected').attr('data-iniciais');
 							procedimentos[index].iniciaisCor=$(this).find('option:selected').attr('data-iniciaisCor');
 							procedimentosListar();
 						})
-
 						$('.js-table-procedimentos').on('change','.js-profissional',function(){
 							
 							if(tratamentoAprovado===1) { 
@@ -2249,7 +2228,7 @@
 							procedimentos[index].id_profissional=$(this).val();
 							procedimentos[index].profissional=$(this).find(':selected').text();
 							procedimentosListar();
-						});
+						});*/
 
 						$('.js-table-procedimentos').on('change','.js-quantidade',function(){
 							let index = $(this).index(`.js-table-procedimentos .js-quantidade`);
@@ -2337,7 +2316,7 @@
 							let id_regiao = $(`.js-id_procedimento option:selected`).attr('data-id_regiao');
 							$(`.js-id_procedimento`).val('').trigger('chosen:updated');
 							$(`.js-id_plano`).val('').trigger('chosen:updated');
-							$(`.js-id_profissional`).val('').trigger('chosen:updated');
+							//$(`.js-id_profissional`).val('').trigger('chosen:updated');
 							$(`.js-inpt-quantidade`).val(1).parent().parent().hide();
 							$(`.js-regiao-${id_regiao}-select`).val([]).trigger('chosen:updated').parent().parent().hide();
 							$(`.js-procedimento-obs`).val('');
@@ -2345,11 +2324,12 @@
 								src:'#modalProcedimento',
 
 								afterLoad:function(){
-									$(".js-id_procedimento,.js-id_plano,.js-id_profissional").select2({dropdownParent: $("#modalProcedimento")});
+									//$(".js-id_procedimento,.js-id_plano,.js-id_profissional").select2({dropdownParent: $("#modalProcedimento")});
+									$(".js-id_procedimento,.js-id_plano").select2({dropdownParent: $("#modalProcedimento")});
 								},
 								afterClose:function(){
-
-									$(".js-id_procedimento,.js-id_plano,.js-id_profissional").select2('destroy');
+									//$(".js-id_procedimento,.js-id_plano,.js-id_profissional").select2('destroy');
+									$(".js-id_procedimento,.js-id_plano").select2('destroy');
 								}
 							})
 						})
@@ -2381,7 +2361,7 @@
 						    	(!container2.is(e.target) && container2.has(e.target).length === 0)) {
 						   		$('.js-id_procedimento').select2('close');
 						   		$('.js-id_plano').select2('close');
-						   		$('.js-id_profissional').select2('close');
+						   		//$('.js-id_profissional').select2('close');
 						   		if($('.js-regiao-1-select').data('select2')) $('.js-regiao-1-select').select2('close');
 						   		if($('.js-regiao-2-select').data('select2')) $('.js-regiao-2-select').select2('close');
 						   		if($('.js-regiao-3-select').data('select2')) $('.js-regiao-3-select').select2('close');
@@ -2459,6 +2439,17 @@
 									<div class="filter-input">
 										<input type="text" name="titulo" value="<?php echo $values['titulo'];?>" placeholder="Nome do plano" style="width:300px" />
 									</div>
+									<div class="filter-input">
+										&nbsp;&nbsp;<select name="id_profissional" class="js-id_profissional" placeholder="Selecione o Profissional">
+											<option value="">Selecione o Profissional...</option>
+											<?php
+											foreach($_profissionais as $x) {
+												$iniciais=$x->calendario_iniciais;
+												echo '<option value="'.$x->id.'" data-iniciais="'.$iniciais.'" data-iniciaisCor="'.$x->calendario_cor.'"'.($values['id_profissional']==$x->id?" selected":"").'>'.utf8_encode($x->nome).'</option>';
+											}
+											?>
+										</select>
+									</div>
 								</div>
 
 								<?php /*
@@ -2523,7 +2514,7 @@
 									<dl>
 										<dd>
 											<a href="javascript:;" class="button js-btn-addProcedimento" style="background:var(--verde);"><i class="iconify" data-icon="bx-bx-plus"></i><span>Novo Procedimento</span></a>
-											<a href="javascript:;" class="button js-btn-aprovarTodosProcedimentos">Aprovar Todos Aguardando Aprovação</span></a>
+											<?php /*<a href="javascript:;" class="button js-btn-aprovarTodosProcedimentos">Aprovar Todos Aguardando Aprovação</span></a>*/?>
 										</dd>
 									</dl>							
 									
@@ -2590,7 +2581,6 @@
 									</div>*/?> 
 									<?php
 									if($tratamentoAprovado===false) {
-
 									?>
 										<div class="js-formDiv-financeiro">
 											<div class="colunas2">
@@ -2676,11 +2666,11 @@
 								else if(x.situacao=="naoAprovado") corSituacao="red";
 								else if(x.situacao=="observado") corSituacao="orange";
 
-								if(eval(x.id_profissional)>0) {
+								/*if(eval(x.id_profissional)>0) {
 									iniciais=`<div class="cal-item-foto"><span style="background:${x.iniciaisCor}">${x.iniciais}</span></div>`;
 								} else {
 									iniciais=`<div class="cal-item-foto"><span style=""><span class="iconify" data-icon="bi:person-fill" data-inline="false"></span></span></div>`
-								}
+								}*/
 								$(`.js-procedimentos-descontos`).append(procedimentosDescontoHMTL);
 								$(`.js-procedimentos-descontos .js-procedimento-item:last`).attr('data-situacao',x.situacao);
 								//$(`.js-procedimentos-descontos .js-procedimento-item:last`).css('border-left',`solid 10px ${corSituacao}`)
@@ -2707,7 +2697,7 @@
 									$(`.js-procedimentos-descontos .js-valor:last`).html(number_format(x.valorCorrigido?x.valorCorrigido:x.valor,2,",","."));
 								}
 
-								$(`.js-procedimentos-descontos .js-profissional:last`).html(iniciais);
+								//$(`.js-procedimentos-descontos .js-profissional:last`).html(iniciais);
 
 							}
 						});
@@ -2855,7 +2845,8 @@
 								let cont = 0;
 								let contProcedimento = 0;
 								procedimentos.forEach(x=>{
-									if(x.situacao!="naoAprovado" && x.situacao!="observado") {
+									console.log(x);
+									if(x.situacao=="aprovado") {
 
 										if($(`#boxDesconto .js-checkbox-descontos:eq(${cont})`).prop('checked')===true) {
 											let desc = 0;
@@ -3144,7 +3135,7 @@
 								</dl>
 
 
-								<dl class="dl2">
+								<?php /*<dl class="dl2">
 									<dt>Profissional</dt>
 									<dd>
 										<select class="js-id_profissional">
@@ -3157,7 +3148,7 @@
 											?>
 										</select>
 									</dd>
-								</dl>
+								</dl>*/?>
 							</div>
 
 								<dl>

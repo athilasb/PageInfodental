@@ -1888,14 +1888,14 @@
 
 			<div class="kanban" id="kanban">
 				
-				<div class="kanban-item" style="color:var(--cor1);">
+				<div class="kanban-item" style="color:var(--cor1);display:none">
 					<h1 class="kanban-item__titulo">CONFIRMAR HOJE<?php /* <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span>*/?></h1>
 					<div class="kanban-card js-kanban-status js-kanban-status-hoje" data-id_status="hoje" style="min-height: 100px;">
 					
 					</div>
 				</div>
 				
-				<div class="kanban-item" style="color:var(--cor1);">
+				<div class="kanban-item" style="color:var(--cor1);display:none">
 					<h1 class="kanban-item__titulo">CONFIRMAR AMANHÃ<?php /* <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span>*/?></h1>
 					<div class="kanban-card js-kanban-status js-kanban-status-amanha" data-id_status="amanha" style="min-height: 100px;">
 						
