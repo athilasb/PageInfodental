@@ -16,11 +16,17 @@ class Mysql {
 			$ms_db=$_ENV['MYSQL_DB'];
 		
 		}*/
-
-		$ms_server="localhost";
+ 
+		/*$ms_server="localhost";
 		$ms_login="andre";
 		$ms_senha="l8e3RSk7aYZQmJuZ";
-		$ms_db="infodental";
+		$ms_db="infodental";*/
+
+		$ms_server=$_ENV['MYSQL_HOST'];
+		$ms_login=$_ENV['MYSQL_USER'];
+		$ms_senha=$_ENV['MYSQL_PASS'];
+		$ms_db=$_ENV['MYSQL_DB'];
+	
 
 		
 		$this->connecting=mysqli_connect($ms_server, $ms_login, $ms_senha);

@@ -49,7 +49,7 @@ CREATE TABLE `ident_cidades` (
   `titulo` varchar(255) NOT NULL,
   `uf` char(2) NOT NULL,
   `capital` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InNODB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -476,7 +476,7 @@ CREATE TABLE `ident_landingpage_temas` (
   `codigo_head` text COLLATE utf8mb4_bin NOT NULL,
   `codigo_body` text COLLATE utf8mb4_bin NOT NULL,
   `codigo_conversao` text COLLATE utf8mb4_bin NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- --------------------------------------------------------
 
@@ -493,7 +493,7 @@ CREATE TABLE `ident_log` (
   `vwhere` varchar(250) NOT NULL,
   `tabela` varchar(100) NOT NULL,
   `id_reg` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InNODB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -511,7 +511,7 @@ CREATE TABLE `ident_logins` (
   `ip_lan` varchar(50) NOT NULL,
   `id_usuario` int(11) NOT NULL,
   `frentedeloja` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InNODB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -527,7 +527,7 @@ CREATE TABLE `ident_log_sessoes` (
   `ip_lan` varchar(30) NOT NULL,
   `pagina` text NOT NULL,
   `frentedeloja` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InNODB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -1424,7 +1424,7 @@ CREATE TABLE `ident_profissionais_comissionamentogeral` (
   `lixo` tinyint(1) NOT NULL,
   `id_profissional` int(11) NOT NULL,
   `id_plano` int(11) NOT NULL,
-  `tipo` enum('','valor','porcentual','horas','') NOT NULL,
+  `tipo` enum('','valor','porcentual','horas') NOT NULL,
   `valor` double NOT NULL,
   `abater_custos` tinyint(1) NOT NULL,
   `abater_impostos` tinyint(1) NOT NULL,
@@ -2547,6 +2547,3 @@ ALTER TABLE `ident_whatsapp_instancias`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
