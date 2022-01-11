@@ -196,267 +196,259 @@
 			if(empty($start)) $data_inicio=date('Y-m-01');
 			if(empty($end)) $data_fim=date('Y-m-31');
 
-			$unidade='';
-			if(isset($_GET['id_unidade']) and is_numeric($_GET['id_unidade']) and isset($_optUnidades[$_GET['id_unidade']])) {
-				$unidade=$_optUnidades[$_GET['id_unidade']];
+		
+			$_pacientes=array();
+			$sql->consult($_p."pacientes","*","where lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) $_pacientes[$x->id]=$x;
+
+			$agendamentos=array();
+			$where="where agenda_data>='".$data_inicio." 00:00:00' and agenda_data<='".$data_fim."' and lixo=0";
+
+			if(isset($_GET['id_status']) and is_numeric($_GET['id_status'])) $where.=" and id_status='".$_GET['id_status']."'";
+			if(isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira'])) $where.=" and id_cadeira='".$_GET['id_cadeira']."'";
+			if(isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional'])) $where.=" and profissionais like '%,".$_GET['id_profissional'].",%'";
+			if(isset($_GET['busca']) and !empty($_GET['busca'])) {
+				$sql->consult($_p."pacientes","*","where nome like '%".addslashes($_GET['busca'])."%'");
+				if($sql->rows) {
+					$pacientesIDs=array();
+					while($x=mysqli_fetch_object($sql->mysqry)) $pacientesIDs[]=$x->id;
+					$where.=" and id_paciente IN (".implode(",",$pacientesIDs).")";
+				} else $where.=" and 2=1";
 			}
 
-			if(is_object($unidade)) {
 
-				$_pacientes=array();
-				$sql->consult($_p."pacientes","*","where lixo=0");
-				while($x=mysqli_fetch_object($sql->mysqry)) $_pacientes[$x->id]=$x;
+			$_usuarios=array();
+			$sql->consult($_p."usuarios","id,nome","");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_usuarios[$x->id]=$x;
+			}
 
-				$agendamentos=array();
-				$where="where agenda_data>='".$data_inicio." 00:00:00' and agenda_data<='".$data_fim."' and id_unidade=$unidade->id and lixo=0";
+			$_status=array();
+			$sql->consult($_p."agenda_status","id,titulo,cor","");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_status[$x->id]=$x;
+			}
 
-				if(isset($_GET['id_status']) and is_numeric($_GET['id_status'])) $where.=" and id_status='".$_GET['id_status']."'";
-				if(isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira'])) $where.=" and id_cadeira='".$_GET['id_cadeira']."'";
-				if(isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional'])) $where.=" and profissionais like '%,".$_GET['id_profissional'].",%'";
-				if(isset($_GET['busca']) and !empty($_GET['busca'])) {
-					$sql->consult($_p."pacientes","*","where nome like '%".addslashes($_GET['busca'])."%'");
-					if($sql->rows) {
-						$pacientesIDs=array();
-						while($x=mysqli_fetch_object($sql->mysqry)) $pacientesIDs[]=$x->id;
-						$where.=" and id_paciente IN (".implode(",",$pacientesIDs).")";
-					} else $where.=" and 2=1";
-				}
+			$sql->consult($_p."agenda","*",$where);
+			if($sql->rows) {
 
-
-				$_usuarios=array();
-				$sql->consult($_p."usuarios","id,nome","");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_usuarios[$x->id]=$x;
-				}
-
-				$_status=array();
-				$sql->consult($_p."agenda_status","id,titulo,cor","");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_status[$x->id]=$x;
-				}
-
-				$sql->consult($_p."agenda","*",$where);
-				if($sql->rows) {
-
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						//var_dump($x);
-					
-						if($x->agendaPessoal==0 and isset($_pacientes[$x->id_paciente])) {
+					//var_dump($x);
+				
+					if($x->agendaPessoal==0 and isset($_pacientes[$x->id_paciente])) {
 
 
-							if($_pacientes[$x->id_paciente]->data_nascimento!="0000-00-00") {
-								$dob = new DateTime($_pacientes[$x->id_paciente]->data_nascimento);
-								$now = new DateTime();
-								$idade = $now->diff($dob)->y;
-							} else {
-								$idade = "";
-							}
-
-							$cadeira=isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'-';
-							$dtStart=date('Y-m-d\TH:i',strtotime($x->agenda_data));
-							$dtEnd=date('Y-m-d\TH:i',strtotime($x->agenda_data." + $x->agenda_duracao minutes"));
-							$hora=date('H:i',strtotime($x->agenda_data));
-							$horaFinal=date('H:i',strtotime($x->agenda_data." + $x->agenda_duracao minutes"));
-
-							$ftPaciente="arqs/pacientes/".$_pacientes[$x->id_paciente]->id.".".$_pacientes[$x->id_paciente]->foto;
-							if(!file_exists($ftPaciente)) {
-								$ftPaciente='';
-							} else $ftPaciente.='?'.date('His');
-
-							$nomeIniciais='L';
-							$procedimentos=array();
-							if(!empty($x->procedimentos)) {
-								$procedimentosObj=json_decode($x->procedimentos);
-								
-								if(is_array($procedimentosObj)) {
-									foreach($procedimentosObj as $p) {
-										$procedimentos[]=utf8_encode($p->procedimento);
-									}
-								}
-							}
-
-
-							$profissionais='';
-							if(!empty($x->profissionais)) {
-								$profissioaisObj=explode(",",$x->profissionais);
-								$profissionaisID=array(-1);
-								foreach($profissioaisObj as $v) {
-									if(!empty($v) and is_numeric($v)) $profissionaisID[]=$v;
-								}
-
-								$sql2->consult($_p."colaboradores","*","where id in (".implode(",",$profissionaisID).") and lixo=0");
-
-								if($sql2->rows) {
-									$cont=1;
-									while($p=mysqli_fetch_object($sql2->mysqry)) {
-										$ft="arqs/profissionais/".$p->id.".".$p->foto;
-										/*if(file_exists($ft)) {
-											$profissionais.='<div class="cal-item-foto"><span><img src="'.$ft.'" width="30" height="30" /></span></div>';
-										} else {*/
-											$aux=explode(" ",$p->nome);
-											$aux[0]=strtoupper($aux[0]);
-
-											/*if($aux[0] =="DR" or $aux[0]=="DR." or $aux[0]=="DRA" or $aux[0]=="DRA.") {
-												$iniciais=strtoupper(substr($aux[1],0,1));
-												if(isset($aux[2])) $iniciais.=strtoupper(substr($aux[2],0,1));
-											} else {
-												$iniciais=strtoupper(substr($aux[0],0,1));
-												if(isset($aux[1])) $iniciais.=strtoupper(substr($aux[1],0,1));
-											}*/
-											$profissionais.='<div class="cal-item-foto"><span  style="background:'.$p->calendario_cor.'">'.utf8_encode($p->calendario_iniciais).'</span></div>';
-											if($cont==2) {
-												$profissionais.='<div class="cal-item-foto"><span>+'.($sql2->rows-2).'</span></div>';
-												break;
-											}
-											$cont++;
-
-										//}
-
-									}
-								}
-							}
-
-							$aux=explode(" ",trim(utf8_encode($_pacientes[$x->id_paciente]->nome)));
-							//$pacienteNome=$aux[0];
-							$pacienteNome=tirarAcentos(utf8_encode($_pacientes[$x->id_paciente]->nome));
-							//if(count($aux)>1) $pacienteNome.=" ".$aux[count($aux)-1];
-
-							$agendadoPor="";
-							if(isset($_usuarios[$x->id_usuario])) {
-								list($pNome,)=explode(" ",utf8_encode($_usuarios[$x->id_usuario]->nome));
-								$agendadoPor=$pNome;
-							}	
-
-							$dias=round((strtotime(date('Y-m-d H:i:s'))-strtotime($x->data_atualizacao=="0000-00-00 00:00:00"?$x->data:$x->data_atualizacao))/(60 * 60 * 24));
-
-							if($dias==0) $agendadoHa="Agendado&nbsp;<strong>HOJE</strong>";
-							else if($dias==1) $agendadoHa="Agendado&nbsp;<strong>ONTEM</strong>";
-							else $agendadoHa="agendou há&nbsp;<strong>$dias</strong>&nbsp;dias";
-							
-							//	$pacienteNome=$_pacientes[$x->id_paciente]->nome;
-							$agendamentos[]=array('agendaPessoal'=>0,																										
-													'resourceId'=>$x->id_cadeira,'start'=>$dtStart,
-													'end'=>$dtEnd,
-													'hora'=>$hora,
-													'horaFinal'=>$horaFinal,
-													'nomeIniciais'=>$nomeIniciais,
-													'foto'=>$ftPaciente,
-													'cadeira'=>$cadeira,
-													'id_paciente'=>$x->id_paciente,
-													'duracao'=>$x->agenda_duracao."m",
-													'indicacao'=>'',
-													'title'=>$str->res($pacienteNome,20),
-													'nomeCompleto'=>$pacienteNome,
-													'telefone1'=>!empty($_pacientes[$x->id_paciente]->telefone1)?mask($_pacientes[$x->id_paciente]->telefone1):'',
-													'instagram'=>utf8_encode($_pacientes[$x->id_paciente]->instagram),
-													'musica'=>utf8_encode($_pacientes[$x->id_paciente]->musica),
-													'situacao'=>utf8_encode($_pacientes[$x->id_paciente]->situacao),
-													'id_status'=>$x->id_status,
-													'idade'=>$idade,
-													'profissionais'=>$profissionais,
-													'color'=>'#FFF',
-													'statusColor'=>(isset($_status[$x->id_status])?$_status[$x->id_status]->cor:''),
-													'pontuacao'=>'1.548',
-													'procedimentos'=>$procedimentos,
-													'agendadoHa'=>$agendadoHa,
-													'agendadoPor'=>$agendadoPor,
-													'obs'=>empty($x->obs)?"-":utf8_encode($x->obs),
-													'id'=>$x->id,
-													'id_unidade'=>$x->id_unidade);
-						} else if($x->agendaPessoal==1) {
-
-							$cadeira=isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'-';
-							$dtStart=date('Y-m-d\TH:i',strtotime($x->agenda_data));
-							$dtEnd=date('Y-m-d\TH:i',strtotime($x->agenda_data_final));
-							$hora=date('H:i',strtotime($x->agenda_data));
-							$horaFinal=date('H:i',strtotime($x->agenda_data_final));
-
-							
-
-							
-
-							$profissionais='';
-							if(!empty($x->profissionais)) {
-								$profissioaisObj=explode(",",$x->profissionais);
-								$profissionaisID=array(-1);
-								foreach($profissioaisObj as $v) {
-									if(!empty($v) and is_numeric($v)) $profissionaisID[]=$v;
-								}
-
-								$sql2->consult($_p."colaboradores","*","where id in (".implode(",",$profissionaisID).") and lixo=0");
-
-								if($sql2->rows) {
-									$cont=1;
-									while($p=mysqli_fetch_object($sql2->mysqry)) {
-										$ft="arqs/profissionais/".$p->id.".".$p->foto;
-										/*if(file_exists($ft)) {
-											$profissionais.='<figure><span><img src="'.$ft.'" width="30" height="30" /></span></figure>';
-										 else { */
-											$aux=explode(" ",$p->nome);
-											$aux[0]=strtoupper($aux[0]);
-
-											/*
-
-											if($aux[0] =="DR" or $aux[0]=="DR." or $aux[0]=="DRA" or $aux[0]=="DRA.") {
-												$iniciais=strtoupper(substr($aux[1],0,1));
-												if(isset($aux[2])) $iniciais.=strtoupper(substr($aux[2],0,1));
-											} else {
-												$iniciais=strtoupper(substr($aux[0],0,1));
-												if(isset($aux[1])) $iniciais.=strtoupper(substr($aux[1],0,1));
-											} 
-											//$profissionais.='<figure><span>'. $iniciais.'</span></figure>'; */
-											$profissionais.='<div class="cal-item-foto"><span  style="background:'.$p->calendario_cor.'">'.utf8_encode($p->calendario_iniciais).'</span></div>';
-											if($cont==2) {
-												$profissionais.='<figure><span>+'.($sql2->rows-2).'</span></figure>';
-												break;
-											}
-											$cont++;
-
-										//}
-									}
-								}
-							}
-
-							$dias=round((strtotime(date('Y-m-d H:i:s'))-strtotime($x->data))/(60 * 60 * 24));
-
-							if($dias==0) $agendadoHa="Agendado <strong>HOJE</strong>";
-							else if($dias==1) $agendadoHa="Agendado <strong>ONTEM</strong>";
-							else $agendadoHa="Agendado há&nbsp;<strong>$dias</strong>&nbsp;dias";
-							
-							//	$pacienteNome=$_pacientes[$x->id_paciente]->nome;
-							$agendamentos[]=array(
-													'agendaPessoal'=>1,
-													'resourceId'=>$x->id_cadeira,'start'=>$dtStart,
-													'end'=>$dtEnd,
-													'hora'=>$hora,
-													'horaFinal'=>$horaFinal,
-													'nomeIniciais'=>'AP',
-													'foto'=>'',
-													'cadeira'=>$cadeira,
-													'id_paciente'=>0,
-													'duracao'=>$x->agenda_duracao."m",
-													'indicacao'=>'',
-													'title'=>'Agendamento Pessoal',
-													'telefone1'=>'',
-													'instagram'=>'',
-													'musica'=>'',
-													'situacao'=>'',
-													'idade'=>'',
-													'profissionais'=>$profissionais,
-													'color'=>'#FFF',
-													'statusColor'=>(isset($_status[$x->id_status])?$_status[$x->id_status]->cor:''),
-													'pontuacao'=>0,
-													'agendadoHa'=>$agendadoHa,
-													'procedimentos'=>array(),
-													'id'=>$x->id,
-													'obs'=>empty($x->obs)?"-":utf8_encode($x->obs),
-													'id_unidade'=>$x->id_unidade);
+						if($_pacientes[$x->id_paciente]->data_nascimento!="0000-00-00") {
+							$dob = new DateTime($_pacientes[$x->id_paciente]->data_nascimento);
+							$now = new DateTime();
+							$idade = $now->diff($dob)->y;
+						} else {
+							$idade = "";
 						}
+
+						$cadeira=isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'-';
+						$dtStart=date('Y-m-d\TH:i',strtotime($x->agenda_data));
+						$dtEnd=date('Y-m-d\TH:i',strtotime($x->agenda_data." + $x->agenda_duracao minutes"));
+						$hora=date('H:i',strtotime($x->agenda_data));
+						$horaFinal=date('H:i',strtotime($x->agenda_data." + $x->agenda_duracao minutes"));
+
+						$ftPaciente="arqs/pacientes/".$_pacientes[$x->id_paciente]->id.".".$_pacientes[$x->id_paciente]->foto;
+						if(!file_exists($ftPaciente)) {
+							$ftPaciente='';
+						} else $ftPaciente.='?'.date('His');
+
+						$nomeIniciais='L';
+						$procedimentos=array();
+						if(!empty($x->procedimentos)) {
+							$procedimentosObj=json_decode($x->procedimentos);
+							
+							if(is_array($procedimentosObj)) {
+								foreach($procedimentosObj as $p) {
+									$procedimentos[]=utf8_encode($p->procedimento);
+								}
+							}
+						}
+
+
+						$profissionais='';
+						if(!empty($x->profissionais)) {
+							$profissioaisObj=explode(",",$x->profissionais);
+							$profissionaisID=array(-1);
+							foreach($profissioaisObj as $v) {
+								if(!empty($v) and is_numeric($v)) $profissionaisID[]=$v;
+							}
+
+							$sql2->consult($_p."colaboradores","*","where id in (".implode(",",$profissionaisID).") and lixo=0");
+
+							if($sql2->rows) {
+								$cont=1;
+								while($p=mysqli_fetch_object($sql2->mysqry)) {
+									$ft="arqs/profissionais/".$p->id.".".$p->foto;
+									/*if(file_exists($ft)) {
+										$profissionais.='<div class="cal-item-foto"><span><img src="'.$ft.'" width="30" height="30" /></span></div>';
+									} else {*/
+										$aux=explode(" ",$p->nome);
+										$aux[0]=strtoupper($aux[0]);
+
+										/*if($aux[0] =="DR" or $aux[0]=="DR." or $aux[0]=="DRA" or $aux[0]=="DRA.") {
+											$iniciais=strtoupper(substr($aux[1],0,1));
+											if(isset($aux[2])) $iniciais.=strtoupper(substr($aux[2],0,1));
+										} else {
+											$iniciais=strtoupper(substr($aux[0],0,1));
+											if(isset($aux[1])) $iniciais.=strtoupper(substr($aux[1],0,1));
+										}*/
+										$profissionais.='<div class="cal-item-foto"><span  style="background:'.$p->calendario_cor.'">'.utf8_encode($p->calendario_iniciais).'</span></div>';
+										if($cont==2) {
+											$profissionais.='<div class="cal-item-foto"><span>+'.($sql2->rows-2).'</span></div>';
+											break;
+										}
+										$cont++;
+
+									//}
+
+								}
+							}
+						}
+
+						$aux=explode(" ",trim(utf8_encode($_pacientes[$x->id_paciente]->nome)));
+						//$pacienteNome=$aux[0];
+						$pacienteNome=tirarAcentos(utf8_encode($_pacientes[$x->id_paciente]->nome));
+						//if(count($aux)>1) $pacienteNome.=" ".$aux[count($aux)-1];
+
+						$agendadoPor="";
+						if(isset($_usuarios[$x->id_usuario])) {
+							list($pNome,)=explode(" ",utf8_encode($_usuarios[$x->id_usuario]->nome));
+							$agendadoPor=$pNome;
+						}	
+
+						$dias=round((strtotime(date('Y-m-d H:i:s'))-strtotime($x->data_atualizacao=="0000-00-00 00:00:00"?$x->data:$x->data_atualizacao))/(60 * 60 * 24));
+
+						if($dias==0) $agendadoHa="Agendado&nbsp;<strong>HOJE</strong>";
+						else if($dias==1) $agendadoHa="Agendado&nbsp;<strong>ONTEM</strong>";
+						else $agendadoHa="agendou há&nbsp;<strong>$dias</strong>&nbsp;dias";
+						
+						//	$pacienteNome=$_pacientes[$x->id_paciente]->nome;
+						$agendamentos[]=array('agendaPessoal'=>0,																										
+												'resourceId'=>$x->id_cadeira,'start'=>$dtStart,
+												'end'=>$dtEnd,
+												'hora'=>$hora,
+												'horaFinal'=>$horaFinal,
+												'nomeIniciais'=>$nomeIniciais,
+												'foto'=>$ftPaciente,
+												'cadeira'=>$cadeira,
+												'id_paciente'=>$x->id_paciente,
+												'duracao'=>$x->agenda_duracao."m",
+												'indicacao'=>'',
+												'title'=>$str->res($pacienteNome,20),
+												'nomeCompleto'=>$pacienteNome,
+												'telefone1'=>!empty($_pacientes[$x->id_paciente]->telefone1)?mask($_pacientes[$x->id_paciente]->telefone1):'',
+												'instagram'=>utf8_encode($_pacientes[$x->id_paciente]->instagram),
+												'musica'=>utf8_encode($_pacientes[$x->id_paciente]->musica),
+												'situacao'=>utf8_encode($_pacientes[$x->id_paciente]->situacao),
+												'id_status'=>$x->id_status,
+												'idade'=>$idade,
+												'profissionais'=>$profissionais,
+												'color'=>'#FFF',
+												'statusColor'=>(isset($_status[$x->id_status])?$_status[$x->id_status]->cor:''),
+												'pontuacao'=>'1.548',
+												'procedimentos'=>$procedimentos,
+												'agendadoHa'=>$agendadoHa,
+												'agendadoPor'=>$agendadoPor,
+												'obs'=>empty($x->obs)?"-":utf8_encode($x->obs),
+												'id'=>$x->id);
+					} else if($x->agendaPessoal==1) {
+
+						$cadeira=isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'-';
+						$dtStart=date('Y-m-d\TH:i',strtotime($x->agenda_data));
+						$dtEnd=date('Y-m-d\TH:i',strtotime($x->agenda_data_final));
+						$hora=date('H:i',strtotime($x->agenda_data));
+						$horaFinal=date('H:i',strtotime($x->agenda_data_final));
+
+						
+
+						
+
+						$profissionais='';
+						if(!empty($x->profissionais)) {
+							$profissioaisObj=explode(",",$x->profissionais);
+							$profissionaisID=array(-1);
+							foreach($profissioaisObj as $v) {
+								if(!empty($v) and is_numeric($v)) $profissionaisID[]=$v;
+							}
+
+							$sql2->consult($_p."colaboradores","*","where id in (".implode(",",$profissionaisID).") and lixo=0");
+
+							if($sql2->rows) {
+								$cont=1;
+								while($p=mysqli_fetch_object($sql2->mysqry)) {
+									$ft="arqs/profissionais/".$p->id.".".$p->foto;
+									/*if(file_exists($ft)) {
+										$profissionais.='<figure><span><img src="'.$ft.'" width="30" height="30" /></span></figure>';
+									 else { */
+										$aux=explode(" ",$p->nome);
+										$aux[0]=strtoupper($aux[0]);
+
+										/*
+
+										if($aux[0] =="DR" or $aux[0]=="DR." or $aux[0]=="DRA" or $aux[0]=="DRA.") {
+											$iniciais=strtoupper(substr($aux[1],0,1));
+											if(isset($aux[2])) $iniciais.=strtoupper(substr($aux[2],0,1));
+										} else {
+											$iniciais=strtoupper(substr($aux[0],0,1));
+											if(isset($aux[1])) $iniciais.=strtoupper(substr($aux[1],0,1));
+										} 
+										//$profissionais.='<figure><span>'. $iniciais.'</span></figure>'; */
+										$profissionais.='<div class="cal-item-foto"><span  style="background:'.$p->calendario_cor.'">'.utf8_encode($p->calendario_iniciais).'</span></div>';
+										if($cont==2) {
+											$profissionais.='<figure><span>+'.($sql2->rows-2).'</span></figure>';
+											break;
+										}
+										$cont++;
+
+									//}
+								}
+							}
+						}
+
+						$dias=round((strtotime(date('Y-m-d H:i:s'))-strtotime($x->data))/(60 * 60 * 24));
+
+						if($dias==0) $agendadoHa="Agendado <strong>HOJE</strong>";
+						else if($dias==1) $agendadoHa="Agendado <strong>ONTEM</strong>";
+						else $agendadoHa="Agendado há&nbsp;<strong>$dias</strong>&nbsp;dias";
+						
+						//	$pacienteNome=$_pacientes[$x->id_paciente]->nome;
+						$agendamentos[]=array(
+												'agendaPessoal'=>1,
+												'resourceId'=>$x->id_cadeira,'start'=>$dtStart,
+												'end'=>$dtEnd,
+												'hora'=>$hora,
+												'horaFinal'=>$horaFinal,
+												'nomeIniciais'=>'AP',
+												'foto'=>'',
+												'cadeira'=>$cadeira,
+												'id_paciente'=>0,
+												'duracao'=>$x->agenda_duracao."m",
+												'indicacao'=>'',
+												'title'=>'Agendamento Pessoal',
+												'telefone1'=>'',
+												'instagram'=>'',
+												'musica'=>'',
+												'situacao'=>'',
+												'idade'=>'',
+												'profissionais'=>$profissionais,
+												'color'=>'#FFF',
+												'statusColor'=>(isset($_status[$x->id_status])?$_status[$x->id_status]->cor:''),
+												'pontuacao'=>0,
+												'agendadoHa'=>$agendadoHa,
+												'procedimentos'=>array(),
+												'id'=>$x->id,
+												'obs'=>empty($x->obs)?"-":utf8_encode($x->obs));
 					}
 				}
-
-				$rtn=array('success'=>true,'agendamentos'=>$agendamentos);
 			}
+
+			$rtn=array('success'=>true,'agendamentos'=>$agendamentos);
+			
 		}
 		header("Content-type: application/json");
 		echo json_encode($rtn);
@@ -480,7 +472,7 @@
 	}
 
 	$_cadeiras=array();
-	$sql->consult($_p."parametros_cadeiras","*","where lixo=0 and id_unidade=$usrUnidade->id order by titulo asc");
+	$sql->consult($_p."parametros_cadeiras","*","where lixo=0 order by titulo asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
 
 	$_profissionais=array();
@@ -499,7 +491,6 @@
 ?>
 <script>
 	var calendar = '';
-	var id_unidade=<?php echo $usrUnidade->id;?>;
 	var dataKanban = '';
 	
 	const verificaAgendamento = () => {
@@ -509,7 +500,7 @@
 		let agenda_data = $('.js-form-agendamento input[name=agenda_data]').val();
 		let agenda_hora = $('.js-form-agendamento input[name=agenda_hora]').val();
 
-		let data = `ajax=agendamentoVerificarDisponibilidade&id_unidade=${id_unidade}&profissionais=${profissionais}&id_cadeira=${id_cadeira}&agenda_data=${agenda_data}&agenda_hora=${agenda_hora}&id_paciente=${id_paciente}`;
+		let data = `ajax=agendamentoVerificarDisponibilidade&profissionais=${profissionais}&id_cadeira=${id_cadeira}&agenda_data=${agenda_data}&agenda_hora=${agenda_hora}&id_paciente=${id_paciente}`;
 		
 
 		$.ajax({
@@ -829,10 +820,6 @@
 
 <section class="content">
 
-	<?php /*<header class="caminho">
-		<h1 class="caminho__titulo">Agenda</h1>
-		<!-- <a href="box/boxAgendamento.php?id_unidade=1" data-fancybox data-type="ajax" class="caminho__tutorial button button__sec"><i class="iconify" data-icon="bx-bx-plus-circle"></i> Novo Agendamento</a> -->
-	</header>*/?>
 
 		
 		
@@ -926,7 +913,7 @@
 					$('#cal-popup .js-grid-procedimentos').html(popViewInfos[id_agenda].procedimentosLista);
 					$('#cal-popup .js-grid-obs').html(popViewInfos[id_agenda].obs);
 					$('#cal-popup .js-id_status').val(popViewInfos[id_agenda].id_status);
-					$('#cal-popup .js-hrefAgenda').attr('href',`box/boxAgendamento.php?id_unidade=${popViewInfos[id_agenda].id_unidade}&id_agenda=${popViewInfos[id_agenda].id_agenda}`);
+					$('#cal-popup .js-hrefAgenda').attr('href',`box/boxAgendamento.php?&id_agenda=${popViewInfos[id_agenda].id_agenda}`);
 					$('#cal-popup .js-hrefPaciente').attr('href',`pg_contatos_pacientes_resumo.php?id_paciente=${popViewInfos[id_agenda].id_paciente}`);
 
 					$('#cal-popup .js-loading').show();
@@ -955,7 +942,7 @@
 						let id_agenda = $(this).attr('data-id');
 
 						let id_status = $(this).val();
-						let data = `ajax=alterarStatus&id_agenda=${id_agenda}&id_status=${id_status}&id_unidade=${id_unidade}`;
+						let data = `ajax=alterarStatus&id_agenda=${id_agenda}&id_status=${id_status}`;
 
 						$.ajax({
 							type:"POST",
@@ -1026,7 +1013,7 @@
 						dateClick: function(info) {
 							$('#cal-popup').hide();
 							$.fancybox.open({
-								src  : `box/boxAgendamento.php?id_unidade=${id_unidade}&data_agenda=${info.dateStr}`,
+								src  : `box/boxAgendamento.php?&data_agenda=${info.dateStr}`,
 								type : 'ajax',
 							});
 						},
@@ -1078,7 +1065,7 @@
 							
 						},
 					    events: function(info, successCallback, failure) {
-							$.getJSON(`<?php echo $_page;?>?ajax=agenda&id_unidade=<?php echo $usrUnidade->id;?>&start=${info.start.valueOf()}&end=${info.end.valueOf()}&<?php echo $filtro;?>&id_status=${filtroStatus}&id_cadeira=${filtroCadeira}&id_profissional=${filtroProfissional}`,
+							$.getJSON(`<?php echo $_page;?>?ajax=agenda&start=${info.start.valueOf()}&end=${info.end.valueOf()}&<?php echo $filtro;?>&id_status=${filtroStatus}&id_cadeira=${filtroCadeira}&id_profissional=${filtroProfissional}`,
 										function (data) {
 											if(data.success) {
 											 	successCallback(data.agendamentos)
@@ -1120,7 +1107,6 @@
 							let procedimentos = arg.event.extendedProps.procedimentos;
 							let profissionais = arg.event.extendedProps.profissionais;
 							let id_agenda = arg.event.id;
-							let id_unidade = arg.event.extendedProps.id_unidade;
 							let infos = ``;
 
    							
@@ -1175,7 +1161,6 @@
 						    popInfos.obs = obs;
 						    popInfos.infos=infos;
 						    popInfos.id_status=id_status;
-						    popInfos.id_unidade=id_unidade;
 						    popInfos.id_agenda=id_agenda;
 						    popInfos.foto=foto.length>0?foto:'';
 						    popInfos.procedimentosLista=procedimentosLista;
@@ -1211,7 +1196,7 @@
 														<option value="">opcao 2</option>
 														<option value="">opcao 3</option>
 													</select>
-													<a href="box/${agendaPessoal==1?"boxAgendamentoPessoal":"boxAgendamento"}.php?id_unidade=${id_unidade}&id_agenda=${id_agenda}" data-fancybox data-type="ajax" data-padding="0" class="button" onclick="$('.cal-popup').hide();">Editar</a>
+													<a href="box/${agendaPessoal==1?"boxAgendamentoPessoal":"boxAgendamento"}.php?id_agenda=${id_agenda}" data-fancybox data-type="ajax" data-padding="0" class="button" onclick="$('.cal-popup').hide();">Editar</a>
 													
 													${linkFichaPaciente}
 												</div>

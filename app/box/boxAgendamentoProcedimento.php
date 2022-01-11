@@ -5,14 +5,7 @@
 
 	$jsc = new Js();
 
-	$unidade='';
-	if(isset($_GET['id_unidade']) and is_numeric($_GET['id_unidade']) and isset($_optUnidades[$_GET['id_unidade']])) {
-		$unidade=$_optUnidades[$_GET['id_unidade']];
-	}
-	if(empty($unidade)) {
-		$jsc->jAlert("Unidade não encontrada!","erro","$.fancybox.close()");
-		die();
-	}
+
 
 	$_procedimentos=array();
 	$sql->consult($_p."parametros_procedimentos","*","where lixo=0");

@@ -120,14 +120,10 @@
 				}
 			}
 		} else if($_POST['ajax']=="horariosPersistir") {
-			$unidade='';
-			if(isset($_POST['id_unidade']) and is_numeric($_POST['id_unidade']) and isset($_unidades[$_POST['id_unidade']])) {
-				$unidade=$_unidades[$_POST['id_unidade']];
-			}
 
 			$cadeira='';
-			if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira']) and is_object($unidade)) {
-				$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."' and  id_unidade=$unidade->id");
+			if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
+				$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."'");
 				if($sql->rows) {
 					$cadeira=mysqli_fetch_object($sql->mysqry);
 				}
@@ -145,22 +141,20 @@
 			$fim=(isset($_POST['fim']) and !empty($_POST['fim']))?addslashes($_POST['fim']):'';
 			$dia=(isset($_POST['dia']) and is_numeric($_POST['dia']))?addslashes($_POST['dia']):'';
 
-			if(empty($unidade)) $rtn=array('success'=>false,'error'=>'Unidade não definida!');
-			else if(empty($cadeira)) $rtn=array('success'=>false,'error'=>'Cadeira não definida!');
+			if(empty($cadeira)) $rtn=array('success'=>false,'error'=>'Cadeira não definida!');
 			else if(empty($profissional)) $rtn=array('success'=>false,'error'=>'Profissional não definido!');
 			else if(empty($inicio)) $rtn=array('success'=>false,'error'=>'Cadeira não definida!');
 			else if(empty($fim)) $rtn=array('success'=>false,'error'=>'Cadeira não definida!');
 			else if(empty($dia) and $dia!=0) $rtn=array('success'=>false,'error'=>'Dia da semana não definido!');
 			else {
-				$vsql="id_unidade=$unidade->id,
-						id_cadeira=$cadeira->id,
+				$vsql="id_cadeira=$cadeira->id,
 						id_profissional=$profissional->id,
 						inicio='".$inicio."',
 						dia='".$dia."',
 						fim='".$fim."'";
 
 				if(isset($_POST['id']) and is_numeric($_POST['id']) and $_POST['id']>0) {
-					$sql->consult($_p."profissionais_horarios","*", "where id='".$_POST['id']."' and id_profissional=$profissional->id and id_unidade=$unidade->id and lixo=0");
+					$sql->consult($_p."profissionais_horarios","*", "where id='".$_POST['id']."' and id_profissional=$profissional->id and lixo=0");
 					if($sql->rows) {
 						$x=mysqli_fetch_object($sql->mysqry);
 						$vsql.=",id_alteracao=$usr->id,alteracao_data=now()";
@@ -197,7 +191,7 @@
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						if(isset($_cadeiras[$x->id_cadeira])) {
 							$cadeira=$_cadeiras[$x->id_cadeira];
-							$horarios[$x->id_unidade][$x->dia][]=array('id'=>$x->id,
+							$horarios[$x->dia][]=array('id'=>$x->id,
 																'id_cadeira'=>$x->id_cadeira,
 																'cadeira'=>utf8_encode($cadeira->titulo),
 																'dia'=>$x->dia,
@@ -225,7 +219,6 @@
 				$rtn=array('success'=>true,
 							'id'=>$horario->id,
 							'id_cadeira'=>$horario->id_cadeira,
-							'id_unidade'=>$horario->id_unidade,
 							'inicio'=>$horario->inicio,
 							'fim'=>$horario->fim,
 							'dia'=>$horario->dia);
@@ -296,7 +289,7 @@
 
 	$_cadeiras=array();
 	$sql->consult($_p."parametros_cadeiras","*","where lixo=0 order by titulo asc");
-	while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id_unidade][]=$x;
+	while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[]=$x;
 
 	if(isset($_GET['form'])) {
 		$cnt='';
@@ -1013,16 +1006,15 @@
 					const horariosListar = () => {
 						if(horarios) {
 							$('.js-td').html('')
-							for(var id_unidade in horarios) {
-								let index = `.js-${id_unidade}`;
-								for(var dia in horarios[id_unidade]) {
-									horarios[id_unidade][dia].forEach(x=>{
-										
-										$(`${index}-${x.id_cadeira}-${dia}`).append(`<div class="js-horario">${x.inicio}  - ${x.fim}<br /><a href="javascript:;" data-id="${x.id}" class="js-editar registros__acao registros__acao_sec"><i class="iconify" data-icon="bx:bxs-edit-alt"></i></a>
-																<a href="javascript:;" data-id="${x.id}" class="js-remover registros__acao registros__acao_sec"><i class="iconify" data-icon="bx:bxs-trash"></i></a><div>`);
-									})
-								}
+							let index = `.js-`;
+							for(var dia in horarios) {
+								horarios[dia].forEach(x=>{
+									
+									$(`${index}-${x.id_cadeira}-${dia}`).append(`<div class="js-horario">${x.inicio}  - ${x.fim}<br /><a href="javascript:;" data-id="${x.id}" class="js-editar registros__acao registros__acao_sec"><i class="iconify" data-icon="bx:bxs-edit-alt"></i></a>
+															<a href="javascript:;" data-id="${x.id}" class="js-remover registros__acao registros__acao_sec"><i class="iconify" data-icon="bx:bxs-trash"></i></a><div>`);
+								})
 							}
+							
 							
 						}
 					}
@@ -1049,13 +1041,12 @@
 							data:data,
 							success:function(rtn) {
 								if(rtn.success) {
-									id_unidade=rtn.id_unidade;
 
-									$(`.js-${id_unidade}-id`).val(rtn.id);
-									$(`.js-${id_unidade}-id_cadeira`).val(rtn.id_cadeira);
-									$(`.js-${id_unidade}-dia`).val(rtn.dia);
-									$(`.js-${id_unidade}-inicio`).val(rtn.inicio);
-									$(`.js-${id_unidade}-fim`).val(rtn.fim);
+									$(`.js-id`).val(rtn.id);
+									$(`.js-id_cadeira`).val(rtn.id_cadeira);
+									$(`.js-dia`).val(rtn.dia);
+									$(`.js-inicio`).val(rtn.inicio);
+									$(`.js-fim`).val(rtn.fim);
 
 									$('.js-horarios-cancelar').show();
 								}
@@ -1063,51 +1054,17 @@
 						});
 					}
 
-					/* const horariosAdicionar = () => {
-						let id_unidade = $('.js-horarios-id_unidade').val();
-						let dia = $('.js-horarios-dia').val();
-						let inicio = $('.js-horarios-inicio').val();
-						let fim = $('.js-horarios-fim').val();
-						let id_horario = $('.js-horarios-id_horario').val();
-
-						if(id_unidade.length==0) {
-							swal({title: "Erro!", text: "Selecione o Unidade!", type:"error", confirmButtonColor: "#424242"});
-						} else 	if(dia.length==0) {
-							swal({title: "Erro!", text: "Selecione o Dia!", type:"error", confirmButtonColor: "#424242"});
-						} else if(inicio.length==0) {
-							swal({title: "Erro!", text: "Selecione o Início do Horário!", type:"error", confirmButtonColor: "#424242"});
-						} else if(fim.length==0) {
-							swal({title: "Erro!", text: "Selecione o Final do Horário!", type:"error", confirmButtonColor: "#424242"});
-						} else {
-							let data = `ajax=horariosAdicionar&id_profissional=${id_profissional}&id_unidade=${id_unidade}&dia=${dia}&inicio=${inicio}&fim=${fim}&id_horario=${id_horario}`;
-							$.ajax({
-								type:"POST",
-								data:data,
-								success:function(rtn) {
-									if(rtn.success) {
-										$('.js-horarios-id_unidade').val('');
-										$('.js-horarios-dia').val('');
-										$('.js-horarios-inicio').val('');
-										$('.js-horarios-fim').val('');
-										$('.js-horarios-id_horario').val(0);
-										$('.js-horarios-cancelar').hide();
-										horariosAtualizar();
-									}
-								}
-							});
-						}
-					} */
+					
 
 					$(function(){
 						horariosAtualizar();
 
 						$('.js-horarios-submit').click(function(){
-							let id_unidade = $(this).attr('data-id_unidade');
-							let id_cadeira = $(`.js-${id_unidade}-id_cadeira`).val();
-							let id = $(`.js-${id_unidade}-id`).val();
-							let dia = $(`.js-${id_unidade}-dia`).val();
-							let inicio = $(`.js-${id_unidade}-inicio`).val();
-							let fim = $(`.js-${id_unidade}-fim`).val();
+							let id_cadeira = $(`.js-id_cadeira`).val();
+							let id = $(`.js-id`).val();
+							let dia = $(`.js-dia`).val();
+							let inicio = $(`.js-inicio`).val();
+							let fim = $(`.js-fim`).val();
 
 							if(id_cadeira.length==0) {
 								swal({title: "Erro!", text: "Selecione a Cadeira!", type:"error", confirmButtonColor: "#424242"});
@@ -1118,7 +1075,7 @@
 							} else if(fim.length==0) {
 								swal({title: "Erro!", text: "Defina o Fim", type:"error", confirmButtonColor: "#424242"});
 							} else {
-								let data = `ajax=horariosPersistir&id_cadeira=${id_cadeira}&dia=${dia}&inicio=${inicio}&fim=${fim}&id_unidade=${id_unidade}&id_profissional=${id_profissional}&id=${id}`;
+								let data = `ajax=horariosPersistir&id_cadeira=${id_cadeira}&dia=${dia}&inicio=${inicio}&fim=${fim}&id_profissional=${id_profissional}&id=${id}`;
 								$.ajax({
 									type:'POST',
 									data:data,
@@ -1126,11 +1083,11 @@
 										if(rtn.success) {
 											horariosAtualizar();	
 
-											$(`.js-${id_unidade}-id_cadeira`).val('');
-											$(`.js-${id_unidade}-id`).val(0);
-											$(`.js-${id_unidade}-dia`).val('');
-											$(`.js-${id_unidade}-fim`).val('');
-											$(`.js-${id_unidade}-inicio`).val('');
+											$(`.js-id_cadeira`).val('');
+											$(`.js-id`).val(0);
+											$(`.js-dia`).val('');
+											$(`.js-fim`).val('');
+											$(`.js-inicio`).val('');
 											$(`.js-horarios-cancelar`).hide();
 										} else if(rtn.error) {
 											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -1153,12 +1110,11 @@
 						});
 
 						$('.js-horarios-cancelar').click(function(){
-							let id_unidade = $(this).attr('data-id_unidade');
-							$(`.js-${id_unidade}-id_cadeira`).val('');
-							$(`.js-${id_unidade}-id`).val(0);
-							$(`.js-${id_unidade}-dia`).val('');
-							$(`.js-${id_unidade}-fim`).val('');
-							$(`.js-${id_unidade}-inicio`).val('');
+							$(`.js-id_cadeira`).val('');
+							$(`.js-id`).val(0);
+							$(`.js-dia`).val('');
+							$(`.js-fim`).val('');
+							$(`.js-inicio`).val('');
 							//$(`.js-horarios-cancelar`).hide();
 						});
 
@@ -1204,21 +1160,19 @@
 					});
 				</script>
 
-				<?php
-					foreach($_unidades as $u) {
-				?>
+				
 				<fieldset>
 					<legend><span class="badge">6</span> <?php echo utf8_encode($u->titulo);?></legend>
 
-					<input type="hidden" class="js-<?php echo $u->id;?>-id" value="0" />
+					<input type="hidden" class="js-id" value="0" />
 					<div class="colunas5"  style="margin-bottom: 20px;">	
 						<dl>
 							<dt>Cadeira</dt>
 							<dd>
-								<select class="<?php echo "js-".$u->id."-id_cadeira";?>">
+								<select class="<?php echo "js-id_cadeira";?>">
 									<option value="">-</option>
 									<?php
-									foreach($_cadeiras[$u->id] as $c) echo '<option value="'.$c->id.'">'.utf8_encode($c->titulo).'</option>';
+									foreach($_cadeiras as $c) echo '<option value="'.$c->id.'">'.utf8_encode($c->titulo).'</option>';
 									?>
 								</select>
 							</dd>
@@ -1226,7 +1180,7 @@
 						<dl>
 							<dt>Dia</dt>
 							<dd>
-								<select  class="<?php echo "js-".$u->id."-dia";?>">
+								<select  class="<?php echo "js-dia";?>">
 									<option value="">-</option>
 									<?php
 									for($i=0;$i<=6;$i++) {
@@ -1238,18 +1192,18 @@
 						</dl>
 						<dl>
 							<dt>Início</dt>
-							<dd><input type="text" name="inicio" class="hora <?php echo "js-".$u->id."-inicio";?>" /></dd>
+							<dd><input type="text" name="inicio" class="hora <?php echo "js--inicio";?>" /></dd>
 						</dl>
 						<dl>
 							<dt>Fim</dt>
-							<dd><input type="text" name="inicio" class="hora  <?php echo "js-".$u->id."-fim";?>" /></dd>
+							<dd><input type="text" name="inicio" class="hora  <?php echo "js--fim";?>" /></dd>
 						</dl>
 
 						<dl>
 							<dt>&nbsp;</dt>
 							<dd>
-								<a href="javascript:;" class="button button__sec js-horarios-submit" data-id_unidade="<?php echo $u->id;?>"><i class="iconify" data-icon="bx-bx-check"></i></a>
-								<a href="javascript:;" class="js-horarios-cancelar tooltip" data-id_unidade="<?php echo $u->id;?>" style="display: none;color:red" title="Cancelar edição"><span class="iconify" data-icon="icons8:cancel"></span> cancelar edição</a>
+								<a href="javascript:;" class="button button__sec js-horarios-submit"><i class="iconify" data-icon="bx-bx-check"></i></a>
+								<a href="javascript:;" class="js-horarios-cancelar tooltip" style="display: none;color:red" title="Cancelar edição"><span class="iconify" data-icon="icons8:cancel"></span> cancelar edição</a>
 							</dd>
 						</dl>
 					</div>
@@ -1265,14 +1219,14 @@
 								?>
 							</tr>
 							<?php
-							if(isset($_cadeiras[$u->id])) {
-								foreach($_cadeiras[$u->id] as $v) {
+							if(isset($_cadeiras)) {
+								foreach($_cadeiras as $v) {
 							?>
 							<tr>
 								<td><?php echo $v->titulo;?></td>
 								<?php
 								for($i=0;$i<=6;$i++) {
-									echo '<td class="js-td js-'.$u->id.'-'.$v->id.'-'.$i.'"></td>';	
+									echo '<td class="js-td js-'.$v->id.'-'.$i.'"></td>';	
 								}
 								?>
 							</tr>
@@ -1284,7 +1238,6 @@
 					</div>
 				</fieldset>
 				<?php
-					}	
 				}
 				?>
 			</form>			

@@ -164,7 +164,6 @@
 		}
 		
 		$where="WHERE lixo='0'";
-		if(isset($values['id_unidade']) and is_numeric($values['id_unidade'])) $where.=" and (id_unidade = '".addslashes($values['id_unidade'])."')";
 		
 		if($usr->cpf=="wlib" and isset($_GET['cmd'])) echo $where;
 

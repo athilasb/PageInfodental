@@ -42,7 +42,7 @@
 	}
 
 	if(isset($_POST['acao']) and $_POST['acao']=="wlib") {
-		$sql->add($_p."financeiro_extrato_ofx","data=now(),id_conta='".$conta->id."',id_unidade='".$conta->id_unidade."'");
+		$sql->add($_p."financeiro_extrato_ofx","data=now(),id_conta='".$conta->id."'");
 		$id_reg=$sql->ulid;
 		
 		$erro='';
@@ -95,7 +95,6 @@
 								valor='".$valor."',
 								descricao='".utf8_decode($descricao)."',
 								id_ofx='".$id_reg."',
-								id_unidade='".$conta->id_unidade."',
 								id_conta='".$conta->id."',
 								uniqueid='".$uniqueId."',
 								checknumber='".$checknumber."'";

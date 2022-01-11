@@ -69,8 +69,8 @@
 						$id_tratamento=$cnt->id;
 
 						if($tratamentoAprovado===false) {
-							$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$id_tratamento and id_paciente=$paciente->id and id_unidade=$usrUnidade->id");
-							$sql->update($_table."_pagamentos","lixo=1,lixo_obs=4,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$id_tratamento and id_paciente=$paciente->id and id_unidade=$usrUnidade->id");
+							$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
+							$sql->update($_table."_pagamentos","lixo=1,lixo_obs=4,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
 						}
 					} else {
 						$vSQL.="data=now(),id_paciente=$paciente->id";
@@ -98,7 +98,6 @@
 								$vSQLProcedimento="lixo=0,
 													id_paciente=$paciente->id,
 													id_tratamento=$id_tratamento,
-													id_unidade=$usrUnidade->id,
 													id_procedimento='".addslashes($x->id_procedimento)."',
 													procedimento='".addslashes(utf8_decode($x->procedimento))."',
 													id_plano='".addslashes($x->id_plano)."',
@@ -148,7 +147,6 @@
 									$vSQLPagamento="lixo=0,
 													id_paciente=$paciente->id,
 													id_tratamento=$id_tratamento,
-													id_unidade=$usrUnidade->id,
 													id_formapagamento='".addslashes($x->id_formapagamento)."',
 													data_vencimento='".addslashes(invDate($x->vencimento))."',
 													valor='".addslashes(valor($x->valor))."',";
@@ -226,7 +224,7 @@
 									if($cnt->status=="APROVADO") {
 
 								?>
-								<a href="box/boxPacienteTratamentoCancelar.php?id_paciente=<?php echo $paciente->id;?>&id_tratamento=<?php echo $cnt->id;?>&id_unidade=<?php echo $usrUnidade->id;?>" data-fancybox data-type="ajax" data-padding="0" class="tooltip js-btn-reprovar sec" title="Cancelar"><i class="iconify" data-icon="bx-bx-x"></i>
+								<a href="box/boxPacienteTratamentoCancelar.php?id_paciente=<?php echo $paciente->id;?>&id_tratamento=<?php echo $cnt->id;?>" data-fancybox data-type="ajax" data-padding="0" class="tooltip js-btn-reprovar sec" title="Cancelar"><i class="iconify" data-icon="bx-bx-x"></i>
 								<?php
 									}
 								}

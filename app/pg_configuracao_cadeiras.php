@@ -145,7 +145,7 @@
 
 	if(isset($_GET['form'])) {
 		$cnt='';
-		$campos=explode(",","titulo,id_unidade,ordem,atendimentopersonalizado");
+		$campos=explode(",","titulo,ordem");
 		
 		foreach($campos as $v) $values[$v]='';
 		
@@ -243,19 +243,6 @@
 								<input type="number" name="ordem" value="<?php echo $values['ordem'];?>" class="obg" />
 							</dd>
 						</dl>
-					</div>
-					<div class="colunas4">
-						<dl>
-							<dt>Unidade</dt>
-							<dd>
-								<select name="id_unidade" class="obg">
-									<option value="">-</option>
-									<?php
-									foreach($_unidades as $v) echo '<option value="'.$v->id.'"'.($v->id==$values['id_unidade']?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
-									?>
-								</select>
-							</dd>
-						</dl>
 						<dl class="dl3">
 							<dt>Título</dt>
 							<dd>
@@ -265,25 +252,7 @@
 					</div>
 				</fieldset>
 
-				<fieldset style="margin:0;">
-					<legend style="font-size: 12px;">
-						<div class="filter-group">
-							<div class="filter-title">
-								<span class="badge">2</span> Horários de Atendimento
-							</div>
-						</div>
-					</legend>
-
-					<div class="colunas4">
-						<dl class="dl2">
-							<dt>Possui Atendimento Personalizado?</dt>
-							<dd>
-								<label><input type="radio" name="atendimentopersonalizado" value="1"<?php echo $values['atendimentopersonalizado']==1?" checked":"";?> class="js-atendimento_s" /> Sim</label>
-								<label><input type="radio" name="atendimentopersonalizado" value="0"<?php echo $values['atendimentopersonalizado']==0?" checked":"";?> class="js-atendimento_n" /> Não</label>
-							</dd>
-						</dl>
-					</div>
-				</fieldset>
+				
 
 				<?php
 					$_dias=explode(",","Domingo,Segunda-Feira,Terça-Feira,Quarta-Feira,Quinta-Feira,Sexta-Feira,Sábado");
@@ -382,7 +351,7 @@
 						horariosAtualizar();
 
 						$('.js-horarios-submit').click(function(){
-							let id_unidade = $(this).attr('data-id_unidade');
+							
 							let id = $(`.js-id`).val();
 							let dia = $(`.js-dia`).val();
 							let inicio = $(`.js-inicio`).val();
@@ -429,7 +398,6 @@
 						});
 
 						$('.js-horarios-cancelar').click(function(){
-							let id_unidade = $(this).attr('data-id_unidade');
 							$(`.js-id_cadeira`).val('');
 							$(`.js-id`).val(0);
 							$(`.js-dia`).val('');
@@ -483,7 +451,7 @@
 					<legend style="font-size: 12px;">
 						<div class="filter-group">
 							<div class="filter-title">
-								<span class="badge">3</span> Horários
+								<span class="badge">2</span> Horários
 							</div>
 						</div>
 					</legend>
@@ -556,7 +524,6 @@
 	}
 	
 	$where="WHERE lixo='0'";
-	if(isset($values['id_unidade']) and is_numeric($values['id_unidade'])) $where.=" and (id_unidade = '".addslashes($values['id_unidade'])."')";
 	
 	if($usr->cpf=="wlib" and isset($_GET['cmd'])) echo $where;
 
@@ -581,9 +548,6 @@
 					<div class="reg-data" style="flex:0 1 50%;">
 						<h1><?php echo strtoupperWLIB(utf8_encode($x->titulo));?></h1>
 						<p>Ordem: <?php echo $x->ordem;?></p>
-					</div>
-					<div class="reg-data" style="flex:0 1 150px;">
-						<p><?php echo isset($_unidades[$x->id_unidade])?utf8_encode($_unidades[$x->id_unidade]->titulo):'-';?></p>
 					</div>
 				</a>
 				<?php

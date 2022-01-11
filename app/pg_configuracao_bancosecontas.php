@@ -26,7 +26,7 @@
 
 	if(isset($_GET['form'])) {
 		$cnt='';
-		$campos=explode(",","titulo,id_unidade,agencia,conta,tipo");
+		$campos=explode(",","titulo,agencia,conta,tipo");
 		
 		foreach($campos as $v) $values[$v]='';
 		
@@ -110,17 +110,7 @@
 				<fieldset>
 					<legend><span class="badge">1</span> Dados</legend>
 					<div class="colunas4">
-						<dl>
-							<dt>Unidade</dt>
-							<dd>
-								<select name="id_unidade" class="obg">
-									<option value="">-</option>
-									<?php
-									foreach($_unidades as $v) echo '<option value="'.$v->id.'"'.($v->id==$values['id_unidade']?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
-									?>
-								</select>
-							</dd>
-						</dl>
+						
 						<dl class="dl2">
 							<dt>Título</dt>
 							<dd>
@@ -178,7 +168,6 @@
 	}
 	
 	$where="WHERE lixo='0'";
-	if(isset($values['id_unidade']) and is_numeric($values['id_unidade'])) $where.=" and (id_unidade = '".addslashes($values['id_unidade'])."')";
 	
 	if($usr->cpf=="wlib" and isset($_GET['cmd'])) echo $where;
 
@@ -203,9 +192,6 @@
 					<div class="reg-data" style="flex:0 1 50%;">
 						<h1><?php echo strtoupperWLIB(utf8_encode($x->titulo));?></h1>
 						<p><?php echo isset($_bancosEContasTipos[$x->tipo])?$_bancosEContasTipos[$x->tipo]:'-';?></p>
-					</div>
-					<div class="reg-data" style="flex:0 1 150px;">
-						<p><?php echo isset($_unidades[$x->id_unidade])?utf8_encode($_unidades[$x->id_unidade]->titulo):'-';?></p>
 					</div>
 				</a>
 				<?php

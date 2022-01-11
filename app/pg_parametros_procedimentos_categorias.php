@@ -1,5 +1,4 @@
 	<script type="text/javascript">
-	var id_unidade = 1;
 
 	var id_agenda = '';
 
@@ -68,7 +67,7 @@
 				let campos = $('form.js-form-agendamento').serialize();
 				let profissionais = $('form.js-form-agendamento .js-profissionais').val();
 
-				let data = `ajax=agendamentoPersistir&id_unidade=${id_unidade}&id_agenda=${id_agenda}&profissionais=${profissionais}&${campos}`;
+				let data = `ajax=agendamentoPersistir&id_agenda=${id_agenda}&profissionais=${profissionais}&${campos}`;
 
 				$.ajax({
 					type:'POST',
@@ -128,7 +127,7 @@
 				$('.js-btn-pessoal').click(function(){
 					$.fancybox.close();
 					$.fancybox.open({
-				        src: "box/boxAgendamentoPessoal.php?id_unidade=1",
+				        src: "box/boxAgendamentoPessoal.php",
 				        type: "ajax"
 				    });
 				})

@@ -43,10 +43,15 @@
 			
 				$vSQL="nome='".addslashes(utf8_decode(strtoupperWLIB($_POST['nome'])))."',
 						cpf='".cpf(utf8_decode($_POST['cpf']))."',
-						senha='".sha1(($_POST['senha']))."'";
+						senha='".sha1(($_POST['senha']))."',
+						primeiro_acesso=1";
 
 
 				$sql->add($_p."colaboradores",$vSQL);
+
+
+				$jsc->jAlert("Cadastro realizado com sucesso","sucesso","document.location.href='./'");
+				die();
 
 
 			} else {
@@ -65,7 +70,6 @@
 			</section>
 
 			<section class="header-controles">
-				
 				<?php /*<select name="unidade" class="header-controles__select">
 					<option value="">STUDIO DENTAL - OESTE</option>
 					<option value="">STUDIO DENTAL - GYN SHOP</option>

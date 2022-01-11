@@ -14,10 +14,6 @@
 					$procedimento=mysqli_fetch_object($sql->mysqry);
 				}
 			}
-			$unidade='';
-			if(isset($_POST['id_unidade']) and is_numeric($_POST['id_unidade']) and isset($_optUnidades[$_POST['id_unidade']])) {
-				$unidade=$_optUnidades[$_POST['id_unidade']];
-			}
 
 			if(is_object($procedimento) and is_object($unidade)) {
 				$sql->consult($_p."parametros_procedimentos_planos","*","where id_procedimento=$procedimento->id"); 

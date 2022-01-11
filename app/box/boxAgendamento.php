@@ -6,237 +6,215 @@
 
 	if(isset($_POST['ajax'])) {
 		$rtn=array();
-		$unidade='';
-		if(isset($_POST['id_unidade']) and is_numeric($_POST['id_unidade']) and isset($_optUnidades[$_POST['id_unidade']])) {
-			$unidade=$_optUnidades[$_POST['id_unidade']];
-		}
+		
 
 		if($_POST['ajax']=="agendamentoPersistir") {
 			
-			if(empty($unidade)) {
-				$rtn=array('success'=>false,'error'=>'Unidade não encontrado!');
+			$profissional='';
+			if(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional'])) {
+				$sql->consult($_p."colaboradores","*","where id='".$_POST['id_profissional']."' and lixo=0");
+				if($sql->rows) {
+					$profissional=mysqli_fetch_object($sql->mysqry);
+
+					$profissionalUnidades=explode(",",$profissional->unidades);
+				}
+			}
+
+			$profissionais=array();
+			if(isset($_POST['profissionais']) and !empty($_POST['profissionais'])) {
+				$pAux=explode(",",$_POST['profissionais']);
+				foreach($pAux as $id_profissional) {
+					if(is_numeric($id_profissional)) $profissionais[]=$id_profissional;
+				}
+			}
+
+			$cadeira='';
+			if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
+				$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."' and lixo=0");
+				if($sql->rows) {
+					$cadeira=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+			$status='';
+			if(isset($_POST['id_status']) and is_numeric($_POST['id_status'])) {
+				$sql->consult($_p."agenda_status","*","where id='".$_POST['id_status']."' and lixo=0");
+				if($sql->rows) {
+					$status=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+			$agendaData='';
+			if(isset($_POST['agenda_data']) and !empty($_POST['agenda_data'])) {
+				list($_dia,$_mes,$_ano)=explode("/",$_POST['agenda_data']);
+				if(checkdate($_mes, $_dia, $_ano)) {
+					$agendaData=$_ano."-".$_mes."-".$_dia;
+				}
+			}
+
+			$agendaHora='';
+			if(isset($_POST['agenda_hora']) and !empty($_POST['agenda_hora'])) {
+				list($_h,$_m)=explode(":",$_POST['agenda_hora']);
+				if(is_numeric($_h) and is_numeric($_m)) {
+					$agendaHora=$_h.":".$_m;
+				}
+			}
+
+			$agenda='';
+			if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
+				$sql->consult($_p."agenda","*","where id='".$_POST['id_agenda']."'");
+				if($sql->rows) {
+					$agenda=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+			if(count($profissionais)==0) {
+				$rtn=array('success'=>false,'error'=>'Profissional não encontrado!');
+			} 
+			/*else if(!in_array($profissional->id, $profissionalUnidades) and 1==2) { // habilitar quando restricoes de unidades estiver ativado
+				$rtn=array('success'=>false,'error'=>'Profissional não encontrado nesta unidade!');
+			} */ 
+			else if(empty($cadeira)) {
+				$rtn=array('success'=>false,'error'=>'Selecione a cadeira!');
+			} 
+			else if(empty($status)) {
+				$rtn=array('success'=>false,'error'=>'Selecione o status!');
+			} 
+			if(empty($agendaData)) {
+				$rtn=array('success'=>false,'error'=>'Data inválida!');
+			} else if(empty($agendaHora)) {
+				$rtn=array('success'=>false,'error'=>'Hora inválida!');
 			} else {
+				$novoPaciente=false;
+				$paciente=$pacienteUnidades='';
+				$erro='';
 
-				
-				$profissional='';
-				if(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional'])) {
-					$sql->consult($_p."colaboradores","*","where id='".$_POST['id_profissional']."' and lixo=0");
-					if($sql->rows) {
-						$profissional=mysqli_fetch_object($sql->mysqry);
+				if(isset($_POST['novoPaciente'])) {
+					$novoPaciente=true;
 
-						$profissionalUnidades=explode(",",$profissional->unidades);
-					}
-				}
-
-				$profissionais=array();
-				if(isset($_POST['profissionais']) and !empty($_POST['profissionais'])) {
-					$pAux=explode(",",$_POST['profissionais']);
-					foreach($pAux as $id_profissional) {
-						if(is_numeric($id_profissional)) $profissionais[]=$id_profissional;
-					}
-				}
-
-				$cadeira='';
-				if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
-					$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."' and id_unidade=$unidade->id and lixo=0");
-					if($sql->rows) {
-						$cadeira=mysqli_fetch_object($sql->mysqry);
-					}
-				}
-				$status='';
-				if(isset($_POST['id_status']) and is_numeric($_POST['id_status'])) {
-					$sql->consult($_p."agenda_status","*","where id='".$_POST['id_status']."' and lixo=0");
-					if($sql->rows) {
-						$status=mysqli_fetch_object($sql->mysqry);
-					}
-				}
-				$agendaData='';
-				if(isset($_POST['agenda_data']) and !empty($_POST['agenda_data'])) {
-					list($_dia,$_mes,$_ano)=explode("/",$_POST['agenda_data']);
-					if(checkdate($_mes, $_dia, $_ano)) {
-						$agendaData=$_ano."-".$_mes."-".$_dia;
-					}
-				}
-
-				$agendaHora='';
-				if(isset($_POST['agenda_hora']) and !empty($_POST['agenda_hora'])) {
-					list($_h,$_m)=explode(":",$_POST['agenda_hora']);
-					if(is_numeric($_h) and is_numeric($_m)) {
-						$agendaHora=$_h.":".$_m;
-					}
-				}
-
-				$agenda='';
-				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
-					$sql->consult($_p."agenda","*","where id='".$_POST['id_agenda']."'");
-					if($sql->rows) {
-						$agenda=mysqli_fetch_object($sql->mysqry);
-					}
-				}
-
-				if(count($profissionais)==0) {
-					$rtn=array('success'=>false,'error'=>'Profissional não encontrado!');
-				} 
-				/*else if(!in_array($profissional->id, $profissionalUnidades) and 1==2) { // habilitar quando restricoes de unidades estiver ativado
-					$rtn=array('success'=>false,'error'=>'Profissional não encontrado nesta unidade!');
-				} */ 
-				else if(empty($cadeira)) {
-					$rtn=array('success'=>false,'error'=>'Selecione a cadeira!');
-				} 
-				else if(empty($status)) {
-					$rtn=array('success'=>false,'error'=>'Selecione o status!');
-				} 
-				if(empty($agendaData)) {
-					$rtn=array('success'=>false,'error'=>'Data inválida!');
-				} else if(empty($agendaHora)) {
-					$rtn=array('success'=>false,'error'=>'Hora inválida!');
-				} else {
-					$novoPaciente=false;
-					$paciente=$pacienteUnidades='';
-					$erro='';
-
-					if(isset($_POST['novoPaciente'])) {
-						$novoPaciente=true;
-
-						if(isset($_POST['cpf']) and !empty($_POST['cpf'])) {
-							$sql->consult($_p."pacientes","*","where cpf='".addslashes(cpf($_POST['cpf']))."' and lixo=0");
-							if($sql->rows) {
-								$erro='Este CPF já possui cadastro!';
-							}
+					if(isset($_POST['cpf']) and !empty($_POST['cpf'])) {
+						$sql->consult($_p."pacientes","*","where cpf='".addslashes(cpf($_POST['cpf']))."' and lixo=0");
+						if($sql->rows) {
+							$erro='Este CPF já possui cadastro!';
 						}
+					}
 
-						if(empty($erro)) {
-							$vSQLPaciente="data=now(),
-											nome='".addslashes(strtoupperWLIB(utf8_decode($_POST['nome'])))."',
-											cpf='".addslashes(cpf(utf8_decode($_POST['cpf'])))."',
-											data_nascimento='".addslashes(invDate($_POST['data_nascimento']))."',
-											telefone1='".addslashes(telefone($_POST['telefone1']))."',
-											indicacao_tipo='".addslashes(utf8_decode($_POST['indicacao_tipo']))."',
-											indicacao='".addslashes(utf8_decode($_POST['indicacao']))."',
-											unidades=',$unidade->id,'";
+					if(empty($erro)) {
+						$vSQLPaciente="data=now(),
+										nome='".addslashes(strtoupperWLIB(utf8_decode($_POST['nome'])))."',
+										cpf='".addslashes(cpf(utf8_decode($_POST['cpf'])))."',
+										data_nascimento='".addslashes(invDate($_POST['data_nascimento']))."',
+										telefone1='".addslashes(telefone($_POST['telefone1']))."',
+										indicacao_tipo='".addslashes(utf8_decode($_POST['indicacao_tipo']))."',
+										indicacao='".addslashes(utf8_decode($_POST['indicacao']))."'";
 
-							$sql->add($_p."pacientes",$vSQLPaciente);
-							$id_paciente=$sql->ulid;
-							$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQLPaciente)."',tabela='".$_p."pacientes',id_reg='".$id_paciente."'");
+						$sql->add($_p."pacientes",$vSQLPaciente);
+						$id_paciente=$sql->ulid;
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQLPaciente)."',tabela='".$_p."pacientes',id_reg='".$id_paciente."'");
 
-							$sql->consult($_p."pacientes","*","where id=$id_paciente");
+						$sql->consult($_p."pacientes","*","where id=$id_paciente");
 
-							if($sql->rows) {
-								$paciente=mysqli_fetch_object($sql->mysqry);
-								$pacienteUnidades=explode(",",$paciente->unidades);
-							}
-						}
-
-					}  
-
-					if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
-						$sql->consult($_p."pacientes","*","where id='".$_POST['id_paciente']."' and lixo=0");
 						if($sql->rows) {
 							$paciente=mysqli_fetch_object($sql->mysqry);
 							$pacienteUnidades=explode(",",$paciente->unidades);
 						}
 					}
-					
-					if(!empty($erro)) {
-						$rtn=array('success'=>false,'error'=>$erro);
+
+				}  
+
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","*","where id='".$_POST['id_paciente']."' and lixo=0");
+					if($sql->rows) {
+						$paciente=mysqli_fetch_object($sql->mysqry);
+						$pacienteUnidades=explode(",",$paciente->unidades);
 					}
-					else if(empty($paciente)) {
-						if($novoPaciente===true) $rtn=array('success'=>false,'error'=>'Algum erro ocorreu durante o cadastro do novo paciente. Tente novamente!');
-						else $rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
-					} else if(!in_array($unidade->id, $pacienteUnidades) and 1==2) { // habilitar quando restricoes de unidades estiver ativado
-						$rtn=array('success'=>false,'error'=>'Paciente não encontrado nesta unidade!');
-					} else {
+				}
+				
+				if(!empty($erro)) {
+					$rtn=array('success'=>false,'error'=>$erro);
+				}
+				else if(empty($paciente)) {
+					if($novoPaciente===true) $rtn=array('success'=>false,'error'=>'Algum erro ocorreu durante o cadastro do novo paciente. Tente novamente!');
+					else $rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
+				} else {
 
-						$agendaData.=" ".$agendaHora;
+					$agendaData.=" ".$agendaHora;
 
-						$vSQL="id_paciente=$paciente->id,
-								id_unidade=$unidade->id,
-								procedimentos='".addslashes(utf8_decode($_POST['procedimentosJSON']))."',
-								profissionais=',".implode(",",$profissionais).",',
-								id_cadeira=$cadeira->id,
-								id_status=$status->id,
-								agenda_data='".$agendaData."',
-								agenda_duracao='".addslashes($_POST['agenda_duracao'])."'
-								";
+					$vSQL="id_paciente=$paciente->id,
+							procedimentos='".addslashes(utf8_decode($_POST['procedimentosJSON']))."',
+							profissionais=',".implode(",",$profissionais).",',
+							id_cadeira=$cadeira->id,
+							id_status=$status->id,
+							agenda_data='".$agendaData."',
+							agenda_duracao='".addslashes($_POST['agenda_duracao'])."'
+							";
 
-						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
+					if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
 
-						if(isset($_POST['clienteChegou']) and $_POST['clienteChegou']==1) $vSQL.=",clienteChegou=1";
-						else $vSQL.=",clienteChegou=0";
+					if(isset($_POST['clienteChegou']) and $_POST['clienteChegou']==1) $vSQL.=",clienteChegou=1";
+					else $vSQL.=",clienteChegou=0";
 
-						if(isset($_POST['emAtendimento']) and $_POST['emAtendimento']==1) $vSQL.=",emAtendimento=1";
-						else $vSQL.=",emAtendimento=0";
-
-
-						$idStatusNovo=((isset($_POST['id_status']) and is_numeric($_POST['id_status']))?$_POST['id_status']:'');
-						if(is_object($agenda)) {
-							$vWHERE="where id=$agenda->id";
-							$sql->update($_p."agenda",$vSQL,$vWHERE);
-							$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."agenda',id_reg='".$agenda->id."'");
+					if(isset($_POST['emAtendimento']) and $_POST['emAtendimento']==1) $vSQL.=",emAtendimento=1";
+					else $vSQL.=",emAtendimento=0";
 
 
-							if($agenda->id_status!=$_POST['id_status']) {
-								$vSQLHistorico="data=now(),
-										id_usuario=$usr->id,
-										evento='agendaStatus',
-										id_paciente=$agenda->id_paciente,
-										id_agenda=$agenda->id,
-										id_status_antigo=$agenda->id_status,
-										id_status_novo=".$idStatusNovo.",
-										descricao=''";
-								$sql->add($_p."pacientes_historico",$vSQLHistorico);
-							}
+					$idStatusNovo=((isset($_POST['id_status']) and is_numeric($_POST['id_status']))?$_POST['id_status']:'');
+					if(is_object($agenda)) {
+						$vWHERE="where id=$agenda->id";
+						$sql->update($_p."agenda",$vSQL,$vWHERE);
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."agenda',id_reg='".$agenda->id."'");
 
 
-							$agendaAlterado=invDate($_POST['agenda_data'])." ".$_POST['agenda_hora'].":00";
-
-							if(strtotime($agenda->agenda_data)!=strtotime($agendaAlterado)) {
-								$vSQLHistorico="data=now(),
+						if($agenda->id_status!=$_POST['id_status']) {
+							$vSQLHistorico="data=now(),
 									id_usuario=$usr->id,
-									evento='agendaHorario',
+									evento='agendaStatus',
 									id_paciente=$agenda->id_paciente,
 									id_agenda=$agenda->id,
-									agenda_data_antigo='$agenda->agenda_data',
-									agenda_data_novo='$agendaAlterado',
+									id_status_antigo=$agenda->id_status,
 									id_status_novo=".$idStatusNovo.",
 									descricao=''";
-								$sql->add($_p."pacientes_historico",$vSQLHistorico);
-							}
-
-
-						} else {
-							/*$sql->consult($_p."agenda","*","where agenda_data='".$agendaData."' and id_paciente=$paciente->id and id_unidade=$unidade->id");
-							if($sql->rows) {
-								$agenda=mysqli_fetch_object($sql->mysqry);
-								$vWHERE="where id=$agenda->id";
-								$sql->update($_p."agenda",$vSQL,$vWHERE);
-								$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."agenda',id_reg='".$agenda->id."'");
-							} else {*/
-								$vSQL.=",data=now(),id_usuario=$usr->id";
-								$sql->add($_p."agenda",$vSQL);
-								$id_agenda=$sql->ulid;
-								$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$id_agenda."'");
-
-								$idPaciente=((isset($_POST['id_paciente']) && is_numeric($_POST['id_paciente']))?$_POST['id_paciente']:'');
-								$vSQLHistorico="data=now(),
-									id_usuario=$usr->id,
-									evento='agendaNovo',
-									id_paciente=".$idPaciente.",
-									id_agenda=$id_agenda,
-									id_status_antigo=0,
-									id_status_novo=".$idStatusNovo.",
-									descricao=''";
-								$sql->add($_p."pacientes_historico",$vSQLHistorico);
-							//}
+							$sql->add($_p."pacientes_historico",$vSQLHistorico);
 						}
 
-						$rtn=array('success'=>true);
+
+						$agendaAlterado=invDate($_POST['agenda_data'])." ".$_POST['agenda_hora'].":00";
+
+						if(strtotime($agenda->agenda_data)!=strtotime($agendaAlterado)) {
+							$vSQLHistorico="data=now(),
+								id_usuario=$usr->id,
+								evento='agendaHorario',
+								id_paciente=$agenda->id_paciente,
+								id_agenda=$agenda->id,
+								agenda_data_antigo='$agenda->agenda_data',
+								agenda_data_novo='$agendaAlterado',
+								id_status_novo=".$idStatusNovo.",
+								descricao=''";
+							$sql->add($_p."pacientes_historico",$vSQLHistorico);
+						}
+
+
+					} else {
+						$vSQL.=",data=now(),id_usuario=$usr->id";
+						$sql->add($_p."agenda",$vSQL);
+						$id_agenda=$sql->ulid;
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$id_agenda."'");
+
+						$idPaciente=((isset($_POST['id_paciente']) && is_numeric($_POST['id_paciente']))?$_POST['id_paciente']:'');
+						$vSQLHistorico="data=now(),
+							id_usuario=$usr->id,
+							evento='agendaNovo',
+							id_paciente=".$idPaciente.",
+							id_agenda=$id_agenda,
+							id_status_antigo=0,
+							id_status_novo=".$idStatusNovo.",
+							descricao=''";
+						$sql->add($_p."pacientes_historico",$vSQLHistorico);
+						
 					}
-					
+
+					$rtn=array('success'=>true);
 				}
 				
 			}
-
 		} else if($_POST['ajax']=="agendamentoRemover") {
 			if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
 				$sql->consult($_p."agenda","*","where id='".$_POST['id_agenda']."'");
@@ -308,110 +286,107 @@
 
 		} else if($_POST['ajax']=="agendamentoVerificarDisponibilidade") {
 
-			if(is_object($unidade)) {
 
-				$profissionais=array();
-				if(isset($_POST['profissionais']) and !empty($_POST['profissionais'])) {
-					
-					$profissionaisID=explode(",",$_POST['profissionais']);
-					if(count($profissionaisID)>0) {
-						$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisID).") and lixo=0");
-						if($sql->rows) {
-							while($x=mysqli_fetch_object($sql->mysqry)) {
-								$profissionais[$x->id]=$x;
-							}
+			$profissionais=array();
+			if(isset($_POST['profissionais']) and !empty($_POST['profissionais'])) {
+				
+				$profissionaisID=explode(",",$_POST['profissionais']);
+				if(count($profissionaisID)>0) {
+					$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisID).") and lixo=0");
+					if($sql->rows) {
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$profissionais[$x->id]=$x;
 						}
 					}
 				}
+			}
 
-				$paciente='';
-				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
-					$sql->consult($_p."pacientes","*","where id='".$_POST['id_paciente']."' and lixo=0");
-					if($sql->rows) {
-						$paciente=mysqli_fetch_object($sql->mysqry);
-					}
+			$paciente='';
+			if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+				$sql->consult($_p."pacientes","*","where id='".$_POST['id_paciente']."' and lixo=0");
+				if($sql->rows) {
+					$paciente=mysqli_fetch_object($sql->mysqry);
 				}
+			}
 
-				$cadeira='';
-				if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
-					$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."' and id_unidade=$unidade->id and lixo=0");
-					if($sql->rows) {
-						$cadeira=mysqli_fetch_object($sql->mysqry);
-					}
+			$cadeira='';
+			if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
+				$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."' and lixo=0");
+				if($sql->rows) {
+					$cadeira=mysqli_fetch_object($sql->mysqry);
 				}
+			}
 
-				$agendaData='';
-				if(isset($_POST['agenda_data']) and !empty($_POST['agenda_data'])) {
+			$agendaData='';
+			if(isset($_POST['agenda_data']) and !empty($_POST['agenda_data'])) {
 
 
-					list($_d,$_m,$_a)=@explode("/",$_POST['agenda_data']);
+				list($_d,$_m,$_a)=@explode("/",$_POST['agenda_data']);
 
-					if(checkdate($_m, $_d, $_a)) {
-						$agendaData=$_a."-".$_m."-".$_d;
-					}
-					
+				if(checkdate($_m, $_d, $_a)) {
+					$agendaData=$_a."-".$_m."-".$_d;
 				}
-				$agendaHora='';
-				if(isset($_POST['agenda_hora']) and !empty($_POST['agenda_hora'])) {
-					list($_h,$_m)=@explode(":",$_POST['agenda_hora']);
-					if(is_numeric($_h) and is_numeric($_m)) {
-						$agendaHora=$_h.":".$_m;
-					}
+				
+			}
+			$agendaHora='';
+			if(isset($_POST['agenda_hora']) and !empty($_POST['agenda_hora'])) {
+				list($_h,$_m)=@explode(":",$_POST['agenda_hora']);
+				if(is_numeric($_h) and is_numeric($_m)) {
+					$agendaHora=$_h.":".$_m;
 				}
+			}
 
-				if(!empty($agendaData)) {
-					if(!empty($agendaHora)) {
-						if(count($profissionais)>0) {
-							if(is_object($cadeira)) {
+			if(!empty($agendaData)) {
+				if(!empty($agendaHora)) {
+					if(count($profissionais)>0) {
+						if(is_object($cadeira)) {
 
-								$validacao=array();
-								$agendaData.=" ".$agendaHora;
-								$agendaDataDia=date('w',strtotime($agendaData));
-								foreach($profissionais as $p) {
-									$where="where dia=$agendaDataDia and 
-													id_profissional=$p->id and 
-													id_cadeira=$cadeira->id and 
-													inicio<='".$agendaHora."' and 
-													fim>='".$agendaHora."'";
-									//echo $where;
-
-									$sql->consult($_p."profissionais_horarios","*",$where);
-									
-									$atende=$sql->rows>0?1:0;
-
-									$validacao[]=array('id_profissional'=>$p->id,
-														'profissional'=>utf8_encode($p->nome),
-														'atende'=>$atende);
-								}
-								// verifica se o profissinal atende nesta cadeira
-								/*$sql->consult($_p."profissionais_horarios","*","where id_profissional=$profissional->id and id_cadeira=$cadeira->id");
-								if($sql->rows) {
-									while($x=mysqli_fetch_object($sql->mysqry)) {
-
-									}
-								} */
-
-
-								//$where="WHERE agenda_data='".$agendaData."' and id_profissional=$profissional->id and id_cadeira=$cadeira->id";
+							$validacao=array();
+							$agendaData.=" ".$agendaHora;
+							$agendaDataDia=date('w',strtotime($agendaData));
+							foreach($profissionais as $p) {
+								$where="where dia=$agendaDataDia and 
+												id_profissional=$p->id and 
+												id_cadeira=$cadeira->id and 
+												inicio<='".$agendaHora."' and 
+												fim>='".$agendaHora."'";
 								//echo $where;
 
-								$rtn=array('success'=>true,'validacao'=>$validacao);
+								$sql->consult($_p."profissionais_horarios","*",$where);
+								
+								$atende=$sql->rows>0?1:0;
 
-							} else {
-								$rtn=array('success'=>false,'error'=>'Cadeira não definida/inválida!');
+								$validacao[]=array('id_profissional'=>$p->id,
+													'profissional'=>utf8_encode($p->nome),
+													'atende'=>$atende);
 							}
+							// verifica se o profissinal atende nesta cadeira
+							/*$sql->consult($_p."profissionais_horarios","*","where id_profissional=$profissional->id and id_cadeira=$cadeira->id");
+							if($sql->rows) {
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+
+								}
+							} */
+
+
+							//$where="WHERE agenda_data='".$agendaData."' and id_profissional=$profissional->id and id_cadeira=$cadeira->id";
+							//echo $where;
+
+							$rtn=array('success'=>true,'validacao'=>$validacao);
+
 						} else {
-							$rtn=array('success'=>false,'error'=>'Profissional não definido/inválido!');
+							$rtn=array('success'=>false,'error'=>'Cadeira não definida/inválida!');
 						}
 					} else {
-						$rtn=array('success'=>false,'error'=>'Horário de agendamento não definida!');
+						$rtn=array('success'=>false,'error'=>'Profissional não definido/inválido!');
 					}
 				} else {
-					$rtn=array('success'=>false,'error'=>'Data de agendamento não definida!');
+					$rtn=array('success'=>false,'error'=>'Horário de agendamento não definida!');
 				}
 			} else {
-				$rtn=array('success'=>false,'error'=>'Unidade não especificada!');
+				$rtn=array('success'=>false,'error'=>'Data de agendamento não definida!');
 			}
+			
 
 		}
 
@@ -435,14 +410,7 @@
 		$_procedimentos[$x->id]=$x;
 	}
 
-	$unidade='';
-	if(isset($_GET['id_unidade']) and is_numeric($_GET['id_unidade']) and isset($_optUnidades[$_GET['id_unidade']])) {
-		$unidade=$_optUnidades[$_GET['id_unidade']];
-	}
-	if(empty($unidade)) {
-		$jsc->jAlert("Unidade não encontrada!","erro","$.fancybox.close()");
-		die();
-	}
+	
 	$campos=explode(",","id_paciente,profissionais,id_cadeira,id_status,clienteChegou,emAtendimento,agenda_data,agenda_hora,agenda_duracao,obs,procedimentos");
 	foreach($campos as $v) {
 		if($v=="profissionais") $values[$v]=array();
@@ -482,7 +450,7 @@
 
 	$agenda='';
 	if(isset($_GET['id_agenda']) and is_numeric($_GET['id_agenda'])) {
-		$sql->consult($_p."agenda","*","where id=".$_GET['id_agenda']." and id_unidade=$unidade->id and lixo=0");
+		$sql->consult($_p."agenda","*","where id=".$_GET['id_agenda']." and lixo=0");
 		if($sql->rows) {
 			$agenda=mysqli_fetch_object($sql->mysqry);
 
@@ -501,7 +469,7 @@
 	}
 
 	$_pacientes=array();
-	$sql->consult($_p."pacientes","*","where lixo=0 order by nome asc");//"where unidades like '%,$unidade->id,%' and lixo=0 order by nome asc");
+	$sql->consult($_p."pacientes","*","where lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_pacientes[$x->id]=$x;
 	}
@@ -511,7 +479,7 @@
 		$_profissionais[$x->id]=$x;
 	}
 	$_cadeiras=array();
-	$sql->consult($_p."parametros_cadeiras","*","where id_unidade=$unidade->id and lixo=0 order by titulo asc");
+	$sql->consult($_p."parametros_cadeiras","*","where lixo=0 order by titulo asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_cadeiras[$x->id]=$x;
 	}
@@ -528,7 +496,6 @@
 
 ?>
 <script type="text/javascript">
-	var id_unidade = <?php echo $unidade->id;?>;
 
 	var id_agenda = '<?php echo is_object($agenda)?$agenda->id:'';?>';
 
@@ -781,7 +748,7 @@
 
 						let urlComplemento = `agendaData=${$('input.agendaData').val()}&agendaHora=${$('input.agendaHora').val()}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}`;
 						$.fancybox.open({
-					        src: `box/boxAgendamentoPessoal.php?id_unidade=<?php echo $unidade->id;?>&${urlComplemento}`,
+					        src: `box/boxAgendamentoPessoal.php?${urlComplemento}`,
 					        type: "ajax"
 					    });
 					})

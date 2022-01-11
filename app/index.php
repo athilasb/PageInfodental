@@ -1,7 +1,6 @@
 <?php
 include "includes/header.php";
 ?>
-
 <section class="login">
 
 	<section class="login__content">

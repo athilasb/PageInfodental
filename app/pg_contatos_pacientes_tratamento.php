@@ -14,12 +14,8 @@
 					$procedimento=mysqli_fetch_object($sql->mysqry);
 				}
 			}
-			$unidade='';
-			if(isset($_POST['id_unidade']) and is_numeric($_POST['id_unidade']) and isset($_optUnidades[$_POST['id_unidade']])) {
-				$unidade=$_optUnidades[$_POST['id_unidade']];
-			}
 
-			if(is_object($procedimento) and is_object($unidade)) {
+			if(is_object($procedimento)) {
 				$sql->consult($_p."parametros_procedimentos_planos","*","where id_procedimento=$procedimento->id"); 
 				
 				$planosID=array();
@@ -161,7 +157,7 @@
 				$sql->update($_table,$vsql,$vwhere);
 				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vsql)."',vwhere='".addslashes($vwhere)."',tabela='".$_table."',id_reg='".$x->id."'");
 
-				$sql->update($_table."_pagamentos","lixo=1,lixo_obs=6,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$x->id and id_paciente=$paciente->id and id_unidade=$usrUnidade->id");
+				$sql->update($_table."_pagamentos","lixo=1,lixo_obs=6,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$x->id and id_paciente=$paciente->id");
 
 				$adm->biCategorizacao();
 				$jsc->jAlert("Tratamento excluído com sucesso!","sucesso","document.location.href='pg_contatos_pacientes_tratamento.php?id_paciente=".$paciente->id."'");
@@ -191,7 +187,7 @@
 	$selectProfissional.='</select>';
 
 	$planosDosProcedimentos=array();
-	$sql->consult($_p."parametros_procedimentos_planos","*","where id_unidade='".$usrUnidade->id."' and lixo=0");
+	$sql->consult($_p."parametros_procedimentos_planos","*","where lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$planosDosProcedimentos[$x->id_procedimento][]=array("id"=>$x->id_plano,"titulo"=>utf8_encode($_planos[$x->id_plano]->titulo));
 	}
@@ -253,7 +249,7 @@
 
 					// Procedimentos
 						$procedimentos=array();
-						$where="where id_tratamento=$cnt->id and id_paciente=$paciente->id and id_unidade=$usrUnidade->id and lixo=0";
+						$where="where id_tratamento=$cnt->id and id_paciente=$paciente->id and lixo=0";
 						$sql->consult($_table."_procedimentos","*",$where);
 						while($x=mysqli_fetch_object($sql->mysqry)) {
 
@@ -296,7 +292,7 @@
 
 					// Pagamentos
 						$pagamentos=array();
-						$where="where id_tratamento=$cnt->id and id_paciente=$paciente->id and id_unidade=$usrUnidade->id and lixo=0";
+						$where="where id_tratamento=$cnt->id and id_paciente=$paciente->id and lixo=0";
 						$sql->consult($_table."_pagamentos","*",$where);
 						while($x=mysqli_fetch_object($sql->mysqry)) {
 							
@@ -402,6 +398,7 @@
 					}
 				}
 
+
 				
 				if($processa===true) {	
 
@@ -430,12 +427,12 @@
 							$id_tratamento=$cnt->id;
 
 							if($tratamentoAprovado===false) {
-								$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$id_tratamento and id_paciente=$paciente->id and id_unidade=$usrUnidade->id");
-								$sql->update($_table."_pagamentos","lixo=1,lixo_obs=1,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$id_tratamento and id_paciente=$paciente->id and id_unidade=$usrUnidade->id");
+								$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
+								$sql->update($_table."_pagamentos","lixo=1,lixo_obs=1,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
 							}
 						} else {
 							$vSQL.="data=now(),id_paciente=$paciente->id";
-							//echo $vSQL;die();
+							//echo $_table." ".$vSQL;die();
 							$sql->add($_table,$vSQL);
 							$id_tratamento=$sql->ulid;
 							$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$id_tratamento."'");
@@ -701,7 +698,6 @@
 												$vSQLPagamento="lixo=0,
 																id_paciente=$paciente->id,
 																id_tratamento=$id_tratamento,
-																id_unidade=$usrUnidade->id,
 																id_formapagamento='".addslashes(isset($x->id_formapagamento)?$x->id_formapagamento:0)."',
 																qtdParcelas='".addslashes(isset($x->qtdParcelas)?$x->qtdParcelas:0)."',
 																data_vencimento='".addslashes(invDate($x->vencimento))."',
@@ -865,7 +861,6 @@
 												$vSQLProcedimento="lixo=0,
 																	id_paciente=$paciente->id,
 																	id_tratamento=$id_tratamento,
-																	id_unidade=$usrUnidade->id,
 																	id_procedimento='".addslashes($x->id_procedimento)."',
 																	procedimento='".addslashes(utf8_decode($x->procedimento))."',
 																	id_plano='".addslashes($x->id_plano)."',
@@ -1055,7 +1050,6 @@
 				var _taxasCreditoSemJuros = JSON.parse('<?php echo json_encode($_taxasCreditoSemJuros);?>');
 				var tratamentoAprovado = <?php echo ($tratamentoAprovado===true)?1:0;?>;
 				var procedimentos = [];
-				var id_unidade = '<?php echo $usrUnidade->id;?>';
 				var id_tratamento = <?php echo is_object($cnt)?$cnt->id:0;?>;
 				var planosDosProcedimentos = JSON.parse(`<?php echo json_encode($planosDosProcedimentos);;?>`);
 				var pagamentos = JSON.parse(`<?php echo ($values['pagamentos']);;?>`);
@@ -2144,7 +2138,7 @@
 								$(`.js-regiao-${id_regiao}`).find('select').select2({  allowClear:true,closeOnSelect: false,dropdownParent: $("#modalProcedimento")});
 
 								$(`.js-procedimento-btnOk`).show();
-								let data = `ajax=planos&id_unidade=${id_unidade}&id_procedimento=${id_procedimento}`;
+								let data = `ajax=planos&id_procedimento=${id_procedimento}`;
 								$.ajax({
 									type:"POST",
 									data:data,
@@ -3181,7 +3175,7 @@
 
 			$_procedimentosAprovado=array();
 			$procedimentosIds=$tratamentosProcedimentosIDs=array(-1);
-			$sql->consult($_table."_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and situacao='aprovado' and lixo=0");
+			$sql->consult($_table."_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and situacao='aprovado' and lixo=0");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$tratamentosProcedimentosIDs[]=$x->id;
 				$_procedimentosAprovado[$x->id]=$x;
@@ -3208,7 +3202,7 @@
 			}
 
 
-			$sql->consult($_table."_pagamentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and id_fusao=0 and lixo=0");
+			$sql->consult($_table."_pagamentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_fusao=0 and lixo=0");
 			$pagRegs=array();
 			$pagamentosIds=array(0);
 			while($x=mysqli_fetch_object($sql->mysqry)) {

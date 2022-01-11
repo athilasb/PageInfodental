@@ -77,6 +77,7 @@
 				$processa=true;
 
 				$dadosBancario=utf8_decode($_POST['dados_bancario']);
+				$vSQL=isset($vSQL)?$vSQL:"";
 				$vSQL.="dados_bancario='".$dadosBancario."',";
 				//echo $vSQL;die();
 				if($processa===true) {	

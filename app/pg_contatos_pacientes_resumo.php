@@ -457,7 +457,7 @@
 				$_procedimentos=array();
 				$_procedimentosAprovado=array();
 				$procedimentosIds=$tratamentosProcedimentosIDs=array(-1);
-				$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and situacao='aprovado' and lixo=0");
+				$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).")  and situacao='aprovado' and lixo=0");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$tratamentosProcedimentosIDs[]=$x->id;
 					$_procedimentosAprovado[$x->id]=$x;
@@ -486,7 +486,7 @@
 
 
 				
-				$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_unidade = $usrUnidade->id and id_fusao=0 and lixo=0");
+				$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id_tratamento IN (".implode(",",$tratamentosIDs).") and id_fusao=0 and lixo=0");
 				$pagRegs=array();
 				$pagamentosIds=array(0);
 				while($x=mysqli_fetch_object($sql->mysqry)) {

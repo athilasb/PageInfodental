@@ -1,8 +1,6 @@
 <?php
 	include "includes/header.php";
 	include "includes/nav.php";
-
-
 ?>
 
 <section class="content">

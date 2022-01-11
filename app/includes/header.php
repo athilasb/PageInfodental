@@ -2,10 +2,11 @@
 	//session_start();
 	if(basename($_SERVER['PHP_SELF'])=="index.php") {
 		require_once("lib/conf.php");
-		require_once("lib/classes.php");
+		require_once("lib/classes.php");	
+		$sql = new Mysql();
+
 		if(isset($_COOKIE[$_p.'adm_cpf']) and isset($_COOKIE[$_p.'adm_senha']) and isset($_COOKIE[$_p.'adm_id'])) {
-			$str = new StringW();		
-			$sql = new Mysql();
+			$str = new StringW();	
 			$sql->consult($_p."colaboradores","*","where id='".$str->protege($_COOKIE[$_p.'adm_id'])."' and 
 																	cpf='".$str->protege($_COOKIE[$_p.'adm_cpf'])."' and 
 																	senha='".$str->protege($_COOKIE[$_p.'adm_senha'])."' and 
@@ -15,6 +16,11 @@
 				echo "<html><head><title>Redirecionando...</title></head><body><font size=4>Redirecionando...</font></body></html>";
 				die();
 			}
+		}
+
+		$sql->consult($_p."colaboradores","id","where lixo=0");
+		if($sql->rows==0) {
+			header("Location: primeiro-acesso.php");
 		}
 	} else {
 		

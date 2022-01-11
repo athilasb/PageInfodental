@@ -728,7 +728,6 @@
 										<th>Data</th>
 										<th>Nº Doc</th>
 										<th>Descrição</th>
-										<th>Unidade</th>
 										<th>Conta</th>
 										<th>Valor</th>
 										<th style="width:50px;">Ação</th>
@@ -754,7 +753,6 @@
 										<td><?php echo $x->dataf;?></td>
 										<td><?php echo !empty($x->checknumber)?utf8_encode($x->checknumber):"-";?></td>
 										<td><?php echo utf8_encode($x->descricao);?></td>
-										<td><?php echo isset($_contas[$x->id_conta])?utf8_encode($_unidades[$_contas[$x->id_conta]->id_unidade]->titulo):"-";?></td>
 										<td><?php echo isset($_contas[$x->id_conta])?utf8_encode($_contas[$x->id_conta]->titulo):"-";?></td>
 										<td style="text-align: right"><font color="<?php echo $x->valor>=0?"green":"red";?>"><?php echo number_format($x->valor,2,",",".");?></font></td>
 										<td><a href="pg_financeiro_movimentacao.php?id_conta=<?php echo $x->id_conta;?>&form=1&edita=<?php echo $x->id;?>" target="_blank" class="button" style="color:#FFF"><span class="iconify" data-icon="bx:bx-search-alt"></span></a></td>

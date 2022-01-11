@@ -26,7 +26,7 @@
 
 	if(isset($_GET['form'])) {
 		$cnt='';
-		$campos=explode(",","titulo,id_unidade,agencia,conta,tipo");
+		$campos=explode(",","titulo,agencia,conta,tipo");
 		
 		foreach($campos as $v) $values[$v]='';
 		
@@ -114,17 +114,6 @@
 				<fieldset>
 					<legend>Dados</legend>
 					<div class="colunas4">
-						<dl>
-							<dt>Unidade</dt>
-							<dd>
-								<select name="id_unidade" class="obg">
-									<option value="">-</option>
-									<?php
-									foreach($_unidades as $v) echo '<option value="'.$v->id.'"'.($v->id==$values['id_unidade']?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
-									?>
-								</select>
-							</dd>
-						</dl>
 						<dl class="dl2">
 							<dt>Título</dt>
 							<dd>
@@ -137,7 +126,7 @@
 								<select name="tipo" class="obg">
 									<option value="">-</option>
 									<?php
-									foreach($_bancosEContasTipos as $k=>$v) echo '<option value="'.$k.'"'.((isset($values['tipo']) and $values['id_unidade']==$k)?' selected':'').'>'.$v.'</option>';
+									foreach($_bancosEContasTipos as $k=>$v) echo '<option value="'.$k.'"'.((isset($values['tipo']) and $values['tipo']==$k)?' selected':'').'>'.$v.'</option>';
 									?>
 								</select>
 							</dd>
@@ -178,17 +167,7 @@
 		<h1 class="filtros__titulo">Banco e Contas</h1>
 		<form method="get" class="filtros-form">
 			<input type="hidden" name="csv" value="0" />
-			<dl>
-				<dt>Unidade</dt>
-				<dd>
-					<select name="id_unidade">
-						<option value="">-</option>
-						<?php
-						foreach($_unidades as $v) echo '<option value="'.$v->id.'"'.((isset($values['id_unidade']) and $v->id==$values['id_unidade'])?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
-						?>
-					</select>
-				</dd>
-			</dl>
+			
 			<button type="submit" class="filtros-form__button"><i class="iconify" data-icon="bx-bx-search"></i></button>
 		</form>
 		<div class="filtros-acoes">
@@ -208,7 +187,6 @@
 	}
 	
 	$where="WHERE lixo='0'";
-	if(isset($values['id_unidade']) and is_numeric($values['id_unidade'])) $where.=" and (id_unidade = '".addslashes($values['id_unidade'])."')";
 	
 	if($usr->cpf=="wlib" and isset($_GET['cmd'])) echo $where;
 
@@ -239,7 +217,6 @@
 					<tr onclick="document.location.href='<?php echo $_page;?>?form=1&edita=<?php echo $x->id."&".$url;?>'">
 						<td><b><?php echo utf8_encode($x->titulo);?></b></td>
 						<td><?php echo isset($_bancosEContasTipos[$x->tipo])?$_bancosEContasTipos[$x->tipo]:'-';?></b></td>
-						<td><?php echo isset($_unidades[$x->id_unidade])?utf8_encode($_unidades[$x->id_unidade]->titulo):'-';?></td>
 					</tr>
 					<?php
 					}

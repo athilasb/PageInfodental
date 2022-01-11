@@ -17,4 +17,5 @@
 	<li><a href="pg_configuracoes_categorias.php?" class="main-nav__resumo-do-paciente<?php echo basename($_SERVER['PHP_SELF'])=="pg_configuracoes_categorias.php"?" active":"";?>">Categorias Financeiras</a></li>
 	<li><a href="pg_colaboradores.php" class="main-nav__resumo-do-paciente<?php echo basename($_SERVER['PHP_SELF'])=="pg_colaboradores.php"?" active":"";?>">Colaboradores</a></li>
 	<li><a href="pg_configuracao_produtos.php" class="main-nav__resumo-do-paciente<?php echo basename($_SERVER['PHP_SELF'])=="pg_configuracao_produtos.php"?" active":"";?>">Produtos</a></li>
+	<li><a href="pg_configuracoes_planos.php" class="main-nav__resumo-do-paciente<?php echo basename($_SERVER['PHP_SELF'])=="pg_configuracoes_planos.php"?" active":"";?>">Planos</a></li>
 </ul>

@@ -83,14 +83,6 @@
 			}
 
 
-			$unidade='';
-			if(isset($_POST['id_unidade']) and is_numeric($_POST['id_unidade'])) {
-				$sql->consult($_p."unidades","*","where id='".$_POST['id_unidade']."'");
-				if($sql->rows) {
-					$unidade=mysqli_fetch_object($sql->mysqry);
-				}
-			}
-
 			$procPlano=$erro="";
 			if(isset($_POST['id_procedimento_plano']) and is_numeric($_POST['id_procedimento_plano']) and $_POST['id_procedimento_plano']>0) {
 				$sql->consult($_p."parametros_procedimentos_planos","*","where id='".$_POST['id_procedimento_plano']."' and lixo=0");
@@ -108,7 +100,6 @@
 						if(is_object($plano)) {
 
 							$vSQL="id_procedimento=$procedimento->id,
-									id_unidade=$unidade->id,
 									id_plano=$plano->id,
 									valor='".valor($_POST['valor'])."',
 									custo='".valor($_POST['custo'])."',
@@ -722,7 +713,7 @@
 									swal({title: "Erro!", text: "Selecione o Valor!", type:"error", confirmButtonColor: "#424242"});
 								} else {
 
-									let data = `ajax=planoAdicionar&id_plano=${id_plano}&id_unidade=${id_unidade}&id_procedimento=${id_procedimento}&valor=${valor}&custo=${custo}&obs=${obs}&id_procedimento_plano=${id_procedimento_plano}&comissionamento=${comissionamento}`;
+									let data = `ajax=planoAdicionar&id_plano=${id_plano}&&id_procedimento=${id_procedimento}&valor=${valor}&custo=${custo}&obs=${obs}&id_procedimento_plano=${id_procedimento_plano}&comissionamento=${comissionamento}`;
 									console.log(data);
 									$.ajax({
 										type:'POST',

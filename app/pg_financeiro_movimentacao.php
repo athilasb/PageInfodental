@@ -124,7 +124,7 @@
 					$id_reg=$cnt->id;
 				} 
 				else {
-					$vSQL.="id_usuario='".$usr->id."',id_conta='".$conta->id."',id_unidade=$conta->id_unidade,ajuste=1";
+					$vSQL.="id_usuario='".$usr->id."',id_conta='".$conta->id."',ajuste=1";
 					$sql->add($_table,$vSQL);
 					$id_reg=$sql->ulid;
 					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$sql->ulid."'");

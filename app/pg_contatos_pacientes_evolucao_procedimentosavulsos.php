@@ -14,10 +14,6 @@
 					$procedimento=mysqli_fetch_object($sql->mysqry);
 				}
 			}
-			$unidade='';
-			if(isset($_POST['id_unidade']) and is_numeric($_POST['id_unidade']) and isset($_optUnidades[$_POST['id_unidade']])) {
-				$unidade=$_optUnidades[$_POST['id_unidade']];
-			}
 
 			if(is_object($procedimento) and is_object($unidade)) {
 				$sql->consult($_p."parametros_procedimentos_planos","*","where id_procedimento=$procedimento->id"); 
@@ -92,7 +88,7 @@
 		$_usuarios[$x->id]=$x;
 	}
 	$planosDosProcedimentos=array();
-	$sql->consult($_p."parametros_procedimentos_planos","*","where id_unidade='".$usrUnidade->id."' and lixo=0");
+	$sql->consult($_p."parametros_procedimentos_planos","*","where lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$planosDosProcedimentos[$x->id_procedimento][]=array("id"=>$x->id_plano,"titulo"=>utf8_encode($_planos[$x->id_plano]->titulo));
 	}
@@ -403,7 +399,6 @@
 			}
 
 			var procedimentos = JSON.parse(jsonEscape(`<?php echo json_encode($evolucaoProcedimentos);?>`));
-			var id_unidade = '<?php echo $usrUnidade->id;?>';
 			var planosDosProcedimentos = JSON.parse(`<?php echo json_encode($planosDosProcedimentos);;?>`);
 			
 
@@ -578,7 +573,7 @@
 							$(`.js-regiao-${id_regiao}`).find('select').chosen({hide_results_on_select:false,allow_single_deselect:true});
 
 							$(`.js-procedimento-btnOk`).show();
-							let data = `ajax=planos&id_unidade=${id_unidade}&id_procedimento=${id_procedimento}`;
+							let data = `ajax=planos&id_procedimento=${id_procedimento}`;
 							$.ajax({
 								type:"POST",
 								data:data,

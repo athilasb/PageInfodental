@@ -18,27 +18,10 @@
 				if(empty($wtalk)) header("Location: ".(empty($dir)?".":$dir)."/?erro=6&url=".$_SERVER['REQUEST_URI']);
 			}
 
-
-			$_unidades=$_optUnidades=array();
-			$sql->consult($_p."unidades","*","where lixo=0  order by titulo asc");
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$_unidades[$x->id]=$x;
-				$_optUnidades[$x->id]=$x;
-			}
-
-			if(isset($_GET['alterarUnidade']) and is_numeric($_GET['alterarUnidade']) and isset($_optUnidades[$_GET['alterarUnidade']])) {
-				setcookie($_p."adm_unidade", $_optUnidades[$_GET['alterarUnidade']]->id, time() + 3600*24, '/');
-				$usrUnidade=$_optUnidades[$_GET['alterarUnidade']];
-			} else if(isset($_COOKIE[$_p.'adm_unidade']) and is_numeric($_COOKIE[$_p.'adm_unidade']) and $_optUnidades[$_COOKIE[$_p.'adm_unidade']]) {
-				$usrUnidade=$_optUnidades[$_COOKIE[$_p.'adm_unidade']];
-			} else {
-				foreach($_optUnidades as $v) {
-					$usrUnidade=$v;
-					break;
-				}
-			}
 			
 		}
+
+
 		else {
 			if(empty($wtalk)) header("Location: ".(empty($dir)?".":$dir)."/?erro=2&url=".$_SERVER['REQUEST_URI']);
 			//die();

@@ -316,10 +316,7 @@
 		<div class="modal-content">
 			<h1 class="modal-content__titulo"><?php echo $titulo;?></h1>
 			<div class="colunas4">
-				<dl>
-					<dt>Unidade</dt>
-					<dd><?php echo utf8_encode($_optUnidades[$cnt->id_unidade]->titulo);?></dd>
-				</dl>
+			
 				<?php /*
 				<dl class="dl3">
 					<dt>Descrição</dt>
@@ -539,7 +536,6 @@
 					<tr class="mov" style="cursor: pointer">
 						<td><input type="radio" name="id_movimento" value="<?php echo $x->id;?>" class="js-movimento-unico" data-valor="<?php echo $x->valor;?>" /></td>
 						<td><?php echo $x->dataf;?></td>
-						<td><?php echo isset($_optUnidades[$x->id_unidade])?utf8_encode($_optUnidades[$x->id_unidade]->titulo):"-";?></td>
 						<td><?php echo isset($_contas[$x->id_conta])?utf8_encode($_contas[$x->id_conta]->titulo):"-";?></td>
 						<td><?php echo $x->tipo;?></td>
 						<td><?php echo utf8_encode($x->descricao);?></td>
@@ -653,7 +649,6 @@
 					<tr class="mov js-banco js-banco-<?php echo $x->id_conta;?>" style="cursor: pointer">
 						<td><center><input type="checkbox" name="id_movimento[]" value="<?php echo $x->id;?>" class="js-movimento" data-valor="<?php echo $x->valor;?>" /></center></td>
 						<td><?php echo $x->dataf;?></td>
-						<td><?php echo isset($_optUnidades[$x->id_unidade])?utf8_encode($_optUnidades[$x->id_unidade]->titulo):"-";?></td>
 						<td><?php echo isset($_contas[$x->id_conta])?utf8_encode($_contas[$x->id_conta]->titulo):"-";?></td>
 						<td><?php echo $x->tipo;?></td>
 						<td><?php echo utf8_encode($x->descricao);?></td>

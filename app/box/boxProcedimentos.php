@@ -147,13 +147,6 @@
 			}
 
 
-			$unidade='';
-			if(isset($_POST['id_unidade']) and is_numeric($_POST['id_unidade'])) {
-				$sql->consult($_p."unidades","*","where id='".$_POST['id_unidade']."'");
-				if($sql->rows) {
-					$unidade=mysqli_fetch_object($sql->mysqry);
-				}
-			}
 
 			$procPlano=$erro="";
 			if(isset($_POST['id_procedimento_plano']) and is_numeric($_POST['id_procedimento_plano']) and $_POST['id_procedimento_plano']>0) {
@@ -168,37 +161,33 @@
 
 			if(empty($erro)) {
 				if(is_object($procedimento)) {
-					if(is_object($unidade)) {
-						if(is_object($plano)) {
+					if(is_object($plano)) {
 
-							$vSQL="id_procedimento=$procedimento->id,
-									id_unidade=$unidade->id,
-									id_plano=$plano->id,
-									valor='".valor($_POST['valor'])."',
-									obs='".addslashes(utf8_decode($_POST['obs']))."'";
+						$vSQL="id_procedimento=$procedimento->id,
+								id_plano=$plano->id,
+								valor='".valor($_POST['valor'])."',
+								obs='".addslashes(utf8_decode($_POST['obs']))."'";
 
-							if(is_object($procPlano)) {
-								$vSQL.=",lixo=0,id_alteracao=$usr->id,alteracao_data=now()";
-								$sql->update($_p."parametros_procedimentos_planos",$vSQL,"where id=$procPlano->id");
-							} else {
-								$sql->consult($_p."parametros_procedimentos_planos","*","where id_procedimento=$procedimento->id and id_plano=$plano->id");
-								if($sql->rows) {
-									$x=mysqli_fetch_object($sql->mysqry);
-									$vSQL.=",lixo=0,id_alteracao=$usr->id,alteracao_data=now()";
-									$sql->update($_p."parametros_procedimentos_planos",$vSQL,"where id=$x->id");
-								} else {
-									$vSQL.=",data=now(),id_usuario=$usr->id,lixo=0";
-									$sql->add($_p."parametros_procedimentos_planos",$vSQL);
-								}
-							}
-
-							$rtn=array('success'=>true);
+						if(is_object($procPlano)) {
+							$vSQL.=",lixo=0,id_alteracao=$usr->id,alteracao_data=now()";
+							$sql->update($_p."parametros_procedimentos_planos",$vSQL,"where id=$procPlano->id");
 						} else {
-							$rtn=array("success"=>false,"error"=>"Plano não encontrado!");
+							$sql->consult($_p."parametros_procedimentos_planos","*","where id_procedimento=$procedimento->id and id_plano=$plano->id");
+							if($sql->rows) {
+								$x=mysqli_fetch_object($sql->mysqry);
+								$vSQL.=",lixo=0,id_alteracao=$usr->id,alteracao_data=now()";
+								$sql->update($_p."parametros_procedimentos_planos",$vSQL,"where id=$x->id");
+							} else {
+								$vSQL.=",data=now(),id_usuario=$usr->id,lixo=0";
+								$sql->add($_p."parametros_procedimentos_planos",$vSQL);
+							}
 						}
+
+						$rtn=array('success'=>true);
 					} else {
-						$rtn=array("success"=>false,"error"=>"Unidade não encontrada!");
+						$rtn=array("success"=>false,"error"=>"Plano não encontrado!");
 					}
+					
 				} else {
 					$rtn=array("success"=>false,"error"=>"Procedimento não encontrado!");
 				}
@@ -422,7 +411,6 @@
 ?>
 <script>
 	var id_procedimento = '<?php echo is_object($procedimento)?$procedimento->id:'';?>';
-	var id_unidade = '<?php echo $usrUnidade->id;?>';
 	$(function(){
 		$('.js-remover').click(function(){
 
@@ -693,7 +681,7 @@
 								swal({title: "Erro!", text: "Selecione o Valor!", type:"error", confirmButtonColor: "#424242"});
 							} else {
 
-								let data = `ajax=planoAdicionar&id_plano=${id_plano}&id_unidade=${id_unidade}&id_procedimento=${id_procedimento}&valor=${valor}&obs=${obs}&id_procedimento_plano=${id_procedimento_plano}`;
+								let data = `ajax=planoAdicionar&id_plano=${id_plano}&id_procedimento=${id_procedimento}&valor=${valor}&obs=${obs}&id_procedimento_plano=${id_procedimento_plano}`;
 								console.log(data);
 								$.ajax({
 									type:'POST',

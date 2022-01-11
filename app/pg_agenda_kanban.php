@@ -272,7 +272,6 @@
 				    popInfos.obs = obs;
 				    popInfos.infos=infos;
 				    popInfos.id_status=id_status;
-				    popInfos.id_unidade=id_unidade;
 				    popInfos.id_agenda=id_agenda;
 				    popInfos.foto=foto.length>0?foto:'';
 				    popInfos.procedimentosLista=procedimentosLista;
