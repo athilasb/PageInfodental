@@ -1,0 +1,1 @@
+ALTER TABLE `ident_colaboradores` ADD `id_cargo` INT NOT NULL AFTER `tipo`, ADD `regime_contrato` INT NOT NULL AFTER `id_cargo`, ADD `salario` INT NOT NULL AFTER `regime_contrato`, ADD `contratacao_obs` INT NOT NULL AFTER `salario`, ADD `carga_horaria` INT NOT NULL AFTER `contratacao_obs`;

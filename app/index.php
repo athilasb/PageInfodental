@@ -9,7 +9,9 @@ include "includes/header.php";
 			<img src="img/logo.svg" width="52" height="50" alt="Info Dental" />
 		</div>
 
-		<?php /*
+		<?php 
+		//var_dump($_ENV);
+		/*
 		<div>
 			<img src="img/logo-cliente.png" width="135" height="49" alt="" class="login__cliente" />
 		</div>
@@ -34,7 +36,7 @@ include "includes/header.php";
 
 </section>
 
-	<?php
+	<?php 
 	if(isset($_GET['erro'])) {
 		if($_GET['erro']==1) {
 			$jsc=new Js();

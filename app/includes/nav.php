@@ -1,4 +1,5 @@
 <?php
+
 	$urlTema='';
 	if(isset($_GET['id_tema']) and is_numeric($_GET['id_tema'])) $urlTema="?id_tema=".$_GET['id_tema'];
 	$_menu=array('dashboard'=>array('dashboard.php'=>'Dashboard','icone'=>'<i class="iconify" data-icon="ic-outline-dashboard"></i>'),

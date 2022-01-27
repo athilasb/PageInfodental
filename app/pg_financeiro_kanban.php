@@ -43,6 +43,7 @@
 	}
 
 
+	$tratamentosIds=array(0);
 	// inadimplentes
 	$regsIn=array();
 	$sql->consult($_p."pacientes_tratamentos_pagamentos","*","WHERE data_vencimento<'".date('Y-m-d')."' and pago=0 and lixo=0");

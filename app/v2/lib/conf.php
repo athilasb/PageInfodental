@@ -11,6 +11,20 @@
 		} 
 	}
 
+	$_cloudinaryURL='https://res.cloudinary.com/infodental/image/upload/';
+	$_cloudinaryPath=$_ENV['S3_BUCKET']."/".$_ENV['NAME']."/";
+	$_cloudinaryUploadPresent="ir9b4eem";
+	$_cloudinaryCloudName="infodental";
+	$_cloudinaryText=array('pt'=>array('local'=>array('browse'=>'Carregar',
+														'main_title'=>'Enviar',
+														'dd_title_single'=>'Carregue e solte a imagem aqui',
+														'dd_title_multi'=>'Carregue e solte as imagens aqui',
+														'drop_title_single'=>'Solte a imagem para carrega',
+														'drop_title_multiple'=>'Solte as imagems para carregar',
+														'upload-queue-title'=>'Enviando'
+														)
+										));
+
 	$_usuariosTipos=array('admin'=>'Administrador',
 						  'moderador'=>'Moderador');
 
@@ -37,6 +51,37 @@
 
 	$_bancosEContasTipos=array('contacorrente'=>'CONTA CORRENTE',
 								'dinheiro'=>'DINHEIRO');
+
+	$_regimes = array(
+		'CLT' => 'CLT',
+		'ESTAGIO' => 'Estágio',
+		'MEI' => 'MEI',
+		'AUTONOMO' => 'Autônomo'
+	);
+	
+	$_tipoCRO = array(
+		'CD'  => 'CD',
+		'ASB' => 'ASB',
+		'TSB' => 'TSB',
+		'TPD' => 'TPD',
+		'APD' => 'APD'
+	);
+
+	$_cargaHoraria = array(
+		1 => '08:00 - 18:00',
+		2 => '17:00 - 23:50'
+	);
+
+	$_cargos = array(
+		'ASB' => 'ASB',
+		'TSB' => 'TSB',
+		'TPD' => 'TPD',
+		'APD' => 'APD',
+		'CD'  => 'Cirurgião Dentista',
+		'AF'  => 'Administrador Financeiro',
+		'R'   => 'Recepcionista', 
+		'GR'  => 'Gerente Geral'
+	);
 
 	$_optUF = array(
 		"AC" => "Acre",
