@@ -1,4 +1,153 @@
 <?php
+	if(isset($_POST['ajax'])) {
+		require_once("lib/conf.php");
+		require_once("usuarios/checa.php");
+		
+		$rtn = array();
+
+		$colaborador='';
+		if(isset($_POST['id_colaborador']) and is_numeric($_POST['id_colaborador'])) {
+			$sql->consult($_p."colaboradores","id,nome","where id=".$_POST['id_colaborador']." and lixo=0");
+			if($sql->rows) {
+				$colaborador=mysqli_fetch_object($sql->mysqry);
+			}
+		}
+
+
+		if(empty($colaborador)) {
+			$rtn=array('success'=>false,'error'=>'Colaborador não encontrado!');
+		} else if($_POST['ajax']=="comissionamentosPersistir") {
+
+
+			$comissionamento='';
+			if(isset($_POST['id_comissionamento']) and is_numeric($_POST['id_comissionamento'])) {
+				$sql->consult($_p."colaboradores_comissionamento","*","where id=".$_POST['id_comissionamento']." and id_colaborador=$colaborador->id and lixo=0");
+				if($sql->rows) {
+					$comissionamento=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+				
+
+			$vSQL='';
+			if($_POST['tipo']=="valor") {
+
+				$id_plano=(isset($_POST['id_plano']) and is_numeric($_POST['id_plano']))?$_POST['id_plano']:0;
+				$id_procedimento=(isset($_POST['id_procedimento']) and is_numeric($_POST['id_procedimento']))?$_POST['id_procedimento']:0;
+				$valor_tabela=(isset($_POST['valor_tabela']) and !empty($_POST['valor_tabela']))?valor($_POST['valor_tabela']):0;
+				$comissao=(isset($_POST['comissao']) and !empty($_POST['comissao']))?($_POST['comissao']):0;
+				$obs=(isset($_POST['obs']) and !empty($_POST['obs']))?addslashes(utf8_decode($_POST['obs'])):'';
+
+
+				$vSQL="tipo='valor',
+						id_colaborador=$colaborador->id,
+						id_plano=$id_plano,
+						id_procedimento=$id_procedimento,
+						valor_tabela='$valor_tabela',
+						comissao='$comissao',
+						obs='$obs'";
+
+			} else if($_POST['tipo']=="percentual") {
+
+
+				$id_plano=(isset($_POST['id_plano']) and is_numeric($_POST['id_plano']))?$_POST['id_plano']:0;
+				$comissao=(isset($_POST['comissao']) and !empty($_POST['comissao']))?valor($_POST['comissao']):0;
+				$obs=(isset($_POST['obs']) and !empty($_POST['obs']))?addslashes(utf8_decode($_POST['obs'])):'';
+
+				$vSQL="tipo='percentual',
+						id_colaborador=$colaborador->id,
+						id_plano=$id_plano,
+						comissao='$comissao',
+						obs='$obs'";
+
+						
+
+			} 
+
+			if(!empty($vSQL)) {
+
+				if(is_object($comissionamento)) {
+
+					$vWHERE="where id=$comissionamento->id";
+					$sql->update($_p."colaboradores_comissionamento",$vSQL,$vWHERE);
+					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."colaboradores_comissionamento',id_reg='".$comissionamento->id."'");
+				} else {
+
+					$sql->add($_p."colaboradores_comissionamento",$vSQL.",data=now()");
+					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',vwhere='',tabela='".$_p."colaboradores_comissionamento',id_reg='".$sql->ulid."'");
+				}
+
+				$rtn=array('success'=>true);
+
+			} else {
+				$rtn=array('success'=>false,'error'=>'Tipo não especificado!');
+			}
+
+		} else if($_POST['ajax']=="comissionamentosListar") {
+
+			$_planos=array();
+			$sql->consult($_p."parametros_planos","*","where lixo=0 order by titulo asc");
+			while($x=mysqli_fetch_object($sql->mysqry)) $_planos[$x->id]=$x;
+
+			$_procedimentos=array();
+			$sql->consult($_p."parametros_procedimentos","id,titulo","where lixo=0 order by titulo asc");
+			while($x=mysqli_fetch_object($sql->mysqry)) $_procedimentos[$x->id]=$x;
+
+			$comissionamento = array('valor'=>array(),
+										'percentual'=>array());
+			$sql->consult($_p."colaboradores_comissionamento","*","where id_colaborador=$colaborador->id and lixo=0 order by data");
+			if($sql->rows) {
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					if($x->tipo=="valor") {
+						$comissionamento[$x->tipo][]=array('id'=>$x->id,
+															'id_plano'=>$x->id_plano,
+															'plano'=>isset($_planos[$x->id_plano])?utf8_encode($_planos[$x->id_plano]->titulo):'-',
+															'id_procedimento'=>$x->id_procedimento,
+															'procedimento'=>isset($_procedimentos[$x->id_procedimento])?utf8_encode($_procedimentos[$x->id_procedimento]->titulo):'-',
+															'valor_tabela'=>$x->valor_tabela,
+															'comissao'=>$x->comissao,
+															'obs'=>utf8_encode($x->obs));
+					} else if($x->tipo=="percentual") {
+						$comissionamento[$x->tipo][]=array('id'=>$x->id,
+															'id_plano'=>$x->id_plano,
+															'plano'=>isset($_planos[$x->id_plano])?utf8_encode($_planos[$x->id_plano]->titulo):'-',
+															'comissao'=>$x->comissao,
+															'obs'=>utf8_encode($x->obs));
+
+					}
+				}
+			}
+			$rtn=array('success'=>true,'comissionamento'=>$comissionamento);
+		
+		} else if($_POST['ajax']=="comissionamentosRemover") {
+
+			$comissionamento='';
+			if(isset($_POST['id_comissionamento']) and is_numeric($_POST['id_comissionamento'])) {
+				$sql->consult($_p."colaboradores_comissionamento","*","where id=".$_POST['id_comissionamento']." and id_colaborador=$colaborador->id and lixo=0");
+				if($sql->rows) {
+					$comissionamento=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+			if(is_object($comissionamento)) {
+
+				$vWHERE="where id=$comissionamento->id";
+				$vSQL="lixo=1";
+				$sql->update($_p."colaboradores_comissionamento",$vSQL,$vWHERE);
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='delete',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."colaboradores_comissionamento',id_reg='".$comissionamento->id."'");
+
+				$rtn=array('success'=>true);
+
+			} else {
+				$rtn=array('success'=>false,'error'=>'Comissionamento não encontrado!');
+			}
+
+
+		}
+
+		header("Content-Type: application/json");
+		echo json_encode($rtn);
+		die();
+	}
 	include "includes/header.php";
 	include "includes/nav.php";
 
@@ -11,6 +160,14 @@
 	$_cargos=array();
 	$sql->consult($_p."colaboradores_cargos","*","where lixo=0 order by titulo asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_cargos[$x->id]=$x;
+
+	$_planos=array();
+	$sql->consult($_p."parametros_planos","*","where lixo=0 order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_planos[$x->id]=$x;
+
+	$_procedimentos=array();
+	$sql->consult($_p."parametros_procedimentos","id,titulo","where lixo=0 order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_procedimentos[$x->id]=$x;
 	
 ?>
 
@@ -62,7 +219,7 @@
 
 					// popula $values para persistir nos cmapos
 					$values=$adm->values;
-
+					if(isset($_POST['foto']) and !empty($_POST['foto'])) $vSQL.="foto='".$_POST['foto']."',";
 
 					$processa=true;
 
@@ -199,27 +356,8 @@
 				<?php
 					}
 				?>
-						<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script> 
 						<script type="text/javascript">
-							
-							var logo = cloudinary.createUploadWidget({
-								cloudName: '<?php echo $_cloudinaryCloudName;?>',
-								language: 'pt',
-								text: <?php echo json_encode($_cloudinaryText);?>,
-								multiple: false,
-								sources: ["local"],
-								folder: '<?php echo $_dirFoto;?>',
-								uploadPreset: '<?php echo $_cloudinaryUploadPresent;?>'}, 
-								(error, result) => {
-									if (!error && result) {
-										if(result.event === "success") {
-											// $('.js-cn').val(result.info.path);
-										}
-									}
-								}
-							);
 							$(function(){
-
 								$('input.money').maskMoney({symbol:'', allowZero:false, showSymbol:true, thousands:'.', decimal:',', symbolStay: true});
 								$('input[name=telefone1]').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
 									let countryOut = country || '  ';
@@ -245,16 +383,31 @@
 												$(this).addClass("active");
 												$(".js-tabs").hide();
 												$(".js-" + tabName).show();
+
+												if(tabName=='dadosdacontratacao') {
+													$('select[name=id_cargo]').addClass('obg');
+													$('select[name=regime_contrato]').addClass('obg');
+													$('select[name=carga_horaria]').addClass('obg');
+												} else {
+													$('select[name=id_cargo]').removeClass('obg');
+													$('select[name=regime_contrato]').removeClass('obg');
+													$('select[name=carga_horaria]').removeClass('obg');
+												}
 											});
 										});
 									</script>
-
+									<?php
+									if(is_object($cnt)) {
+									?>
 									<section class="tab">
 										<a href="javascript:;" data-tab="dadospessoais" class="active">Dados Pessoais</a>
 										<a href="javascript:;" data-tab="dadosdacontratacao">Dados da Contratação</a>					
 										<a href="javascript:;" data-tab="habilitaragendamento">Habilitar Agendamento</a>					
 										<a href="javascript:;" data-tab="acessoaosistema">Acesso ao Sistema</a>
 									</section>
+									<?php
+									}
+									?>
 								</div>
 								<div class="filter-group">
 									<div class="filter-form form">
@@ -285,123 +438,168 @@
 								<fieldset>
 									<legend>Dados Pessoais</legend>
 
-									<div class="colunas3">
-										<dl>
-											<dt>Nome</dt>
-											<dd><input type="text" name="nome" value="<?php echo $values['nome'];?>" class="obg" /></dd>
-										</dl>
-										<dl>
-											<dt>Sexo</dt>
-											<dd>
-												<label><input type="radio" name="sexo" value="M"<?php echo $values['sexo']=="M"?" checked":"";?>>masculino</label>
-												<label><input type="radio" name="sexo" value="F"<?php echo $values['sexo']=="F"?" checked":"";?>>feminino</label>
-											</dd>
-										</dl>
-										<dl>
-											<dt>Foto</dt>
-											<dd><input type="file" /></dd>
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl>
-											<dt>Doc. Identidade</dt>
-											<dd>
-												<input type="text" name="rg" value="<?php echo $values['rg'];?>"  class="" />
-											</dd>
-										</dl>
-										<dl>
-											<dt>Org. Emissor</dt>
-											<dd>
-												<input type="text" name="rg_orgaoemissor" value="<?php echo $values['rg_orgaoemissor'];?>"  class="" />
-											</dd>
-										</dl>
-										<dl>
-											<dt>UF</dt>
-											<dd>
-												<select name="rg_orgaoemissor">
-													<option value="">-</option>
-													<?php
-													foreach($_optUF as $uf=>$titulo) {
-														echo '<option value="'.$uf.'"'.($values['rg_orgaoemissor']==$uf?' selected':'').'>'.$titulo.'</option>';
+									<div class="grid grid_3">
+										<div style="grid-column:span 2">
+
+											<div class="colunas">
+												<dl>
+													<dt>Nome</dt>
+													<dd><input type="text" name="nome" value="<?php echo $values['nome'];?>" class="obg" /></dd>
+												</dl>
+												<dl>
+													<dt>Sexo</dt>
+													<dd>
+														<label><input type="radio" name="sexo" value="M"<?php echo $values['sexo']=="M"?" checked":"";?>>masculino</label>
+														<label><input type="radio" name="sexo" value="F"<?php echo $values['sexo']=="F"?" checked":"";?>>feminino</label>
+													</dd>
+												</dl>
+											</div>
+											<div class="colunas3">
+												<dl>
+													<dt>Doc. Identidade</dt>
+													<dd>
+														<input type="text" name="rg" value="<?php echo $values['rg'];?>"  class="" />
+													</dd>
+												</dl>
+												<dl>
+													<dt>Org. Emissor</dt>
+													<dd>
+														<input type="text" name="rg_orgaoemissor" value="<?php echo $values['rg_orgaoemissor'];?>"  class="" />
+													</dd>
+												</dl>
+												<dl>
+													<dt>UF</dt>
+													<dd>
+														<select name="rg_orgaoemissor">
+															<option value="">-</option>
+															<?php
+															foreach($_optUF as $uf=>$titulo) {
+																echo '<option value="'.$uf.'"'.($values['rg_orgaoemissor']==$uf?' selected':'').'>'.$titulo.'</option>';
+															}
+															?>
+														</select>
+													</dd>
+												</dl>
+											</div>
+											<div class="colunas3">
+												<dl>
+													<dt>CPF</dt>
+													<dd>
+														<input type="text" name="cpf" value="<?php echo $values['cpf'];?>" class="cpf obg" />
+													</dd>
+												</dl>
+												<dl>
+													<dt>Data de Nascimento</dt>
+													<dd>
+														<input type="text" name="data_nascimento" value="<?php echo $values['data_nascimento'];?>" class="data" />
+													</dd>
+												</dl>
+												<dl>
+													<dt>Estado Civil</dt>
+													<dd>
+														<select name="estado_civil" class="chosen">
+															<option value="">-</option>
+															<?php
+															foreach($_pacienteEstadoCivil as $k=>$v) {
+																echo '<option value="'.$k.'"'.(($values['estado_civil']==$k)?' selected':'').'>'.$v.'</option>';
+															}
+															?>
+														</select>
+													</dd>
+												</dl>
+											</div>
+											<div class="colunas3">
+												<dl>
+													<dt>CRO</dt>
+													<dd>
+														<input type="text" name="cro" value="<?php echo $values['cro']; ?>" class="" />
+													</dd>
+												</dl>
+												<dl>
+													<dt>UF do CRO</dt>
+													<dd>
+														<select name="uf_cro" class="chosen">
+															<option value="">-</option>
+															<?php
+															foreach($_optUF as $uf=>$titulo) {
+																echo '<option value="'.$uf.'"'.($values['uf_cro']==$uf?' selected':'').'>'.$titulo.'</option>';
+															}
+															?>
+														</select></dd>
+												</dl>
+												<dl>
+													<dt>Tipo do CRO</dt>
+													<dd>
+														<select name="tipo_cro" class="chosen">
+															<option value="">-</option>
+															<?php
+															foreach($_tipoCRO as $k=>$v) {
+																echo '<option value="'.$k.'"'.(($values['tipo_cro']==$k)?' selected':'').'>'.$v.'</option>';
+															}
+															?>
+														</select>
+													</dd>
+												</dl>
+											</div>
+											<div class="colunas">
+												<dl>
+													<dt>Nome da Mãe</dt>
+													<dd>
+														<input type="text" name="nome_pai" value="<?php echo $values['nome_pai'];?>" class="" />
+													</dd>
+												</dl>
+												<dl>
+													<dt>Nome do Pai</dt>
+													<dd>
+														<input type="text" name="nome_mae" value="<?php echo $values['nome_mae'];?>" class="" />
+													</dd>
+												</dl>
+											</div>
+
+										</div>
+										<div>
+											<?php
+												$thumb="img/logo-user.png";
+												if(is_object($cnt)) {
+													if(!empty($cnt->foto)) {
+														$image=$_cloudinaryURL.'c_thumb,w_600/'.$cnt->foto;
+														$thumb=$_cloudinaryURL.'c_thumb,w_600/'.$cnt->foto;
+													} 
+												}
+											?>
+											<div class="form-image">
+												<img src="<?php echo $thumb;?>" alt="" width="484" height="68" />
+											</div>
+											<dl>
+												<dt>Foto</dt>
+												<dd><button id="foto" onclick="return false;" class="button button_main">Procurar</button></dd>
+											</dl>
+										</div>
+										<input type="hidden" name="foto" />
+										<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
+										<script>
+											$(function(){
+												var foto = cloudinary.createUploadWidget({
+													cloudName: '<?php echo $_cloudinaryCloudName;?>',
+													language: 'pt',
+													text: <?php echo json_encode($_cloudinaryText);?>,
+													multiple: false,
+													sources: ["local"],
+													folder: '<?php echo $_dirFoto;?>',
+													uploadPreset: '<?php echo $_cloudinaryUploadPresent;?>'}, 
+													(error, result) => {
+														if (!error && result) {
+															if(result.event === "success") {
+																 $('input[name=foto]').val(result.info.path);
+															}
+														}
 													}
-													?>
-												</select>
-											</dd>
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl>
-											<dt>CPF</dt>
-											<dd>
-												<input type="text" name="cpf" value="<?php echo $values['cpf'];?>" class="cpf obg" />
-											</dd>
-										</dl>
-										<dl>
-											<dt>Data de Nascimento</dt>
-											<dd>
-												<input type="text" name="data_nascimento" value="<?php echo $values['data_nascimento'];?>" class="data" />
-											</dd>
-										</dl>
-										<dl>
-											<dt>Estado Civil</dt>
-											<dd>
-												<select name="estado_civil" class="chosen">
-													<option value="">-</option>
-													<?php
-													foreach($_pacienteEstadoCivil as $k=>$v) {
-														echo '<option value="'.$k.'"'.(($values['estado_civil']==$k)?' selected':'').'>'.$v.'</option>';
-													}
-													?>
-												</select>
-											</dd>
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl>
-											<dt>CRO</dt>
-											<dd>
-												<input type="text" name="cro" value="<?php echo $values['cro']; ?>" class="" />
-											</dd>
-										</dl>
-										<dl>
-											<dt>UF do CRO</dt>
-											<dd>
-												<select name="uf_cro" class="chosen">
-													<option value="">-</option>
-													<?php
-													foreach($_optUF as $uf=>$titulo) {
-														echo '<option value="'.$uf.'"'.($values['uf_cro']==$uf?' selected':'').'>'.$titulo.'</option>';
-													}
-													?>
-												</select></dd>
-										</dl>
-										<dl>
-											<dt>Tipo do CRO</dt>
-											<dd>
-												<select name="tipo_cro" class="chosen">
-													<option value="">-</option>
-													<?php
-													foreach($_tipoCRO as $k=>$v) {
-														echo '<option value="'.$k.'"'.(($values['tipo_cro']==$k)?' selected':'').'>'.$v.'</option>';
-													}
-													?>
-												</select>
-											</dd>
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl>
-											<dt>Nome da Mãe</dt>
-											<dd>
-												<input type="text" name="nome_pai" value="<?php echo $values['nome_pai'];?>" class="" />
-											</dd>
-										</dl>
-										<dl>
-											<dt>Nome do Pai</dt>
-											<dd>
-												<input type="text" name="nome_mae" value="<?php echo $values['nome_mae'];?>" class="" />
-											</dd>
-										</dl>
+												)
+												document.getElementById("foto").addEventListener("click", function(){
+												    foto.open();
+												}, false);
+											});
+										</script>	
 									</div>
 								</fieldset>
 
@@ -418,7 +616,7 @@
 										<dl>
 											<dt>Telefone</dt>
 											<dd class="form-comp">
-												<span class="js-country">BR</span><input type="text" name="telefone2" class="obg " attern="\d*" x-autocompletetype="tel" value="<?php echo $values['telefone2'];?>" />
+												<span class="js-country">BR</span><input type="text" name="telefone2" class="" attern="\d*" x-autocompletetype="tel" value="<?php echo $values['telefone2'];?>" />
 											</dd>
 										</dl>
 										<dl>
@@ -464,6 +662,9 @@
 								</fieldset>
 							</div><!-- .js-dadospessoais -->
 
+							<?php
+							if(is_object($cnt)) {
+							?>
 							<div class="js-tabs js-dadosdacontratacao" style="display:none">
 								<fieldset>
 									<legend>Contratação</legend>
@@ -471,7 +672,7 @@
 										<dl>
 											<dt>Cargo Atual</dt>
 											<dd>
-												<select name="id_cargo" class="obg">
+												<select name="id_cargo" class="">
 													<option value="">-</option>
 													<?php
 													foreach($_cargos as $v) {
@@ -484,7 +685,7 @@
 										<dl>
 											<dt>Regime de Contratação</dt>
 											<dd>
-												<select name="regime_contrato" class="obg">
+												<select name="regime_contrato" class="">
 													<option value="">-</option>
 													<?php
 													foreach($_regimes as $k => $v) {
@@ -503,7 +704,7 @@
 										<dl>
 											<dt>Carga Horária</dt>
 											<dd>
-												<select name="carga_horaria" class="obg">
+												<select name="carga_horaria" class="">
 													<option value="">-</option>
 													<?php
 													foreach($_cargaHoraria as $k => $v) {
@@ -522,7 +723,13 @@
 
 								<fieldset>
 									<legend><span>Comissionamento</span></legend>
+
 									<script type="text/javascript">
+
+										var comissionamentoPercentual = [];
+										var comissionamentoValor = [];
+										var id_colaborador = <?php echo $cnt->id;?>;
+
 										const comissionamentoTipo = () => {
 											//alert($('input[name=comissionamento_tipo]:checked').val());
 											if($('input[name=comissionamento_tipo]:checked').val()=="nenhum") {
@@ -535,9 +742,209 @@
 												$('.js-valorfixo').show();
 											}
 										}
+
+										const comissionamentosAtualizar = () => {
+											$.ajax({
+												type:"POST",
+												data:`ajax=comissionamentosListar&id_colaborador=${id_colaborador}`,
+												success:function(rtn) {
+													if(rtn.success) {
+														if(rtn.comissionamento.percentual) comissionamentoPercentual=rtn.comissionamento.percentual;
+														if(rtn.comissionamento.valor) comissionamentoValor=rtn.comissionamento.valor;
+														comissionamentosListar();
+													} else if(rtn.error) {
+
+													} else {
+
+													}
+												},
+												error:function(){
+
+												}
+											});
+										}
+
+										const comissionamentosListar = () => {
+
+											$(`.js-tbody-percentual tr`).remove();
+											$('select[name=percentual_id_plano]').find(`option`).prop('disabled',false);
+
+											comissionamentoPercentual.forEach(x=>{	
+												$('select[name=percentual_id_plano]').find(`option[value=${x.id_plano}]`).prop('disabled',true);
+
+												let html = `<tr>
+																<td>${x.plano}</td>
+																<td>${x.comissao}%</td>
+																<td>${x.obs}</td>
+																<td style="text-align:right;">
+																	<a href="javascript:;" class="button js-comissionamento-editar" data-id="${x.id}" data-tipo="percentual"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+																	<a href="javascript:;" class="button js-comissionamento-remover" data-id="${x.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+																</td>
+															</tr>`;
+
+												$(`.js-tbody-percentual`).append(html);
+											});
+
+											$(`.js-tbody-valor tr`).remove();
+											$('select[name=valor_id_plano]').find(`option`).prop('disabled',false);
+
+											comissionamentoValor.forEach(x=>{
+												$('select[name=valor_id_plano]').find(`option[value=${x.id_plano}]`).prop('disabled',true);
+
+												let html = `<tr>
+																<td>${x.plano}</td>
+																<td>${x.procedimento}</td>
+																<td>${number_format(x.valor_tabela,2,",",".")}</td>
+																<td>${number_format(x.comissao,2,",",".")}</td>
+																<td>${x.obs}</td>
+																<td style="text-align:right;">
+																	<a href="javascript:;" class="button js-comissionamento-editar" data-id="${x.id}" data-tipo="valor"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+																	<a href="javascript:;" class="button js-comissionamento-remover" data-id="${x.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+																</td>
+															</tr>`;
+
+												$(`.js-tbody-valor`).append(html);
+											});
+
+										}
+
 										$(function(){
+											comissionamentosAtualizar();
 											comissionamentoTipo();
 											$('input[name=comissionamento_tipo]').click(comissionamentoTipo);
+
+											$('.js-table-comissionamento').on('click','.js-comissionamento-editar',function(){
+												let id = $(this).attr('data-id');	
+												let tipo = $(this).attr('data-tipo');
+												let obj = {};
+												if(tipo=="valor") {
+													obj = comissionamentoValor.find(x=>{ return x.id==id});
+													if(obj.id) {
+														$('input[name=valor_id_comissionamento]').val(obj.id);
+														$('select[name=valor_id_plano]').val(obj.id_plano);
+														$('select[name=valor_id_plano]').find(`option[value=${obj.id_plano}]`).prop('disabled',false);
+														$('select[name=valor_id_procedimento]').val(obj.id_procedimento);
+														$('input[name=valor_tabela]').val(number_format(obj.valor_tabela,2,",","."));
+														$('input[name=valor_comissao]').val(number_format(obj.comissao,2,",","."));
+														$('input[name=valor_obs]').val(obj.obs);
+														$('.js-comissionamento-submit').html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
+													}
+												} else if(tipo=="percentual") {
+													obj = comissionamentoPercentual.find(x=>{ return x.id==id});
+													if(obj.id) {
+														$('input[name=percentual_id_comissionamento]').val(obj.id);
+														$('select[name=percentual_id_plano]').val(obj.id_plano);
+														$('select[name=percentual_id_plano]').find(`option[value=${obj.id_plano}]`).prop('disabled',false);
+														$('input[name=percentual_comissao]').val(number_format(obj.comissao,2,",","."));
+														$('input[name=percentual_obs]').val(obj.obs);
+														$('.js-comissionamento-submit').html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
+													}
+												}
+
+
+											});
+
+											$('.js-table-comissionamento').on('click','.js-comissionamento-remover',function(){
+												let id = $(this).attr('data-id');
+												let data = `ajax=comissionamentosRemover&id_comissionamento=${id}&id_colaborador=${id_colaborador}`;
+												let obj = $(this);
+
+												obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+												$.ajax({
+													type:"POST",
+													data:data,
+													success:function(rtn) {
+														if(rtn.success) {
+															comissionamentosAtualizar();
+														} else if(rtn.error) {
+															swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+														} else {
+															swal({title: "Erro!", text: `Algum erro ocorreu durante a remoção deste comissionamento!`, type:"error", confirmButtonColor: "#424242"});
+														}
+													},
+													error:function(){
+														swal({title: "Erro!", text: `Algum erro ocorreu durante a remoção deste comissionamento!`, type:"error", confirmButtonColor: "#424242"});
+													}
+												}).done(function(){
+													obj.html(`<i class="iconify" data-icon="fluent:delete-24-regular"></i>`);
+												})
+											})
+
+
+											$('.js-comissionamento-submit').click(function(){
+
+
+												let tipo = $(this).attr('data-tipo');
+
+												let data = erro = ``;
+												if(tipo=="valor") {
+
+													let id_comissionamento = $('input[name=valor_id_comissionamento]').val();
+													let id_plano = $('select[name=valor_id_plano]').val();
+													let id_procedimento = $('select[name=valor_id_procedimento]').val();
+													let valor_tabela = $('input[name=valor_tabela]').val();
+													let comissao = $('input[name=valor_comissao]').val();
+													let obs = $('input[name=valor_obs]').val();
+
+													if(id_plano.length==0) erro=`Selecione o Plano`;
+													else if(id_procedimento.length==0) erro=`Selecione o Procedimento`;
+													else if(valor_tabela.length==0) erro=`Preencha o Valor de Tabela`;
+													else if(comissao.length==0) erro=`Preencha o Valor de Comissão`;
+
+													if(erro.length==0) {
+														data = `tipo=valor&id_plano=${id_plano}&id_procedimento=${id_procedimento}&valor_tabela=${valor_tabela}&comissao=${comissao}&obs=${obs}&id_comissionamento=${id_comissionamento}`;
+													}
+
+												} else if(tipo=="percentual") {
+
+													let id_comissionamento = $('input[name=percentual_id_comissionamento]').val();
+													let id_plano = $('select[name=percentual_id_plano]').val();
+													let comissao = $('input[name=percentual_comissao]').val();
+													let obs = $('input[name=percentual_obs]').val();
+
+													if(id_plano.length==0) erro=`Selecione o Plano`;
+													else if(comissao.length==0) erro=`Preencha o Percentual de Comissão`;
+
+													if(erro.length==0) {
+														data = `tipo=percentual&id_plano=${id_plano}&comissao=${comissao}&obs=${obs}&id_comissionamento=${id_comissionamento}`;
+													}
+
+												}
+
+												if(erro.length>0) {
+													swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
+												} else {
+
+
+													$(this).html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+													$.ajax({
+														type:"POST",
+														data:`ajax=comissionamentosPersistir&id_colaborador=${id_colaborador}&${data}`,
+														success:function(rtn) {
+															if(rtn.success) {
+																comissionamentosAtualizar();
+
+																if(tipo=="valor") {
+																	$('select[name=valor_id_plano], select[name=valor_id_procedimento], input[name=valor_tabela], input[name=valor_comissao], input[name=valor_obs], input[name=valor_id_comissionamento]').val('');
+																} else if(tipo=="percentual") {
+																	$('select[name=percentual_id_plano], input[name=percentual_comissao], input[name=percentual_obs], input[name=percentual_id_comissionamento]').val('');
+																}
+
+															} else if(rtn.error) {
+																swal({title: "Erro!",text:rtn.error,type:"error",confirmButtonColor:"#424242"});
+															} else {
+																swal({title:"Erro!",text:`Algum erro ocorreu durante a persistência deste comissionamento!`,type:"error",confirmButtonColor:"#424242"});
+															}
+														},
+														error:function(){
+															swal({title:"Erro!",text:`Algum erro ocorreu durante a persistência deste comissionamento!`,type:"error", confirmButtonColor:"#424242"});
+														}
+													}).done(function(){
+														$('.js-comissionamento-submit').html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+													});
+												}
+
+											})
 										})
 									</script>
 									<?php
@@ -553,21 +960,31 @@
 
 									<div class="js-comissao js-percentual" style="display:none;">
 										<div class="colunas3">
+											<input type="hidden" name="percentual_id_comissionamento" />
 											<dl>
 												<dt>Plano</dt>
-												<dd><select name=""></select></dd>
+												<dd>
+													<select name="percentual_id_plano">
+														<option value="">-</option>
+														<?php
+														foreach($_planos as $v) {
+															echo '<option value="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
+														}
+														?>
+													</select>
+												</dd>
 											</dl>
 											<dl>
 												<dt>Percentual</dt>
-												<dd class="form-comp form-comp_pos"><input type="text" name="" /><span>%</span></dd>
+												<dd class="form-comp form-comp_pos"><input type="text" name="percentual_comissao" maxlength="5" class="js-maskFloat2" /><span>%</span></dd>
 											</dl>
 											<dl>
 												<dt>Observação</dt>
-												<dd><input type="text" name="" /><a href="" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a></dd>
+												<dd><input type="text" name="percentual_obs" /><a href="javascript:;" class="button button_main js-comissionamento-submit" data-tipo="percentual"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a></dd>
 											</dl>
 										</div>
 										<div class="list2">
-											<table>
+											<table class="js-table-comissionamento">
 												<thead>
 													<tr>
 														<th>Plano</th>
@@ -576,18 +993,9 @@
 														<th></th>
 													</tr>
 												</thead>
-												<tbody>
+												<tbody class="js-tbody-percentual">
 													<tr>
 														<td><strong>UNIMED</strong></td>
-														<td>12.5%</td>
-														<td>Negociação especial</td>													
-														<td style="text-align:right;">
-															<a href="" class="button"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
-															<a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-														</td>
-													</tr>
-													<tr>
-														<td><strong>ODONTOPREV</strong></td>
 														<td>12.5%</td>
 														<td>Negociação especial</td>													
 														<td style="text-align:right;">
@@ -602,32 +1010,51 @@
 
 									<div class="js-comissao js-valorfixo" style="display:none;">
 										<div class="colunas5">
+											<input type="hidden" name="valor_id_comissionamento" />
 											<dl>
 												<dt>Plano</dt>
-												<dd><select name=""></select></dd>
+												<dd>
+													<select name="valor_id_plano">
+														<option value="">-</option>
+														<?php
+														foreach($_planos as $v) {
+															echo '<option value="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
+														}
+														?>
+													</select>
+												</dd>
 											</dl>
 											<dl>
 												<dt>Procedimento</dt>
-												<dd><select name=""></select></dd>
+												<dd>
+													<select name="valor_id_procedimento">
+														<option value="">-</option>
+														<?php
+														foreach($_procedimentos as $v) {
+															echo '<option value="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
+														}
+														?>
+													</select>
+												</dd>
 											</dl>
 											<dl>
 												<dt>Valor Tabela</dt>
-												<dd class="form-comp"><span>R$</span><input type="text" name="" /></dd>
+												<dd class="form-comp"><span>R$</span><input type="text" name="valor_tabela" class="money" /></dd>
 											</dl>
 											<dl>
 												<dt>Valor Comissão</dt>
-												<dd class="form-comp"><span>R$</span><input type="text" name="" /></dd>
+												<dd class="form-comp"><span>R$</span><input type="text" name="valor_comissao" class="money" /></dd>
 											</dl>
 											<dl>
 												<dt>Observações</dt>
 												<dd>
-													<input type="text" name="" />
-													<a href="" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
+													<input type="text" name="valor_obs" />
+													<a href="javascript:;" class="button button_main js-comissionamento-submit" data-tipo="valor"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
 												</dd>
 											</dl>
 										</div>
 										<div class="list2">
-											<table>
+											<table class="js-table-comissionamento">
 												<thead>
 													<tr>
 														<th>Plano</th>
@@ -638,7 +1065,7 @@
 														<th></th>
 													</tr>
 												</thead>
-												<tbody>
+												<tbody class="js-tbody-valor">
 													<tr>
 														<td><strong>UNIMED</strong></td>
 														<td>Prótese Dental</td>
@@ -649,18 +1076,7 @@
 															<a href="" class="button"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
 															<a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 														</td>
-													</tr>
-													<tr>
-														<td><strong>UNIMED</strong></td>
-														<td>Prótese Dental</td>
-														<td>R$ 200,00</td>													
-														<td>R$ 25,00</td>
-														<td>Negociação Especial</td>
-														<td style="text-align:right;">
-															<a href="" class="button"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
-															<a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-														</td>
-													</tr>													
+													</tr>												
 												</tbody>
 											</table>
 										</div>
@@ -757,6 +1173,9 @@
 									</dl>									
 								</div>
 							</div>
+							<?php
+							}
+							?>
 						</form>
 
 				<?php

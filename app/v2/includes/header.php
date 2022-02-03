@@ -40,7 +40,7 @@
 <head>
 <meta charset="utf-8">
 
-<title><?php echo isset($title)?$title." | Infodental":"Infodental"; ?></title>
+<title><?php echo isset($title)?$title." | Infodental v2":"Infodental v2"; ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="description" content="<?php echo ($description)?$description:"Infodental"; ?>">
 <meta name="author" content="WLIB Soluções Web - www.wlib.com.br">

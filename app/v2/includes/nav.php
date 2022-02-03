@@ -1,4 +1,6 @@
 	<?php
+
+
 	$_menu=array('dashboard'=>array('page'=>'tarefas-inteligentes.php',
 									'title'=>'Tarefas Inteligêntes',
 									'icon'=>'<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>'),
@@ -15,6 +17,7 @@
 											'title'=>'Landing Page',
 											'icon'=>'<i class="iconify" data-icon="fluent:web-asset-24-regular"></i>'),
 						'configuracoes'=>array('page'=>'pg_configuracoes_clinica.php',
+												'pages'=>explode(",","pg,pg_configuracoes_clinica.php,pg_configuracoes_clinica_colaboradores.php,pg_configuracoes_clinica_cadeiras.php,pg_configuracoes_evolucao_anamnese.php"),
 												'title'=>'Configurações',
 												'icon'=>'<i class="iconify" data-icon="fluent:settings-20-regular"></i>'),
 						
@@ -28,7 +31,7 @@
 			<?php
 			foreach($_menu as $session=>$params) {
 			?>
-			<a href="<?php echo $params['page'];?>" class="<?php echo (basename($_SERVER['PHP_SELF'])==$params['page'])?" active":"";?>"><?php echo $params['icon'];?></a>
+			<a href="<?php echo $params['page'];?>" class="<?php echo in_array(basename($_SERVER['PHP_SELF']),$params['pages'])?" active":"";?>"><?php echo $params['icon'];?></a>
 			<?php
 			}
 			?>
