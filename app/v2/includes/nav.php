@@ -17,7 +17,7 @@
 											'title'=>'Landing Page',
 											'icon'=>'<i class="iconify" data-icon="fluent:web-asset-24-regular"></i>'),
 						'configuracoes'=>array('page'=>'pg_configuracoes_clinica.php',
-												'pages'=>explode(",","pg,pg_configuracoes_clinica.php,pg_configuracoes_clinica_colaboradores.php,pg_configuracoes_clinica_cadeiras.php,pg_configuracoes_evolucao_anamnese.php"),
+												'pages'=>explode(",","pg,pg_configuracoes_clinica.php,pg_configuracoes_clinica_colaboradores.php,pg_configuracoes_clinica_cadeiras.php,pg_configuracoes_evolucao_anamnese.php,pg_configuracoes_evolucao_procedimentos.php,pg_configuracoes_evolucao_servicosdelaboratorio.php,pg_configuracoes_evolucao_examecomplementar.php"),
 												'title'=>'Configurações',
 												'icon'=>'<i class="iconify" data-icon="fluent:settings-20-regular"></i>'),
 						

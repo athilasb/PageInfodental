@@ -401,7 +401,6 @@
 									<tr class="js-item" data-id="<?php echo $x->id;?>">
 										<td style="width:20px;"><i class="iconify" data-icon="fluent:chevron-up-down-24-regular"></i></td>
 										<td><h1><strong><?php echo utf8_encode($x->titulo);?></strong></h1></td>
-										<td>Ordem: <?php echo $x->ordem;?></td>
 									</tr>
 									<?php
 									}

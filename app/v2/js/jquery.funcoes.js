@@ -1,3 +1,6 @@
+
+var baseURLApiAside = 'includes/api/apiAside.php';
+
 function number_format (number, decimals, dec_point, thousands_sep) {
   number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
   var n = !isFinite(+number) ? 0 : +number,
@@ -19,6 +22,11 @@ function number_format (number, decimals, dec_point, thousands_sep) {
     s[1] += new Array(prec - s[1].length + 1).join('0');
   }
   return s.join(dec);
+}
+function unMoney(valor) {
+	valor = valor.replace(/[^\d,-.]+/g,'');
+    valor = valor.replace('.','').replace('.','').replace('.','').replace('.','').replace('.','').replace(',','.');
+    return eval(valor);
 }
 $(function() {
 
@@ -56,6 +64,11 @@ $(function() {
 		let aside = $(this).attr("data-aside");
 		$(".aside-" + aside).fadeIn(100,function() {
 			$(this).children(".aside__inner1").addClass("active");
+			if(aside=="especialidade") {
+				asEspecialidadesAtualizar();
+			} else if(aside=="plano") {
+				asPlanosAtualizar();
+			}
 		});
 	});
 

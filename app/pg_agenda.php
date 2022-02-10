@@ -1,4 +1,25 @@
 <?php
+
+	/*/if(isset($_GET['cmd'])) {
+
+		require_once("lib/conf.php");
+		require_once("usuarios/checa.php");
+
+		$aux = explode(" ",$_GET['cmd']);
+
+		$wh="";
+		foreach($aux as $v) {
+			$wh.="nome REGEXP '$v' and ";
+		}
+		$wh=substr($wh,0,strlen($wh)-5);
+		$where="where ($wh)";
+		$sql->consult($_p."pacientes","id,nome",$where);
+
+		echo $where."->". $sql->rows."<BR>";
+		while($x=mysqli_fetch_object($sql->mysqry)) echo $x->nome."<BR>";
+
+		die();
+	}*/
 	if(isset($_POST['ajax'])) {
 		require_once("lib/conf.php");
 		require_once("usuarios/checa.php");
@@ -575,7 +596,15 @@
 		} else if($_GET['ajax']=="buscaPaciente") {
 			$where="WHERE 1=2";
 			if(isset($_GET['search']) and !empty($_GET['search'])) {
-				$where="where nome like '%".$_GET['search']."%' or telefone1 like '%".$_GET['search']."%' or cpf like '%".$_GET['search']."%' and lixo=0";
+				$aux = explode(" ",$_GET['search']);
+
+				$wh="";
+				foreach($aux as $v) {
+					$wh.="nome REGEXP '$v' and ";
+				}
+				$wh=substr($wh,0,strlen($wh)-5);
+				$where="where ($wh) or telefone1 like '%".$_GET['search']."%' or cpf like '%".$_GET['search']."%' and lixo=0";
+				//$where="where nome like '%".$_GET['search']."%' or telefone1 like '%".$_GET['search']."%' or cpf like '%".$_GET['search']."%' and lixo=0";
 			}
 			
 			$sql->consult($_p."pacientes","nome,id,telefone1,cpf",$where." order by nome asc");
