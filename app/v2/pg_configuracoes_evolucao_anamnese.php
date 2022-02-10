@@ -124,7 +124,7 @@
 			
 			$perguntas=array();
 			if(is_object($anamnese)) {
-				$sql->consult($_p."parametros_anamnese_formulario","*","WHERE id_anamnese='".$anamnese->id."' and lixo=0");
+				$sql->consult($_p."parametros_anamnese_formulario","*","WHERE id_anamnese='".$anamnese->id."' and lixo=0 order by ordem asc");
 				if($sql->rows) {
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						$perguntas[]=array('id_pergunta' =>$x->id,
@@ -184,6 +184,22 @@
 				$rtn=array('success'=>true);
 			} else {
 				$rtn=array('success'=>false,'error'=>'Pergunta não encontrado!');
+			}
+		} else if($_POST['ajax']=="persistirOrdem") {
+			if(isset($_POST['ordem']) and !empty($_POST['ordem'])) {
+				$ordem=explode(",",$_POST['ordem']);
+				if(is_array($ordem) and count($ordem)>0) {
+					$aux=1;
+					foreach($ordem as $idItem) {
+						if(is_numeric($idItem)) {
+							$sql->update($_p."parametros_anamnese_formulario","ordem=$aux","where id=$idItem");
+							$aux++;
+						}
+					}
+					$rtn=array('success'=>true);
+				}
+			} else {
+				$rtn=array('error'=>'Ordem não definida!');
 			}
 		}
 
@@ -543,14 +559,13 @@
 
 					const persistirOrdem = () => {
 						let ordem = [];
-						$(`.js-div-perguntas .js-pergunta`).each(function(index,elem){
-							ordem.push($(elem).attr('data-id_formulario'));
+						$(`.js-perguntas-table .aside-open`).each(function(index,elem){
+							ordem.push($(elem).attr('data-id'));
 						});
 
 						let data = `ajax=persistirOrdem&ordem=${ordem}`;
 						$.ajax({
 							type:"POST",
-							url:'box/boxAnamnese.php',
 							data:data,
 							success:function(rtn) {
 								console.log(rtn);
@@ -699,6 +714,13 @@
 								$('.js-alerta').val('nenhum');
 								$('.js-dl-alerta').hide();
 								$('select[name=pergunta_alerta]').removeClass('obg');
+							}
+						});
+
+						$(".js-perguntas-table").sortable({
+							stop:function(event,ui) {
+								 let id = $(ui.item).attr('data-id');
+								 persistirOrdem(id);
 							}
 						});
 
