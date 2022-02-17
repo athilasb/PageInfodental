@@ -60,7 +60,8 @@
 			<p><?php echo idade($paciente->data_nascimento);?> anos</p>
 			<p><span style="color:var(--cinza3);">#<?php echo $paciente->id;?></span>
 			<?php
-			if(isset($_codigoBI[$paciente->codigo_bi])) {
+
+			if($_infodentalCompleto==1 and isset($_codigoBI[$paciente->codigo_bi])) {
 			?>
 			<p><span style="background:var(--cinza4);color:#FFF;padding:4px;border-radius: 5px;"><?php echo $_codigoBI[$paciente->codigo_bi];?></span>
 			<?php
@@ -76,7 +77,9 @@
 
 <ul class="abas">
 	<li><a href="pg_contatos_pacientes_resumo.php?<?php echo "id_paciente=$paciente->id";?>" class="main-nav__resumo-do-paciente<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_resumo.php"?" active":"";?>">Resumo do Paciente</a></li>
-
+	<?php
+	if($_infodentalCompleto==1) {
+	?>
 	<li><a href="pg_contatos_pacientes_evolucao.php?<?php echo "id_paciente=$paciente->id";?>" class="main-nav__evolucao-e-laboratorio<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_evolucao.php"?" active":"";?>">Prontuário</a></li>
 
 	<?php /*<li><a href="pg_contatos_pacientes_laboratorio.php?<?php echo "id_paciente=$paciente->id";?>" class="main-nav__laboratorio<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_laboratorio.php"?" active":"";?>">Laboratório</a></li>*/?>
@@ -88,7 +91,9 @@
 	<?php /*<li><a href="javascript:;" class="main-nav__programa-de-fidelidade<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_programadefidelidade.php"?" active":"";?>">Programa de Fidelidade</a></li>*/?>
 	
 	<li><a href="javascript:;" class="main-nav__arquivo-e-documentos<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_arquivoedocumentos.php"?" active":"";?>">Arquivos</a></li>
-
+	<?php
+	}
+	?>
 	<li><a href="pg_contatos_pacientes_dadospessoais.php?<?php echo "id_paciente=$paciente->id";?>" class="main-nav__dados-pessoais<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_dadospessoais.php"?" active":"";?>">Dados Pessoais</a></li>
 
 

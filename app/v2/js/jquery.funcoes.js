@@ -28,6 +28,24 @@ function unMoney(valor) {
     valor = valor.replace('.','').replace('.','').replace('.','').replace('.','').replace('.','').replace(',','.');
     return eval(valor);
 }
+
+function validaHoraMinuto(val) {
+	var regexp = (/[^0-9\:]|^\.+(?!$)|^0+(?=[0-9]+)|\.(?=\.|.+\.)/g);
+
+	if (regexp.test(val)) val = val.replace(regexp, '');
+    
+      aux = val.split(':');
+      hra=(aux[0]);
+      min=(aux[1]);
+
+    err='';
+      if(!$.isNumeric(aux[0])) err="Hora inválida";
+      else if(!$.isNumeric(aux[1])) err="Minutos inválida";
+      else if(hra>=24) err="A hora deve ser menor que 24";
+      else if(min>=60) err="O minuto deve ser menor que 60";
+
+    return err;
+}
 $(function() {
 
 	$("input.data").inputmask("99/99/9999");
@@ -110,14 +128,37 @@ $(function() {
 
 	$('.js-maskFloat2').keyup(function() {
 
-		this.value=this.value.replace('.',',');
+		let val = this.value;
+		
+
+		let min = $(this).attr('data-min') ? eval($(this).attr('data-min')) : -1;
+		let max = $(this).attr('data-max') ? eval($(this).attr('data-max')) : -1;
+
+
 
 	    var regexp = (/[^0-9\,]|^\.+(?!$)|^0+(?=[0-9]+)|\.(?=\.|.+\.)/g);
 
-	    if (regexp.test(this.value)) {
-	        this.value = this.value.replace(regexp, '');
+	    if (regexp.test(val)) {
+	        val = val.replace(regexp, '');
 	    }
+	    val = val.replace(',','.');
+	   // val = $.isNumeric(val)?eval(val):val;
+	   // console.log(val)
+	    if($.isNumeric(val) && min>=0 && max>=0) {
+				if(val<min) val=min;
+				else if(val>max) val=max;
+			}
+			this.value=val.toString().replace('.',',');
 	});
+	$('.js-confirmarDeletar').click(function(){
+
+		let msg = $(this).attr('data-msg') ? $(this).attr('data-msg') : 'Tem certeza que deseja remover este registro?';
+		var href=$(this).attr('href');
+		
+		swal({   title: "Atenção",   text: msg,   type: "warning",   showCancelButton: true,   confirmButtonColor: "#DD6B55",   confirmButtonText: "Sim!",   cancelButtonText: "Não",   closeOnConfirm: false,   closeOnCancel: false }, function(isConfirm){   if (isConfirm) {    document.location.href=href;   } else {   swal.close();   } });
+		
+		return false;
+	})
 
 	
 	

@@ -158,8 +158,12 @@
 				});
 			</script>
 			<div class="hist2 box" style="grid-column:span 2; grid-row:span 2; min-height:calc(100vh - 290px);">
+				<?php
+				if($_infodentalCompleto==1) {
+				?>
 				<aside>
 					<h1 class="paciente__titulo1">Histórico</h1>										
+					
 					<div class="grid-links grid-links_sm">
 						<a href="javascript:;" class="js-historico-filtro active" data-tipo="todos">
 							<i class="iconify" data-icon="mdi:format-list-bulleted"></i>
@@ -178,8 +182,15 @@
 							<p>Financeiro</p>
 						</a>						
 					</div>
+					
 				</aside>
+				<?php
+				}
+				?>
+
 				<article>
+
+					<h1 class="paciente__titulo1">Histórico</h1>	
 
 					<div class="paciente-scroll" style="padding-left: 23px;">
 					<?php
@@ -232,7 +243,6 @@
 						} else {
 							$registrosSemAgendamento[strtotime($x->data)]=$x;
 						}
-
 					}
 
 					foreach($agrupamentoAgenda as $idAg=>$regs) {
@@ -402,48 +412,12 @@
 					<?php
 					}
 					?>
-					
-					
-					<?php /*<div class="hist2-item">
-						<div class="hist2-item__inner1">
-							<div class="hist2-item__icone"><i class="iconify" data-icon="mdi:calendar-check"></i></div>
-						</div>
-						<div class="hist2-item__inner2">
-							<div class="hist2-item__dados">
-								<h1>11/10/2021 09:30 - Dr. Kroner Machado Costa</h1>
-								<p><strong>Agendado para 09/12/2021 08:00</strong> - Consultório 3 - Dr. Simone Helena dos Santos <span style="background:#fc8008">sala de espera</span></p>
-								<a href="javascript:;" onclick="$(this).parent().next('.hist2-item__detalhes').slideToggle('fast');" class="button button__alt button__sm"><i class="iconify" data-icon="mdi:chevron-down"></i> mais detalhes</a>
-							</div>
-							<div class="hist2-item__detalhes" style="display:none;">
-								<div class="hist2-item__dados">
-									<h1>11/10/2021 09:30 - Dr. Kroner Machado Costa</h1>
-									<p><strong>Agendado para 09/12/2021 08:00</strong> - Consultório 3 - Dr. Simone Helena dos Santos <span style="background:#1182ea">confirmado</span></p>
-								</div>
-								<div class="hist2-item__dados">
-									<h1>11/10/2021 09:30 - Dr. Kroner Machado Costa</h1>
-									<p><strong>Agendado para 09/12/2021 08:00</strong> - Consultório 3 - Dr. Simone Helena dos Santos <span style="background:#545559">à confirmar</span></p>
-								</div>
-							</div>
-						</div>
 					</div>
-					<div class="hist2-item">
-						<div class="hist2-item__inner1">
-							<div class="hist2-item__icone"><i class="iconify" data-icon="mdi:finance"></i></div>
-						</div>
-						<div class="hist2-item__inner2">
-							<div class="hist2-item__dados">
-								<h1>11/10/2021 09:30 - Dr. Kroner Machado Costa</h1>
-								<p><strong>Inadimplente - R$15.217,50</strong><br />Reabilitação Full - Pedro</p>
-							</div>
-						</div>
-					</div>*/?>
-				</div>
 					
 				</article>
 			</div>
-
-
 			<?php
+			if($_infodentalCompleto==1) {
 				$where="WHERE id_paciente=$paciente->id and lixo=0";
 				$sql->consult($_p."pacientes_tratamentos","*",$where);
 
@@ -596,6 +570,9 @@
 
 				</div>
 			</div>
+			<?php
+			}
+			?>
 
 			
 

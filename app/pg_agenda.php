@@ -603,7 +603,7 @@
 					$wh.="nome REGEXP '$v' and ";
 				}
 				$wh=substr($wh,0,strlen($wh)-5);
-				$where="where ($wh) or telefone1 like '%".$_GET['search']."%' or cpf like '%".$_GET['search']."%' and lixo=0";
+				$where="where (($wh) or nome like '%".$_GET['search']."%' or telefone1 like '%".$_GET['search']."%' or cpf like '%".$_GET['search']."%') and lixo=0";
 				//$where="where nome like '%".$_GET['search']."%' or telefone1 like '%".$_GET['search']."%' or cpf like '%".$_GET['search']."%' and lixo=0";
 			}
 			
@@ -1428,8 +1428,9 @@
 
 						    //if(instagram.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-instagram"></i> ${instagram}</p>`;
 						    //else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-instagram"></i> -</p>`;
-
-						    infos+=`<p class="js-statusBI"><span style="background:var(--cinza4);color:#FFF;padding:5px;border-radius: 5px;">${statusBI}</span></p>`;
+						    if(infodentalCompleto==1) {
+							    infos+=`<p class="js-statusBI"><span style="background:var(--cinza4);color:#FFF;padding:5px;border-radius: 5px;">${statusBI}</span></p>`;
+							}
 
 						    if(telefone1.length>0) infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-phone"></i> ${telefone1}</p>`;
 						    else infos+=`<p class="paciente-info-grid__item"><i class="iconify" data-icon="mdi-phone"></i> -</p>`;

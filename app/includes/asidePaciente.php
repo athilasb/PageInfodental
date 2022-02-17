@@ -32,13 +32,18 @@
 				<a href="pg_contatos_pacientes_dadospessoais.php" class="verde adicionar tooltip" title="adicionar"><span>Novo Paciente</span></a>
 			</div>
 		</div>
-
+		<?php
+		if($_infodentalCompleto==1) {
+		?>
 		<div class="filter-group filter-group_right" >
 			<div class="filter-links">
 				<a href="pg_contatos_pacientes.php" data-status="APROVADO" class="js-btn-status<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes.php"?" active":"";?>">Lista</a>
 				<a href="pg_contatos_pacientes_kanban.php" data-status="APROVADO" class="js-btn-status<?php echo basename($_SERVER['PHP_SELF'])=="pg_contatos_pacientes_kanban.php"?" active":"";?>">Kanban</a>
 			</div>
 		</div>
+		<?php
+		}
+		?>
 
 		<div class="filter-group filter-group_right">
 				<form method="get" class="filter-form">

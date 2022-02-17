@@ -151,6 +151,12 @@
 				}
 			}
 
+			$horario='';
+			if(isset($_POST['id']) and is_numeric($_POST['id']) and $_POST['id']>0) {
+				$sql->consult($_p."profissionais_horarios","*", "where id='".$_POST['id']."' and lixo=0");
+				if($sql->rows) $horario=mysqli_fetch_object($sql->mysqry);
+			}
+
 			$inicio=(isset($_POST['inicio']) and !empty($_POST['inicio']))?addslashes($_POST['inicio']):'';
 			$fim=(isset($_POST['fim']) and !empty($_POST['fim']))?addslashes($_POST['fim']):'';
 			$dia=(isset($_POST['dia']) and is_numeric($_POST['dia']))?addslashes($_POST['dia']):'';
@@ -161,24 +167,40 @@
 			else if(empty($fim)) $rtn=array('success'=>false,'error'=>'Fim não definido!');
 			else if(empty($dia) and $dia!=0) $rtn=array('success'=>false,'error'=>'Dia da semana não definido!');
 			else {
-				$vsql="id_cadeira=$cadeira->id,
-						id_profissional=$colaborador->id,
-						inicio='".$inicio."',
-						dia='".$dia."',
-						fim='".$fim."'";
 
-				if(isset($_POST['id']) and is_numeric($_POST['id']) and $_POST['id']>0) {
-					$sql->consult($_p."profissionais_horarios","*", "where id='".$_POST['id']."' and id_profissional=$colaborador->id and lixo=0");
-					if($sql->rows) {
-						$x=mysqli_fetch_object($sql->mysqry);
-						$vsql.=",id_alteracao=$usr->id,alteracao_data=now()";
-						$sql->update($_p."profissionais_horarios",$vsql,"where id=$x->id");
+
+				$horarios = new Horarios(array('prefixo'=>$_p));
+
+				$attr=array('id_cadeira'=>$cadeira->id,
+							'id_colaborador'=>$colaborador->id,
+							'id_horario'=>is_object($horario)?$horario->id:0,
+							'diaSemana'=>$dia,
+							'inputHoraInicio'=>$inicio,
+							'inputHoraFim'=>$fim);
+
+				if($horarios->cadeiraHorariosIntercecao($attr)) {
+
+					$vsql="id_cadeira=$cadeira->id,
+							id_profissional=$colaborador->id,
+							inicio='".$inicio."',
+							dia='".$dia."',
+							fim='".$fim."'";
+
+					if(isset($_POST['id']) and is_numeric($_POST['id']) and $_POST['id']>0) {
+						$sql->consult($_p."profissionais_horarios","*", "where id='".$_POST['id']."' and id_profissional=$colaborador->id and lixo=0");
+						if($sql->rows) {
+							$x=mysqli_fetch_object($sql->mysqry);
+							$vsql.=",id_alteracao=$usr->id,alteracao_data=now()";
+							$sql->update($_p."profissionais_horarios",$vsql,"where id=$x->id");
+							$rtn=array('success'=>true);
+						} else $rtn=array('success'=>false,'error'=>'Horário não encontrado');
+					} else {
+						$vsql.=",id_usuario=$usr->id,data=now()";
+						$sql->add($_p."profissionais_horarios",$vsql);
 						$rtn=array('success'=>true);
-					} else $rtn=array('success'=>false,'error'=>'Horário não encontrado');
+					}
 				} else {
-					$vsql.=",id_usuario=$usr->id,data=now()";
-					$sql->add($_p."profissionais_horarios",$vsql);
-					$rtn=array('success'=>true);
+					$rtn=array('success'=>false,'error'=>$horarios->erro);
 				}
 			}
 		} else if($_POST['ajax']=="horariosListar") {
@@ -207,7 +229,13 @@
 					}
 
 				}
-				$rtn=array('success'=>true,'horarios'=>$horarios);
+
+				$horariosObj = new Horarios(array('prefixo'=>$_p));
+				$carga='';
+				if($horariosObj->colaboradorCargaHoraria($colaborador->id)) {
+					$carga=sec_convert($horariosObj->carga,'HF');
+				}
+				$rtn=array('success'=>true,'horarios'=>$horarios,'carga'=>$carga);
 			}
 		} else if($_POST['ajax']=="horariosEditar") {
 			$horario='';
@@ -300,7 +328,7 @@
 			# Formulario de Adição/Edição
 			if(isset($_GET['form'])) {
 
-				$campos=explode(",","nome,sexo,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,estado_civil,telefone1,telefone2,nome_pai,nome_mae,email,instagram,linkedin,facebook,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,escolaridade,cro,uf_cro,tipo_cro,calendario_cor,calendario_iniciais,id_cargo,regime_contrato,salario,contratacao_obs,carga_horaria,comissionamento_tipo,permitir_acesso,lng,lat");
+				$campos=explode(",","nome,sexo,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,estado_civil,telefone1,telefone2,nome_pai,nome_mae,email,instagram,linkedin,facebook,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,escolaridade,cro,uf_cro,tipo_cro,calendario_cor,calendario_iniciais,id_cargo,regime_contrato,salario,contratacao_obs,carga_horaria,comissionamento_tipo,permitir_acesso,lng,lat,check_agendamento,contratacaoAtiva");
 
 				foreach($campos as $v) $values[$v]='';
 				$values['calendario_cor']="#c18c6a";
@@ -320,11 +348,30 @@
 					}
 				}
 
+				if(isset($_GET['deleta'])) {
+					if(is_object($cnt)) {
+						$vSQL="lixo=1";
+						$vWHERE="where id=$cnt->id";
+						$sql->update($_table,$vSQL,$vWHERE);
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='delete',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
+
+						$jsc->go("$_page?$url");
+						die();
+ 					} else {
+ 						$jsc->jAlert("Colaborador não encontrado","erro","document.location.href='$_page?$url';");
+ 					}
+				}
+
 				// persistencia
 				if(isset($_POST['acao']) and $_POST['acao']=="wlib") {
 
+					$_POST['calendario_iniciais']=strtoupperWLIB($_POST['calendario_iniciais']);
+
 					// monta sql de insert/update
 					$vSQL=$adm->vSQL($campos,$_POST);
+
+					if(isset($_POST['senha']) and !empty($_POST['senha'])) $vSQL.="senha='".sha1($_POST['senha'])."',";
+			
 
 					// popula $values para persistir nos cmapos
 					$values=$adm->values;
@@ -493,7 +540,7 @@
 												$(".js-tabs").hide();
 												$(".js-" + tabName).show();
 
-												if(tabName=='dadosdacontratacao') {
+												/*if(tabName=='dadosdacontratacao') {
 													$('select[name=id_cargo]').addClass('obg');
 													$('select[name=regime_contrato]').addClass('obg');
 													$('select[name=carga_horaria]').addClass('obg');
@@ -501,7 +548,7 @@
 													$('select[name=id_cargo]').removeClass('obg');
 													$('select[name=regime_contrato]').removeClass('obg');
 													$('select[name=carga_horaria]').removeClass('obg');
-												}
+												}*/
 											});
 										});
 									</script>
@@ -527,11 +574,11 @@
 										if(is_object($cnt)) {
 										?>
 										<dl>
-											<dd><a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
+											<dd><a href="<?php echo "$_page?form=1&edita=$cnt->id&deleta=1&$url";?>" class="button js-confirmarDeletar" data-msg="Tem certeza que deseja remover este colaborador?"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
 										</dl>
-										<dl>
-											<dd><a href="" class="button"><i class="iconify" data-icon="fluent:print-24-regular"></i></a></dd>
-										</dl>
+										<?php /*<dl>
+											<dd><a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:print-24-regular"></i></a></dd>
+										</dl>*/?>
 										<?php
 										}
 										?>
@@ -812,10 +859,33 @@
 							<?php
 							if(is_object($cnt)) {
 							?>
+							<script type="text/javascript">
+								
+								const contratacaoAtiva = () => { 
+									if($('.js-contratacaoAtiva').prop('checked')===true) {
+										$('.js-box-contratacaoAtiva').fadeIn().find('');
+									} else {
+										$('.js-box-contratacaoAtiva').hide();
+									}
+								}
+								$(function(){
+									contratacaoAtiva();
+
+									$('.js-contratacaoAtiva').click(contratacaoAtiva);
+								});
+							</script>
 							<div class="js-tabs js-dadosdacontratacao" style="display:none">
 								<fieldset>
 									<legend>Contratação</legend>
 									<div class="colunas3">
+										<dl>
+											<dd>
+												<label><input type="checkbox" name="contratacaoAtiva" value="1" class="input-switch js-contratacaoAtiva"<?php echo $values['contratacaoAtiva']==1?" checked":"";?> /> Contratação Ativa</label>
+											</dd>
+										</dl>
+									</div>
+
+									<div class="colunas3 js-box-contratacaoAtiva">
 										<dl>
 											<dt>Cargo Atual</dt>
 											<dd>
@@ -847,18 +917,19 @@
 											<dd><input type="text" name="salario" value="<?php echo $values['salario'];?>" class="money" /></dd>
 										</dl>
 									</div>
-									<div class="colunas3">
+									<div class="colunas3 js-box-contratacaoAtiva">
 										<dl>
-											<dt>Carga Horária</dt>
+											<dt>Carga Horária Semanal</dt>
 											<dd>
-												<select name="carga_horaria" class="">
+												<?php /*<select name="carga_horaria" class="">
 													<option value="">-</option>
 													<?php
 													foreach($_cargaHoraria as $k => $v) {
 														echo '<option value="'.$k.'"'.(($values['carga_horaria']==$k)?' selected':'').'>'.$v.'</option>';
 													}
 													?>
-												</select>
+												</select>*/?>
+												<input type="text" name="carga_horaria" value="<?php echo $values['carga_horaria'];?>" />
 											</dd>
 										</dl>
 										<dl class="dl2">
@@ -866,6 +937,8 @@
 											<dd><input type="text" name="contratacao_obs" value="<?php echo $values['contratacao_obs'];?>" /></dd>
 										</dl>
 									</div>
+
+									
 								</fieldset>
 
 								<fieldset>
@@ -1123,7 +1196,7 @@
 											</dl>
 											<dl>
 												<dt>Percentual</dt>
-												<dd class="form-comp form-comp_pos"><input type="text" name="percentual_comissao" maxlength="5" class="js-maskFloat2" /><span>%</span></dd>
+												<dd class="form-comp form-comp_pos"><input type="text" name="percentual_comissao" maxlength="5" class="js-maskFloat2" data-min="0" data-max="100" /><span>%</span></dd>
 											</dl>
 											<dl>
 												<dt>Observação</dt>
@@ -1232,6 +1305,12 @@
 								</fieldset>
 							</div><!-- .js-dadosdacontratacao -->
 
+							<?php
+							$horarios = new Horarios(array('prefixo'=>$_p));
+							if($horarios->colaboradorCargaHoraria($cnt->id)) {
+								$carga=$horarios->carga;
+							}
+							?>
 							<script type="text/javascript">
 								var horarios = [];
 								var id_colaborador=<?php echo $cnt->id;?>;
@@ -1259,6 +1338,10 @@
 										success:function(rtn) {
 											if(rtn.success) {
 												horarios=rtn.horarios;
+
+												if(rtn.carga) {
+													$('.js-carga').val(rtn.carga);
+												}
 												horariosListar();
 											}
 										}
@@ -1285,8 +1368,21 @@
 										}
 									});
 								}
+
+								const habilitaAgendamento = () => {
+									if($('.js-check_agendamento').prop('checked')===true) {
+										$('.js-box-habilitarAgendamento').fadeIn();
+									} else {
+										$('.js-box-habilitarAgendamento').hide();
+
+									}
+								}
+
+
+
 								$(function(){
 									horariosAtualizar();
+									habilitaAgendamento();
 
 									$('.js-horarios-submit').click(function(){
 										let obj = $(this);
@@ -1298,16 +1394,20 @@
 											let dia = $(`.js-dia`).val();
 											let inicio = $(`.js-inicio`).val();
 											let fim = $(`.js-fim`).val();
+										    
 
-											if(id_cadeira.length==0) {
-												swal({title: "Erro!", text: "Selecione a Cadeira!", type:"error", confirmButtonColor: "#424242"});
-											} else if(dia.length==0) {
+											errInicio = validaHoraMinuto(inicio);
+											errFim = validaHoraMinuto(fim);
+
+											if(dia.length==0) {
 												swal({title: "Erro!", text: "Selecione o Dia!", type:"error", confirmButtonColor: "#424242"});
-											} else if(inicio.length==0) {
-												swal({title: "Erro!", text: "Defina o Início", type:"error", confirmButtonColor: "#424242"});
-											} else if(fim.length==0) {
-												swal({title: "Erro!", text: "Defina o Fim", type:"error", confirmButtonColor: "#424242"});
-											} else {
+											} else if(errInicio.length>0) {
+												swal({title: "Erro!", text: `Erro na hora início: ${errInicio}`, type:"error", confirmButtonColor: "#424242"});
+											} else if(errFim.length>0) {
+												swal({title: "Erro!", text: `Erro na hora final: ${errFim}`, type:"error", confirmButtonColor: "#424242"});
+											} else if(dia.length==0) {
+												swal({title: "Erro!", text: "Selecione a Cadeira!", type:"error", confirmButtonColor: "#424242"});
+											} else  {
 
 												obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 												obj.attr('data-loading',1);
@@ -1404,30 +1504,42 @@
 											}
 									});
 
+									$('.js-check_agendamento').on('click','',habilitaAgendamento);
+
 								});
 							</script>
+
 							<div class="js-tabs js-habilitaragendamento" style="display:none;">
 								<fieldset>
 									<legend>Agendamento</legend>
+
 									<div class="colunas4">
-										<dl class="dl2">
+										
+									</div>
+									<div class="colunas4">
+										<dl class="dl">
 											<dt></dt>
-											<dd><label><input type="checkbox" class="input-switch" /> Habilitar agendamento</label></dd>
+											<dd><label><input type="checkbox" class="input-switch js-check_agendamento" name="check_agendamento" value="1"<?php echo $values['check_agendamento']==1?" checked":"";?> /> Habilitar agendamento</label></dd>
 										</dl>
-										<dl>
+										<dl class="js-box-habilitarAgendamento">
+											<dt>Carga Horária</dt>
+											<dd><input type="text" value="<?php echo sec_convert($carga,'HF');?>" class="js-carga" disabled />
+										</dl>
+										<dl class="js-box-habilitarAgendamento">
 											<dt>Inicial</dt>
-											<dd><input type="text" name="" /></dd>
+											<dd><input type="text" name="calendario_iniciais" value="<?php echo $values['calendario_iniciais'];?>" maxlength="2" style="text-transform: uppercase;" /></dd>
 										</dl>
-										<dl>
+										<dl class="js-box-habilitarAgendamento">
 											<dt>Cor</dt>
-											<dd><input type="text" name="" /></dd>
+											<dd><input type="color" name="calendario_cor" value="<?php echo $values['calendario_cor'];?>" /></dd>
 										</dl>
 									</div>
 								</fieldset>
 
-								<fieldset class="js-fieldset-horarios">
+								<fieldset class="js-fieldset-horarios js-box-habilitarAgendamento">
 									<legend>Horário de Atendimento</legend>
 									<input type="hidden" class="js-id" value="0" />
+
 									<div class="colunas4">
 										<dl>
 											<dt>Dia da Semana</dt>
@@ -1504,19 +1616,24 @@
 							</div>
 
 							<div class="js-tabs js-acessoaosistema" style="display:none;">
+
 								<div class="colunas3">
+									
 									<dl>
-										<dt>Email de acesso</dt>
-										<dd><input type="text" name="" /></dd>
+										<dt>Email de recuperação</dt>
+										<dd><input type="text" name="email" value="<?php echo $values['email'];?>" /></dd>
 									</dl>
-									<dl class="dl2">
-										<dt></dt>
-										<dd>
-											<label><input type="checkbox" name="permitir_acesso" value="1" class="input-switch"<?php echo $values['permitir_acesso']==1?" checked":"";?> /> Acesso ao sistema</label>
-											<label><input type="checkbox" name="" class="input-switch"> Ativo</label>
-										</dd>
+									<dl>
+										<dt>Senha</dt>
+										<dd><input type="password" name="senha" value="" /></dd>
 									</dl>									
 								</div>
+								<dl class="dl2">
+									<dd>
+										<label><input type="checkbox" name="permitir_acesso" value="1" class="input-switch" onclick="$(this).prop('checked')==true?$('input[name=email]').addClass('obg'):$('input[name=email]').removeClass('obg');"<?php echo $values['permitir_acesso']==1?" checked":"";?> /> Acesso ao sistema</label>
+										<?php /*<label><input type="checkbox" name="" class="input-switch"> Ativo</label>*/?>
+									</dd>
+								</dl>
 							</div>
 							<?php
 							}
@@ -1557,7 +1674,7 @@
 								$where.=" and nome like '%".$values['busca']."%'";
 							}
 							//$sql->consult($_table,"*",$where." order by nome asc");
-							$sql->consultPagMto2($_table,"*",10,$where." order by nome asc","",15,"pagina",$_page."?".$url."&pagina=");
+							$sql->consultPagMto2($_table,"*",10,$where." order by contratacaoAtiva desc, nome asc","",15,"pagina",$_page."?".$url."&pagina=");
 							if($sql->rows==0) {
 								if(isset($values['busca'])) $msg="Nenhum Resultado encontrado";
 								else $msg="Nenhum colaborador cadastrado";
@@ -1568,26 +1685,31 @@
 							<table>
 								<?php
 								while($x=mysqli_fetch_object($sql->mysqry)) {
+									if($x->contratacaoAtiva==1) {
+										$cssOpacity="";
+									} else {
+										$cssOpacity='style="opacity:0.5;"';
+									}
 								?>
-								<tr onclick="document.location.href='<?php echo $_page."?form=1&edita=$x->id&$url";?>';">
+								<tr onclick="document.location.href='<?php echo $_page."?form=1&edita=$x->id&$url";?>';"<?php echo $cssOpacity;?>>
 									<td><h1><strong><?php echo utf8_encode($x->nome);?></strong></h1></td>
 									<td><?php echo $x->data_nascimento!="0000-00-00"?idade($x->data_nascimento)." anos":"";?></td>
 									<td>
 										<?php
 										if($x->permitir_acesso==1) {
 										?>
-										<strong style="color:var(--verde);"><i class="iconify" data-icon="fluent:checkmark-circle-12-regular"></i> Acesso Ativo</strong>
+										<strong style="color:var(--verde);"><i class="iconify" data-icon="fluent:checkmark-circle-12-regular"></i> Acesso ao sistema</strong>
 										<?php
-										} else {
+										} /*else {
 										?>
 										<strong style="color:var(--vermelho);"><i class="iconify" data-icon="fluent:checkmark-circle-12-regular"></i> Acesso Desativado</strong>
 										<?php	
-										}
+										}*/
 										?>
 									</td>
 									<td>
 										<?php
-										if(!empty($x->calendario_iniciais)) {
+										if($x->check_agendamento==1 and !empty($x->calendario_iniciais)) {
 										?>
 										<div class="badge-prof" title="Kroner Costa" style="<?php echo empty($x->calendario_cor)?"":"background:$x->calendario_cor";?>"><?php echo $x->calendario_iniciais;?></div>
 										<?php

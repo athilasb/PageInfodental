@@ -662,7 +662,9 @@
 											?>
 										</dd>
 									</dl>
-
+									<?php
+									if($_infodentalCompleto==1) {
+									?>
 									<dl class="dl2">
 										<dt>Situação</dt>
 										<dd>
@@ -674,6 +676,9 @@
 											</select>
 										</dd>
 									</dl>
+									<?php
+									}
+									?>
 								</div>
 							</fieldset>
 

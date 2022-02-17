@@ -58,8 +58,10 @@
 		'CLT' => 'CLT',
 		'ESTAGIO' => 'Estágio',
 		'MEI' => 'MEI',
-		'AUTONOMO' => 'Autônomo'
+		'AUTONOMO' => 'Autônomo',
+		'PROLABORE' => 'Prolabore'
 	);
+	ksort($_regimes);
 	
 	$_tipoCRO = array(
 		'CD'  => 'CD',

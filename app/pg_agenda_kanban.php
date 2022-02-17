@@ -218,7 +218,6 @@
 		?>
 
 		<script type="text/javascript">
-
 			var data = '<?php echo $dataWH;?>';
 			var dataAgenda = '<?php echo date('d/m/Y',strtotime($dataWH));?>';
 			var popViewInfos = [];
@@ -283,7 +282,7 @@
 					// Atendido
 					if(eval(x.id_status)==5) {
 						// se nao possui evolucao
-						if(x.evolucao==0) {
+						if(infodentalCompleto==1 && x.evolucao==0) {
 							evolucao = `kanban-item_erro`;
 						}
 					}
@@ -295,7 +294,7 @@
 						html = `<div href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
 										
 										<h1>${x.paciente}</h1>
-										<h2>${x.statusBI}</h2>
+										${infodentalCompleto==1?`<h2>${x.statusBI}</h2>`:``}
 										<a href="pg_contatos_pacientes_resumo.php?id_paciente=${x.id_paciente}" target="_blank" class="js-hrefPaciente button button__sec"><i class="iconify" data-icon="bx:bxs-user"></i></a>
 									</div>`;
 

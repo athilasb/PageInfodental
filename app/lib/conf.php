@@ -2,6 +2,7 @@
 	$_title="Info Dental";
 	$_p="ident_";
 
+
 	if(isset($_SERVER['HTTP_HOST'])) {
 		if($_SERVER['HTTP_HOST']=="163.172.187.183:5000") {
 			$_ENV['MYSQL_HOST']='51.159.74.70:23821';
@@ -10,6 +11,13 @@
 			$_ENV['MYSQL_PASS']="d3ntaL@inf0"; 
 		} 
 	}
+
+
+
+	$_unidadesEspeciais['studiodental']=1;
+
+	$_infodentalCompleto=isset($_unidadesEspeciais[$_ENV['NAME']])?1:0;
+
 
 	$_usuariosTipos=array('admin'=>'Administrador',
 						  'moderador'=>'Moderador');

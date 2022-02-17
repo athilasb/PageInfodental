@@ -997,7 +997,18 @@
 					</div>*/?>
 					<?php
 					$where="WHERE lixo='0'";
-					if(isset($values['busca']) and !empty($values['busca'])) $where.=" and (nome like '%".utf8_decode($values['busca'])."%' or cpf like '%".cpf($values['busca'])."%' or id = '".addslashes($values['busca'])."')";
+					if(isset($values['busca']) and !empty($values['busca'])) {
+						//$where.=" and (nome like '%".utf8_decode($values['busca'])."%' or cpf like '%".cpf($values['busca'])."%' or id = '".addslashes($values['busca'])."')";
+						$wh="";
+						$aux = explode(" ",$_GET['busca']);
+
+						foreach($aux as $v) {
+							$wh.="nome REGEXP '$v' and ";
+						}
+						$wh=substr($wh,0,strlen($wh)-5);
+						$where="where (($wh) or nome like '%".$_GET['busca']."%' or telefone1 like '%".$_GET['busca']."%' or cpf like '%".$_GET['busca']."%') and lixo=0";
+					}
+
 					
 					$where.=" order by nome asc";
 					//echo $where;
@@ -1017,14 +1028,26 @@
 								if(isset($_codigoBICores[$x->codigo_bi])) $cor=$_codigoBICores[$x->codigo_bi];
 						?>
 						<a href="pg_contatos_pacientes_resumo.php?id_paciente=<?php echo $x->id?>" class="reg-group">
+							<?php
+							if($_infodentalCompleto==1) {
+							?>
 							<div class="reg-color" style="background-color:<?php echo $cor;?>"></div>
+							<?php
+							}
+							?>
 							<div class="reg-data" style="flex:0 1 50%;">
 								<h1><?php echo strtoupperWLIB(utf8_encode($x->nome));?></h1>
 								<p>Código: <?php echo $x->id;?></p>
 							</div>
+							<?php
+							if($_infodentalCompleto==1) {
+							?>
 							<div class="reg-data" style="flex:0 1 70px;">
 								<p><?php echo isset($_codigoBI[$x->codigo_bi])?$_codigoBI[$x->codigo_bi]:"";?></p>
 							</div>
+							<?php
+							}
+							?>
 							<div class="reg-data" style="flex:0 1 70px;">
 								<p><?php echo $x->data_nascimento!="0000-00-00"?idade($x->data_nascimento)." anos":"";?></p>
 							</div>

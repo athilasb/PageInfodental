@@ -12,6 +12,21 @@
 	function mask($tel) {
 		return substr($tel,2,1)==9?"(".substr($tel,0,2).") ".substr($tel,2,5)."-".substr($tel,7,4):"(".substr($tel,0,2).") ".substr($tel,2,4)."-".substr($tel,6,5);
 	}
+	function nome($nome,$qtd) {
+		$aux=explode(" ",$nome);
+
+		$rtn='';
+		$cont=1;
+		foreach($aux as $v) {
+			if(strlen($v)<=3) continue;
+			$rtn.=trim($v).' ';
+			if($qtd<=$cont) break;
+			$cont++;
+		}
+
+		return $rtn;
+
+	}
 	function numeroletras($rtn) {
 		return preg_replace("/[^a-zA-Z0-9]+/", "", $rtn);
 	}
@@ -140,6 +155,72 @@
 	function converteData($data) {
 		list($dia,$mes,$ano)=explode("/",$data);
 		return $ano."-".$mes."-".$dia;
+	}
+	function MathZDC($dividend, $divisor, $quotient=0) {
+		if ($divisor==0) {
+			return $quotient;
+		}
+		else if ($dividend==0) {
+			return 0;
+		} else {
+			return ($dividend/$divisor);
+		}
+	}
+	function sec_convert($sec,$precision) {
+		$Ftime=0;
+		$sec=round($sec,0);
+		if ($sec < 1) {
+			if($precision == 'HF') {
+				return "0m";
+			} else {
+				if($precision == 'S') {
+					return "0m";
+				} else {
+					return "0m";
+				}
+			}
+		} else {
+			if($precision == 'HF') {
+				$precision='H';
+			} else {
+				if (($sec < 3600) and ($precision != 'S')) {
+					$precision='M';
+				}
+			}
+			if($precision == 'H') {
+				$Fhours_H =	MathZDC($sec, 3600);
+				$Fhours_H_int = floor($Fhours_H);
+				$Fhours_H_int = intval("$Fhours_H_int");
+				$Fhours_M = ($Fhours_H - $Fhours_H_int);
+				$Fhours_M = ($Fhours_M * 60);
+				$Fhours_M_int = floor($Fhours_M);
+				$Fhours_M_int = intval("$Fhours_M_int");
+				$Fhours_S = ($Fhours_M - $Fhours_M_int);
+				$Fhours_S = ($Fhours_S * 60);
+				$Fhours_S = round($Fhours_S, 0);
+				$horas=$Fhours_H_int;
+			//	echo $horas."ss"
+				//if (strlen($Fhours_S)==1) $Fhours_S = "0".$Fhours_S;
+				//if (strlen($Fhours_M_int)==1) $Fhours_M_int = "0".$Fhours_M_int;
+				//if (strlen($Fhours_H_int)==1) $Fhours_H_int = "0".$Fhours_H_int;
+				$Ftime = ($horas>0?$Fhours_H_int."h ":"").($Fhours_M_int>0?$Fhours_M_int."m":"");//."m".$Fhours_S."";
+			}
+			if ($precision == 'M') {
+				$Fminutes_M = MathZDC($sec, 60);
+				$Fminutes_M_int = floor($Fminutes_M);
+				$Fminutes_M_int = intval("$Fminutes_M_int");
+				$Fminutes_S = ($Fminutes_M - $Fminutes_M_int);
+				$Fminutes_S = ($Fminutes_S * 60);
+				$Fminutes_S = round($Fminutes_S, 0);
+				if (strlen($Fminutes_S)==1) $Fminutes_S = "0$Fminutes_S";
+				if (strlen($Fminutes_M_int)==1) $Fminutes_M_int = "0$Fminutes_M_int";
+				$Ftime = $Fminutes_M_int."m".$Fminutes_S."";
+			}
+			if($precision == 'S') {
+				$Ftime = $sec;
+			}
+			return $Ftime;
+		}
 	}
 	function secondsToTime($seconds,$saida=false) {
 	    $dtF = new \DateTime('@0');

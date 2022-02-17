@@ -122,6 +122,7 @@
 
 				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
 					$sql->consult($_p."pacientes","*","where id='".$_POST['id_paciente']."' and lixo=0");
+					
 					if($sql->rows) {
 						$paciente=mysqli_fetch_object($sql->mysqry);
 						$pacienteUnidades=explode(",",$paciente->unidades);

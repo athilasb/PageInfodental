@@ -1,7 +1,7 @@
 <?php
 	
 	require_once("lib/conf.php");
-	$_table=$_p."parametros_cadeiras";
+	$_table=$_p."parametros_fornecedores";
 
 	if(isset($_POST['ajax'])) {
 
@@ -27,7 +27,17 @@
 			} else {
 
 				$data = array('id'=>$cnt->id,
-								'titulo'=>utf8_encode($cnt->titulo));
+								'tipo_pessoa'=>utf8_encode($cnt->tipo_pessoa),
+								'nome'=>utf8_encode($cnt->nome),
+								'cpf'=>utf8_encode($cnt->cpf),
+								'razao_social'=>utf8_encode($cnt->razao_social),
+								'nome_fantasia'=>utf8_encode($cnt->nome_fantasia),
+								'responsavel'=>utf8_encode($cnt->responsavel),
+								'cnpj'=>utf8_encode($cnt->cnpj),
+								'telefone1'=>utf8_encode($cnt->telefone1),
+								'telefone2'=>utf8_encode($cnt->telefone2),
+								'endereco'=>utf8_encode($cnt->endereco),
+								'complemento'=>utf8_encode($cnt->complemento));
 
 				$rtn=array('success'=>true,'data'=>$data);
 
@@ -203,13 +213,9 @@
 				}
 			} 
 
-			$horariosObj = new Horarios(array('prefixo'=>$_p));
-			$carga='';
-			if($horariosObj->cadeiraCargaHoraria($cadeira->id)) {
-				$carga=sec_convert($horariosObj->carga,'HF');
-			}
+			
 
-			$rtn=array('success'=>true,'horarios'=>$horarios,'carga'=>$carga);
+			$rtn=array('success'=>true,'horarios'=>$horarios );
 		} 
 
 		else if($_POST['ajax']=="horariosEditar") {
@@ -262,7 +268,7 @@
 	include "includes/nav.php";
 
 	$values=$adm->get($_GET);
-	$campos=explode(",","titulo");
+	$campos=explode(",","tipo_pessoa,nome,cpf,razao_social,nome_fantasia,cnpj,telefone1,telefone2,email,endereco,lat,lng,complemento");
 
 	if(isset($_POST['acao'])) {
 
@@ -317,7 +323,7 @@
 				
 				<div class="filter-group">
 					<div class="filter-title">
-						<h1>Configure a clínica</h1>
+						<h1>Configure o fornecedor</h1>
 					</div>
 				</div>
 			</section>
@@ -327,7 +333,7 @@
 				<div class="box box-col">
 
 					<?php
-					require_once("includes/submenus/subConfiguracoesClinica.php");
+					require_once("includes/submenus/subConfiguracoesFornecedor.php");
 					?>
 					<script type="text/javascript">
 						const openAside = (id) => {
@@ -341,8 +347,26 @@
 									data:data,
 									success:function(rtn){ 
 										if(rtn.success) {
-											$('#js-aside input[name=titulo]').val(rtn.data.titulo);
+
+											if(rtn.data.tipo_pessoa=='PF') {
+												$('#js-aside input[name=tipo_pessoa][value=pf]').click();
+											} else {
+
+												$('#js-aside input[name=tipo_pessoa][value=pj]').click();
+											}
+
 											$('#js-aside input[name=id]').val(rtn.data.id);
+											$('#js-aside input[name=nome]').val(rtn.data.nome);
+											$('#js-aside input[name=cpf]').val(rtn.data.cpf);
+											$('#js-aside input[name=razao_social]').val(rtn.data.razao_social);
+											$('#js-aside input[name=nome_fantasia]').val(rtn.data.nome_fantasia);
+											$('#js-aside input[name=responsavel]').val(rtn.data.responsavel);
+											$('#js-aside input[name=cnpj]').val(rtn.data.cnpj);
+											$('#js-aside input[name=telefone1]').val(rtn.data.telefone1);
+											$('#js-aside input[name=telefone2]').val(rtn.data.telefone2);
+											$('#js-aside input[name=email]').val(rtn.data.email);
+											$('#js-aside input[name=endereco]').val(rtn.data.endereco);
+											$('#js-aside input[name=complemento]').val(rtn.data.complemento);
 											horariosAtualizar();
 
 											$('.js-fieldset-horarios,.js-btn-remover').show();
@@ -418,12 +442,13 @@
 							$('.js-openAside').click(function(){
 								$('#js-aside form.formulario-validacao').trigger('reset');
 								openAside(0);
-							})
+							});
+
 							$('.list1').on('click','.js-item',function(){
 								$('#js-aside form.formulario-validacao').trigger('reset');
 								let id = $(this).attr('data-id');
 								openAside(id);
-							})
+							});
 						})
 					</script>
 
@@ -433,7 +458,7 @@
 							<div class="filter-group">
 								<div class="filter-form form">
 									<dl>
-										<dd><a href="javascript:;" class="button button_main js-openAside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Nova Cadeira</span></a></dd>
+										<dd><a href="javascript:;" class="button button_main js-openAside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Novo Fornecedor</span></a></dd>
 									</dl>
 								</div>								
 							</div>
@@ -452,24 +477,38 @@
 						# LISTAGEM #
 						$where="where lixo=0";
 						if(isset($values['busca']) and !empty($values['busca'])) {
-							$where.=" and titulo like '%".$values['busca']."%'";
+							//$where.=" and titulo like '%".$values['busca']."%'";
+							$wh="";
+							$aux = explode(" ",$_GET['busca']);
+
+							foreach($aux as $v) {
+								$wh.="(nome REGEXP '$v' or razao_social REGEXP '$v' ) and ";
+							}
+							$wh=substr($wh,0,strlen($wh)-5);
+							$where="where ($wh) and lixo=0";
 						}
-						$sql->consultPagMto2($_table,"*",10,$where." order by ordem asc","",15,"pagina",$_page."?".$url."&pagina=");
+						//echo $where;//die();
+						//$sql->consultPagMto2($_table,"*,IF(tipo_pessoa='PJ',razao_social,nome_fantasia) as titulo",10,$where." order by titulo","",15,"pagina",$_page."?".$url."&pagina=");
+						$sql->consult($_table,"*,IF(tipo_pessoa='PJ',nome_fantasia,nome) as titulo",$where." order by titulo");
 						if($sql->rows==0) {
 							if(isset($values['busca'])) $msg="Nenhum Resultado encontrado";
 							else $msg="Nenhum colaborador cadastrado";
-
 							echo "<center>$msg</center>";
 						} else {
+							$registros=array();
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$registros[$x->titulo]=$x;
+							}
+							//ksort($registros);
 						?>	
 							<div class="list1">
 								<table>
 									<?php
-									while($x=mysqli_fetch_object($sql->mysqry)) {
+									foreach($registros as $x) {
 									?>
 									<tr class="js-item" data-id="<?php echo $x->id;?>">
 										<td style="width:20px;"><i class="iconify" data-icon="fluent:chevron-up-down-24-regular"></i></td>
-										<td><h1><strong><?php echo utf8_encode($x->titulo);?></strong></h1></td>
+										<td><h1><strong><?php echo utf8_encode($x->titulo.($x->tipo_pessoa=="PJ"?" ($x->razao_social)":""));?></strong></h1></td>
 									</tr>
 									<?php
 									}
@@ -479,7 +518,7 @@
 							<?php
 								if(isset($sql->myspaginacao) and !empty($sql->myspaginacao)) {
 							?>
-							<div class="paginacao">						
+							<div class="pagination">						
 								<?php echo $sql->myspaginacao;?>
 							</div>
 							<?php
@@ -500,7 +539,7 @@
 		<div class="aside__inner1">
 
 			<header class="aside-header">
-				<h1>Adicionar colaborador</h1>
+				<h1>Fornecedor</h1>
 				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 			</header>
 
@@ -522,17 +561,73 @@
 				</section>
 				
 				<fieldset>
-					<legend>Dados da Cadeira</legend>
-					<div class="colunas3">				
-						<dl class="dl2">
-							<dt>Título</dt>
-							<dd><input type="text" name="titulo" class="obg" /></dd>
+					<legend>Dados do Fornecedor</legend>
+									
+					<dl>
+						<dt>Tipo</dt>
+						<dd>
+							<label><input type="radio" name="tipo_pessoa" value="pf" checked onclick="$('.js-pessoa').hide(); $('.js-pessoa-pf').show();">Pessoa Física</label>
+							<label><input type="radio" name="tipo_pessoa" value="pj" onclick="$('.js-pessoa').hide(); $('.js-pessoa-pj').show();" />Pessoa Jurídica</label>
+						</dd>
+					</dl>
+					<div class="js-pessoa js-pessoa-pf">
+						<div class="colunas3">
+							<dl class="dl2">
+								<dt>Nome</dt>
+								<dd><input type="text" name="nome" /></dd>
+							</dl>
+							<dl>
+								<dt>CPF</dt>
+								<dd><input type="tel" name="cpf" class="cpf" /></dd>
+							</dl>
+						</div>						
+					</div>
+					<div class="js-pessoa js-pessoa-pj" style="display:none;">
+						<div class="colunas3">
+							<dl class="dl2">
+								<dt>Nome Fantasia</dt>
+								<dd><input type="text" name="nome" /></dd>
+							</dl>
+							<dl>
+								<dt>Responsável</dt>
+								<dd><input type="text" name="responsavel" class="" /></dd>
+							</dl>
+							<dl class="dl2">
+								<dt>Razão Social</dt>
+								<dd><input type="text" name="razao_social" class="" /></dd>
+							</dl>
+							<dl>
+								<dt>CNPJ</dt>
+								<dd><input type="tel" name="cnpj" class="cnpj" /></dd>
+							</dl>
+						</div>						
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<legend>Dados de Contato</legend>
+					<div class="colunas3">
+						<dl>
+							<dt>WhatsApp</dt>
+							<dd class="form-comp"><span>BR</span><input type="tel" name="" /></dd>
 						</dl>
 						<dl>
-							<dt>Carga Horária</dt>
-							<dd><input type="text" value="" class="js-carga" disabled />
+							<dt>Telefone</dt>
+							<dd class="form-comp"><span>BR</span><input type="tel" name="" /></dd>
 						</dl>
-					</div>
+						<dl>
+							<dt>Email</dt>
+							<dd><input type="email" name="email" /></dd>
+						</dl>
+					</div>					
+					<dl>
+						<dt>Endereço</dt>
+						<dd><input type="text" name="endereco" /></dd>
+					</dl>
+					<dl>
+						<dt>Complemento</dt>
+						<dd><input type="text" name="complemento" /></dd>
+					</dl>
 				</fieldset>
 
 
@@ -718,6 +813,7 @@
 
 					});
 				</script>
+
 				<fieldset class="js-fieldset-horarios">
 					<legend>Horário de Funcionamento</legend>
 

@@ -83,6 +83,7 @@
 <script type="text/javascript" src="ckfinder/ckfinder.js"></script>
 <script type="text/javascript">
 	var id_unidade = '<?php echo (isset($usrUnidade) and is_object($usrUnidade))?$usrUnidade->id:0;?>';
+	var infodentalCompleto = <?php echo $_infodentalCompleto;?>;
 </script>
 </head>
 
