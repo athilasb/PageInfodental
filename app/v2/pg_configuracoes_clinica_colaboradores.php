@@ -365,7 +365,7 @@
 				// persistencia
 				if(isset($_POST['acao']) and $_POST['acao']=="wlib") {
 
-					$_POST['calendario_iniciais']=strtoupperWLIB($_POST['calendario_iniciais']);
+					if(isset($_POST['calendario_iniciais'])) $_POST['calendario_iniciais']=strtoupperWLIB($_POST['calendario_iniciais']);
 
 					// monta sql de insert/update
 					$vSQL=$adm->vSQL($campos,$_POST);
@@ -1318,9 +1318,13 @@
 								const horariosListar = () => {
 									if(horarios) {
 										$('.js-td').html('')
+
+										let cadeirasComHorarios = [];
 										for(var id_cadeira in horarios) {
 											let index = `.js-${id_cadeira}`;
 											for(var dia in horarios[id_cadeira]) {
+
+												if(cadeirasComHorarios.includes(id_cadeira)===false) cadeirasComHorarios.push(id_cadeira);
 												horarios[id_cadeira][dia].forEach(x=>{
 													
 													$(`${index}-${dia}`).append(`<a href="javascript:;" class="js-editar" data-id="${x.id}">${x.inicio}~${x.fim}<br />`);
@@ -1598,7 +1602,7 @@
 												<?php
 												foreach($_cadeiras as $x) {
 												?>
-												<tr>
+												<tr class="js-cadeira-<?php echo $x->id;?>">
 													<td><strong><?php echo utf8_encode($x->titulo);?></strong></td>
 													<?php
 														for($i=0;$i<=6;$i++) {

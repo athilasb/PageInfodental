@@ -117,6 +117,13 @@
 		"TO" => "Tocantins"				    					    					   		    
 	);
 
+	$_bancos=array(1=>'Itaú',
+					2=>'Bradesco',
+					3=>'Sicoob',
+					4=>'Nubank');
+
+	asort($_bancos);
+
 	$_tiposReceitas=array('interno'=>'USO INTERNO',
 							'externo'=>'USO EXTERNO');
 
@@ -162,6 +169,12 @@
 	foreach($_selectSituacaoOptions as $key=>$value) {
 		$selectSituacaoOptions.='<option value="'.$key.'" data-cor="'.$value['cor'].'">'.$value['titulo'].'</option>';
 	}
+
+	$_pixTipos=array('cpfcnpj'=>'CPF/CNPJ',
+						'telefone'=>'Telefone',
+						'email'=>'E-mail',
+						'chave'=>'Chave Aletória'
+					);
 
 	
 ?>

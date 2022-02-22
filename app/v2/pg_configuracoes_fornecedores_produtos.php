@@ -2,13 +2,23 @@
 	require_once("lib/conf.php");
 	require_once("usuarios/checa.php");
 
-	$_table=$_p."parametros_servicosdelaboratorio";
+	$_table=$_p."produtos";
 
-	$_fornecedores=array();
-	$sql->consult($_p."parametros_fornecedores","*,IF(tipo_pessoa='PF',nome,razao_social) as titulo","where tipo='LABORATORIO' and lixo=0 order by titulo");
+	$_marcas=array();
+	$sql->consult($_p."produtos_marcas","*","where lixo=0 order by titulo");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_fornecedores[$x->id]=$x;
+		$_marcas[$x->id]=$x;
 	}
+
+	$_especialidades=array();
+	$sql->consult($_p."parametros_especialidades","*","where lixo=0 order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_especialidades[$x->id]=$x;
+	}
+	
+	$_unidadesMedidas=array();
+	$sql->consult($_p."produtos_unidadesmedidas","*","where lixo=0 order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_unidadesMedidas[$x->id]=$x;
 
 	if(isset($_POST['ajax'])) {
 
@@ -16,13 +26,7 @@
 
 		$rtn=array();
 
-		$servico='';
-		if(isset($_POST['id_servico']) and is_numeric($_POST['id_servico'])) {
-			$sql->consult($_p."parametros_servicosdelaboratorio","*","where id='".addslashes($_POST['id_servico'])."' and lixo=0");
-			if($sql->rows) {
-				$servico=mysqli_fetch_object($sql->mysqry);
-			}
-		}
+		
 
 		if($_POST['ajax']=="editar") {
 
@@ -40,7 +44,14 @@
 
 				$data = array('id'=>$cnt->id,
 								'titulo'=>utf8_encode($cnt->titulo),
-								'id_regiao'=>$cnt->id_regiao);
+								'id_marca'=>utf8_encode($cnt->id_marca),
+								'id_especialidade'=>utf8_encode($cnt->id_especialidade),
+								'unidade_medida'=>utf8_encode($cnt->unidade_medida),
+								'volume'=>utf8_encode($cnt->volume),
+								'referencia'=>utf8_encode($cnt->referencia),
+								'estoque_minimo'=>utf8_encode($cnt->estoque_minimo),
+								'embalagemComMais'=>(int)($cnt->embalagemComMais),
+								'quantidade'=>utf8_encode($cnt->quantidade));
 
 				$rtn=array('success'=>true,'data'=>$data);
 
@@ -188,36 +199,19 @@
 		echo json_encode($rtn);
 		die();
 	}
-	
-	$_regioes=array();
-	$sql->consult($_p."parametros_procedimentos_regioes","*","where lixo=0 order by titulo asc");
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_regioes[$x->id]=$x;
-	}
-
-	$_fases=array();
-	$sql->consult($_p."parametros_fases","*","where lixo=0 order by titulo asc");
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_fases[$x->id]=$x;
-	}
-
-	$_especialidades=array();
-	$sql->consult($_p."parametros_especialidades","*","where lixo=0 order by titulo asc");
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_especialidades[$x->id]=$x;
-	}
-
 
 	include "includes/header.php";
 	include "includes/nav.php";
 
 	$values=$adm->get($_GET);
-	$campos=explode(",","titulo,id_regiao");
+	$campos=explode(",","titulo,id_marca,id_especialidade,unidade_medida,volume,referencia,estoque_minimo,embalagemComMais,quantidade");
 
 	if(isset($_POST['acao'])) {
 
 		$vSQL=$adm->vSQL($campos,$_POST);
 		$values=$adm->values;
+
+		//echo $vSQL;die();
 
 		$cnt = '';
 		if(isset($_POST['id']) and is_numeric($_POST['id'])) {
@@ -264,10 +258,9 @@
 		<div class="main__content content">
 
 			<section class="filter">
-				
 				<div class="filter-group">
 					<div class="filter-title">
-						<h1>Configure as evoluções</h1>
+						<h1>Configure as produtos</h1>
 					</div>
 				</div>
 			</section>
@@ -277,11 +270,10 @@
 				<div class="box box-col">
 
 					<?php
-					require_once("includes/submenus/subConfiguracoesEvolucao.php");
+					require_once("includes/submenus/subConfiguracoesFornecedor.php");
 					?>
 					<script type="text/javascript">
 						const openAside = (id) => {
-
 							if($.isNumeric(id) && id>0) {
 								let data = `ajax=editar&id=${id}`;
 								$.ajax({
@@ -291,13 +283,23 @@
 										if(rtn.success) {
 											$('#js-aside input[name=titulo]').val(rtn.data.titulo);
 											$('#js-aside input[name=id]').val(rtn.data.id);
-											$('#js-aside select[name=id_regiao]').val(rtn.data.id_regiao);
+											$('#js-aside select[name=id_marca]').val(rtn.data.id_marca);
+											$('#js-aside select[name=id_especialidade]').val(rtn.data.id_especialidade);
+											$('#js-aside select[name=unidade_medida]').val(rtn.data.unidade_medida);
+											$('#js-aside input[name=volume]').val(rtn.data.volume);
+											$('#js-aside input[name=referencia]').val(rtn.data.referencia);
+											$('#js-aside input[name=estoque_minimo]').val(rtn.data.estoque_minimo);
+											$('#js-aside input[name=embalagemComMais]').prop('checked',rtn.data.embalagemComMais==1?true:false);
+											$('#js-aside input[name=quantidade]').val(rtn.data.quantidade);
 
-											regsAtualizar(true);
+
 
 											$('.js-fieldset-regs,.js-btn-remover').show();
 											
-											
+											$(".aside-form").fadeIn(100,function() {
+												$(".aside-form .aside__inner1").addClass("active");
+												embalagemComMais();
+											});
 										} else if(rtn.error) {
 											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 										} else {
@@ -312,11 +314,12 @@
 								
 
 							} else {
-
 								$('.js-fieldset-regs,.js-btn-remover').hide();
 
-								$("#js-aside").fadeIn(100,function() {
-									$(".aside .aside__inner1").addClass("active");
+								
+								$(".aside-form").fadeIn(100,function() {
+									$(".aside-form .aside__inner1").addClass("active");
+									embalagemComMais();
 								});
 							}
 						}
@@ -370,18 +373,18 @@
 							$('.list1').on('click','.js-item',function(){
 								$('#js-aside form.formulario-validacao').trigger('reset');
 								let id = $(this).attr('data-id');
+
 								openAside(id);
 							});
 						})
 					</script>
 
 					<div class="box-col__inner1">
-				
 						<section class="filter">
 							<div class="filter-group">
 								<div class="filter-form form">
 									<dl>
-										<dd><a href="javascript:;" class="button button_main js-openAside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Novo Serviço de Laboratório</span></a></dd>
+										<dd><a href="javascript:;" class="button button_main js-openAside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Novo Produto</span></a></dd>
 									</dl>
 								</div>								
 							</div>
@@ -417,8 +420,7 @@
 									?>
 									<tr class="js-item" data-id="<?php echo $x->id;?>">
 										<td><h1><strong><?php echo utf8_encode($x->titulo);?></strong></h1></td>
-										<td><?php echo isset($_regioes[$x->id_regiao])?utf8_encode($_regioes[$x->id_regiao]->titulo):"-";?></td>
-										<td><?php echo isset($_especialidades[$x->id_regiao])?utf8_encode($_especialidades[$x->id_regiao]->titulo):"-";?></td>
+										<td><?php echo $x->unidade_medida;?></td>
 									<?php
 									}
 									?>
@@ -443,11 +445,11 @@
 		
 		</div>
 	</main>
-	<section class="aside aside-form" id="js-aside">
+	<section class="aside-form aside-form" id="js-aside">
 		<div class="aside__inner1">
 
 			<header class="aside-header">
-				<h1>Serviço de Laboratório</h1>
+				<h1>Produto</h1>
 				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 			</header>
 
@@ -470,304 +472,91 @@
 				</section>
 
 				<fieldset>
-					<legend>Dados do Serviço</legend>
-					<div class="colunas3">
-						<dl class="dl2">
-							<dt>Nome do Serviço</dt>
-							<dd><input type="text" name="titulo" /></dd>
-						</dl>
+					<legend>Dados do Produto</legend>
+					<dl>
+						<dt>Nome do Produto</dt>
+						<dd><input type="text" name="titulo" class="obg" /></dd>
+					</dl>
+					<div class="colunas">
 						<dl>
-							<dt>Região</dt>
-							<dd>
-								<select name="id_regiao" class="obg">
-									<option></option>
+							<dt>Marca</dt>
+							<dd class="form-comp form-comp_pos">
+								<select name="id_marca" class="ajax-id_marca">
+									<option value="">-</option>
 									<?php
-									foreach($_regioes as $e) {
+									foreach($_marcas as $e) {
 									?>
 									<option value="<?php echo $e->id;?>"><?php echo utf8_encode($e->titulo);?></option>
 									<?php	
 									}
 									?>
 								</select>
+								<a href="javascript:;" class="js-btn-aside" data-aside="marca" data-aside-sub><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
 							</dd>
 						</dl>
+						<dl>
+							<dt>Especialidade</dt>
+							<dd class="form-comp form-comp_pos">
+								<select name="id_especialidade" class="ajax-id_especialidade">
+									<option value="">-</option>
+									<?php
+									foreach($_especialidades as $e) {
+									?>
+									<option value="<?php echo $e->id;?>"><?php echo utf8_encode($e->titulo);?></option>
+									<?php	
+									}
+									?>
+								</select>
+								<a href="javascript:;" class="js-btn-aside" data-aside="especialidade" data-aside-sub><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+							</dd>
+						</dl>
+						<dl>
+							<dt>Unidade de Medida</dt>
+							<dd>
+								<select name="unidade_medida" class="">
+									<option value="">-</option>
+									<?php
+									foreach($_unidadesMedidas as $v) echo '<option value="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
+									?>
+								</select>
+							</dd>
+						</dl>
+						<dl>
+							<dt>Volume</dt>
+							<dd><input type="text" name="volume" /></dd>
+						</dl>
+						<dl>
+							<dt>Referência</dt>
+							<dd><input type="text" name="referencia" /></dd>
+						</dl>
+						<dl>
+							<dt>Estoque Mínimo</dt>
+							<dd><input type="text" name="estoque_minimo" /></dd>
+						</dl>
+						<dl>
+							<dt>&nbsp;</dt>					
+							<dd><label><input type="checkbox" name="embalagemComMais" value="1" class="input-switch" /> Embalagem com mais de 1 unidade</label></dd>
+						</dl>
+						<dl>
+							<dt>Quantidade</dt>
+							<dd><input type="text" name="quantidade" /></dd>
+						</dl>					
 					</div>
-
 				</fieldset>
 
 				<script type="text/javascript">
-					var regs = [];
-
-					const regsListar = (openAside) => {
-						
-						if(regs) {
-							$('.js-regs-table tbody').html('');
-
-							$(`.js-id_fornecedor option`).prop('disabled',false);
-
-
-							regs.forEach(x=>{
-
-								$(`.js-id_fornecedor`).find(`option[value=${x.id_fornecedor}]`).prop('disabled',true);
-								$(`.js-regs-table tbody`).append(`<tr class="aside-open js-editar" data-id="${x.id}">
-																	<td><h1>${x.fornecedor}</h1></td>
-																	<td>${number_format(x.valor,2,",",".")}</td>
-																	<td>${x.obs}</td>
-																	<td style="text-align:right;"><a href="javascript:;" class="button js-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
-																</tr>`)
-							});;
-							if(openAside===true) {
-								$(".aside").fadeIn(100,function() {
-									$(".aside .aside__inner1").addClass("active");
-								});
-							}
-
+					const embalagemComMais = () => {
+						if($('input[name=embalagemComMais]').prop('checked')===true) {
+							$('input[name=quantidade]').parent().parent().show();
 						} else {
-							if(openAside===true) {
-								$(".aside").fadeIn(100,function() {
-										$(".aside .aside__inner1").addClass("active");
-								});
-							}
+							$('input[name=quantidade]').parent().parent().hide();
 						}
 					}
-
-					const regsAtualizar = (openAside) => {	
-						let id_servico=$('#js-aside input[name=id]').val();
-						let data = `ajax=regsListar&id_servico=${id_servico}`;
-						$.ajax({
-							type:"POST",
-							data:data,
-							success:function(rtn) {
-								if(rtn.success) {
-									regs=rtn.regs;
-									regsListar(openAside);
-								}
-							}
-						})
-					}
-					
-					const regsEditar = (id) => {
-						let data = `ajax=regsEditar&id=${id}`;
-						$.ajax({
-							type:"POST",
-							data:data,
-							success:function(rtn) {
-								if(rtn.success) {
-									reg=rtn.cnt
-
-									$(`.js-id`).val(reg.id);
-									$(`.js-id_fornecedor`).val(reg.id_fornecedor).find(`option[value=${reg.id_fornecedor}]`).prop('disabled',false);
-									$(`.js-valor`).val(number_format(reg.valor,2,",","."));
-									$(`.js-obs`).val(reg.obs);
-
-									
-									$('.js-form').animate({scrollTop: 0},'fast');
-									$('.js-regs-submit').html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
-									$('.js-regs-remover').show();
-
-								} else if(rtn.error) {
-									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-								} else {
-									swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
-								}
-							},
-							error:function(){
-								swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
-							}
-						});
-					}
-
-					
 					$(function(){
-
-						$('input.money').maskMoney({symbol:'', allowZero:true, showSymbol:true, thousands:'.', decimal:',', symbolStay: true});
-						$('.js-regs-submit').click(function(){
-							let obj = $(this);
-							if(obj.attr('data-loading')==0) {
-
-								let id_servico=$('#js-aside input[name=id]').val();
-								let id = $(`.js-id`).val();
-								let id_fornecedor = $(`.js-id_fornecedor`).val();
-								let valor = unMoney($(`.js-valor`).val());
-								let obs = $(`.js-obs`).val();
-
-							
-
-								if(id_fornecedor.length==0) {
-									swal({title: "Erro!", text: "Selecione o Laboratório", type:"error", confirmButtonColor: "#424242"});
-								}  else {
-
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
-
-									let data = `ajax=regsPersistir&id_servico=${id_servico}&id=${id}&id_fornecedor=${id_fornecedor}&valor=${valor}&obs=${obs}`;
-									
-									$.ajax({
-										type:'POST',
-										data:data,
-										success:function(rtn) {
-											if(rtn.success) {
-												regsAtualizar();	
-
-												$(`.js-id`).val(0);
-												$(`.js-id_fornecedor`).val(``);
-												$(`.js-valor`).val(``);
-												$(`.js-obs`).val(``);
-
-											} else if(rtn.error) {
-												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-											} else {
-												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-											}
-											
-										},
-										error:function() {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										}
-									}).done(function(){
-										$('.js-regs-remover').hide();
-										obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-										obj.attr('data-loading',0);
-									});
-
-								}
-							}
-						})
-
-						$('.js-regs-table').on('click','.js-editar',function(){
-							let id = $(this).attr('data-id');
-
-							regsEditar(id);
-						});
-
-						$('.js-fieldset-regs').on('click','.js-regs-remover',function(){
-							let obj = $(this);
-
-							if(obj.attr('data-loading')==0) {
-
-								let id = $('.js-id').val();
-								swal({
-									title: "Atenção",
-									text: "Você tem certeza que deseja remover este registro?",
-									type: "warning",
-									showCancelButton: true,
-									confirmButtonColor: "#DD6B55",
-									confirmButtonText: "Sim!",
-									cancelButtonText: "Não",
-									closeOnConfirm:false,
-									closeOnCancel: false }, 
-									function(isConfirm){   
-										if (isConfirm) {   
-
-											obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-											obj.attr('data-loading',1);
-											let data = `ajax=regsRemover&id=${id}`; 
-											$.ajax({
-												type:"POST",
-												data:data,
-												success:function(rtn) {
-													if(rtn.success) {
-														$(`.js-id`).val(0);
-														$(`.js-id_fornecedor`).val('');
-														$(`.js-valor`).val('');
-														$(`.js-obs`).val('');
-														regsAtualizar();
-														swal.close();   
-													} else if(rtn.error) {
-														swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-													} else {
-														swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção deste horário!", type:"error", confirmButtonColor: "#424242"});
-													}
-												},
-												error:function(){
-													swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção deste horário!", type:"error", confirmButtonColor: "#424242"});
-												}
-											}).done(function(){
-												$('.js-regs-remover').hide();
-												obj.html('<i class="iconify" data-icon="fluent:delete-24-regular"></i>');
-												obj.attr('data-loading',0);
-												$(`.js-regs-submit`).html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-											});
-										} else {   
-											swal.close();   
-										} 
-									});
-							}
-						});
-
-
-						$('.js-tipo').change(function(){
-							let tipo = $(this).val();
-
-							if(tipo.length>0) {
-								if(tipo=='simnao') {
-									$('.js-dl-alerta').show();
-									$('select[name=pergunta_alerta]').addClass('obg');
-								} else if(tipo=='simnaotexto') {
-									$('.js-dl-alerta').show();
-									$('select[name=pergunta_alerta]').addClass('obg');
-								} else {
-									$('.js-alerta').val('nenhum');
-									$('.js-dl-alerta').hide();
-									$('select[name=pergunta_alerta]').removeClass('obg');
-								}
-							} else {
-								$('.js-alerta').val('nenhum');
-								$('.js-dl-alerta').hide();
-								$('select[name=pergunta_alerta]').removeClass('obg');
-							}
-						});
-
-					});
+						$('input[name=embalagemComMais]').click(embalagemComMais);
+					})
 				</script>
 
-				<fieldset class="js-fieldset-regs">
-					<input type="hidden" class="js-id" />
-					<legend>Laboratórios</legend>
-					<div class="colunas3">
-						<dl>
-							<dt>Laboratório</dt>
-							<dd>
-								<select class="js-id_fornecedor" class="">
-									<option value=""></option>
-									<?php
-									foreach($_fornecedores as $e) {
-									?>
-									<option value="<?php echo $e->id;?>"><?php echo utf8_encode($e->titulo);?></option>
-									<?php	
-									}
-									?>
-								</select>
-							</dd>
-						</dl>
-						<dl>
-							<dt>Valor</dt>
-							<dd class="form-comp"><span>R$</span><input type="tel" class="js-valor money" /></dd>
-						</dl>
-					</div>
-					<dl>
-						<dt>Observações</dt>
-						<dd>
-							<input type="text" class="js-obs" />
-							<button type="button" class="button button_main js-regs-submit" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
-							<a href="javascript:;" class="button js-regs-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-						</dd>
-					</dl>
-					<div class="list2" style="margin-top:2rem;">
-						<table class="js-regs-table">
-							<thead>
-								<tr>
-									<th>LABORATÓRIO</th>
-									<th>VALOR</th>
-									<th>OBSERVAÇÕES</th>
-									<th></th>
-								</tr>
-							</thead>
-							<tbody>
-							</tbody>
-						</table>
-					</div>
-				</fieldset>
 			</form>
 
 		</div>
@@ -776,5 +565,8 @@
 	
 
 <?php 
-include "includes/footer.php";
+	$apiConfig=array('especialidade'=>1,
+						'marca'=>1);
+	require_once("includes/api/apiAside.php");
+	include "includes/footer.php";
 ?>	

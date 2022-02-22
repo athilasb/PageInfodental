@@ -161,6 +161,8 @@
 						foreach($_horariosProfissionais as $h) {
 
 							if(isset($profissionaisHorarioIds[$h->id_profissional]) or $h->dia!=$x->dia) break;
+
+							if(!isset($_colaboradores[$h->id_profissional])) continue;
 							$hInicio=strtotime($h->inicio);
 							$hFim=strtotime($h->fim);
 							//echo $x->inicio."-".$x->fim."->\n";
@@ -500,7 +502,7 @@
 		<div class="aside__inner1">
 
 			<header class="aside-header">
-				<h1>Adicionar colaborador</h1>
+				<h1>Adicionar cadeira</h1>
 				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 			</header>
 

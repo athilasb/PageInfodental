@@ -1,7 +1,13 @@
 <?php
-	
 	require_once("lib/conf.php");
+	require_once("usuarios/checa.php");
 	$_table=$_p."parametros_fornecedores";
+
+	$_fornecedores=array();
+	$sql->consult($_p."parametros_fornecedores","*,IF(tipo_pessoa='PF',nome,razao_social) as titulo","where tipo='FORNECEDOR' and lixo=0 order by titulo");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_fornecedores[$x->id]=$x;
+	}
 
 	if(isset($_POST['ajax'])) {
 
@@ -37,7 +43,11 @@
 								'telefone1'=>utf8_encode($cnt->telefone1),
 								'telefone2'=>utf8_encode($cnt->telefone2),
 								'endereco'=>utf8_encode($cnt->endereco),
-								'complemento'=>utf8_encode($cnt->complemento));
+								'email'=>utf8_encode($cnt->email),
+								'complemento'=>utf8_encode($cnt->complemento),
+								'pix_tipo'=>utf8_encode($cnt->pix_tipo),
+								'pix_chave'=>utf8_encode($cnt->pix_chave),
+								'pix_beneficiario'=>utf8_encode($cnt->pix_beneficiario));
 
 				$rtn=array('success'=>true,'data'=>$data);
 
@@ -68,195 +78,119 @@
 			}
 		}
 
-		else if($_POST['ajax']=="horariosPersistir") {
+		else if($_POST['ajax']=="regsPersistir") {
 
-			$cadeira='';
-			if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
-				$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."'");
+			$cnt='';
+			if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+				$sql->consult($_table."_bancosecontas","*","where id='".addslashes($_POST['id'])."' and lixo=0");
 				if($sql->rows) {
-					$cadeira=mysqli_fetch_object($sql->mysqry);
+					$cnt=mysqli_fetch_object($sql->mysqry);
 				}
 			}
 
-			$horario='';
-			if(isset($_POST['id']) and is_numeric($_POST['id']) and $_POST['id']>0) {
-				$sql->consult($_p."parametros_cadeiras_horarios","*", "where id='".$_POST['id']."' and lixo=0");
-				if($sql->rows) $horario=mysqli_fetch_object($sql->mysqry);
-			}
+			$fornecedor=(isset($_POST['id_fornecedor']) and isset($_fornecedores[$_POST['id_fornecedor']]))?$_fornecedores[$_POST['id_fornecedor']]:'';
+			$banco=isset($_POST['banco'])?addslashes(utf8_decode($_POST['banco'])):'';
+			$agencia=isset($_POST['agencia'])?addslashes(utf8_decode($_POST['agencia'])):'';
+			$conta=isset($_POST['conta'])?addslashes(utf8_decode($_POST['conta'])):'';
 
-
-			$inicio=(isset($_POST['inicio']) and !empty($_POST['inicio']))?addslashes($_POST['inicio']):'';
-			$fim=(isset($_POST['fim']) and !empty($_POST['fim']))?addslashes($_POST['fim']):'';
-			$dia=(isset($_POST['dia']) and is_numeric($_POST['dia']))?addslashes($_POST['dia']):'';
-
-			if(empty($cadeira)) $rtn=array('success'=>false,'error'=>'Cadeira não definida!');
-			else if(empty($inicio)) $rtn=array('success'=>false,'error'=>'Cadeira não definida!');
-			else if(empty($fim)) $rtn=array('success'=>false,'error'=>'Cadeira não definida!');
-			else if(empty($dia) and $dia!=0) $rtn=array('success'=>false,'error'=>'Dia da semana não definido.');
+			if(empty($fornecedor)) $rtn=array('success'=>false,'error'=>'Fornecedor não encontrado!');
 			else {
 
 
-				$horarios = new Horarios(array('prefixo'=>$_p));
+				$vSQL="id_fornecedor='$fornecedor->id',
+						banco='".$banco."',
+						agencia='".$agencia."',
+						conta='".$conta."',
+						lixo=0";
 
-				$attr=array('id_cadeira'=>$cadeira->id,
-							'id_horario'=>is_object($horario)?$horario->id:0,
-							'diaSemana'=>$dia,
-							'inputHoraInicio'=>$inicio,
-							'inputHoraFim'=>$fim);
-
-				if($horarios->cadeiraHorariosIntercecao($attr)) {
-					$vsql="id_cadeira=$cadeira->id,
-						inicio='".$inicio."',
-						dia='".$dia."',
-						fim='".$fim."'";
-
-					if(is_object($horario)) {
-						$vsql.=",id_alteracao=$usr->id,alteracao_data=now()";
-						$sql->update($_p."parametros_cadeiras_horarios",$vsql,"where id=$horario->id");
-						$rtn=array('success'=>true);
-					} else {
-						$vsql.=",id_usuario=$usr->id,data=now()";
-						$sql->add($_p."parametros_cadeiras_horarios",$vsql);
-						$rtn=array('success'=>true);
-					}
+				if(is_object($cnt)) {
+					$vWHERE="where id=$cnt->id";
+					//$vSQL.=",alteracao_data=now(),id_alteracao=$usr->id";
+					$sql->update($_table."_bancosecontas",$vSQL,$vWHERE);
+					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."_laboratorios',id_reg='$cnt->id'");
 				} else {
-					$rtn=array('success'=>false,'error'=>$horarios->erro);
+					//$vSQL.=",data=now(),id_usuario=$usr->id";
+					$sql->add($_table."_bancosecontas",$vSQL);
+					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='',tabela='".$_table."_laboratorios',id_reg='$sql->ulid'");
+
 				}
+
+				$rtn=array('success'=>true);
 			}
 		} 
 
-		else if($_POST['ajax']=="horariosListar") {
-
-
-			$cadeira='';
-			if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
-				$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."'");
-				if($sql->rows) {
-					$cadeira=mysqli_fetch_object($sql->mysqry);
-				}
-			}
-
-
-
-			$horarios=array();
-			if(is_object($cadeira)) {
-
-				$_colaboradores=array();
-				$sql->consult($_p."colaboradores","id,nome","where lixo=0");
-				while ($x=mysqli_fetch_object($sql->mysqry)) {
-					$_colaboradores[$x->id]=$x;
-				}
-
-				$_horariosProfissionais=array();
-				$sql->consult($_p."profissionais_horarios","*","where id_cadeira=$cadeira->id and lixo=0");
-				if($sql->rows) {
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$_horariosProfissionais[]=$x;
-					}
-				}
-
-				$sql->consult($_p."parametros_cadeiras_horarios","*,date_format(inicio,'%H:%i') as inicio,
-															date_format(fim,'%H:%i') as fim","where id_cadeira=$cadeira->id and lixo=0 order by inicio asc");
-				if($sql->rows) {
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-
-						$profissionaisHorario='';
-						$profissionaisHorarioIds=array();
-
-					
-						$inpInicio=strtotime($x->inicio);
-						$inpFim=strtotime($x->fim);
-
-
-						foreach($_horariosProfissionais as $h) {
-
-							if(isset($profissionaisHorarioIds[$h->id_profissional]) or $h->dia!=$x->dia) break;
-							$hInicio=strtotime($h->inicio);
-							$hFim=strtotime($h->fim);
-							//echo $x->inicio."-".$x->fim."->\n";
-
-							$intercede=false;
-							$intercedeHorario="";
-							
-							if($inpInicio<$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim<$hFim) { 
-								//echo 1;
-								$intercede=true;
-							} else if($inpInicio>=$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim<=$hFim) {
-								//echo 2;
-								$intercede=true;
-							} else if($inpInicio>=$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim>$hFim) { 
-								//echo 3;
-								$intercede=true;
-							}
-
-
-							if($intercede===true) {
-								$profissionaisHorario.=date('H:i',strtotime($h->inicio))." - ".date('H:i',strtotime($h->fim)).": ".nome(utf8_encode($_colaboradores[$h->id_profissional]->nome),2)."<br />";
-								$profissionaisHorarioIds[$h->id_profissional]=1;
-								//break;
-							}
-						}
-
-						
-
-						$horarios[$x->dia][]=array('id'=>$x->id,
-													'id_cadeira'=>$x->id_cadeira,
-													'cadeira'=>utf8_encode($cadeira->titulo),
-													'dia'=>$x->dia,
-													'inicio'=>$x->inicio,
-													'fim'=>$x->fim,
-													'profissionaisHorario'=>empty($profissionaisHorario)?'Nenhum profissional':$profissionaisHorario
-													);
-						
-					}
-
-				}
-			} 
+		else if($_POST['ajax']=="regsListar") {
 
 			
-
-			$rtn=array('success'=>true,'horarios'=>$horarios );
+			$regs=array();
+			$fornecedor=(isset($_POST['id_fornecedor']) and isset($_fornecedores[$_POST['id_fornecedor']]))?$_fornecedores[$_POST['id_fornecedor']]:'';
+			if(is_object($fornecedor)) {
+				$where="WHERE id_fornecedor='".$fornecedor->id."' and lixo=0";
+				$sql->consult($_table."_bancosecontas","*",$where);
+			
+				if($sql->rows) {
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$regs[]=array('id' =>$x->id,
+										'id_fornecedor' =>$x->id_fornecedor,
+										'banco' => (float)$x->banco,
+										'bancoTitulo' => isset($_bancos[$x->banco])?$_bancos[$x->banco]:'',
+										'agencia' =>utf8_encode(addslashes($x->agencia)),
+										'conta' =>utf8_encode(addslashes($x->conta)));
+					}
+				} 
+				$rtn=array('success'=>true,'regs'=>$regs);
+			} else {
+				$rtn=array('success'=>false,'error'=>'Fornecedor não definido!');
+			}
 		} 
 
-		else if($_POST['ajax']=="horariosEditar") {
-			$horario='';
-			if(isset($_POST['id_horario']) and is_numeric($_POST['id_horario'])) {
-				$sql->consult($_p."parametros_cadeiras_horarios","*,date_format(inicio,'%H:%i') as inicio,
-																date_format(fim,'%H:%i') as fim","where id='".$_POST['id_horario']."'");
+		else if($_POST['ajax']=="regsEditar") {
+			$cnt='';
+			if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+				$sql->consult($_table."_bancosecontas","*","where id='".addslashes($_POST['id'])."' and lixo=0");
 				if($sql->rows) {
-					$horario=mysqli_fetch_object($sql->mysqry);
+					$x=mysqli_fetch_object($sql->mysqry);
+					$cnt=(object)array('id' =>$x->id,
+									'id_fornecedor' =>$x->id_fornecedor,
+									'banco' =>utf8_encode(addslashes($x->banco)),
+									'agencia' =>utf8_encode(addslashes($x->agencia)),
+									'conta' =>utf8_encode(addslashes($x->conta))
+								);
 				}
 			}
 
-			if(is_object($horario)) {
+			if(is_object($cnt)) {
+
+				
 
 				$rtn=array('success'=>true,
-							'id'=>$horario->id,
-							'id_cadeira'=>$horario->id_cadeira,
-							'inicio'=>$horario->inicio,
-							'fim'=>$horario->fim,
-							'dia'=>$horario->dia);
+							'id'=>$cnt->id,
+							'cnt'=>$cnt);
 			} else {
-				$rtn=array('success'=>false,'error'=>'Horário não encontrado!');
+				$rtn=array('success'=>false,'error'=>'Pergunta não encontrada!');
 			}
 		} 
 
-		else if($_POST['ajax']=="horariosRemover") {
-			$horario='';
-			if(isset($_POST['id_horario']) and is_numeric($_POST['id_horario'])) {
-				$sql->consult($_p."parametros_cadeiras_horarios","*,date_format(inicio,'%H:%i') as inicio,
-																date_format(fim,'%H:%i') as fim","where id='".$_POST['id_horario']."'");
+		else if($_POST['ajax']=="regsRemover") {
+			$cnt='';
+			if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+				$sql->consult($_table."_bancosecontas","*","where id='".$_POST['id']."'");
 				if($sql->rows) {
-					$horario=mysqli_fetch_object($sql->mysqry);
+					$cnt=mysqli_fetch_object($sql->mysqry);
 				}
 			}
 
-			if(is_object($horario)) {
-				$sql->update($_p."parametros_cadeiras_horarios","lixo=$usr->id,lixo_data=now()","where id=$horario->id");
+			if(is_object($cnt)) {
+				$vSQL="lixo=$usr->id";
+				$vWHERE="where id=$cnt->id";
+
+
+				$sql->update($_table."_bancosecontas",$vSQL,$vWHERE);
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='delete',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."_laboratorios',id_reg='$cnt->id'");
 
 				$rtn=array('success'=>true);
 			} else {
-				$rtn=array('success'=>false,'error'=>'Horário não encontrado!');
+				$rtn=array('success'=>false,'error'=>'Plano não encontrado!');
 			}
 		}
 
@@ -268,7 +202,7 @@
 	include "includes/nav.php";
 
 	$values=$adm->get($_GET);
-	$campos=explode(",","tipo_pessoa,nome,cpf,razao_social,nome_fantasia,cnpj,telefone1,telefone2,email,endereco,lat,lng,complemento");
+	$campos=explode(",","tipo_pessoa,nome,cpf,razao_social,nome_fantasia,responsavel,cnpj,telefone1,telefone2,email,endereco,lat,lng,complemento,pix_tipo,pix_chave,pix_beneficiario");
 
 	if(isset($_POST['acao'])) {
 
@@ -290,7 +224,8 @@
 			$id_reg=$cnt->id;
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='$_table',id_reg='$id_reg'");
 		} else {
-			$vSQL=substr($vSQL,0,strlen($vSQL)-1);
+			//$vSQL=substr($vSQL,0,strlen($vSQL)-1);
+			$vSQL.="tipo='FORNECEDOR'";
 			$sql->add($_table,$vSQL);
 			$id_reg=$sql->ulid;
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',vwhere='',tabela='$_table',id_reg='$id_reg'");
@@ -338,7 +273,7 @@
 					<script type="text/javascript">
 						const openAside = (id) => {
 
-							$('.js-horarios-remover').hide();
+							$('.js-regs-remover').hide();
 
 							if($.isNumeric(id) && id>0) {
 								let data = `ajax=editar&id=${id}`;
@@ -367,13 +302,19 @@
 											$('#js-aside input[name=email]').val(rtn.data.email);
 											$('#js-aside input[name=endereco]').val(rtn.data.endereco);
 											$('#js-aside input[name=complemento]').val(rtn.data.complemento);
-											horariosAtualizar();
+											$('#js-aside select[name=pix_tipo]').val(rtn.data.pix_tipo);
+											$('#js-aside input[name=pix_chave]').val(rtn.data.pix_chave);
+											$('#js-aside input[name=pix_beneficiario]').val(rtn.data.pix_beneficiario);
+											regsAtualizar();
 
-											$('.js-fieldset-horarios,.js-btn-remover').show();
+											$('.js-fieldset-regs,.js-btn-remover').show();
 
 											$(".aside").fadeIn(100,function() {
 												$(".aside .aside__inner1").addClass("active");
 											});
+
+
+											$('html, body').animate({scrollTop: 0},'fast');
 											
 										} else if(rtn.error) {
 											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -390,7 +331,7 @@
 
 							} else {
 
-								$('.js-fieldset-horarios,.js-btn-remover').hide();
+								$('.js-fieldset-regs,.js-btn-remover').hide();
 
 								$(".aside").fadeIn(100,function() {
 									$(".aside .aside__inner1").addClass("active");
@@ -466,7 +407,7 @@
 								<div class="filter-group">
 									<div class="filter-form form">
 										<dl>
-											<dd class="form-comp form-comp_pos"><input type="text" name="busca" value="<?php echo isset($values['busca'])?$values['busca']:"";?>" placeholder="Buscar..." /><a href="javascript:;" onclick="$('form.js-filtro').submit();"><i class="iconify" data-icon="fluent:search-12-filled"></i></a></dd>
+											<dd class="form-comp form-comp_pos"><input type="text" name="busca" value="<?php echo isset($_GET['busca'])?$_GET['busca']:"";?>" placeholder="Buscar..." /><a href="javascript:;" onclick="$('form.js-filtro').submit();"><i class="iconify" data-icon="fluent:search-12-filled"></i></a></dd>
 										</dl>
 									</div>
 								</div>
@@ -475,6 +416,7 @@
 
 						<?php
 						# LISTAGEM #
+						$values=$adm->get($_GET);
 						$where="where lixo=0";
 						if(isset($values['busca']) and !empty($values['busca'])) {
 							//$where.=" and titulo like '%".$values['busca']."%'";
@@ -488,8 +430,9 @@
 							$where="where ($wh) and lixo=0";
 						}
 						//echo $where;//die();
-						//$sql->consultPagMto2($_table,"*,IF(tipo_pessoa='PJ',razao_social,nome_fantasia) as titulo",10,$where." order by titulo","",15,"pagina",$_page."?".$url."&pagina=");
+						//$sql->consultPagMto2($_table,"*,IF(tipo_pessoa='PJ',responsavel,nome) as titulo",10,$where." order by titulo","",15,"pagina",$_page."?".$url."&pagina=");
 						$sql->consult($_table,"*,IF(tipo_pessoa='PJ',nome_fantasia,nome) as titulo",$where." order by titulo");
+
 						if($sql->rows==0) {
 							if(isset($values['busca'])) $msg="Nenhum Resultado encontrado";
 							else $msg="Nenhum colaborador cadastrado";
@@ -497,7 +440,7 @@
 						} else {
 							$registros=array();
 							while($x=mysqli_fetch_object($sql->mysqry)) {
-								$registros[$x->titulo]=$x;
+								$registros[]=$x;
 							}
 							//ksort($registros);
 						?>	
@@ -519,7 +462,7 @@
 								if(isset($sql->myspaginacao) and !empty($sql->myspaginacao)) {
 							?>
 							<div class="pagination">						
-								<?php echo $sql->myspaginacao;?>
+								Pag<?php echo $sql->myspaginacao;?>
 							</div>
 							<?php
 							}
@@ -586,7 +529,7 @@
 						<div class="colunas3">
 							<dl class="dl2">
 								<dt>Nome Fantasia</dt>
-								<dd><input type="text" name="nome" /></dd>
+								<dd><input type="text" name="nome_fantasia" /></dd>
 							</dl>
 							<dl>
 								<dt>Responsável</dt>
@@ -609,11 +552,11 @@
 					<div class="colunas3">
 						<dl>
 							<dt>WhatsApp</dt>
-							<dd class="form-comp"><span>BR</span><input type="tel" name="" /></dd>
+							<dd class="form-comp"><span>BR</span><input type="tel" name="telefone1" /></dd>
 						</dl>
 						<dl>
 							<dt>Telefone</dt>
-							<dd class="form-comp"><span>BR</span><input type="tel" name="" /></dd>
+							<dd class="form-comp"><span>BR</span><input type="tel" name="telefone2" /></dd>
 						</dl>
 						<dl>
 							<dt>Email</dt>
@@ -630,106 +573,154 @@
 					</dl>
 				</fieldset>
 
+				<fieldset>
+					<legend>PIX</legend>
+
+					<div class="colunas4">
+						<dl>
+							<dt>Tipo</dt>
+							<dd>
+								<select name="pix_tipo">
+									<option value="">-</option>
+									<?php
+									foreach($_pixTipos as $k=>$v) {
+										echo '<option value="'.$k.'">'.$v.'</option>';
+									}
+									?>
+								</select>
+							</dd>
+						</dl>
+						<dl>
+							<dt>Chave</dt>
+							<dd><input type="text" name="pix_chave" /></dd>
+						</dl>
+						<dl class="dl2">
+							<dt>Beneficiário</dt>
+							<dd><input type="text" name="pix_beneficiario" /></dd>
+						</dl>
+					</div>
+				</fieldset>
+
 
 				<script type="text/javascript">
-					var horarios = [];
+					var regs = [];
 
-					const horariosListar = () => {
-						if(horarios) {
-							$('.js-td').html('')
-							for(var dia in horarios) {
-								horarios[dia].forEach(x=>{
-									
-									/*$(`.js-${dia}`).append(`<div class="js-horario">${x.inicio}  - ${x.fim}<br /><a href="javascript:;" data-id="${x.id}" class="js-editar registros__acao registros__acao_sec"><i class="iconify" data-icon="bx-bx-download"></i></a>
-															<a href="javascript:;" data-id="${x.id}" class="js-remover registros__acao registros__acao_sec"><i class="iconify" data-icon="bx-bx-trash"></i></a><div>`);*/
-									$(`.js-${dia}`).append(`<a href="javascript:;" class="js-editar tooltiph" title="${x.profissionaisHorario}" data-id="${x.id}" >${x.inicio}~${x.fim}</a><br />`);
-								})
+					const regsListar = (openAside) => {
+						
+						if(regs) {
+							$('.js-regs-table tbody').html('');
+
+							//$(`.js-id_fornecedor option`).prop('disabled',false);
+
+
+							regs.forEach(x=>{
+
+								//$(`.js-id_fornecedor`).find(`option[value=${x.id_fornecedor}]`).prop('disabled',true);
+								$(`.js-regs-table tbody`).append(`<tr class="aside-open js-editar" data-id="${x.id}">
+																	<td><h1>${x.bancoTitulo}</h1></td>
+																	<td>${x.agencia}</td>
+																	<td>${x.conta}</td>
+																	<td style="text-align:right;"><a href="javascript:;" class="button js-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
+																</tr>`)
+							});;
+							if(openAside===true) {
+								$(".aside").fadeIn(100,function() {
+									$(".aside .aside__inner1").addClass("active");
+								});
 							}
-							 $(".tooltiph").tooltipster({theme:"borderless",contentAsHTML:true});
-							
-							
+
+						} else {
+							if(openAside===true) {
+								$(".aside").fadeIn(100,function() {
+										$(".aside .aside__inner1").addClass("active");
+								});
+							}
 						}
 					}
-					const horariosAtualizar = () => {
-						let id_cadeira=$('#js-aside input[name=id]').val();
-						let data = `ajax=horariosListar&id_cadeira=${id_cadeira}`;
+
+					const regsAtualizar = (openAside) => {	
+						let id_fornecedor=$('#js-aside input[name=id]').val();
+						let data = `ajax=regsListar&id_fornecedor=${id_fornecedor}`;
 						$.ajax({
 							type:"POST",
 							data:data,
 							success:function(rtn) {
 								if(rtn.success) {
-									horarios=rtn.horarios;
-
-									if(rtn.carga) {
-										$('.js-carga').val(rtn.carga);
-									}
-									horariosListar();
+									regs=rtn.regs;
+									regsListar(openAside);
 								}
 							}
 						})
 					}
 					
-					const horarioEditar = (id_horario) => {
-						let data = `ajax=horariosEditar&id_horario=${id_horario}`;
-						var horarioObj = [];
+					const regsEditar = (id) => {
+						let data = `ajax=regsEditar&id=${id}`;
 						$.ajax({
 							type:"POST",
 							data:data,
 							success:function(rtn) {
 								if(rtn.success) {
+									reg=rtn.cnt
 
-									$(`.js-id`).val(rtn.id);
-									$(`.js-dia`).val(rtn.dia);
-									$(`.js-inicio`).val(rtn.inicio);
-									$(`.js-fim`).val(rtn.fim);
-									$('.js-horarios-submit').html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
+									$(`.js-id`).val(reg.id);
+									$(`.js-banco`).val(reg.banco);
+									$(`.js-agencia`).val(reg.agencia);
+									$(`.js-conta`).val(reg.conta);
 
-									$('.js-horarios-remover').show();
+									
+									$('.js-form').animate({scrollTop: 0},'fast');
+									$('.js-regs-submit').html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
+									$('.js-regs-remover').show();
+
+								} else if(rtn.error) {
+									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+								} else {
+									swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
 								}
+							},
+							error:function(){
+								swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
 							}
 						});
 					}
+
+					
 					$(function(){
 
-						
-						$('.js-horarios-submit').click(function(){
+						$('input.money').maskMoney({symbol:'', allowZero:true, showSymbol:true, thousands:'.', decimal:',', symbolStay: true});
+						$('.js-regs-submit').click(function(){
 							let obj = $(this);
-
 							if(obj.attr('data-loading')==0) {
 
+								let id_fornecedor=$('#js-aside input[name=id]').val();
 								let id = $(`.js-id`).val();
-								let dia = $(`.js-dia`).val();
-								let inicio = $(`.js-inicio`).val();
-								let fim = $(`.js-fim`).val();
-								let id_cadeira=$('#js-aside input[name=id]').val();
+								let banco = $(`.js-banco`).val();
+								let agencia = $(`.js-agencia`).val();
+								let conta = $(`.js-conta`).val();
 
-								errInicio = validaHoraMinuto(inicio);
-								errFim = validaHoraMinuto(fim);
+							
 
-								if(dia.length==0) {
-									swal({title: "Erro!", text: "Selecione o Dia!", type:"error", confirmButtonColor: "#424242"});
-								} else if(errInicio.length>0) {
-									swal({title: "Erro!", text: `Erro na hora início: ${errInicio}`, type:"error", confirmButtonColor: "#424242"});
-								} else if(errFim.length>0) {
-									swal({title: "Erro!", text: `Erro na hora final: ${errFim}`, type:"error", confirmButtonColor: "#424242"});
-								} else {
+								if(id_fornecedor.length==0) {
+									swal({title: "Erro!", text: "Selecione o Fornecedor", type:"error", confirmButtonColor: "#424242"});
+								}  else {
 
 									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 									obj.attr('data-loading',1);
 
-									let data = `ajax=horariosPersistir&id_cadeira=${id_cadeira}&dia=${dia}&inicio=${inicio}&fim=${fim}&id=${id}`;
+									let data = `ajax=regsPersistir&id=${id}&id_fornecedor=${id_fornecedor}&banco=${banco}&agencia=${agencia}&conta=${conta}`;
+									
 									$.ajax({
 										type:'POST',
 										data:data,
 										success:function(rtn) {
 											if(rtn.success) {
-												horariosAtualizar();	
+												regsAtualizar();	
 
 												$(`.js-id`).val(0);
-												$(`.js-dia`).val('');
-												$(`.js-fim`).val('');
-												$(`.js-inicio`).val('');
-												$(`.js-horarios-cancelar`).hide();
+												$(`.js-banco`).val(``);
+												$(`.js-agencia`).val(``);
+												$(`.js-conta`).val(``);
+
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 											} else {
@@ -741,7 +732,7 @@
 											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
 										}
 									}).done(function(){
-										$('.js-horarios-remover').hide();
+										$('.js-regs-remover').hide();
 										obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
 										obj.attr('data-loading',0);
 									});
@@ -750,19 +741,18 @@
 							}
 						})
 
-						$('.js-horario-table').on('click','.js-editar',function(){
+						$('.js-regs-table').on('click','.js-editar',function(){
 							let id = $(this).attr('data-id');
-							horarioEditar(id);
+
+							regsEditar(id);
 						});
 
-						
-
-						$('.js-fieldset-horarios').on('click','.js-horarios-remover',function(){
+						$('.js-fieldset-regs').on('click','.js-regs-remover',function(){
 							let obj = $(this);
 
 							if(obj.attr('data-loading')==0) {
 
-								let id_horario = $('.js-id').val();
+								let id = $('.js-id').val();
 								swal({
 									title: "Atenção",
 									text: "Você tem certeza que deseja remover este registro?",
@@ -775,19 +765,20 @@
 									closeOnCancel: false }, 
 									function(isConfirm){   
 										if (isConfirm) {   
+
 											obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 											obj.attr('data-loading',1);
-											let data = `ajax=horariosRemover&id_horario=${id_horario}`; 
+											let data = `ajax=regsRemover&id=${id}`; 
 											$.ajax({
 												type:"POST",
 												data:data,
 												success:function(rtn) {
 													if(rtn.success) {
 														$(`.js-id`).val(0);
-														$(`.js-dia`).val('');
-														$(`.js-fim`).val('');
-														$(`.js-inicio`).val('');
-														horariosAtualizar();
+														$(`.js-banco`).val('');
+														$(`.js-agencia`).val('');
+														$(`.js-conta`).val('');
+														regsAtualizar();
 														swal.close();   
 													} else if(rtn.error) {
 														swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -799,10 +790,10 @@
 													swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção deste horário!", type:"error", confirmButtonColor: "#424242"});
 												}
 											}).done(function(){
-												$('.js-horarios-remover').hide();
+												$('.js-regs-remover').hide();
 												obj.html('<i class="iconify" data-icon="fluent:delete-24-regular"></i>');
 												obj.attr('data-loading',0);
-												$(`.js-horarios-submit`).html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+												$(`.js-regs-submit`).html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
 											});
 										} else {   
 											swal.close();   
@@ -811,94 +802,77 @@
 							}
 						});
 
+
+						$('.js-tipo').change(function(){
+							let tipo = $(this).val();
+
+							if(tipo.length>0) {
+								if(tipo=='simnao') {
+									$('.js-dl-alerta').show();
+									$('select[name=pergunta_alerta]').addClass('obg');
+								} else if(tipo=='simnaotexto') {
+									$('.js-dl-alerta').show();
+									$('select[name=pergunta_alerta]').addClass('obg');
+								} else {
+									$('.js-alerta').val('nenhum');
+									$('.js-dl-alerta').hide();
+									$('select[name=pergunta_alerta]').removeClass('obg');
+								}
+							} else {
+								$('.js-alerta').val('nenhum');
+								$('.js-dl-alerta').hide();
+								$('select[name=pergunta_alerta]').removeClass('obg');
+							}
+						});
+
 					});
 				</script>
 
-				<fieldset class="js-fieldset-horarios">
-					<legend>Horário de Funcionamento</legend>
-
-					<input type="hidden" class="js-id" value="0" />
-					<div class="colunas4">
+				<fieldset class="js-fieldset-regs">
+					<input type="hidden" class="js-id" />
+					<legend>Dados Bancários</legend>
+					<div class="colunas3">
 						<dl>
-							<dt>Dia da Semana</dt>
+							<dt>Banco</dt>
 							<dd>
-								<select  class="js-dia">
+								<select class="js-banco">
 									<option value="">-</option>
 									<?php
-									for($i=0;$i<=6;$i++) {
-										echo '<option value="'.$i.'">'.$_dias[$i].'</option>';	
+									foreach($_bancos as $k=>$v) {
+									?>
+									<option value="<?php echo $k;?>"><?php echo $v;?></option>
+									<?php	
 									}
 									?>
 								</select>
 							</dd>
 						</dl>
 						<dl>
-							<dt>Início</dt>
-							<dd class="form-comp">
-								<span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span>
-								<input type="text" name="inicio" class="hora js-inicio" />
-							</dd>
+							<dt>Agência</dt>
+							<dd><input type="text" class="js-agencia" /></dd>
 						</dl>
 						<dl>
-							<dt>Fim</dt>
-							<dd class="form-comp">
-								<span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span>
-								<input type="text" name="fim" class="hora js-fim" />
-							</dd>
-						</dl>
-						<dl>
-							<dt></dt>
+							<dt>Conta</dt>
 							<dd>
-								<button type="button" class="button button_main js-horarios-submit" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
-								<a href="javascript:;" class="button js-horarios-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+								<input type="text" class="js-conta" />
+							<button type="button" class="button button_main js-regs-submit" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
+							<a href="javascript:;" class="button js-regs-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 							</dd>
 						</dl>
 					</div>
-					<div class="list2">
-						<table class="js-horario-table">
+					<div class="list2" style="margin-top:2rem;">
+						<table class="js-regs-table">
 							<thead>
 								<tr>
-									<?php
-									for($i=0;$i<=6;$i++) {
-										echo '<th style="width:14.285%">'.$_dias[$i].'</th>';	
-									}
-									?>
+									<th>BANCO</th>
+									<th>AGÊNCIA</th>
+									<th>CONTA</th>
+									<th></th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr style="font-size:12px">
-									<?php
-									for($i=0;$i<=6;$i++) {
-										echo '<td class="js-td js-'.$i.'"></td>';	
-									}
-									?>
-								</tr>
 							</tbody>
 						</table>
-						<?php /*<table> 
-							<thead>
-								<tr>
-									<th style="width:14.285%">DOM</th>
-									<th style="width:14.285%">SEG</th>
-									<th style="width:14.285%">TER</th>
-									<th style="width:14.285%">QUA</th>
-									<th style="width:14.285%">QUI</th>
-									<th style="width:14.285%">SEX</th>
-									<th style="width:14.285%">SÁB</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr style="font-size:12px">
-									<td></td>
-									<td><a href="">08:00~12:00</a><br /><a href="">14:00~18:00</a></td>
-									<td><a href="">08:00~12:00</a><br /><a href="">14:00~18:00</a></td>
-									<td><a href="">08:00~12:00</a><br /><a href="">14:00~18:00</a></td>
-									<td><a href="">08:00~12:00</a><br /><a href="">14:00~18:00</a></td>
-									<td><a href="">08:00~12:00</a><br /><a href="">14:00~18:00</a></td>
-									<td><a href="">09:00~13:00</a></td>
-								</tr>
-							</tbody>
-						</table>*/?>
 					</div>
 				</fieldset>
 			

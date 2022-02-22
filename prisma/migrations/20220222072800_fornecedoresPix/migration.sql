@@ -1,0 +1,1 @@
+ALTER TABLE `ident_parametros_fornecedores` ADD `pix_tipo` VARCHAR(50) NOT NULL AFTER `lng`, ADD `pix_chave` VARCHAR(100) NOT NULL AFTER `pix_tipo`, ADD `pix_beneficiario` VARCHAR(150) NOT NULL AFTER `pix_chave`;

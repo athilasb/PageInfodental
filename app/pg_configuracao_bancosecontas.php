@@ -14,7 +14,7 @@
 	<?php
 	require_once("includes/abaConfiguracao.php");
 	?>
-
+ 
 	<?php
 	$_table=$_p."financeiro_bancosecontas";
 	$_page=basename($_SERVER['PHP_SELF']);

@@ -17,7 +17,7 @@
 											'title'=>'Landing Page',
 											'icon'=>'<i class="iconify" data-icon="fluent:web-asset-24-regular"></i>'),
 						'configuracoes'=>array('page'=>'pg_configuracoes_clinica_colaboradores.php',
-												'pages'=>explode(",","pg,pg_configuracoes_clinica.php,pg_configuracoes_clinica_colaboradores.php,pg_configuracoes_clinica_cadeiras.php,pg_configuracoes_evolucao_anamnese.php,pg_configuracoes_evolucao_procedimentos.php,pg_configuracoes_evolucao_servicosdelaboratorio.php,pg_configuracoes_evolucao_examecomplementar.php,pg_configuracoes_fornecedores.php,pg_configuracoes_fornecedor_produto.php"),
+												'pages'=>explode(",","pg,pg_configuracoes_clinica.php,pg_configuracoes_clinica_colaboradores.php,pg_configuracoes_clinica_cadeiras.php,pg_configuracoes_evolucao_anamnese.php,pg_configuracoes_evolucao_procedimentos.php,pg_configuracoes_evolucao_servicosdelaboratorio.php,pg_configuracoes_evolucao_examecomplementar.php,pg_configuracoes_fornecedores.php,pg_configuracoes_fornecedores_produtos.php,pg_configuracoes_financeiro_bancosecontas.php,pg_configuracoes_financeiro_cartoes.php,"),
 												'title'=>'Configurações',
 												'icon'=>'<i class="iconify" data-icon="fluent:settings-20-regular"></i>'),
 						
@@ -31,7 +31,7 @@
 			<?php
 			foreach($_menu as $session=>$params) {
 			?>
-			<a href="<?php echo $params['page'];?>" class="<?php echo in_array(basename($_SERVER['PHP_SELF']),$params['pages'])?" active":"";?>"><?php echo $params['icon'];?></a>
+			<a href="<?php echo $params['page'];?>" class="<?php echo in_array(basename($_SERVER['PHP_SELF']),isset($params['pages'])?$params['pages']:array())?" active":"";?>"><?php echo $params['icon'];?></a>
 			<?php
 			}
 			?>

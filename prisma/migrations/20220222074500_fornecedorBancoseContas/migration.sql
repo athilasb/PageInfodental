@@ -1,0 +1,1 @@
+CREATE TABLE `ident_parametros_fornecedores_bancosecontas` ( `id` INT(11) NOT NULL AUTO_INCREMENT , `lixo` BOOLEAN NOT NULL , `id_fornecedor` INT NOT NULL , `banco` VARCHAR(10) NOT NULL , `agencia` VARCHAR(50) NOT NULL , `conta` VARCHAR(50) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;

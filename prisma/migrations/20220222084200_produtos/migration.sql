@@ -1,0 +1,1 @@
+ALTER TABLE `ident_produtos` ADD `volume` VARCHAR(150) NOT NULL AFTER `id_marca`, ADD `referencia` VARCHAR(150) NOT NULL AFTER `volume`, ADD `estoque_minimo` DOUBLE NOT NULL AFTER `referencia`, ADD `embalagemComMais` BOOLEAN NOT NULL AFTER `estoque_minimo`, ADD `quantidade` DOUBLE NOT NULL AFTER `embalagemComMais`;
