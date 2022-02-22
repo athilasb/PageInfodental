@@ -84,7 +84,7 @@
 						$intercede=false;
 						$intercedeHorario="";
 						
-						if($inpInicio<$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim<$hFim) { 
+						if($inpInicio<$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim<=$hFim) { 
 							//echo 1;
 							$intercede=true;
 						} else if($inpInicio>=$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim<=$hFim) {
@@ -93,7 +93,10 @@
 						} else if($inpInicio>=$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim>$hFim) { 
 							//echo 3;
 							$intercede=true;
-						}
+						} else if($inpInicio<$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim>$hFim) { 
+							//echo 4;
+							$intercede=true;
+						} 
 
 						if($intercede===true) {
 							$intercedeHorario = date('H:i',strtotime($x->inicio))." - ".date('H:i',strtotime($x->fim));

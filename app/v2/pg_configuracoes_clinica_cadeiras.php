@@ -160,7 +160,7 @@
 
 						foreach($_horariosProfissionais as $h) {
 
-							if(isset($profissionaisHorarioIds[$h->id_profissional]) or $h->dia!=$x->dia) break;
+							//if(isset($profissionaisHorarioIds[$h->id_profissional]) or $h->dia!=$x->dia) break;
 
 							if(!isset($_colaboradores[$h->id_profissional])) continue;
 							$hInicio=strtotime($h->inicio);
@@ -170,7 +170,7 @@
 							$intercede=false;
 							$intercedeHorario="";
 							
-							if($inpInicio<$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim<$hFim) { 
+							if($inpInicio<=$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim<=$hFim) { 
 								//echo 1;
 								$intercede=true;
 							} else if($inpInicio>=$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim<=$hFim) {
@@ -179,10 +179,15 @@
 							} else if($inpInicio>=$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim>$hFim) { 
 								//echo 3;
 								$intercede=true;
-							}
+							} else if($inpInicio==$hInicio and $inpFim==$hFim) { 
+								//echo 1;
+								$intercede=true;
+							} 
 
+							//if($x->id==22) echo $x->inicio."-".$x->fim." x ".$h->inicio."-".$h->fim." => ".($intercede===true?1:0)."\n";
 
 							if($intercede===true) {
+							//	echo "entrou\n";
 								$profissionaisHorario.=date('H:i',strtotime($h->inicio))." - ".date('H:i',strtotime($h->fim)).": ".nome(utf8_encode($_colaboradores[$h->id_profissional]->nome),2)."<br />";
 								$profissionaisHorarioIds[$h->id_profissional]=1;
 								//break;
