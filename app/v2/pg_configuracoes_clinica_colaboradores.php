@@ -780,54 +780,66 @@
 											<dd class="form-comp"><span>@</span><input type="text" name="instagram" value="<?php echo $values['instagram'];?>" /></dd>
 										</dl>
 									</div>
+									<script>
+										var marker = '';
+										var map = '';
+										var position = '';
+										var positionEndereco = '';
+										var el = document.getElementById("geolocation");
+										var location_timeout = '';
+										var geocoder = '';
+										var enderecoObj = {};
+										var enderecos = [];	
+										var lat = `-16.688304`;
+										var lng = `-49.267055`;
+
+										function initMap() {
+											let options = {componentRestrictions: {country: "bra"}}
+											var input = document.getElementById('search');
+
+											var autocomplete = new google.maps.places.Autocomplete(input,options);
+											geocoder = new google.maps.Geocoder();
+
+											autocomplete.addListener('place_changed', function() {
+
+												var result = autocomplete.getPlace();
+												lat = result.geometry.location.lat();
+												lng = result.geometry.location.lng();
+												$('input[name=lat]').val(lat);
+												$('input[name=lng]').val(lng);
+
+												let logradouro = '';
+												let numero = '';
+												let bairro = '';
+												let cep = '';
+												let cidade = '';
+												let estado = '';
+												let pais = '';
+												let descricao = '';
+
+												enderecoObj = { logradouro, numero, bairro, cep, cidade, estado, pais, descricao, lat, lng }
+
+												$('input[name=lat]').val(enderecoObj.lat);
+												$('input[name=lng]').val(enderecoObj.lng);
+											});
+
+										}	
+									</script>
+									<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDi3GasDqpa_yfvnd9303Dz_shp5XSLqAY&libraries=places&callback=initMap">
+									</script>
 									<div>
-										<?php /*
 										<dl class="dl2">
 											<dt>Endereço</dt>
-											<dd><input type="text" name="endereco" value="<?php echo $values['endereco'];?>" /></dd>
-										</dl> */ ?>
-
-										<style>
-											.mapboxgl-ctrl-geocoder {
-											min-width: 321%;
-											}
-											#democlass {
-												padding: 6px 35px;
-											}
-										</style>
-										<dl>
-											<dt>Endereço</dt>
-											<dd><div id="geocoder"></dd>
-										</dl>
+											<dd><input type="text" name="endereco" value="<?php echo $values['endereco'];?>" id="search" /></dd>
+										</dl> 
 										<dl>
 											<dt>Complemento</dt>
 											<dd><input type="text" name="complemento" value="<?php echo $values['complemento'];?>" /></dd>
 										</dl>
 									</div>
-									<input type="hidden" name="endereco" id="endereco" />
-									<input type="hidden" name="lng" id="lng" />
-									<input type="hidden" name="lat" id="lat" />
-									<script>
-										mapboxgl.accessToken = 'pk.eyJ1IjoiaW5mb2RlbnRhbCIsImEiOiJja3plMW02YmYzM3ExMnZueHRmNWxzZnZsIn0.xnH6TgbfJIYP2EBs-60mjQ';
-										const geocoder = new MapboxGeocoder({
-										accessToken: mapboxgl.accessToken,
-										placeholder: 'Procurar',
-										language:'ptr',
-										country:'br'
-										});
-
-										geocoder.addTo('#geocoder');
-										document.getElementsByClassName("mapboxgl-ctrl-geocoder--input")[0].setAttribute("id", "democlass");
-										document.getElementById("democlass").value = '<?php echo $values['endereco'];?>';
-										 
-										geocoder.on('result', (e) => {
-											document.getElementById("lng").value = e.result.geometry.coordinates[0];
-											document.getElementById("lat").value = e.result.geometry.coordinates[1];
-											document.getElementById("endereco").value = e.result.place_name_ptr;
-
-											//results.innerText = JSON.stringify(e.result, null, 2);
-										});
-									</script>
+									<input type="hidden" name="lng" id="lng" style="display:none;" />
+									<input type="hidden" name="lat" id="lat" style="display:none;" />
+									
 								</fieldset>
 
 								<fieldset>
