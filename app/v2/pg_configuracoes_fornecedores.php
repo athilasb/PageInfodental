@@ -552,25 +552,74 @@
 					<div class="colunas3">
 						<dl>
 							<dt>WhatsApp</dt>
-							<dd class="form-comp"><span>BR</span><input type="tel" name="telefone1" /></dd>
+							<dd class="form-comp"><span class="js-country">BR</span><input type="tel" name="telefone1" class=""attern="\d*" x-autocompletetype="tel" /></dd>
 						</dl>
 						<dl>
 							<dt>Telefone</dt>
-							<dd class="form-comp"><span>BR</span><input type="tel" name="telefone2" /></dd>
+							<dd class="form-comp"><span class="js-country">BR</span><input type="tel" name="telefone2" class="" attern="\d*" x-autocompletetype="tel" /></dd>
 						</dl>
 						<dl>
 							<dt>Email</dt>
 							<dd><input type="email" name="email" /></dd>
 						</dl>
-					</div>					
+					</div>	
+					<script>
+						var marker = '';
+						var map = '';
+						var position = '';
+						var positionEndereco = '';
+						var el = document.getElementById("geolocation");
+						var location_timeout = '';
+						var geocoder = '';
+						var enderecoObj = {};
+						var enderecos = [];	
+						var lat = `-16.688304`;
+						var lng = `-49.267055`;
+
+						function initMap() {
+							let options = {componentRestrictions: {country: "bra"}}
+							var input = document.getElementById('search');
+
+							var autocomplete = new google.maps.places.Autocomplete(input,options);
+							geocoder = new google.maps.Geocoder();
+
+							autocomplete.addListener('place_changed', function() {
+
+								var result = autocomplete.getPlace();
+								lat = result.geometry.location.lat();
+								lng = result.geometry.location.lng();
+								$('input[name=lat]').val(lat);
+								$('input[name=lng]').val(lng);
+
+								let logradouro = '';
+								let numero = '';
+								let bairro = '';
+								let cep = '';
+								let cidade = '';
+								let estado = '';
+								let pais = '';
+								let descricao = '';
+
+								enderecoObj = { logradouro, numero, bairro, cep, cidade, estado, pais, descricao, lat, lng }
+
+								$('input[name=lat]').val(enderecoObj.lat);
+								$('input[name=lng]').val(enderecoObj.lng);
+							});
+
+						}	
+					</script>
+					<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDi3GasDqpa_yfvnd9303Dz_shp5XSLqAY&libraries=places&callback=initMap">
+					</script>				
 					<dl>
 						<dt>Endereço</dt>
-						<dd><input type="text" name="endereco" /></dd>
+						<dd><input type="text" name="endereco" id="search" /></dd>
 					</dl>
 					<dl>
 						<dt>Complemento</dt>
 						<dd><input type="text" name="complemento" /></dd>
 					</dl>
+					<input type="hidden" name="lng" id="lng" style="display:none;" />
+					<input type="hidden" name="lat" id="lat" style="display:none;" />
 				</fieldset>
 
 				<fieldset>
@@ -688,6 +737,15 @@
 					$(function(){
 
 						$('input.money').maskMoney({symbol:'', allowZero:true, showSymbol:true, thousands:'.', decimal:',', symbolStay: true});
+						$('input[name=telefone1]').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
+							let countryOut = country || '  ';
+							$(this).parent().parent().find('.js-country').html(countryOut);
+						}).trigger('keyup');
+
+						$('input[name=telefone2]').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
+							let countryOut = country || '  ';
+							$(this).parent().parent().find('.js-country').html(countryOut);
+						}).trigger('keyup');
 						$('.js-regs-submit').click(function(){
 							let obj = $(this);
 							if(obj.attr('data-loading')==0) {
