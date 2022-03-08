@@ -67,6 +67,7 @@
 <link rel="stylesheet" type="text/css" href="css/apps.css" />
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script defer type="text/javascript" src="js/jquery-ui.js"></script>
 <script defer type="text/javascript" src="js/jquery.slick.js"></script>
 <script defer type="text/javascript" src="js/jquery.datetimepicker.js"></script>
 <script defer type="text/javascript" src="js/jquery.chosen.js"></script>
