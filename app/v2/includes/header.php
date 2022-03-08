@@ -49,8 +49,8 @@
 <base href="//<?php echo $_SERVER["HTTP_HOST"];?>/v2/" />
 
 
-<meta property="og:title" content="<?php echo $title; ?>" />
-<meta property="og:description" content="<?php echo ($description)?$description:"Infodental"; ?>" />
+<meta property="og:title" content="<?php echo isset($title)?$title:"Infodental"; ?>" />
+<meta property="og:description" content="<?php echo isset($description)?$description:"Sistema inteligente para clínicas"; ?>" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="http://<?php echo $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];?>" />
 <meta property="og:image" content="http://<?php echo $_SERVER['HTTP_HOST'];?>/img/facebook.png" />
@@ -63,6 +63,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="css/style.css" />
+<link rel="stylesheet" type="text/css" href="css/calendario.css" />
 <link rel="stylesheet" type="text/css" href="css/apps.css" />
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -80,6 +81,8 @@
 <script type="text/javascript" src="js/jquery.validacao.js"></script>
 <script type="text/javascript" src="js/jquery.funcoes.js?v2"></script>
 <script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
+<script type="text/javascript">
+</script>
 
 </head>
 

@@ -17,14 +17,23 @@ CREATE TABLE `ident_clinica` (
   `cpf` varchar(30) NOT NULL,
   `nome` varchar(150) NOT NULL,
   `pg_colaboradores_dadospessoais` varchar(150) NOT NULL,
+  `responsavel_cro` varchar(150) NOT NULL,
   `responsavel_cro_uf` varchar(10) NOT NULL,
   `responsavel_cro_tipo` varchar(30) NOT NULL,
   `cn_logo` varchar(250) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
-INSERT INTO `ident_clinica` (`id`, `clinica_nome`, `instagram`, `site`, `email`, `whatsapp`, `telefone`, `endereco`, `complemento`, `lat`, `lng`, `tipo`, `razao_social`, `cnpj`, `inscricao_estadual`, `cpf`, `nome`, `responsavel_cro`, `responsavel_cro_uf`, `responsavel_cro_tipo`, `cn_logo`) VALUES
-(1, ' ', '', '', '', '', '', '', '', '', '', 'PJ', '', '', '', '', '', '', '', '', '');
+INSERT INTO `ident_clinica` (`id`, 
+  `instagram`, 
+  `site`, 
+  `email`, 
+  `whatsapp`, 
+  `telefone`, 
+  `endereco`, 
+  `complemento`, 
+  `lat`, `lng`, `tipo`, `razao_social`, `cnpj`, `inscricao_estadual`, `cpf`, `nome`, `responsavel_cro`, `responsavel_cro_uf`, `responsavel_cro_tipo`, `cn_logo`) VALUES
+(1, '', '', '', '', '', '', '', '', '', 'PJ', '', '', '', '', '', '', '', '', '');
 
 ALTER TABLE `ident_clinica`
   ADD PRIMARY KEY (`id`);

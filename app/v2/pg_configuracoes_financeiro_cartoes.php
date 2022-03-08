@@ -2,7 +2,7 @@
 	require_once("lib/conf.php");
 	require_once("usuarios/checa.php");
 
-	$_table=$_p."financeiro_bancosecontas";
+	$_table=$_p."parametros_cartoes_operadoras";
 
 	if(isset($_POST['ajax'])) {
 
@@ -28,10 +28,11 @@
 
 				$data = array('id'=>$cnt->id,
 								'titulo'=>utf8_encode($cnt->titulo),
-								'tipo'=>utf8_encode($cnt->tipo),
+								'id_banco'=>$cnt->id_banco,
+								/*'tipo'=>utf8_encode($cnt->tipo),
 								'agencia'=>utf8_encode($cnt->agencia),
 								'conta'=>utf8_encode($cnt->conta),
-								/*'banco'=>utf8_encode($cnt->banco),
+								'banco'=>utf8_encode($cnt->banco),
 								'pix_tipo'=>utf8_encode($cnt->pix_tipo),
 								'pix_chave'=>utf8_encode($cnt->pix_chave),
 								'pix_beneficiario'=>utf8_encode($cnt->pix_beneficiario)*/);
@@ -70,11 +71,26 @@
 		die();
 	}
 
+
+	$_financeiroBancos=array();
+	$sql->consult($_p."financeiro_bancosecontas","*","where lixo=0 order by titulo");
+	while ($x=mysqli_fetch_object($sql->mysqry)) {
+		$_financeiroBancos[$x->id]=$x;
+	}
+
+	$_financeiroBandeiras=array();
+	$sql->consult($_p."parametros_cartoes_bandeiras","*","where lixo=0 order by titulo");
+	while ($x=mysqli_fetch_object($sql->mysqry)) {
+		$_financeiroBandeiras[$x->id]=$x;
+	}
+	
+	$qtdParcelamento=12;
+
 	include "includes/header.php";
 	include "includes/nav.php";
 
 	$values=$adm->get($_GET);
-	$campos=explode(",","titulo,agencia,conta,tipo");
+	$campos=explode(",","titulo,id_banco");
 
 	if(isset($_POST['acao'])) {
 
@@ -151,23 +167,15 @@
 									data:data,
 									success:function(rtn){ 
 										if(rtn.success) {
-											$(`#js-aside input[name=tipo][value=${rtn.data.tipo}`).click();
 											$('#js-aside input[name=titulo]').val(rtn.data.titulo);
 											$('#js-aside input[name=id]').val(rtn.data.id);
-											$('#js-aside select[name=banco]').val(rtn.data.banco);
-											$('#js-aside input[name=agencia]').val(rtn.data.agencia);
-											$('#js-aside input[name=conta]').val(rtn.data.conta);
-											$('#js-aside input[name=pix_tipo]').val(rtn.data.pix_tipo);
-											$('#js-aside input[name=pix_chave]').val(rtn.data.pix_chave);
-											$('#js-aside input[name=pix_beneficiario]').val(rtn.data.pix_beneficiario);
-
+											$('#js-aside select[name=id_banco]').val(rtn.data.id_banco);
 
 
 											$('.js-fieldset-regs,.js-btn-remover').show();
 											
 											$(".aside-form").fadeIn(100,function() {
 												$(".aside-form .aside__inner1").addClass("active");
-												tipoConta();
 											});
 										} else if(rtn.error) {
 											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -188,7 +196,6 @@
 								
 								$(".aside-form").fadeIn(100,function() {
 									$(".aside-form .aside__inner1").addClass("active");
-									tipoConta();
 								});
 							}
 						}
@@ -253,7 +260,7 @@
 							<div class="filter-group">
 								<div class="filter-form form">
 									<dl>
-										<dd><a href="javascript:;" class="button button_main js-openAside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Novo Banco/Conta</span></a></dd>
+										<dd><a href="javascript:;" class="button button_main js-openAside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Nova Operadora</span></a></dd>
 									</dl>
 								</div>								
 							</div>
@@ -290,8 +297,6 @@
 									?>
 									<tr class="js-item" data-id="<?php echo $x->id;?>">
 										<td><h1><strong><?php echo utf8_encode($x->titulo);?></strong></h1></td>
-										<td><?php echo $x->tipo=="dinheiro"?"Dinheiro":"Conta Corrente";?></td>
-										<td><?php echo $x->tipo!="dinheiro"?"$x->agencia / $x->conta":"";?></td>
 									</tr>
 									<?php
 									}
@@ -317,11 +322,13 @@
 		
 		</div>
 	</main>
+
+
 	<section class="aside-form aside-form" id="js-aside">
 		<div class="aside__inner1">
 
 			<header class="aside-header">
-				<h1>Produto</h1>
+				<h1>Operadora</h1>
 				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 			</header>
 
@@ -344,88 +351,75 @@
 				</section>
 
 				<fieldset>
-					<legend>Dados do Banco/Conta</legend>
-					<dl>
-						<dt>Tipo de Conta</dt>
-						<dd>
-							<label><input type="radio" name="tipo" value="contacorrente" checked />Conta Corrente</label>
-							<label><input type="radio" name="tipo" value="pix" />Pix</label>
-							<label><input type="radio" name="tipo" value="dinheiro" />Dinheiro</label>
-						</dd>
-					</dl>
-					<dl>
-						<dt>Título</dt>
-						<dd><input type="text" name="titulo" class="obg" /></dd>
-					</dl>
-					<div class="js-tipo js-tipo-cc">
-						<div class="colunas3">
-							<dl>
-								<dt>Banco</dt>
-								<dd>
-									<select name="banco">
-										<option value="">-</option>
-										<?php
-										foreach($_bancos as $k=>$v) {
-										?>
-										<option value="<?php echo $k;?>"><?php echo $v;?></option>
-										<?php	
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
-							<dl>
-								<dt>Agência</dt>
-								<dd><input type="text" name="agencia" /></dd>
-							</dl>
-							<dl>
-								<dt>Conta</dt>
-								<dd><input type="text" name="conta" /></dd>
-							</dl>
-						</div>
+					<legend>Dados da Operadora</legend>
+					
+					<div class="colunas3">
+
+						<dl class="dl2">
+							<dt>Título</dt>
+							<dd><input type="text" name="titulo" class="obg" /></dd>
+						</dl>
+						<dl>
+							<dt>Banco</dt>
+							<dd>
+								<select name="id_banco">
+									<option value="">-</option>
+									<?php
+									foreach($_financeiroBancos as $v) {
+										if($v->tipo!="contacorrente") continue;
+									?>
+									<option value="<?php echo $v->id;?>"><?php echo utf8_encode($v->titulo);?></option>
+									<?php	
+									}
+									?>
+								</select>
+							</dd>
+						</dl>
 					</div>
-					<div class="js-tipo js-tipo-pix" style="display:none;">
-						<div class="colunas3">
-							<dl>
-								<dt>Tipo</dt>
-								<dd>
-									<select name="pix_tipo">
-										<option value="">-</option>
-										<?php
-										foreach($_pixTipos as $k=>$v) {
-											echo '<option value="'.$k.'">'.$v.'</option>';
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
-							<dl>
-								<dt>Chave Pix</dt>
-								<dd><input type="text" name="pix_chave" /></dd>
-							</dl>
-							<dl>
-								<dt>Beneficiário</dt>
-								<dd><input type="text" name="pix_beneficiario" /></dd>
-							</dl>
-						</div>
-					</div>
+
 				</fieldset>
 
-				<script type="text/javascript">
-					const tipoConta = () => {
-						let val = $('input[name=tipo]:checked').val();
-						$('.js-tipo').hide();
 
-						if(val==="contacorrente") {
-							$('.js-tipo-cc').show();
-						} else if(val==="pix") {
-							$('.js-tipo-pix').show();
-						}
+				<fieldset class="js-fieldset-regs">
+					<input type="hidden" class="js-id" />
+					
+					<legend>Bandeiras</legend>
+					<?php
+					foreach($_financeiroBandeiras as $b) {
+					?>
+					<div class="colunas3">
+						<dl>
+							<dd><label><input type="checkbox" name="" class="input-switch" /><?php echo utf8_encode($b->titulo);?></label></dd>
+						</dl>
+						<dl>
+							<dd>
+								<label><input type="checkbox" class="input-switch" name="tipo1" value="debito" />Débito</label>
+								<label><input type="checkbox" class="input-switch" name="tipo1" value="credito" />Crédito</label>
+							</dd>
+						</dl>
+						<dl>
+							<dd>
+								<select name="">
+									<option value="">-</option>	
+									<?php
+									for($i=1;$i<=$qtdParcelamento;$i++) {
+									?>
+									<option value="<?php echo $i;?>"><?php echo $i."x";?></option>
+									<?php
+									}
+									?>								
+								</select>
+								<a href="javascript:;" class="button" data-aside="detalhes" data-aside-sub><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+							</dd>
+						</dl>
+					</div>
+					<?php	
 					}
-					$(function(){
-						$('input[name=tipo]').click(tipoConta);
-					})
-				</script>
+					?>
+
+				</fieldset>
+
+
 
 			</form>
 

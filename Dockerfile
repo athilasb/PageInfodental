@@ -4,6 +4,8 @@
 # Copyright (c) 2014-2015 Docker, Inc.
 
 FROM php:7.4-apache
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+CMD ["/usr/sbin/apache2ctl", "-D", "FOREGROUND"]
 
 RUN apt-get update
 RUN apt-get install -y build-essential

@@ -5,7 +5,8 @@ class Mysql {
 		$ms_login, 
 		$ms_senha, 
 		$ms_db,
-		$bd_info=array('ident_colaboradores_cargos'=>'infod_parametros_cargos');
+		$bd_info=array('ident_colaboradores_cargos'=>'infod_parametros_cargos',
+						'ident_parametros_cartoes_bandeiras'=>'infod_parametros_cartoes_bandeiras');
 
 	public $mysqry, $rows;
 	

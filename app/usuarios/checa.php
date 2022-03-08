@@ -6,7 +6,7 @@
 		$sql = new Mysql();
 		
 		$sql->consult($_p."colaboradores","*","where id='".addslashes($_COOKIE[$_p.'adm_id'])."' and cpf='".addslashes($_COOKIE[$_p.'adm_cpf'])."' and senha='".addslashes($_COOKIE[$_p.'adm_senha'])."' and lixo='0'");
-															
+										
 		if($sql->rows) {
 			$usr = mysqli_fetch_object($sql->mysqry);
 			//$_usuariosPermissoes=explode(",",$usr->permissoes);

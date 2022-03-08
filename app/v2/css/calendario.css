@@ -1,0 +1,8 @@
+.cal-item {width:100%; background:#fff; border:1px solid var(--cinza2); border-left:6px solid var(--cor1); padding:.5rem; color:var(--cinza4); position:relative; z-index:9999999; border-radius:5px; overflow:hidden;}
+.cal-item__inner1 {display:flex;}
+.cal-item-dados {flex:1;}
+.cal-item-dados h1 {font-weight:normal; color:var(--cinza4); font-size:0.9375em;}
+.cal-item-dados h2 {font-size:1.125em; margin-top:.25rem; color:var(--cinza5);}
+.cal-item-foto {flex:0 1 30px; margin-left:.5rem;}
+.cal-item-foto span {display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:var(--cor1); color:#fff; border-radius:30px;}
+.cal-item-foto img {width:30px; height:30px; object-fit:cover; border-radius:30px;}

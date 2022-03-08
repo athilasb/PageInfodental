@@ -44,7 +44,7 @@
 				$vSQL="nome='".addslashes(utf8_decode(strtoupperWLIB($_POST['nome'])))."',
 						cpf='".cpf(utf8_decode($_POST['cpf']))."',
 						senha='".sha1(($_POST['senha']))."',
-						primeiro_acesso=1";
+						permitir_acesso=1";
 
 
 				$sql->add($_p."colaboradores",$vSQL);

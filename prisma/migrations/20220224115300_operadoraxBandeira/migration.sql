@@ -1,0 +1,1 @@
+CREATE TABLE `ident_parametros_cartoes_operadoras_bandeiras` ( `id` INT(11) NOT NULL AUTO_INCREMENT , `lixo` BOOLEAN NOT NULL , `id_operadora` INT NOT NULL , `id_bandeira` INT NOT NULL , `check_debito` BOOLEAN NOT NULL , `check_credito` BOOLEAN NOT NULL , `credito_parcelad` INT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB COMMENT = 'vincula operadora com bandeira';
