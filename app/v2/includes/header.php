@@ -65,6 +65,7 @@
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <link rel="stylesheet" type="text/css" href="css/calendario.css" />
 <link rel="stylesheet" type="text/css" href="css/apps.css" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script defer type="text/javascript" src="js/jquery-ui.js"></script>
@@ -79,6 +80,7 @@
 <script defer type="text/javascript" src="js/jquery.caret.js"></script>
 <script defer type="text/javascript" src="js/jquery.mobilePhoneNumber.js"></script>
 <script type="text/javascript" src="js/jquery.sweetalert.js"></script>
+<script type="text/javascript" src="js/jquery.select2.js"></script>
 <script type="text/javascript" src="js/jquery.validacao.js"></script>
 <script type="text/javascript" src="js/jquery.funcoes.js?v2"></script>
 <script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>

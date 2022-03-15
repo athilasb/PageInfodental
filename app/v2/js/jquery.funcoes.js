@@ -1,6 +1,8 @@
 
 var baseURLApiAside = 'includes/api/apiAside.php';
-
+function d2(num) {
+	return num>9?num:`0${num}`;
+}
 function number_format (number, decimals, dec_point, thousands_sep) {
   number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
   var n = !isFinite(+number) ? 0 : +number,
