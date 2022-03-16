@@ -276,7 +276,7 @@ code {font-size:0.875em; background:rgba(0,0,0,0.1); margin:0 .5rem;}
 .login-form__inner1 .box {background:#fff;}
 .login-form__logo {display:block; margin:0 auto 3rem auto; width:auto; height:auto; max-width:80%; max-height:100px;}
 
-.aside, .aside-sub {position:absolute; z-index:999; top:0; left:0; width:100%; height:100%; display:none; overflow:hidden; background:rgba(0,0,0,0.3);}
+.aside, .aside-sub {position:fixed; z-index:999; top:0; left:0; width:100%; height:100%; display:none; overflow:hidden; background:rgba(0,0,0,0.3);}
 .aside__inner1 {position:absolute; z-index:1; top:10px; right:0; transform:translateX(840px); width:780px; height:calc(100vh - 10px); background:#fff; box-shadow:0 0 20px rgba(0,0,0,0.3); display:flex; flex-direction:column; transition:all 200ms;}
 .aside-header {flex:0 0 72px; display:flex; align-items:center; justify-content:center; position:relative; background:var(--cinza1);}
 .aside-header h1 {font-size:1.375em; font-weight:normal; color:var(--cinza4);}

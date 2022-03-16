@@ -1448,7 +1448,7 @@
 			  infoComplementar+= !! state.telefone ? ` - Tel.: ${state.telefone}` : '';
 
 			  var $state = $(
-			    '<span><img src="img/ilustra-perfil.png" style="width:30px;height:30px;border-radius:50px;" /> ' + state.text + infoComplementar + '</span>'
+			    '<span style="display:flex; align-items:center; gap:.5rem;"><img src="img/ilustra-perfil.png" style="width:40px;height:40px;border-radius:100%;" /> ' + state.text + infoComplementar + '</span>'
 			  );
 			  return $state;
 		}
@@ -2055,6 +2055,7 @@
 						  	schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
 
 							locale: 'pt-br',
+							contentHeight: 'auto',
 						    headerToolbar: {
 						      left: '',
 						      center:'',
@@ -2389,15 +2390,17 @@
 				<div id='calendar'></div>
 			</section>
 
-			<?php /*<section class="box">
+			<section class="box" style="overflow:hidden; width:calc(100vw - 210px);">
 				<div class="cal-lost">
 					<script>
 						$(function() {
+							
 							$('.cal-lost-slick').slick({
 								dots:false,
 								arrows:true,
 								variableWidth:true									
 							});
+							
 						});
 					</script>
 					<div class="cal-lost-slick">
@@ -2446,8 +2449,7 @@
 						
 					</div>
 				</div>
-			</section>*/?>
-
+			</section>
 
 		</div>
 	</main>
@@ -2599,11 +2601,11 @@
 					<div class="colunas">
 						<dl>
 							<dt>Paciente</dt>
-							<dd class="form-comp form-comp_pos">
+							<dd>
 								<select name="id_paciente" class="select2 obg-0">
 									<option value="">...</option>
 								</select>
-								<a href="" class="button"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
+								<!-- <a href="" class="button"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a> -->
 							</dd>
 						</dl>
 						<dl>
@@ -2615,7 +2617,7 @@
 				<div class="colunas">
 					<dl>
 						<dt>Profissionais</dt>
-						<dd class="form-comp form-comp_pos">
+						<dd>
 							<select class="js-profissionais" multiple>
 								<option value=""></option>
 								<?php
@@ -2829,7 +2831,7 @@
 				<div class="colunas">
 					<dl>
 						<dt>Profissionais</dt>
-						<dd class="form-comp form-comp_pos">
+						<dd>
 							<select name="id_profissional"  class="">
 								<option value=""></option>
 								<?php
@@ -3096,7 +3098,7 @@
 					<div class="colunas">
 						<dl class="dl2">
 							<dt>Profissionais</dt>
-							<dd class="form-comp form-comp_pos">
+							<dd>
 								<select class="js-profissionais" multiple>
 									<option value=""></option>
 									<?php
