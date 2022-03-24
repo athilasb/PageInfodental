@@ -1,5 +1,4 @@
 <?php
-	
 	require_once("lib/conf.php");
 	$_table=$_p."parametros_cadeiras";
 
@@ -157,7 +156,7 @@
 						$inpInicio=strtotime($x->inicio);
 						$inpFim=strtotime($x->fim);
 
-
+						$jaEntrou=array();
 						foreach($_horariosProfissionais as $h) {
 
 							//if(isset($profissionaisHorarioIds[$h->id_profissional]) or $h->dia!=$x->dia) break;
@@ -186,10 +185,11 @@
 
 							//if($x->id==22) echo $x->inicio."-".$x->fim." x ".$h->inicio."-".$h->fim." => ".($intercede===true?1:0)."\n";
 
-							if($intercede===true) {
+							if($intercede===true and !isset($jaEntrou[$h->id_profissional])) {
 							//	echo "entrou\n";
 								$profissionaisHorario.=date('H:i',strtotime($h->inicio))." - ".date('H:i',strtotime($h->fim)).": ".nome(utf8_encode($_colaboradores[$h->id_profissional]->nome),2)."<br />";
 								$profissionaisHorarioIds[$h->id_profissional]=1;
+								$jaEntrou[$h->id_profissional]=true;
 								//break;
 							}
 						}

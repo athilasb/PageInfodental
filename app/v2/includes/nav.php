@@ -34,9 +34,16 @@
 			<a href="<?php echo $params['page'];?>" class="<?php echo in_array(basename($_SERVER['PHP_SELF']),isset($params['pages'])?$params['pages']:array())?" active":"";?>"><?php echo $params['icon'];?></a>
 			<?php
 			}
-			?>
 
-			<a href="" class="nav-buttons__usuario"><img src="img/ilustra-usuario.jpg" alt="" width="40" height="40" /></a>
+
+			$_dirFoto=$_cloudinaryPath."arqs/colaboradores/";
+			$ft="img/ilustra-usuario.jpg";
+
+			if(!empty($usr->foto)) {
+				$ft=$_cloudinaryURL.',w_50/'.$usr->foto;
+			}
+			?>
+			<a href="javascript:;" class="nav-buttons__usuario"><img src="<?php echo $ft;?>" alt="" width="40" height="40" /></a>
 			<a href="usuarios/sair.php"><i class="iconify" data-icon="fluent:door-arrow-right-20-regular"></i></a>
 		</div>
 

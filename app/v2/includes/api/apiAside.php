@@ -11,6 +11,7 @@
 		$_tableEspecialidades=$_p."parametros_especialidades";
 		$_tablePlanos=$_p."parametros_planos";
 		$_tableMarcas=$_p."produtos_marcas";
+		$_tablePacientes=$_p."pacientes";
 
 
 		# Especialidades
@@ -281,6 +282,56 @@
 					$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
 				}
 			}
+		# Pacientes
+			else if($_POST['ajax']=="asPacientePersistir") {
+
+
+				$nome=isset($_POST['nome'])?addslashes(utf8_decode($_POST['nome'])):'';
+				$cpf=isset($_POST['cpf'])?addslashes(telefone($_POST['cpf'])):'';
+				$telefone1=isset($_POST['telefone1'])?addslashes(telefone($_POST['telefone1'])):'';
+				$indicacao_tipo=isset($_POST['indicacao_tipo'])?addslashes(utf8_decode($_POST['indicacao_tipo'])):'';
+				$indicacao=isset($_POST['indicacao'])?addslashes(utf8_decode($_POST['indicacao'])):'';
+
+				if(empty($nome)) $rtn=array('success'=>false,'error'=>'Preencha o nome do Paciente!');
+				else if(empty($telefone1)) $rtn=array('success'=>false,'error'=>'Preencha o whatsapp do Paciente!');
+				else if(!empty($cpf) && strlen($cpf)!=11) $rtn=array('success'=>false,'error'=>'Digite um CPF válido!');
+				else {
+
+					$vSQL="nome='$nome',
+							cpf='$cpf',
+							telefone1='$telefone1',
+							indicacao_tipo='$indicacao_tipo',
+							indicacao='$indicacao',
+							data=now(),
+							id_usuario=$usr->id";
+
+
+					$erro='';
+					if(!empty($cpf)) {
+						$where="where cpf = '".$cpf."' and lixo=0";
+						$sql->consult($_tablePacientes,"id",$where);
+						
+						if($sql->rows) {
+							$erro="Já existe paciente cadastrado com esse CPF!";
+						}
+					}
+
+					if(empty($erro)) {
+
+						$sql->add($_tablePacientes,$vSQL);
+						$id_paciente=$sql->ulid;
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='',tabela='".$_tableMarcas."',id_reg='$id_paciente'");
+
+					
+						$rtn=array('success'=>true,
+									'id_paciente'=>$id_paciente,
+									'nome'=>utf8_encode($nome));
+					} else {
+						$rtn=array('success'=>false,'error'=>$erro);
+					}
+				}
+			} 
+			
 
 
 		header("Content-type: application/json");
@@ -1053,6 +1104,136 @@
 					</table>
 				</div>
 			</form>
+		</form>
+	</div>
+</section>
+<?php
+	}
+	if(isset($apiConfig['paciente'])) {
+?>
+<script type="text/javascript">
+	
+	$(function(){
+
+		$('.js-asPaciente-submit').click(function(){
+			let obj = $(this);
+			if(obj.attr('data-loading')==0) {
+
+				let nome = $(`.js-asPaciente-nome`).val();
+				let telefone1 = $(`.js-asPaciente-telefone1`).val();
+				let cpf = $(`.js-asPaciente-cpf`).val();
+				let indicacao_tipo = $(`.js-asPaciente-indicacao_tipo`).val();
+				let indicacao = $(`.js-asPaciente-indicacao`).val();
+			
+
+				if(nome.length==0) {
+					swal({title: "Erro!", text: "Digite o Nome do Paciente", type:"error", confirmButtonColor: "#424242"});
+				} else if(telefone1.length==0) {
+					swal({title: "Erro!", text: "Digite o Whatsapp do Paciente", type:"error", confirmButtonColor: "#424242"});
+				}  else {
+
+					obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+					obj.attr('data-loading',1);
+
+					let data = `ajax=asPacientePersistir&nome=${nome}&telefone1=${telefone1}&cpf=${cpf}&indicacao_tipo=${indicacao_tipo}&indicacao=${indicacao}`;
+					
+					$.ajax({
+						type:'POST',
+						data:data,
+						url:baseURLApiAside,
+						success:function(rtn) {
+							if(rtn.success) {
+
+								$(`.js-asPaciente-nome`).val(``);
+								$(`.js-asPaciente-telefone1`).val(``);
+								$(`.js-asPaciente-cpf`).val(``);
+								$(`.js-asPaciente-indicacao_tipo`).val(``);
+								$(`.js-asPaciente-indicacao`).val(``);
+
+								$('.ajax-id_paciente').append(`<option value="${rtn.id_paciente}" selected>${rtn.nome}</option>`);
+								$('.aside-paciente .aside-close').click();
+
+							} else if(rtn.error) {
+								swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+							} else {
+								swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+							}
+							
+						},
+						error:function() {
+							swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+						} 
+					}).done(function(){
+						obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+						obj.attr('data-loading',0);
+					});
+
+				}
+			}
+		})
+
+
+
+	});
+</script>
+
+<section class="aside aside-paciente">
+	<div class="aside__inner1">
+
+		<header class="aside-header">
+			<h1>Novo Paciente</h1>
+			<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+		</header>
+
+		<form method="post" class="aside-content form js-asPaciente-form">
+			
+			<dl>
+				<dt>Nome</dt>
+				<dd>
+					<input type="text" class="js-asPaciente-nome" />
+				</dd>
+			</dl>
+
+			<div class="colunas2">
+
+				<dl>
+					<dt>Whatsapp</dt>
+					<dd class="form-comp">
+						<span class="js-country">BR</span><input type="text" class="js-asPaciente-telefone1" />
+					</dd>
+				</dl>
+				<dl>
+					<dt>CPF</dt>
+					<dd>
+						<input type="text" class="js-asPaciente-cpf cpf" />
+					</dd>
+				</dl>
+			</div>
+
+			<div class="colunas2">
+
+				<dl>
+					<dt>Tipo Indicação</dt>
+					<dd>
+						<select class="js-asPaciente-indicacao_tipo">
+							<option value="">-</option>
+							<?php
+							foreach($_pacienteIndicacoes as $v) {
+								echo '<option value="'.$v->id.'"'.($values['indicacao_tipo']==$v->id?' selected':'').' data-id="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
+							}
+							?>
+						</select>
+					</dd>
+				</dl>
+				<dl>
+					<dt>Indicação</dt>
+					<dd>
+						<input type="text" class="js-asPaciente-indicacao" />
+						<button type="button" class="js-asPaciente-submit button button_main" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
+
+					</dd>
+				</dl>
+			</div>
 		</form>
 	</div>
 </section>

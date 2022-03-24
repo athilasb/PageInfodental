@@ -77,6 +77,7 @@
 <script defer type="text/javascript" src="js/jquery.fancybox.js"></script>
 <script defer type="text/javascript" src="js/jquery.tablesorter.js"></script>
 <script defer type="text/javascript" src="js/jquery.inputmask.js"></script>
+<script defer type="text/javascript" src="js/jquery.dad.js"></script>
 <script defer type="text/javascript" src="js/jquery.money.js"></script>
 <script defer type="text/javascript" src="js/jquery.tooltipster.js"></script>
 <script defer type="text/javascript" src="js/jquery.caret.js"></script>

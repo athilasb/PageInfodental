@@ -139,7 +139,6 @@
 	$values=$adm->get($_GET);
 
 
-
 	$data = isset($_GET['data'])?$_GET['data']:date('d/m/Y');
 
 	list($dia,$mes,$ano)=explode("/",$data);

@@ -303,3 +303,12 @@ code {font-size:0.875em; background:rgba(0,0,0,0.1); margin:0 .5rem;}
 .cal-lost-item {display:flex !important; align-items:center; background:#fff; margin:0 5px; padding:.75rem; border-radius:8px; border-left:4px solid var(--cinza3);}
 .cal-lost-item > div {margin-right:1rem;}
 .cal-lost-item p {font-size:0.813em; color:var(--cinza4);}
+
+
+.kanban {display:flex; gap:.5rem;}
+.kanban-item {flex:1; background:var(--cinza4); border-radius:var(--border-radius2); padding:.5rem; background-image: linear-gradient(180deg, rgba(0,0,0,0.21) 0%, rgba(0,0,0,0.00) 100%); border-radius: 8px;}
+.kanban-item header {display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; letter-spacing:-0.02em; height:50px; margin-bottom:.5rem;}
+.kanban-item article {display:flex; flex-direction:column; gap:.5rem;}
+.kanban-item article a {background:#fff; border-radius:4px; padding:.5rem; box-shadow:2px 2px 4px rgba(0,0,0,0.2); display:flex; flex-direction:column; gap:.25rem;}
+.kanban-item article h1 {font-size:0.9375em; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;}
+.kanban-item article p {font-size:0.8125em; line-height:1; color:var(--cinza4);}

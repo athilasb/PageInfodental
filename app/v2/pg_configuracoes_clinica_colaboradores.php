@@ -825,7 +825,7 @@
 
 										}	
 									</script>
-									<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDi3GasDqpa_yfvnd9303Dz_shp5XSLqAY&libraries=places&callback=initMap">
+									<script async src="https://maps.googleapis.com/maps/api/js?key=<?php echo $_googleMapsKey;?>&libraries=places&callback=initMap">
 									</script>
 									<div>
 										<dl class="dl2">

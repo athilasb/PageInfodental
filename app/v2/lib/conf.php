@@ -30,6 +30,8 @@
 
 	ksort($_usuariosTipos);
 
+	$_googleMapsKey="AIzaSyDi3GasDqpa_yfvnd9303Dz_shp5XSLqAY";
+
 	$_dias=explode(",","Domingo,Segunda-Feira,Terça-Feira,Quarta-Feira,Quinta-Feira,Sexta-Feira,Sábado");
 	
 	$_pacienteSituacao=array('BI'=>'BI','EXCLUIDO'=>'EXCLUÍDO');
