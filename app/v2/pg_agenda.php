@@ -1934,7 +1934,8 @@
 										$('.cal-lost-slick').slick({
 											dots:false,
 											arrows:true,
-											variableWidth:true									
+											slidesToShow:4,											
+											infinite:false
 										});
 									}
 								});
