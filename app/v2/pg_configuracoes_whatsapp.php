@@ -190,7 +190,7 @@
 										<label><input type="checkbox" class="input-switch" name="pub-<?php echo $x->id;?>" value="1"<?php echo $x->pub==1?" checked":"";?> /> <?php echo ($x->titulo);?></label>
 									</dt>
 									<dd>
-										<textarea name="texto-<?php echo $x->id;?>" style="height:120px;"><?php echo ($x->texto);?></textarea>
+										<textarea name="texto-<?php echo $x->id;?>" style="height:200px;"><?php echo ($x->texto);?></textarea>
 									</dd>
 								</dl>
 								<?php
@@ -198,6 +198,41 @@
 								?>
 									
 							
+							</fieldset>
+
+							<fieldset class="box-registros">
+								<legend>Palavra Chaves</legend>
+
+								<table class="table">
+									<tr>
+										<th style="width:200px;">Palavra Chave</th>
+										<th>Descrição</th>
+									</tr>
+									<tr>
+										<td>[nome]</td>
+										<td>Nome do paciente</td>
+									</tr>
+									<tr>
+										<td>[agenda_data]</td>
+										<td>Data do agendamento (dd/mm/AAAA)</td>
+									</tr>
+									<tr>
+										<td>[agenda_hora]</td>
+										<td>Horário do agendamento (HH:mm)</td>
+									</tr>
+									<tr>
+										<td>[consultorio]</td>
+										<td>Consultório do agendamento</td>
+									</tr>
+									<tr>
+										<td>[profissionais]</td>
+										<td>Profissionais do agendamento</td>
+									</tr>
+									<tr>
+										<td>[duracao]</td>
+										<td>Duração do agendamento</td>
+									</tr>
+								</table>
 							</fieldset>
 
 

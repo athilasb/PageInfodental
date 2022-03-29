@@ -10,7 +10,7 @@
 			if(isset($attr['prefixo'])) $this->prefixo=$attr['prefixo'];
 			if(isset($attr['usr'])) $this->usr=$attr['usr'];
 
-			$sql=new Mysql();
+			$sql=new Mysql(true);
 			$_p=$this->prefixo;
 
 			$tipos=array();
@@ -37,181 +37,158 @@
 			return "55$novoNumero";
 		}
 
-		function wtsFilaAdiciona($attr) {
+		function adicionaNaFila($attr) {
 			$_p=$this->prefixo;
 			$sql=new Mysql();
 			$sqlWts=new Mysql(true);
 
-
-			// configuracao das mensagens
-			$msgConfig=array(1=>'whatsapp_boasvindas',
-								2=>'whatsapp_fechamento',
-								3=>'whatsapp_chamarClienteFilaDeEspera',
-								4=>'whatsapp_filaDeEsperaProximo',
-								5=>'whatsapp_chamarClienteVendaBalcao');
-
 			$tipo='';
-			if(isset($attr['id_tipo']) and isset($this->tipos[$attr['id_tipo']])) {
+			if(isset($attr['id_tipo']) and is_numeric($attr['id_tipo']) and isset($this->tipos[$attr['id_tipo']])) {
 				$tipo=$this->tipos[$attr['id_tipo']];
 			}
 
-			// boas vindas
 			if(is_object($tipo)) {
-				$visita='';
-				if(isset($attr['id_visita']) and is_numeric($attr['id_visita'])) {
-					$sql->consult($_p."clientes_visitas","*","where id='".$attr['id_visita']."'");
-					if($sql->rows) {
-						$visita=mysqli_fetch_object($sql->mysqry);
 
-						$sql->consult($_p."clientes","*","where id=$visita->id_cliente");
+				if($tipo->pub==1) {
+
+
+					$paciente = '';
+					if(isset($attr['id_paciente']) and is_numeric($attr['id_paciente'])) {
+						$sql->consult($_p."pacientes","id,nome,telefone1","where id=".$attr['id_paciente']." and lixo=0");
 						if($sql->rows) {
-							$cliente=mysqli_fetch_object($sql->mysqry);
+							$paciente=mysqli_fetch_object($sql->mysqry);
 						}
-
-						$sql->consult($_p."unidades","*","where id=$visita->id_unidade and lixo=0");
-						if($sql->rows) {
-							$unidade=mysqli_fetch_object($sql->mysqry);
-							$sqlWts->consult($_p."unidades","*","where id=$unidade->id");
-							$unidadeWts=mysqli_fetch_object($sqlWts->mysqry);
-						}
-
-						if(!empty($cliente->celular)) {
-							
-							$msg='';
-
-							$sql->consult($_p."clientes_visitas","count(*) as total","where id_cliente=$cliente->id and lixo=0");
-							$t=mysqli_fetch_object($sql->mysqry);
-							$visitasQtd=$t->total;
-
-							$filaPosicao=0;
-
-
-							// configura e substitui as tags das mensagems
-
-							$msgTipos=array();
-							foreach($msgConfig as $idt=>$wm) {
-								if(isset($unidadeWts->$wm)) {
-									$msgTipos[$idt]=$unidadeWts->$wm;
-									$msgTipos[$idt]=str_replace("[nome]",utf8_encode($cliente->nome),$msgTipos[$idt]);
-									$msgTipos[$idt]=str_replace("[visitas]",$visitasQtd,$msgTipos[$idt]);
-									$msgTipos[$idt]=str_replace("[filaPosicao]",$filaPosicao,$msgTipos[$idt]);
-									$msgTipos[$idt]=str_replace("[filaLink]","https://".$_ENV['NAME'].".vucasolution.com.br/fila-de-espera/".sha1($visita->id),$msgTipos[$idt]);
-									$avaliacaoTipo=$visita->balcao==0?2:3;
-									$msgTipos[$idt]=str_replace("[avaliacaoLink]","https://".$_ENV['NAME'].".vucasolution.com.br/avaliacao/".md5($avaliacaoTipo).".".md5($visita->id),$msgTipos[$idt]);
-								}
-							}
-						
-							
-							// Mensagem de boas vindas
-							if($tipo->id==1) {
-								$sql->consult($_p."whatsapp_mensagens","*","where data > NOW() - INTERVAL 3 HOUR AND id_cliente=$cliente->id and id_tipo='".$tipo->id."' and id_visita=$visita->id");
-								if($sql->rows==0) {
-									if(isset($msgTipos[$tipo->id]) and !empty($msgTipos[$tipo->id])) {
-										$sqlWts->consult($_p."unidades","*","where id=$unidade->id");
-										$w=mysqli_fetch_object($sqlWts->mysqry);
-										$msg=$msgTipos[$tipo->id];
-									}
-								} else {
-									$this->erro="Já está na fila!";
-									return false;
-								}
-							}
-							// Mensagem de fechamento
-							else if($tipo->id==2) {
-								$sql->consult($_p."whatsapp_mensagens","*","where data > NOW() - INTERVAL 3 HOUR AND id_cliente=$cliente->id and id_tipo='".$tipo->id."' and id_visita=$visita->id");
-								if($sql->rows==0) {
-									if(isset($msgTipos[$tipo->id]) and !empty($msgTipos[$tipo->id])) {
-										// $sqlWts->consult($_p."unidades","*","where id=$unidade->id");
-										// $w=mysqli_fetch_object($sqlWts->mysqry);
-										$msg=$msgTipos[$tipo->id];
-									}
-								} else {
-									$this->erro="Já está na fila!";
-									return false;
-								}
-							}
-							// Mensagem de chamar cliente na fila de espera
-							else if($tipo->id==3) {
-								if(isset($msgTipos[$tipo->id]) and !empty($msgTipos[$tipo->id])) {
-									$sqlWts->consult($_p."unidades","*","where id=$unidade->id");
-									$w=mysqli_fetch_object($sqlWts->mysqry);
-									$msg=$msgTipos[$tipo->id];
-								}
-							}
-							
-							// Mensagem de proximo da fila de espera
-							else if($tipo->id==4) {
-								$sql->consult($_p."whatsapp_mensagens","*","where id_cliente=$cliente->id and id_tipo='".$tipo->id."'  and data > NOW() - INTERVAL 2 HOUR");
-								if($sql->rows==0) {
-									if(isset($msgTipos[$tipo->id]) and !empty($msgTipos[$tipo->id])) {
-										$sqlWts->consult($_p."unidades","*","where id=$unidade->id");
-										$w=mysqli_fetch_object($sqlWts->mysqry);
-										$msg=$msgTipos[$tipo->id];
-									}
-								} else {
-									$this->erro="Já está na fila!";
-									return false;
-								}
-							}
-
-							// Mensagem de chamar cliente da venda balcao
-							else if($tipo->id==5) {
-								if(isset($msgTipos[$tipo->id]) and !empty($msgTipos[$tipo->id])) {
-									$sqlWts->consult($_p."unidades","*","where id=$unidade->id");
-									$w=mysqli_fetch_object($sqlWts->mysqry);
-									$msg=$msgTipos[$tipo->id];
-								}
-							}
-
-							if(!empty($msg)) { 
-
-								$sqlWts->add($_p."whatsapp_mensagens","data=now(),
-																	enviado=0,
-																	id_cliente=$cliente->id,
-																	id_visita=$visita->id,
-																	id_unidade=$visita->id_unidade,
-																	id_tipo='".$tipo->id."',
-																	numero='".telefone($cliente->celular)."',
-																	mensagem='".addslashes($msg)."'");
-								$id_whatsapp=$sqlWts->ulid;
-
-								if($this->wtsRabbitmq($id_whatsapp)) {
-
-								}
-								// $id_msg=$sql->ulid;
-								// $sqlWts->update($_p."whatsapp_mensagens","mensagem='".addslashes($msg)."'","where id=$id_msg");
-								return true;
-							} else {
-								$this->erro="Nenhuma mensagem configurada!";
-								return false;
-							}
-							
-						}  else {
-							$this->erro="Cliente sem celular!";
-							return false;
-						}
-					}  else {
-						$this->erro="Visita não encontrada!";
-						return false;
 					}
-				}  else {
-					$this->erro="Visita não especificada!";
-					return false;
+
+					$agenda = $cadeira = $profissionais = '';
+					if(isset($attr['id_agenda']) and is_numeric($attr['id_agenda'])) {
+						$sql->consult($_p."agenda","id,id_paciente,id_cadeira,agenda_data,agenda_duracao,profissionais","where id=".$attr['id_agenda']." and lixo=0");
+						if($sql->rows) {
+							$agenda=mysqli_fetch_object($sql->mysqry);
+
+							if($agenda->id_cadeira>0) {
+								$sql->consult($_p."parametros_cadeiras","*","where id=$agenda->id_cadeira");
+								if($sql->rows) {
+									$cadeira=mysqli_fetch_object($sql->mysqry);
+								}
+							}
+
+							if(!empty($agenda->profissionais)) {
+								$aux=explode(",",$agenda->profissionais);
+								foreach($aux as $idProf) {
+									if(!empty($idProf) and is_numeric($idProf)) {
+										$profissionaisIds[]=$idProf;
+									}
+								}
+
+								if(count($profissionaisIds)>0) {
+									$sql->consult($_p."colaboradores","id,nome","where id IN (".implode(",",$profissionaisIds).")");
+									if($sql->rows) {
+										while($x=mysqli_fetch_object($sql->mysqry)) {
+											$profissionais.=utf8_encode($x->nome)." e ";
+										}
+
+										$profissionais=substr($profissionais,0,strlen($profissionais)-3);
+									}
+								}
+							}
+						}
+					}
+
+					// Novo Agendamento (id_tipo=1), Alteração de Agendamento (id_tipo=2)
+					if($tipo->id==1) {
+						$_dias=array('Domingo',
+										'Segunda-Feira',
+										'Terça-Feira',
+										'Quarta-Feira',
+										'Quinta-Feira',
+										'Sexta-Feira',
+										'Sábado');
+
+						if(is_object($paciente)) {
+
+							if(is_object($agenda)) {
+
+								if($agenda->id_paciente == $paciente->id) {
+
+									$msg = $tipo->texto;
+									$numero = telefone($paciente->telefone1);
+
+									if(!empty($numero)) {
+
+
+										
+
+										$dataFormatada=$_dias[date('w',strtotime($agenda->agenda_data))].", ";
+										$dataFormatada.=date('d/m/Y',strtotime($agenda->agenda_data));
+
+										$msg = str_replace("[nome]",utf8_encode($paciente->nome), $msg);
+										$msg = str_replace("[agenda_data]",$dataFormatada, $msg);
+										$msg = str_replace("[agenda_hora]",date('H:i',strtotime($agenda->agenda_data)), $msg);
+										$msg = str_replace("[consultorio]",is_object($cadeira)?utf8_encode($cadeira->titulo):"Consultório", $msg);
+										$msg = str_replace("[profissionais]",($profissionais), $msg);
+										$msg = str_replace("[duracao]",($agenda->agenda_duracao)." minutos", $msg);
+
+										// verifica se ja enviou
+										$where="where id_agenda=$agenda->id and id_paciente=$paciente->id and id_tipo=$tipo->id  and numero='".addslashes($numero)."' and data > NOW() - INTERVAL 1 HOUR";
+										$sql->consult($_p."whatsapp_mensagens","*",$where);
+									
+										if($sql->rows==0) {
+
+											$vSQL="data=now(),
+													id_tipo=$tipo->id,
+													id_paciente=$paciente->id,
+													id_agenda=$agenda->id,
+													numero='$numero',
+													mensagem='$msg'";
+
+											$sqlWts->add($_p."whatsapp_mensagens",$vSQL);
+
+											return true;
+
+										} else {
+											$this->erro="Esta mensagem já foi cadastrada nos últimos 60 minutos";
+										}
+									} else {
+										$this->erro="Paciente #$paciente->id não possui número de whatsapp";
+									}
+
+								} else {
+									$this->erro="Agendamento #$agenda->id não é do paciente #$paciente->id";
+								}
+
+							} else {
+								$this->erro="Agendamento não encontrado!";
+							}
+
+						} else {
+							$this->erro="Paciente não encontrado!";
+						}
+					}
+
+				} else {
+					$this->erro="Tipo de mensagem desativada";
 				}
-			}  else {
-				$this->erro="Tipo de mensagem não definido!";
-				return false;
+
+			} else {
+				$this->erro = 'Tipo de mensagem inválida!';
 			}
+
+			return false;
+
+
 		}
 
 		
-		function disparaWhatsapp() {
+		function dispara() {
+			
 			$_p=$this->prefixo;
 			$sql=new Mysql(true);
 
 			$enviarMsgs=array();
-			$visitasIDs=array(-1);
-			$deliveryPedidosIDs=array(-1);
+			$pacienteIds=array(-1);
+			$agendasIds=array(-1);
+			$profissionaisIds=array(-1);
 
 			// consulta se esta disparando
 			$sql->consult($_p."whatsapp_disparos","*","where ativo=1 and data > NOW() - INTERVAL 15 MINUTE");
@@ -228,70 +205,52 @@
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					if(empty($x->mensagem)) continue;
 					$enviarMsgs[]=$x;
-					if($x->id_visita>0)  $visitasIDs[]=$x->id_visita;
-					if($x->id_delivery_pedido>0)  $deliveryPedidosIDs[]=$x->id_delivery_pedido;
+					if($x->id_paciente>0)  $pacienteIds[$x->id_paciente]=$x->id_paciente;
+					if($x->id_agenda>0)  $agendasIds[$x->id_agenda]=$x->id_agenda;
+					if($x->id_profissional>0)  $profissionaisIds[$x->id_profissional]=$x->id_profissional;
 				}
 			}
-
 			if(count($enviarMsgs)>0) {
 
-				$_visitas=array();
-				$clientesIDs=array();
-				$unidadesIDs=array();
-				$sql->consult($_p."clientes_visitas","*","where id IN (".implode(",",$visitasIDs).") and lixo=0");
+				$_agendas=array();
+				$sql->consult($_p."agenda","id,id_paciente,profissionais","where id IN (".implode(",",$agendasIds).") and lixo=0");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_visitas[$x->id]=$x;
-					$clientesIDs[]=$x->id_cliente;
-					$unidadesIDs[]=$x->id_unidade;
-				}
-
-				$_pedidos=array();
-				$sql->consult($_p."delivery_pedidos","*","where id IN (".implode(",",$deliveryPedidosIDs).") and lixo=0");
-			
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_pedidos[$x->id]=$x;
-					$clientesIDs[]=$x->id_cliente;
-					$unidadesIDs[]=$x->id_unidade;
-				}
-
-				$_clientes=array();
-				$sql->consult($_p."clientes","*","where id IN (".implode(",",$clientesIDs).") and lixo=0");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_clientes[$x->id]=$x;
-				}
-
-				$_unidades=array();
-				$whatsappsIDs=array();
-				$sql->consult($_p."unidades","*","where id IN (".implode(",",$unidadesIDs).") and lixo=0");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_unidades[$x->id]=$x;
-					if($x->id_whatsapp>0) $whatsappsIDs[]=$x->id_whatsapp;
-				}
-				$_whatsapps=array();
-				if(count($whatsappsIDs)>0) {
-					$sql->consult($_p."whatsapp_instancias","*","where lixo=0");//id IN (".implode(",",$whatsappsIDs).") and lixo=0");
-					if($sql->rows) {
-						while($x=mysqli_fetch_object($sql->mysqry)) {
-							$_whatsapps[$x->id]=$x;
+					$_agendas[$x->id]=$x;
+					$pacienteIds[$x->id_paciente]=$x->id_paciente;
+					if(!empty($x->profissionais)) {
+						$aux=explode(",",$x->profissionais);
+						foreach($aux as $idProfissional) {
+							if(!empty($idProfissional) and is_numeric($idProfissional)) {
+								$profissionaisIds[$idProfissional]=$idProfissional;
+							}
 						}
 					}
 				}
 
-				$_tipos=array();
-				$sql->consult($_p."whatsapp_mensagens_tipos","*","");
+				$_pacientes=array();
+				$sql->consult($_p."pacientes","id,nome","where id IN (".implode(",",$pacienteIds).") and lixo=0");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_tipos[$x->id]=$x;
+					$_pacientes[$x->id]=$x;
 				}
+
+				$_profissionais=array();
+				$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisIds).") and lixo=0");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_profissionais[$x->id]=$x;
+				}
+
+				$_tipos=$this->tipos;
+
+				// verifica se possui conexao
+				$where="where instancia='".$_ENV['NAME']."' and lixo=0 order by data desc limit 1";
+				$sql->consult("infodentalADM.infod_contas_onlines","*",$where);
+
+				$conexao=$sql->rows?mysqli_fetch_object($sql->mysqry):'';
+				
 
 				$sql->add($_p."whatsapp_disparos","data=now(),ativo=1");
 				$id_disparo=0;//$sql->ulid;
 				foreach($enviarMsgs as $v) {
-					
-					// verifica se possui conexao
-					$sql->consult("vucaADM.vuca_contas_vucazaps_unidades","*","where id_unidade=$v->id_unidade and lixo=0 order by data desc limit 1");
-					//echo "<hr>where id_unidade=$v->id_unidade and lixo=0 order by data desc limit 1 -> $sql->rows";
-					$conexao=$sql->rows?mysqli_fetch_object($sql->mysqry):'';
-					
 
 
 					if(empty($conexao)) {
@@ -307,147 +266,62 @@
 						$tipo=isset($_tipos[$v->id_tipo])?$_tipos[$v->id_tipo]:'';
 						//var_dump($tipo);
 						if(is_object($tipo)) {
-							if($tipo->tipo=="unidade") {
-
-								if(isset($_visitas[$v->id_visita]) and is_object($_visitas[$v->id_visita])) {
-									$visita=$_visitas[$v->id_visita];
-									if(isset($_unidades[$visita->id_unidade])) {
-										$unidade=$_unidades[$visita->id_unidade];
-										
 
 
+							$paciente = isset($_pacientes[$v->id_paciente])?$_pacientes[$v->id_paciente]:'';
+							$agenda = isset($_agendas[$v->id_agenda])?$_agendas[$v->id_agenda]:'';
+							$profissional = isset($_profissionais[$v->id_profissional])?$_profissionais[$v->id_profissional]:'';
+							if($tipo->id==1) {
 
-										$attr=array('numero'=>$v->numero,'mensagem'=>$v->mensagem,'id_conexao'=>$conexao->id,'id_unidade'=>$conexao->id_unidade);
+								if(is_object($paciente) and is_object($agenda)) {
 
-										if($this->enviaMensagem($attr)) {
-											$vsql="data_enviado=now(),enviado=1,retorno_json='".addslashes($this->response)."',id_conexao=$conexao->id";
-											$vwhere="where id=$v->id";
-											$sql->update($_p."whatsapp_mensagens",$vsql,$vwhere);
+									$attr=array('numero'=>$v->numero,
+												'mensagem'=>$v->mensagem,
+												'id_conexao'=>$conexao->id);
 
-											if(isset($_clientes[$visita->id_cliente]) and is_object($_clientes[$visita->id_cliente])) {
-												$cliente=$_clientes[$visita->id_cliente];
+									if($this->enviaMensagem($attr)) {
+										$vsql="data_enviado=now(),enviado=1,retorno_json='".addslashes($this->response)."',id_conexao=$conexao->id";
+										$vwhere="where id=$v->id";
+										$sql->update($_p."whatsapp_mensagens",$vsql,$vwhere);
 
-												$attr=array('numero'=>telefone($cliente->celular),'instance'=>$conexao->wid);
-												if($this->getProfile($attr)) {
-													$response=json_decode($this->response);
-													if(isset($response->pictureUrl) and !empty($response->pictureUrl)) {
-														$_dir="arqs/temp/";
-														$img = "../../retaguarda/".$_dir."wtsTemp.jpg";
-														$url=$response->pictureUrl;
-														if(file_put_contents($img, file_get_contents($url))) {
-															// upload da foto 
-															$uploadFile=$img;
-															$uploadType=filesize($img);
-															$uploadPathFile=$this->infosWasabi['_wasabiPathRoot']."arqs/clientes/".$cliente->id.".jpg";
-															$uploaded=$this->infosWasabi['wasabiS3']->putObject(S3::inputFile($uploadFile,false),$this->infosWasabi['_wasabiBucket'],$uploadPathFile,S3::ACL_PUBLIC_READ);
-															
-															if($uploaded) {	
-																$sql->update($_p."clientes","foto='jpg',foto_vn='".$_ENV['NAME']."'","where id=$cliente->id");
-															}
+										if($tipo->getProfile==1) {
+											$attr=array('numero'=>$v->numero,'instance'=>$conexao->wid);
+											if($this->getProfile($attr)) {
+												$response=json_decode($this->response);
+												if(isset($response->pictureUrl) and !empty($response->pictureUrl)) {
+													$_dir="arqs/temp/";
+													$img = "../../retaguarda/".$_dir."wtsTemp.jpg";
+													$url=$response->pictureUrl;
+													echo $url;
+													/*if(file_put_contents($img, file_get_contents($url))) {
+														// upload da foto 
+														$uploadFile=$img;
+														$uploadType=filesize($img);
+														$uploadPathFile=$this->infosWasabi['_wasabiPathRoot']."arqs/clientes/".$cliente->id.".jpg";
+														$uploaded=$this->infosWasabi['wasabiS3']->putObject(S3::inputFile($uploadFile,false),$this->infosWasabi['_wasabiBucket'],$uploadPathFile,S3::ACL_PUBLIC_READ);
+														
+														if($uploaded) {	
+															$sql->update($_p."clientes","foto='jpg',foto_vn='".$_ENV['NAME']."'","where id=$cliente->id");
 														}
-													}
+													}*/
 												}
-												
-												
 											}
-											sleep(0.4);
-										}  else {
-											$vsql="data_erro=now(),erro=1,erro_retorno='".addslashes(isset($this->erro) ? $this->erro : 'sem erro')."',id_conexao=$conexao->id";
-											$vwhere="where id=$v->id";
-											$sql->update($_p."whatsapp_mensagens",$vsql,$vwhere);
 										}
-
 											
-									} //else echo "erro";
+											
+										
+										sleep(0.4);
+									}  else {
+										$vsql="data_erro=now(),erro=1,erro_retorno='".addslashes(isset($this->erro) ? $this->erro : 'sem erro')."',id_conexao=$conexao->id";
+										$vwhere="where id=$v->id";
+										$sql->update($_p."whatsapp_mensagens",$vsql,$vwhere);
+									}
 
-								} //else echo "erro";
-							} else if($tipo->tipo=="delivery") {
-								if(isset($_pedidos[$v->id_delivery_pedido]) and is_object($_pedidos[$v->id_delivery_pedido])) {
-									$pedido=$_pedidos[$v->id_delivery_pedido];
+								}
 
-									if(isset($_unidades[$pedido->id_unidade])) {
-										$unidade=$_unidades[$pedido->id_unidade];
-
-										if($tipo->id==6) { // se for mensagem de envio para o entregador
-											if(!empty($v->lat) and !empty($v->lng)) {
-												$attr=array('id_conexao'=>$conexao->id,
-															'id_unidade'=>$conexao->id_unidade,
-															'numero'=>$v->numero,
-															//'mensagem'=>$v->mensagem,
-															'lat'=>$v->lat,
-															'lng'=>$v->lng,
-															//'mensagem'=>"Pedido #".$pedido->id
-														);
-
-												$attrMensagem=array('id_conexao'=>$conexao->id,
-																	'id_unidade'=>$conexao->id_unidade,
-																	'numero'=>$v->numero,
-																	'offline'=>true,
-																	'mensagem'=>$v->mensagem);
-
-  		
-												$enviado=false;
-												if($this->enviaLocalizacao($attr)) {
-													$rsp=isset($this->response)?json_decode($this->response):"";
-													$quotedMessageId='';
-													if(is_object($rsp)) {	
-														$quotedMessageId=isset($rsp->id)?$rsp->id:'';
-													}
-
-													sleep(3);
-													if($this->enviaMensagem($attrMensagem,$quotedMessageId)) {
-														$response = isset($this->response)?json_decode($this->response):'';
-														if(is_object($response) and isset($response->success) and $response->success===true) {
-															$vsql="data_enviado=now(),enviado=1,retorno_json='".addslashes($this->response)."',id_conexao=$conexao->id";
-															$vwhere="where id=$v->id";
-															$sql->update($_p."whatsapp_mensagens",$vsql,$vwhere);
-															$enviado=true;
-														} else {
-															$vsql="retorno_json='".addslashes($this->response)."',id_conexao=$conexao->id";
-															$vwhere="where id=$v->id";
-															$sql->update($_p."whatsapp_mensagens",$vsql,$vwhere);	
-														}
-													}
-												}
-
-												/*if($this->enviaLocalizacao($attr) && $this->enviaMensagem($attrMensagem)) {
-														$vsql="data_enviado=now(),enviado=1,retorno_json='".addslashes($this->response)."',id_conexao=$conexao->id";
-														$vwhere="where id=$v->id";
-														$sql->update($_p."whatsapp_mensagens",$vsql,$vwhere);
-													
-													
-												} else {*/
-												if($enviado===false) {
-													$vsql="data_erro=now(),erro=1,erro_retorno='".addslashes($this->erro)."'";
-													$vwhere="where id=$v->id";
-													$sql->update($_p."whatsapp_mensagens",$vsql,$vwhere);
-												}
-											} 
-										} else {
-											$attr=array('numero'=>$v->numero,'mensagem'=>$v->mensagem,'id_conexao'=>$conexao->id,'id_unidade'=>$conexao->id_unidade);
-
-											if($this->enviaMensagem($attr)) {
-												$vsql="data_enviado=now(),enviado=1,retorno_json='".addslashes($this->response)."',id_conexao=$conexao->id";
-												$vwhere="where id=$v->id";
-												$sql->update($_p."whatsapp_mensagens",$vsql,$vwhere);
-
-												if($tipo->getProfile===1) {
-													if(isset($_clientes[$visita->id_cliente]) and is_object($_clientes[$visita->id_cliente])) {
-														$cliente=$_clientes[$visita->id_cliente];
-													}
-												}
-												sleep(0.4);
-											}  else {
-												$vsql="data_erro=now(),erro=1,erro_retorno='".addslashes($this->erro)."',id_conexao=$conexao->id";
-												$vwhere="where id=$v->id";
-												$sql->update($_p."whatsapp_mensagens",$vsql,$vwhere);
-											}
-										}
-
-									} //else echo "erro";
-
-								} //else echo "erro";
 							}
+							
+							
 						}
 					}
 				}
@@ -470,20 +344,14 @@
 			$mensagem=(isset($attr['mensagem']) and !empty($attr['mensagem']))?$attr['mensagem']:'';
 			$offline=(isset($attr['offline']) and $attr['offline']==true)?true:false;
 
-			$unidade='';
-			if(isset($attr['id_unidade']) and is_numeric($attr['id_unidade'])) {
-				$sql->consult($_p."unidades","*","where id=".$attr['id_unidade']);
-				if($sql->rows) $unidade=mysqli_fetch_object($sql->mysqry);
-			}
-
+	
 			$conexao='';
-			if(is_object($unidade) and isset($attr['id_conexao']) and is_numeric($attr['id_conexao'])) {
-				$sql->consult("vucaADM.vuca_contas_vucazaps_unidades","*","where id=".$attr['id_conexao']." and id_unidade=$unidade->id");
+			if(isset($attr['id_conexao']) and is_numeric($attr['id_conexao'])) {
+				$sql->consult("infodentalADM.infod_contas_onlines","*","where id=".$attr['id_conexao']);
 				if($sql->rows) $conexao=mysqli_fetch_object($sql->mysqry);
 			}
 
-			if(empty($unidade)) $erro='Unidade não encontrada';
-			else if(empty($conexao)) $erro="Nenhum whatsapp está conectado a esta unidade";
+			if(empty($conexao)) $erro="Nenhum whatsapp está conectado a esta unidade";
 			else if(empty($numero)) $erro="Número destinatário não definido";
 			else if(empty($mensagem)) $erro="Mensagem não definida!";
 			else {
@@ -498,22 +366,23 @@
 
 				//var_dump($postfields);
 
-				$sql->add($_p."whatsapp_log","data=now(),
+				/*$sql->add($_p."whatsapp_log","data=now(),
 												endpoint='".$this->endpoint."/send/text',
 												params='".addslashes(json_encode($postfields))."',
 												id_unidade=$unidade->id");
-				$id_log=$sql->ulid;
+				$id_log=$sql->ulid;*/
 
 
 				$curl = curl_init();
 
+
 				curl_setopt_array($curl, [
 				  CURLOPT_PORT => "8443",
-				  CURLOPT_URL => $this->endpoint."/send/text",
+				  CURLOPT_URL => $this->endpoint."/message/text",
 				  CURLOPT_RETURNTRANSFER => true,
 				  CURLOPT_ENCODING => "",
 				  CURLOPT_MAXREDIRS => 10,
-				  CURLOPT_TIMEOUT => 60,
+				  CURLOPT_TIMEOUT => 30,
 				  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 				  CURLOPT_CUSTOMREQUEST => "POST",
 				  CURLOPT_POSTFIELDS => json_encode($postfields),
@@ -524,17 +393,16 @@
 				]);
 
 				$response = curl_exec($curl);
+
 				$err = curl_error($curl);
 
 				curl_close($curl);
+				$this->response=$response;
 
 				if($err) {
-				  $this->erro="cURL Error #:" . $err;
-				  $sql->update($_p."whatsapp_log","response='Erro: ".addslashes($err)."'","where id=$id_log");
-				  return false;
+				  $erro="cURL Error #:" . $err;
 				} else {
-				  $this->response=$response;
-				  $sql->update($_p."whatsapp_log","response='".addslashes($this->response)."'","where id=$id_log");
+				 
 				}
 			}
 

@@ -13,7 +13,21 @@
 
 	echo "<hr >";
 
-	// 
-	echo "<h1>"
+	// Novo Agendamento
+	echo "<h1>Confirmação de Agendamento</h1>";
+	$attr=array('id_tipo'=>1,
+				'id_paciente'=>6216,
+				'id_agenda'=>10348);
+	if($wts->adicionaNaFila($attr)) echo "ok";
+	else echo "erro: ".$wts->erro;
+	echo "<br />";
 
+
+
+
+	if(isset($_GET['dispara'])) {
+
+		if($wts->dispara()) echo "Disparado!";
+		else echo "Erro: $wts->erro";
+	}
 ?>
