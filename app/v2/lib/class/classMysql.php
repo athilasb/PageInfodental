@@ -10,7 +10,7 @@ class Mysql {
 
 	public $mysqry, $rows;
 	
-	function __construct($chatpro=false) { 
+	function __construct($mb4='') { 
 		/*if($_SERVER['HTTP_HOST']=="studiodental.dental") {
 			$ms_server="localhost";
 			$ms_login="root";
@@ -37,10 +37,13 @@ class Mysql {
 
 		
 		$this->connecting=mysqli_connect($ms_server, $ms_login, $ms_senha);
-		if(isset($chatpro) and $chatpro===true) {
+		if(isset($mb4) and $mb4===true) { 
 			mysqli_set_charset($this->connecting,'utf8mb4');
 		}
-		else mysqli_set_charset($this->connecting,'latin1');
+		else {
+			mysqli_set_charset($this->connecting,'latin1');
+		}
+		
 		$dbing=mysqli_select_db($this->connecting, $ms_db);
 	}
 	function colunas($ms_table) {

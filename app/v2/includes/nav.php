@@ -1,21 +1,21 @@
 	<?php
 
 
-	$_menu=array('dashboard'=>array('page'=>'tarefas-inteligentes.php',
+	$_menu=array(/*'dashboard'=>array('page'=>'tarefas-inteligentes.php',
 									'title'=>'Tarefas Inteligêntes',
-									'icon'=>'<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>'),
+									'icon'=>'<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>'),*/
 						'agenda'=>array('page'=>'pg_agenda.php',
 										'title'=>'Agenda',
 										'icon'=>'<i class="iconify" data-icon="fluent:calendar-ltr-20-regular"></i>'),
 						'pacientes'=>array('page'=>'pg_pacientes.php',
 											'title'=>'Pacientes',
 											'icon'=>'<i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular"></i>'),
-						'financeiro'=>array('page'=>'pg_financeiro.php',
+						/*'financeiro'=>array('page'=>'pg_financeiro.php',
 											'title'=>'Financeiro',
 											'icon'=>'<i class="iconify" data-icon="fluent:data-trending-20-regular"></i>'),
 						'ladingpage'=>array('page'=>'pg_landingpage.php',
 											'title'=>'Landing Page',
-											'icon'=>'<i class="iconify" data-icon="fluent:web-asset-24-regular"></i>'),
+											'icon'=>'<i class="iconify" data-icon="fluent:web-asset-24-regular"></i>'),*/
 						'configuracoes'=>array('page'=>'pg_configuracoes_clinica_colaboradores.php',
 												'pages'=>explode(",","pg,pg_configuracoes_clinica.php,pg_configuracoes_clinica_colaboradores.php,pg_configuracoes_clinica_cadeiras.php,pg_configuracoes_evolucao_anamnese.php,pg_configuracoes_evolucao_procedimentos.php,pg_configuracoes_evolucao_servicosdelaboratorio.php,pg_configuracoes_evolucao_examecomplementar.php,pg_configuracoes_fornecedores.php,pg_configuracoes_fornecedores_produtos.php,pg_configuracoes_financeiro_bancosecontas.php,pg_configuracoes_financeiro_cartoes.php,"),
 												'title'=>'Configurações',

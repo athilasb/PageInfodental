@@ -1154,7 +1154,7 @@
 										'start'=>str_replace(" ","T",$dt),
 										'end'=>str_replace(" ","T",date('Y-m-d H:i',strtotime($dt." + 30 minutes"))),
 										'cadeira'=>utf8_encode($c->titulo),
-										'color'=>'#efefef',
+										'color'=>'#cccccc',
 										'display'=>'background'
 									);
 						}

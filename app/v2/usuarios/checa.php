@@ -18,6 +18,9 @@
 				if(empty($wtalk)) header("Location: ".(empty($dir)?".":$dir)."/?erro=6&url=".$_SERVER['REQUEST_URI']);
 			}
 
+			$sql->consult("infodentalADM.infod_contas_onlines","*","where instancia='".$_ENV['NAME']."' and lixo=0");
+			$_wts=$sql->rows?mysqli_fetch_object($sql->mysqry):'';
+
 			
 		}
 

@@ -226,10 +226,10 @@
 							
 							//$('input[name=instagram]').inputmask({"mask":"@9-a{1,8}","placeholder":''})
 
-							$('input[name=instagram]').keyup(function(){
+							/*$('input[name=instagram]').keyup(function(){
 								let val = $(this).val().replace('@','');
 								$(this).val(`@${val}`);
-							});
+							});*/
 
 							$('input[name=telefone1]').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
 								let countryOut = country || '  ';
