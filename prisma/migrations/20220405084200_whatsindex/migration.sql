@@ -1,0 +1,1 @@
+ALTER TABLE `ident_whatsapp_mensagens` ADD INDEX(`id_agenda`);

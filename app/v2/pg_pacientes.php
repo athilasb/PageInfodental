@@ -106,7 +106,7 @@
 				<div class="filter-group">
 					<div class="filter-form form">
 						<dl>
-							<dd><a href="" class="button"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></a></dd>
+							<dd><a href="pg_pacientes.php" class="button"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></a></dd>
 						</dl>
 						<dl>
 							<dd><a href="javascript:;" class="button button_main js-submit-paciente"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>

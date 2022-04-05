@@ -47,6 +47,14 @@
 		$_tipos[$x->id]=$x;
 	}
 
+	$sql->consult($_p."whatsapp_respostasdeconfirmacao","*","");
+	if($sql->rows==0) {
+		$sql->add($_p."whatsapp_respostasdeconfirmacao","pubSim=0,pubNao=0,pubNaoIdentificado=0");
+	}
+
+	$sql->consult($_p."whatsapp_respostasdeconfirmacao","*","where id=1");
+	$wrc=mysqli_fetch_object($sql->mysqry);
+
 
 
 	if(isset($_POST['acao'])) {
@@ -64,6 +72,17 @@
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
 
 		}
+
+
+		$vSQL="pubSim='".((isset($_POST['pubSim']) and $_POST['pubSim']==1)?1:0)."',
+				pubNao='".((isset($_POST['pubNao']) and $_POST['pubNao']==1)?1:0)."',
+				pubNaoIdentificado='".((isset($_POST['pubNaoIdentificado']) and $_POST['pubNaoIdentificado']==1)?1:0)."',
+				msgSim='".addslashes($_POST['msgSim'])."',
+				msgNao='".addslashes($_POST['msgNao'])."',
+				msgNaoIdentificado='".addslashes($_POST['msgNaoIdentificado'])."'
+				";
+
+		$sql->update($_p."whatsapp_respostasdeconfirmacao",$vSQL,"where id=$wrc->id");
 
 		
 
@@ -198,6 +217,39 @@
 								?>
 									
 							
+							</fieldset>
+
+							<fieldset>
+								<legend>Respostas</legend>
+
+
+								<dl>
+									<dt>
+										<label><input type="checkbox" class="input-switch" name="pubSim" value="1"<?php echo $wrc->pubSim==1?" checked":"";?> /> Confirmação de Agendamento (1)</label>
+									</dt>
+									<dd>
+										<textarea name="msgSim" style="height:120px;"><?php echo ($wrc->msgSim);?></textarea>
+									</dd>
+								</dl>
+
+								<dl>
+									<dt>
+										<label><input type="checkbox" class="input-switch" name="pubNao" value="1"<?php echo $wrc->pubNao==1?" checked":"";?> /> Não confirmação de Agendamento (2)</label>
+									</dt>
+									<dd>
+										<textarea name="msgNao" style="height:120px;"><?php echo ($wrc->msgNao);?></textarea>
+									</dd>
+								</dl>
+
+								<dl>
+									<dt>
+										<label><input type="checkbox" class="input-switch" name="pubNaoIdentificado" value="1"<?php echo $wrc->pubNaoIdentificado==1?" checked":"";?> /> Resposta não identificada</label>
+									</dt>
+									<dd>
+										<textarea name="msgNaoIdentificado" style="height:120px;"><?php echo ($wrc->msgNaoIdentificado);?></textarea>
+									</dd>
+								</dl>
+
 							</fieldset>
 
 							<fieldset class="box-registros">

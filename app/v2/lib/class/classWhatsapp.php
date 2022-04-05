@@ -3,6 +3,7 @@
 	class WhatsApp {
 		
 		private $prefixo = "", 
+				$block = array('62982414610'),
 				$endpoint = "https://srv.infodental.dental:8443",
 				$token = "b5b9f54a9b11125a63136f3712e853f1023836b3";
 
@@ -37,6 +38,43 @@
 			return "55$novoNumero";
 		}
 
+		function mensagemAtalhos($attr) {
+
+			$_dias=array('Domingo',
+						'Segunda-Feira',
+						'Terça-Feira',
+						'Quarta-Feira',
+						'Quinta-Feira',
+						'Sexta-Feira',
+						'Sábado');
+
+			$paciente = (isset($attr['paciente']) and is_object($attr['paciente']))?$attr['paciente']:'';
+			$agenda = (isset($attr['agenda']) and is_object($attr['agenda']))?$attr['agenda']:'';
+			$cadeira = (isset($attr['cadeira']) and is_object($attr['cadeira']))?$attr['cadeira']:'';
+			$profissionais = (isset($attr['profissionais']) and !empty($attr['profissionais']))?$attr['profissionais']:'';
+			$msg = (isset($attr['msg']) and !empty($attr['msg']))?$attr['msg']:'';
+
+			if(is_object($paciente)) {
+				$msg = str_replace("[nome]",utf8_encode($paciente->nome), $msg);
+			}
+			if(is_object($agenda)) {
+
+				$dataFormatada=$_dias[date('w',strtotime($agenda->agenda_data))].", ";
+				$dataFormatada.=date('d/m/Y',strtotime($agenda->agenda_data));
+
+				$msg = str_replace("[agenda_data]",$dataFormatada, $msg);
+				$msg = str_replace("[agenda_hora]",date('H:i',strtotime($agenda->agenda_data)), $msg);
+				$msg = str_replace("[profissionais]",($profissionais), $msg);
+				$msg = str_replace("[duracao]",($agenda->agenda_duracao)." minutos", $msg);
+
+			}
+			if(is_object($cadeira)) {
+				$msg = str_replace("[consultorio]",is_object($cadeira)?utf8_encode($cadeira->titulo):"Consultório", $msg);
+			}
+
+			return $msg;
+
+		}
 		function adicionaNaFila($attr) {
 			$_p=$this->prefixo;
 			$sql=new Mysql();
@@ -62,7 +100,10 @@
 
 					$agenda = $cadeira = $profissionais = '';
 					if(isset($attr['id_agenda']) and is_numeric($attr['id_agenda'])) {
-						$sql->consult($_p."agenda","id,id_paciente,id_cadeira,agenda_data,agenda_duracao,profissionais","where id=".$attr['id_agenda']." and lixo=0");
+						$whereAg="where id=".$attr['id_agenda']." and lixo=0";
+						//echo $whereAg."<BR>";
+						$sql->consult($_p."agenda","id,id_paciente,id_cadeira,agenda_data,agenda_duracao,profissionais",$whereAg);
+						//echo $whereAg." => $sql->rows<BR>";
 						if($sql->rows) {
 							$agenda=mysqli_fetch_object($sql->mysqry);
 
@@ -93,17 +134,14 @@
 								}
 							}
 						}
-					}
+					} 
 
-					// Novo Agendamento (id_tipo=1), Alteração de Agendamento (id_tipo=2)
-					if($tipo->id==1) {
-						$_dias=array('Domingo',
-										'Segunda-Feira',
-										'Terça-Feira',
-										'Quarta-Feira',
-										'Quinta-Feira',
-										'Sexta-Feira',
-										'Sábado');
+
+					// Lembrete de Agendamento 24-18h (id_tipo=1)
+					// Lembrete de Agendamento 3h (id_tipo=2)
+					// Cancelamento (id_tipo=3)
+					$this->erro='';
+					if($tipo->id==1 or $tipo->id==2 or $tipo->id==3) {
 
 						if(is_object($paciente)) {
 
@@ -114,24 +152,30 @@
 									$msg = $tipo->texto;
 									$numero = telefone($paciente->telefone1);
 
-									if(!empty($numero)) {
+									if(!empty($numero) and !empty($msg)) {
 
+										if(in_array($numero,$this->block)) {
+											$this->erro="Numero bloqueado ($numero)";
+											return false;
+										}
 
-										
-
-										$dataFormatada=$_dias[date('w',strtotime($agenda->agenda_data))].", ";
-										$dataFormatada.=date('d/m/Y',strtotime($agenda->agenda_data));
-
-										$msg = str_replace("[nome]",utf8_encode($paciente->nome), $msg);
-										$msg = str_replace("[agenda_data]",$dataFormatada, $msg);
-										$msg = str_replace("[agenda_hora]",date('H:i',strtotime($agenda->agenda_data)), $msg);
-										$msg = str_replace("[consultorio]",is_object($cadeira)?utf8_encode($cadeira->titulo):"Consultório", $msg);
-										$msg = str_replace("[profissionais]",($profissionais), $msg);
-										$msg = str_replace("[duracao]",($agenda->agenda_duracao)." minutos", $msg);
+										$attr=array('paciente'=>$paciente,
+													'agenda'=>$agenda,
+													'profissionais'=>$profissionais,
+													'cadeira'=>$cadeira,
+													'msg'=>$msg);
+										$msg = $this->mensagemAtalhos($attr);
+										//echo "<br />=> ".$msg."<BR>";
 
 										// verifica se ja enviou
-										$where="where id_agenda=$agenda->id and id_paciente=$paciente->id and id_tipo=$tipo->id  and numero='".addslashes($numero)."' and data > NOW() - INTERVAL 1 HOUR";
+										$where="where id_agenda=$agenda->id and 
+														id_paciente=$paciente->id and 
+														id_tipo=$tipo->id  and 
+														numero='".addslashes($numero)."' and 
+														data > NOW() - INTERVAL 48 HOUR";
+
 										$sql->consult($_p."whatsapp_mensagens","*",$where);
+
 									
 										if($sql->rows==0) {
 
@@ -164,6 +208,8 @@
 						} else {
 							$this->erro="Paciente não encontrado!";
 						}
+					} else {
+						$this->erro="Nenhum tipo encontrado";
 					}
 
 				} else {
@@ -264,21 +310,21 @@
 							
 
 						$tipo=isset($_tipos[$v->id_tipo])?$_tipos[$v->id_tipo]:'';
-						//var_dump($tipo);
+					
 						if(is_object($tipo)) {
 
 
 							$paciente = isset($_pacientes[$v->id_paciente])?$_pacientes[$v->id_paciente]:'';
 							$agenda = isset($_agendas[$v->id_agenda])?$_agendas[$v->id_agenda]:'';
 							$profissional = isset($_profissionais[$v->id_profissional])?$_profissionais[$v->id_profissional]:'';
-							if($tipo->id==1) {
+							if($tipo->id==1 or $tipo->id==2 or $tipo->id==3) {
 
 								if(is_object($paciente) and is_object($agenda)) {
 
 									$attr=array('numero'=>$v->numero,
 												'mensagem'=>$v->mensagem,
 												'id_conexao'=>$conexao->id);
-
+									
 									if($this->enviaMensagem($attr)) {
 										$vsql="data_enviado=now(),enviado=1,retorno_json='".addslashes($this->response)."',id_conexao=$conexao->id";
 										$vwhere="where id=$v->id";
@@ -310,7 +356,7 @@
 											
 											
 										
-										sleep(0.4);
+										sleep(1);
 									}  else {
 										$vsql="data_erro=now(),erro=1,erro_retorno='".addslashes(isset($this->erro) ? $this->erro : 'sem erro')."',id_conexao=$conexao->id";
 										$vwhere="where id=$v->id";

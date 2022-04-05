@@ -22,7 +22,7 @@
 
 			if(!empty($data)) {
 
-				$agenda=array();
+				$agenda=$agendaIds=array();
 				$pacientesIds=$pacientesAtendidosIds=array(-1);
 				$where="where agenda_data>='".$data." 00:00:00' and agenda_data<='".$data." 23:59:59' and lixo=0";
 				if($id_profissional>0) $where.=" and profissionais like '%,$id_profissional,%'";
@@ -33,6 +33,7 @@
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$registros[]=$x;
 					$pacientesIds[]=$x->id_paciente;
+					$agendaIds[]=$x->id;
 
 					// ATENDIDO
 					if($x->id_status==5) {
@@ -55,6 +56,19 @@
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$_pacientes[$x->id]=$x;
 				}
+
+				$_agendamentosConfirmacaoWts=array();
+				if(count($agendaIds)>0) {
+					$sql->consult($_p."whatsapp_mensagens","*","where id_agenda IN (".implode(",",$agendaIds).") and id_tipo=1");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$_agendamentosConfirmacaoWts[$x->id_agenda]=1;
+
+						if($x->resposta_sim==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=2;
+						else if($x->resposta_nao==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=3;
+						else if($x->resposta_naocompreendida>0) $_agendamentosConfirmacaoWts[$x->id_agenda]=4;
+					}
+				}
+
 				foreach($registros as $x) {
 					if(isset($_pacientes[$x->id_paciente])) {
 						$paciente=$_pacientes[$x->id_paciente];
@@ -70,7 +84,8 @@
 													'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?$_codigoBI[$paciente->codigo_bi]:'',
 													'paciente'=>ucwords(strtolowerWLIB(utf8_encode($_pacientes[$x->id_paciente]->nome))),
 													'telefone1'=>mask($_pacientes[$x->id_paciente]->telefone1),
-													'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0
+													'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0,
+													'wts'=>(int)isset($_agendamentosConfirmacaoWts[$x->id])?$_agendamentosConfirmacaoWts[$x->id]:0
 												);
 					}
 				}
@@ -168,7 +183,7 @@
 		$dataWH=date('Y-m-d');
 	}
 
-	$agenda=$registros=array();
+	$agenda=$registros=$agendaIds=array();
 	$pacientesIds=$pacientesAtendidosIds=array(-1);
 	$where="where agenda_data>='".$dataWH." 00:00:00' and agenda_data<='".$dataWH." 23:59:59' and lixo=0";
 	if(isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional']) and $_GET['id_profissional']>0) $where.=" and profissionais like '%,".$_GET['id_profissional'].",%'";
@@ -177,10 +192,22 @@
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$registros[]=$x;
 		$pacientesIds[]=$x->id_paciente;
+		$agendaIds[]=$x->id;
 
 		// ATENDIDO
 		if($x->id_status==5) {
 			$pacientesAtendidosIds[]=$x->id_paciente;
+		}
+	}
+
+	$_agendamentosConfirmacaoWts=array();
+	if(count($agendaIds)>0) {
+		$sql->consult($_p."whatsapp_mensagens","*","where id_agenda IN (".implode(",",$agendaIds).") and id_tipo=1");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$_agendamentosConfirmacaoWts[$x->id_agenda]=1;
+			if($x->resposta_sim==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=2;
+			else if($x->resposta_nao==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=3;
+			else if($x->resposta_naocompreendida>0) $_agendamentosConfirmacaoWts[$x->id_agenda]=4;
 		}
 	}
 
@@ -219,7 +246,8 @@
 										'id_status'=>$x->id_status,
 										'paciente'=>ucwords(strtolowerWLIB(utf8_encode($_pacientes[$x->id_paciente]->nome))),
 										'telefone1'=>mask($_pacientes[$x->id_paciente]->telefone1),
-										'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0
+										'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0,
+										'wts'=>(int)isset($_agendamentosConfirmacaoWts[$x->id])?$_agendamentosConfirmacaoWts[$x->id]:0
 									);
 		}
 	}
@@ -241,14 +269,12 @@
 			<div class="header__inner2">
 				<section class="header-date">
 					<div class="header-date-buttons">
-						<a href="" class="button active">hoje</a>	
-						<a href="" class="button"><i class="iconify" data-icon="fluent:arrow-left-24-filled"></i></a>	
-						<a href="" class="button"><i class="iconify" data-icon="fluent:arrow-right-24-filled"></i></a>	
+					
 					</div>
 					<div class="header-date-now">
-						<h1>12</h1>
-						<h2>dez</h2>
-						<h3>terça-feira</h3>
+						<h1 class="js-cal-titulo-diames"></h1>
+						<h2 class="js-cal-titulo-mes"></h2>
+						<h3 class="js-cal-titulo-dia"></h3>
 					</div>
 				</section>
 			</div>
@@ -351,6 +377,20 @@
 						}
 
 						let html = ``;
+						let wtsIcon = ``;
+						if(x.wts !== undefined && x.wts>0) {
+							if(x.wts == 1) {
+								wtsIcon=` <span class="iconify" data-icon="bi:send" data-inline="true"></span>`;
+							} else if(x.wts == 2) {
+								wtsIcon=` <span class="iconify" data-icon="bi:send-check" data-inline="true" style="color:var(--verde)"></span>`;
+							} else if(x.wts == 3) {
+								wtsIcon=` <span class="iconify" data-icon="bi:send-x" data-inline="true" style="color:var(--vermelho)"></span>`;
+							} else if(x.wts == 4) {
+								wtsIcon=` <span class="iconify" data-icon="fluent:person-chat-24-regular" data-inline="true"></span>`;
+							} else {
+								wtsIcon=` <span class="iconify" data-icon="bi:send-exclamation" data-inline="true"></span>`;
+							}
+						}
 						
 						if(eval(x.id_status)==5) {
 							//console.log(x);
@@ -363,7 +403,7 @@
 							html = `<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
 											<p class="kanban-card-dados__data">
 												<i class="iconify" data-icon="ph:calendar-blank"></i>
-												${x.data} &bull; ${x.hora}
+												${x.data} &bull; ${x.hora}${wtsIcon}
 											</p>
 											<h1>${x.paciente}</h1>
 											<p>${x.telefone1}</p>
@@ -373,7 +413,7 @@
 							html = `<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
 											<p class="kanban-card-dados__data">
 												<i class="iconify" data-icon="ph:calendar-blank"></i>
-												${x.data} &bull; ${x.hora}
+												${x.data} &bull; ${x.hora}${wtsIcon}
 											</p>
 											<h1>${x.paciente}</h1>
 											<p>${x.telefone1}</p>
@@ -393,17 +433,52 @@
 
 					let dataFormatada = `${dias[dtObj.getDay()]}, ${dtObj.getDate()} de ${meses[(dtObj.getMonth())]} de ${dtObj.getFullYear()}`;
 
-
 					data = `${dtObj.getFullYear()}-${d2(dtObj.getMonth()+1)}-${d2(dtObj.getDate())}`;
 					dataAgenda = `${dtObj.getDate()}/${d2(dtObj.getMonth()+1)}/${d2(dtObj.getFullYear())}`;
 
 					agendaAtualizar();
 
-					$('.js-calendario-title').val(dataFormatada)
+					$('.js-calendario-title').val(dataFormatada);
+
+					let date = dtObj;
+					let mesString='';
+
+					if(date.getMonth()==0) mesString='jan'; 
+					else if(date.getMonth()==1) mesString='fev'; 
+					else if(date.getMonth()==2) mesString='mar'; 
+					else if(date.getMonth()==3) mesString='abr'; 
+					else if(date.getMonth()==4) mesString='mai'; 
+					else if(date.getMonth()==5) mesString='jun'; 
+					else if(date.getMonth()==6) mesString='jul'; 
+					else if(date.getMonth()==7) mesString='ago'; 
+					else if(date.getMonth()==8) mesString='set'; 
+					else if(date.getMonth()==9) mesString='out'; 
+					else if(date.getMonth()==10) mesString='nov'; 
+					else if(date.getMonth()==11) mesString='dez'; 
+
+					if(date.getUTCDay()==0) diaString='domingo';
+					else if(date.getUTCDay()==1) diaString='segunda-feira';
+					else if(date.getUTCDay()==2) diaString='terça-feira';
+					else if(date.getUTCDay()==3) diaString='quarta-feira';
+					else if(date.getUTCDay()==4) diaString='quinta-feira';
+					else if(date.getUTCDay()==5) diaString='sexta-feira';
+					else if(date.getUTCDay()==6) diaString='sábado';
+
+					let dateString = date.getDate()+" "+mesString+" "+date.getFullYear();
+
+					$('.js-cal-titulo-diames').html(dtObj.getDate()>=9?dtObj.getDate():`0${dtObj.getDate()}`);
+					$('.js-cal-titulo-mes').html(mesString);
+					$('.js-cal-titulo-dia').html(diaString);
+
+
 				}
 
 
 				$(function(){
+
+					let aux = data.split('-');
+					let dtObj = new Date(`${aux[1]}/${aux[2]}/${aux[0]}`);
+					dataProcess(dtObj);
 
 					$('.js-profissionais').change(function(){
 						id_profissional=$(this).val();

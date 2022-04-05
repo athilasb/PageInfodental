@@ -13,10 +13,13 @@
 	while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
 
 	$_status=array();
-	$sql->consult($_p."agenda_status","*","where lixo=0");
+	$sql->consult($_p."agenda_status","*","where lixo=0 order by kanban_ordem asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_status[$x->id]=$x;
 	}
+
+	$attr=array('prefixo'=>$_p,'usr'=>$usr);
+	$infozap = new Whatsapp($attr);
 
 	if(isset($_POST['ajax'])) {
 
@@ -547,10 +550,23 @@
 						$sql->add($_p."pacientes_historico",$vSQLHistorico);
 					}
 
+					// veririca se desmarcou
+					$wts=0;
+					//if($agenda->id_status!=$idStatusNovo) {
+						if($idStatusNovo==4) {
+
+							$attr=array('id_tipo'=>3,
+										'id_paciente'=>$agenda->id_paciente,
+										'id_agenda'=>$agenda->id);
+							//var_dump($attr);
+							if($infozap->adicionaNaFila($attr)) $wts=1;
+
+						}
+					//}
 
 				
 
-					$rtn=array('success'=>true);
+					$rtn=array('success'=>true,'wts'=>$wts);
 				}
 				
 			}
@@ -813,6 +829,12 @@
 			}
 		}
 
+		else if($_POST['ajax']=="whatsappDisparar") {
+
+			$infozap->dispara();
+			$rtn=array('success'=>true);
+		}
+
 		header("Content-type: application/json");
 		echo json_encode($rtn);
 		die();
@@ -870,7 +892,7 @@
 
 
 			$registros=$registrosDesmarcados=array();
-			$pacientesIds=array();
+			$pacientesIds=$agendaIds=array();
 			
 			$sql->consult($_p."agenda","*",$where);
 			if($sql->rows) {
@@ -883,7 +905,17 @@
 						$registros[]=$x;
 					}
 					$pacientesIds[]=$x->id_paciente;
+					$agendaIds[]=$x->id;
 				}
+
+
+				$_agendamentosConfirmacaoWts=array();
+				/*if(count($agendaIds)>0) {
+					$sql->consult($_p."whatsapp_mensagens","*","where id_agenda IN (".implode(",",$agendaIds).")");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$_agendamentosConfirmacaoWts[$x->id_agenda]=1;
+					}
+				}*/
 
 				// Agendamentos não desmarcados
 				foreach($registros as $x) {
@@ -962,6 +994,7 @@
 												'color'=>'#FFF',
 												'statusColor'=>(isset($_status[$x->id_status])?$_status[$x->id_status]->cor:''),
 												'id'=>$x->id,
+												'wts'=>(int)isset($_agendamentosConfirmacaoWts[$x->id])?1:0
 											);
 					} else if($x->agendaPessoal==1) {
 
@@ -1399,9 +1432,10 @@
 		}
 
 
+
 		$(function(){
 
-			$('input[name=agenda_data]').datetimepicker({
+			$('#js-aside-add input[name=agenda_data]').datetimepicker({
 												timepicker:false,
 												format:'d/m/Y',
 												scrollMonth:false,
@@ -1409,7 +1443,7 @@
 												scrollInput:false,
 											});
 
-			$('input[name=agenda_hora]').datetimepicker({
+			$('#js-aside-add input[name=agenda_hora]').datetimepicker({
 				  datepicker:false,
 			      format:'H:i',
 			      pickDate:false
@@ -1460,13 +1494,13 @@
 				let dataAgenda = new Date(`${valAno}, ${valMes}, ${valDia}`);
 				let dataHoje = new Date();
 
+				//console.log(dataAgenda+' '+dataHoje);
 				if(dataAgenda>dataHoje) {
 					$(this).parent().parent().parent().parent().find('select[name=id_status]').find('option[value=7],option[value=6],option[value=5],option[value=3]').prop('disabled',true);
 				} else {
-
 					$(this).parent().parent().parent().parent().find('select[name=id_status]').find('option[value=7],option[value=6],option[value=5],option[value=3]').prop('disabled',false);
 				}
-			})
+			});
 
 			$('.m-produtos').next().show();	
 
@@ -1675,7 +1709,7 @@
 		.fc-scroller {overflow:visible !important;}
 		.fc-row.fc-rigid, .fc .fc-scroller-harness {overflow:visible !important;} 
 		.fc-scroller, fc.day.grid.containet {overflow:none !important;}
-		.fc-timegrid-slot { height: 45px !important; // 1.5em by default }
+		.fc-timegrid-slot { height: 60px !important; // 1.5em by default }
 		.fc-scrollgrid-sync-inner { height:90px; }
 		.fc-scrollgrid  { border:none !important; }
 		.fc-scrollgrid-liquid{ border:none !important; }
@@ -1733,6 +1767,7 @@
 					var calendar = '';
 					var calpopID = 0;
 					var desmarcados = [];
+					var slickDesmarcados = false;
 					
 					const popView = (id_agenda) => {
 						
@@ -1760,7 +1795,7 @@
 											$('#js-aside-edit select[name=id_profissional]').find(':selected').prop('selected',false);
 											if(rtn.data.profissionais) {
 												rtn.data.profissionais.forEach(idProfissional=> {
-													console.log(idProfissional);
+													//console.log(idProfissional);
 													$('#js-aside-edit-agendaPessoal select[name=id_profissional]').find(`[value=${idProfissional}]`).prop('selected',true);
 												})
 											}
@@ -1872,9 +1907,59 @@
 
 											$('#js-aside-edit .js-profissionais').chosen();
 											
-											
+											$('#js-aside-edit input[name=agenda_data]').trigger('change');
 
 											$('#js-aside-edit .js-profissionais').trigger('chosen:updated');
+
+
+											$('#js-aside-edit .js-salvar').show();
+
+											$('#js-aside-edit input, #js-aside-edit textarea').prop('readonly',false).css('background','');
+
+											$('#js-aside-edit select').prop('disabled',false).css('background','').trigger('chosen:updated');
+
+											// se confirmado
+											if(rtn.data.id_status=="2") {
+												$('#js-aside-edit select[name=id_status]').find('option[value=1]').prop('disabled',true);
+
+												$('#js-aside-edit input[name=agenda_data]').prop('readonly',true).datetimepicker('destroy').css('background','var(--cinza3)');
+
+												$('#js-aside-edit input[name=agenda_hora]').prop('readonly',true).datetimepicker('destroy').css('background','var(--cinza3)');
+
+											}  
+											// se desmarcado
+											else if(rtn.data.id_status=="4") {
+
+												$('#js-aside-edit .js-salvar').hide();
+
+												$('#js-aside-edit select[name=id_status]').prop('disabled',true);
+
+												$('#js-aside-edit input[name=agenda_data],#js-aside-edit input[name=agenda_hora]').datetimepicker('destroy')
+
+												$('#js-aside-edit input, #js-aside-edit textarea').prop('readonly',true).css('background','var(--cinza3)');
+
+												$('#js-aside-edit select').prop('disabled',true).css('background','var(--cinza3)').trigger('chosen:updated');
+
+
+											} else {
+
+
+												$('#js-aside-edit select[name=id_status]').find('option[value=1]').prop('disabled',false)
+
+												$('#js-aside-edit input[name=agenda_data]').datetimepicker({
+													timepicker:false,
+													format:'d/m/Y',
+													scrollMonth:false,
+													scrollTime:false,
+													scrollInput:false,
+												}).css('background','');
+
+												$('#js-aside-edit input[name=agenda_hora]').datetimepicker({
+													  datepicker:false,
+												      format:'H:i',
+												      pickDate:false
+												}).css('background','');
+											}
 										}
 
 
@@ -1900,8 +1985,14 @@
 							if(desmarcados.length==0) {
 								$('#js-agendamentosDesmarcados').html(`<center>Nenhum agendamento desmarcado</center>`);
 							} else {
+								if(slickDesmarcados===true) {
+									$('.cal-lost-slick').slick('destroy');
+								}
+
 								$('#js-agendamentosDesmarcados').html(``);
-								console.log(desmarcados)
+
+								//console.log(desmarcados)
+
 								let processados=0;
 								desmarcados.forEach(x=> {
 
@@ -1921,7 +2012,7 @@
 									let item = `<a href="javascript:;" class="cal-lost-item" style="border-color:${x.color};" onclick="popView(${x.id});">
 													<div>
 														<p>${x.hora}-${x.horaFinal} - ${x.cadeira}</p>
-														<h1>${x.nome}</h1>
+														<h1 style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;">${x.nome}</h1>
 													</div>
 													${profissionais}
 												</a>`;
@@ -1929,14 +2020,15 @@
 									$(`#js-agendamentosDesmarcados`).append(item);
 									processados++;
 									if(processados==desmarcados.length) {
-										console.log('teste'+` => ${processados}==${desmarcados.length}`);
-
+									
 										$('.cal-lost-slick').slick({
 											dots:false,
 											arrows:true,
 											slidesToShow:4,											
 											infinite:false
 										});
+										slickDesmarcados = true;
+										
 									}
 								});
 
@@ -1948,6 +2040,7 @@
 
 					$(function(){
 
+					
 
 						var calendarEl = document.getElementById('calendar'); 
 						calendar = new FullCalendar.Calendar(calendarEl, {
@@ -2079,6 +2172,13 @@
 								let statusColor = arg.event.extendedProps.statusColor;
 								let profissionais = arg.event.extendedProps.profissionais;
 								let id_agenda = arg.event.id;
+								let wts = arg.event.extendedProps.wts;
+
+								let wtsIcon = ``;
+								/*if(wts !== undefined && wts == 1) {
+								
+									wtsIcon=`<span class="iconify" data-icon="akar-icons:whatsapp-fill"></span>`;
+								}*/
 
 								profissionaisHTML = ``;
 								if(profissionais && profissionais.length>0) {
@@ -2105,6 +2205,7 @@
 														 <p>${hora}</p>
 														 <h1 class="cal-item__titulo">${nome}</h1>
 													</section>
+													${wtsIcon}
 												</section>`
 							    } else {
 							    	eventHTML=`<section class="cal-item" style="height:100%;border-left:6px solid ${statusColor};" >
@@ -2113,11 +2214,12 @@
 															<h1>${hora} - ${cadeira}</h1>
 															<h2>${nome}</h2>
 														</div>
+														${wtsIcon}
 														${profissionaisHTML}
 													</section>
 												</section>`
 							    }
-							    console.log(agendaPessoal);
+							    //console.log(agendaPessoal);
 							    if(agendaPessoal==2) {
 							    	eventHTML=`<div style="background:red"></div>`;
 							    }
@@ -2239,7 +2341,7 @@
 
 						let erro=false;
 						$(`#js-aside-add form .obg-${agendaPessoal}`).each(function(index,elem){
-							console.log($(this).attr('name'));
+						//	console.log($(this).attr('name'));
 							if($(this).attr('name')!==undefined && $(this).val()  && $(this).val().length==0) {
 								$(elem).addClass('erro');
 								erro=true;
@@ -2265,6 +2367,12 @@
 								data:data,
 								success:function(rtn) {
 									if(rtn.success) {
+
+										$('#js-aside-add select[name=id_paciente]').val('').trigger('change.select2');
+
+										$('#js-aside-add select.js-profissionais').val('').trigger('chosen:updated');
+										$('#js-aside-add input,#js-aside-add textarea').val('');
+
 										$.fancybox.close();
 										calendar.refetchEvents();
 										$('#js-aside-add .aside-close').click();
@@ -2489,7 +2597,7 @@
 
 						let erro=false;
 						$('#js-aside-edit-agendaPessoal form .obg').each(function(index,elem){
-							console.log($(this).attr('name'));
+							//console.log($(this).attr('name'));
 							if($(this).attr('name')!==undefined && $(this).val().length==0) {
 								$(elem).addClass('erro');
 								erro=true;
@@ -2732,6 +2840,14 @@
 										calendar.refetchEvents();
 										$('#js-aside-edit .aside-close').click();
 
+										if(rtn.wts && rtn.wts==1) {
+											let data = `ajax=whatsappDisparar`;
+											$.ajax({
+												type:"POST",
+												data:data
+											})
+										}
+
 
 										//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
 									} else if(rtn.error) {
@@ -2772,6 +2888,7 @@
 							<p class="js-statusBI"></p>
 							<p class="js-idade"></p>
 							<p>Periodicidade: 6 meses</p>
+							<p>Música</p>
 						</div>
 					</div>
 				</section>
@@ -2840,7 +2957,7 @@
 								<option value="">-</option>
 								<?php
 								foreach($_status as $p) {
-									echo '<option value="'.$p->id.'"'.($values['id_status']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
+									echo '<option value="'.$p->id.'">'.utf8_encode($p->titulo).'</option>';
 								}
 								?>
 							</select>

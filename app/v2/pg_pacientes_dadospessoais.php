@@ -124,7 +124,7 @@
 				<div class="filter-group">
 					<div class="filter-form form">
 						<dl>
-							<dd><a href="" class="button"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></a></dd>
+							<dd><a href="pg_pacientes.php" class="button"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></a></dd>
 						</dl>
 						<dl>
 							<dd><a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>

@@ -41,9 +41,9 @@ RUN a2ensite 000-default
 # Apache + PHP requires preforking Apache for best results
 RUN a2dismod mpm_event && a2enmod mpm_prefork
 
-#COPY cron /etc/cron.d/cron
-#RUN chmod 0644 /etc/cron.d/cron
-#RUN crontab /etc/cron.d/cron
+COPY cron /etc/cron.d/cron
+RUN chmod 0644 /etc/cron.d/cron
+RUN crontab /etc/cron.d/cron
 # Enable apache2 rewrite engine
 RUN a2enmod rewrite && a2enmod proxy_http && a2enmod proxy_wstunnel
 
