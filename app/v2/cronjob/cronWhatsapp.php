@@ -34,7 +34,7 @@
 				$dif /= 60 * 60 *24;
 				$dif= round($dif);
 
-				if($dif>=7) {
+				//if($dif>=7) {
 					echo $x->data." - $dif - -> ".$x->agenda_data." -> <BR> -> $x->id";
 					$attr=array('id_tipo'=>1,
 								'id_paciente'=>$x->id_paciente,
@@ -42,7 +42,7 @@
 					if($wts->adicionaNaFila($attr)) echo "<BR>Sucesso!";
 					else echo "<BR>Erro: ".$wts->erro;
 					echo "<hr>";
-				}
+				//}
 			}
 		}
 
