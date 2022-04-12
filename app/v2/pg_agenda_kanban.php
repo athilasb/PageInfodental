@@ -66,6 +66,16 @@
 						if($x->resposta_sim==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=2;
 						else if($x->resposta_nao==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=3;
 						else if($x->resposta_naocompreendida>0) $_agendamentosConfirmacaoWts[$x->id_agenda]=4;
+						else if($x->enviado==0 and $x->erro==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=6;
+						else {
+							$dif = strtotime(date('Y-m-d H:i'))-strtotime($x->data_enviado);
+							$dif /= 60;
+							$dif = ceil($dif);
+
+							if($dif>4) {
+								 $_agendamentosConfirmacaoWts[$x->id_agenda]=5;
+							}
+						}
 					}
 				}
 
@@ -77,8 +87,8 @@
 						$dia=" ".$diasExtenso[date('w',strtotime($x->agenda_data))];
 
 						$agenda[]=(object) array('id_agenda'=>$x->id,
-													'data'=>$dataAg.$dia,
-													'hora'=>date('H:i',strtotime($x->agenda_data)),
+													'data'=>$dataAg,//.$dia,
+													'hora'=>date('H:i',strtotime($x->agenda_data))." às ".date('H:i',strtotime($x->agenda_data_final)),
 													'id_status'=>$x->id_status,
 													'id_paciente'=>$paciente->id,
 													'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?$_codigoBI[$paciente->codigo_bi]:'',
@@ -242,7 +252,7 @@
 										'id_paciente'=>$x->id_paciente,
 										'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?$_codigoBI[$paciente->codigo_bi]:'',
 										'data'=>$dataAg,
-										'hora'=>date('H:i',strtotime($x->agenda_data))." às ".date('H:i',strtotime($x->agenda_data)),
+										'hora'=>date('H:i',strtotime($x->agenda_data))." às ".date('H:i',strtotime($x->agenda_data_final)),
 										'id_status'=>$x->id_status,
 										'paciente'=>ucwords(strtolowerWLIB(utf8_encode($_pacientes[$x->id_paciente]->nome))),
 										'telefone1'=>mask($_pacientes[$x->id_paciente]->telefone1),
@@ -346,7 +356,7 @@
 
 				const agendaListar = () => {
 
-					$(`#kanban .js-kanban-item,#kanban .js-kanban-item-modal`).remove();
+					$(`#kanban a`).remove();
 
 					popViewInfos = [];
 
@@ -379,45 +389,48 @@
 						let html = ``;
 						let wtsIcon = ``;
 						if(x.wts !== undefined && x.wts>0) {
-							if(x.wts == 1) {
-								wtsIcon=` <span class="iconify" data-icon="bi:send" data-inline="true"></span>`;
-							} else if(x.wts == 2) {
-								wtsIcon=` <span class="iconify" data-icon="bi:send-check" data-inline="true" style="color:var(--verde)"></span>`;
-							} else if(x.wts == 3) {
-								wtsIcon=` <span class="iconify" data-icon="bi:send-x" data-inline="true" style="color:var(--vermelho)"></span>`;
-							} else if(x.wts == 4) {
-								wtsIcon=` <span class="iconify" data-icon="fluent:person-chat-24-regular" data-inline="true"></span>`;
+							if(x.wts == 1) { // aguardando
+								//wtsIcon=` <span class="iconify" data-icon="bi:send" data-inline="true" data-height="16" style="background:var(--cinza5);color:#FFF;padding:7px;border-radius:5px;"></span>`;
+								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span>aguard. resp.</span></div>`;
+							} else if(x.wts == 2) { // sim
+								//wtsIcon=` <span class="iconify" data-icon="bi:send-check" data-inline="true" data-height="16" style="background:var(--verde);color:#FFF;padding:7px;border-radius:5px;"></span>`;
+								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span style="color:green">confirmado</span></div>`;
+							} else if(x.wts == 3) { // nao
+								//wtsIcon=` <span class="iconify" data-icon="bi:send-x" data-inline="true" data-height="16" style="background:var(--vermelho);color:#FFF;padding:7px;border-radius:5px;"></span>`;
+								wtsIcon=`<div class="kanban-item-wp kanban-item-wp_destaque"><i class="iconify" data-icon="cib:whatsapp"></i> <span>desmarcado</span></div>`;
+							} else if(x.wts == 4) { // sem entender
+								//wtsIcon=` <span class="iconify" data-icon="fluent:person-chat-24-regular" data-inline="true" data-height="16" style="background:var(--cinza4);color:#FFF;padding:7px;border-radius:5px;"></span>`;
+								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span>não compreend.</span></div>`;
+							} else if(x.wts == 5) { // mais de 4h sem resposta
+								//wtsIcon=` <span class="iconify" data-icon="fluent:person-chat-24-regular" data-inline="true" data-height="16" style="background:var(--cinza4);color:#FFF;padding:7px;border-radius:5px;"></span>`;
+								
+								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span>sem resp.</span></div>`;
+							} else if(x.wts == 6) { // deu erro ao enviar
+								//wtsIcon=` <span class="iconify" data-icon="fluent:person-chat-24-regular" data-inline="true" data-height="16" style="background:var(--cinza4);color:#FFF;padding:7px;border-radius:5px;"></span>`;
+								
+								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span>sem conexão</span></div>`;
 							} else {
-								wtsIcon=` <span class="iconify" data-icon="bi:send-exclamation" data-inline="true"></span>`;
+								//wtsIcon=` <span class="iconify" data-icon="bi:send-exclamation" data-inline="true"></span>`;
+								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span>aguard resp.</span></div>`;
 							}
 						}
+						//wtsIcon+=` ${x.wts}`
 						
 						if(eval(x.id_status)==5) {
-							//console.log(x);
-							html = `<div href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
-											
-											<h1>${x.paciente}</h1>
-											<h2>${x.statusBI}</h2>
-											<a href="pg_contatos_pacientes_resumo.php?id_paciente=${x.id_paciente}" target="_blank" class="js-hrefPaciente button button__sec"><i class="iconify" data-icon="bx:bxs-user"></i></a>
-										</div>`;
-							html = `<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
-											<p class="kanban-card-dados__data">
-												<i class="iconify" data-icon="ph:calendar-blank"></i>
-												${x.data} &bull; ${x.hora}${wtsIcon}
-											</p>
-											<h1>${x.paciente}</h1>
-											<p>${x.telefone1}</p>
-										</a>`;
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}">
+										<p>${x.data} • ${x.hora}</p>
+										<h1>${x.paciente}</h1>
+										<p>${x.telefone1}</p>
+										${wtsIcon}
+									</a>`;
 
 						} else {
-							html = `<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
-											<p class="kanban-card-dados__data">
-												<i class="iconify" data-icon="ph:calendar-blank"></i>
-												${x.data} &bull; ${x.hora}${wtsIcon}
-											</p>
-											<h1>${x.paciente}</h1>
-											<p>${x.telefone1}</p>
-										</a>`;
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}">
+										<p>${x.data} • ${x.hora}</p>
+										<h1>${x.paciente}</h1>
+										${x.id_status==2?'':`<p>${x.telefone1}</p>`}
+										${wtsIcon}
+									</a>`;
 
 						
 						}	

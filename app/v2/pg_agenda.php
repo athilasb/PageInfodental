@@ -835,6 +835,51 @@
 			$rtn=array('success'=>true);
 		}
 
+		else if($_POST['ajax']=="agendamentosProfissionais") {
+
+			$data = (isset($_POST['data']) and isset($_POST['data']))?invDate($_POST['data']):'';
+			$hora = (isset($_POST['hora']) and isset($_POST['hora']))?$_POST['hora'].":00":'';
+
+			if(!empty($data) and !empty($hora)) {
+				$diaSemana = date('w',strtotime($data));
+				
+
+				$profissionaisDestaque=array();
+				$where="where dia='$diaSemana' and 
+								inicio<='$hora' and 
+								fim>='$hora' and 
+ 								lixo=0";
+				$sql->consult($_p."profissionais_horarios","distinct id_profissional",$where);
+			//	echo $where."->".$sql->rows."\n";
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					//echo $x->id_profissional."\n";
+					$profissionaisDestaque[$x->id_profissional]=1;
+				}
+
+				$listaProfissionais=$listaProfissionaisDestaque=array();
+				foreach($_profissionais as $x) {
+					if($x->check_agendamento==0) continue;
+					if(isset($profissionaisDestaque[$x->id])) {
+						$listaProfissionaisDestaque[]=(object)array('id'=>$x->id,'nome'=>utf8_encode($x->nome),'destaque'=>1);
+					}
+				}
+
+
+				foreach($_profissionais as $x) {
+					if($x->check_agendamento==0) continue;
+					if(!isset($profissionaisDestaque[$x->id])) {
+						$listaProfissionais[]=(object)array('id'=>$x->id,'nome'=>utf8_encode($x->nome),'destaque'=>0);
+					}
+				}
+
+				$rtn=array('success'=>true,
+							'listaProfissionaisDestaque'=>$listaProfissionaisDestaque,
+							'listaProfissionais'=>$listaProfissionais);
+
+
+			}
+		}
+
 		header("Content-type: application/json");
 		echo json_encode($rtn);
 		die();
@@ -1109,7 +1154,7 @@
 
 			}
 
-		//	echo json_encode($_cadeirasHorarios);
+			//	echo json_encode($_cadeirasHorarios);
 
 			//echo "<BR><BR>";
 
@@ -1229,7 +1274,6 @@
 										'telefone'=>utf8_encode($x->telefone1),
 										'cpf'=>utf8_encode($x->cpf));
 			}
-
 
 		}
 		header("Content-type: application/json");
@@ -1400,6 +1444,7 @@
 			$('#js-aside-add input[name=agenda_hora]').val(agendaHora);
 			$('#js-aside-add select[name=id_cadeira]').val(id_cadeira);
 			$('#js-aside-add select[name=id_paciente]').val(null).trigger('change');
+			$('#js-aside-add input[name=alteracao]').val(0);
 
 
 			$("#js-aside-add").fadeIn(100,function() {
@@ -1409,6 +1454,7 @@
 
 			$('#js-aside-add .js-profissionais').chosen();
 			$('#js-aside-add .js-profissionais').trigger('chosen:updated');
+			agendamentosProfissionais(`add`);
 		}
 		
 		const formatTemplate = (state) => {
@@ -1779,7 +1825,7 @@
 									if(rtn.success) {
 
 										//$('html, body').animate({scrollTop: 0},'fast');
-										if(rtn.data.agendaPessoal==1) {
+										if(rtn.data.agendaPessoal>0) {
 											$('#js-aside-edit-agendaPessoal input[name=id]').val(rtn.data.id);
 											$('#js-aside-edit-agendaPessoal input[name=agenda_data]').val(rtn.data.agenda_data);
 											$('#js-aside-edit-agendaPessoal input[name=agenda_hora]').val(rtn.data.agenda_hora);
@@ -1833,7 +1879,7 @@
 											$('.js-fieldset-horarios,.js-btn-remover').show();
 											
 
-											if(rtn.data.statusBI.length==0) {
+											if(rtn.data.statusBI && rtn.data.statusBI.length==0) {
 												$('#js-aside-edit .js-statusBI').html(``).hide();
 											} else {
 												$('#js-aside-edit .js-statusBI').html(`${rtn.data.statusBI}`).show();
@@ -1848,7 +1894,7 @@
 											}
 
 											$('.js-ag-futuro table tr').remove();
-											if(rtn.data.agendamentosFuturos.length>0) {
+											if(rtn.data.agendamentosFuturos && rtn.data.agendamentosFuturos.length>0) {
 												rtn.data.agendamentosFuturos.forEach(x=>{
 
 
@@ -1962,6 +2008,10 @@
 											}
 										}
 
+										$('#js-aside-edit input[name=alteracao]').val(0);
+										$('#js-aside-edit-agendaPessoal input[name=alteracao]').val(0);
+										agendamentosProfissionais(`edit`);
+
 
 
 									} else if(rtn.error) {
@@ -1974,7 +2024,6 @@
 									swal({title: "Erro!", text: 'Algum erro ocorreu durante a abertura deste agendamento', type:"error", confirmButtonColor: "#424242"});
 								}
 						});
-
 					}
 
 					const agendamentosDesmarcados = () => {
@@ -2037,6 +2086,76 @@
 						}
 					}
 
+
+					const agendamentosProfissionais = (tipo) => {
+
+						if(tipo=="add" || tipo=="edit") {
+
+							let aside = $(`#js-aside-${tipo}`);
+
+							let profissionaisSelecionados = aside.find('.js-profissionais option:selected').length>0 ? aside.find('.js-profissionais').val() : [];
+							let aData = aside.find('input[name=agenda_data]').val();
+							let aHora = aside.find('input[name=agenda_hora]').val();
+
+							let data = `ajax=agendamentosProfissionais&data=${aData}&hora=${aHora}`;
+							
+							$.ajax({
+								type:"POST",
+								data:data,
+								success:function(rtn) {
+									if(rtn.success) {
+										if(rtn.listaProfissionais || rtn.listaProfissionaisDestaque) {
+											aside.find('.js-profissionais option').remove();
+											//aside.find('.js-profissionais').append(`<option value=""></option>`);
+
+											if(rtn.listaProfissionaisDestaque && rtn.listaProfissionaisDestaque.length>0) {
+
+												itens = 0;
+												options = ``;
+												rtn.listaProfissionaisDestaque.forEach(x=>{
+													let nome = x.nome;
+
+													sel = $.inArray(x.id,profissionaisSelecionados)>=0?' selected':'';
+													
+													options+=`<option value="${x.id}"${sel}>${nome}</option>`;
+													
+													itens++;
+
+													if(itens == rtn.listaProfissionaisDestaque.length) {
+														aside.find('.js-profissionais').append(`<optgroup label="Atende nesse horário">${options}</optgroup>`);
+													}
+												})
+
+											}
+
+											if(rtn.listaProfissionais && rtn.listaProfissionais.length>0) {
+												
+												itens = 0;
+												options = ``;
+												rtn.listaProfissionais.forEach(x=>{
+													let nome = x.nome;
+
+													sel = $.inArray(x.id,profissionaisSelecionados)>=0?' selected':'';
+													
+													options+=`<option value="${x.id}"${sel}>${nome}</option>`;
+													
+													itens++;
+													if(itens == rtn.listaProfissionais.length) {
+														aside.find('.js-profissionais').append(`<optgroup label="Não atende nesse horário">${options}</optgroup>`);
+													}
+												});
+											
+
+											}
+
+											aside.find('.js-profissionais').trigger('chosen:updated');
+										}
+									}
+								}
+							})
+						}
+
+					}
 
 					$(function(){
 
@@ -2243,10 +2362,6 @@
 						  });
 						calendar.render();
 
-					});
-					$(function(){
-
-						
 						calendarioVisualizacaoData();
 
 						<?php
@@ -2282,42 +2397,6 @@
 							</div>
 							<span class="badge-prof">SH</span>
 						</a>
-						<?php /*
-						<a href="" class="cal-lost-item">
-							<div>
-								<p>08:30-09:00 - CONSULTÓRIO 3</p>
-								<h1>Lidiane Vanessa Silva Bastos</h1>
-							</div>
-							<span class="badge-prof">SH</span>
-						</a>
-						<a href="" class="cal-lost-item">
-							<div>
-								<p>08:30-09:00 - CONSULTÓRIO 3</p>
-								<h1>Lidiane Vanessa Silva Bastos</h1>
-							</div>
-							<span class="badge-prof">SH</span>
-						</a>
-						<a href="" class="cal-lost-item">
-							<div>
-								<p>08:30-09:00 - CONSULTÓRIO 3</p>
-								<h1>Lidiane Vanessa Silva Bastos</h1>
-							</div>
-							<span class="badge-prof">SH</span>
-						</a>
-						<a href="" class="cal-lost-item">
-							<div>
-								<p>08:30-09:00 - CONSULTÓRIO 3</p>
-								<h1>Lidiane Vanessa Silva Bastos</h1>
-							</div>
-							<span class="badge-prof">SH</span>
-						</a>
-						<a href="" class="cal-lost-item">
-							<div>
-								<p>08:30-09:00 - CONSULTÓRIO 3</p>
-								<h1>Lidiane Vanessa Silva Bastos</h1>
-							</div>
-							<span class="badge-prof">SH</span>
-						</a>*/?>
 						
 					</div>
 				</div>
@@ -2375,7 +2454,7 @@
 
 										$.fancybox.close();
 										calendar.refetchEvents();
-										$('#js-aside-add .aside-close').click();
+										$('#js-aside-add .aside-close-novoAgendamento').click();
 
 
 										//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
@@ -2397,18 +2476,55 @@
 						}
 					}
 					return false;
-				})
+				});
+
+				$('#js-aside-add').find('input,select,textarea').change(function(x){
+					$('#js-aside-add input[name=alteracao]').val(1);
+				});
+
+				$('#js-aside-add .aside-close-novoAgendamento').click(function(){
+					let obj = $(this);
+					if($('#js-aside-add input[name=alteracao]').val()=="1") {
+						swal({   
+								title: "Atenção",   
+								text: "Tem certeza que deseja fechar sem salvar as informações?",
+								type: "warning",   
+								showCancelButton: true,   
+								confirmButtonColor: "#DD6B55",   
+								confirmButtonText: "Sim!",   
+								cancelButtonText: "Não",   
+								closeOnConfirm: false,   
+								closeOnCancel: false 
+							}, function(isConfirm){   
+								if (isConfirm) {   
+									$(obj).parent().parent().removeClass("active");
+									$(obj).parent().parent().parent().fadeOut(); 
+									swal.close();
+						  		 } else {   
+						  		 	swal.close();   
+						  		 } 
+						  	});
+		
+					} else {
+						$(obj).parent().parent().removeClass("active");
+						$(obj).parent().parent().parent().fadeOut();
+					}
+				});
+
+				$('#js-aside-add').find('input[name=agenda_data],input[name=agenda_hora]').change(function(){
+					agendamentosProfissionais(`add`);
+				});
 			})
 		</script>
 		<div class="aside__inner1">
 
 			<header class="aside-header">
 				<h1>Novo Agendamento</h1>
-				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+				<a href="javascript:;" class="aside-header__fechar aside-close-novoAgendamento"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 			</header>
-
 			<form method="post" class="aside-content form" onsubmit="return false">
 				<input type="hidden" name="agendaPessoal" value="0" />
+				<input type="hidden" name="alteracao" value="0" />
 
 				<script>
 					
@@ -2501,7 +2617,7 @@
 								<?php
 								foreach($_profissionais as $p) {
 									if($p->check_agendamento==0) continue;
-									echo '<option value="'.$p->id.'"'.(in_array($p->id, $values['profissionais'])?' selected':'').'>'.utf8_encode($p->nome).'</option>';
+									echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
 								}
 								?>
 							</select>
@@ -2564,7 +2680,7 @@
 											if(rtn.success) {
 												$.fancybox.close();
 												calendar.refetchEvents();
-												$('#js-aside-edit-agendaPessoal .aside-close').click();
+												$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click();
 												//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -2586,8 +2702,8 @@
 								swal.close();   
 							} 
 						});
-		
 				})
+
 				$('#js-aside-edit-agendaPessoal .js-salvar').click(function(){
 					let obj = $(this);
 
@@ -2622,7 +2738,7 @@
 									if(rtn.success) {
 										$.fancybox.close();
 										calendar.refetchEvents();
-										$('#js-aside-edit-agendaPessoal .aside-close').click();
+										$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click();
 
 
 										//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
@@ -2644,18 +2760,54 @@
 						}
 					}
 					return false;
-				})
+				});
+
+				$('#js-aside-edit-agendaPessoal').find('input,select,textarea').change(function(x){
+					$('#js-aside-edit-agendaPessoal input[name=alteracao]').val(1);
+				});
+
+				$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click(function(){
+					let obj = $(this);
+					if($('#js-aside-edit-agendaPessoal input[name=alteracao]').val()=="1") {
+						swal({   
+								title: "Atenção",   
+								text: "Tem certeza que deseja fechar sem salvar as informações?",
+								type: "warning",   
+								showCancelButton: true,   
+								confirmButtonColor: "#DD6B55",   
+								confirmButtonText: "Sim!",   
+								cancelButtonText: "Não",   
+								closeOnConfirm: false,   
+								closeOnCancel: false 
+							}, function(isConfirm){   
+								if (isConfirm) {   
+									$(obj).parent().parent().removeClass("active");
+									$(obj).parent().parent().parent().fadeOut(); 
+									swal.close();
+						  		 } else {   
+						  		 	swal.close();   
+						  		 } 
+						  	});
+		
+					} else {
+						$(obj).parent().parent().removeClass("active");
+						$(obj).parent().parent().parent().fadeOut();
+					}
+				});
+
+
 			})
 		</script>
 		<div class="aside__inner1">
 
 			<header class="aside-header">
 				<h1>Agenda Pessoal</h1>
-				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+				<a href="javascript:;" class="aside-header__fechar aside-close-edicaoAgendamentoPessoal"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 			</header>
 
 			<form method="post" class="aside-content form" onsubmit="return false">
 				<input type="hidden" name="id" />
+				<input type="hidden" name="alteracao" value="0" />
 
 				<script>
 					$(function() {
@@ -2779,7 +2931,7 @@
 											if(rtn.success) {
 												$.fancybox.close();
 												calendar.refetchEvents();
-												$('#js-aside-edit .aside-close').click();
+												$('#js-aside-edit .aside-close-edicaoAgendamento').click();
 												//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -2801,8 +2953,8 @@
 								swal.close();   
 							} 
 						});
-		
-				})
+				});
+
 				$('#js-aside-edit .js-salvar').click(function(){
 					let obj = $(this);
 
@@ -2838,7 +2990,7 @@
 									if(rtn.success) {
 										$.fancybox.close();
 										calendar.refetchEvents();
-										$('#js-aside-edit .aside-close').click();
+										$('#js-aside-edit .aside-close-edicaoAgendamento').click();
 
 										if(rtn.wts && rtn.wts==1) {
 											let data = `ajax=whatsappDisparar`;
@@ -2868,18 +3020,56 @@
 						}
 					}
 					return false;
-				})
+				});
+
+				$('#js-aside-edit').find('input,select,textarea').change(function(x){
+					$('#js-aside-edit input[name=alteracao]').val(1);
+				});
+
+				$('#js-aside-edit .aside-close-edicaoAgendamento').click(function(){
+					let obj = $(this);
+					if($('#js-aside-edit input[name=alteracao]').val()=="1") {
+						swal({   
+								title: "Atenção",   
+								text: "Tem certeza que deseja fechar sem salvar as informações?",
+								type: "warning",   
+								showCancelButton: true,   
+								confirmButtonColor: "#DD6B55",   
+								confirmButtonText: "Sim!",   
+								cancelButtonText: "Não",   
+								closeOnConfirm: false,   
+								closeOnCancel: false 
+							}, function(isConfirm){   
+								if (isConfirm) {   
+									$(obj).parent().parent().removeClass("active");
+									$(obj).parent().parent().parent().fadeOut(); 
+									swal.close();
+						  		 } else {   
+						  		 	swal.close();   
+						  		 } 
+						  	});
+		
+					} else {
+						$(obj).parent().parent().removeClass("active");
+						$(obj).parent().parent().parent().fadeOut();
+					}
+				});
+
+				$('#js-aside-edit').find('input[name=agenda_data],input[name=agenda_hora]').change(function(){
+					agendamentosProfissionais(`edit`);
+				});
 			})
 		</script>
 		<div class="aside__inner1">
 
 			<header class="aside-header">
 				<h1>Detalhes do Agendamento</h1>
-				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+				<a href="javascript:;" class="aside-header__fechar aside-close-edicaoAgendamento"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 			</header>
 
 			<form method="post" class="aside-content form" onsubmit="return false">
 				<input type="hidden" name="id" />
+				<input type="hidden" name="alteracao" value="0" />
 				<section class="header-profile">
 					<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto" />
 					<div class="header-profile__inner1">
@@ -2991,7 +3181,7 @@
 									<?php
 									foreach($_profissionais as $p) {
 										if($p->check_agendamento==0) continue;
-										echo '<option value="'.$p->id.'"'.(in_array($p->id, $values['profissionais'])?' selected':'').'>'.utf8_encode($p->nome).'</option>';
+										echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
 									}
 									?>
 								</select>
