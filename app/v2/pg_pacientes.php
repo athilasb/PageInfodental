@@ -70,7 +70,7 @@
 			$('.list1').on('click','.js-item',function(){
 				$('#js-aside form.formulario-validacao').trigger('reset');
 				let id = $(this).attr('data-id');
-				document.location.href=`pg_pacientes_dadospessoais.php?id_paciente=${id}`;
+				document.location.href=`pg_pacientes_resumo.php?id_paciente=${id}`;
 			})
 		})
 	</script>
@@ -88,6 +88,7 @@
 			$values=$adm->values;
 
 			$vSQL=substr($vSQL,0,strlen($vSQL)-1);
+			$vSQL.=",periodicidade=6";
 			$sql->add($_table,$vSQL);
 			$id_reg=$sql->ulid;
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',vwhere='',tabela='$_table',id_reg='$id_reg'");
@@ -599,7 +600,7 @@
 					<div class="filter-group">
 						<div class="filter-form form">
 							<dl>
-								<dd class="form-comp form-comp_pos"><input type="text" name="busca" placeholder="Buscar..." value="<?php echo isset($values['busca'])?($values['busca']):"";?>" /><a href="javascript:;" onclick="$('form.js-filtro').submit();"><i class="iconify" data-icon="fluent:search-12-filled"></i></a></dd>
+								<dd class="form-comp form-comp_pos"><input type="text" name="busca" placeholder="Buscar..." value="<?php echo isset($_GET['busca'])?($_GET['busca']):"";?>" /><a href="javascript:;" onclick="$('form.js-filtro').submit();"><i class="iconify" data-icon="fluent:search-12-filled"></i></a></dd>
 							</dl>
 						</div>					
 					</div>
@@ -676,17 +677,23 @@
 						//$where.=" and (nome like '%".utf8_decode($values['busca'])."%' or cpf like '%".cpf($values['busca'])."%' or id = '".addslashes($values['busca'])."')";
 						$wh="";
 						$aux = explode(" ",$_GET['busca']);
-
+						$primeiraLetra='';
 						foreach($aux as $v) {
+							if(empty($v)) continue;
+
+							if(empty($primeiraLetra)) $primeiraLetra=substr($v,0,1);
 							$wh.="nome REGEXP '$v' and ";
 						}
 						$wh=substr($wh,0,strlen($wh)-5);
 						$where="where (($wh) or nome like '%".$_GET['busca']."%' or telefone1 like '%".$_GET['busca']."%' or cpf like '%".$_GET['busca']."%') and lixo=0";
-						//echo $where;die();
+						
+						
 					}
 
-					
-					$where.=" order by nome asc";
+
+					if(!empty($primeiraLetra)) $where.=" ORDER BY CASE WHEN nome >= '$primeiraLetra' THEN 1 ELSE 0 END DESC, nome ASC";
+					else $where.=" order by nome asc";
+
 					//echo $where;
 					$sql->consultPagMto2($_table,"*",10,$where,"",15,"pagina",$_page."?".$url."&pagina=");
 					if($sql->rows==0) {

@@ -25,6 +25,11 @@
 														)
 										));
 
+	$_pacientesPeriodicidade = array(1=>'1 mês',
+										4=>'4 meses',
+										6=>'6 meses',
+										12=>'12 meses');
+
 	$_usuariosTipos=array('admin'=>'Administrador',
 						  'moderador'=>'Moderador');
 

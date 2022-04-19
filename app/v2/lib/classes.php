@@ -166,6 +166,66 @@
 			return ($dividend/$divisor);
 		}
 	}
+	
+	function sec_convertOriginal($sec,$precision) {
+
+
+		$neg = $sec < 0 ? true : false;
+
+		if($neg) $sec*=-1;
+		$Ftime=0;
+		$sec=round($sec,0);
+		if ($sec < 1) {
+			if($precision == 'HF') {
+				return "00:00";
+			} else {
+				if($precision == 'S') {
+					return "00:00:00";
+				} else {
+					return "00:00:00";
+				}
+			}
+		} else {
+			if($precision == 'HF') {
+				$precision='H';
+			} else {
+				if (($sec < 3600) and ($precision != 'S')) {
+					$precision='M';
+				}
+			}
+			if($precision == 'H') {
+				$Fhours_H =	MathZDC($sec, 3600);
+				$Fhours_H_int = floor($Fhours_H);
+				$Fhours_H_int = intval("$Fhours_H_int");
+				$Fhours_M = ($Fhours_H - $Fhours_H_int);
+				$Fhours_M = ($Fhours_M * 60);
+				$Fhours_M_int = floor($Fhours_M);
+				$Fhours_M_int = intval("$Fhours_M_int");
+				$Fhours_S = ($Fhours_M - $Fhours_M_int);
+				$Fhours_S = ($Fhours_S * 60);
+				$Fhours_S = round($Fhours_S, 0);
+				if (strlen($Fhours_S)==1) $Fhours_S = "0".$Fhours_S;
+				if (strlen($Fhours_M_int)==1) $Fhours_M_int = "0".$Fhours_M_int;
+				if (strlen($Fhours_H_int)==1) $Fhours_H_int = "0".$Fhours_H_int;
+				$Ftime = $Fhours_H_int.":".$Fhours_M_int;
+			}
+			if ($precision == 'M') {
+				$Fminutes_M = MathZDC($sec, 60);
+				$Fminutes_M_int = floor($Fminutes_M);
+				$Fminutes_M_int = intval("$Fminutes_M_int");
+				$Fminutes_S = ($Fminutes_M - $Fminutes_M_int);
+				$Fminutes_S = ($Fminutes_S * 60);
+				$Fminutes_S = round($Fminutes_S, 0);
+				if (strlen($Fminutes_S)==1) $Fminutes_S = "0$Fminutes_S";
+				if (strlen($Fminutes_M_int)==1) $Fminutes_M_int = "0$Fminutes_M_int";
+				$Ftime = "00:$Fminutes_M_int:$Fminutes_S";
+			}
+			if($precision == 'S') {
+				$Ftime = $sec;
+			}
+			return ($neg?"-":"").$Ftime;
+		}
+	}
 	function sec_convert($sec,$precision) {
 		$Ftime=0;
 		$sec=round($sec,0);

@@ -306,6 +306,21 @@ code {font-size:0.875em; background:rgba(0,0,0,0.1); margin:0 .5rem;}
 .history-item h2 {font-size:0.875em; font-weight:normal;}
 .history-item em {font-style:normal; font-size:0.875em; background:var(--cinza3); color:#fff; padding:0 .375rem; border-radius:100px; font-weight:bold;}
 
+.history2-item {display:flex; gap:.5rem; position:relative; padding-bottom:2rem;}
+.history2-item:before {content:""; position:absolute; top:0; left:17px; border-left:2px solid var(--cinza2); height:100%;}
+.history2-item aside {flex:0 0 36px; position:relative; z-index:9;}
+.history2-item aside span {display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:100%; background:var(--cinza3); color:#fff; font-size:1.5em;}
+.history2-item article {flex:1;}
+.history2-main > div {display:flex; align-items:center; gap:.5rem;}
+.history2-main h1 {font-size:1em; letter-spacing:-0.02em; margin-right:auto; font-weight:normal;}
+.history2-main h2 {font-size:0.875em; letter-spacing:-0.03em; font-weight:normal; color:var(--cinza4);}
+.history2-main a {text-decoration:underline; font-size:0.875em; color:var(--cinza4);}
+.history2-more {border-left:2px solid var(--cinza2); padding-left:1rem; display:none;}
+.history2-more-item {margin-top:1rem;}
+.history2-more-item h1 {font-size:0.813em; font-weight:normal; color:var(--cinza4);}
+.history2-more-item h2 {font-size:0.875em; font-weight:normal;}
+.history2-more-item h2 span {font-size:0.875em; font-weight:bold; background:var(--cinza4); color:#fff; padding:0 .5rem; border-radius:100px; white-space:nowrap;}
+
 .cal-lost-slick {margin:0 1rem; padding:0 .25rem;}
 .cal-lost-item {display:flex !important; align-items:center; background:#fff; margin:0 5px; padding:.75rem; border-radius:8px; border-left:4px solid var(--cinza3);}
 .cal-lost-item > div {margin-right:1rem;}
@@ -325,7 +340,7 @@ code {font-size:0.875em; background:rgba(0,0,0,0.1); margin:0 .5rem;}
 .kanban-item-wp_destaque span {color:#fff; background:var(--vermelho); border-color:var(--vermelho);}
 
 .pac-ind {display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;}
-.pac-ind > div {display:flex; gap:.5rem; align-items:center;}
+.pac-ind > div {display:flex; gap:.5rem; align-items:center; line-height:1;}
 .pac-ind > div .iconify {font-size:1.75em; color:var(--cinza4);}
 .pac-ind > div h1 {font-weight:normal;}
 

@@ -1,5 +1,51 @@
 <?php
-     
+     if(isset($_POST['ajaxHeader'])) {
+            require_once("lib/conf.php");
+            require_once("usuarios/checa.php");
+
+
+            $rtn = [] ;
+
+            if($_POST['ajaxHeader']=='pacientePeriodicidade') {
+                  $paciente = '';
+                  if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+                        $sql->consult($_p."pacientes","*","where id=".$_POST['id_paciente']);
+                        if($sql->rows) {
+                              $paciente=mysqli_fetch_object($sql->mysqry);
+                        }
+                  }
+                  
+                  if(is_object($paciente)) {
+
+                        if(isset($_POST['periodicidade']) and is_numeric($_POST['periodicidade']) and isset($_pacientesPeriodicidade[$_POST['periodicidade']])) {
+
+                              $vSQL="periodicidade='".$_POST['periodicidade']."'";
+                              $vWHERE="where id=$paciente->id";
+
+                              $sql->update($_p."pacientes",$vSQL,$vWHERE);
+                              $sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."pacientes',id_reg='".$paciente->id."'");
+
+                              $rtn=array('success'=>true,
+                                          'periodicidade'=>$_POST['periodicidade'],
+                                          'periodicidadeHTML'=>$_pacientesPeriodicidade[$_POST['periodicidade']]);
+                   
+
+                        } else {
+                              $rtn=array('success'=>false,'error'=>'Periodicidade inválida!');
+                        }
+
+                  } else {
+                        $rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
+                  }
+            }
+
+
+            header("Content-type: application/json");
+            echo json_encode($rtn);
+            die();
+
+     }
+
       if(basename($_SERVER['PHP_SELF'])=="index.php") {
             require_once("lib/conf.php");
             require_once("lib/classes.php");

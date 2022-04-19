@@ -34,7 +34,7 @@
 				if($sql->rows) {
 					$cnt=mysqli_fetch_object($sql->mysqry);
 
-					$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,codigo_bi","where id=$cnt->id_paciente");
+					$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,codigo_bi,musica,periodicidade","where id=$cnt->id_paciente");
 					if($sql->rows) {
 						$paciente=mysqli_fetch_object($sql->mysqry);
 					}
@@ -42,6 +42,7 @@
 				
 				}
 			}
+
 
 			if(empty($cnt)) {
 				$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
@@ -72,12 +73,14 @@
 				} else {
 
 					$agendamentosFuturos=array();
-					$dob = new DateTime($paciente->data_nascimento);
-					$now = new DateTime();
-					$idade = $now->diff($dob)->y;
+
+					if($paciente->data_nascimento!="0000-00-00") {
+						$dob = new DateTime($paciente->data_nascimento);
+						$now = new DateTime();
+						$idade = $now->diff($dob)->y;
+					} else $idade=0;
 				
 
-				
 					$_pacientesAgendamentos=array();
 					$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and agenda_data>'".date('Y-m-d')."' and id_status IN (1,2) and lixo=0 order by agenda_data");
 
@@ -153,6 +156,8 @@
 					$dias/=60*60*24;
 					$dias=round($dias);
 
+
+
 					$data = array('id'=>$cnt->id,
 									'agendou_profissional'=>isset($_profissionais[$cnt->id_usuario])?utf8_encode($_profissionais[$cnt->id_usuario]->nome):"-",
 									'agendou_dias'=>(int)$dias,
@@ -166,6 +171,8 @@
 									'idade'=>(int)$idade,
 									'id_cadeira'=>$cnt->id_cadeira,
 									'telefone1'=>$paciente->telefone1,
+									'musica'=>utf8_encode($paciente->musica),
+									'periodicidade'=>isset($_pacientesPeriodicidade[$paciente->periodicidade])?$_pacientesPeriodicidade[$paciente->periodicidade]:$paciente->periodicidade,
 									'profissionais'=>$profissionaisID,
 									'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):"",
 									'obs'=>addslashes(utf8_encode($cnt->obs)),
@@ -839,6 +846,7 @@
 
 			$data = (isset($_POST['data']) and isset($_POST['data']))?invDate($_POST['data']):'';
 			$hora = (isset($_POST['hora']) and isset($_POST['hora']))?$_POST['hora'].":00":'';
+			$id_cadeira = (isset($_POST['id_cadeira']) and isset($_POST['id_cadeira']))?$_POST['id_cadeira']:0;
 
 			if(!empty($data) and !empty($hora)) {
 				$diaSemana = date('w',strtotime($data));
@@ -849,6 +857,7 @@
 								inicio<='$hora' and 
 								fim>='$hora' and 
  								lixo=0";
+ 				if($id_cadeira>0) $where.=" and id_cadeira=$id_cadeira";
 				$sql->consult($_p."profissionais_horarios","distinct id_profissional",$where);
 			//	echo $where."->".$sql->rows."\n";
 				while($x=mysqli_fetch_object($sql->mysqry)) {
@@ -1257,15 +1266,21 @@
 				$aux = explode(" ",$_GET['search']);
 
 				$wh="";
+				$primeiraLetra='';
 				foreach($aux as $v) {
+					if(empty($v)) continue;
+
+					if(empty($primeiraLetra)) $primeiraLetra=substr($v,0,1);
 					$wh.="nome REGEXP '$v' and ";
 				}
 				$wh=substr($wh,0,strlen($wh)-5);
 				$where="where (($wh) or nome like '%".$_GET['search']."%' or telefone1 like '%".$_GET['search']."%' or cpf like '%".$_GET['search']."%') and lixo=0";
 				//$where="where nome like '%".$_GET['search']."%' or telefone1 like '%".$_GET['search']."%' or cpf like '%".$_GET['search']."%' and lixo=0";
 			}
-			
-			$sql->consult($_p."pacientes","nome,id,telefone1,cpf",$where." order by nome asc");
+			if(!empty($primeiraLetra)) $where.=" ORDER BY CASE WHEN nome >= '$primeiraLetra' THEN 1 ELSE 0 END DESC, nome ASC";
+			else $where.=" order by nome asc";
+
+			$sql->consult($_p."pacientes","nome,id,telefone1,cpf",$where);
 			//echo $where;
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$rtn['items'][]=array('id'=>$x->id,
@@ -1480,7 +1495,6 @@
 
 
 		$(function(){
-
 			$('#js-aside-add input[name=agenda_data]').datetimepicker({
 												timepicker:false,
 												format:'d/m/Y',
@@ -1770,7 +1784,7 @@
 				</section>
 				<section class="tab">
 					<a href="pg_agenda.php" class="active">Calendário</a>
-					<a href="pg_agenda_kanban.php">Kanban</a>					
+					<a href="javascript:;" class="js-aba-calendario">Kanban</a>					
 				</section>
 			</div>
 
@@ -1857,8 +1871,27 @@
 										} else {
 											$('#js-aside-edit input[name=id]').val(rtn.data.id);
 
-											$('#js-aside-edit .js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:window-new-24-regular"></i>`).attr('href',`pg_pacientes.php?form=1&edita=${rtn.data.id}`);
-											$('#js-aside-edit .js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
+											$('#js-aside-edit .js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
+
+											if(rtn.data.idade && rtn.data.idade>0) {
+												
+												$('#js-aside-edit .js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
+											} else {
+												$('#js-aside-edit .js-idade').html(``);
+											}
+
+											if(rtn.data.periodicidade && rtn.data.periodicidade.length>0) {
+												
+												$('#js-aside-edit .js-periodicidade').html(`Periodicidade: ${rtn.data.periodicidade}`);
+											} else {
+												$('#js-aside-edit .js-periodicidade').html(`Periodicidade: -`);
+											}
+
+											if(rtn.data.musica && rtn.data.musica.length>0) {
+												$('#js-aside-edit .js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
+											} else {
+												$('#js-aside-edit .js-musica').html(``);
+											}
 											$('#js-aside-edit input[name=agenda_data]').val(rtn.data.agenda_data);
 											$('#js-aside-edit input[name=agenda_hora]').val(rtn.data.agenda_hora);
 
@@ -2096,8 +2129,9 @@
 							let profissionaisSelecionados = aside.find('.js-profissionais option:selected').length>0 ? aside.find('.js-profissionais').val() : [];
 							let aData = aside.find('input[name=agenda_data]').val();
 							let aHora = aside.find('input[name=agenda_hora]').val();
+							let id_cadeira = $(`#js-aside-${tipo} select[name=id_cadeira] option:selected`).val();
 
-							let data = `ajax=agendamentosProfissionais&data=${aData}&hora=${aHora}`;
+							let data = `ajax=agendamentosProfissionais&data=${aData}&hora=${aHora}&id_cadeira=${id_cadeira}`;
 							
 							$.ajax({
 								type:"POST",
@@ -2159,7 +2193,12 @@
 
 					$(function(){
 
-					
+						$('.js-aba-calendario').click(function(){
+							data =  new Date(calendar.getDate());;
+							let dtObj = `${d2(data.getDate())}/${d2(data.getMonth()+1)}/${data.getFullYear()}`;
+							
+							document.location.href='pg_agenda_kanban.php?data='+dtObj;
+						})
 
 						var calendarEl = document.getElementById('calendar'); 
 						calendar = new FullCalendar.Calendar(calendarEl, {
@@ -2362,7 +2401,7 @@
 						  });
 						calendar.render();
 
-						calendarioVisualizacaoData();
+						setTimeout(function(){calendarioVisualizacaoData();},100);
 
 						<?php
 						if(!empty($initDate)) {
@@ -2454,6 +2493,7 @@
 
 										$.fancybox.close();
 										calendar.refetchEvents();
+										$('#js-aside-add input[name=alteracao]').val(0);
 										$('#js-aside-add .aside-close-novoAgendamento').click();
 
 
@@ -2990,6 +3030,7 @@
 									if(rtn.success) {
 										$.fancybox.close();
 										calendar.refetchEvents();
+										$('#js-aside-edit input[name=alteracao]').val(0);
 										$('#js-aside-edit .aside-close-edicaoAgendamento').click();
 
 										if(rtn.wts && rtn.wts==1) {
@@ -3077,8 +3118,8 @@
 						<div>
 							<p class="js-statusBI"></p>
 							<p class="js-idade"></p>
-							<p>Periodicidade: 6 meses</p>
-							<p>Música</p>
+							<p class="js-periodicidade">Periodicidade: 6 meses</p>
+							<p class="js-musica"></p>
 						</div>
 					</div>
 				</section>

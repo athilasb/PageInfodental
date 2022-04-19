@@ -271,7 +271,7 @@
 					<h1>Agenda</h1>
 				</section>
 				<section class="tab">
-					<a href="pg_agenda.php">Calendário</a>
+					<a href="javascript:;" class="js-aba-calendario">Calendário</a>
 					<a href="pg_agenda_kanban.php" class="active">Kanban</a>					
 				</section>
 			</div>
@@ -492,6 +492,13 @@
 					let aux = data.split('-');
 					let dtObj = new Date(`${aux[1]}/${aux[2]}/${aux[0]}`);
 					dataProcess(dtObj);
+
+					$('.js-aba-calendario').click(function(){
+						let aux = data.split('-');
+						let dtObj = `${aux[2]}/${aux[1]}/${aux[0]}`;
+
+						document.location.href='pg_agenda.php?initDate='+dtObj;
+					})
 
 					$('.js-profissionais').change(function(){
 						id_profissional=$(this).val();

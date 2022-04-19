@@ -88,6 +88,16 @@
 	
 	require_once("includes/header/headerPacientes.php");
 
+
+	if(isset($_GET['deleta']) and is_numeric($_GET['deleta'])) {
+		$vSQL="lixo=1";
+		$vWHERE="where id=$paciente->id";
+		$sql->update($_table,$vSQL,$vWHERE);
+		$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='delete',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='$_table',id_reg='$paciente->id'");
+		$jsc->go("pg_pacientes.php");
+
+	}
+
 	if(is_object($paciente)) {
 		$values=$adm->values($campos,$paciente);
 		$values['data']=date('d/m/Y H:i',strtotime($paciente->data));
@@ -127,7 +137,7 @@
 							<dd><a href="pg_pacientes.php" class="button"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></a></dd>
 						</dl>
 						<dl>
-							<dd><a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
+							<dd><a href="<?php echo "pg_pacientes_dadospessoais.php?id_paciente=$paciente->id&deleta=$paciente->id";?>" class="button js-confirmarDeletar"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
 						</dl>
 						<dl>
 							<dd><a href="" class="button"><i class="iconify" data-icon="fluent:print-24-regular"></i></a></dd>
