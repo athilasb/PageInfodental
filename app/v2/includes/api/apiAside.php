@@ -104,6 +104,7 @@
 					$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
 				}
 			}
+
 		# Planos
 			else if($_POST['ajax']=="asPlanosListar") {
 
@@ -193,6 +194,7 @@
 					$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
 				}
 			}
+
 		# Marcas
 			else if($_POST['ajax']=="asMarcasListar") {
 
@@ -282,6 +284,7 @@
 					$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
 				}
 			}
+
 		# Pacientes
 			else if($_POST['ajax']=="asPacientePersistir") {
 
@@ -331,6 +334,120 @@
 					}
 				}
 			} 
+
+		# Pacientes Relacionamento
+			else if($_POST['ajax']=="asRelacionamentoPaciente") {
+
+				$_profissionais=array();
+				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento","where lixo=0 order by nome asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
+
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,codigo_bi,musica,periodicidade","where id=".$_POST['id_paciente']);
+					if($sql->rows) $paciente=mysqli_fetch_object($sql->mysqry);
+				}
+
+
+				if(is_object($paciente)) {
+
+					if($paciente->data_nascimento!="0000-00-00") {
+						$dob = new DateTime($paciente->data_nascimento);
+						$now = new DateTime();
+						$idade = $now->diff($dob)->y;
+					} else $idade=0;
+				
+
+					$agendamentosFuturos=array();
+					$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and agenda_data>'".date('Y-m-d')."' and id_status IN (1,2) and lixo=0 order by agenda_data");
+
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+
+						$cor='';
+						$iniciais='';
+
+						$aux = explode(",",$x->profissionais);
+						$profissionais=array();
+						foreach($aux as $id_profissional) {
+							if(!empty($id_profissional) and is_numeric($id_profissional)) {
+
+								if(isset($_profissionais[$id_profissional])) {
+									$cor=$_profissionais[$id_profissional]->calendario_cor;
+									$iniciais=$_profissionais[$id_profissional]->calendario_iniciais;
+
+									$profissionais[]=array('iniciais'=>$iniciais,'cor'=>$cor);
+								}
+							}
+
+						}
+
+						$agendamentosFuturos[]=array('id_agenda'=>$x->id,
+													'data'=>date('d/m/Y H:i',strtotime($x->agenda_data)),
+													'initDate'=>date('d/m/Y',strtotime($x->agenda_data)),
+													'cadeira'=>isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'',
+													'profissionais'=>$profissionais);
+					}
+
+					$ultimoAgendamento=is_object($x)?$x:'';
+
+				
+				
+
+					$_historico=array();
+					$sql->consult($_p."pacientes_historico","*","where id_paciente=$paciente->id and  lixo=0 order by data desc");
+					
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+
+						if($x->evento=="agendaHorario") {
+								$_historico[]=array('usr'=>utf8_encode($_profissionais[$x->id_usuario]->nome),
+																	'dt'=>date('d/m H:i',strtotime($x->data)),
+																	'ev'=>'horario',
+																	'nvDt'=>date('d/m H:i',strtotime($x->agenda_data_novo)),
+																	'antDt'=>date('d/m H:i',strtotime($x->agenda_data_antigo))
+																);
+
+						} else {
+							if(isset($_status[$x->id_status_novo])) {
+								$_historico[]=array('usr'=>utf8_encode($_profissionais[$x->id_usuario]->nome),
+																	'dt'=>date('d/m H:i',strtotime($x->data)),
+																	'ev'=>'status',
+																	'desc'=>utf8_encode($x->descricao),
+																	'sts'=>utf8_encode($_status[$x->id_status_novo]->titulo),
+																	'novo'=>$x->evento=="agendaNovo",
+																	'cor'=>$_status[$x->id_status_novo]->cor
+																);
+							}
+						}
+						
+					}
+
+					$dias='';
+					if(is_object($ultimoAgendamento)) {
+						$dias=strtotime(date('Y-m-d H:i:s'))-strtotime($ultimoAgendamento->data);
+						$dias/=60*60*24;
+						$dias=round($dias);
+					}
+
+
+					$pacienteInfo=array('id'=>$paciente->id,
+										'nome'=>addslashes(utf8_encode($paciente->nome)),
+										'agendou_dias'=>(int)$dias,
+										'idade'=>(int)$idade,
+										'telefone1'=>$paciente->telefone1,
+										'musica'=>utf8_encode($paciente->musica),
+										'periodicidade'=>isset($_pacientesPeriodicidade[$paciente->periodicidade])?$_pacientesPeriodicidade[$paciente->periodicidade]:$paciente->periodicidade,
+										'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):"",
+										'agendamentosFuturos'=>$agendamentosFuturos,
+										'historico'=>$_historico
+								);
+
+					$rtn=array('success'=>true,
+								'paciente'=>$pacienteInfo);
+				} else {
+					$rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
+				}
+
+			}
 			
 
 
@@ -1237,6 +1354,260 @@
 		</form>
 	</div>
 </section>
+<?php
+	}
+	if(isset($apiConfig['pacienteRelacionamento'])) {
+?>
+<script type="text/javascript">
+	const pacienteRelacionamento = (id_paciente) => {
+
+		let data = `ajax=asRelacionamentoPaciente&id_paciente=${id_paciente}`;
+					
+		$.ajax({
+			type:'POST',
+			data:data,
+			url:baseURLApiAside,
+			success:function(rtn) {
+				if(rtn.success) {
+					$('#js-aside-pacienteRelacionamento .js-nome').html(`${rtn.paciente.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.paciente.id_paciente}`);
+
+
+					if(rtn.paciente.idade && rtn.paciente.idade>0) {
+						
+						$('#js-aside-pacienteRelacionamento .js-idade').html(rtn.paciente.idade+(rtn.paciente.idade>=2?' anos':' ano'));
+					} else {
+						$('#js-aside-pacienteRelacionamento .js-idade').html(``);
+					}
+
+					if(rtn.paciente.periodicidade && rtn.paciente.periodicidade.length>0) {
+						
+						$('#js-aside-pacienteRelacionamento .js-periodicidade').html(`Periodicidade: ${rtn.paciente.periodicidade}`);
+					} else {
+						$('#js-aside-pacienteRelacionamento .js-periodicidade').html(`Periodicidade: -`);
+					}
+
+					if(rtn.paciente.musica && rtn.paciente.musica.length>0) {
+						$('#js-aside-pacienteRelacionamento .js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.paciente.musica}`);
+					} else {
+						$('#js-aside-pacienteRelacionamento .js-musica').html(``);
+					}
+
+					$("#js-aside-pacienteRelacionamento").fadeIn(100,function() {
+						$('#js-aside-pacienteRelacionamento .js-profissionais').chosen();
+						$('#js-aside-pacienteRelacionamento .js-tab').find('a:eq(0)').click();
+						$("#js-aside-pacienteRelacionamento .aside__inner1").addClass("active");
+					});
+
+					$('#js-aside-pacienteRelacionamento input[name=agenda_data]').datetimepicker({
+						timepicker:false,
+						format:'d/m/Y',
+						scrollMonth:false,
+						scrollTime:false,
+						scrollInput:false,
+					}).css('background','');
+
+					$('#js-aside-pacienteRelacionamento input[name=agenda_hora]').datetimepicker({
+						  datepicker:false,
+					      format:'H:i',
+					      pickDate:false
+					}).css('background','');
+
+					$('#js-aside-pacienteRelacionamento input[name=id_paciente]').val(rtn.paciente.id);
+
+					$('input[name=telefone1],.js-asPaciente-telefone1').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
+						let countryOut = country || '  ';
+						$(this).parent().parent().find('.js-country').html(countryOut);
+					}).trigger('keyup');
+
+				} else if(rtn.error) {
+					swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+				} else {
+					swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+				}
+				
+			},
+			error:function() {
+				swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+			} 
+		}).done(function(){
+			//obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+			//obj.attr('data-loading',0);
+		});
+
+		
+	}
+</script>
+
+<section class="aside aside-pacienteRelacionamento" id="js-aside-pacienteRelacionamento">
+	
+	<div class="aside__inner1">
+
+		<header class="aside-header">
+			<h1>Relacionamento com Paciente</h1>
+			<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+		</header>
+
+		<form method="post" class="aside-content form" onsubmit="return false">
+			<input type="text" name="id_paciente" />
+			<input type="text" name="tipo" value="queroAgendar" />
+			<section class="header-profile">
+				<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto" />
+				<div class="header-profile__inner1">
+					<h1><a href="" target="_blank" class="js-nome"></a></h1>
+					<div>
+						<p class="js-statusBI"></p>
+						<p class="js-idade"></p>
+						<p class="js-periodicidade">Periodicidade: 6 meses</p>
+						<p class="js-musica"></p>
+					</div>
+				</div>
+			</section>
+
+			<script>
+				$(function() {
+					$('.js-tab a').click(function() {
+						$(".js-tab a").removeClass("active");
+						$(this).addClass("active");							
+					});
+
+					$('#js-aside-pacienteRelacionamento .js-btn-acao').click(function(){
+						$('#js-aside-pacienteRelacionamento .js-btn-acao').removeClass('active');
+						$(this).addClass('active');
+
+						if($(this).attr('data-tipo')=="queroAgendar") {
+							$('#js-aside-pacienteRelacionamento .js-ag-agendamento-naoQueroAgendar').hide();
+							$('#js-aside-pacienteRelacionamento .js-ag-agendamento-queroAgendar').show();
+							$('#js-aside-pacienteRelacionamento input[name=tipo]').val('queroAgendar');
+						} else {
+							$('#js-aside-pacienteRelacionamento .js-ag-agendamento-naoQueroAgendar').show();
+							$('#js-aside-pacienteRelacionamento .js-ag-agendamento-queroAgendar').hide();
+							$('#js-aside-pacienteRelacionamento input[name=tipo]').val('naoQueroAgendar');
+
+						}
+					});
+
+					$('#js-aside-pacienteRelacionamento .js-ag-agendamento .js-salvar').click(function(){
+						let tipo = $('#js-aside-pacienteRelacionamento input[name=tipo]').val();
+						let id_paciente = $('#js-aside-pacienteRelacionamento input[name=id_paciente]').val();
+
+						alert(id_paciente);
+
+					})
+				});
+			</script>
+			<section class="tab tab_alt js-tab">
+				<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamento').show();" class="active">Agendamento</a>
+				<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-proximas').show();">Próximas Consultas</a>
+				<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>					
+			</section>
+			
+			<div class="js-ag js-ag-agendamento">
+
+				<section class="filter">
+					<div class="button-group">
+						<a href="javascript:;" class="js-btn-acao button active" data-tipo="queroAgendar"><span>Quero agendar</span></a>
+						<a href="javascript:;" class="js-btn-acao button" data-tipo="naoQueroAgendar"><span>Não quero agendar</span></a>
+					</div>
+					<div class="filter-group">
+						<div class="filter-form form">
+							<dl>
+								<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+							</dl>
+						</div>								
+					</div>
+				</div>
+
+				<div class="js-ag-agendamento-queroAgendar">
+					<div class="colunas3">
+						<dl>
+							<dt>Data</dt>
+							<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data" /></dd>
+						</dl>
+					
+						<dl>
+							<dt>Duração</dt>
+							<dd class="form-comp form-comp_pos">
+								<?php /*<input type="tel" name="agenda_duracao" class="" />*/?>
+								<select name="agenda_duracao">
+									<?php
+									foreach($optAgendaDuracao as $v) {
+										echo '<option value="'.$v.'"'.($values['agenda_duracao']==$v?' selected':'').'>'.$v.'</option>';
+									}
+									?>
+								</select>
+								<span>min</span>
+							</dd>
+						</dl>
+
+						<dl>
+							<dt>Consultório</dt>
+							<dd>
+								<select name="id_cadeira">
+									<option value=""></option>
+									<?php
+									foreach($_cadeiras as $p) {
+										echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
+									}
+									?>
+								</select>
+							</dd>
+						</dl>
+					</div>
+					<div class="colunas3">
+						<dl class="dl2">
+							<dt>Profissionais</dt>
+							<dd>
+								<select class="js-profissionais">
+									<option value=""></option>
+									<?php
+									foreach($_profissionais as $p) {
+										if($p->check_agendamento==0) continue;
+										echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+									}
+									?>
+								</select>
+							</dd>
+						</dl>
+						<dl>
+							<dt>Hora</dt>
+							<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="tel" name="agenda_hora" class="hora" /></dd>
+						</dl>
+					</div>
+				</div>
+
+
+				<div class="js-ag-agendamento-naoQueroAgendar">
+					<dl>
+						<dd>
+							<select>
+								<option value="">selecione</option>
+								<?php
+								foreach($_historicoStatus as $v) {
+									echo '<option value="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
+								}
+								?>
+							</select>
+						</dd>
+					</dl>
+					<dl>
+						<dt>Observações</dt>
+						<dd>
+							<textarea style="height:80px;"></textarea>
+						</dd>
+					</dl>
+				</div>
+
+			</div>
+			<div class="js-ag js-ag-proximas" style="display:none;">
+				Proximas
+			</div>
+			<div class="js-ag js-ag-historico" style="display:none;">
+				Historico
+			</div>
+		</div>
+
+	</form>
+</section><!-- .aside -->
 <?php
 	}
 ?>

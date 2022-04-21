@@ -425,12 +425,12 @@
 						} else if($x->evento=="observacao" || $x->evento=="relacionamento") {
 							$evento="relacionamento";
 							$icone='<span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>';
-							$dataTimeline=date('d/m • H:i',strtotime($x->data));
+							$dataTimeline=date('d/m/y • H:i',strtotime($x->data));
 
 							$profissionaisIniciais= isset($_colaboradores[$x->id_usuario])?utf8_encode($_colaboradores[$x->id_usuario]->nome):"";
 							$cadeira='';
 
-									$obs=utf8_encode($x->descricao);
+							$obs=utf8_encode($x->descricao);
 							if($x->id_obs>0 and isset($_historicoStatus[$x->id_obs])) {
 								$obs="<strong>".utf8_encode($_historicoStatus[$x->id_obs]->titulo)."</strong><br />".$obs;
 							} 
@@ -481,7 +481,7 @@
 															}
 														}
 														if(!empty($profissionais)) $profissionais=substr($profissionais,0,strlen($profissionais)-2);
-														$dataTimeline=date('d/m H:i',strtotime($agenda->agenda_data));
+														$dataTimeline=date('d/m/y H:i',strtotime($agenda->agenda_data));
 													}
 
 													if(empty($agenda) or empty($cadeira)) continue;
@@ -496,7 +496,7 @@
 												<?php
 												if($s->evento=="agendaHorario") {
 												?>
-												<h2>Horário alterado de <span class="data"><?php echo date('d/m H:i',strtotime($s->agenda_data_antigo));?></span> para <span class="data"><?php echo date('d/m H:i',strtotime($s->agenda_data_novo));?></span> <br /><?php echo utf8_encode($cadeira->titulo);?><?php echo !empty($profissionais)?" - ".$profissionais:"";?></h2>
+												<h2>Horário alterado de <span class="data"><?php echo date('d/m/ H:i',strtotime($s->agenda_data_antigo));?></span> para <span class="data"><?php echo date('d/m H:i',strtotime($s->agenda_data_novo));?></span> <br /><?php echo utf8_encode($cadeira->titulo);?><?php echo !empty($profissionais)?" - ".$profissionais:"";?></h2>
 												<?php
 												}
 												else if($s->evento=="agendaStatus") {
