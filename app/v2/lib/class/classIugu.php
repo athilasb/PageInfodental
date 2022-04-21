@@ -73,6 +73,28 @@
 			}
 		}
 
+		function assinaturaSuspender($id_assinatura) {
+			$attr=array('method'=>'subscriptions/'.$id_assinatura.'/suspend/',
+						'type'=>'POST');
+
+			if($this->endpoint($attr)) {
+
+				if($this->info['http_code'] == 500) {
+					$this->erro="Algum erro ocorreu. Por favor tente novamente";
+					return false;
+				} else if($this->info['http_code'] == 400) {
+					$this->erro="Algum erro ocorreu. Por favor tente novamente.";
+					return false;
+				} else {
+					return true;
+				}
+
+			} else {
+				$this->erro="Algum erro ocorreu durante o pagamento";
+				return false;
+			}
+		}
+
 		function assinaturaAlterarPlanoDaAssinatura($id_assinatura,$id_plano) {
 			$attr=array('method'=>'subscriptions/'.$id_assinatura.'/change_plan/'.$id_plano,
 						'type'=>'POST');
@@ -102,20 +124,16 @@
 						'type'=>'POST',
 						'pagamento'=>true,
 						'fields'=>($fields));
-
 			if($this->endpoint($attr)) {
 
 				//echo json_encode($this->response);
-				//var_dump($this->info);
-				if($this->info['http_code'] == 500) {
-					$this->erro="Algum erro ocorreu. Por favor tente novamente";
-					return false;
-				} else if($this->info['http_code'] == 400) {
+				if($this->info['http_code'] == 200) {
+
+					return true;
+				} else  {
 					$this->erro="Algum erro ocorreu. Por favor tente novamente.";
 					return false;
-				} else {
-					return true;
-				}
+				} 
 
 			} else {
 				$this->erro="Algum erro ocorreu durante o pagamento";
@@ -148,9 +166,9 @@
 			}
 		}
 
-		function assinaturaListar($start) {
+		function assinaturaListar($customer_id) {
 
-			$attr=array('method'=>'subscriptions?start='.$start,
+			$attr=array('method'=>'subscriptions?customer_id='.$customer_id,
 						'type'=>'GET',
 						'fields'=>array()); //var_dump($attr);
 			if($this->endpoint($attr)) {
@@ -278,9 +296,8 @@
 
 		
 			if(isset($customer_id) and !empty($customer_id)) {
-				$attr=array('method'=>'invoices/?customer_id=$customer_id',
+				$attr=array('method'=>'invoices/?limit=100&customer_id='.$customer_id,
 							'type'=>'GET');
-
 				if($this->endpoint($attr)) {
 					return true;
 				} else {

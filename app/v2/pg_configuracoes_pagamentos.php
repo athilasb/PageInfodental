@@ -21,6 +21,36 @@
 		$values=$adm->values($campos,$cnt);
 	}
 
+	$_iuguPlanos=array();
+	if($iugu->planosListar()) {
+		$_iuguPlanos=$iugu->response;
+	}
+
+	// verifica se possui assinatura
+	$subscription='';
+	if(!empty($cnt->iugu_subscription_id)) {
+		if($iugu->assinaturaConsultar($cnt->iugu_subscription_id)) {
+			if(isset($iugu->response->id)) {
+				$subscription=$iugu->response;
+			}
+		}
+	}
+
+	if(isset($_GET['cancelar'])) {
+		if(is_object($subscription)) {
+
+			if($iugu->assinaturaSuspender($cnt->iugu_subscription_id)) {
+				$sql->update("infodentalADM.infod_contas","iugu_subscription_id=''","where instancia='$cnt->instancia'");
+				$jsc->jAlert("Assinatura foi suspensa com sucesso!","sucesso","document.location.href='$_page'");
+				die();
+			} else {
+				$jsc->jAlert("Algum erro ocorreu durante a suspensão desta assinatura!","erro","");
+			}
+
+		} else {
+			$jsc->jAlert("Sua conta não possui nenhuma assinatura!","erro","");
+		}
+	}
 
 
 	// se nao encontrar registro
@@ -40,6 +70,7 @@
 		$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."'");
 
 		# Persistencia do Cliente
+			
 			$sql->consult($_table,"*","where instancia='".addslashes($_ENV['NAME'])."'");
 			if($sql->rows) {
 				$cnt=mysqli_fetch_object($sql->mysqry);
@@ -59,7 +90,8 @@
 				// se não possui cadastro na iugu
 				if(empty($cnt->iugu_customer_id)) {
 					if($iugu->clientesCriar($attr)) {
-						$sql->update($_table,"iugu_customer_id='".addslashes($iugu->response->id)."'","where instancia='$cnt->instancia'");
+						$customer_id=$iugu->response->id;
+						$sql->update($_table,"iugu_customer_id='".addslashes($customer_id)."'","where instancia='$cnt->instancia'");
 					} else {
 						$jsc->jAlert($iugu->erro,"erro","");
 
@@ -69,7 +101,7 @@
 				// se possuir altera dados
 				else {
 					if($iugu->clientesAlterar($cnt->iugu_customer_id,$attr)) {
-						
+						$customer_id=$cnt->iugu_customer_id;
 					} else {
 						$jsc->jAlert($iugu->erro,"erro","");
 
@@ -79,24 +111,58 @@
 
 		# Assinatura do Plano
 			// se ja possui assinatura
-			if($cnt->iugu_substription_id) {
+			if($cnt->iugu_subscription_id) {
 
 			}
 			// se nao possui assinatura
 			else {
 
+				if(isset($_POST['iugu_plano']) and !empty($_POST['iugu_plano'])) {
+					$plan_identifier=addslashes($_POST['iugu_plano']);
+
+
+					// verifica se cliente possui assinatura na iugu antes de criar uma nova
+					$subscriptionIugu='';
+					if($iugu->assinaturaListar($cnt->iugu_customer_id)) {
+						if(isset($iugu->response->items)) {
+							foreach($iugu->response->items as $it) {
+								if($it->suspended===false) {
+									$subscriptionIugu=$it;
+								}
+							}
+						}
+					}
+
+					if(is_object($subscriptionIugu)) {
+						$sql->update("infodentalADM.infod_contas","iugu_subscription_id='$subscriptionIugu->id'","where instancia='$cnt->instancia'");
+						$jsc->jAlert("Sua conta já possui assinatura ativa!","erro","document.location.href='$_page'");
+						die();
+					} else {
+
+						$attr = array('plan_identifier'=>$plan_identifier,
+										'customer_id'=>$customer_id);
+						if($iugu->assinaturaCriar($attr)) {
+
+							$subscription_id=$iugu->response->id;
+
+							$sql->update("infodentalADM.infod_contas","iugu_subscription_id='$subscription_id'","where instancia='$cnt->instancia'");
+						
+							$jsc->jAlert("Assinatura realizada com sucesso!","sucesso","document.location.href='$_page'");
+							die();
+						} else {
+							$jsc->jAlert($iugu->erro,"erro","");
+						}
+					}
+
+				}
+
 			}
 	
-
 		$jsc->go($_page);
 		die();
 	}
 
-	$_iuguPlanos=array();
-	if($iugu->planosListar()) {
-		$_iuguPlanos=$iugu->response;
-	}
-
+	
 
 ?>
 
@@ -140,7 +206,7 @@
 							<div class="filter-group">
 								<div class="filter-form form">
 									<dl>
-										<dd><a href="javascript:;" class="button button_main js-submit"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span><?php echo empty($cnt->iugu_customer_id)?'Assinar':'Alterar';?></span></a></dd>
+										<dd><a href="javascript:;" class="button button_main js-submit2" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></a></dd>
 									</dl>
 								</div>
 							</div>							
@@ -186,27 +252,81 @@
 									let countryOut = country || '  ';
 									$(this).parent().parent().find('.js-country').html(countryOut);
 								}).trigger('keyup');
+
+								$('.js-submit2').click(function(){
+
+									let obj = $(this);
+
+									if(obj.attr('data-loading')==0) {
+										obj.attr('data-loading',1).html(`<i class="iconify" data-icon="eos-icons:loading"></i> <span>Salvando...</span>`);
+										$('form.formulario-validacao').submit();
+									} 
+
+								});
 							})
 						</script>
 						<?php
 						//var_dump($_iuguPlanos);
 						?>
-						<form method="post" class="form formulario-validacao">
+						<form method="post" class="form formulario-validacao" action="<?php echo $_page;?>">
 							<input type="hidden" name="acao" value="wlib" />
 							<fieldset>
 								<legend>Assinatura</legend>
+
+								<?php
+								if(is_object($subscription)) {
+
+								?>
+								<div class="colunas3">
+									<dl>
+										<dt>Plano</dt>
+										<dd>
+											<?php
+											echo $subscription->plan_name;
+											?>
+										</dd>
+									</dl>
+
+									<dl>
+										<dt>Valor</dt>
+										<dd>
+											<?php
+											echo number_format($subscription->price_cents/100,2,",",".");
+											?>
+										</dd>
+									</dl>
+									<dl>
+										<dt>Status</dt>
+										<dd>
+											<?php
+											echo $subscription->suspended==false?"<font color=green>ATIVO</font>":"<font color=red>SUSPENSO</font>";
+											?>
+										</dd>
+									</dl>
+								</div>
+								<br />
+								<center>
+										<a href="<?php echo $_page."?cancelar=1";?>" class="button js-confirmarDeletar" data-msg="Tem certeza que deseja cancelar a assinatura?" style="color:red;border-color:red"><span class="iconify" data-icon="ep:close-bold"></span> 
+									Cancelar Assinatura</a>
+								</center>
+								<?php
+								} else {
+								?>
 								<dl>
 									<dd>
-										<select name="iugu_plano">
+										<select name="iugu_plano" class="obg">
 											<option value="">- Selecione um Plano -</option>
 											<?php
 											foreach($_iuguPlanos->items as $v) {
-												echo '<option value="'.$v->id.'"'.($v->id==$values['iugu_customer_id']?' selected':'').'>'.$v->name.' ('.number_format($v->prices[0]->value_cents/100,2,",",".").')</option>';
+												echo '<option value="'.$v->identifier.'"'.($v->id==$values['iugu_customer_id']?' selected':'').'>'.$v->name.' ('.number_format($v->prices[0]->value_cents/100,2,",",".").')</option>';
 											}
 											?>
 										</select>
 									</dd>
 								</dl>
+								<?php
+								}
+								?>
 							</fieldset>
 							<fieldset>
 								<legend>Dados de Pagamento</legend>
@@ -292,23 +412,55 @@
 									</div>
 							</fieldset>
 
-							<fieldset>
-								<legend>Faturas</legend>
 
+							<fieldset>
+								<legend>Faturas Recentes</legend>
+								<?php
+								if(empty($subscription)) {
+								?>
+								<center>
+									Nenhuma assinatura ativa!
+								</center>
+								<?php
+								} else {
+									
+
+
+								?>
 								<div class="list1">
 									<table>
 										<?php
+										foreach($subscription->recent_invoices as $f) {
 											$cor="var(--cinza3)";
+											$status=$f->status;
+											if($f->status=="paid") {
+												$status="Pago";
+												$cor="var(--verde)";
+											} else if($f->status=="pending") {
+												$status="Aguardando Pagamento";
+												$cor="#ffcc00";
+											} else if($f->status="expired") {
+												$status="Expirada";
+												$cor="var(--vermelho)";
+											}
+											
 										?>
-										<tr class="js-item">
+										<tr class="js-item" onclick="window.open('<?php echo $f->secure_url;?>')">
 											<td class="list1__border" style="color:<?php echo $cor;?>"></td>
-											<td><h1><strong>Abril/2022</strong></h1></td>
-											<td>Plano Básico</td>
-											<td>R$200,00</td>
+											<td><h1><?php echo $status;?></h1></td>
+											<td><?php echo date('d/m/Y',strtotime($f->due_date));?></td>
+											<td><?php echo $f->total;?></td>
 										</tr>
+										<?php
+										}
+										?>
 										
 									</table>
 								</div>
+								<?php
+									
+								}
+								?>
 
 							</fieldset>
 

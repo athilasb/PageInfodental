@@ -4,6 +4,9 @@
 	$_menu=array(/*'dashboard'=>array('page'=>'tarefas-inteligentes.php',
 									'title'=>'Tarefas Inteligêntes',
 									'icon'=>'<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>'),*/
+						'inteligencia'=>array('page'=>'pg_inteligencia.php',
+												'pages'=>explode(",",'pg_inteligencia.php'),
+												'icon'=>'<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>'),
 						'agenda'=>array('page'=>'pg_agenda.php',
 										'pages'=>explode(",","pg_agenda.php,pg_agenda_kanban.php"),
 										'title'=>'Agenda',
