@@ -108,7 +108,7 @@
 	function maskTelefone($tel) {
 		$tel=preg_replace("/[^a-zA-Z0-9]+/", "", $tel);
 
-		return "(".substr($tel,0,2).") ".substr($tel,2,4)."-".substr($tel,6,4);
+		return "(".substr($tel,0,2).") ".substr($tel,2,4)."-".substr($tel,6,6);
 	}
 	function invDate($data) {
 		if(!empty($data)) {

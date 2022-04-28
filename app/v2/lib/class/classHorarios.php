@@ -94,9 +94,10 @@
 							//echo 3;
 							$intercede=true;
 						} else if($inpInicio<$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim>$hFim) { 
-							//echo 4;
+						//	echo 4;
 							$intercede=true;
-						} 
+						}
+						// echo "\n\n ";
 
 						if($intercede===true) {
 							$intercedeHorario = date('H:i',strtotime($x->inicio))." - ".date('H:i',strtotime($x->fim));

@@ -60,6 +60,23 @@
 				$rtn=array('success'=>false);
 			}
 
+		} else if($_POST['ajax']=="foto") {
+
+			$paciente = '';
+			if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+				$sql->consult($_p."pacientes","id","where id = ".$_POST['id_paciente']);
+				if($sql->rows) {
+					$paciente=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+			if(is_object($paciente) and isset($_POST['foto']) and !empty($_POST['foto'])) {
+				$sql->update($_p."pacientes","foto_cn='".addslashes($_POST['foto'])."'","where id=$paciente->id");
+				$rtn=array('success'=>true);
+			} else {
+				$rtn=array('success'=>false);
+			}
+
 		}
 
 		header("Content-type: application/json");
@@ -317,7 +334,7 @@
 									<dl class="dl2">
 										<dt>Profissão</dt>
 										<dd>
-											<select name="profissao" class="chosen" data-placeholder="PROFISSÃO">
+											<select name="profissao" class="chosen ajax-id_profissao" data-placeholder="PROFISSÃO">
 												<option value=""></option>
 												<?php
 												foreach($_profissoes as $v) {
@@ -325,7 +342,9 @@
 												}
 												?>
 											</select>
-											<a href="" class="button"><i class="iconify" data-icon="fluent:add-24-regular"></i></a></dd>
+
+											<a href="javascript:;" class="js-btn-aside button" data-aside="profissao" data-aside-sub><i class="iconify" data-icon="fluent:add-24-regular"></i></a>
+										</dd>
 									</dl>
 									<dl>
 										<dt>Preferência Musical</dt>
@@ -367,6 +386,8 @@
 										<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 										<script>
 											$(function(){
+												var id_paciente = <?php echo $paciente->id;?>;
+												var cloudinaryURL = '<?php echo $_cloudinaryURL;?>';
 												var foto = cloudinary.createUploadWidget({
 													cloudName: '<?php echo $_cloudinaryCloudName;?>',
 													language: 'pt',
@@ -378,7 +399,17 @@
 													(error, result) => {
 														if (!error && result) {
 															if(result.event === "success") {
-																 $('input[name=foto_cn]').val(result.info.path);
+
+																data = `ajax=foto&id_paciente=${id_paciente}&foto=${result.info.path}`;
+																$.ajax({
+																	type:"POST",
+																	data:data,
+																	success:function(rtn) {
+																		$(".form-image img").attr('src',`${cloudinaryURL}c_thumb,w_600/${result.info.path}`)
+																	}
+																});
+																//console.log(`${cloudinaryURL}c_thumb,w_600/${result.info.path}`)
+																$('input[name=foto_cn]').val(result.info.path);
 															}
 														}
 													}
@@ -629,5 +660,8 @@
 	</main>
 
 <?php 
-include "includes/footer.php";
+
+	$apiConfig=array('profissao'=>1);
+	require_once("includes/api/apiAside.php");
+	include "includes/footer.php";
 ?>	

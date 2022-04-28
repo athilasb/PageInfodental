@@ -61,6 +61,7 @@
 		}
 	}
 
+
 	$_agendaHoras = array();
 
 	$sql->consult($_p."agenda","id,id_cadeira,agenda_duracao","where agenda_data>='".$data." 00:00:00' and agenda_data<='".$data." 23:59:59' and id_status IN (1,2,5) and lixo=0");
@@ -295,10 +296,12 @@
 
 								$retornoPacientesAgendaJSON=array();
 								if(count($atendidosPacientesIds)>0) {
+
+
 									// busca pacientes que foram atendidos nos ultimos 720 dias
 									$_pacientesAtendidosIds=array();
 									$_pacientesAtendidos=array();
-									$sql->consult($_p."pacientes","id,nome,telefone1,periodicidade","where id IN (".implode(",",$atendidosPacientesIds).")");
+									$sql->consult($_p."pacientes","id,nome,telefone1,periodicidade","where id IN (".implode(",",$atendidosPacientesIds).") order by nome");
 									while ($x=mysqli_fetch_object($sql->mysqry)) {
 										if(isset($_pacientesPeriodicidade[$x->periodicidade])) {
 											$_pacientesAtendidosIds[$x->periodicidade][$x->id]=$x->id;
@@ -317,19 +320,24 @@
 									// cria o array que restaram os pacientes que necessitam de retorno
 									$_pacientesAtendidosIdsResto = $_pacientesAtendidosIds;
 
+									$_pacientesAtendidosUltimoAgendamento = array();
+
 									// roda todos os pacientes atendidos por periodicidade
 									foreach($_pacientesAtendidosIds as $periodicidade=>$pacientesIds) {
 
 										// busca agendamentos dos pacientes da periodicidade que foram atendidos e nao necessitam de retorno
-										$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL $periodicidade MONTH and id_status=5 and id_paciente IN (".implode(",",$pacientesIds).") and lixo=0 order by agenda_data desc");
+										$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL $periodicidade MONTH and id_status IN (5,1,2) and id_paciente IN (".implode(",",$pacientesIds).") and lixo=0 order by agenda_data desc");
 										while($x=mysqli_fetch_object($sql->mysqry)) {
-											//echo $x->id_paciente."->".$x->agenda_data."<BR>";
+
 
 											// remove da lista de pacientes que necessitam de retorno
 											unset($_pacientesAtendidosIdsResto[$periodicidade][$x->id_paciente]);
 										}
 									}
 
+
+
+									$retornoPacientesAgendaJSONAux=array();
 									// monta a lista dos pacientes que necessitam de retorno
 									foreach($_pacientesAtendidosIdsResto as $periodicidade=>$pacientes) {
 								
@@ -337,15 +345,49 @@
 											if(isset($_pacientesAtendidos[$idPaciente])) {
 												$paciente=$_pacientesAtendidos[$idPaciente];
 												$nome=utf8_encode($paciente->nome);
+
+												
+												// ultimo agendamento 
+												$ultimoAtendimento='';
+												
+												if(isset($atendidosPacientesAgenda[$paciente->id])) {
+													$u=$atendidosPacientesAgenda[$paciente->id];
+													$ultimoAtendimento=date('d/m/Y',strtotime($u->agenda_data));
+
+													$tem=strtotime(date('Y-m-d H:i'))-strtotime($u->agenda_data);
+													$tem/=(60*60*24*30);
+													$tem=ceil($tem);
+													if($tem<$paciente->periodicidade) continue;
+													//$nome.=" ($paciente->periodicidade) ha $tem mese(s) - $u->agenda_data";
+												} else {
+													continue;
+												}
+
+
+
+
+
 												$status=isset($_pacientesStatus[$paciente->id])?$_pacientesStatus[$paciente->id]:0;
-												$retornoPacientesAgendaJSON[]=array('id_paciente'=>$paciente->id,
+
+												$index=strtotime($u->agenda_data);
+												if(isset($retornoPacientesAgendaJSONAux[$index])) {
+													$index++;
+												}
+
+												$retornoPacientesAgendaJSONAux[$index]=array('id_paciente'=>$paciente->id,
 																						'nome'=>$nome,
 																						'status'=>$status,
 																						'telefone'=>empty($paciente->telefone1)?"":maskTelefone($paciente->telefone1));
 											}
 										}
 									}
+									arsort($retornoPacientesAgendaJSONAux);
+									foreach($retornoPacientesAgendaJSONAux as $x) {
+										$retornoPacientesAgendaJSON[]=$x;
+									}
 								}
+
+
 
 
 						?>
