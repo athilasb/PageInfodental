@@ -39,12 +39,6 @@
 	}
 
 
-	$_cadeiras = array();
-	$sql->consult($_p."parametros_cadeiras","*","where lixo=0");
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_cadeiras[$x->id]=$x;
-	}
-
 	// calcula horas do dia de cada cadeira
 	$dataDia = date('w',strtotime($data));
 
@@ -254,7 +248,7 @@
 
 									// busca pacientes que foram desmarcados
 									$_pacientesDesmarcados=array();
-									$sql->consult($_p."pacientes","id,nome,telefone1","where id IN (".implode(",",$desmarcadosPacientesIds).")");
+									$sql->consult($_p."pacientes","id,nome,telefone1,foto_cn","where id IN (".implode(",",$desmarcadosPacientesIds).")");
 									while ($x=mysqli_fetch_object($sql->mysqry)) {
 										$_pacientesDesmarcados[$x->id]=$x;
 									}
@@ -268,9 +262,13 @@
 											//$nome=$cont++." - ".utf8_encode($paciente->nome);
 											$nome=utf8_encode($paciente->nome);
 
+											$ft='';
+											if(!empty($paciente->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+
 											$status=isset($_pacientesStatus[$paciente->id])?$_pacientesStatus[$paciente->id]:0;
 											$desmarcadosPacientesAgendaJSON[]=array('id_paciente'=>$paciente->id,
 																					'nome'=>$nome,
+																					'ft'=>$ft,
 																					'status'=>$status,
 																					'telefone'=>empty($paciente->telefone1)?"":maskTelefone($paciente->telefone1));
 										}
@@ -281,6 +279,7 @@
 
 								$atendidosPacientesIds=array();
 								$atendidosPacientesAgenda=array();
+								$atendidosPacientesVezes=array();
 
 
 								// busca os agendamentos dos ultimos 720 dias com status atendido
@@ -288,8 +287,14 @@
 								while($x=mysqli_fetch_object($sql->mysqry)) {
 
 									if(!isset($atendidosPacientesAgenda[$x->id_paciente])) {
-										$atendidosPacientesAgenda[$x->id_paciente]=$x;
-										$atendidosPacientesIds[]=$x->id_paciente;
+
+										if(!isset($atendidosPacientesVezes[$x->id_paciente])) $atendidosPacientesVezes[$x->id_paciente]=0;
+										$atendidosPacientesVezes[$x->id_paciente]++;
+
+										if($atendidosPacientesVezes[$x->id_paciente]>=3) {
+											$atendidosPacientesAgenda[$x->id_paciente]=$x;
+											$atendidosPacientesIds[]=$x->id_paciente;
+										}
 									}
 								}
 
@@ -342,7 +347,9 @@
 									foreach($_pacientesAtendidosIdsResto as $periodicidade=>$pacientes) {
 								
 										foreach($pacientes as $idPaciente) {
-											if(isset($_pacientesAtendidos[$idPaciente])) {
+
+											// se nao estiver na lista de desmarcados (desmarcadosPacientesIds);
+											if(isset($_pacientesAtendidos[$idPaciente]) and !isset($desmarcadosPacientesIds[$idPaciente])) {
 												$paciente=$_pacientesAtendidos[$idPaciente];
 												$nome=utf8_encode($paciente->nome);
 
@@ -374,8 +381,12 @@
 													$index++;
 												}
 
+												$ft='';
+												if(!empty($paciente->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+
 												$retornoPacientesAgendaJSONAux[$index]=array('id_paciente'=>$paciente->id,
 																						'nome'=>$nome,
+																						'ft'=>$ft,
 																						'status'=>$status,
 																						'telefone'=>empty($paciente->telefone1)?"":maskTelefone($paciente->telefone1));
 											}
@@ -497,8 +508,9 @@
 												icone=`<i class="iconify" data-icon="fluent:call-missed-24-regular" style="font-size:2em; color:blue;"></i>`;
 											}
 
+											let ft = x.ft.length>0?x.ft:'img/ilustra-usuario.jpg';
 											$('.js-pacientes').append(`<tr class="js-item" data-id_paciente=${x.id_paciente}>
-																			<td class="list1__foto"><img src="img/ilustra-usuario.jpg" width="54" height="54" /></td>
+																			<td class="list1__foto"><img src="${ft}" width="54" height="54" /></td>
 																			<td>
 																			<h1>${x.nome}</h1>
 																			<p>${x.telefone}</p>

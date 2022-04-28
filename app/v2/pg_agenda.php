@@ -34,7 +34,7 @@
 				if($sql->rows) {
 					$cnt=mysqli_fetch_object($sql->mysqry);
 
-					$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,codigo_bi,musica,periodicidade","where id=$cnt->id_paciente");
+					$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,codigo_bi,musica,periodicidade,foto_cn","where id=$cnt->id_paciente");
 					if($sql->rows) {
 						$paciente=mysqli_fetch_object($sql->mysqry);
 					}
@@ -156,12 +156,18 @@
 					$dias/=60*60*24;
 					$dias=round($dias);
 
+					$ft='';
+					if(!empty($paciente->foto_cn)) {
+						$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+					}
+
 
 
 					$data = array('id'=>$cnt->id,
 									'agendou_profissional'=>isset($_profissionais[$cnt->id_usuario])?utf8_encode($_profissionais[$cnt->id_usuario]->nome):"-",
 									'agendou_dias'=>(int)$dias,
 									'agendaPessoal'=>0,
+									'ft'=>$ft,
 									'agenda_data'=>date('d/m/Y',strtotime($cnt->agenda_data)),
 									'agenda_hora'=>date('H:i',strtotime($cnt->agenda_data)),
 									'agenda_duracao'=>$cnt->agenda_duracao,
@@ -1028,6 +1034,7 @@
 						}
 
 
+
 						$futuro=0;
 						if(strtotime(date('Y-m-d',strtotime($x->agenda_data)))>strtotime(date('Y-m-d'))) $futuro=1;
 
@@ -1873,8 +1880,13 @@
 
 											$('#js-aside-edit .js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
 
+											if(rtn.data.ft && rtn.data.ft.length>0) {
+												$('#js-aside-edit .js-foto').attr('src',rtn.data.ft);
+											} else {
+												$('#js-aside-edit .js-foto').attr('src','img/ilustra-usuario.jpg');
+											}
+
 											if(rtn.data.idade && rtn.data.idade>0) {
-												
 												$('#js-aside-edit .js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
 											} else {
 												$('#js-aside-edit .js-idade').html(``);
@@ -3112,7 +3124,7 @@
 				<input type="hidden" name="id" />
 				<input type="hidden" name="alteracao" value="0" />
 				<section class="header-profile">
-					<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto" />
+					<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
 					<div class="header-profile__inner1">
 						<h1><a href="" target="_blank" class="js-nome"></a></h1>
 						<div>

@@ -345,7 +345,7 @@
 
 				$paciente = '';
 				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
-					$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,codigo_bi,musica,periodicidade","where id=".$_POST['id_paciente']);
+					$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,codigo_bi,musica,periodicidade,foto_cn","where id=".$_POST['id_paciente']);
 					if($sql->rows) $paciente=mysqli_fetch_object($sql->mysqry);
 				}
 
@@ -359,87 +359,168 @@
 					} else $idade=0;
 				
 
-					$agendamentosFuturos=array();
-					$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and agenda_data>'".date('Y-m-d')."' and id_status IN (1,2) and lixo=0 order by agenda_data");
+					$ultimoAgendamento='';
+					$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and id_status IN (5) and lixo=0 order by agenda_data desc limit 1");
+					if($sql->rows) {
+						$ultimoAgendamento=mysqli_fetch_object($sql->mysqry);
 
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-
-						$cor='';
-						$iniciais='';
-
-						$aux = explode(",",$x->profissionais);
-						$profissionais=array();
-						foreach($aux as $id_profissional) {
-							if(!empty($id_profissional) and is_numeric($id_profissional)) {
-
-								if(isset($_profissionais[$id_profissional])) {
-									$cor=$_profissionais[$id_profissional]->calendario_cor;
-									$iniciais=$_profissionais[$id_profissional]->calendario_iniciais;
-
-									$profissionais[]=array('iniciais'=>$iniciais,'cor'=>$cor);
-								}
-							}
-
-						}
-
-						$agendamentosFuturos[]=array('id_agenda'=>$x->id,
-													'data'=>date('d/m/Y H:i',strtotime($x->agenda_data)),
-													'initDate'=>date('d/m/Y',strtotime($x->agenda_data)),
-													'cadeira'=>isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'',
-													'profissionais'=>$profissionais);
 					}
-
-					$ultimoAgendamento=is_object($x)?$x:'';
 
 				
 				
 
 					$_historico=array();
-					$sql->consult($_p."pacientes_historico","*","where id_paciente=$paciente->id and  lixo=0 order by data desc");
-					
-					while($x=mysqli_fetch_object($sql->mysqry)) {
 
-						if($x->evento=="agendaHorario") {
-								$_historico[]=array('usr'=>utf8_encode($_profissionais[$x->id_usuario]->nome),
-																	'dt'=>date('d/m H:i',strtotime($x->data)),
-																	'ev'=>'horario',
-																	'nvDt'=>date('d/m H:i',strtotime($x->agenda_data_novo)),
-																	'antDt'=>date('d/m H:i',strtotime($x->agenda_data_antigo))
-																);
+					# Historico
+						$_cadeiras=array();
+						$sql->consult($_p."parametros_cadeiras","*","where lixo=0  order by titulo asc");
+						while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
 
-						} else {
-							if(isset($_status[$x->id_status_novo])) {
-								$_historico[]=array('usr'=>utf8_encode($_profissionais[$x->id_usuario]->nome),
-																	'dt'=>date('d/m H:i',strtotime($x->data)),
-																	'ev'=>'status',
-																	'desc'=>utf8_encode($x->descricao),
-																	'sts'=>utf8_encode($_status[$x->id_status_novo]->titulo),
-																	'novo'=>$x->evento=="agendaNovo",
-																	'cor'=>$_status[$x->id_status_novo]->cor
-																);
+						$_colaboradores=array();
+						$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,calendario_cor","");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_colaboradores[$x->id]=$x;
+						}
+
+						$_historicoStatus=array();
+						$sql->consult($_p."pacientes_historico_status","*","");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_historicoStatus[$x->id]=$x;
+						}
+
+						$_agendaStatus=array();
+						$sql->consult($_p."agenda_status","*","");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_agendaStatus[$x->id]=$x;
+						}
+
+						$registrosHistorico=array();
+						$agendasIds=array();
+						$sql->consult($_p."pacientes_historico","*","where id_paciente=$paciente->id and lixo=0 order by data desc");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$registrosHistorico[]=$x;
+							if($x->id_agenda>0) $agendasIds[$x->id_agenda]=$x->id_agenda;
+						}
+
+						$_agenda=array();
+						if(count($agendasIds)>0) {
+							$sql->consult($_p."agenda","id,id_cadeira,agenda_data,profissionais,id_status","where id IN (".implode(",",$agendasIds).")");
+							if($sql->rows) {
+								while ($x=mysqli_fetch_object($sql->mysqry)) {
+									$_agenda[$x->id]=$x;
+								}
 							}
 						}
+
 						
-					}
+
+						$registrosComAgendamento=$registrosSemAgendamento=array();
+						$agrupamentoAgenda=array();
+
+
+						$historicoAgendamento=array();
+						foreach($registrosHistorico as $x) {
+
+							$arr = array();
+
+							if($x->evento=="observacao") {
+								$arr['ev']=$x->evento;
+								$arr['dt']=date('d/m • H:i',strtotime($x->data));
+								$arr['col']=isset($_colaboradores[$x->id_usuario])?utf8_encode($_colaboradores[$x->id_usuario]->nome):"Desconhecido";
+								$arr['obs']=isset($_historicoStatus[$x->id_obs])?utf8_encode($_historicoStatus[$x->id_obs]->titulo):'';
+
+								$index=strtotime($x->data);
+								while(isset($_historico[$index])) {
+									$index++;
+								}
+								$_historico[$index]=$arr;
+							
+							} else {
+								if(isset($_agenda[$x->id_agenda])) {
+									$agenda=$_agenda[$x->id_agenda];
+									if(!isset($historicoAgendamento[$x->id_agenda])) {
+
+										$icone="mdi:calendar-check";
+										$iconeCor=isset($_agendaStatus[$agenda->id_status])?$_agendaStatus[$agenda->id_status]->cor:'';
+
+										$cadeira=isset($_cadeiras[$agenda->id_cadeira])?utf8_encode($_cadeiras[$agenda->id_cadeira]->titulo):'-';
+
+										$profissionaisIniciais=array();
+
+										$profissionaisAux=explode(",",$agenda->profissionais);
+										foreach($profissionaisAux as $idPro) {
+											if(is_numeric($idPro) and isset($_colaboradores[$idPro])) {
+												$col=$_colaboradores[$idPro];
+												$profissionaisIniciais[]=array('iniciais'=>$col->calendario_iniciais,
+																				'cor'=>$col->calendario_cor);
+											}
+										}
+
+
+
+										$historicoAgendamento[]=array('ev'=>$x->evento,
+																		'dt2'=>$agenda->agenda_data,
+																		'ic'=>$icone,
+																		'icC'=>$iconeCor,
+																		'dt'=>date('d/m/Y • H:i',strtotime($agenda->agenda_data)),
+																		'cad'=>$cadeira,
+																		'prof'=>$profissionaisIniciais);
+									} 
+									
+									
+								}
+								
+							}
+
+							
+						}
+
+
+						foreach($historicoAgendamento as $id_agenda=>$x) {
+							$index=strtotime($x['dt2']);
+							
+							$_historico[$index]=$x;
+						}
+
+						krsort($_historico);
+
+						$_historicoJSON=array();
+						foreach($_historico as $k=>$v) {
+							$_historicoJSON[]=$v;
+						}
+				
 
 					$dias='';
 					if(is_object($ultimoAgendamento)) {
-						$dias=strtotime(date('Y-m-d H:i:s'))-strtotime($ultimoAgendamento->data);
+						$dias=strtotime(date('Y-m-d H:i:s'))-strtotime($ultimoAgendamento->agenda_data);
 						$dias/=60*60*24;
 						$dias=round($dias);
+
+						if($dias>30) {
+							$dias/=30;
+							$dias=ceil($dias);
+							$dias.=$dias>1?" meses":"mês";
+						} else {
+							$dias.=" dia(s)";
+						}
 					}
 
+					$ft='';
+					if(!empty($paciente->foto_cn)) {
+						$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+					}
 
 					$pacienteInfo=array('id'=>$paciente->id,
+										'ft'=>$ft,
 										'nome'=>addslashes(utf8_encode($paciente->nome)),
-										'agendou_dias'=>(int)$dias,
+										'agendou_dias'=>$dias,
 										'idade'=>(int)$idade,
 										'telefone1'=>$paciente->telefone1,
 										'musica'=>utf8_encode($paciente->musica),
 										'periodicidade'=>isset($_pacientesPeriodicidade[$paciente->periodicidade])?$_pacientesPeriodicidade[$paciente->periodicidade]:$paciente->periodicidade,
 										'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):"",
-										'agendamentosFuturos'=>$agendamentosFuturos,
-										'historico'=>$_historico
+
+										'historico'=>$_historicoJSON
 								);
 
 					$rtn=array('success'=>true,
@@ -1758,19 +1839,28 @@
 							if(rtn.success) {
 								$('#js-aside-pacienteRelacionamento .js-nome').html(`${rtn.paciente.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.paciente.id}`);
 
+								if(rtn.paciente.ft && rtn.paciente.ft.length>0) {
+									$('#js-aside-pacienteRelacionamento .js-foto').attr('src',rtn.paciente.ft);
+								} else {
+									$('#js-aside-pacienteRelacionamento .js-foto').attr('src','img/ilustra-usuario.jpg');
+								}
 
 								if(rtn.paciente.idade && rtn.paciente.idade>0) {
-									
-									$('#js-aside-pacienteRelacionamento .js-idade').html(rtn.paciente.idade+(rtn.paciente.idade>=2?' anos':' ano'));
+									$('#js-aside-pacienteRelacionamento .js-idade').html(rtn.paciente.idade+(rtn.paciente.idade>=2?' anos':' ano')).show();;
 								} else {
-									$('#js-aside-pacienteRelacionamento .js-idade').html(``);
+									$('#js-aside-pacienteRelacionamento .js-idade').html(``).hide();;
 								}
 
 								if(rtn.paciente.periodicidade && rtn.paciente.periodicidade.length>0) {
-									
 									$('#js-aside-pacienteRelacionamento .js-periodicidade').html(`Periodicidade: ${rtn.paciente.periodicidade}`);
 								} else {
 									$('#js-aside-pacienteRelacionamento .js-periodicidade').html(`Periodicidade: -`);
+								}
+
+								if(rtn.paciente.agendou_dias && rtn.paciente.agendou_dias.length>0) {
+									$('#js-aside-pacienteRelacionamento .js-ultimoAtendimento').html(`Atendido há ${rtn.paciente.agendou_dias}`);
+								} else {
+									$('#js-aside-pacienteRelacionamento .js-ultimoAtendimento').html(`a`);
 								}
 
 								if(rtn.paciente.musica && rtn.paciente.musica.length>0) {
@@ -1806,6 +1896,63 @@
 									$(this).parent().parent().find('.js-country').html(countryOut);
 								}).trigger('keyup');
 
+								$('#js-aside-pacienteRelacionamento .js-ag-historico section').find('.history2-item').remove();
+
+								if(rtn.paciente.historico && rtn.paciente.historico.length>0) {
+									rtn.paciente.historico.forEach(x=>{
+										let html = '';
+										if(x.ev=="observacao") {
+											html = `<div class="history2-item">
+														<aside>
+															<span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>			
+														</aside>
+
+														<article>
+															<div class="history2-main">
+																<div>
+																	<h1>${x.dt}</h1>
+																	${x.col}												
+																</div>
+																<strong>${x.obs}</strong>
+																<br />																				
+															</div>
+														</article>
+													</div>`;
+										} else {
+
+											let profissionaisHTML = '';
+
+
+											if(x.prof && x.prof.length>0) {
+												x.prof.forEach(p=>{
+													profissionaisHTML+=`<div class="badge-prof" style="background:${p.cor}">${p.iniciais}</div>`;
+												})
+											}
+
+											html = `<div class="history2-item">
+														<aside>
+															<span style="background:${x.icC};"><i class="iconify" data-icon="${x.ic}"></i></span>
+															
+														</aside>
+
+														<article>
+															<div class="history2-main">
+																<div>
+																	<h1>${x.dt}</h1>
+																	${x.cad}
+																	${profissionaisHTML}
+																</div>
+																
+															</div>
+														</article>
+													</div>`;
+										}
+
+
+										$('#js-aside-pacienteRelacionamento .js-ag-historico section').append(html);
+									})
+								}
+ 
 							} else if(rtn.error) {
 								swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 							} else {
@@ -1838,14 +1985,13 @@
 						<input type="hidden" name="id_paciente" />
 						<input type="hidden" name="tipo" value="queroAgendar" />
 						<section class="header-profile">
-							<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto" />
+							<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="js-foto header-profile__foto" />
 							<div class="header-profile__inner1">
 								<h1><a href="" target="_blank" class="js-nome"></a></h1>
 								<div>
-									<p class="js-statusBI"></p>
 									<p class="js-idade"></p>
 									<p class="js-periodicidade"></p>
-									<p class="js-musica"></p>
+									<p class="js-ultimoAtendimento"></p>
 								</div>
 							</div>
 						</section>
@@ -2050,7 +2196,6 @@
 						</script>
 						<section class="tab tab_alt js-tab">
 							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamento').show();" class="active">Agendamento</a>
-							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-proximas').show();">Próximas Consultas</a>
 							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>					
 						</section>
 						
@@ -2068,7 +2213,7 @@
 										</dl>
 									</div>								
 								</div>
-							</div>
+							</section>
 
 							<div class="js-ag-agendamento-queroAgendar">
 								<div class="colunas3">
@@ -2157,11 +2302,65 @@
 							</div>
 
 						</div>
-						<div class="js-ag js-ag-proximas" style="display:none;">
-							Proximas
-						</div>
 						<div class="js-ag js-ag-historico" style="display:none;">
-							Historico
+							<div class="history">
+								<section>
+									<div class="history2">
+
+										<div class="history2-item">
+											<aside>
+												<span style="background:#f9de27;color:#FFF;"><i class="iconify" data-icon="mdi:calendar-check"></i></span>		
+											</aside>
+
+											<article>
+												<div class="history2-main">
+													<div>
+														<h1>02/05 • 09:00</h1>
+														<h2>CONSULT. 4</h2>												
+														<div class="badge-prof" style="background:#c18c6a">PM</div>												
+													</div>																						
+													<h3><a href="javascript:;" onclick="$(this).parent().parent().next('.history2-more').slideToggle('fast');">detalhes</a></h3>									
+												</div>
+												<div class="history2-more">
+													
+
+													<div class="history2-more-item">
+
+														<h1>02/02/21 08:30 - Simone Helena dos Santos </h1>
+														<h2>Alterou status de <span class="data" style="background:#545559">À CONFIRMAR</span> para <span class="data" style="background:#f9de27">DESMARCADO</span></h2>
+																										
+													</div>
+													
+
+													<div class="history2-more-item">
+
+														<h1>25/01/21 15:30 - Alessandra Silva Alves</h1>
+																										<h2>Criou novo agendamento com status <span class="data" style="background:#545559">À CONFIRMAR</span></h2>
+																										
+													</div>
+												</div>
+											</article>
+										</div>
+
+										<div class="history2-item">
+											<aside>
+												<span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>			
+											</aside>
+
+											<article>
+												<div class="history2-main">
+													<div>
+														<h1>28/04/22 • 08:23</h1>
+														Kroner Machado Costa												
+													</div>
+													<strong>Não conseguiu contato</strong>
+													<br />																				
+												</div>
+											</article>
+										</div>
+									</div>
+								</section>
+							</div>
 						</div>
 					</div>
 
