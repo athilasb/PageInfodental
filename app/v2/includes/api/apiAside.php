@@ -6,6 +6,10 @@
 		require_once("../../lib/conf.php");
 		require_once("../../usuarios/checa.php");
 
+
+		$attr=array('prefixo'=>$_p,'usr'=>$usr);
+		$wts = new Whatsapp($attr);
+
 		$rtn = array();
 
 		$_tableEspecialidades=$_p."parametros_especialidades";
@@ -404,12 +408,19 @@
 
 						$_agenda=array();
 						if(count($agendasIds)>0) {
-							$sql->consult($_p."agenda","id,id_cadeira,agenda_data,profissionais,id_status","where id IN (".implode(",",$agendasIds).")");
+							$sql->consult($_p."agenda","id,id_cadeira,agenda_data,profissionais,id_status","where id IN (".implode(",",$agendasIds).") and lixo=0");
 							if($sql->rows) {
 								while ($x=mysqli_fetch_object($sql->mysqry)) {
 									$_agenda[$x->id]=$x;
 								}
 							}
+						}
+
+						$_todosAgendamentos=array();
+						$sql->consult($_p."agenda","id,id_cadeira,agenda_data,profissionais,id_status","where id_paciente=$paciente->id and lixo=0");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							if(isset($agendasIds[$x->id])) continue;
+							$_todosAgendamentos[]=$x;
 						}
 
 						
@@ -475,10 +486,39 @@
 							
 						}
 
+						foreach($_todosAgendamentos as $agenda) {
+							$icone="mdi:calendar-check";
+							$iconeCor=isset($_agendaStatus[$agenda->id_status])?$_agendaStatus[$agenda->id_status]->cor:'';
+
+							$cadeira=isset($_cadeiras[$agenda->id_cadeira])?utf8_encode($_cadeiras[$agenda->id_cadeira]->titulo):'-';
+
+							$profissionaisIniciais=array();
+
+							$profissionaisAux=explode(",",$agenda->profissionais);
+							foreach($profissionaisAux as $idPro) {
+								if(is_numeric($idPro) and isset($_colaboradores[$idPro])) {
+									$col=$_colaboradores[$idPro];
+									$profissionaisIniciais[]=array('iniciais'=>$col->calendario_iniciais,
+																	'cor'=>$col->calendario_cor);
+								}
+							}
+
+							$historicoAgendamento[]=array('ev'=>'agendamento',
+															'dt2'=>$agenda->agenda_data,
+															'ic'=>$icone,
+															'icC'=>$iconeCor,
+															'dt'=>date('d/m/Y • H:i',strtotime($agenda->agenda_data)),
+															'cad'=>$cadeira,
+															'prof'=>$profissionaisIniciais);
+
+
+						}
 
 						foreach($historicoAgendamento as $id_agenda=>$x) {
 							$index=strtotime($x['dt2']);
-							
+							while(isset($_historico[$index])) {
+								$index++;
+							}
 							$_historico[$index]=$x;
 						}
 
@@ -662,7 +702,6 @@
 				} else {
 					$rtn=array('success'=>false,'error'=>$erro);
 				}
-
 			}
 			else if($_POST['ajax']=="asRelacionamentoPacienteHorarios") {
 			
@@ -835,6 +874,50 @@
 					$rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
 				}
 			} 
+			else if($_POST['ajax']=="asRelacionamentoPacienteEnviarWhatsapp") {
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","*","where id='".$_POST['id_paciente']."'");
+					if($sql->rows) { 
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+				}	
+
+				$wtsMsg = '';
+				$sql->consult($_p."whatsapp_mensagens_tipos","*","where id=4");
+				if($sql->rows) {
+					$wtsMsg=mysqli_fetch_object($sql->mysqry);
+				}
+
+				$erro='';
+				if(empty($paciente)) $erro='Paciente não encontrado!';
+				else if(empty($wtsMsg)) $erro='Mensagem <b>Relacionamento Gestão de Tempo</b> não configurado';
+				else if(is_object($wtsMsg) and $wtsMsg->pub==0) $erro='Mensagem <b>Relacionamento Gestão de Tempo</b> desativada';
+				else if(empty($_wts)) $erro='Whatsapp desconectado!';
+				else {
+
+					$attr=array('id_tipo'=>4,
+								'id_paciente'=>$paciente->id);
+					if($wts->adicionaNaFila($attr)) {
+						$rtn=array('success'=>true);
+					} else {
+						$rtn=array('success'=>false,'error'=>$wts->erro);
+					}
+
+				}
+
+				if(!empty($erro)) {
+					$rtn=array('success'=>false,'error'=>$erro);
+				}
+			}
+			else if($_POST['ajax']=="asRelacionamentoPacienteDisparaWhatsapp") {
+				if($wts->dispara()) {
+
+					$rtn=array('success'=>true);
+				} else {
+					$rtn=array('success'=>false,'error'=>$wts->erro); 
+				}
+			}
 			
 		# Profissoes
 			else if($_POST['ajax']=="asProfissoesListar") {
@@ -1845,6 +1928,8 @@
 									$('#js-aside-pacienteRelacionamento .js-foto').attr('src','img/ilustra-usuario.jpg');
 								}
 
+								$('#js-aside-pacienteRelacionamento .js-whatsapp-numero').val(rtn.paciente.telefone1);
+
 								if(rtn.paciente.idade && rtn.paciente.idade>0) {
 									$('#js-aside-pacienteRelacionamento .js-idade').html(rtn.paciente.idade+(rtn.paciente.idade>=2?' anos':' ano')).show();;
 								} else {
@@ -1860,7 +1945,7 @@
 								if(rtn.paciente.agendou_dias && rtn.paciente.agendou_dias.length>0) {
 									$('#js-aside-pacienteRelacionamento .js-ultimoAtendimento').html(`Atendido há ${rtn.paciente.agendou_dias}`);
 								} else {
-									$('#js-aside-pacienteRelacionamento .js-ultimoAtendimento').html(`a`);
+									$('#js-aside-pacienteRelacionamento .js-ultimoAtendimento').html(`Nunca foi atendido(a)`);
 								}
 
 								if(rtn.paciente.musica && rtn.paciente.musica.length>0) {
@@ -2071,6 +2156,55 @@
 									}
 								});
 
+								$('#js-aside-pacienteRelacionamento .js-btn-whatsapp-enviar').click(function(){
+
+									let obj = $(this);
+									let objTextoAntigo = $(this).html();
+
+									if(obj.attr('data-loading')==0) {
+
+										obj.attr('data-loading',1);
+										obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+										let id_paciente = $('#js-aside-pacienteRelacionamento input[name=id_paciente]').val();
+
+										let data = `ajax=asRelacionamentoPacienteEnviarWhatsapp&id_paciente=${id_paciente}`;
+									
+										$.ajax({
+												type:'POST',
+												data:data,
+												url:baseURLApiAside,
+												success:function(rtn) {
+													if(rtn.success) {
+
+														$.ajax({
+															type:"POST",
+															url:baseURLApiAside,
+															data:'ajax=asRelacionamentoPacienteDisparaWhatsapp'
+														});
+														
+
+														swal({title: "Sucesso!", text: 'Mensagem enviada com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
+														});
+
+													} else if(rtn.error) {
+														swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+													} else {
+														swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+													}
+													
+												},
+												error:function() {
+													swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+												} 
+										}).done(function(){
+											obj.html(objTextoAntigo);
+											obj.attr('data-loading',0);
+										});
+
+									}
+
+								})
+
 								$('#js-aside-pacienteRelacionamento .js-ag-agendamento .js-salvar').click(function(){
 									let tipo = $('#js-aside-pacienteRelacionamento input[name=tipo]').val();
 									let id_paciente = $('#js-aside-pacienteRelacionamento input[name=id_paciente]').val();
@@ -2191,11 +2325,13 @@
 									}
 
 								});
+
 								$('.js-btn-acao-queroAgendar').click();
 							});
 						</script>
 						<section class="tab tab_alt js-tab">
 							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamento').show();" class="active">Agendamento</a>
+							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-whatsapp').show();">Whatsapp</a>			
 							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>					
 						</section>
 						
@@ -2302,6 +2438,48 @@
 							</div>
 
 						</div>
+
+						<div class="js-ag js-ag-whatsapp">
+
+							<?php
+							// id => 4: Relacionamento Gestão de Tempo
+							$sqlwts=new Mysql(true);
+							$sqlwts->consult($_p."whatsapp_mensagens_tipos","*","where id=4");
+							$wts=$sqlwts->rows?mysqli_fetch_object($sqlwts->mysqry):"";
+							
+							if(is_object($wts)) {
+							?>
+							<div class="colunas3">
+							<dl>
+								<dt>Número</dt>
+								<dd>
+									<input type="text" disabled class="telefone js-whatsapp-numero" />
+								</dd>
+							</dl>
+						</div>
+							<dl>
+								<dt>Mensagem</dt>
+								<dd>
+									<textarea style="height: 250px;" disabled><?php echo $wts->texto;?></textarea>
+								</dd>
+							</dl>
+
+							<a href="javascript:;" class="button button__sec js-btn-whatsapp-enviar" data-loading="0">Enviar Whatsapp</a>
+
+							<?php
+							} else {
+							?>
+							<center>
+								<br />Mensagem <b>Relacionamento Gestão de Tempo</b> não configurado.
+								<br /><br />
+								<a href="pg_configuracoes_whatsapp.php" target="_blank" class="button">Clique aqui para configurar</a>
+							</center>
+							<?php	
+							}
+							?>
+						</div>
+
+
 						<div class="js-ag js-ag-historico" style="display:none;">
 							<div class="history">
 								<section>

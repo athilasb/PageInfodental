@@ -208,6 +208,70 @@
 						} else {
 							$this->erro="Paciente não encontrado!";
 						}
+					} else if($tipo->id==4) {
+						if(is_object($paciente)) {
+
+							$msg = $tipo->texto;
+							$numero = telefone($paciente->telefone1);
+
+							if(!empty($numero) and !empty($msg)) {
+
+								if(in_array($numero,$this->block)) {
+									$this->erro="Numero bloqueado ($numero)";
+									return false;
+								}
+
+								// busca ultimo agendamento
+								$agenda='';
+								$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and id_status IN (5) and lixo=0 order by agenda_data desc limit 1");
+								if($sql->rows) {
+									$agenda=mysqli_fetch_object($sql->mysqry);
+								}
+
+								if(is_object($agenda)) {
+									$attr=array('paciente'=>$paciente,
+												'agenda'=>$agenda,
+												'profissionais'=>$profissionais,
+												'cadeira'=>$cadeira,
+												'msg'=>$msg);
+									$msg = $this->mensagemAtalhos($attr);
+
+									// verifica se ja enviou
+									$where="where id_agenda=$agenda->id and 
+													id_paciente=$paciente->id and 
+													id_tipo=$tipo->id  and 
+													numero='".addslashes($numero)."' and 
+													data > NOW() - INTERVAL 48 HOUR";
+
+									$sql->consult($_p."whatsapp_mensagens","*",$where);
+
+								
+									if($sql->rows==0) {
+										$vSQL="data=now(),
+												id_tipo=$tipo->id,
+												id_paciente=$paciente->id,
+												id_agenda=$agenda->id,
+												numero='$numero',
+												mensagem='$msg'";
+
+										$sqlWts->add($_p."whatsapp_mensagens",$vSQL);
+
+										return true;
+									} else {
+										$this->erro="Este paciente nunca foi atendido!";
+									}
+
+								} else {
+									$this->erro="Esta mensagem já foi cadastrada nos últimos 60 minutos";
+								}
+							} else {
+								$this->erro="Paciente #$paciente->id não possui número de whatsapp";
+							}
+
+							
+						} else {
+							$this->erro="Paciente não encontrado!";
+						}
 					} else {
 						$this->erro="Nenhum tipo encontrado";
 					}
@@ -256,6 +320,7 @@
 					if($x->id_profissional>0)  $profissionaisIds[$x->id_profissional]=$x->id_profissional;
 				}
 			}
+
 			if(count($enviarMsgs)>0) {
 
 				$_agendas=array();
@@ -317,14 +382,13 @@
 							$paciente = isset($_pacientes[$v->id_paciente])?$_pacientes[$v->id_paciente]:'';
 							$agenda = isset($_agendas[$v->id_agenda])?$_agendas[$v->id_agenda]:'';
 							$profissional = isset($_profissionais[$v->id_profissional])?$_profissionais[$v->id_profissional]:'';
-							if($tipo->id==1 or $tipo->id==2 or $tipo->id==3) {
+							if($tipo->id==1 or $tipo->id==2 or $tipo->id==3 or $tipo->id==4) {
 
 								if(is_object($paciente) and is_object($agenda)) {
 
 									$attr=array('numero'=>$v->numero,
 												'mensagem'=>$v->mensagem,
 												'id_conexao'=>$conexao->id);
-									
 									if($this->enviaMensagem($attr)) {
 										$vsql="data_enviado=now(),enviado=1,retorno_json='".addslashes($this->response)."',id_conexao=$conexao->id";
 										$vwhere="where id=$v->id";

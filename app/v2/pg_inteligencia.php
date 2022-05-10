@@ -43,26 +43,41 @@
 	$dataDia = date('w',strtotime($data));
 
 	$_horas = array();
-	$sql->consult($_p."parametros_cadeiras_horarios","*","where dia='$dataDia' and lixo=0");
+	$_horasMes = array();
+	$sql->consult($_p."parametros_cadeiras_horarios","*","where lixo=0");
 	if($sql->rows) {
 		while($x=mysqli_fetch_object($sql->mysqry)) {
-			if(!isset($_horas[$x->id_cadeira])) $_horas[$x->id_cadeira]=0;
 
 			$dif = (strtotime($x->fim)-strtotime($x->inicio))/(60);
 
-			$_horas[$x->id_cadeira]+=$dif;
+			if(!isset($_horasMes[$x->id_cadeira][$x->dia])) $_horasMes[$x->id_cadeira][$x->dia]=0;
+			$_horasMes[$x->id_cadeira][$x->dia]+=$dif;
+
+
+			if($dataDia==$x->dia) {
+				if(!isset($_horas[$x->id_cadeira])) $_horas[$x->id_cadeira]=0;
+				$_horas[$x->id_cadeira]+=$dif;
+			}
 
 		}
 	}
 
 
 	$_agendaHoras = array();
+	$_agendaHorasMes = array();
 
-	$sql->consult($_p."agenda","id,id_cadeira,agenda_duracao","where agenda_data>='".$data." 00:00:00' and agenda_data<='".$data." 23:59:59' and id_status IN (1,2,5) and lixo=0");
+	$sql->consult($_p."agenda","id,id_cadeira,agenda_data,agenda_duracao","where agenda_data>='".date('Y-m-01')." 00:00:00' and agenda_data<='".date('Y-m-t')." 23:59:59' and id_status IN (1,2,5) and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 
-			if(!isset($_agendaHoras[$x->id_cadeira])) $_agendaHoras[$x->id_cadeira]=0;
-			$_agendaHoras[$x->id_cadeira]+=$x->agenda_duracao;
+			$dia = date('d',strtotime($x->agenda_data));
+
+			if(!isset($_agendaHorasMes[$x->id_cadeira][$dia])) $_agendaHorasMes[$x->id_cadeira][$dia]=0;
+			$_agendaHorasMes[$x->id_cadeira][$dia]+=$x->agenda_duracao;
+
+			if(date('Y-m-d',strtotime($x->agenda_data))==$data) {
+				if(!isset($_agendaHoras[$x->id_cadeira])) $_agendaHoras[$x->id_cadeira]=0;
+				$_agendaHoras[$x->id_cadeira]+=$x->agenda_duracao;
+			}
 	}
 
 
@@ -132,17 +147,164 @@
 					<div class="filter">
 						<div class="filter-group">
 							<div class="filter-title">
-								<h1>Índices de Ociosidade</h1>
+								<h1>Taxa de Ocupação</h1>
 							</div>
 						</div>
 					</div>
 
 					<section class="tab">
-						<a href="" class="active">Cadeiras</a>
-						<a href="">Dentistas</a>						
+						<a href="javascript:;" class="active js-btn-grafico" data-tipo="cadeiras">Cadeiras</a>
+						<a href="javascript:;" class="js-btn-grafico" data-tipo="dentistas">Dentistas</a>						
 					</section>
 
-					<section style="width:100%; height:300px; background:var(--cinza2); margin-bottom:var(--margin1);">						
+					<section style="width:100%; height:300px; background:var(--cinza2); margin-bottom:var(--margin1);padding:15px;">		
+
+						<?php
+
+							for($i=1;$i<=date('t');$i++) {
+								$dias[]=$i;
+							}
+
+							$cores=array('blue','green','brown','orange','purple');
+							//echo json_encode($_agendaHorasMes[1]["05"]);
+							$graficoData = array();
+							foreach($_cadeiras as $x) {
+								//echo $x->titulo."<BR>";
+								for($i=1;$i<=date('t');$i++) {
+									if(!isset($graficoData[$x->id])) $graficoData[$x->id]=array();
+
+									$diaSemana=date('w',strtotime(date('Y-m-'.$i)));
+									if(isset($_horasMes[$x->id][$diaSemana])) {
+										$horasDisp=$_horasMes[$x->id][$diaSemana];
+
+										//echo $diaSemana."->".$horasDisp."<BR>";
+										$ocupacao=isset($_agendaHorasMes[$x->id][d2($i)])?$_agendaHorasMes[$x->id][d2($i)]:0;
+										
+										$tx = ceil(($ocupacao/$horasDisp)*100);
+
+										//echo $i." = ".$diaSemana.": ".$ocupacao."/".$horasDisp." = ".$tx."<Br>";;
+
+										$graficoData[$x->id][]=$tx;
+									} else {
+
+										$graficoData[$x->id][]=0;
+									}
+								}
+							}
+
+
+							$graficoCadeiras=array();
+							$graficoDentistas=array();
+							$aux=0;
+							foreach($_cadeiras as $c) {
+								$graficoCadeiras[]=array('fill'=>true,
+															'label'=>utf8_encode($c->titulo),
+															'data'=>$graficoData[$c->id],
+															'backgroundColor'=>'transparent',
+															'borderColor'=>$cores[$aux++],
+															'borderWidth'=>1);
+								$graficoDentistas[]=array('fill'=>true,
+															'label'=>utf8_encode($c->titulo),
+															'data'=>array(rand(1,10),rand(1,100),rand(1,100)),
+															'backgroundColor'=>'transparent',
+															'borderColor'=>'gray',
+															'borderWidth'=>1);
+							
+							}
+
+						?>
+						<script>
+						$(function() {
+
+							$('.js-btn-grafico').click(function(){
+
+								let tipo = $(this).attr('data-tipo');
+
+								$('.box-grafico').hide();
+
+								$('.js-btn-grafico').removeClass('active');
+								$(this).addClass('active');
+
+								if(tipo=="dentistas") {
+									$('#grafico-dentistas').show();
+								} else {
+									$('#grafico-cadeiras').show();
+								}
+							})
+
+							var ctx = document.getElementById('grafico-cadeiras').getContext('2d');
+							var graficoCadeiras = new Chart(ctx, {    
+							    type: 'line',
+							    data: {
+							        labels:  <?php echo json_encode($dias);?>,
+							        datasets: <?php echo json_encode($graficoCadeiras);?>
+							    },
+							    options: {
+							    	legend: {
+						    			display:false								    			
+						    		},
+							    	responsive:true,
+									maintainAspectRatio: false,
+							        scales: {
+							            yAxes: [{
+							                ticks: {
+							                    beginAtZero: true
+							                },
+							                gridLines: {
+							                	drawBorder: false,
+							                	color: 'transparent'									                	
+							                }
+							            }],
+							            xAxes: [{
+								            gridLines: {
+								            	drawBorder: false,
+								                color: '#ebebeb',
+								                zeroLineColor: "#ebebeb"
+								            }	              
+								        }]
+							        }
+							    }
+							});
+
+
+							var ctx = document.getElementById('grafico-dentistas').getContext('2d');
+							var graficoDentistas = new Chart(ctx, {    
+							    type: 'line',
+							    data: {
+							        
+							        labels:  <?php echo json_encode($dias);?>,
+							        datasets: <?php echo json_encode($graficoDentistas);?>
+							    },
+							    options: {
+							    	legend: {
+						    			display:false								    			
+						    		},
+							    	responsive:true,
+									maintainAspectRatio: false,
+							        scales: {
+							            yAxes: [{
+							                ticks: {
+							                    beginAtZero: true
+							                },
+							                gridLines: {
+							                	drawBorder: false,
+							                	color: 'transparent'									                	
+							                }
+							            }],
+							            xAxes: [{
+								            gridLines: {
+								            	drawBorder: false,
+								                color: '#ebebeb',
+								                zeroLineColor: "#ebebeb"
+								            }	              
+								        }]
+							        }
+							    }
+							});
+						});
+						</script>
+						<canvas id="grafico-cadeiras" class="box-grafico"></canvas>
+						<canvas id="grafico-dentistas" class="box-grafico" style="display:none;"></canvas>
 					</section>
 
 					<div class="list4">
@@ -152,16 +314,16 @@
 							$cadeiraHoras = isset($_horas[$c->id]) ? $_horas[$c->id] : 0;
 							$agendaHoras = isset($_agendaHoras[$c->id]) ? $_agendaHoras[$c->id] : 0;
 
-							$indice = 100-ceil($cadeiraHoras==0?0:($agendaHoras/$cadeiraHoras)*100);
+							$indice = ceil($cadeiraHoras==0?0:($agendaHoras/$cadeiraHoras)*100);
 						?>
 						<a href="" class="list4-item active">
 							<div>
 								<h1>
 									<?php 
-									if($indice>0) {
-										echo $indice.'% <i class="iconify" data-icon="fluent:arrow-download-20-regular" style="color:#FF0000"></i>';
+									if($indice<0) {
+										echo $indice.'%';
 									} else {
-										echo ($indice==0?0:($indice*-1)).'% <i class="iconify" data-icon="fluent:arrow-export-up-20-filled" style="color:green"></i>';
+										echo ($indice==0?0:($indice)).'%';
 									}
 									?>
 								</h1>
@@ -248,7 +410,7 @@
 
 									// busca pacientes que foram desmarcados
 									$_pacientesDesmarcados=array();
-									$sql->consult($_p."pacientes","id,nome,telefone1,foto_cn","where id IN (".implode(",",$desmarcadosPacientesIds).")");
+									$sql->consult($_p."pacientes","id,nome,telefone1,foto_cn","where id IN (".implode(",",$desmarcadosPacientesIds).") and lixo=0");
 									while ($x=mysqli_fetch_object($sql->mysqry)) {
 										$_pacientesDesmarcados[$x->id]=$x;
 									}
@@ -306,7 +468,7 @@
 									// busca pacientes que foram atendidos nos ultimos 720 dias
 									$_pacientesAtendidosIds=array();
 									$_pacientesAtendidos=array();
-									$sql->consult($_p."pacientes","id,nome,telefone1,periodicidade","where id IN (".implode(",",$atendidosPacientesIds).") order by nome");
+									$sql->consult($_p."pacientes","id,nome,telefone1,periodicidade","where id IN (".implode(",",$atendidosPacientesIds).") and lixo=0 order by nome");
 									while ($x=mysqli_fetch_object($sql->mysqry)) {
 										if(isset($_pacientesPeriodicidade[$x->periodicidade])) {
 											$_pacientesAtendidosIds[$x->periodicidade][$x->id]=$x->id;
@@ -315,7 +477,7 @@
 									}
 
 									// busca historico
-									$sql->consult($_p."pacientes_historico","*","where id_paciente IN (".implode(",",$desmarcadosPacientesIds).") and evento='observacao' order by data desc");
+									$sql->consult($_p."pacientes_historico","*","where id_paciente IN (".implode(",",$atendidosPacientesIds).") and evento='observacao' order by data desc");
 									while($x=mysqli_fetch_object($sql->mysqry)) {
 										if(!isset($_pacientesStatus[$x->id_paciente])) {
 											$_pacientesStatus[$x->id_paciente]=$x->id_obs;

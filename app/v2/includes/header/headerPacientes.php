@@ -1,7 +1,7 @@
 <?php
 	$paciente='';
 	if(isset($_GET['id_paciente']) and is_numeric($_GET['id_paciente'])) {
-		$sql->consult($_p."pacientes","*","where id='".$_GET['id_paciente']."'");
+		$sql->consult($_p."pacientes","*","where id='".$_GET['id_paciente']."' and lixo=0");
 		if($sql->rows) {
 			$paciente=mysqli_fetch_object($sql->mysqry);
 		}
