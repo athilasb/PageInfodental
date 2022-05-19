@@ -121,6 +121,7 @@
 	}
 
 	if(isset($_POST['acao'])) {
+ 		$_POST['rg_orgaoemissor']=strtoupperWLIB($_POST['rg_orgaoemissor']);
 
 		$vSQL=$adm->vSQL($campos,$_POST);
 		$values=$adm->values;
@@ -298,7 +299,7 @@
 									</dl>
 									<dl>
 										<dt>Org. Emissor</dt>
-										<dd><input type="text" name="rg_orgaoemissor" value="<?php echo $values['rg_orgaoemissor'];?>"  class="" /></dd>
+										<dd><input type="text" name="rg_orgaoemissor" value="<?php echo $values['rg_orgaoemissor'];?>"  class="" style="text-transform: uppercase;" /></dd>
 									</dl>
 									<dl>
 										<dt>UF</dt>
@@ -311,6 +312,49 @@
 									<dl>
 										<dt>CPF</dt>
 										<dd><input type="text" name="cpf" value="<?php echo $values['cpf'];?>" class="cpf js-cpf" /></dd>
+										<dd class="js-cpf-dd" style="color:var(--vermelho);font-size: 12px;padding-top:5px;"></dd>
+										<script type="text/javascript">
+											$(function(){
+
+												$('input[name=cpf]').change(function(){
+													let cpf = $(this).val();
+													$('.js-cpf-dd').hide();
+
+													if(cpf.length==14) {
+														if(validarCPF(cpf)) {
+
+															$('.js-cpf-dd').hide();
+														} else {
+															$('.js-cpf-dd').html(`<span class="iconify" data-icon="dashicons:warning" data-inline="true"></span>CPF inválido!`).show();;
+														}
+													
+
+														let data = `ajax=consultaCPF&cpf=${cpf}`
+														$.ajax({
+															type:"POST",
+															url:"pg_pacientes.php",
+															data:data,
+															success:function(rtn) {
+																if(rtn.success) {
+																	if(rtn.pacientes && rtn.pacientes>0) {
+																		$('.js-cpf-dd').html(`<span class="iconify" data-icon="dashicons:warning" data-inline="true"></span>Já existe cadastro com este CPF!`).show();;
+																	} else {
+																	}
+																} else if(rtn.error) {
+
+																} else {
+
+																}
+															},
+															error:function(){
+
+															}
+														})
+													}
+
+												})
+											})
+										</script>
 									</dl>
 									<dl>
 										<dt>Data de Nascimento</dt>
@@ -333,7 +377,7 @@
 								<div class="colunas3">
 									<dl class="dl2">
 										<dt>Profissão</dt>
-										<dd>
+										<dd class="">
 											<select name="profissao" class="chosen ajax-id_profissao" data-placeholder="PROFISSÃO">
 												<option value=""></option>
 												<?php

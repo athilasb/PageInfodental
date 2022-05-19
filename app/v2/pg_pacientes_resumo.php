@@ -110,9 +110,11 @@
 	}
 
 	$_profissionais=array();
+	$_profissionaisArr=array();
 	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_profissionais[$x->id]=$x;
+		$_profissionaisArr[$x->id]=$x;
 	}
 
 	$_tiposEvolucao=array();
@@ -165,10 +167,110 @@
 			$haPaciente.=" $dif->h horas";
 		}
 
-		$haPaciente="Há $haPaciente";
+		$haPaciente="Paciente há $haPaciente";
 
 	}
-						
+
+	# Resumo
+		$_colaboradores=array();
+		$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,calendario_cor","");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$_colaboradores[$x->id]=$x;
+		}
+
+		$_historicoStatus=array();
+		$sql->consult($_p."pacientes_historico_status","*","");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$_historicoStatus[$x->id]=$x;
+		}
+
+		$_agendaStatus=array();
+		$sql->consult($_p."agenda_status","*","");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$_agendaStatus[$x->id]=$x;
+		}
+
+		$registros=array();
+		$agendasIds=array();
+		$sql->consult($_p."pacientes_historico","*","where id_paciente=$paciente->id and lixo=0 order by data desc");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$registros[]=$x;
+			if($x->id_agenda>0) $agendasIds[$x->id_agenda]=$x->id_agenda;
+		}
+
+		
+
+		$registrosComAgendamento=$registrosSemAgendamento=array();
+		$agrupamentoAgenda=array();
+
+		foreach($registros as $x) {
+			$agendasIds[]=$x->id;
+			if($x->id_agenda>0) {
+				if(isset($agrupamentoAgenda[$x->id_agenda])) {
+					$agrupamentoAgenda[$x->id_agenda]['grupo'][]=$x;
+				} else {
+					$agrupamentoAgenda[$x->id_agenda]=array('ultimaAgenda'=>$x,'grupo'=>array($x));
+				}
+			} else {
+				$registrosSemAgendamento[strtotime($x->data)]=$x;
+			}
+		}
+
+
+
+		$_agendas=$_profissionais=array();
+		if(count($agendasIds)>0) {
+			$sql->consult($_p."agenda","id,id_cadeira,profissionais,agenda_data,id_status,lixo","where id IN (".implode(",",$agendasIds).") and lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+
+				$_agendas[$x->id]=$x;
+
+			}
+		} 
+
+
+		$_grAgendasProfissionais=array();
+		$_grAgendasProfissionaisTotal=0;
+		$sql->consult($_p."agenda","id,id_cadeira,profissionais,agenda_data,id_status,lixo","where id_paciente=$paciente->id and lixo=0");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+
+
+			$profAux=explode(",",$x->profissionais);
+
+			foreach($profAux as $idP) {
+				if(!empty($idP) and is_numeric($idP)) {
+					if(!isset($_grAgendasProfissionais[$idP])) $_grAgendasProfissionais[$idP]=0;
+					$_grAgendasProfissionais[$idP]++;
+					$_grAgendasProfissionaisTotal++;
+				}
+			}
+
+
+		}
+
+
+		foreach($agrupamentoAgenda as $idAg=>$regs) {
+			if(isset($_agendas[$regs['ultimaAgenda']->id_agenda])) {
+				$agendamento=($_agendas[$regs['ultimaAgenda']->id_agenda]);
+				$id=strtotime($agendamento->agenda_data);//.$x->id;
+
+
+				$registrosComAgendamento[$id]=$regs;
+			}
+		}
+
+		//var_dump($agrupamentoAgenda);
+
+		$registrosPorOrdem=array();
+		foreach($registrosComAgendamento as $id=>$x) {
+			$registrosPorOrdem[$id]=$x;
+		}
+
+		foreach($registrosSemAgendamento as $id=>$x) {
+			$registrosPorOrdem[$id]=$x;
+		}
+
+		krsort($registrosPorOrdem);
 
 	?>
 	
@@ -191,7 +293,7 @@
 					</div>
 					<div>
 						<i class="iconify" data-icon="ph:phone-call-bold"></i>
-						<h1><?php echo empty($paciente->whatsapp)?"-":$paciente->whatsapp;?></h1>
+						<h1><?php echo empty($paciente->telefone1)?"-":maskTelefone($paciente->telefone1);?></h1>
 					</div>
 					<div>
 						<i class="iconify" data-icon="fluent:target-arrow-20-filled"></i>
@@ -226,7 +328,7 @@
 						</div>
 					</div>
 
-					<div class="list4">
+					<div class="list4 box">
 						<a href="" class="list4-item">
 							<div>
 								<h1><?php echo sec_convertOriginal($agendamentosAtendidosDuracao,'HF');?></h1>
@@ -274,8 +376,96 @@
 							<div class="filter-title">
 								<h1>Atendimento por Dentista</h1>
 							</div>
+						</div>						
+					</div>
+
+					<?php
+
+						$grProfissionais = array();
+						$labelDentistas = array();
+						foreach($_grAgendasProfissionais as $id_profissional=>$qtd) {
+							if(isset($_profissionaisArr[$id_profissional])) {
+								$profissional=$_profissionaisArr[$id_profissional];
+
+								$labelDentistas[]=utf8_encode($profissional->nome);
+
+								//echo $qtd."->".(($qtd/$_grAgendasProfissionaisTotal)*100)." = $_grAgendasProfissionaisTotal<BR>";
+
+								$perc=number_format((($qtd/$_grAgendasProfissionaisTotal)*100),1,".","");
+								$labelDentistasQtd[]=$perc;
+								$labelDentistasCor[]=$profissional->calendario_cor;
+
+								$grProfissionais[$profissional->id]=array('id'=>$profissional->id,
+																			'nome'=>utf8_encode($profissional->nome),
+																			'qtd'=>$qtd,
+																			'perc'=>$perc);
+							}
+						}
+					?>
+
+					<div class="grid grid_2" style="margin:0;">						
+						<div class="box" style="grid-column:span 1">
+							<div style="width:100%; padding:20px;">
+								<script>
+								$(function() {
+									var ctx = document.getElementById('grafico1').getContext('2d');
+									var grafico1 = new Chart(ctx, {    
+									    type: 'doughnut',
+									    data: {
+									        labels: <?php echo json_encode($labelDentistas);?>,
+
+									        datasets: [{
+									            fill:true,
+									            borderDashOffset: 0.0,
+									            label: 'Pacientes',
+									            data: <?php echo json_encode($labelDentistasQtd);?>,
+									            backgroundColor: <?php echo json_encode($labelDentistasCor);?>,
+									            borderColor:'transparent',
+									            borderWidth: 1,
+									            borderDash: [],
+									            borderDashOffset: 0.0
+									        }]
+									    },
+									    options: {
+									    	legend: {
+									            display: false
+									         },
+									    	responsive:true,
+
+											
+									    }
+									});
+								});
+								</script>
+								<canvas id="grafico1" class="box-grafico"></canvas>
+							</div>
 						</div>
-					</div>					
+
+						<div class="box">
+							<div class="list1">
+								<table>
+									<?php
+									foreach($grProfissionais as $infos) {
+										$id_profissional=$infos['id'];
+										if(isset($_profissionaisArr[$id_profissional])) {
+											$profissional=$_profissionaisArr[$id_profissional];
+									?>
+									<tr class="js-item">
+										<td class="list1__border" style="color:<?php echo $profissional->calendario_cor;?>"></td>
+										<td>
+											<h1><?php echo utf8_encode($profissional->nome);?></h1>
+											<p><?php echo $infos['qtd'];?> consulta(s)</p>
+										</td>
+										<td style="font-size:25px;"><?php echo $infos['perc'];?>%</td>
+									</tr>
+									<?php
+										}
+									}
+									?>
+								</table>
+							</div>
+						</div>
+					</div>				
 				</section>
 
 
@@ -289,89 +479,6 @@
 						</div>
 					</div>
 
-					<?php
-					$_colaboradores=array();
-					$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,calendario_cor","");
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$_colaboradores[$x->id]=$x;
-					}
-
-					$_historicoStatus=array();
-					$sql->consult($_p."pacientes_historico_status","*","");
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$_historicoStatus[$x->id]=$x;
-					}
-
-					$_agendaStatus=array();
-					$sql->consult($_p."agenda_status","*","");
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$_agendaStatus[$x->id]=$x;
-					}
-
-					$registros=array();
-					$agendasIds=array();
-					$sql->consult($_p."pacientes_historico","*","where id_paciente=$paciente->id and lixo=0 order by data desc");
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$registros[]=$x;
-						if($x->id_agenda>0) $agendasIds[$x->id_agenda]=$x->id_agenda;
-					}
-
-					
-
-					$registrosComAgendamento=$registrosSemAgendamento=array();
-					$agrupamentoAgenda=array();
-
-					foreach($registros as $x) {
-						$agendasIds[]=$x->id;
-						if($x->id_agenda>0) {
-							if(isset($agrupamentoAgenda[$x->id_agenda])) {
-								$agrupamentoAgenda[$x->id_agenda]['grupo'][]=$x;
-							} else {
-								$agrupamentoAgenda[$x->id_agenda]=array('ultimaAgenda'=>$x,'grupo'=>array($x));
-							}
-						} else {
-							$registrosSemAgendamento[strtotime($x->data)]=$x;
-						}
-					}
-
-					$_agendas=$_profissionais=array();
-					if(count($agendasIds)>0) {
-						$sql->consult($_p."agenda","id,id_cadeira,profissionais,agenda_data,id_status,lixo","where id IN (".implode(",",$agendasIds).") and lixo=0");
-						while($x=mysqli_fetch_object($sql->mysqry)) {
-							$_agendas[$x->id]=$x;
-
-						}
-					}
-
-					foreach($agrupamentoAgenda as $idAg=>$regs) {
-						if(isset($_agendas[$regs['ultimaAgenda']->id_agenda])) {
-							$agendamento=($_agendas[$regs['ultimaAgenda']->id_agenda]);
-							$id=strtotime($agendamento->agenda_data);//.$x->id;
-
-
-							$registrosComAgendamento[$id]=$regs;
-						}
-					}
-
-					//var_dump($agrupamentoAgenda);
-
-					$registrosPorOrdem=array();
-					foreach($registrosComAgendamento as $id=>$x) {
-						$registrosPorOrdem[$id]=$x;
-					}
-
-					foreach($registrosSemAgendamento as $id=>$x) {
-						$registrosPorOrdem[$id]=$x;
-					}
-
-					krsort($registrosPorOrdem);
-
-
-			
-
-					
-					?>
-	
 					<div class="pac-hist-content">
 						<section>
 							<div class="history2">

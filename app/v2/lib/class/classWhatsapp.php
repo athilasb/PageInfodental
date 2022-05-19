@@ -50,6 +50,7 @@
 
 			$paciente = (isset($attr['paciente']) and is_object($attr['paciente']))?$attr['paciente']:'';
 			$agenda = (isset($attr['agenda']) and is_object($attr['agenda']))?$attr['agenda']:'';
+			$ultimoAgendamento = (isset($attr['ultimoAgendamento']) and is_object($attr['ultimoAgendamento']))?$attr['ultimoAgendamento']:'';
 			$cadeira = (isset($attr['cadeira']) and is_object($attr['cadeira']))?$attr['cadeira']:'';
 			$profissionais = (isset($attr['profissionais']) and !empty($attr['profissionais']))?$attr['profissionais']:'';
 			$msg = (isset($attr['msg']) and !empty($attr['msg']))?$attr['msg']:'';
@@ -66,6 +67,25 @@
 				$msg = str_replace("[agenda_hora]",date('H:i',strtotime($agenda->agenda_data)), $msg);
 				$msg = str_replace("[profissionais]",($profissionais), $msg);
 				$msg = str_replace("[duracao]",($agenda->agenda_duracao)." minutos", $msg);
+
+
+				$dias='';
+				if(is_object($ultimoAgendamento)) {
+					$dias=strtotime(date('Y-m-d H:i:s'))-strtotime($ultimoAgendamento->agenda_data);
+					$dias/=60*60*24;
+					$dias=round($dias);
+
+					if($dias>30) {
+						$dias/=30;
+						$dias=ceil($dias);
+						$dias.=$dias>1?" meses":"mês";
+					} else {
+						$dias.=" dia(s)";
+					}
+					$msg = str_replace("[tempo_sem_atendimento]",$dias,$msg);
+				} else {
+					$msg = str_replace("[tempo_sem_atendimento]","...",$msg);
+				}
 
 			}
 			if(is_object($cadeira)) {
@@ -147,6 +167,12 @@
 
 							if(is_object($agenda)) {
 
+								$ultimoAgendamento='';
+								$sql->consult($_p."agenda","agenda_data,id","where id_paciente=$paciente->id and id_status=5 order by agenda_data desc limit 1");
+								if($sql->rows) {
+									$ultimoAgendamento=mysqli_fetch_object($sql->mysqry);
+								}
+
 								if($agenda->id_paciente == $paciente->id) {
 
 									$msg = $tipo->texto;
@@ -161,6 +187,7 @@
 
 										$attr=array('paciente'=>$paciente,
 													'agenda'=>$agenda,
+													'ultimoAgendamento'=>$ultimoAgendamento,
 													'profissionais'=>$profissionais,
 													'cadeira'=>$cadeira,
 													'msg'=>$msg);
@@ -185,6 +212,7 @@
 													id_agenda=$agenda->id,
 													numero='$numero',
 													mensagem='$msg'";
+
 
 											$sqlWts->add($_p."whatsapp_mensagens",$vSQL);
 
@@ -211,6 +239,12 @@
 					} else if($tipo->id==4) {
 						if(is_object($paciente)) {
 
+							$ultimoAgendamento='';
+							$sql->consult($_p."agenda","agenda_data,id","where id_paciente=$paciente->id and id_status=5 order by agenda_data desc limit 1");
+							if($sql->rows) {
+								$ultimoAgendamento=mysqli_fetch_object($sql->mysqry);
+							}
+
 							$msg = $tipo->texto;
 							$numero = telefone($paciente->telefone1);
 
@@ -231,17 +265,21 @@
 								if(is_object($agenda)) {
 									$attr=array('paciente'=>$paciente,
 												'agenda'=>$agenda,
+												'ultimoAgendamento'=>$ultimoAgendamento,
 												'profissionais'=>$profissionais,
 												'cadeira'=>$cadeira,
 												'msg'=>$msg);
 									$msg = $this->mensagemAtalhos($attr);
+									$this->msg=$msg;
+
+									//$numero="62982400606";
 
 									// verifica se ja enviou
 									$where="where id_agenda=$agenda->id and 
 													id_paciente=$paciente->id and 
 													id_tipo=$tipo->id  and 
 													numero='".addslashes($numero)."' and 
-													data > NOW() - INTERVAL 48 HOUR";
+													data > NOW() - INTERVAL 4 HOUR and lixo=0";
 
 									$sql->consult($_p."whatsapp_mensagens","*",$where);
 
@@ -258,7 +296,7 @@
 
 										return true;
 									} else {
-										$this->erro="Este paciente nunca foi atendido!";
+										$this->erro="Este paciente já foi notificado nas últimas 48 horas";
 									}
 
 								} else {

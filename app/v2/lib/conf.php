@@ -35,7 +35,7 @@
 
 	ksort($_usuariosTipos);
 
-	$_googleMapsKey="AIzaSyDi3GasDqpa_yfvnd9303Dz_shp5XSLqAY";
+	$_googleMapsKey="AIzaSyDsahBPe1gVi2BGiTwo1I9EU9rvu4Z_0LQ";
 
 	$_dias=explode(",","Domingo,Segunda-Feira,Terça-Feira,Quarta-Feira,Quinta-Feira,Sexta-Feira,Sábado");
 	

@@ -12,7 +12,7 @@
 										'title'=>'Agenda',
 										'icon'=>'<i class="iconify" data-icon="fluent:calendar-ltr-20-regular"></i>'),
 						'pacientes'=>array('page'=>'pg_pacientes.php',
-											'pages'=>explode(',','pg_pacientes.php,pg_pacientes_dadospessoais.php'),
+											'pages'=>explode(',','pg_pacientes.php,pg_pacientes_dadospessoais.php,pg_pacientes_resumo.php'),
 											'title'=>'Pacientes',
 											'icon'=>'<i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular"></i>'),
 						/*'financeiro'=>array('page'=>'pg_financeiro.php',
@@ -48,6 +48,18 @@
 				$ft=$_cloudinaryURL.',w_50/'.$usr->foto;
 			}
 			?>
+			<?php
+			if(is_object($_wts)) {
+			?>
+			<a href="javascript:;" class="nav-buttons__usuario"><span class="iconify" data-icon="fluent:plug-connected-checkmark-20-filled"  style="color:var(--verde);"></span></a>
+			<?php
+			} else {
+			?>
+			<a href="javascript:;" class="nav-buttons__usuario"><span class="iconify" data-icon="fluent:plug-connected-add-20-regular" style="color:var(--vermelho);"></span></a>
+			<?php
+			}
+			?>
+
 			<a href="javascript:;" class="nav-buttons__usuario"><img src="<?php echo $ft;?>" alt="" width="40" height="40" /></a>
 			<a href="usuarios/sair.php"><i class="iconify" data-icon="fluent:door-arrow-right-20-regular"></i></a>
 		</div>

@@ -314,6 +314,9 @@
 							id_usuario=$usr->id";
 
 
+					$vSQL.=",periodicidade=6";
+
+
 					$erro='';
 					if(!empty($cpf)) {
 						$where="where cpf = '".$cpf."' and lixo=0";
@@ -370,6 +373,258 @@
 
 					}
 
+					$_whatsappHistorico=array();
+					$sqlwts=new Mysql(true);
+					$sqlwts->consult($_p."whatsapp_mensagens","*","where id_paciente=$paciente->id and id_tipo=4 and lixo=0 order by data");
+					if($sqlwts->rows) {
+						while($x=mysqli_fetch_object($sqlwts->mysqry)) {
+							$_whatsappHistorico[]=array('dt'=>date('d/m/Y H:i',strtotime($x->data)),
+														'msg'=>nl2br($x->mensagem),
+														'resposta_sim'=>$x->resposta_sim,
+														'resposta_nao'=>$x->resposta_nao);
+						}
+					}
+				
+
+					$_historico=array();
+
+					# Historico
+						$_cadeiras=array();
+						$sql->consult($_p."parametros_cadeiras","*","where lixo=0  order by titulo asc");
+						while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
+
+						$_colaboradores=array();
+						$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,calendario_cor","");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_colaboradores[$x->id]=$x;
+						}
+
+						$_historicoStatus=array();
+						$sql->consult($_p."pacientes_historico_status","*","");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_historicoStatus[$x->id]=$x;
+						}
+
+						$_agendaStatus=array();
+						$sql->consult($_p."agenda_status","*","");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_agendaStatus[$x->id]=$x;
+						}
+
+						$registrosHistorico=array();
+						$agendasIds=array();
+						$sql->consult($_p."pacientes_historico","*","where id_paciente=$paciente->id and lixo=0 order by data desc");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$registrosHistorico[]=$x;
+							if($x->id_agenda>0) $agendasIds[$x->id_agenda]=$x->id_agenda;
+						}
+
+						$_agenda=array();
+						if(count($agendasIds)>0) {
+							$sql->consult($_p."agenda","id,id_cadeira,agenda_data,profissionais,id_status","where id IN (".implode(",",$agendasIds).") and lixo=0");
+							if($sql->rows) {
+								while ($x=mysqli_fetch_object($sql->mysqry)) {
+									$_agenda[$x->id]=$x;
+								}
+							}
+						}
+
+						$_todosAgendamentos=array();
+						$sql->consult($_p."agenda","id,id_cadeira,agenda_data,profissionais,id_status","where id_paciente=$paciente->id and lixo=0");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							if(isset($agendasIds[$x->id])) continue;
+							$_todosAgendamentos[]=$x;
+						}
+
+						
+
+						$registrosComAgendamento=$registrosSemAgendamento=array();
+						$agrupamentoAgenda=array();
+
+
+						$historicoAgendamento=array();
+						foreach($registrosHistorico as $x) {
+
+							$arr = array();
+
+							if($x->evento=="observacao") {
+								$arr['ev']=$x->evento;
+								$arr['dt']=date('d/m • H:i',strtotime($x->data));
+								$arr['col']=isset($_colaboradores[$x->id_usuario])?utf8_encode($_colaboradores[$x->id_usuario]->nome):"Desconhecido";
+								$arr['obs']=isset($_historicoStatus[$x->id_obs])?utf8_encode($_historicoStatus[$x->id_obs]->titulo):'';
+
+								$index=strtotime($x->data);
+								while(isset($_historico[$index])) {
+									$index++;
+								}
+								$_historico[$index]=$arr;
+							
+							} else {
+								if(isset($_agenda[$x->id_agenda])) {
+									$agenda=$_agenda[$x->id_agenda];
+									if(!isset($historicoAgendamento[$x->id_agenda])) {
+
+										$icone="mdi:calendar-check";
+										$iconeCor=isset($_agendaStatus[$agenda->id_status])?$_agendaStatus[$agenda->id_status]->cor:'';
+
+										$cadeira=isset($_cadeiras[$agenda->id_cadeira])?utf8_encode($_cadeiras[$agenda->id_cadeira]->titulo):'-';
+
+										$profissionaisIniciais=array();
+
+										$profissionaisAux=explode(",",$agenda->profissionais);
+										foreach($profissionaisAux as $idPro) {
+											if(is_numeric($idPro) and isset($_colaboradores[$idPro])) {
+												$col=$_colaboradores[$idPro];
+												$profissionaisIniciais[]=array('iniciais'=>$col->calendario_iniciais,
+																				'cor'=>$col->calendario_cor);
+											}
+										}
+
+
+
+										$historicoAgendamento[]=array('ev'=>$x->evento,
+																		'dt2'=>$agenda->agenda_data,
+																		'ic'=>$icone,
+																		'icC'=>$iconeCor,
+																		'dt'=>date('d/m/Y • H:i',strtotime($agenda->agenda_data)),
+																		'cad'=>$cadeira,
+																		'prof'=>$profissionaisIniciais);
+									} 
+									
+									
+								}
+								
+							}
+
+							
+						}
+
+						foreach($_todosAgendamentos as $agenda) {
+							$icone="mdi:calendar-check";
+							$iconeCor=isset($_agendaStatus[$agenda->id_status])?$_agendaStatus[$agenda->id_status]->cor:'';
+
+							$cadeira=isset($_cadeiras[$agenda->id_cadeira])?utf8_encode($_cadeiras[$agenda->id_cadeira]->titulo):'-';
+
+							$profissionaisIniciais=array();
+
+							$profissionaisAux=explode(",",$agenda->profissionais);
+							foreach($profissionaisAux as $idPro) {
+								if(is_numeric($idPro) and isset($_colaboradores[$idPro])) {
+									$col=$_colaboradores[$idPro];
+									$profissionaisIniciais[]=array('iniciais'=>$col->calendario_iniciais,
+																	'cor'=>$col->calendario_cor);
+								}
+							}
+
+							$historicoAgendamento[]=array('ev'=>'agendamento',
+															'dt2'=>$agenda->agenda_data,
+															'ic'=>$icone,
+															'icC'=>$iconeCor,
+															'dt'=>date('d/m/Y • H:i',strtotime($agenda->agenda_data)),
+															'cad'=>$cadeira,
+															'prof'=>$profissionaisIniciais);
+
+
+						}
+
+						foreach($historicoAgendamento as $id_agenda=>$x) {
+							$index=strtotime($x['dt2']);
+							while(isset($_historico[$index])) {
+								$index++;
+							}
+							$_historico[$index]=$x;
+						}
+
+						krsort($_historico);
+
+						$_historicoJSON=array();
+						foreach($_historico as $k=>$v) {
+							$_historicoJSON[]=$v;
+						}
+				
+
+					$dias='';
+					if(is_object($ultimoAgendamento)) {
+						$dias=strtotime(date('Y-m-d H:i:s'))-strtotime($ultimoAgendamento->agenda_data);
+						$dias/=60*60*24;
+						$dias=round($dias);
+
+						if($dias>30) {
+							$dias/=30;
+							$dias=ceil($dias);
+							$dias.=$dias>1?" meses":"mês";
+						} else {
+							$dias.=" dia(s)";
+						}
+					}
+
+					$ft='';
+					if(!empty($paciente->foto_cn)) {
+						$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+					}
+
+					$pacienteInfo=array('id'=>$paciente->id,
+										'ft'=>$ft,
+										'nome'=>addslashes(utf8_encode($paciente->nome)),
+										'agendou_dias'=>$dias,
+										'idade'=>(int)$idade,
+										'telefone1'=>$paciente->telefone1,
+										'musica'=>utf8_encode($paciente->musica),
+										'periodicidade'=>isset($_pacientesPeriodicidade[$paciente->periodicidade])?$_pacientesPeriodicidade[$paciente->periodicidade]:$paciente->periodicidade,
+										'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):"",
+
+										'historico'=>$_historicoJSON,
+										'historicoWts'=>$_whatsappHistorico
+								);
+
+					$rtn=array('success'=>true,
+								'paciente'=>$pacienteInfo);
+				} else {
+					$rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
+				}
+			} 
+			else if($_POST['ajax']=="asRelacionamentoPacienteExcluido") {
+
+				$_profissionais=array();
+				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento","where lixo=0 order by nome asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
+
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,codigo_bi,musica,periodicidade,foto_cn","where id=".$_POST['id_paciente']);
+					if($sql->rows) $paciente=mysqli_fetch_object($sql->mysqry);
+				}
+
+
+				if(is_object($paciente)) {
+
+					if($paciente->data_nascimento!="0000-00-00") {
+						$dob = new DateTime($paciente->data_nascimento);
+						$now = new DateTime();
+						$idade = $now->diff($dob)->y;
+					} else $idade=0;
+				
+
+					$ultimoAgendamento='';
+					$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and id_status IN (5) and lixo=0 order by agenda_data desc limit 1");
+					if($sql->rows) {
+						$ultimoAgendamento=mysqli_fetch_object($sql->mysqry);
+
+					}
+
+					$excluidoMotivo=$excluidoData=$excluidoUsuario="";
+					$sql->consult($_p."pacientes_excluidos","*","where id_paciente=$paciente->id and lixo=0 order by data desc limit 1");
+					if($sql->rows) {
+						$e=mysqli_fetch_object($sql->mysqry);
+						$excluidoMotivo=utf8_encode($e->motivo);
+						$excluidoData=date('d/m/Y H:d',strtotime($e->data));
+						$excluidoUsuario="Desconhecido";
+						$sql->consult($_p."colaboradores","id,nome","where id=$e->id_usuario");
+						if($sql->rows) {
+							$c=mysqli_fetch_object($sql->mysqry);
+							$excluidoUsuario=utf8_encode($c->nome);
+						}
+					}
 				
 				
 
@@ -552,6 +807,9 @@
 
 					$pacienteInfo=array('id'=>$paciente->id,
 										'ft'=>$ft,
+										'excluidoData'=>$excluidoData,
+										'excluidoUsuario'=>$excluidoUsuario,
+										'excluidoMotivo'=>$excluidoMotivo,
 										'nome'=>addslashes(utf8_encode($paciente->nome)),
 										'agendou_dias'=>$dias,
 										'idade'=>(int)$idade,
@@ -896,9 +1154,15 @@
 				else if(empty($_wts)) $erro='Whatsapp desconectado!';
 				else {
 
+
+
+
 					$attr=array('id_tipo'=>4,
 								'id_paciente'=>$paciente->id);
 					if($wts->adicionaNaFila($attr)) {
+
+						
+
 						$rtn=array('success'=>true);
 					} else {
 						$rtn=array('success'=>false,'error'=>$wts->erro);
@@ -918,7 +1182,80 @@
 					$rtn=array('success'=>false,'error'=>$wts->erro); 
 				}
 			}
-			
+			else if($_POST['ajax']=="asRelacionamentoPacienteExcluir") {
+				$erro='';
+
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","*","where id='".$_POST['id_paciente']."'");
+					if($sql->rows) { 
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$motivo = isset($_POST['motivo'])?addslashes(utf8_decode($_POST['motivo'])):'';
+
+				if(empty($paciente)) $erro='Paciente não encontrado!';
+				else if(empty($motivo)) $erro='Selecione um Motivo';
+				
+
+				if(empty($erro)) {
+
+
+
+					$sql->consult($_p."pacientes_excluidos","*","where id_paciente=$paciente->id and lixo=0");
+					if($sql->rows) {
+						$rtn=array('success'=>false,'error'=>'Este paciente já está excluído');
+					}  else {
+
+						$vSQL="data=now(),
+								id_paciente=$paciente->id,
+								motivo='".$motivo."',
+								id_usuario=$usr->id";
+
+						$sql->add($_p."pacientes_excluidos",$vSQL);
+
+
+						$rtn=array('success'=>true);
+					}
+				} else {
+					$rtn=array('success'=>false,'error'=>$erro);
+				}
+			}
+			else if($_POST['ajax']=="asRelacionamentoPacienteRemoverExcluidos") {
+				$erro='';
+
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","*","where id='".$_POST['id_paciente']."'");
+					if($sql->rows) { 
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+
+				if(empty($paciente)) $erro='Paciente não encontrado!';
+
+				if(empty($erro)) {
+
+
+
+					$sql->consult($_p."pacientes_excluidos","*","where id_paciente=$paciente->id and lixo=0 order by data desc limit 1");
+					if($sql->rows) {
+						$e=mysqli_fetch_object($sql->mysqry);
+
+						$sql->update($_p."pacientes_excluidos","lixo=1,lixo_data=now(),lixo_id_usuario=$usr->id","where id=$e->id");
+
+						$rtn=array('success'=>true);
+					}  else {
+
+						$rtn=array('success'=>false,'error'=>'Este paciente não está na lista de excluídos');
+					}
+				} else {
+					$rtn=array('success'=>false,'error'=>$erro);
+				}
+			}
+		
 		# Profissoes
 			else if($_POST['ajax']=="asProfissoesListar") {
 
@@ -964,7 +1301,7 @@
 					}
 				}
 
-				$titulo=isset($_POST['titulo'])?addslashes(utf8_decode($_POST['titulo'])):'';
+				$titulo=isset($_POST['titulo'])?addslashes(utf8_decode(strtoupperWLIB($_POST['titulo']))):'';
 
 				if(empty($titulo)) $rtn=array('success'=>false,'error'=>'Título não preenchido!');
 				else {
@@ -1908,153 +2245,272 @@
 		<?php
 			}
 	if(isset($apiConfig['pacienteRelacionamento'])) {
+		$_historicoStatus=array();
+		$sql->consult($_p."pacientes_historico_status","*","");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$_historicoStatus[$x->id]=$x;
+		}
 			?>
 			<script type="text/javascript">
-				const pacienteRelacionamento = (id_paciente) => {
 
-					let data = `ajax=asRelacionamentoPaciente&id_paciente=${id_paciente}`;
-								
-					$.ajax({
-						type:'POST',
-						data:data,
-						url:baseURLApiAside,
-						success:function(rtn) {
-							if(rtn.success) {
-								$('#js-aside-pacienteRelacionamento .js-nome').html(`${rtn.paciente.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.paciente.id}`);
-
-								if(rtn.paciente.ft && rtn.paciente.ft.length>0) {
-									$('#js-aside-pacienteRelacionamento .js-foto').attr('src',rtn.paciente.ft);
-								} else {
-									$('#js-aside-pacienteRelacionamento .js-foto').attr('src','img/ilustra-usuario.jpg');
-								}
-
-								$('#js-aside-pacienteRelacionamento .js-whatsapp-numero').val(rtn.paciente.telefone1);
-
-								if(rtn.paciente.idade && rtn.paciente.idade>0) {
-									$('#js-aside-pacienteRelacionamento .js-idade').html(rtn.paciente.idade+(rtn.paciente.idade>=2?' anos':' ano')).show();;
-								} else {
-									$('#js-aside-pacienteRelacionamento .js-idade').html(``).hide();;
-								}
-
-								if(rtn.paciente.periodicidade && rtn.paciente.periodicidade.length>0) {
-									$('#js-aside-pacienteRelacionamento .js-periodicidade').html(`Periodicidade: ${rtn.paciente.periodicidade}`);
-								} else {
-									$('#js-aside-pacienteRelacionamento .js-periodicidade').html(`Periodicidade: -`);
-								}
-
-								if(rtn.paciente.agendou_dias && rtn.paciente.agendou_dias.length>0) {
-									$('#js-aside-pacienteRelacionamento .js-ultimoAtendimento').html(`Atendido há ${rtn.paciente.agendou_dias}`);
-								} else {
-									$('#js-aside-pacienteRelacionamento .js-ultimoAtendimento').html(`Nunca foi atendido(a)`);
-								}
-
-								if(rtn.paciente.musica && rtn.paciente.musica.length>0) {
-									$('#js-aside-pacienteRelacionamento .js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.paciente.musica}`);
-								} else {
-									$('#js-aside-pacienteRelacionamento .js-musica').html(``);
-								}
-
-								$("#js-aside-pacienteRelacionamento").fadeIn(100,function() {
-									$('#js-aside-pacienteRelacionamento .js-profissionais').chosen();
-									$('#js-aside-pacienteRelacionamento .js-tab').find('a:eq(0)').click();
-									$("#js-aside-pacienteRelacionamento .aside__inner1").addClass("active");
-								});
-
-								$('#js-aside-pacienteRelacionamento input[name=agenda_data]').datetimepicker({
-									timepicker:false,
-									format:'d/m/Y',
-									scrollMonth:false,
-									scrollTime:false,
-									scrollInput:false,
-								}).css('background','');
-
-								$('#js-aside-pacienteRelacionamento input[name=agenda_hora]').datetimepicker({
-									  datepicker:false,
-								      format:'H:i',
-								      pickDate:false
-								}).css('background','');
-
-								$('#js-aside-pacienteRelacionamento input[name=id_paciente]').val(rtn.paciente.id);
-
-								$('input[name=telefone1],.js-asPaciente-telefone1').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
-									let countryOut = country || '  ';
-									$(this).parent().parent().find('.js-country').html(countryOut);
-								}).trigger('keyup');
-
-								$('#js-aside-pacienteRelacionamento .js-ag-historico section').find('.history2-item').remove();
-
-								if(rtn.paciente.historico && rtn.paciente.historico.length>0) {
-									rtn.paciente.historico.forEach(x=>{
-										let html = '';
-										if(x.ev=="observacao") {
-											html = `<div class="history2-item">
-														<aside>
-															<span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>			
-														</aside>
-
-														<article>
-															<div class="history2-main">
-																<div>
-																	<h1>${x.dt}</h1>
-																	${x.col}												
-																</div>
-																<strong>${x.obs}</strong>
-																<br />																				
-															</div>
-														</article>
-													</div>`;
-										} else {
-
-											let profissionaisHTML = '';
+				const pacienteRelacionamentoPopula = (obj,rtn,filtro,lista) => {
 
 
-											if(x.prof && x.prof.length>0) {
-												x.prof.forEach(p=>{
-													profissionaisHTML+=`<div class="badge-prof" style="background:${p.cor}">${p.iniciais}</div>`;
-												})
-											}
+					if(filtro=="excluidos") {
+						obj.find('textarea[name=motivo]').val(rtn.paciente.excluidoMotivo).prop('disabled',true);
 
-											html = `<div class="history2-item">
-														<aside>
-															<span style="background:${x.icC};"><i class="iconify" data-icon="${x.ic}"></i></span>
-															
-														</aside>
+						if(rtn.paciente.excluidoData) {
 
-														<article>
-															<div class="history2-main">
-																<div>
-																	<h1>${x.dt}</h1>
-																	${x.cad}
-																	${profissionaisHTML}
-																</div>
-																
-															</div>
-														</article>
-													</div>`;
-										}
+							listaExt='';
+							if(lista.length>0) listaExt=` da lista <b>${lista}</b>`;
+							obj.find('.js-excluido-desc').html(`<dd style="font-size:12px;color:#666">Excluído em <b>${rtn.paciente.excluidoData}</b> por <b>${rtn.paciente.excluidoUsuario}</b>${listaExt}</dd>`)
+						}
+					}
+
+					obj.find('.js-nome').html(`${rtn.paciente.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.paciente.id}`);
+
+					if(rtn.paciente.ft && rtn.paciente.ft.length>0) {
+						obj.find('.js-foto').attr('src',rtn.paciente.ft);
+					} else {
+						obj.find('.js-foto').attr('src','img/ilustra-usuario.jpg');
+					}
+
+					obj.find('.js-whatsapp-numero').val(rtn.paciente.telefone1);
+
+					if(rtn.paciente.idade && rtn.paciente.idade>0) {
+						obj.find('.js-idade').html(rtn.paciente.idade+(rtn.paciente.idade>=2?' anos':' ano')).show();;
+					} else {
+						obj.find('.js-idade').html(``).hide();;
+					}
+
+					if(rtn.paciente.periodicidade && rtn.paciente.periodicidade.length>0) {
+						obj.find('.js-periodicidade').html(`Periodicidade: ${rtn.paciente.periodicidade}`);
+					} else {
+						obj.find('.js-periodicidade').html(`Periodicidade: -`);
+					}
+
+					if(rtn.paciente.agendou_dias && rtn.paciente.agendou_dias.length>0) {
+						obj.find('.js-ultimoAtendimento').html(`Atendido há ${rtn.paciente.agendou_dias}`);
+					} else {
+						obj.find('.js-ultimoAtendimento').html(`Nunca foi atendido(a)`);
+					}
+
+					if(rtn.paciente.musica && rtn.paciente.musica.length>0) {
+						obj.find('.js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.paciente.musica}`);
+					} else {
+						obj.find('.js-musica').html(``);
+					}
+
+					obj.find('input[name=id_paciente]').val(rtn.paciente.id);
+
+					$('input[name=telefone1],.js-asPaciente-telefone1').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
+						let countryOut = country || '  ';
+						$(this).parent().parent().find('.js-country').html(countryOut);
+					}).trigger('keyup');
 
 
-										$('#js-aside-pacienteRelacionamento .js-ag-historico section').append(html);
+					obj.find('.js-whatsappHistorico').html(``);
+
+					if(rtn.paciente.historicoWts && rtn.paciente.historicoWts.length>0) {
+
+						rtn.paciente.historicoWts.forEach(x=>{
+
+							let status = `<span class="iconify" data-icon="bxs:hourglass" data-inline="true"></span> Aguardando resposta`;
+							let cor = `var(--cinza5)`;
+
+							if(x.resposta_sim==1) {
+								status = '<span class="iconify" data-icon="el:ok-circle" data-inline="true"></span> Confirmado';
+								cor = 'var(--verde)';
+							} else if(x.resposta_nao==1) {
+								status = '<span class="iconify" data-icon="ic:outline-cancel" data-inline="true"></span> Não Confirmado';
+								cor = 'var(--vermelho)';
+							}
+							let html = `<div class="history2-item">
+											<aside>
+												<span style="background:${cor}"><i class="iconify" data-icon="mdi:chat-processing-outline" ></i></span>			
+											</aside>
+
+											<article>
+												<div class="history2-main">
+													<div>
+														<h1>${x.dt}</h1>	
+														<p style="color:${cor}">${status}</p>											
+													</div><br />
+													<p style="font-size:12px;color:#666">
+													${x.msg}					
+													</p>														
+												</div>
+											</article>
+										</div>`;
+
+							obj.find('.js-whatsappHistorico').append(html);
+						})
+
+					} else {
+						obj.find('.js-whatsappHistorico').html(`<center>Nenhum Whatsapp enviado</center>`);
+					}
+
+					obj.find('.js-ag-historico section').find('.history2-item').remove();
+
+					if(rtn.paciente.historico && rtn.paciente.historico.length>0) {
+						rtn.paciente.historico.forEach(x=>{
+							let html = '';
+							if(x.ev=="observacao") {
+								html = `<div class="history2-item">
+											<aside>
+												<span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>			
+											</aside>
+
+											<article>
+												<div class="history2-main">
+													<div>
+														<h1>${x.dt}</h1>
+														${x.col}												
+													</div>
+													<strong>${x.obs}</strong>
+													<br />																				
+												</div>
+											</article>
+										</div>`;
+							} else {
+
+								let profissionaisHTML = '';
+
+
+								if(x.prof && x.prof.length>0) {
+									x.prof.forEach(p=>{
+										profissionaisHTML+=`<div class="badge-prof" style="background:${p.cor}">${p.iniciais}</div>`;
 									})
 								}
- 
-							} else if(rtn.error) {
-								swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-							} else {
-								swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-							}
-							
-						},
-						error:function() {
-							swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-						} 
-					}).done(function(){
-						//obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-						//obj.attr('data-loading',0);
-					});
 
-					
+								html = `<div class="history2-item">
+											<aside>
+												<span style="background:${x.icC};"><i class="iconify" data-icon="${x.ic}"></i></span>
+												
+											</aside>
+
+											<article>
+												<div class="history2-main">
+													<div>
+														<h1>${x.dt}</h1>
+														${x.cad}
+														${profissionaisHTML}
+													</div>
+													
+												</div>
+											</article>
+										</div>`;
+							}
+
+
+							obj.find('.js-ag-historico section').append(html);
+						})
+					}
+
+					if(filtro=="excluidos") {
+					} else {
+						$('.js-btn-acao-queroAgendar').click();
+					}
 				}
+
+				const pacienteRelacionamento = (obj) => {//id_paciente,filtro) => {
+					id_paciente=obj.attr('data-id_paciente');
+					filtro=obj.attr('data-filtro');
+					if(filtro=="excluidos") {
+						let data = `ajax=asRelacionamentoPacienteExcluido&id_paciente=${id_paciente}`;
+						lista=obj.attr('data-lista');					
+						$.ajax({
+							type:'POST',
+							data:data,
+							url:baseURLApiAside,
+							success:function(rtn) {
+								if(rtn.success) {
+
+									let obj = $("#js-aside-pacienteRelacionamentoExcluido");
+
+									pacienteRelacionamentoPopula(obj,rtn,filtro,lista);
+									
+									obj.fadeIn(100,function() {
+										obj.find('.js-tab').find('a:eq(0)').click();
+										obj.find('.aside__inner1').addClass("active");
+									});
+
+
+	 
+								} else if(rtn.error) {
+									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+								} else {
+									swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+								}
+								
+							},
+							error:function() {
+								swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+							} 
+						}).done(function(){
+							//obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+							//obj.attr('data-loading',0);
+						});
+
+					} else {
+
+						let data = `ajax=asRelacionamentoPaciente&id_paciente=${id_paciente}`;
+									
+						$.ajax({
+							type:'POST',
+							data:data,
+							url:baseURLApiAside,
+							success:function(rtn) {
+								if(rtn.success) {
+									let obj = $("#js-aside-pacienteRelacionamento");
+
+									pacienteRelacionamentoPopula(obj,rtn,filtro,'');
+
+									obj.fadeIn(100,function() {
+										obj.find('.js-profissionais').chosen();
+										obj.find('.js-tab').find('a:eq(0)').click();
+										obj.find('.aside__inner1').addClass("active");
+									});
+
+									obj.find('input[name=agenda_data]').datetimepicker({
+										timepicker:false,
+										format:'d/m/Y',
+										scrollMonth:false,
+										scrollTime:false,
+										scrollInput:false,
+									}).css('background','');
+
+									obj.find('input[name=agenda_hora]').datetimepicker({
+										  datepicker:false,
+									      format:'H:i',
+									      pickDate:false
+									}).css('background','');
+
+									
+	 
+								} else if(rtn.error) {
+									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+								} else {
+									swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+								}
+								
+							},
+							error:function() {
+								swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+							} 
+						}).done(function(){
+							//obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+							//obj.attr('data-loading',0);
+						});
+					}
+				}
+
+				$(function(){
+					$('.js-tab a').click(function() {
+						$(".js-tab a").removeClass("active");
+						$(this).addClass("active");							
+					})
+				})
 			</script>
 
 			<section class="aside aside-pacienteRelacionamento" id="js-aside-pacienteRelacionamento">
@@ -2135,24 +2591,27 @@
 									
 								});
 
-								$('.js-tab a').click(function() {
-									$(".js-tab a").removeClass("active");
-									$(this).addClass("active");							
-								});
+								;
 
 								$('#js-aside-pacienteRelacionamento .js-btn-acao').click(function(){
 									$('#js-aside-pacienteRelacionamento .js-btn-acao').removeClass('active');
 									$(this).addClass('active');
 
 									if($(this).attr('data-tipo')=="queroAgendar") {
+										$('#js-aside-pacienteRelacionamento .js-ag-agendamento-excluir').hide();
 										$('#js-aside-pacienteRelacionamento .js-ag-agendamento-naoQueroAgendar').hide();
 										$('#js-aside-pacienteRelacionamento .js-ag-agendamento-queroAgendar').show();
 										$('#js-aside-pacienteRelacionamento input[name=tipo]').val('queroAgendar');
+									} else if($(this).attr('data-tipo')=="excluir")  {
+										$('#js-aside-pacienteRelacionamento .js-ag-agendamento-excluir').show();
+										$('#js-aside-pacienteRelacionamento .js-ag-agendamento-naoQueroAgendar').hide();
+										$('#js-aside-pacienteRelacionamento .js-ag-agendamento-queroAgendar').hide();
+										$('#js-aside-pacienteRelacionamento input[name=tipo]').val('excluir');
 									} else {
+										$('#js-aside-pacienteRelacionamento .js-ag-agendamento-excluir').hide();
 										$('#js-aside-pacienteRelacionamento .js-ag-agendamento-naoQueroAgendar').show();
 										$('#js-aside-pacienteRelacionamento .js-ag-agendamento-queroAgendar').hide();
 										$('#js-aside-pacienteRelacionamento input[name=tipo]').val('naoQueroAgendar');
-
 									}
 								});
 
@@ -2208,7 +2667,7 @@
 								$('#js-aside-pacienteRelacionamento .js-ag-agendamento .js-salvar').click(function(){
 									let tipo = $('#js-aside-pacienteRelacionamento input[name=tipo]').val();
 									let id_paciente = $('#js-aside-pacienteRelacionamento input[name=id_paciente]').val();
-
+							
 									if(tipo=="queroAgendar") {
 										let agenda_data = $('#js-aside-pacienteRelacionamento input[name=agenda_data]').val();
 										let agenda_duracao = $('#js-aside-pacienteRelacionamento select[name=agenda_duracao]').val();
@@ -2226,6 +2685,7 @@
 										if(erro.length==0) {
 
 											let obj = $(this);
+											let obHTMLAntigo = $(this).html();
 
 											if(obj.attr('data-loading')==0) {
 												
@@ -2245,9 +2705,9 @@
 																$('#js-aside-pacienteRelacionamento select.js-profissionais').val('');
 																$('#js-aside-pacienteRelacionamento select[name=agenda_hora]').val('');
 
-
+																atualizaValorListasInteligentes();
 																swal({title: "Sucesso!", text: 'Agendamento realizado com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-																	document.location.reload();
+																	$('.aside-close').click();
 																});
 
 															} else if(rtn.error) {
@@ -2261,7 +2721,7 @@
 															swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
 														} 
 												}).done(function(){
-													obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+													obj.html(obHTMLAntigo);
 													obj.attr('data-loading',0);
 												});
 
@@ -2271,7 +2731,6 @@
 										} else {
 											swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 										}
-
 									} else if(tipo=="naoQueroAgendar") {
 										let status = $('#js-aside-pacienteRelacionamento select[name=id_status]').val();
 										let obs = $('#js-aside-pacienteRelacionamento textarea[name=obs]').val();
@@ -2281,6 +2740,7 @@
 										
 										if(erro.length==0) {
 											let obj = $(this);
+											let obHTMLAntigo = $(this).html();
 
 											if(obj.attr('data-loading')==0) {
 												
@@ -2297,9 +2757,9 @@
 																$('#js-aside-pacienteRelacionamento select[name=id_status]').val('');
 																$('#js-aside-pacienteRelacionamento textarea[name=obs]').val('');
 
-
+																atualizaValorListasInteligentes();
 																swal({title: "Sucesso!", text: 'Observação cadastrada realizado com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-																	document.location.reload();
+																	$('.aside-close').click();
 																});
 
 															} else if(rtn.error) {
@@ -2313,7 +2773,58 @@
 															swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
 														} 
 												}).done(function(){
-													obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+													obj.html(obHTMLAntigo);
+													obj.attr('data-loading',0);
+												});
+
+
+											}
+										} else {
+											swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+										}
+									} else if(tipo=="excluir") {
+
+										let motivo = $('#js-aside-pacienteRelacionamento textarea[name=motivo]').val();
+										let erro = '';
+
+										if(motivo.length==0) erro = 'Defina o <b>Motivo</b>';
+										
+										if(erro.length==0) {
+											let obj = $(this);
+											let obHTMLAntigo = $(this).html();
+
+											if(obj.attr('data-loading')==0) {
+												
+												obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+												obj.attr('data-loading',1);
+
+												let data = `ajax=asRelacionamentoPacienteExcluir&id_paciente=${id_paciente}&motivo=${motivo}`;
+											
+												$.ajax({
+														type:'POST',
+														data:data,
+														url:baseURLApiAside,
+														success:function(rtn) {
+															if(rtn.success) {
+																$('#js-aside-pacienteRelacionamento textarea[name=motivo]').val('');
+
+																atualizaValorListasInteligentes();
+																swal({title: "Sucesso!", text: 'Paciente excluído com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
+																	$('.aside-close').click();
+																});
+
+															} else if(rtn.error) {
+																swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+															} else {
+																swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+															}
+															
+														},
+														error:function() {
+															swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+														} 
+												}).done(function(){
+													obj.html(obHTMLAntigo);
 													obj.attr('data-loading',0);
 												});
 
@@ -2324,6 +2835,7 @@
 										}
 									}
 
+ 
 								});
 
 								$('.js-btn-acao-queroAgendar').click();
@@ -2341,6 +2853,7 @@
 								<div class="button-group">
 									<a href="javascript:;" class="js-btn-acao js-btn-acao-queroAgendar button active" data-tipo="queroAgendar"><span>Quero agendar</span></a>
 									<a href="javascript:;" class="js-btn-acao button" data-tipo="naoQueroAgendar"><span>Não consegui agendar</span></a>
+									<a href="javascript:;" class="js-btn-acao button" data-tipo="excluir"><span>Excluir da lista</span></a>
 								</div>
 								<div class="filter-group">
 									<div class="filter-form form">
@@ -2437,6 +2950,16 @@
 								</dl>
 							</div>
 
+
+							<div class="js-ag-agendamento-excluir">
+								<dl>
+									<dt>Motivo</dt>
+									<dd>
+										<textarea name="motivo" style="height:80px;"></textarea>
+									</dd>
+								</dl>
+							</div>
+
 						</div>
 
 						<div class="js-ag js-ag-whatsapp">
@@ -2450,13 +2973,13 @@
 							if(is_object($wts)) {
 							?>
 							<div class="colunas3">
-							<dl>
-								<dt>Número</dt>
-								<dd>
-									<input type="text" disabled class="telefone js-whatsapp-numero" />
-								</dd>
-							</dl>
-						</div>
+								<dl>
+									<dt>Número</dt>
+									<dd>
+										<input type="text" disabled class="telefone js-whatsapp-numero" />
+									</dd>
+								</dl>
+							</div>
 							<dl>
 								<dt>Mensagem</dt>
 								<dd>
@@ -2477,6 +3000,15 @@
 							<?php	
 							}
 							?>
+
+
+							<fieldset style="margin-top:30px;">
+								<legend>Histórico</legend>
+
+								<div class="history2 js-whatsappHistorico">
+								
+								</div>
+							</fieldset>
 						</div>
 
 
@@ -2541,6 +3073,171 @@
 							</div>
 						</div>
 					</div>
+
+				</form>
+			</section><!-- .aside -->
+
+
+
+			<section class="aside aside-pacienteRelacionamentoExcluido" id="js-aside-pacienteRelacionamentoExcluido">
+				
+				<div class="aside__inner1">
+
+					<header class="aside-header">
+						<h1>Paciente Excluído (ignorados)</h1>
+						<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+					</header>
+
+					<form method="post" class="aside-content form" onsubmit="return false">
+						<input type="hidden" name="id_paciente" />
+						<input type="hidden" name="tipo" value="queroAgendar" />
+						<section class="header-profile">
+							<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="js-foto header-profile__foto" />
+							<div class="header-profile__inner1">
+								<h1><a href="" target="_blank" class="js-nome"></a></h1>
+								<div>
+									<p class="js-idade"></p>
+									<p class="js-periodicidade"></p>
+									<p class="js-ultimoAtendimento"></p>
+								</div>
+							</div>
+						</section>
+
+						<script>
+							
+
+							$(function() {
+
+								$('#js-aside-pacienteRelacionamentoExcluido .js-retirarDaLista').click(function(){
+									
+							
+									let obj = $(this);
+									let objTextoAntigo = $(this).html();
+
+									if(obj.attr('data-loading')==0) {
+
+										obj.attr('data-loading',1);
+										obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+										let id_paciente = $('#js-aside-pacienteRelacionamentoExcluido input[name=id_paciente]').val();
+
+										let data = `ajax=asRelacionamentoPacienteRemoverExcluidos&id_paciente=${id_paciente}`;
+									
+										$.ajax({
+												type:'POST',
+												data:data,
+												url:baseURLApiAside,
+												success:function(rtn) {
+													if(rtn.success) {
+
+														atualizaValorListasInteligentes();
+														swal({title: "Sucesso!", text: 'Paciente excluído com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
+															$('.aside-close').click();
+														});
+
+													} else if(rtn.error) {
+														swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+													} else {
+														swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+													}
+													
+												},
+												error:function() {
+													swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+												} 
+										}).done(function(){
+											obj.html(objTextoAntigo);
+											obj.attr('data-loading',0);
+										});
+									};
+								});
+
+							});
+						</script>
+						<section class="tab tab_alt js-tab">
+							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-excluido').show();" class="active">Excluído</a>			
+							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>					
+						</section>
+						
+						<div class="js-ag js-ag-excluido">
+
+							
+
+							<div class="js-ag-agendamento-excluir">
+								<dl>
+									<dt>Motivo</dt>
+									<dd>
+										<textarea name="motivo" style="height:80px;"></textarea>
+									</dd>
+									<dd class="js-excluido-desc"></dd>
+								</dl>
+							</div>
+
+							<center>
+								<br /><br />
+								<button class="button button_main js-retirarDaLista" data-loading="0"><i class="iconify" data-icon="fluent:delete-24-regular"></i> <span>Remover da Lista de Excluídos</span></button>
+							</center>
+						</div>
+						
+						<div class="js-ag js-ag-historico" style="display:none;">
+							<div class="history">
+								<section>
+									<div class="history2">
+
+										<div class="history2-item">
+											<aside>
+												<span style="background:#f9de27;color:#FFF;"><i class="iconify" data-icon="mdi:calendar-check"></i></span>		
+											</aside>
+
+											<article>
+												<div class="history2-main">
+													<div>
+														<h1>02/05 • 09:00</h1>
+														<h2>CONSULT. 4</h2>												
+														<div class="badge-prof" style="background:#c18c6a">PM</div>												
+													</div>																						
+													<h3><a href="javascript:;" onclick="$(this).parent().parent().next('.history2-more').slideToggle('fast');">detalhes</a></h3>									
+												</div>
+												<div class="history2-more">
+													
+
+													<div class="history2-more-item">
+
+														<h1>02/02/21 08:30 - Simone Helena dos Santos </h1>
+														<h2>Alterou status de <span class="data" style="background:#545559">À CONFIRMAR</span> para <span class="data" style="background:#f9de27">DESMARCADO</span></h2>
+																										
+													</div>
+													
+
+													<div class="history2-more-item">
+
+														<h1>25/01/21 15:30 - Alessandra Silva Alves</h1>
+																										<h2>Criou novo agendamento com status <span class="data" style="background:#545559">À CONFIRMAR</span></h2>
+																										
+													</div>
+												</div>
+											</article>
+										</div>
+
+										<div class="history2-item">
+											<aside>
+												<span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>			
+											</aside>
+
+											<article>
+												<div class="history2-main">
+													<div>
+														<h1>28/04/22 • 08:23</h1>
+														Kroner Machado Costa												
+													</div>
+													<strong>Não conseguiu contato</strong>
+													<br />																				
+												</div>
+											</article>
+										</div>
+									</div>
+								</section>
+							</div>
+						</div>
 
 				</form>
 			</section><!-- .aside -->
@@ -2783,7 +3480,7 @@
 					<dl>
 						<dt>Profissão</dt>
 						<dd>
-							<input type="text" class="js-asProfissoes-titulo" />
+							<input type="text" class="js-asProfissoes-titulo" style="text-transform:uppercase;" />
 							<button type="button" class="js-asProfissoes-submit button button_main" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
 							<a href="javascript:;" class="button js-asProfissoes-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 						</dd>

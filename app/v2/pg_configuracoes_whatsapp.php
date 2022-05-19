@@ -79,7 +79,13 @@
 				pubNaoIdentificado='".((isset($_POST['pubNaoIdentificado']) and $_POST['pubNaoIdentificado']==1)?1:0)."',
 				msgSim='".addslashes($_POST['msgSim'])."',
 				msgNao='".addslashes($_POST['msgNao'])."',
-				msgNaoIdentificado='".addslashes($_POST['msgNaoIdentificado'])."'
+				msgNaoIdentificado='".addslashes($_POST['msgNaoIdentificado'])."',
+				pubInteligenciaSim='".((isset($_POST['pubInteligenciaSim']) and $_POST['pubInteligenciaSim']==1)?1:0)."',
+				pubInteligenciaNao='".((isset($_POST['pubInteligenciaNao']) and $_POST['pubInteligenciaNao']==1)?1:0)."',
+				pubInteligenciaNaoIdentificado='".((isset($_POST['pubInteligenciaNaoIdentificado']) and $_POST['pubInteligenciaNaoIdentificado']==1)?1:0)."',
+				msgInteligenciaSim='".addslashes($_POST['msgInteligenciaSim'])."',
+				msgInteligenciaNao='".addslashes($_POST['msgInteligenciaNao'])."',
+				msgInteligenciaNaoIdentificado='".addslashes($_POST['msgInteligenciaNaoIdentificado'])."'
 				";
 
 		$sql->update($_p."whatsapp_respostasdeconfirmacao",$vSQL,"where id=$wrc->id");
@@ -220,8 +226,7 @@
 							</fieldset>
 
 							<fieldset>
-								<legend>Respostas</legend>
-
+								<legend>Respostas para Confirmação</legend>
 
 								<dl>
 									<dt>
@@ -247,6 +252,39 @@
 									</dt>
 									<dd>
 										<textarea name="msgNaoIdentificado" style="height:120px;"><?php echo ($wrc->msgNaoIdentificado);?></textarea>
+									</dd>
+								</dl>
+
+							</fieldset>
+
+							<fieldset>
+								<legend>Respostas para Relacionamento de Gestão do Tempo</legend>
+
+
+								<dl>
+									<dt>
+										<label><input type="checkbox" class="input-switch" name="pubInteligenciaSim" value="1"<?php echo $wrc->pubInteligenciaSim==1?" checked":"";?> /> Confirmação de Agendamento (1)</label>
+									</dt>
+									<dd>
+										<textarea name="msgInteligenciaSim" style="height:120px;"><?php echo ($wrc->msgInteligenciaSim);?></textarea>
+									</dd>
+								</dl>
+
+								<dl>
+									<dt>
+										<label><input type="checkbox" class="input-switch" name="pubInteligenciaNao" value="1"<?php echo $wrc->pubInteligenciaNao==1?" checked":"";?> /> Não confirmação de Agendamento (2)</label>
+									</dt>
+									<dd>
+										<textarea name="msgInteligenciaNao" style="height:120px;"><?php echo ($wrc->msgInteligenciaNao);?></textarea>
+									</dd>
+								</dl>
+
+								<dl>
+									<dt>
+										<label><input type="checkbox" class="input-switch" name="pubInteligenciaNaoIdentificado" value="1"<?php echo $wrc->pubInteligenciaNaoIdentificado==1?" checked":"";?> /> Resposta não identificada</label>
+									</dt>
+									<dd>
+										<textarea name="msgInteligenciaNaoIdentificado" style="height:120px;"><?php echo ($wrc->msgInteligenciaNaoIdentificado);?></textarea>
 									</dd>
 								</dl>
 
@@ -283,6 +321,10 @@
 									<tr>
 										<td>[duracao]</td>
 										<td>Duração do agendamento</td>
+									</tr>
+									<tr>
+										<td>[tempo_sem_atendimento]</td>
+										<td>Tempo de cadastro em meses</td>
 									</tr>
 								</table>
 							</fieldset>

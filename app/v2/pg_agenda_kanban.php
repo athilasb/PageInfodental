@@ -417,7 +417,7 @@
 						//wtsIcon+=` ${x.wts}`
 						
 						if(eval(x.id_status)==5) {
-							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}">
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="teste">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										<p>${x.telefone1}</p>
@@ -425,7 +425,7 @@
 									</a>`;
 
 						} else {
-							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}">
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="teste">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										${x.id_status==2?'':`<p>${x.telefone1}</p>`}
@@ -436,6 +436,8 @@
 						}	
 
 						$(`#kanban .js-kanban-status-${x.id_status}`).append(html);
+
+						$(`#kanban .js-kanban-status-${x.id_status} .tooltip:last`).tooltipster({theme:"borderless"});
 					})
 
 				}	

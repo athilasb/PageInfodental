@@ -79,11 +79,13 @@
 		<div class="main__content content">
 
 			
- 		<?php
+ 	<?php
  	if(isset($_GET['form'])) {
 
  		if(isset($_POST['acao'])) {
 
+
+ 			$_POST['rg_orgaoemissor']=strtoupperWLIB($_POST['rg_orgaoemissor']);
 			$vSQL=$adm->vSQL($campos,$_POST);
 			$values=$adm->values;
 
@@ -135,34 +137,7 @@
 								}
 							})
 
-							$('input[name=cpf]').change(function(){
-								let cpf = $(this).val();
-								$('.js-cpf-erro').hide();
-
-								let data = `ajax=consultaCPF&cpf=${cpf}`
-								$.ajax({
-									type:"POST",
-									url:"pg_pacientes.php",
-									data:data,
-									success:function(rtn) {
-										if(rtn.success) {
-											if(rtn.pacientes && rtn.pacientes>0) {
-												$('.js-cpf-erro').show();
-											} else {
-												$('.js-cpf-erro').hide();
-											}
-										} else if(rtn.error) {
-
-										} else {
-
-										}
-									},
-									error:function(){
-
-									}
-								})
-
-							})
+							
 
 							$('select[name=indicacao_tipo]').change(function(){
 								//let id_indicacao = $(this).find('option:selected').attr('data-id');
@@ -277,7 +252,7 @@
 									</dl>
 									<dl>
 										<dt>Org. Emissor</dt>
-										<dd><input type="text" name="rg_orgaoemissor" value="<?php echo $values['rg_orgaoemissor'];?>"  class="" /></dd>
+										<dd><input type="text" name="rg_orgaoemissor" value="<?php echo $values['rg_orgaoemissor'];?>"  class="" style="text-transform: uppercase;" /></dd>
 									</dl>
 									<dl>
 										<dt>UF</dt>
@@ -290,9 +265,49 @@
 									<dl>
 										<dt>CPF</dt>
 										<dd><input type="text" name="cpf" value="<?php echo $values['cpf'];?>" class="cpf js-cpf" /></dd>
-										<dd class="js-cpf-erro" style="color:var(--vermelho);display: none;">
-											<span class="iconify" data-icon="dashicons:warning" data-inline="true"></span>Já existe cadastro com este CPF
-										</dd>
+										<dd class="js-cpf-dd" style="color:var(--vermelho);font-size: 12px;padding-top:5px;"></dd>
+										<script type="text/javascript">
+											$(function(){
+
+												$('input[name=cpf]').change(function(){
+													let cpf = $(this).val();
+													$('.js-cpf-dd').hide();
+
+													if(cpf.length==14) {
+														if(validarCPF(cpf)) {
+
+															$('.js-cpf-dd').hide();
+														} else {
+															$('.js-cpf-dd').html(`<span class="iconify" data-icon="dashicons:warning" data-inline="true"></span>CPF inválido!`).show();;
+														}
+													
+
+														let data = `ajax=consultaCPF&cpf=${cpf}`
+														$.ajax({
+															type:"POST",
+															url:"pg_pacientes.php",
+															data:data,
+															success:function(rtn) {
+																if(rtn.success) {
+																	if(rtn.pacientes && rtn.pacientes>0) {
+																		$('.js-cpf-dd').html(`<span class="iconify" data-icon="dashicons:warning" data-inline="true"></span>Já existe cadastro com este CPF!`).show();;
+																	} else {
+																	}
+																} else if(rtn.error) {
+
+																} else {
+
+																}
+															},
+															error:function(){
+
+															}
+														})
+													}
+
+												})
+											})
+										</script>
 									</dl>
 									<dl>
 										<dt>Data de Nascimento</dt>
@@ -316,7 +331,7 @@
 									<dl class="dl2">
 										<dt>Profissão</dt>
 										<dd>
-											<select name="profissao" class="chosen" data-placeholder="PROFISSÃO">
+											<select name="profissao" class="chosen ajax-id_profissao" data-placeholder="PROFISSÃO">
 												<option value=""></option>
 												<?php
 												foreach($_profissoes as $v) {
@@ -324,7 +339,8 @@
 												}
 												?>
 											</select>
-											<a href="" class="button"><i class="iconify" data-icon="fluent:add-24-regular"></i></a></dd>
+											<a href="javascript:;" class="js-btn-aside button" data-aside="profissao" data-aside-sub><i class="iconify" data-icon="fluent:add-24-regular"></i></a>
+										</dd>
 									</dl>
 									<dl>
 										<dt>Preferência Musical</dt>
@@ -754,6 +770,8 @@
 		</div>
 	</main>
 
-<?php 
-include "includes/footer.php";
+<?php
+	$apiConfig=array('profissao'=>1);
+	require_once("includes/api/apiAside.php");
+	include "includes/footer.php";
 ?>	
