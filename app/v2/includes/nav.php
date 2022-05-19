@@ -6,6 +6,7 @@
 									'icon'=>'<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>'),*/
 						'inteligencia'=>array('page'=>'pg_inteligencia.php',
 												'pages'=>explode(",",'pg_inteligencia.php'),
+												'title'=>'Dashboard',		
 												'icon'=>'<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>'),
 						'agenda'=>array('page'=>'pg_agenda.php',
 										'pages'=>explode(",","pg_agenda.php,pg_agenda_kanban.php"),
@@ -30,13 +31,14 @@
 	?>
 	<section class="nav">
 		<div class="nav-header">
-			<a href="dashboard.php"><img src="img/logo-reduzido.svg" alt="" width="30" height="28" /></a>
+			<a href="dashboard.php" class="nav-header__logo"><img src="img/logo-reduzido.svg" alt="" width="30" height="28" /></a>
+			<a href="javascript:;" class="nav-header__menu" onclick="$('.nav-buttons').slideToggle('fast');"><i class="iconify" data-icon="fluent:navigation-24-filled"></i></a>
 		</div>
 		<div class="nav-buttons">
 			<?php
 			foreach($_menu as $session=>$params) {
 			?>
-			<a href="<?php echo $params['page'];?>" class="<?php echo in_array(basename($_SERVER['PHP_SELF']),isset($params['pages'])?$params['pages']:array())?" active":"";?>"><?php echo $params['icon'];?></a>
+			<a href="<?php echo $params['page'];?>" class="<?php echo in_array(basename($_SERVER['PHP_SELF']),isset($params['pages'])?$params['pages']:array())?" active":"";?>"><?php echo $params['icon'];?><span class="nav-buttons__legenda"><?php echo $params['title'];?></span></a>
 			<?php
 			}
 
@@ -51,17 +53,17 @@
 			<?php
 			if(is_object($_wts)) {
 			?>
-			<a href="javascript:;" class="nav-buttons__usuario"><span class="iconify" data-icon="fluent:plug-connected-checkmark-20-filled"  style="color:var(--verde);"></span></a>
+			<a href="javascript:;" class="nav-buttons__whatsapp tooltip" title="WhatsApp conectado"><span class="iconify" data-icon="la:whatsapp"></span><span class="nav-buttons__indicator" style="background-color:var(--verde);"></span><span class="nav-buttons__legenda">WhatsApp (conectado)</span></a>
 			<?php
 			} else {
 			?>
-			<a href="javascript:;" class="nav-buttons__usuario"><span class="iconify" data-icon="fluent:plug-connected-add-20-regular" style="color:var(--vermelho);"></span></a>
+			<a href="javascript:;" class="nav-buttons__whatsapp tooltip" title="WhatsApp desconectado"><span class="iconify" data-icon="la:whatsapp"></span><span class="nav-buttons__indicator" style="background-color:var(--vermelho);"></span><span class="nav-buttons__legenda">WhatsApp (desconectado)</span></a>
 			<?php
 			}
 			?>
 
-			<a href="javascript:;" class="nav-buttons__usuario"><img src="<?php echo $ft;?>" alt="" width="40" height="40" /></a>
-			<a href="usuarios/sair.php"><i class="iconify" data-icon="fluent:door-arrow-right-20-regular"></i></a>
+			<a href="javascript:;" class="nav-buttons__usuario"><img src="<?php echo $ft;?>" alt="" width="40" height="40" /><span class="nav-buttons__legenda">Meus dados</span></a>
+			<a href="usuarios/sair.php"><i class="iconify" data-icon="fluent:door-arrow-right-20-regular"></i><span class="nav-buttons__legenda">Sair</span></a>
 		</div>
 
 	</section>

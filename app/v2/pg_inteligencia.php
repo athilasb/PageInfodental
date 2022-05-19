@@ -429,9 +429,7 @@
 			</div>
 			<div class="header__inner2">
 				<section class="header-date">
-					<div class="header-date-buttons">
-					
-					</div>
+					<div class="header-date-buttons"></div>
 					<div class="header-date-now">
 						<h1 class="js-cal-titulo-diames"><?php echo date('d',strtotime($data));?></h1>
 						<h2 class="js-cal-titulo-mes"><?php echo substr(strtolower(mes(date('m',strtotime($data)))),0,3);?></h2>
