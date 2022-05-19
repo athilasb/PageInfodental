@@ -39,7 +39,7 @@
 
 	$_dias=explode(",","Domingo,Segunda-Feira,Terça-Feira,Quarta-Feira,Quinta-Feira,Sexta-Feira,Sábado");
 	
-	$_pacienteSituacao=array('BI'=>'BI','EXCLUIDO'=>'EXCLUÍDO');
+	$_pacienteSituacao=array('BI'=>'BI','EXCLUIDO'=>'DESATIVADO');
 
 	$_pacienteEstadoCivil=array('SOLTEIRO'=>'SOLTEIRO','CASADO'=>'CASADO','SEPARADO'=>'SEPARADO','CASADO'=>'CASADO','VIÚVO'=>'VIÚVO');
 
@@ -149,7 +149,7 @@
 						5=>'Desativado',);*/
 
 	$_codigoBI=array(1=>'Novo',
-						2=>'Antigo',
+					2=>'Paciente Ativo',//Antigo',
 						3=>'Alto Potencial',
 						4=>'Em Tratamento',
 						5=>'Em Acompanhamento',

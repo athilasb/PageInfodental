@@ -133,6 +133,7 @@
 		$id_reg=$paciente->id;
 		$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='$_table',id_reg='$id_reg'");
 		
+		$adm->biCategorizacao();
 		$jsc->go($_page."?id_paciente=$paciente->id");
 		die();
 	}

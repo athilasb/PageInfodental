@@ -23,8 +23,9 @@
 		}
 
 		function biCategorizacao() {
-			$curl = curl_init();
+			/*$curl = curl_init();
 
+			
 			curl_setopt_array($curl, [
 			  CURLOPT_URL => "https://studiodental.dental/infodental/cmd/bi.php",
 			  CURLOPT_RETURNTRANSFER => true,
@@ -46,6 +47,10 @@
 			} else {
 			  echo $response;
 			}*/
+
+
+			$bi = new BI(array('prefixo'=>$_p));
+			$bi->classificaTodos();
 		}
 		
 		function values($campos,$cnt) {

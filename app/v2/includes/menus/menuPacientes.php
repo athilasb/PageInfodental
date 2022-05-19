@@ -6,5 +6,5 @@
 
 <section class="tab">
 	<a href="pg_pacientes.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesPacientes)?' class="active"':'';?>>Lista</a>
-	<a href="pg_pacientes_lanban.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesPacientesKanban)?' class="active"':'';?>>Kanban</a>					
+	<a href="pg_pacientes_kanban.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesPacientesKanban)?' class="active"':'';?>>Kanban</a>					
 </section>

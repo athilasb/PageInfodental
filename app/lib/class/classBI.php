@@ -7,7 +7,8 @@
 			if(isset($attr['prefixo'])) $this->prefixo=$attr['prefixo'];
 		}
 
-		function classificaTodos() {
+		/// Codigo BI completo (até o sistema ficar pronto): 2022-05-19
+		function classificaTodosOFF() {
 			$sql = new Mysql();
 			$_p=$this->prefixo;
 
@@ -199,6 +200,188 @@
 				}
 	
 
+				# 2 - Paciente Antigo
+				if($categoriaBI==0) {
+					if(isset($_agendas[$p->id])) {
+						
+						foreach($_agendas[$p->id] as $a) {
+							// id_status = 5 -> ATENDIDO
+							if($a->id_status==5) {
+								$dif=((strtotime(date('Y-m-d H:i:s'))-strtotime($a->agenda_data))/(60*60*24*30*365));
+
+								$dt = new DateTime($a->agenda_data);
+								$dtHj = new DateTime();
+								$dif = $dtHj->diff($dt);
+								$meses = $dif->m*($dif->y+1);
+
+								if($meses<=24) {
+									$categoriaBI=2;
+								}
+								break;
+
+								//echo $a->agenda_data."->".$dif->m."* ".$dif->y." = $meses<BR>";
+							}
+
+
+						}
+					}
+					if($categoriaBI>0) {
+						//echo $p->nome."-> ".$meses." meses ($a->agenda_data) - ".$categoriaBI."<BR>";
+						//var_dump($_agendas[$p->id]);
+						//echo "<HR>";
+					}
+				}
+
+				# 6 - Baixo Potencial
+				if($categoriaBI==0) {
+					
+					$categoriaBI=6;
+				}
+
+				
+
+				//echo $p->nome.": $categoriaBI";
+
+				if($p->codigo_bi!=$categoriaBI) {
+					$sql->update($_p."pacientes","codigo_bi='$categoriaBI'","where id=$p->id");
+
+					//echo " -> refresh";
+				}
+
+				//echo "<BR>";
+
+			}
+
+
+		}
+
+		// Codigo BI versao simples
+		function classificaTodos() {
+			$sql = new Mysql();
+			$_p=$this->prefixo;
+
+			
+
+			$_planosDeTratamento=array();
+			$_tratamentosPacientes=array();
+			$_tratamentosAprovadosPacientes=array();
+			$sql->consult($_p."pacientes_tratamentos","id,status,id_paciente","where lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_planosDeTratamento[$x->id_paciente][]=$x->id;
+				$_tratamentosPacientes[$x->id_paciente][]=$x;
+				if($x->status=="APROVADO") $_tratamentosAprovadosPacientes[$x->id_paciente][]=$x;
+			}
+
+
+			$_evolucoes=array();
+			$tratamentosProcedimentosIds=array(0);
+			$sql->consult($_p."pacientes_tratamentos_procedimentos","id,id_paciente,id_tratamento,status_evolucao","where data > NOW() - INTERVAL 24 MONTH and situacao='aprovado' and id_tratamento>0 and lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_evolucoes[$x->id_paciente][$x->id_tratamento][]=$x;
+				$tratamentosProcedimentosIds[]=$x->id;
+			}
+
+
+			$_tratamentosAprovadosEvolucao=array();
+			$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIds).") and lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_tratamentosAprovadosEvolucao[$x->id_tratamento_procedimento][]=$x;
+			}
+
+			// Agendamentos
+			$_agendas=array();
+			$_ultimoAgendamento=array();
+			$sql->consult($_p."agenda","id,data,id_paciente,id_status,agenda_data","where agenda_data > NOW() - INTERVAL 24 MONTH and lixo=0 order by agenda_data desc");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_agendas[$x->id_paciente][]=$x;
+				if(!isset($_ultimoAgendamento[$x->id_paciente])) $_ultimoAgendamento[$x->id_paciente]=$x;
+			}
+
+
+			$_pacientes=array();
+			$pacientesIds=array();
+			$sql->consult($_p."pacientes","*","where lixo=0");
+			//echo $sql->rows." pacientes <br >";
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+
+				$diasDeCadastro = floor((strtotime(date('Y-m-d H:i:s')) - strtotime(date($x->data)))/(60*60*24));
+
+				$tratamentos = isset($_planosDeTratamento[$x->id])?count($_planosDeTratamento[$x->id]):0;
+				$agendamentos = isset($_agendas[$x->id])?count($_agendas[$x->id]):0;
+				$ultimoAgendamento =  '';
+				if(isset($_agendas[$x->id])) {
+					$ultimoAgendamento=$_agendas[$x->id][0]->data;
+				}
+
+				$tratamentosStatus=array();
+
+				if(isset($_tratamentosPacientes[$x->id])) {
+
+					foreach($_tratamentosPacientes[$x->id] as $p) {
+						if(!isset($tratamentosStatus[$p->status])) {
+							$tratamentosStatus[$p->status]=0;
+						}
+
+						$tratamentosStatus[$p->status]++;
+						
+					}
+				}
+
+				$agendamentos=isset($_agenda[$x->id])?count($_agenda[$x->id]):0;
+
+				$_pacientes[]=array('id'=>$x->id,
+									'data'=>$x->data,
+									'codigo_bi'=>$x->codigo_bi,
+											'situacao'=>$x->situacao,
+											'nome'=>utf8_encode($x->nome),
+											'novo'=>$diasDeCadastro<=60?1:0,
+											'ultimoAgendamento'=>$ultimoAgendamento,
+											'agendamento18m'=>1, // possui agendamento nos ultimos 18 meses
+											'agendamentos'=>$agendamentos,
+											'tratamentos'=>array('qtd'=>$tratamentos,
+																	'aguardando'=>isset($tratamentosStatus['PENDENTE'])?$tratamentosStatus['PENDENTE']:0,
+																	'aprovado'=>isset($tratamentosStatus['APROVADO'])?$tratamentosStatus['APROVADO']:0,
+																	'cancelado'=>isset($tratamentosStatus['CANCELADO'])?$tratamentosStatus['CANCELADO']:0)
+										);
+				$pacientesIds[]=$x->id;
+			}
+
+			
+			foreach($_pacientes as $p) {
+
+				$p = (object) $p;
+				//var_dump($p);
+				$categoriaBI=0;
+
+				$excluido=0;
+				
+				# 7 - Pacientes Desativados
+				if($categoriaBI==0) {
+					if($p->situacao=='EXCLUIDO') $categoriaBI=7;
+				}
+
+				# 1 - Novo Paciente
+				if($categoriaBI==0) {
+					$foiAtendido=false;
+
+					if(isset($_agendas[$p->id])) {
+						foreach($_agendas[$p->id] as $a) {
+							if($a->id_status==5) $foiAtendido=true;
+						}
+					}
+
+					if($foiAtendido===false) {
+
+						$dias = strtotime(date('Y-m-d'))-strtotime($p->data);
+						$dias /= 60*60*24;
+						$dias = round($dias);
+						if($dias<90) {
+							$categoriaBI=1;
+						}
+
+					}
+				}
+			
 				# 2 - Paciente Antigo
 				if($categoriaBI==0) {
 					if(isset($_agendas[$p->id])) {

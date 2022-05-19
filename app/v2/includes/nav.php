@@ -12,7 +12,7 @@
 										'title'=>'Agenda',
 										'icon'=>'<i class="iconify" data-icon="fluent:calendar-ltr-20-regular"></i>'),
 						'pacientes'=>array('page'=>'pg_pacientes.php',
-											'pages'=>explode(',','pg_pacientes.php,pg_pacientes_dadospessoais.php,pg_pacientes_resumo.php'),
+											'pages'=>explode(',','pg_pacientes.php,pg_pacientes_dadospessoais.php,pg_pacientes_resumo.php,pg_pacientes_kanban.php'),
 											'title'=>'Pacientes',
 											'icon'=>'<i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular"></i>'),
 						/*'financeiro'=>array('page'=>'pg_financeiro.php',
