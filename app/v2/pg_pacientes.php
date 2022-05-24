@@ -271,7 +271,7 @@
 									<dl>
 										<dt>CPF</dt>
 										<dd><input type="text" name="cpf" value="<?php echo $values['cpf'];?>" class="cpf js-cpf" /></dd>
-										<dd class="js-cpf-dd" style="color:var(--vermelho);font-size: 12px;padding-top:5px;"></dd>
+										<div class="js-cpf-dd form-alert"></div>
 										<script type="text/javascript">
 											$(function(){
 
@@ -284,7 +284,7 @@
 
 															$('.js-cpf-dd').hide();
 														} else {
-															$('.js-cpf-dd').html(`<span class="iconify" data-icon="dashicons:warning" data-inline="true"></span>CPF inválido!`).show();;
+															$('.js-cpf-dd').html(`<i class="iconify" data-icon="fluent:info-16-regular"></i> CPF inválido!`).show();;
 														}
 													
 
@@ -296,7 +296,7 @@
 															success:function(rtn) {
 																if(rtn.success) {
 																	if(rtn.pacientes && rtn.pacientes>0) {
-																		$('.js-cpf-dd').html(`<span class="iconify" data-icon="dashicons:warning" data-inline="true"></span>Já existe cadastro com este CPF!`).show();;
+																		$('.js-cpf-dd').html(`<i class="iconify" data-icon="fluent:info-16-regular"></i> Já existe cadastro com este CPF!`).show();;
 																	} else {
 																	}
 																} else if(rtn.error) {

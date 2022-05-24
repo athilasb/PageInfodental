@@ -403,8 +403,8 @@
 						}
 					?>
 
-					<div class="grid grid_2" style="margin:0;">						
-						<div class="box" style="grid-column:span 1">
+					<div class="grid grid_2 box" style="margin:0;">
+						<div style="grid-column:span 1">
 							<div style="width:100%; padding:20px;">
 								<script>
 								$(function() {
@@ -441,7 +441,7 @@
 							</div>
 						</div>
 
-						<div class="box">
+						<div>
 							<div class="list1">
 								<table>
 									<?php
