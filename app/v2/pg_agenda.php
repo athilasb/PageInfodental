@@ -2651,7 +2651,9 @@
 								<select name="id_paciente" class="select2 obg-0 ajax-id_paciente">
 									<option value="">...</option>
 								</select>
-								<a  href="javascript:;" class="js-btn-aside" data-aside="paciente" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a> 
+								<a  href="javascript:;" class="js-btn-aside button" data-aside="paciente" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a> 
+
+								<?php /*<a href="javascript:;" class="js-btn-aside button" data-aside="profissao" data-aside-sub><i class="iconify" data-icon="fluent:add-24-regular"></i></a>*/?>
 							</dd>
 						</dl>
 						<dl>

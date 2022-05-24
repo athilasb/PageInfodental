@@ -45,6 +45,11 @@
 		$values[$v]='';
 	}
 
+	if(isset($_GET['cmd'])) {
+		$adm->biCategorizacao();
+		die();
+	}
+
 ?>
 
 	<header class="header">
@@ -96,6 +101,7 @@
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',vwhere='',tabela='$_table',id_reg='$id_reg'");
 			
 
+			$adm->biCategorizacao();
 			$jsc->go("pg_pacientes_dadospessoais.php?id_paciente=$id_reg");
 			die();
 		}

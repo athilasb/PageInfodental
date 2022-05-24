@@ -342,6 +342,13 @@
 					}
 				}
 			} 
+			else if($_POST['ajax']=="biCategorizacao") {
+
+				$adm = new Adm($_p);
+				$adm->biCategorizacao();
+
+				$rtn=array('success'=>true);
+			}
 
 		# Pacientes Relacionamento
 			else if($_POST['ajax']=="asRelacionamentoPaciente") {
@@ -2158,6 +2165,12 @@
 										$('.ajax-id_paciente').append(`<option value="${rtn.id_paciente}" selected>${rtn.nome}</option>`);
 										$('.aside-paciente .aside-close').click();
 
+										$.ajax({
+											type:"POST",
+											data:`ajax=biCategorizacao`,
+											url:baseURLApiAside
+										})
+
 									} else if(rtn.error) {
 										swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 									} else {
@@ -2212,8 +2225,52 @@
 							<dd>
 								<input type="text" class="js-asPaciente-cpf cpf" />
 							</dd>
+							<dd class="js-cpf-dd" style="color:var(--vermelho);font-size: 12px;padding-top:5px;"></dd>
 						</dl>
 					</div>
+
+					<script type="text/javascript">
+						$(function(){
+
+							$('input.js-asPaciente-cpf').change(function(){
+								let cpf = $(this).val();
+								$('.js-cpf-dd').hide();
+
+								if(cpf.length==14) {
+									if(validarCPF(cpf)) {
+
+										$('.js-cpf-dd').hide();
+									} else {
+										$('.js-cpf-dd').html(`<span class="iconify" data-icon="dashicons:warning" data-inline="true"></span>CPF inválido!`).show();;
+									}
+								
+
+									let data = `ajax=consultaCPF&cpf=${cpf}`
+									$.ajax({
+										type:"POST",
+										url:"pg_pacientes.php",
+										data:data,
+										success:function(rtn) {
+											if(rtn.success) {
+												if(rtn.pacientes && rtn.pacientes>0) {
+													$('.js-cpf-dd').html(`<span class="iconify" data-icon="dashicons:warning" data-inline="true"></span>Já existe cadastro com este CPF!`).show();;
+												} else {
+												}
+											} else if(rtn.error) {
+
+											} else {
+
+											}
+										},
+										error:function(){
+
+										}
+									})
+								}
+
+							})
+						})
+					</script>
 
 					<div class="colunas2">
 
