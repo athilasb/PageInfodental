@@ -1797,9 +1797,7 @@
 
 			<div class="header__inner2">
 				<section class="header-date">
-					<div class="header-date-buttons">
-					
-					</div>
+					<div class="header-date-buttons"></div>
 					<div class="header-date-now">
 						<h1 class="js-cal-titulo-diames"></h1>
 						<h2 class="js-cal-titulo-mes"></h2>

@@ -58,6 +58,8 @@ $(function() {
 	$("input.cpf").inputmask("999.999.999-99");
 	$("input.cnpj").inputmask("99.999.999/9999-99");
 
+	$('.tooltip').tooltipster();
+
 	$(".chosen").chosen({allow_single_deselect:true});
 
 	jQuery.datetimepicker.setLocale('pt');
@@ -162,6 +164,4 @@ $(function() {
 		return false;
 	})
 
-	
-	
 });
