@@ -5,7 +5,7 @@
 									'title'=>'Tarefas Inteligêntes',
 									'icon'=>'<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>'),*/
 						'inteligencia'=>array('page'=>'pg_inteligencia.php',
-												'pages'=>explode(",",'pg_inteligencia.php'),
+												'pages'=>explode(",",'pg_inteligencia.php,pg_inteligencia_analytics.php'),
 												'title'=>'Dashboard',		
 												'icon'=>'<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>'),
 						'agenda'=>array('page'=>'pg_agenda.php',
@@ -23,9 +23,13 @@
 											'title'=>'Landing Page',
 											'icon'=>'<i class="iconify" data-icon="fluent:web-asset-24-regular"></i>'),*/
 						'configuracoes'=>array('page'=>'pg_configuracoes_clinica_colaboradores.php',
-												'pages'=>explode(",","pg,pg_configuracoes_clinica.php,pg_configuracoes_clinica_colaboradores.php,pg_configuracoes_clinica_cadeiras.php,pg_configuracoes_evolucao_anamnese.php,pg_configuracoes_evolucao_procedimentos.php,pg_configuracoes_evolucao_servicosdelaboratorio.php,pg_configuracoes_evolucao_examecomplementar.php,pg_configuracoes_fornecedores.php,pg_configuracoes_fornecedores_produtos.php,pg_configuracoes_financeiro_bancosecontas.php,pg_configuracoes_financeiro_cartoes.php,pg_configuracoes_whatsapp.php,pg_configuracoes_pagamentos.php"),
+												'pages'=>explode(",","pg,pg_configuracoes_clinica.php,pg_configuracoes_clinica_colaboradores.php,pg_configuracoes_clinica_cadeiras.php,pg_configuracoes_evolucao_anamnese.php,pg_configuracoes_evolucao_procedimentos.php,pg_configuracoes_evolucao_servicosdelaboratorio.php,pg_configuracoes_evolucao_examecomplementar.php,pg_configuracoes_fornecedores.php,pg_configuracoes_fornecedores_produtos.php,pg_configuracoes_financeiro_bancosecontas.php,pg_configuracoes_financeiro_cartoes.php,pg_configuracoes_pagamentos.php"),
 												'title'=>'Configurações',
-												'icon'=>'<i class="iconify" data-icon="fluent:settings-20-regular"></i>')
+												'icon'=>'<i class="iconify" data-icon="fluent:settings-20-regular"></i>'),
+						'whatsapp'=>array('page'=>'pg_configuracoes_whatsapp.php',
+												'pages'=>explode(",","pg_configuracoes_whatsapp.php"),
+												'title'=>'Whatsapp',
+												'icon'=>'<i class="iconify" data-icon="la:whatsapp"></i>')
 						
 				   );
 	?>
@@ -37,8 +41,13 @@
 		<div class="nav-buttons">
 			<?php
 			foreach($_menu as $session=>$params) {
+				$spanWts='';
+				if($session=="whatsapp") {
+					if(is_object($_wts)) $spanWts='<span class="nav-buttons__indicator" style="background-color:var(--verde);"></span><span class="nav-buttons__legenda">WhatsApp (conectado)</span>';
+					else $spanWts='<span class="nav-buttons__indicator" style="background-color:var(--vermelho);"></span><span class="nav-buttons__legenda">WhatsApp (desconectado)</span>';
+				}
 			?>
-			<a href="<?php echo $params['page'];?>" class="<?php echo in_array(basename($_SERVER['PHP_SELF']),isset($params['pages'])?$params['pages']:array())?" active":"";?>"><?php echo $params['icon'];?><span class="nav-buttons__legenda"><?php echo $params['title'];?></span></a>
+			<a href="<?php echo $params['page'];?>" class="<?php echo in_array(basename($_SERVER['PHP_SELF']),isset($params['pages'])?$params['pages']:array())?" active":"";?>"><?php echo $params['icon'];?><span class="nav-buttons__legenda"><?php echo $params['title'];?></span><?php echo $spanWts;?></a>
 			<?php
 			}
 
@@ -50,19 +59,8 @@
 				$ft=$_cloudinaryURL.',w_50/'.$usr->foto;
 			}
 			?>
-			<?php
-			if(is_object($_wts)) {
-			?>
-			<a href="javascript:;" class="nav-buttons__whatsapp tooltip" title="WhatsApp conectado"><span class="iconify" data-icon="la:whatsapp"></span><span class="nav-buttons__indicator" style="background-color:var(--verde);"></span><span class="nav-buttons__legenda">WhatsApp (conectado)</span></a>
-			<?php
-			} else {
-			?>
-			<a href="javascript:;" class="nav-buttons__whatsapp tooltip" title="WhatsApp desconectado"><span class="iconify" data-icon="la:whatsapp"></span><span class="nav-buttons__indicator" style="background-color:var(--vermelho);"></span><span class="nav-buttons__legenda">WhatsApp (desconectado)</span></a>
-			<?php
-			}
-			?>
 
-			<a href="javascript:;" class="nav-buttons__usuario"><img src="<?php echo $ft;?>" alt="" width="40" height="40" /><span class="nav-buttons__legenda">Meus dados</span></a>
+			<a href="javascript:;" class="nav-buttons__usuario nav-buttons__whatsapp"><img src="<?php echo $ft;?>" alt="" width="40" height="40" /><span class="nav-buttons__legenda">Meus dados</span></a>
 			<a href="usuarios/sair.php"><i class="iconify" data-icon="fluent:door-arrow-right-20-regular"></i><span class="nav-buttons__legenda">Sair</span></a>
 		</div>
 

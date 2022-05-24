@@ -109,7 +109,7 @@
 					<h1>Configurações</h1>
 				</section>
 				<?php
-				require_once("includes/menus/menuConfiguracoes.php");
+				require_once("includes/menus/menuWhatsapp.php");
 				?>
 			</div>
 		</div>

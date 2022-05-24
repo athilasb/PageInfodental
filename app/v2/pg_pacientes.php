@@ -95,7 +95,7 @@
 			$values=$adm->values;
 
 			$vSQL=substr($vSQL,0,strlen($vSQL)-1);
-			$vSQL.=",periodicidade=6";
+			$vSQL.=",periodicidade=6,data=now()";
 			$sql->add($_table,$vSQL);
 			$id_reg=$sql->ulid;
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',vwhere='',tabela='$_table',id_reg='$id_reg'");
@@ -607,7 +607,104 @@
 		$sql->consult($_p."pacientes","count(*) as total","where lixo=0");
 		$x=mysqli_fetch_object($sql->mysqry);
 		$pacientes=$x->total;
-	?>
+
+		$sql->consult($_p."pacientes","*","where data>='".date('Y-m-d H:i:s',strtotime(date('Y-m-d H:i:s')." - 1 year"))."' and lixo=0");
+		$total=$sql->rows;
+
+		// Grafico 2: Idade
+			$grafico2Labels=array();
+			for($i=0;$i<=70;$i+=10) {
+				if($i==70) {
+					$grafico2Labels[]="+71";
+				} else {
+					$grafico2Labels[]=($i==0?$i:$i+1)."-".($i+10);
+				}
+			}
+
+			$pacintesQuantidade=array();
+			$pacientesIdade=array();
+			$locations=array();
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$locations[] = array(utf8_encode($x->nome), $x->lat , $x->lng);
+				$mes=date('m',strtotime($x->data));
+				$ano=date('y',strtotime($x->data));
+
+				if(!isset($pacintesQuantidade[substr(mes($mes),0,3)."/".$ano])) $pacintesQuantidade[substr(mes($mes),0,3)."/".$ano]=0;
+				$pacintesQuantidade[substr(mes($mes),0,3)."/".$ano]++;
+				
+				$idade=idade($x->data_nascimento);
+
+				if($idade<=10) {
+					if(!isset($pacientesIdade[0])) $pacientesIdade[0]=0;
+					$pacientesIdade[0]++;
+				} else if($idade<=20) {
+					if(!isset($pacientesIdade[1])) $pacientesIdade[1]=0;
+					$pacientesIdade[1]++;
+				} else if($idade<=30) {
+					if(!isset($pacientesIdade[2])) $pacientesIdade[2]=0;
+					$pacientesIdade[2]++;
+				} else if($idade<=40) {
+					if(!isset($pacientesIdade[3])) $pacientesIdade[3]=0;
+					$pacientesIdade[3]++;
+				} else if($idade<=50) {
+					if(!isset($pacientesIdade[4])) $pacientesIdade[4]=0;
+					$pacientesIdade[4]++;
+				} else if($idade<=60) {
+					if(!isset($pacientesIdade[5])) $pacientesIdade[5]=0;
+					$pacientesIdade[5]++;
+				} else if($idade<=70) {
+					if(!isset($pacientesIdade[6])) $pacientesIdade[6]=0;
+					$pacientesIdade[6]++;
+				} 
+				if(!isset($grafico2[$idade])) $grafico2[$idade]=0;
+				$grafico2[$idade]++;
+			}
+		// Grafico 2: Idade
+		$grafico2Data=array();
+		foreach($grafico2Labels as $key=>$v) {
+			$grafico2Data[$key]=isset($pacientesIdade[$key])?$pacientesIdade[$key]:0;
+		}
+		//echo json_encode($grafico2Data);
+
+		// Grafico 1: Quantidade
+		$grafico1Labels=array();
+		$mes=date('m');
+		$ano=date('y');
+		for($i=1;$i<=12;$i++) {
+			$grafico1Labels[]=substr(mes($mes),0,3)."/".$ano;
+			$mes--;
+			if($mes==0) {
+				$ano--;
+				$mes=12;
+			}
+		}
+
+		$grafico1Labels=array_reverse($grafico1Labels);
+		foreach($grafico1Labels as $key) { 
+			if(!isset($pacintesQuantidade[$key])) $grafico1Data[]=0;
+			else { //echo $key."->".$grafico1DataAux[$key]."<BR>";
+				$grafico1Data[]=$pacintesQuantidade[$key];
+			}
+		}
+
+		$grafico3Data = array();
+		$sql->consult($_p."pacientes","count(*) as total","WHERE lixo=0 and sexo='M'");
+		if($sql->rows) {
+			$x=mysqli_fetch_object($sql->mysqry);
+			$grafico3Data[]= $x->total;
+		}
+		$sql->consult($_p."pacientes","count(*) as total","WHERE lixo=0 and sexo='F'");
+		if($sql->rows) {
+			$x=mysqli_fetch_object($sql->mysqry);
+			$grafico3Data[]= $x->total;
+		}
+	?>		
+			<script type="text/javascript">
+				
+				$(function(){
+
+				});
+			</script>
  			<section class="filter">
 				
 				<div class="filter-group">
@@ -649,7 +746,7 @@
 
 					<div class="list4">
 						
-						<a href="" class="list4-item active">
+						<a href="javascript:;" class="list4-item active js-grafico" data-grafico="2">
 							<div>
 								<h1><i class="iconify" data-icon="fluent:food-cake-20-regular"></i></h1>
 							</div>
@@ -657,7 +754,7 @@
 								<p>Distribuição <strong>por Idade</strong></p>
 							</div>
 						</a>
-						<a href="" class="list4-item">
+						<a href="javascript:;" class="list4-item js-grafico" data-grafico="3">
 							<div>
 								<h1><i class="iconify" data-icon="ph:gender-intersex"></i></h1>
 							</div>
@@ -665,7 +762,7 @@
 								<p>Distribuição <strong>por Gênero</strong></p>
 							</div>
 						</a>
-						<a href="" class="list4-item">
+						<a href="javascript:;" class="list4-item js-grafico" data-grafico="4">
 							<div>
 								<h1><i class="iconify" data-icon="fluent:location-20-regular"></i></h1>
 							</div>
@@ -673,7 +770,7 @@
 								<p>Distribuição <strong>Localização</strong></p>
 							</div>
 						</a>
-						<a href="" class="list4-item">
+						<a href="javascript:;" class="list4-item js-grafico" data-grafico="1">
 							<div>
 								<h1><i class="iconify" data-icon="fluent:person-add-20-regular"></i></h1>
 							</div>
@@ -684,8 +781,212 @@
 
 					</div>
 
-					<section style="width:100%; height:300px; background:var(--cinza2); margin-bottom:var(--margin1);">						
-					</section>
+
+					<script>
+						$(function() {
+							$('.js-grafico').click(function(){
+								let grafico = $(this).attr('data-grafico');
+
+								$(`.box-grafico`).hide();
+								$(`#grafico${grafico}`).show();
+								$(`.js-grafico`).removeClass('active');
+								$(this).addClass('active');
+							});
+
+							$('.js-grafico:eq(0)').trigger('click')
+
+							var ctx = document.getElementById('grafico1').getContext('2d');
+							var gradientStroke = ctx.createLinearGradient(0,230,0,50);
+							gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
+							gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
+							gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
+							var grafico1 = new Chart(ctx, {    
+							    type: 'line',
+							    data: {
+							        labels: <?php echo json_encode($grafico1Labels);?>,
+							        datasets: [{
+							            fill:true,
+							            borderDashOffset: 0.0,
+							            label: 'Pacientes',
+							            data: <?php echo json_encode($grafico1Data);?>,
+							            backgroundColor: gradientStroke,
+							            borderColor:'rgba(254,71,2,0.3)',
+							            borderWidth: 1,
+							            borderDash: [],
+							            borderDashOffset: 0.0
+							        }]
+							    },
+							    options: {
+							        scales: {
+							            yAxes: [{
+							                ticks: {
+							                    beginAtZero: true
+							                },
+							                gridLines: {
+							                	drawBorder: false,
+							                	color: 'transparent'
+							                }
+							            }],
+							            xAxes: [{
+								            gridLines: {
+								            	drawBorder: false,
+								                color: '#ebebeb',
+								                zeroLineColor: "#ebebeb"
+								            }	              
+								        }]
+							        }
+							    }
+							});
+
+							var ctx = document.getElementById('grafico2').getContext('2d');
+							var gradientStroke = ctx.createLinearGradient(0,230,0,50);
+							gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
+							gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
+							gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
+							var grafico2 = new Chart(ctx, {    
+							    type: 'bar',
+							    data: {
+							        labels: <?php echo json_encode($grafico2Labels);?>,
+							        datasets: [{
+							            fill:true,
+							            borderDashOffset: 0.0,
+							            label: 'Pacientes',
+							            data: <?php echo json_encode($grafico2Data);?>,
+							            backgroundColor: gradientStroke,
+							            borderColor:'rgba(254,71,2,0.3)',
+							            borderWidth: 1,
+							            borderDash: [],
+							            borderDashOffset: 0.0
+							        }]
+							    },
+							    options: {
+							        scales: {
+							            yAxes: [{
+							                ticks: {
+							                    beginAtZero: true
+							                },
+							                gridLines: {
+							                	drawBorder: false,
+							                	color: 'transparent'
+							                }
+							            }],
+							            xAxes: [{
+								            gridLines: {
+								            	drawBorder: false,
+								                color: '#ebebeb',
+								                zeroLineColor: "#ebebeb"
+								            }	              
+								        }]
+							        }
+							    }
+							});
+
+
+
+							const DATA_COUNT = 5;
+							const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
+							var ctx = document.getElementById('grafico3').getContext('2d');
+							var gradientStroke = ctx.createLinearGradient(0,230,0,50);
+							gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
+							gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
+							gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
+							var grafico3 = new Chart(ctx, {    
+							    type: 'pie',
+							    data: {
+									  labels: ['Masculino', 'Feminino'],
+									  datasets: [
+									    {
+									      label: 'Dataset 1',
+									      data: <?php echo json_encode($grafico3Data);?>,
+									      backgroundColor: ['blue','pink'],
+									    }
+									  ]
+							    },
+							    options: {
+							        scales: {
+							            
+							        }
+							    }
+							});
+
+							var ctx = document.getElementById('grafico5').getContext('2d');
+							var gradientStroke = ctx.createLinearGradient(0,230,0,50);
+							gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
+							gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
+							gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
+							var grafico5 = new Chart(ctx, {    
+							    type: 'line',
+							    data: {
+							        labels: ["1","2","3","4","5","6","7"],
+							        datasets: [{
+							            fill:true,
+							            borderDashOffset: 0.0,
+							            label: '# visitas',
+							            data: [1200,1100,1300,1300,500,1200,1345],
+							            backgroundColor: gradientStroke,
+							            borderColor:'rgba(254,71,2,0.3)',
+							            borderWidth: 1,
+							            borderDash: [],
+							            borderDashOffset: 0.0
+							        }]
+							    },
+							    options: {
+							        scales: {
+							            yAxes: [{
+							                ticks: {
+							                    beginAtZero: true
+							                },
+							                gridLines: {
+							                	drawBorder: false,
+							                	color: 'transparent'
+							                }
+							            }],
+							            xAxes: [{
+								            gridLines: {
+								            	drawBorder: false,
+								                color: '#ebebeb',
+								                zeroLineColor: "#ebebeb"
+								            }	              
+								        }]
+							        }
+							    }
+							});
+						});
+					</script>
+
+					<div class="grafico">
+						<canvas id="grafico1" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
+						<canvas id="grafico2" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
+						<canvas id="grafico3" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
+						<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo $_googleMapsKey;?>&libraries=geometry,drawing,places&callback=initMap" defer></script>
+						<script>
+							function initMap() {
+							  const myLatlng = { lat: -16.6958288, lng: -49.4443537 };
+							  const map = new google.maps.Map(document.getElementById("grafico4"), {
+							    zoom: 10,
+							    center: myLatlng,
+							  });
+							  var locations = <?php echo json_encode($locations);?>;
+							  var infowindow =  new google.maps.InfoWindow({});
+							  var marker, count;for (count = 0; count < locations.length; count++) {
+								    marker = new google.maps.Marker({
+								      position: new google.maps.LatLng(locations[count][1], locations[count][2]),
+								      map: map,
+								      title: locations[count][0]
+								    });google.maps.event.addListener(marker, 'click', (function (marker, count) {
+								      return function () {
+								        infowindow.setContent(locations[count][0]);
+								        infowindow.open(map, marker);
+								      }
+									})(marker, count));
+								}
+							}
+						</script>
+						<section id="grafico4" class="box-grafico" style="width: 600px;height:500px;margin-bottom: 10px;display:none;"></section>
+						<canvas id="grafico5" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
+					</div>
+					<?php /*<section style="width:100%; height:300px; background:var(--cinza2); margin-bottom:var(--margin1);" class="grafico">						
+					</section>*/?>
 				</div>
 
 				<div class="box">

@@ -766,117 +766,117 @@
 					</a>
 				</div>
 				<div class="grafico">
-				<script>
-					$(function() {
-						$('.js-grafico').click(function(){
+					<script>
+						$(function() {
+							$('.js-grafico').click(function(){
 							let grafico = $(this).attr('data-grafico');
 
 							$(`.box-grafico`).hide();
 							$(`#grafico${grafico}`).show();
 							$(`.js-grafico`).removeClass('active');
 							$(this).addClass('active');
-						});
+							});
 
-						$('.js-grafico:eq(0)').trigger('click')
+							$('.js-grafico:eq(0)').trigger('click')
 
-						var ctx = document.getElementById('grafico1').getContext('2d');
-						var gradientStroke = ctx.createLinearGradient(0,230,0,50);
-						gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
-						gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
-						gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
-						var grafico1 = new Chart(ctx, {    
-						    type: 'line',
-						    data: {
-						        labels: <?php echo json_encode($grafico1Labels);?>,
-						        datasets: [{
-						            fill:true,
-						            borderDashOffset: 0.0,
-						            label: 'Pacientes',
-						            data: <?php echo json_encode($grafico1Data);?>,
-						            backgroundColor: gradientStroke,
-						            borderColor:'rgba(254,71,2,0.3)',
-						            borderWidth: 1,
-						            borderDash: [],
-						            borderDashOffset: 0.0
-						        }]
-						    },
-						    options: {
-						        scales: {
-						            yAxes: [{
-						                ticks: {
-						                    beginAtZero: true
-						                },
-						                gridLines: {
-						                	drawBorder: false,
-						                	color: 'transparent'
-						                }
-						            }],
-						            xAxes: [{
+							var ctx = document.getElementById('grafico1').getContext('2d');
+							var gradientStroke = ctx.createLinearGradient(0,230,0,50);
+							gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
+							gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
+							gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
+							var grafico1 = new Chart(ctx, {    
+							type: 'line',
+							data: {
+							    labels: <?php echo json_encode($grafico1Labels);?>,
+							    datasets: [{
+							        fill:true,
+							        borderDashOffset: 0.0,
+							        label: 'Pacientes',
+							        data: <?php echo json_encode($grafico1Data);?>,
+							        backgroundColor: gradientStroke,
+							        borderColor:'rgba(254,71,2,0.3)',
+							        borderWidth: 1,
+							        borderDash: [],
+							        borderDashOffset: 0.0
+							    }]
+							},
+							options: {
+							    scales: {
+							        yAxes: [{
+							            ticks: {
+							                beginAtZero: true
+							            },
+							            gridLines: {
+							            	drawBorder: false,
+							            	color: 'transparent'
+							            }
+							        }],
+							        xAxes: [{
 							            gridLines: {
 							            	drawBorder: false,
 							                color: '#ebebeb',
 							                zeroLineColor: "#ebebeb"
 							            }	              
 							        }]
-						        }
-						    }
-						});
+							    }
+							}
+							});
 
-						var ctx = document.getElementById('grafico2').getContext('2d');
-						var gradientStroke = ctx.createLinearGradient(0,230,0,50);
-						gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
-						gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
-						gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
-						var grafico2 = new Chart(ctx, {    
-						    type: 'bar',
-						    data: {
-						        labels: <?php echo json_encode($grafico2Labels);?>,
-						        datasets: [{
-						            fill:true,
-						            borderDashOffset: 0.0,
-						            label: 'Pacientes',
-						            data: <?php echo json_encode($grafico2Data);?>,
-						            backgroundColor: gradientStroke,
-						            borderColor:'rgba(254,71,2,0.3)',
-						            borderWidth: 1,
-						            borderDash: [],
-						            borderDashOffset: 0.0
-						        }]
-						    },
-						    options: {
-						        scales: {
-						            yAxes: [{
-						                ticks: {
-						                    beginAtZero: true
-						                },
-						                gridLines: {
-						                	drawBorder: false,
-						                	color: 'transparent'
-						                }
-						            }],
-						            xAxes: [{
+							var ctx = document.getElementById('grafico2').getContext('2d');
+							var gradientStroke = ctx.createLinearGradient(0,230,0,50);
+							gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
+							gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
+							gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
+							var grafico2 = new Chart(ctx, {    
+							type: 'bar',
+							data: {
+							    labels: <?php echo json_encode($grafico2Labels);?>,
+							    datasets: [{
+							        fill:true,
+							        borderDashOffset: 0.0,
+							        label: 'Pacientes',
+							        data: <?php echo json_encode($grafico2Data);?>,
+							        backgroundColor: gradientStroke,
+							        borderColor:'rgba(254,71,2,0.3)',
+							        borderWidth: 1,
+							        borderDash: [],
+							        borderDashOffset: 0.0
+							    }]
+							},
+							options: {
+							    scales: {
+							        yAxes: [{
+							            ticks: {
+							                beginAtZero: true
+							            },
+							            gridLines: {
+							            	drawBorder: false,
+							            	color: 'transparent'
+							            }
+							        }],
+							        xAxes: [{
 							            gridLines: {
 							            	drawBorder: false,
 							                color: '#ebebeb',
 							                zeroLineColor: "#ebebeb"
 							            }	              
 							        }]
-						        }
-						    }
-						});
+							    }
+							}
+							});
 
 
 
-						const DATA_COUNT = 5;
-						const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
-						var ctx = document.getElementById('grafico3').getContext('2d');
-						var gradientStroke = ctx.createLinearGradient(0,230,0,50);
-						gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
-						gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
-						gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
-						var grafico3 = new Chart(ctx, {    
-						    type: 'pie',
-						    data: {
+							const DATA_COUNT = 5;
+							const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
+							var ctx = document.getElementById('grafico3').getContext('2d');
+							var gradientStroke = ctx.createLinearGradient(0,230,0,50);
+							gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
+							gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
+							gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
+							var grafico3 = new Chart(ctx, {    
+							type: 'pie',
+							data: {
 								  labels: ['Masculino', 'Feminino'],
 								  datasets: [
 								    {
@@ -885,58 +885,59 @@
 								      backgroundColor: ['blue','pink'],
 								    }
 								  ]
-						    },
-						    options: {
-						        scales: {
-						            
-						        }
-						    }
-						});
+							},
+							options: {
+							    scales: {
+							        
+							    }
+							}
+							});
 
-						var ctx = document.getElementById('grafico5').getContext('2d');
-						var gradientStroke = ctx.createLinearGradient(0,230,0,50);
-						gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
-						gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
-						gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
-						var grafico5 = new Chart(ctx, {    
-						    type: 'line',
-						    data: {
-						        labels: ["1","2","3","4","5","6","7"],
-						        datasets: [{
-						            fill:true,
-						            borderDashOffset: 0.0,
-						            label: '# visitas',
-						            data: [1200,1100,1300,1300,500,1200,1345],
-						            backgroundColor: gradientStroke,
-						            borderColor:'rgba(254,71,2,0.3)',
-						            borderWidth: 1,
-						            borderDash: [],
-						            borderDashOffset: 0.0
-						        }]
-						    },
-						    options: {
-						        scales: {
-						            yAxes: [{
-						                ticks: {
-						                    beginAtZero: true
-						                },
-						                gridLines: {
-						                	drawBorder: false,
-						                	color: 'transparent'
-						                }
-						            }],
-						            xAxes: [{
+							var ctx = document.getElementById('grafico5').getContext('2d');
+							var gradientStroke = ctx.createLinearGradient(0,230,0,50);
+							gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
+							gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
+							gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
+							var grafico5 = new Chart(ctx, {    
+							type: 'line',
+							data: {
+							    labels: ["1","2","3","4","5","6","7"],
+							    datasets: [{
+							        fill:true,
+							        borderDashOffset: 0.0,
+							        label: '# visitas',
+							        data: [1200,1100,1300,1300,500,1200,1345],
+							        backgroundColor: gradientStroke,
+							        borderColor:'rgba(254,71,2,0.3)',
+							        borderWidth: 1,
+							        borderDash: [],
+							        borderDashOffset: 0.0
+							    }]
+							},
+							options: {
+							    scales: {
+							        yAxes: [{
+							            ticks: {
+							                beginAtZero: true
+							            },
+							            gridLines: {
+							            	drawBorder: false,
+							            	color: 'transparent'
+							            }
+							        }],
+							        xAxes: [{
 							            gridLines: {
 							            	drawBorder: false,
 							                color: '#ebebeb',
 							                zeroLineColor: "#ebebeb"
 							            }	              
 							        }]
-						        }
-						    }
+							    }
+							}
+							});
 						});
-					});
 					</script>
+				
 					<div class="grafico">
 						<canvas id="grafico1" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
 						<canvas id="grafico2" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>

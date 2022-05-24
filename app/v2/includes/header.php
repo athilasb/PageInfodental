@@ -111,6 +111,7 @@
 <link rel="stylesheet" type="text/css" href="css/style.css?v3" />
 <link rel="stylesheet" type="text/css" href="css/calendario.css" />
 <link rel="stylesheet" type="text/css" href="css/apps.css" />
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <?php /*<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />*/ ?>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -134,6 +135,8 @@
 <script type="text/javascript" src="js/jquery.validacao.js"></script>
 <script type="text/javascript" src="js/jquery.funcoes.js?v3"></script>
 <script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
+<script type="text/javascript" src="js/moment.js"></script>
+<script type="text/javascript" src="js/jquery.daterangepicker.js"></script>
 
 <script type="text/javascript">
 </script>
