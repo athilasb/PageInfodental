@@ -891,14 +891,14 @@
 							gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
 							gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
 							var grafico3 = new Chart(ctx, {    
-							    type: 'pie',
+							    type: 'doughnut',
 							    data: {
 									  labels: ['Masculino', 'Feminino'],
 									  datasets: [
 									    {
 									      label: 'Dataset 1',
 									      data: <?php echo json_encode($grafico3Data);?>,
-									      backgroundColor: ['blue','pink'],
+									      backgroundColor: ['darkslateblue','lightpink'],
 									    }
 									  ]
 							    },

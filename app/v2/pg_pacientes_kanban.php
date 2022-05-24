@@ -145,7 +145,7 @@
 			</section>
 
 			<section class="grid" style="flex:1;">
-				<div class="kanban">
+				<div class="kanban" style="grid-template-columns:repeat(4,minmax(0,1fr));">
 					<?php
 					foreach($_codigoBI as $codigoBI=>$biTitulo) {
 						if($codigoBI==3 or $codigoBI==4 or $codigoBI==5) continue;
