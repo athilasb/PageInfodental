@@ -55,30 +55,18 @@
 	$data=date('Y-m-d');
 
 	$analyticsTipos=explode(",","horas,agendamentos,atendidos,desmarcados,faltou");
+	$analyticsTiposTitulo=array("horas"=>"Horas de Atendimento",
+								"agendamentos"=>"Agendamentos",
+								"atendidos"=>"Atendidos",
+								"desmarcados"=>"Desmarcados",
+								"faltou"=>"Faltou");
 
 	$analyticsTipo="horas";
 	if(isset($_GET['analyticsTipo'])) {
 		if(in_array($_GET['analyticsTipo'],$analyticsTipos)) $analyticsTipo=$_GET['analyticsTipo'];
 	}
 
-
-	$where="where agenda_data>='".$dataDe." 00:00:00' and agenda_data<='".$dataAte." 23:59:59' and agendaPessoal=0";
-
-	//echo $where."<BR>";
-	$sql->consult($_p."agenda","id,id_status,agenda_duracao",$where);
-	$agendamentos=$sql->rows;
-	$agendamentosAtendidos=$agendamentosDesmarcados=$agendamentosFaltou=$agendamentosAtendidosDuracao=0;
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		if($x->id_status==5) {
-			$agendamentosAtendidos++;
-			$agendamentosAtendidosDuracao+=$x->agenda_duracao;
-		} else if($x->id_status==4) $agendamentosDesmarcados++;
-		else if($x->id_status==3) $agendamentosFaltou++;
-	}
-
-	if($agendamentosAtendidosDuracao>0) $agendamentosAtendidosDuracao*=60;
-
-	$tipo="";
+	$labelTitulo=$analyticsTiposTitulo[$analyticsTipo];
 
 	$dias = strtotime($dataAte) - strtotime($dataDe);
 	$dias /= (60*60*24);;
@@ -86,19 +74,105 @@
 	$dt = $dataDe;
 
 	if($dias<=31) {
-
+		$agruparPor="dia";
 		do {
 			$label[]=date('d/m',strtotime($dt));
 			$dt = date('Y-m-d',strtotime($dt." + 1 day"));
 		} while(strtotime($dt)<=strtotime($dataAte));
 
 	} else {
+		$agruparPor="mes";
 
 		do {
 			$label[]=strtolower(substr(mes(date('m',strtotime($dt))),0,3))."/".date('y',strtotime($dt));
 			$dt = date('Y-m-d',strtotime($dt." + 1 month"));
 		} while(strtotime($dt)<=strtotime($dataAte));
 	}
+
+
+	$where="where agenda_data>='".$dataDe." 00:00:00' and agenda_data<='".$dataAte." 23:59:59' and agendaPessoal=0 and lixo=0";
+
+
+	$labelInfos=array();
+	$sql->consult($_p."agenda","id,id_status,agenda_duracao,agenda_data",$where);
+	$agendamentos=$sql->rows;
+	$agendamentosAtendidos=$agendamentosDesmarcados=$agendamentosFaltou=$agendamentosAtendidosDuracao=0;
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		if($x->id_status==5) {
+			$agendamentosAtendidos++;
+			$agendamentosAtendidosDuracao+=($x->agenda_duracao/60);
+			$agendamentosAtendidosDuracao=round($agendamentosAtendidosDuracao);
+		} else if($x->id_status==4) $agendamentosDesmarcados++;
+		else if($x->id_status==3) $agendamentosFaltou++;
+
+		//echo $x->agenda_data."\n<BR>";
+
+		if($analyticsTipo=="horas") {
+			if($x->id_status==5) {
+				if($agruparPor=="dia") {
+					$index=date('d/m',strtotime($x->agenda_data));
+				} else {
+					$index=strtolower(substr(mes(date('m',strtotime($x->agenda_data))),0,3))."/".date('y',strtotime($x->agenda_data));
+				}
+				if(!isset($labelInfos[$index])) $labelInfos[$index]=0;
+				$labelInfos[$index]+=($x->agenda_duracao/60);
+				$labelInfos[$index]=round($labelInfos[$index]);
+				
+			}
+		} else if($analyticsTipo=="agendamentos") {
+			
+			if($agruparPor=="dia") {
+				$index=date('d/m',strtotime($x->agenda_data));
+			} else {
+				$index=strtolower(substr(mes(date('m',strtotime($x->agenda_data))),0,3))."/".date('y',strtotime($x->agenda_data));
+			}
+			if(!isset($labelInfos[$index])) $labelInfos[$index]=0;
+			$labelInfos[$index]++;
+		} else if($analyticsTipo=="atendidos") {
+			if($x->id_status==5) {
+				if($agruparPor=="dia") {
+					$index=date('d/m',strtotime($x->agenda_data));
+				} else {
+					$index=strtolower(substr(mes(date('m',strtotime($x->agenda_data))),0,3))."/".date('y',strtotime($x->agenda_data));
+				}
+				if(!isset($labelInfos[$index])) $labelInfos[$index]=0;
+				$labelInfos[$index]++;
+			}
+		} else if($analyticsTipo=="desmarcados") {
+			if($x->id_status==4) {
+				if($agruparPor=="dia") {
+					$index=date('d/m',strtotime($x->agenda_data));
+				} else {
+					$index=strtolower(substr(mes(date('m',strtotime($x->agenda_data))),0,3))."/".date('y',strtotime($x->agenda_data));
+				}
+				if(!isset($labelInfos[$index])) $labelInfos[$index]=0;
+				$labelInfos[$index]++;
+			}
+		} else if($analyticsTipo=="faltou") {
+			if($x->id_status==3) {
+				if($agruparPor=="dia") {
+					$index=date('d/m',strtotime($x->agenda_data));
+				} else {
+					$index=strtolower(substr(mes(date('m',strtotime($x->agenda_data))),0,3))."/".date('y',strtotime($x->agenda_data));
+				}
+				if(!isset($labelInfos[$index])) $labelInfos[$index]=0;
+				$labelInfos[$index]++;
+			}
+		}
+
+	}
+
+
+
+	$labelInfosJSON=array();
+	foreach($label as $v) {
+		$labelInfosJSON[]=isset($labelInfos[$v])?round(($labelInfos[$v])):0;
+	}
+
+	//if($agendamentosAtendidosDuracao>0) $agendamentosAtendidosDuracao*=60;
+
+	
+
 
 	
 ?>
@@ -161,7 +235,7 @@
 					<div class="list4">
 						<a href="<?php echo "$_page?analyticsTipo=hora&$url";?>" class="list4-item<?php echo $analyticsTipo=="horas"?" active":"";?>">
 							<div>
-								<h1><?php echo sec_convertOriginal($agendamentosAtendidosDuracao,'HF');?></h1>
+								<h1><?php echo number_format($agendamentosAtendidosDuracao,0,"",".");?></h1>
 							</div>
 							<div>
 								<p>Horas de Atendimento</p>
@@ -207,7 +281,7 @@
 							<div class="filter">
 								<div class="filter-group">
 									<div class="filter-title">
-										<h1>Atendimento por Dentista</h1>
+										<h1><?php echo $labelTitulo;?></h1>
 									</div>
 								</div>						
 							</div>
@@ -267,8 +341,8 @@
 									        datasets: [{
 									            fill:true,
 									            borderDashOffset: 0.0,
-									            label: 'Pacientes',
-									            data: <?php echo json_encode($label);?>,
+									            label: '<?php echo $labelTitulo;?>',
+									            data: <?php echo json_encode($labelInfosJSON);?>,
 									            backgroundColor: 'transparent',
 									            borderColor:'gray',
 									            borderWidth: 1,
