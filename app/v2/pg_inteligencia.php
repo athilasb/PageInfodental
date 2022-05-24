@@ -657,7 +657,10 @@
 								</h1>
 							</div>
 							<div>
-								<p><?php echo utf8_encode($c->titulo)." - ".$agendaHoras."/".$cadeiraHoras."m";?></p>
+								<p>
+									<?php echo utf8_encode($c->titulo);?>
+									<?php echo "<br /><span style=\"font-size:12px;color:var(--cinza3)\"><span class=\"iconify\" data-icon=\"bi:clock-history\" style=\"color:var(--cor1)\"></span>&nbsp;&nbsp;".$agendaHoras." / ".$cadeiraHoras."min</span>";?>
+								</p>
 							</div>
 						</a>
 						<?php
