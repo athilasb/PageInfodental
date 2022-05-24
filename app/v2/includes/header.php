@@ -135,8 +135,8 @@
 <script type="text/javascript" src="js/jquery.validacao.js"></script>
 <script type="text/javascript" src="js/jquery.funcoes.js?v3"></script>
 <script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script type="text/javascript" src="js/moment.js"></script>
+<script type="text/javascript" src="js/jquery.daterangepicker.js"></script>
 
 <script type="text/javascript">
 </script>

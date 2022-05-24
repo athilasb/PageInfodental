@@ -28,8 +28,14 @@
 
 	
 	$filtro="7";
-	$dataAte=date('Y-m-d');
 	$dataDe=date('Y-m-d',strtotime(date('Y-m-d')." - 7 days"));
+	$dataAte=date('Y-m-d');
+
+	if(isset($_GET['data_inicio']) and !empty($_GET['data_inicio']) and isset($_GET['data_fim']) and !empty($_GET['data_fim'])) {
+		$filtro='';
+		$dataDe=$_GET['data_inicio'];
+		$dataAte=$_GET['data_fim'];
+	}
 
 	if(isset($_GET['filtro'])) {
 		if($_GET['filtro']=="30") {
@@ -48,10 +54,17 @@
 	}
 	$data=date('Y-m-d');
 
+	$analyticsTipos=explode(",","horas,agendamentos,atendidos,desmarcados,faltou");
+
+	$analyticsTipo="horas";
+	if(isset($_GET['analyticsTipo'])) {
+		if(in_array($_GET['analyticsTipo'],$analyticsTipos)) $analyticsTipo=$_GET['analyticsTipo'];
+	}
+
 
 	$where="where agenda_data>='".$dataDe." 00:00:00' and agenda_data<='".$dataAte." 23:59:59' and agendaPessoal=0";
 
-	echo $where;
+	//echo $where."<BR>";
 	$sql->consult($_p."agenda","id,id_status,agenda_duracao",$where);
 	$agendamentos=$sql->rows;
 	$agendamentosAtendidos=$agendamentosDesmarcados=$agendamentosFaltou=$agendamentosAtendidosDuracao=0;
@@ -65,6 +78,27 @@
 
 	if($agendamentosAtendidosDuracao>0) $agendamentosAtendidosDuracao*=60;
 
+	$tipo="";
+
+	$dias = strtotime($dataAte) - strtotime($dataDe);
+	$dias /= (60*60*24);;
+	$dias = round($dias);
+	$dt = $dataDe;
+
+	if($dias<=31) {
+
+		do {
+			$label[]=date('d/m',strtotime($dt));
+			$dt = date('Y-m-d',strtotime($dt." + 1 day"));
+		} while(strtotime($dt)<=strtotime($dataAte));
+
+	} else {
+
+		do {
+			$label[]=strtolower(substr(mes(date('m',strtotime($dt))),0,3))."/".date('y',strtotime($dt));
+			$dt = date('Y-m-d',strtotime($dt." + 1 month"));
+		} while(strtotime($dt)<=strtotime($dataAte));
+	}
 
 	
 ?>
@@ -86,11 +120,11 @@
 				<section class="header-date">
 					<div class="header-date-buttons"></div>
 					<div class="header-date-now">
-						<h1 class="js-cal-titulo-diames"><?php echo date('d',strtotime($data));?></h1>
-						<h2 class="js-cal-titulo-mes"><?php echo substr(strtolower(mes(date('m',strtotime($data)))),0,3);?></h2>
+						<h1 class="js-cal-titulo-diames"><?php echo date('d',strtotime($dataDe));?></h1>
+						<h2 class="js-cal-titulo-mes"><?php echo substr(strtolower(mes(date('m',strtotime($dataDe)))),0,3);?>/<?php echo substr(strtolower((date('Y',strtotime($dataDe)))),2,2);?></h2>
 						até
-						<h1 class="js-cal-titulo-diames"><?php echo date('d',strtotime($data));?></h1>
-						<h2 class="js-cal-titulo-mes"><?php echo substr(strtolower(mes(date('m',strtotime($data)))),0,3);?></h2>
+						<h1 class="js-cal-titulo-diames"><?php echo date('d',strtotime($dataAte));?></h1>
+						<h2 class="js-cal-titulo-mes"><?php echo substr(strtolower(mes(date('m',strtotime($dataAte)))),0,3);?>/<?php echo substr(strtolower((date('Y',strtotime($dataAte)))),2,2);?></h2>
 					</div>
 				</section>
 			</div>
@@ -110,12 +144,11 @@
 				<div class="filter-group">
 					<a href="javascript:;" class="button js-calendario"><span class="iconify" data-icon="bi:calendar-week" data-inline="false" data-width="20"></span></a>	
 					<div class="button-group">
-
-						<a href="<?php echo "$_page?filtro=7";?>" class="button<?php echo $filtro=="7"?" active":"";?>">7 dias</a>
-						<a href="<?php echo "$_page?filtro=30";?>" class="button<?php echo $filtro=="30"?" active":"";?>">30 dias</a>
-						<a href="<?php echo "$_page?filtro=60";?>" class="button<?php echo $filtro=="60"?" active":"";?>">60 dias</a>
-						<a href="<?php echo "$_page?filtro=90";?>" class="button<?php echo $filtro=="90"?" active":"";?>">90 dias</a>
-						<a href="<?php echo "$_page?filtro=ano";?>" class="button<?php echo $filtro=="ano"?" active":"";?>">ano</a>
+						<a href="<?php echo "$_page?filtro=7&analyticsTipo=$analyticsTipo";?>" class="button<?php echo $filtro=="7"?" active":"";?>">7 dias</a>
+						<a href="<?php echo "$_page?filtro=30&analyticsTipo=$analyticsTipo";?>" class="button<?php echo $filtro=="30"?" active":"";?>">30 dias</a>
+						<a href="<?php echo "$_page?filtro=60&analyticsTipo=$analyticsTipo";?>" class="button<?php echo $filtro=="60"?" active":"";?>">60 dias</a>
+						<a href="<?php echo "$_page?filtro=90&analyticsTipo=$analyticsTipo";?>" class="button<?php echo $filtro=="90"?" active":"";?>">90 dias</a>
+						<a href="<?php echo "$_page?filtro=ano&analyticsTipo=$analyticsTipo";?>" class="button<?php echo $filtro=="ano"?" active":"";?>">ano</a>
 					</div>
 				</div>
 			</section>
@@ -126,7 +159,7 @@
 				<section class="box">
 
 					<div class="list4">
-						<a href="" class="list4-item">
+						<a href="<?php echo "$_page?analyticsTipo=hora&$url";?>" class="list4-item<?php echo $analyticsTipo=="horas"?" active":"";?>">
 							<div>
 								<h1><?php echo sec_convertOriginal($agendamentosAtendidosDuracao,'HF');?></h1>
 							</div>
@@ -134,7 +167,7 @@
 								<p>Horas de Atendimento</p>
 							</div>
 						</a>
-						<a href="" class="list4-item">
+						<a href="<?php echo "$_page?analyticsTipo=agendamentos&$url";?>" class="list4-item<?php echo $analyticsTipo=="agendamentos"?" active":"";?>">
 							<div>
 								<h1><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i> <?php echo number_format($agendamentos,0,"",".");?></h1>
 							</div>
@@ -142,7 +175,7 @@
 								<p>Agendamentos</p>
 							</div>
 						</a>
-						<a href="" class="list4-item">
+						<a href="<?php echo "$_page?analyticsTipo=atendidos&$url";?>" class="list4-item<?php echo $analyticsTipo=="atendidos"?" active":"";?>">
 							<div>
 								<h1><i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i> <?php echo number_format($agendamentosAtendidos,0,"",".");?></h1>
 							</div>
@@ -150,7 +183,7 @@
 								<p>Atendidos</p>
 							</div>
 						</a>
-						<a href="" class="list4-item">
+						<a href="<?php echo "$_page?analyticsTipo=desmarcados&$url";?>" class="list4-item<?php echo $analyticsTipo=="desmarcados"?" active":"";?>">
 							<div>
 								<h1><i class="iconify" data-icon="fluent:calendar-sync-24-regular"></i> <?php echo number_format($agendamentosDesmarcados,0,"",".");?></h1>
 							</div>
@@ -158,7 +191,7 @@
 								<p>Desmarcados</p>
 							</div>
 						</a>
-						<a href="" class="list4-item">
+						<a href="<?php echo "$_page?analyticsTipo=faltou&$url";?>" class="list4-item<?php echo $analyticsTipo=="faltou"?" active":"";?>">
 							<div>
 								<h1><i class="iconify" data-icon="fluent:calendar-cancel-24-regular"></i> <?php echo number_format($agendamentosFaltou,0,"",".");?></h1>
 							</div>
@@ -182,20 +215,62 @@
 							<div style="width:100%; height:350px;">
 								<script>
 								$(function() {
-									$('.js-calendario').daterangepicker();
+									$('.js-calendario').daterangepicker({
+										"autoApply":true,
+										 "locale": {
+									        "format": "DD/MM/YYYY",
+									        "separator": " - ",
+									        "fromLabel": "De",
+									        "toLabel": "Até",
+									        "customRangeLabel": "Customizar",
+									        "weekLabel": "W",
+									        "daysOfWeek": [
+									            "Dom",
+									            "Seg",
+									            "Ter",
+									            "Qua",
+									            "Qui",
+									            "Sex",
+									            "Sáb"
+									        ],
+									        "monthNames": [
+									            "Janeiro",
+									            "Fevereiro",
+									            "Março",
+									            "Abril",
+									            "Maio",
+									            "Junho",
+									            "Julho",
+									            "Agosto",
+									            "Setembro",
+									            "Outubro",
+									            "Novembro",
+									            "Dezembro"
+									        ],
+									        "firstDay": 1
+									    },
+									});
+
+
+									$('.js-calendario').on('apply.daterangepicker',function(ev,picker) {
+										let dtFim = picker.endDate.format('YYYY-MM-DD');
+										let dtInicio = picker.startDate.format('YYYY-MM-DD');
+										document.location.href=`<?php echo "$_page?analyticsTipo=$analyticsTipo";?>&data_inicio=${dtInicio}&data_fim=${dtFim}`
+										
+									});
 
 									var ctx = document.getElementById('grafico1').getContext('2d');
 									var grafico1 = new Chart(ctx, {    
-									    type: 'bar',
+									    type: 'line',
 									    data: {
-									        labels: ["Joao","Pedro","Luciano","Kroner"],
+									        labels:  <?php echo json_encode($label);?>,
 									        datasets: [{
 									            fill:true,
 									            borderDashOffset: 0.0,
 									            label: 'Pacientes',
-									            data: [43,44,30,32],
-									            backgroundColor: '#ddd',
-									            borderColor:'transparent',
+									            data: <?php echo json_encode($label);?>,
+									            backgroundColor: 'transparent',
+									            borderColor:'gray',
 									            borderWidth: 1,
 									            borderDash: [],
 									            borderDashOffset: 0.0
@@ -224,6 +299,7 @@
 									        }
 									    }
 									});
+
 								});
 								</script>
 								<canvas id="grafico1" class="box-grafico"></canvas>
