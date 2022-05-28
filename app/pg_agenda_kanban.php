@@ -22,7 +22,7 @@
 
 			if(!empty($data)) {
 
-				$agenda=array();
+				$agenda=$agendaIds=array();
 				$pacientesIds=$pacientesAtendidosIds=array(-1);
 				$where="where agenda_data>='".$data." 00:00:00' and agenda_data<='".$data." 23:59:59' and lixo=0";
 				if($id_profissional>0) $where.=" and profissionais like '%,$id_profissional,%'";
@@ -33,6 +33,7 @@
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$registros[]=$x;
 					$pacientesIds[]=$x->id_paciente;
+					$agendaIds[]=$x->id;
 
 					// ATENDIDO
 					if($x->id_status==5) {
@@ -55,6 +56,29 @@
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$_pacientes[$x->id]=$x;
 				}
+
+				$_agendamentosConfirmacaoWts=array();
+				if(count($agendaIds)>0) {
+					$sql->consult($_p."whatsapp_mensagens","*","where id_agenda IN (".implode(",",$agendaIds).") and id_tipo=1");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$_agendamentosConfirmacaoWts[$x->id_agenda]=1;
+
+						if($x->resposta_sim==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=2;
+						else if($x->resposta_nao==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=3;
+						else if($x->resposta_naocompreendida>0) $_agendamentosConfirmacaoWts[$x->id_agenda]=4;
+						else if($x->enviado==0 and $x->erro==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=6;
+						else {
+							$dif = strtotime(date('Y-m-d H:i'))-strtotime($x->data_enviado);
+							$dif /= 60;
+							$dif = ceil($dif);
+
+							if($dif>4) {
+								 $_agendamentosConfirmacaoWts[$x->id_agenda]=5;
+							}
+						}
+					}
+				}
+
 				foreach($registros as $x) {
 					if(isset($_pacientes[$x->id_paciente])) {
 						$paciente=$_pacientes[$x->id_paciente];
@@ -63,14 +87,15 @@
 						$dia=" ".$diasExtenso[date('w',strtotime($x->agenda_data))];
 
 						$agenda[]=(object) array('id_agenda'=>$x->id,
-													'data'=>$dataAg.$dia,
-													'hora'=>date('H:i',strtotime($x->agenda_data)),
+													'data'=>$dataAg,//.$dia,
+													'hora'=>date('H:i',strtotime($x->agenda_data))." às ".date('H:i',strtotime($x->agenda_data_final)),
 													'id_status'=>$x->id_status,
 													'id_paciente'=>$paciente->id,
 													'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?$_codigoBI[$paciente->codigo_bi]:'',
 													'paciente'=>ucwords(strtolowerWLIB(utf8_encode($_pacientes[$x->id_paciente]->nome))),
 													'telefone1'=>mask($_pacientes[$x->id_paciente]->telefone1),
-													'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0
+													'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0,
+													'wts'=>(int)isset($_agendamentosConfirmacaoWts[$x->id])?$_agendamentosConfirmacaoWts[$x->id]:0
 												);
 					}
 				}
@@ -125,19 +150,36 @@
 		echo json_encode($rtn);
 
 		die();
-
-
 	}
-	$title="";
+	require_once("lib/conf.php");
+	require_once("usuarios/checa.php");
+	$_table = $_p."agenda";
+
+	
 	include "includes/header.php";
 	include "includes/nav.php";
 
-	if($usr->tipo!="admin" and !in_array("produtos",$_usuariosPermissoes)) {
-		$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
-		die();
-	}
-	$values=$adm->get($_GET);
 
+	$_status=array();
+	$sql->consult($_p."agenda_status","*","where  lixo=0 order by kanban_ordem asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_status[$x->id]=$x;
+	}
+
+	$_cadeiras=array();
+	$sql->consult($_p."parametros_cadeiras","*","where lixo=0 order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
+
+	$_profissionais=array();
+	$sql->consult($_p."colaboradores","id,nome,check_agendamento,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
+
+	$_agendaStatus=array('confirmado'=>'CONFIRMADO','agendado'=>'AGENDADO');
+	//  right:'dayGridMonth,resourceTimeGridOneDay,resourceTimeGridFiveDay,resourceTimeGridSevenDay'
+	$_views=array("dayGridMonth"=>"MÊS",
+					"resourceTimeGridOneDay"=>"1 dia",
+					"resourceTimeGridFiveDay"=>"5 dias",
+					"resourceTimeGridSevenDay"=>"7 dias");
 
 	$data = isset($_GET['data'])?$_GET['data']:date('d/m/Y');
 
@@ -151,7 +193,7 @@
 		$dataWH=date('Y-m-d');
 	}
 
-	$agenda=$registros=array();
+	$agenda=$registros=$agendaIds=array();
 	$pacientesIds=$pacientesAtendidosIds=array(-1);
 	$where="where agenda_data>='".$dataWH." 00:00:00' and agenda_data<='".$dataWH." 23:59:59' and lixo=0";
 	if(isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional']) and $_GET['id_profissional']>0) $where.=" and profissionais like '%,".$_GET['id_profissional'].",%'";
@@ -160,10 +202,22 @@
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$registros[]=$x;
 		$pacientesIds[]=$x->id_paciente;
+		$agendaIds[]=$x->id;
 
 		// ATENDIDO
 		if($x->id_status==5) {
 			$pacientesAtendidosIds[]=$x->id_paciente;
+		}
+	}
+
+	$_agendamentosConfirmacaoWts=array();
+	if(count($agendaIds)>0) {
+		$sql->consult($_p."whatsapp_mensagens","*","where id_agenda IN (".implode(",",$agendaIds).") and id_tipo=1");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$_agendamentosConfirmacaoWts[$x->id_agenda]=1;
+			if($x->resposta_sim==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=2;
+			else if($x->resposta_nao==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=3;
+			else if($x->resposta_naocompreendida>0) $_agendamentosConfirmacaoWts[$x->id_agenda]=4;
 		}
 	}
 
@@ -198,297 +252,415 @@
 										'id_paciente'=>$x->id_paciente,
 										'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?$_codigoBI[$paciente->codigo_bi]:'',
 										'data'=>$dataAg,
-										'hora'=>date('H:i',strtotime($x->agenda_data))." às ".date('H:i',strtotime($x->agenda_data)),
+										'hora'=>date('H:i',strtotime($x->agenda_data))." às ".date('H:i',strtotime($x->agenda_data_final)),
 										'id_status'=>$x->id_status,
 										'paciente'=>ucwords(strtolowerWLIB(utf8_encode($_pacientes[$x->id_paciente]->nome))),
 										'telefone1'=>mask($_pacientes[$x->id_paciente]->telefone1),
-										'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0
+										'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0,
+										'wts'=>(int)isset($_agendamentosConfirmacaoWts[$x->id])?$_agendamentosConfirmacaoWts[$x->id]:0
 									);
 		}
 	}
+?> 
+	
+	<header class="header">
+		<div class="header__content content">
 
+			<div class="header__inner1">
+				<section class="header-title">
+					<h1>Agenda</h1>
+				</section>
+				<section class="tab">
+					<a href="javascript:;" class="js-aba-calendario">Calendário</a>
+					<a href="pg_agenda_kanban.php" class="active">Kanban</a>					
+				</section>
+			</div>
 
-?>
-
-	<section class="content">
-
-		<?php
-		require_once("includes/asideAgenda.php");
-		?>
-
-		<script type="text/javascript">
-			var data = '<?php echo $dataWH;?>';
-			var dataAgenda = '<?php echo date('d/m/Y',strtotime($dataWH));?>';
-			var popViewInfos = [];
-			let dataAux = new Date("<?php echo $data;?>");
-			var id_profissional = <?php echo (isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional']))?$_GET['id_profissional']:0;?>;
-			var id_cadeira = <?php echo (isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira']))?$_GET['id_cadeira']:0;?>;
-
-			const meses = ["jan.", "fev.", "mar.", "abr.", "mai.", "jun.", "jul.","ago.","set.","out.","nov.","dez."];
-			const dias = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
-			
-			let dataFormatada = `${dias[dataAux.getDay()]}, ${dataAux.getDate()} de ${meses[(dataAux.getMonth())]} de ${dataAux.getFullYear()}`;
-			
-			var agenda = JSON.parse(`<?php echo json_encode($agenda);?>`);
-
-			const agendaAtualizar = () => {
-
-				let dataAjax = `ajax=agenda&data=${data}&id_profissional=${id_profissional}&id_cadeira=${id_cadeira}`;
-				$.ajax({
-					type:"POST",
-					data:dataAjax,
-					success:function(rtn) {
-						if(rtn.success) {
-							agenda=rtn.agenda;
-							agendaListar();
-						} else if(rtn.error) {
-
-						} else {
-
-						}
-					},
-					error:function(){
-
-					}
-				})
-			}
-
-			const agendaListar = () => {
-
-				$(`#kanban .js-kanban-item,#kanban .js-kanban-item-modal`).remove();
-
-				popViewInfos = [];
-
-				agenda.forEach(x=>{
-
-					/*popInfos = {};
-				    popInfos.nome = nome;
-				    popInfos.nomeCompleto = nomeCompleto;
-				    popInfos.idade = idade;
-				    popInfos.id_paciente = id_paciente;
-				    popInfos.situacao = situacao;
-				    popInfos.obs = obs;
-				    popInfos.infos=infos;
-				    popInfos.id_status=id_status;
-				    popInfos.id_agenda=id_agenda;
-				    popInfos.foto=foto.length>0?foto:'';
-				    popInfos.procedimentosLista=procedimentosLista;
-
-					popViewInfos[x.id_agenda] = popInfos;*/
-
-					let evolucao = ``;
-
-					// Atendido
-					if(eval(x.id_status)==5) {
-						// se nao possui evolucao
-						if(infodentalCompleto==1 && x.evolucao==0) {
-							evolucao = `kanban-item_erro`;
-						}
-					}
-
-					let html = ``;
+			<div class="header__inner2">
+				<section class="header-date">
+					<div class="header-date-buttons">
 					
-					if(eval(x.id_status)==5) {
-						//console.log(x);
-						html = `<div href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
-										
-										<h1>${x.paciente}</h1>
-										${infodentalCompleto==1?`<h2>${x.statusBI}</h2>`:``}
-										<a href="pg_contatos_pacientes_resumo.php?id_paciente=${x.id_paciente}" target="_blank" class="js-hrefPaciente button button__sec"><i class="iconify" data-icon="bx:bxs-user"></i></a>
-									</div>`;
+					</div>
+					<div class="header-date-now">
+						<h1 class="js-cal-titulo-diames"></h1>
+						<h2 class="js-cal-titulo-mes"></h2>
+						<h3 class="js-cal-titulo-dia"></h3>
+					</div>
+				</section>
+			</div>
 
-					} else {
-						html = `<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item ${evolucao}" data-id="${x.id_agenda}">
-										<p class="kanban-card-dados__data">
-											<i class="iconify" data-icon="ph:calendar-blank"></i>
-											${x.data} &bull; ${x.hora}
-										</p>
-										<h1>${x.paciente}</h1>
-										<h2>${x.telefone1}</h2>
-									</a>`;
-					}
+		</div>
+	</header>
 
-								<?php /*<div class="kanban-card-modal js-kanban-item-modal" style="display:none;">
-									<div class="kanban-card-modal__inner1">
-										<a class="kanban-card-modal__fechar" href="javascript:;" onclick="$(this).parent().parent().hide(); $('.js-reagendar, .js-cancelar').hide(); $('.js-opcoes').show();"><i class="iconify" data-icon="ph-x"></i></a>
-										<h1>Ana Paula Toniazzo</h1>
-										<h2>(62) 98450-2332</h2>
-										<h2>Anestesia</h2>
-									</div>
-									<div class="kanban-card-modal__inner2 js-opcoes">
-										<a href="javascript:;" class="button button__full" style="background-color:var(--verde);">Confirmar agendamento</a>
-										<a href="javascript:;" onclick="$(this).parent().hide(); $(this).parent().nextAll('.js-reagendar').show();" class="button button__full" style="background-color:var(--amarelo);">Reagendar</a>
-										<a href="javascript:;" onclick="$(this).parent().hide(); $(this).parent().nextAll('.js-cancelar').show();" class="button button__full" style="background-color:var(--vermelho);">Cancelar Agendamento</a>
-									</div>
-									<div class="kanban-card-modal__inner2 js-reagendar" style="display:none;">
-										<form>
-											<input type="text" name="" class="datecalendar" placeholder="06/04/2021" />
-											<select name=""><option value="">Profissional...</option></select>
-											<select name=""><option value="">Cadeira...</option></select>
-											<select name=""><option value="">Horas disponíveis...</option></select>
-											<button type="submit" class="button button__full" style="background:var(--amarelo);">Reagendar</button>
-										</form>
-									</div>
-									<div class="kanban-card-modal__inner2 js-cancelar" style="display:none;">
-										<form>
-											<textarea name="" rows="4" placeholder="Descreva o motivo do cancelamento..."></textarea>
-											<button type="submit" class="button button__full" style="background:var(--vermelho);">Cancelar</button>
-										</form>
-									</div>
-								</div>`;*/?>
+	<main class="main">
+		<div class="main__content content">
 
-					$(`#kanban .js-kanban-status-${x.id_status}`).append(html);
-				})
+			<?php
 
-			}	
+			require_once("includes/filter/filterAgenda.php");
+			/*<section class="filter">
+				<div class="filter-group">
+					<div class="filter-form form">
+						<dl>
+							<dd><a href="javascript:;" class="button button_main" data-aside="add"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Novo Agendamento</span></a></dd>
+						</dl>
+					</div>
+				</div>
+				<div class="filter-group">
+					<div class="filter-form form">
+						<dl style="width:160px;">
+							<dd><select name=""><option value="">Consultório...</option></select></dd>
+						</dl>
+						<dl style="width:160px;">
+							<dd><select name=""><option value="">Profissional...</option></select></dd>
+						</dl>						
+					</div>					
+				</div>
+			</section>*/?>
+			<script type="text/javascript">
+				var data = '<?php echo $dataWH;?>';
+				var dataAgenda = '<?php echo date('d/m/Y',strtotime($dataWH));?>';
+				var popViewInfos = [];
+				let dataAux = new Date("<?php echo $data;?>");
+				var id_profissional = <?php echo (isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional']))?$_GET['id_profissional']:0;?>;
+				var id_cadeira = <?php echo (isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira']))?$_GET['id_cadeira']:0;?>;
 
-			const d2 = (num) => {
-				return num <=9 ? `0${num}`:num;
-			}
-
-			const dataProcess = (dtObj) => {
-					
-
-				let dataFormatada = `${dias[dtObj.getDay()]}, ${dtObj.getDate()} de ${meses[(dtObj.getMonth())]} de ${dtObj.getFullYear()}`;
-
-
-				data = `${dtObj.getFullYear()}-${d2(dtObj.getMonth()+1)}-${d2(dtObj.getDate())}`;
-				dataAgenda = `${dtObj.getDate()}/${d2(dtObj.getMonth()+1)}/${d2(dtObj.getFullYear())}`;
-
-				agendaAtualizar();
-
-				$('.js-calendario-title').val(dataFormatada)
-			}
-
-
-			$(function(){
-
-				$('.js-profissionais').change(function(){
-					id_profissional=$(this).val();
-					agendaAtualizar();
-				});
-
-				$('.js-cadeira').change(function(){
-					id_cadeira=$(this).val();
-					agendaAtualizar();
-				});
-
-
-				$('.js-calendario').datetimepicker({
-					timepicker:false,
-					format:'d F Y',
-					scrollMonth:false,
-					scrollTime:false,
-					scrollInput:false,
-					onChangeDateTime:function(dp,dt) {
-						dataProcess(dp);
-					}
-				});
-
-				agendaListar();
-
-				$('.js-calendario-title').val(dataFormatada);
-
+				const meses = ["jan.", "fev.", "mar.", "abr.", "mai.", "jun.", "jul.","ago.","set.","out.","nov.","dez."];
+				const dias = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
 				
-				var droppable = $(".js-kanban-status").dad({
-					placeholderTarget: ".js-kanban-item"
-				});
+				let dataFormatada = `${dias[dataAux.getDay()]}, ${dataAux.getDate()} de ${meses[(dataAux.getMonth())]} de ${dataAux.getFullYear()}`;
+				
+				var agenda = JSON.parse(`<?php echo json_encode($agenda);?>`);
 
-				$(".js-kanban-status").on("dadDrop", function (e, element) {
-					let id_agenda = $(element).attr('data-id');
-					let id_status = $(element).parent().attr('data-id_status');
+				const agendaAtualizar = () => {
 
-					let dataAjax = `ajax=alterarStatus&id_agenda=${id_agenda}&id_status=${id_status}`;
+					let dataAjax = `ajax=agenda&data=${data}&id_profissional=${id_profissional}&id_cadeira=${id_cadeira}`;
 					$.ajax({
 						type:"POST",
 						data:dataAjax,
 						success:function(rtn) {
 							if(rtn.success) {
-								agendaAtualizar();
+								agenda=rtn.agenda;
+								agendaListar();
+							} else if(rtn.error) {
+
+							} else {
+
 							}
+						},
+						error:function(){
+
 						}
 					})
-		        });
-
-
-				$('a.js-right').click(function(){
-					let aux = data.split('-');
-					let dtObj = new Date(`${aux[1]}/${aux[2]}/${aux[0]}`);
-					dtObj.setDate(dtObj.getDate()+1);
-					dataProcess(dtObj);
-				});
-				$('a.js-left').click(function(){ 
-					let aux = data.split('-');
-					let dtObj = new Date(`${aux[1]}/${aux[2]}/${aux[0]}`);
-					dtObj.setDate(dtObj.getDate()-1);
-					dataProcess(dtObj);
-				});
-				$('a.js-today').click(function(){
-					let dtObj = new Date(`<?php echo date('m/').(date('d')-1).date('/Y');?>`);
-					dtObj.setDate(dtObj.getDate()+1);
-					dataProcess(dtObj);
-				});
-
-			});
-		</script>
-
-		<section class="grid">
-			<div class="kanban" id="kanban">
-				<?php
-				foreach($_status as $s) {
-				?>
-				<div class="kanban-item" style="background:<?php echo $s->cor;?>;color:var(--cor1);">
-					<h1 class="kanban-item__titulo"><?php echo utf8_encode($s->titulo);?><?php /* <span class="tooltip" title="Descrição do item..."><i class="iconify" data-icon="ph:question"></i></span>*/?></h1>
-					<div class="kanban-card js-kanban-status js-kanban-status-<?php echo $s->id;?>" data-id_status="<?php echo $s->id;?>" style="min-height: 100px;">
-						<?php 
-						/*<a href="javascript:;" onclick="$(this).next('.kanban-card-modal').show();" class="kanban-card-dados js-kanban-item">
-							<p class="kanban-card-dados__data">
-								<i class="iconify" data-icon="ph:calendar-blank"></i>
-								03/06 (quinta-feira) &bull; 09:00
-							</p>
-							<h1>Cláudia de Paula Gomes</h1>
-							<h2>(62) 98450-2332</h2>
-						</a>
-						<div class="kanban-card-modal" style="display:none;">
-							<div class="kanban-card-modal__inner1">
-								<a class="kanban-card-modal__fechar" href="javascript:;" onclick="$(this).parent().parent().hide(); $('.js-reagendar, .js-cancelar').hide(); $('.js-opcoes').show();"><i class="iconify" data-icon="ph-x"></i></a>
-								<h1>Ana Paula Toniazzo</h1>
-								<h2>(62) 98450-2332</h2>
-								<h2>Anestesia</h2>
-							</div>
-							<div class="kanban-card-modal__inner2 js-opcoes">
-								<a href="javascript:;" class="button button__full" style="background-color:var(--verde);">Confirmar agendamento</a>
-								<a href="javascript:;" onclick="$(this).parent().hide(); $(this).parent().nextAll('.js-reagendar').show();" class="button button__full" style="background-color:var(--amarelo);">Reagendar</a>
-								<a href="javascript:;" onclick="$(this).parent().hide(); $(this).parent().nextAll('.js-cancelar').show();" class="button button__full" style="background-color:var(--vermelho);">Cancelar Agendamento</a>
-							</div>
-							<div class="kanban-card-modal__inner2 js-reagendar" style="display:none;">
-								<form>
-									<input type="text" name="" class="datecalendar" placeholder="06/04/2021" />
-									<select name=""><option value="">Profissional...</option></select>
-									<select name=""><option value="">Cadeira...</option></select>
-									<select name=""><option value="">Horas disponíveis...</option></select>
-									<button type="submit" class="button button__full" style="background:var(--amarelo);">Reagendar</button>
-								</form>
-							</div>
-							<div class="kanban-card-modal__inner2 js-cancelar" style="display:none;">
-								<form>
-									<textarea name="" rows="4" placeholder="Descreva o motivo do cancelamento..."></textarea>
-									<button type="submit" class="button button__full" style="background:var(--vermelho);">Cancelar</button>
-								</form>
-							</div>
-						</div>*/
-						?>
-					</div>
-				</div>
-				<?php
 				}
-				?>
-			</div>
 
-		</section>
+				const agendaListar = () => {
 
-	</section>
-			
-<?php
+					$(`#kanban a`).remove();
+
+					popViewInfos = [];
+
+					agenda.forEach(x=>{
+
+						/*popInfos = {};
+					    popInfos.nome = nome;
+					    popInfos.nomeCompleto = nomeCompleto;
+					    popInfos.idade = idade;
+					    popInfos.id_paciente = id_paciente;
+					    popInfos.situacao = situacao;
+					    popInfos.obs = obs;
+					    popInfos.infos=infos;
+					    popInfos.id_status=id_status;
+					    popInfos.id_agenda=id_agenda;
+					    popInfos.foto=foto.length>0?foto:'';
+					    popInfos.procedimentosLista=procedimentosLista;
+
+						popViewInfos[x.id_agenda] = popInfos;*/
+
+						let evolucao = ``;
+
+						// Atendido
+						if(eval(x.id_status)==5) {
+							// se nao possui evolucao
+							evolucao = `kanban-item_erro`;
+							
+						}
+
+						let html = ``;
+						let wtsIcon = ``;
+						if(x.wts !== undefined && x.wts>0) {
+							if(x.wts == 1) { // aguardando
+								//wtsIcon=` <span class="iconify" data-icon="bi:send" data-inline="true" data-height="16" style="background:var(--cinza5);color:#FFF;padding:7px;border-radius:5px;"></span>`;
+								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span>aguard. resp.</span></div>`;
+							} else if(x.wts == 2) { // sim
+								//wtsIcon=` <span class="iconify" data-icon="bi:send-check" data-inline="true" data-height="16" style="background:var(--verde);color:#FFF;padding:7px;border-radius:5px;"></span>`;
+								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span style="color:green">confirmado</span></div>`;
+							} else if(x.wts == 3) { // nao
+								//wtsIcon=` <span class="iconify" data-icon="bi:send-x" data-inline="true" data-height="16" style="background:var(--vermelho);color:#FFF;padding:7px;border-radius:5px;"></span>`;
+								wtsIcon=`<div class="kanban-item-wp kanban-item-wp_destaque"><i class="iconify" data-icon="cib:whatsapp"></i> <span>desmarcado</span></div>`;
+							} else if(x.wts == 4) { // sem entender
+								//wtsIcon=` <span class="iconify" data-icon="fluent:person-chat-24-regular" data-inline="true" data-height="16" style="background:var(--cinza4);color:#FFF;padding:7px;border-radius:5px;"></span>`;
+								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span>não compreend.</span></div>`;
+							} else if(x.wts == 5) { // mais de 4h sem resposta
+								//wtsIcon=` <span class="iconify" data-icon="fluent:person-chat-24-regular" data-inline="true" data-height="16" style="background:var(--cinza4);color:#FFF;padding:7px;border-radius:5px;"></span>`;
+								
+								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span>sem resp.</span></div>`;
+							} else if(x.wts == 6) { // deu erro ao enviar
+								//wtsIcon=` <span class="iconify" data-icon="fluent:person-chat-24-regular" data-inline="true" data-height="16" style="background:var(--cinza4);color:#FFF;padding:7px;border-radius:5px;"></span>`;
+								
+								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span>sem conexão</span></div>`;
+							} else {
+								//wtsIcon=` <span class="iconify" data-icon="bi:send-exclamation" data-inline="true"></span>`;
+								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span>aguard resp.</span></div>`;
+							}
+						}
+						//wtsIcon+=` ${x.wts}`
+						
+						if(eval(x.id_status)==5) {
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="teste">
+										<p>${x.data} • ${x.hora}</p>
+										<h1>${x.paciente}</h1>
+										<p>${x.telefone1}</p>
+										${wtsIcon}
+									</a>`;
+
+						} else {
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="teste">
+										<p>${x.data} • ${x.hora}</p>
+										<h1>${x.paciente}</h1>
+										${x.id_status==2?'':`<p>${x.telefone1}</p>`}
+										${wtsIcon}
+									</a>`;
+
+						
+						}	
+
+						$(`#kanban .js-kanban-status-${x.id_status}`).append(html);
+
+						$(`#kanban .js-kanban-status-${x.id_status} .tooltip:last`).tooltipster({theme:"borderless"});
+					})
+
+				}	
+
+
+				const dataProcess = (dtObj) => {
+						
+
+					let dataFormatada = `${dias[dtObj.getDay()]}, ${dtObj.getDate()} de ${meses[(dtObj.getMonth())]} de ${dtObj.getFullYear()}`;
+
+					data = `${dtObj.getFullYear()}-${d2(dtObj.getMonth()+1)}-${d2(dtObj.getDate())}`;
+					dataAgenda = `${dtObj.getDate()}/${d2(dtObj.getMonth()+1)}/${d2(dtObj.getFullYear())}`;
+
+					agendaAtualizar();
+
+					$('.js-calendario-title').val(dataFormatada);
+
+					let date = dtObj;
+					let mesString='';
+
+					if(date.getMonth()==0) mesString='jan'; 
+					else if(date.getMonth()==1) mesString='fev'; 
+					else if(date.getMonth()==2) mesString='mar'; 
+					else if(date.getMonth()==3) mesString='abr'; 
+					else if(date.getMonth()==4) mesString='mai'; 
+					else if(date.getMonth()==5) mesString='jun'; 
+					else if(date.getMonth()==6) mesString='jul'; 
+					else if(date.getMonth()==7) mesString='ago'; 
+					else if(date.getMonth()==8) mesString='set'; 
+					else if(date.getMonth()==9) mesString='out'; 
+					else if(date.getMonth()==10) mesString='nov'; 
+					else if(date.getMonth()==11) mesString='dez'; 
+
+					if(date.getUTCDay()==0) diaString='domingo';
+					else if(date.getUTCDay()==1) diaString='segunda-feira';
+					else if(date.getUTCDay()==2) diaString='terça-feira';
+					else if(date.getUTCDay()==3) diaString='quarta-feira';
+					else if(date.getUTCDay()==4) diaString='quinta-feira';
+					else if(date.getUTCDay()==5) diaString='sexta-feira';
+					else if(date.getUTCDay()==6) diaString='sábado';
+
+					let dateString = date.getDate()+" "+mesString+" "+date.getFullYear();
+
+					$('.js-cal-titulo-diames').html(dtObj.getDate()>=9?dtObj.getDate():`0${dtObj.getDate()}`);
+					$('.js-cal-titulo-mes').html(mesString);
+					$('.js-cal-titulo-dia').html(diaString);
+
+
+				}
+
+
+				$(function(){
+
+					let aux = data.split('-');
+					let dtObj = new Date(`${aux[1]}/${aux[2]}/${aux[0]}`);
+					dataProcess(dtObj);
+
+					$('.js-aba-calendario').click(function(){
+						let aux = data.split('-');
+						let dtObj = `${aux[2]}/${aux[1]}/${aux[0]}`;
+
+						document.location.href='pg_agenda.php?initDate='+dtObj;
+					})
+
+					$('.js-profissionais').change(function(){
+						id_profissional=$(this).val();
+						agendaAtualizar();
+					});
+
+					$('.js-cadeira').change(function(){
+						id_cadeira=$(this).val();
+						agendaAtualizar();
+					});
+
+
+					$('.js-calendario').datetimepicker({
+						timepicker:false,
+						format:'d F Y',
+						scrollMonth:false,
+						scrollTime:false,
+						scrollInput:false,
+						onChangeDateTime:function(dp,dt) {
+							dataProcess(dp);
+						}
+					});
+
+					agendaListar();
+
+					$('.js-calendario-title').val(dataFormatada);
+
+					
+					var droppable = $(".js-kanban-status").dad({
+						placeholderTarget: ".js-kanban-item"
+					});
+
+					$(".js-kanban-status").on("dadDrop", function (e, element) {
+						let id_agenda = $(element).attr('data-id');
+						let id_status = $(element).parent().attr('data-id_status');
+
+						let dataAjax = `ajax=alterarStatus&id_agenda=${id_agenda}&id_status=${id_status}`;
+						$.ajax({
+							type:"POST",
+							data:dataAjax,
+							success:function(rtn) {
+								if(rtn.success) {
+									agendaAtualizar();
+								}
+							}
+						})
+			        });
+
+
+					$('a.js-right').click(function(){
+						let aux = data.split('-');
+						let dtObj = new Date(`${aux[1]}/${aux[2]}/${aux[0]}`);
+						dtObj.setDate(dtObj.getDate()+1);
+						dataProcess(dtObj);
+					});
+					$('a.js-left').click(function(){ 
+						let aux = data.split('-');
+						let dtObj = new Date(`${aux[1]}/${aux[2]}/${aux[0]}`);
+						dtObj.setDate(dtObj.getDate()-1);
+						dataProcess(dtObj);
+					});
+					$('a.js-today').click(function(){
+						let dtObj = new Date(`<?php echo date('m/').(date('d')-1).date('/Y');?>`);
+						dtObj.setDate(dtObj.getDate()+1);
+						dataProcess(dtObj);
+					});
+
+				});
+			</script>
+			<section class="grid" style="flex:1;">
+				<div class="kanban" id="kanban">
+					
+					<?php
+					foreach($_status as $s) {
+					?>
+					<div class="kanban-item" style="background:<?php echo $s->cor;?>;">
+						<header>
+							<h1 class="kanban-item__titulo"><?php echo utf8_encode($s->titulo);?></h1>
+						</header>
+						<article class="kanban-card js-kanban-status js-kanban-status-<?php echo $s->id;?>" data-id_status="<?php echo $s->id;?>" style="min-height: 100px;">
+							
+						</article>
+					</div>
+
+					
+					<?php
+					}
+					
+					/*
+					<div class="kanban-item" style="background-color:#545559;">
+						<header>
+							<h1>À CONFIRMAR</h1>
+						</header>
+						<article>
+							<a href="javascript:;" draggable="true">
+								<p>08:00 a 10:00</p>
+								<h1>Arnaldo Rubio Júnior</h1>
+								<p>(62) 99830-0574</p>
+							</a>
+							<a href="javascript:;" draggable="true">
+								<p>08:00 a 10:00</p>
+								<h1>Pedro Saddi</h1>
+								<p>(62) 99830-0574</p>
+							</a>
+							<a href="javascript:;" draggable="true">
+								<p>08:00 a 10:00</p>
+								<h1>Pedro Henrique Saddi de Azevedo</h1>
+								<p>(62) 99830-0574</p>
+							</a>
+						</article>
+					</div>
+					<div class="kanban-item" style="background-color:#1182EA;">
+						<header>
+							<h1>CONFIRMADO</h1>
+						</header>
+					</div>
+					<div class="kanban-item" style="background-color:#FC8107;">
+						<header>
+							<h1>SALA DE ESPERA</h1>
+						</header>
+					</div>
+					<div class="kanban-item" style="background-color:#25E4C2;">
+						<header>
+							<h1>EM ATENDIMENTO</h1>
+						</header>
+					</div>
+					<div class="kanban-item" style="background-color:#53D328;">
+						<header>
+							<h1>ATENDIDO</h1>
+						</header>
+						<article>
+							<a href="javascript:;" draggable="true">
+								<h1>Pedro Henrique Saddi de Azevedo</h1>
+								<span class="button button_sm"><strong>ficha do paciente</strong></span>
+							</a>
+						</article>
+					</div>
+					<div class="kanban-item" style="background-color:#FADE26;">
+						<header>
+							<h1>DESMARCADO</h1>
+						</header>
+					</div>
+					<div class="kanban-item" style="background-color:#FE4B3F;">
+						<header>
+							<h1>FALTOU</h1>
+						</header>
+					</div>
+					*/
+					?>
+				</div>
+			</section>
+
+		</div>
+	</main>
+
+<?php 
+	
+	$apiConfig=array('paciente'=>1);
+	require_once("includes/api/apiAside.php");
+
+
 	include "includes/footer.php";
-?>
+?>	

@@ -9,9 +9,9 @@
 			$dinheiro=array('price','valor','instrumentacao','teleconsulta_valor','teleconsulta_desconto','consultapresencial_valor','consultapresencial_desconto','salario'),
 			$bool=array('instrumentacao_pago','credito','efetivado'),
 			$datahora=array('data','data_cirurgia'),
-			$checkbox=array('pub','destaque','face','quantitativo','dia_inteiro','responsavel_possui','atendimentopersonalizado','permitir_acesso','estrangeiro','custo_recorrente','custo_fuxo','contratacaoAtiva','embalagemComMais'),
+			$checkbox=array('pub','destaque','face','quantitativo','dia_inteiro','responsavel_possui','atendimentopersonalizado','permitir_acesso','estrangeiro','custo_recorrente','custo_fuxo','check_agendamento','contratacaoAtiva','embalagemComMais'),
 			$noupper=array('email','instagram','tipo','legenda','codigo_conversao','codigo_head','codigo_body','instagram'),
-			$multi=array('permissoes','unidade','camposEvolucao'),
+			$multi=array('permissoes','unidade','camposEvolucao','profissional_multiple','bi_multiple'),
 			$telefones=array('telefone','telefone1','telefone2','telefone3'),
 			$unmask=array('cpf','cnpj'),
 			$datas=array('data_nascimento','data_modelo','data_noticia','data_versao','data_reg','data_catalogo','vencimento','efetivado_data','responsavel_datanascimento','data_vencimento','data_emissao','data_extrato');
@@ -23,33 +23,8 @@
 		}
 
 		function biCategorizacao() {
-			/*$curl = curl_init();
 
-			
-			curl_setopt_array($curl, [
-			  CURLOPT_URL => "https://studiodental.dental/infodental/cmd/bi.php",
-			  CURLOPT_RETURNTRANSFER => true,
-			  CURLOPT_ENCODING => "",
-			  CURLOPT_MAXREDIRS => 10,
-			  CURLOPT_TIMEOUT => 30,
-			  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			  CURLOPT_CUSTOMREQUEST => "POST",
-			  CURLOPT_POSTFIELDS => "",
-			]);
-
-			$response = curl_exec($curl);
-			$err = curl_error($curl);
-
-			curl_close($curl);
-
-			/*if ($err) {
-			  echo "cURL Error #:" . $err;
-			} else {
-			  echo $response;
-			}*/
-
-
-			$bi = new BI(array('prefixo'=>$_p));
+			$bi = new BI(array('prefixo'=>$this->pre));
 			$bi->classificaTodos();
 		}
 		
@@ -349,7 +324,7 @@
 			$str = new StringW();
 			
 			$datas=array('data','data_inicio','data_fim');
-			$multi=array('status_multi','status_produto_multi','status_ged_multi','status_entrega_multi');
+			$multi=array('status_multi','status_produto_multi','status_ged_multi','status_entrega_multi','profissional_multiple','bi_multiple');
 			
 			$values=array();
 			if(isset($get) and is_array($get)) {
@@ -369,7 +344,7 @@
 						if(is_array($v)) $values[$k]=$v;
 						else $values[$k]=array();
 					} else {
-						$values[$k]=$str->protege($v);
+						$values[$k]=addslashes($v);
 					}
 				}
 			}
@@ -379,7 +354,7 @@
 		
 		function url($get) {
 
-			$noURL=explode(",","fichadocliente,edita,pagina,ancoraanexo,csv,deleta,desconciliar,form,pagina,alterarUnidade,deletaPaciente,deletaTratamento,unirPagamentos,abrirAnamnese");
+			$noURL=explode(",","fichadocliente,edita,pagina,ancoraanexo,csv,deleta,desconciliar,form,pagina,alterarUnidade,deletaPaciente,deletaTratamento,unirPagamentos,abrirAnamnese,analyticsTipo");
 
 			$url="";
 			if(is_array($get)) {

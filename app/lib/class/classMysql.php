@@ -1,9 +1,16 @@
 <?php
 class Mysql {
-	private $ms_server, $ms_login, $ms_senha, $ms_db;
+	private 
+		$ms_server, 
+		$ms_login, 
+		$ms_senha, 
+		$ms_db,
+		$bd_info=array('ident_colaboradores_cargos'=>'infod_parametros_cargos',
+						'ident_parametros_cartoes_bandeiras'=>'infod_parametros_cartoes_bandeiras');
+
 	public $mysqry, $rows;
 	
-	function __construct($chatpro=false) { 
+	function __construct($mb4='') { 
 		/*if($_SERVER['HTTP_HOST']=="studiodental.dental") {
 			$ms_server="localhost";
 			$ms_login="root";
@@ -30,10 +37,13 @@ class Mysql {
 
 		
 		$this->connecting=mysqli_connect($ms_server, $ms_login, $ms_senha);
-		if(isset($chatpro) and $chatpro===true) {
+		if(isset($mb4) and $mb4===true) { 
 			mysqli_set_charset($this->connecting,'utf8mb4');
 		}
-		else mysqli_set_charset($this->connecting,'latin1');
+		else {
+			mysqli_set_charset($this->connecting,'latin1');
+		}
+		
 		$dbing=mysqli_select_db($this->connecting, $ms_db);
 	}
 	function colunas($ms_table) {
@@ -41,23 +51,38 @@ class Mysql {
 		$this->mysqry=mysqli_query($this->connecting, $columns) or die(mysqli_error($this->connecting));
 	}
 	function del($ms_table,$ms_arg) {
+		if(isset($this->bd_info[$ms_table])) {
+			$ms_table="infodentalADM.".$this->bd_info[$ms_table];
+		}
+
 		$deleting="DELETE from $ms_table $ms_arg";
 		$qry=mysqli_query($this->connecting, $deleting) or die(mysqli_error($this->connecting));
 		$this->rows = mysqli_affected_rows($this->connecting);
 	}
 	function update($ms_table,$ms_fields,$ms_arg) {
+		if(isset($this->bd_info[$ms_table])) {
+			$ms_table="infodentalADM.".$this->bd_info[$ms_table];
+		}
+
 		$updating="UPDATE $ms_table set $ms_fields $ms_arg";
 		$qry=mysqli_query($this->connecting, $updating) or die(mysqli_error($this->connecting));
 		if(mysqli_affected_rows($this->connecting)<0) $this->resul="erro";
 		else $this->resul="ok";
 	}
 	function add($ms_table,$ms_values) {
+
+
 		$inserting="INSERT INTO $ms_table SET $ms_values";
 		$qry=mysqli_query($this->connecting, $inserting) or die(mysqli_error($this->connecting));
 		if(mysqli_affected_rows($this->connecting)==0) $this->resul="erro";
 		$this->ulid=mysqli_insert_id($this->connecting);
 	}
 	function consult($ms_table,$ms_fields,$ms_arg) {
+		
+		if(isset($this->bd_info[$ms_table])) { 
+			$ms_table="infodentalADM.".$this->bd_info[$ms_table];
+		}
+
 		$sql="SELECT $ms_fields from $ms_table $ms_arg";
 		$this->mysqry=mysqli_query($this->connecting, $sql) or die(mysqli_error($this->connecting));
 		$this->rows=mysqli_num_rows($this->mysqry);
@@ -68,6 +93,10 @@ class Mysql {
 		
 	}
 	function consultPagMto2($mysqltabela,$mysqlcampos,$myslimite,$mysargumentos,$mysurl,$inter,$pagnome,$root="") {
+		if(isset($this->bd_info[$mysqltabela])) { 
+			$ms_table="infodentalADM.".$this->bd_info[$ms_table];
+		}
+
 		$myssql="SELECT count(*) as total from ".$mysqltabela." ".$mysargumentos;
 		//$myssql="SELECT ".$mysqlcampos." from ".$mysqltabela." ".$mysargumentos;
 		$PHP_SELF=basename($_SERVER['PHP_SELF']);

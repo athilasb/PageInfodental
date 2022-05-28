@@ -1,40 +1,41 @@
 <?php
 include "includes/header.php";
 ?>
+
 <section class="login">
 
-	<section class="login__content">
+	<div class="login-bg">
+		<img src="img/login-bg.jpg" alt="" width="800" height="1080" class="login-bg__img" />
+		<div class="login-bg-logo">
+			<img src="img/logo-reduzido.svg" alt="" width="60" height="55" />
+		</div>
+	</div>
+
+	<div class="login-form">
 		
-		<div class="login-logo">
-			<img src="img/logo.svg" width="52" height="50" alt="Info Dental" />
+		<div class="login-form__inner1">
+
+			<img src="img/logo-cliente.png" alt="" width="484" height="68" class="login-form__logo" />
+			
+			<form method="post" action="usuarios/login.php" class="form formulario-validacao">
+				<input type="hidden" name="url" value="<?php echo isset($_GET['url'])?str_replace("erro=1&url=","",str_replace("erro=2&url=","",str_replace("erro=3&url=","",str_replace("erro=4&url=","",str_replace("erro=5&url=","",str_replace("erro=6&url=","",$_SERVER['QUERY_STRING'])))))):"";?>" />
+				<dl>
+					<dd class="form-comp"><span><i class="iconify" data-icon="fluent:person-12-regular"></i></span><input type="text" name="auth_cpf" class="obg" placeholder="Login" /></dd>
+				</dl>
+				<dl>
+					<dd class="form-comp"><span><i class="iconify" data-icon="fluent:lock-closed-12-regular"></i></span><input type="password" name="auth_senha" class="obg" placeholder="Senha" /></dd>
+				</dl>
+				<dl>
+					<dd><button type="submit" class="button button_main button_full">Entrar</button></dd>
+				</dl>
+				<?php /*<dl>
+					<dd><a href="">Esqueci minha senha <i class="iconify" data-icon="fluent:arrow-right-20-filled"></i></a></dd>
+				</dl>*/ ?>
+			</form>
+
 		</div>
 
-		<?php 
-		//var_dump($_ENV);
-		/*
-		<div>
-			<img src="img/logo-cliente.png" width="135" height="49" alt="" class="login__cliente" />
-		</div>
-		*/ ?>
-
-		<form method="post" action="usuarios/login.php" class="form formulario-validacao">
-			<input type="hidden" name="url" value="<?php echo isset($_GET['url'])?str_replace("erro=1&url=","",str_replace("erro=2&url=","",str_replace("erro=3&url=","",str_replace("erro=4&url=","",str_replace("erro=5&url=","",str_replace("erro=6&url=","",$_SERVER['QUERY_STRING'])))))):"";?>" />
-			<dl>
-				<dt>Login</dt>
-				<dd><input type="text" name="auth_cpf" class="obg" /></dd>
-			</dl>
-			<dl>
-				<dt>Senha</dt>
-				<dd><input type="password" name="auth_senha" class="obg" /></dd>
-			</dl>
-			<dl>
-				<dd><button type="submit" class="button">Acessar</button></dd>
-			</dl>
-		</form>
-		
-	</section>
-
-</section>
+	</div>
 
 	<?php 
 	if(isset($_GET['erro'])) {
@@ -63,5 +64,10 @@ include "includes/header.php";
 	}
 	?>
 
-</body>
-</html>
+
+</section>
+
+
+<?php 
+include "includes/footer.php";
+?>	

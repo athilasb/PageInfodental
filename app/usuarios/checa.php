@@ -6,7 +6,7 @@
 		$sql = new Mysql();
 		
 		$sql->consult($_p."colaboradores","*","where id='".addslashes($_COOKIE[$_p.'adm_id'])."' and cpf='".addslashes($_COOKIE[$_p.'adm_cpf'])."' and senha='".addslashes($_COOKIE[$_p.'adm_senha'])."' and lixo='0'");
-										
+															
 		if($sql->rows) {
 			$usr = mysqli_fetch_object($sql->mysqry);
 			//$_usuariosPermissoes=explode(",",$usr->permissoes);
@@ -17,6 +17,9 @@
 			if($usr->permitir_acesso==0) {
 				if(empty($wtalk)) header("Location: ".(empty($dir)?".":$dir)."/?erro=6&url=".$_SERVER['REQUEST_URI']);
 			}
+
+			$sql->consult("infodentalADM.infod_contas_onlines","*","where instancia='".$_ENV['NAME']."' and lixo=0");
+			$_wts=$sql->rows?mysqli_fetch_object($sql->mysqry):'';
 
 			
 		}
