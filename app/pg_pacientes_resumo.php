@@ -285,11 +285,11 @@
 				<section class="box pac-ind">
 					<div>
 						<i class="iconify" data-icon="fa-brands:instagram"></i>
-						<h1><?php echo empty($paciente->instagram)?"-":$paciente->instagram;?></h1>
+						<h1><?php echo empty($paciente->instagram)?"-":utf8_encode($paciente->instagram);?></h1>
 					</div>
 					<div>
 						<i class="iconify" data-icon="bxs:music"></i>
-						<h1><?php echo empty($paciente->musica)?"-":$paciente->musica;?></h1>
+						<h1><?php echo empty($paciente->musica)?"-":utf8_encode($paciente->musica);?></h1>
 					</div>
 					<div>
 						<i class="iconify" data-icon="ph:phone-call-bold"></i>

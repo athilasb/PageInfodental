@@ -8,7 +8,11 @@
 
 		if($_POST['ajax']=="atualizaListaInteligente") {
 
-			$_historicoStatus=array();
+			$_profissionais=array();
+			$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento","where lixo=0 order by nome asc");
+			while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
+
+			$_historicoStatus=array();	
 			$sql->consult($_p."pacientes_historico_status","*","");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$_historicoStatus[$x->id]=$x;
@@ -42,9 +46,12 @@
 
 			# Sugestoes sem BI
 
+				$listaUnicaJSON=array();
+
 				# Desmarcados sem agendamentos
 
 					$desmarcadosPacientesAgenda=array();
+					$pacientesTodosIds=array();
 
 					// busca pacientes desmarcados nos ultimos 360 dias 
 					$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL 360 DAY and id_status=4 and lixo=0 order by agenda_data desc");
@@ -80,6 +87,8 @@
 								$removerDaLista = (strtotime($ultimoAgendamentoDesmarcado->agenda_data)<strtotime($x->agenda_data))?1:0;
 								if($removerDaLista==1) {
 									unset($desmarcadosPacientesAgenda[$x->id_paciente]);
+								} else {
+									$pacientesTodosIds[$x->id_paciente]=$x->id_paciente;
 								}
 							}
 
@@ -95,7 +104,7 @@
 
 						// busca pacientes que foram desmarcados
 						$_pacientesDesmarcados=array();
-						$sql->consult($_p."pacientes","id,nome,telefone1,foto_cn","where id IN (".implode(",",$desmarcadosPacientesIds).") and lixo=0");
+						$sql->consult($_p."pacientes","id,nome,telefone1,foto_cn,profissional_maisAtende","where id IN (".implode(",",$desmarcadosPacientesIds).") and lixo=0");
 						while ($x=mysqli_fetch_object($sql->mysqry)) {
 							$_pacientesDesmarcados[$x->id]=$x;
 						}
@@ -113,11 +122,13 @@
 								if(!empty($paciente->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
 
 								$status=isset($_pacientesStatus[$paciente->id])?$_pacientesStatus[$paciente->id]:0;
-								$desmarcadosPacientesAgendaJSON[]=array('id_paciente'=>$paciente->id,
-																		'nome'=>$nome,
-																		'ft'=>$ft,
-																		'status'=>$status,
-																		'telefone'=>empty($paciente->telefone1)?"":maskTelefone($paciente->telefone1));
+								//$desmarcadosPacientesAgendaJSON[]
+								$listaUnicaJSON[]=array('id_paciente'=>$paciente->id,
+														'profissional'=>$paciente->profissional_maisAtende,
+														'nome'=>$nome,
+														'ft'=>$ft,
+														'status'=>$status,
+														'telefone'=>empty($paciente->telefone1)?"":maskTelefone($paciente->telefone1));
 							}
 						}
 					}
@@ -157,7 +168,7 @@
 						// busca pacientes que foram atendidos nos ultimos 720 dias
 						$_pacientesAtendidosIds=array();
 						$_pacientesAtendidos=array();
-						$sql->consult($_p."pacientes","id,nome,telefone1,periodicidade","where id IN (".implode(",",$atendidosPacientesIds).") and lixo=0 order by nome");
+						$sql->consult($_p."pacientes","id,nome,telefone1,periodicidade,profissional_maisAtende","where id IN (".implode(",",$atendidosPacientesIds).") and lixo=0 order by nome");
 						while ($x=mysqli_fetch_object($sql->mysqry)) {
 							if(isset($_pacientesPeriodicidade[$x->periodicidade])) {
 								$_pacientesAtendidosIds[$x->periodicidade][$x->id]=$x->id;
@@ -228,10 +239,13 @@
 										$index++;
 									}
 
+									$pacientesTodosIds[$paciente->id]=$paciente->id;
+
 									$ft='';
 									if(!empty($paciente->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
 
 									$retornoPacientesAgendaJSONAux[$index]=array('id_paciente'=>$paciente->id,
+																			'profissional'=>$paciente->profissional_maisAtende,
 																			'nome'=>$nome,
 																			'ft'=>$ft,
 																			'status'=>$status,
@@ -241,7 +255,8 @@
 						}
 						arsort($retornoPacientesAgendaJSONAux);
 						foreach($retornoPacientesAgendaJSONAux as $x) {
-							$retornoPacientesAgendaJSON[]=$x;
+							//$retornoPacientesAgendaJSON
+							$listaUnicaJSON[]=$x;
 						}
 					}
 
@@ -270,6 +285,36 @@
 						}
 					}
 
+				# Quantidade de agendamentos
+					$agendaQtd=array();
+					$agendaProfissionais=array();
+					if(count($pacientesTodosIds)>0) {
+						$sql->consult($_p."agenda","id,id_paciente,id_status,profissionais","where lixo=0");
+						if($sql->rows) {
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								if(!isset($agendaQtd[$x->id_paciente][$x->id_status])) {
+									$agendaQtd[$x->id_paciente][$x->id_status]=0;
+								}
+
+								$agendaQtd[$x->id_paciente][$x->id_status]++;
+
+								if($x->id_status==5) {
+									$aux = explode(",",$x->profissionais);
+									foreach($aux as $idP) {
+										if(!empty($idP) and is_numeric($idP)) {
+											if(!isset($agendaProfissionais[$x->id_paciente][$idP])) {
+												$agendaProfissionais[$x->id_paciente][$idP]=0;
+											} 
+											$agendaProfissionais[$x->id_paciente][$idP]++;
+										}
+									}
+								}
+							}
+
+						}
+					}
+
+
 				# Ordena lista
 					// Ordena lista
 
@@ -286,7 +331,7 @@
 										2=>4);
 
 
-					$desmarcadosPacientesAgendaJSONOrdenada=array();
+					/*$desmarcadosPacientesAgendaJSONOrdenada=array();
 					foreach($desmarcadosPacientesAgendaJSON as $v) {
 						$index = $statusOrdem[$v['status']];
 						$desmarcadosPacientesAgendaJSONOrdenada[$index][]=$v;
@@ -296,12 +341,22 @@
 					foreach($retornoPacientesAgendaJSON as $v) {
 						$index = $statusOrdem[$v['status']];
 						$retornoPacientesAgendaJSONOrdenada[$index][]=$v;
+					}*/
+
+					$listaUnicaJSONOrdenada=array();
+					foreach($listaUnicaJSON as $v) {
+						$index = $statusOrdem[$v['status']];
+
+						if($index==4) continue;
+						$listaUnicaJSONOrdenada[$index][]=$v;
 					}
 
-					$desmarcadosPacientesAgendaJSON=array();
-					$retornoPacientesAgendaJSON=array();
+					//$desmarcadosPacientesAgendaJSON=array();
+					//$retornoPacientesAgendaJSON=array();
+					$listaUnicaJSON=array();
 					for($i=1;$i<=4;$i++) {
-						if(isset($desmarcadosPacientesAgendaJSONOrdenada[$i])) {
+
+						/*if(isset($desmarcadosPacientesAgendaJSONOrdenada[$i])) {
 							foreach($desmarcadosPacientesAgendaJSONOrdenada[$i] as $v) {
 								$desmarcadosPacientesAgendaJSON[]=$v;
 							}
@@ -311,15 +366,56 @@
 							foreach($retornoPacientesAgendaJSONOrdenada[$i] as $v) {
 								$retornoPacientesAgendaJSON[]=$v;
 							}
+						}*/
+						if(isset($listaUnicaJSONOrdenada[$i])) {
+							foreach($listaUnicaJSONOrdenada[$i] as $v) {
+								$listaUnicaJSON[]=$v;
+							}
 						}
+					}
+
+					$listaFinal=array();
+
+					foreach($listaUnicaJSON as $v) {
+						$qtd=isset($agendaQtd[$v['id_paciente']][5])?$agendaQtd[$v['id_paciente']][5]:0;
+						$qtdDesmarcados=isset($agendaQtd[$v['id_paciente']][4])?$agendaQtd[$v['id_paciente']][4]:0;
+						$qtdFaltas=isset($agendaQtd[$v['id_paciente']][3])?$agendaQtd[$v['id_paciente']][3]:0;
+						$item=$v;
+						$item['atendidos']=$qtd;
+						$item['desmarcados']=$qtdDesmarcados;
+						$item['faltas']=$qtdFaltas;
+
+
+						$profissionais = array();
+
+						if(isset($agendaProfissionais[$v['id_paciente']])) {
+							foreach($agendaProfissionais[$v['id_paciente']] as $idP=>$qtd){
+								if(isset($_profissionais[$idP])) {
+									$profissionais[]=array('nome'=>utf8_encode($_profissionais[$idP]->nome),
+															'qtd'=>$qtd);
+								}
+							}
+						}
+
+						$item['profissionais']=$profissionais;
+
+						$index=$qtd;
+						while(isset($listaFinal[$index])) {
+							$index.=".";
+						}
+						$listaFinal[$index]=$item;
+					}
+					krsort($listaFinal);
+
+					$newLista=array();
+					foreach($listaFinal as $v) {
+						$newLista[]=$v;
 					}
 
 
 
 			$rtn=array('success'=>true,
-						'pacientesDesmarcados'=> ($desmarcadosPacientesAgendaJSON),
-						'pacientesRetorno'=> ($retornoPacientesAgendaJSON),
-						'pacientesExcluidos'=> ($pacientesExcluidosJSON));
+						'pacientesOportunidades'=> ($newLista));
 
 		}
 
@@ -334,7 +430,11 @@
 
 	$_table=$_p."colaboradores";
 
-
+	$_historicoStatus=array();
+	$sql->consult($_p."pacientes_historico_status","*","");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_historicoStatus[$x->id]=$x;
+	}
 	$_profissionais=array();
 	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento","where lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
@@ -642,7 +742,7 @@
 							$cadeiraHoras = isset($_horas[$c->id]) ? $_horas[$c->id] : 0;
 							$agendaHoras = isset($_agendaHoras[$c->id]) ? $_agendaHoras[$c->id] : 0;
 
-							$indice = ceil($cadeiraHoras==0?0:($agendaHoras/$cadeiraHoras)*100);
+							$indice = ceil($cadeiraHoras==0?100:($agendaHoras/$cadeiraHoras)*100);
 						?>
 						<a href="" class="list4-item active">
 							<div>
@@ -695,16 +795,9 @@
 						<div class="list3">
 							<span class="list3-item">
 								<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>
-								<p>Há <b class="js-indicador-desmarcados">0</b> pacientes <strong>desmarcados</strong> sem agendamento futuro</p>
+								<p>Há <b class="js-indicador-oportunidades">0</b> oportunidades de agendamentos</p>
 							</span>
-							<span class="list3-item">
-								<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>
-								<p>Há <b class="js-indicador-retorno">0</b> pacientes que <b>necessitam de retorno</b></p>
-							</span>
-							<span class="list3-item">
-								<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>
-								<p>Há <b class="js-indicador-excluidos">0</b> pacientes <b>excluídos</b></p>
-							</span>
+							
 						</div>
 
 					</div>
@@ -715,17 +808,21 @@
 							<div class="colunas">
 								<dl>
 									<dd>
-										<select class="js-filtro-pacientes">
-											<option value="desmarcados">desmarcado</option>
-											<option value="retorno">retorno</option>
-											<option value="excluidos">excluídos</option>
+										<select class="js-filtro-profissional">
+											<option>Todos Profissionais</option>
+											<?php
+											foreach($_profissionais as $p) {
+												if($p->check_agendamento==0) continue;
+												echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+											}
+											?>
 										</select>
 									</dd>
 								</dl>
 								<dl>
 									<dd>
 										<select class="js-filtro-status">
-											<option value="0">status</option>
+											<option value="0">Todos Status</option>
 											<?php
 											foreach($_historicoStatus as $v) {
 												echo '<option value="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
@@ -747,13 +844,13 @@
 								?>
 
 
-								var pacientesDesmarcados = [];
+								var pacientesOportunidades = [];
 								var pacientesRetorno = [];
 								var pacientesExcluidos = [];
 
 								var pacientes = [];
 								var pagina = 0;
-								var paginaReg = 10;
+								var paginaReg = 1;
 								var paginaQtd = 0;
 
 								const atualizaValorListasInteligentes = () => {
@@ -766,9 +863,7 @@
 										success:function(rtn) {
 											if(rtn.success) {
 
-												pacientesDesmarcados = rtn.pacientesDesmarcados;
-												pacientesRetorno = rtn.pacientesRetorno;
-												pacientesExcluidos = rtn.pacientesExcluidos;
+												pacientesOportunidades = rtn.pacientesOportunidades;
 
 												
 
@@ -786,37 +881,22 @@
 									
 									$('.js-pacientes').html(``);
 
+									pacientes = pacientesOportunidades;
+
 									let filtro = $('.js-filtro-pacientes option:selected').val();
 
-									if(filtro=="retorno") {
-										pacientes = pacientesRetorno;
-									} else if(filtro=="excluidos") {
-										pacientes = pacientesExcluidos;
-									} else {
-										pacientes = pacientesDesmarcados;
-									}
-
-									$('.js-indicador-desmarcados').html(pacientesDesmarcados.length);
-									$('.js-indicador-retorno').html(pacientesRetorno.length);
-									$('.js-indicador-excluidos').html(pacientesExcluidos.length);
+									$('.js-indicador-oportunidades').html(pacientesOportunidades.length);
 
 									let status = $('.js-filtro-status option:selected').val();
 
 									if(status>0) {
-										let newPacientes = [];
-										let cont = 0;
-										/*pacientes.forEach(x=>{
-											if(x.status==status) {
-												newPacientes.push(x);
-											}
-
-											cont++;
-											if(cont==pacientes.length) {
-												pacientes = newPacientes;
-											}
-										});*/
-
 										pacientes = pacientes.filter(x=>{return x.status==status});
+									}
+
+
+									let profissional = $('.js-filtro-profissional option:selected').val();
+									if(profissional>0) {
+										pacientes = pacientes.filter(x=>{return x.profissional==profissional});
 									}
 
 									if(pacientes.length==0) {
@@ -851,20 +931,32 @@
 												lista=x.lista;
 											}
 
-	
+		
+											let profissionais = '';
+
+											if(x.profissionais && x.profissionais.length>0) {
+												x.profissionais.forEach(x=>{
+													profissionais+=`${x.nome}: ${x.qtd}<br />`;
+												})
+											}
+
 											let ft = (x.ft && x.ft.length>0)?x.ft:'img/ilustra-usuario.jpg';
-											$('.js-pacientes').append(`<tr class="js-item" data-filtro="${filtro}" data-id_paciente="${x.id_paciente}" data-lista="${lista}">
+											$('.js-pacientes').append(`<tr class="js-item" data-filtro="${filtro}" data-id_paciente="${x.id_paciente}" data-lista="${lista}" style="height:420px">
 																			<td class="list1__foto"><img src="${ft}" width="54" height="54" /></td>
 																			<td>
 																			<h1>${x.nome}</h1>
 																			<p>${x.telefone}</p>
+																			<p>Atendido: ${x.atendidos}</p>
+																			<p>Faltas: ${x.faltas}</p>
+																			<p>Desmarcado: ${x.desmarcados}</p>
+																			<p>${profissionais}</p>
 																			</td>
 																			<td>${icone}</td>
 																		</tr>`);
 
 										};
 
-										$('.js-guia').html(`Página <b>${pagina+1}</b> de <b>${paginaQtd}</b>`);
+										//$('.js-guia').html(`Página <b>${pagina+1}</b> de <b>${paginaQtd}</b>`);
 
 										if(paginaQtd==1) {
 											$('.js-guia,.js-paginacao').hide();
@@ -885,7 +977,7 @@
 										pacientesLista();
 									});
 
-									$('.js-filtro-pacientes').change(function(){
+									$('.js-filtro-profissional').change(function(){
 										pagina=0;
 										pacientesLista();
 									}).trigger('change');

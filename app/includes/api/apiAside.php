@@ -459,6 +459,7 @@
 								$arr['dt']=date('d/m • H:i',strtotime($x->data));
 								$arr['col']=isset($_colaboradores[$x->id_usuario])?utf8_encode($_colaboradores[$x->id_usuario]->nome):"Desconhecido";
 								$arr['obs']=isset($_historicoStatus[$x->id_obs])?utf8_encode($_historicoStatus[$x->id_obs]->titulo):'';
+								$arr['descricao']=utf8_encode($x->descricao);
 
 								$index=strtotime($x->data);
 								while(isset($_historico[$index])) {
@@ -469,7 +470,7 @@
 							} else {
 								if(isset($_agenda[$x->id_agenda])) {
 									$agenda=$_agenda[$x->id_agenda];
-									if(!isset($historicoAgendamento[$x->id_agenda])) {
+									if(!isset($historicoAgendamento[$agenda->id])) {
 
 										$icone="mdi:calendar-check";
 										$iconeCor=isset($_agendaStatus[$agenda->id_status])?$_agendaStatus[$agenda->id_status]->cor:'';
@@ -489,7 +490,8 @@
 
 
 
-										$historicoAgendamento[]=array('ev'=>$x->evento,
+										$historicoAgendamento[$agenda->id]=array('ev'=>$x->evento,
+																		'id'=>$agenda->id,
 																		'dt2'=>$agenda->agenda_data,
 																		'ic'=>$icone,
 																		'icC'=>$iconeCor,
@@ -2425,7 +2427,7 @@
 														${x.col}												
 													</div>
 													<strong>${x.obs}</strong>
-													<br />																				
+													${x.descricao?`<p>${x.descricao}</p>`:''}																			
 												</div>
 											</article>
 										</div>`;
@@ -2900,7 +2902,7 @@
 						</script>
 						<section class="tab tab_alt js-tab">
 							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamento').show();" class="active">Agendamento</a>
-							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-whatsapp').show();">Whatsapp</a>			
+							<?php /*<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-whatsapp').show();">Whatsapp</a>*/?>			
 							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>					
 						</section>
 						

@@ -276,7 +276,7 @@
 					</div>
 
 					<div class="grid grid_3" style="margin:0;">						
-						<div class="box" style="grid-column:span 2">
+						<div class="box" style="grid-column:span 3">
 
 							<div class="filter">
 								<div class="filter-group">
@@ -381,7 +381,7 @@
 
 						</div>
 
-						<div class="box">
+						<?php /*<div class="box">
 							<div class="filter">
 								<div class="filter-group">
 									<div class="filter-title">
@@ -437,7 +437,7 @@
 								</script>
 								<canvas id="grafico2" class="box-grafico"></canvas>
 							</div>
-						</div>
+						</div>*/?>
 					</div>
 				</section>
 			</div>

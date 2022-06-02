@@ -86,13 +86,13 @@
 <head>
 <meta charset="utf-8">
 
-<title><?php echo isset($title)?$title." | Infodental v2":"Infodental v2"; ?></title>
+<title><?php echo isset($title)?$title." | Infodental":"Infodental"; ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="description" content="<?php echo ($description)?$description:"Infodental"; ?>">
 <meta name="author" content="WLIB Soluções Web - www.wlib.com.br">
 
 
-<base href="//<?php echo $_SERVER["HTTP_HOST"];?>/v2/" />
+<base href="//<?php echo $_SERVER["HTTP_HOST"];?>/" />
 
 
 <meta property="og:title" content="<?php echo isset($title)?$title:"Infodental"; ?>" />
@@ -108,9 +108,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="css/style.css?v3" />
+<link rel="stylesheet" type="text/css" href="css/style.css?v4" />
 <link rel="stylesheet" type="text/css" href="css/calendario.css" />
-<link rel="stylesheet" type="text/css" href="css/apps.css" />
+<link rel="stylesheet" type="text/css" href="css/apps.css?v2" />
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <?php /*<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />*/ ?>
 

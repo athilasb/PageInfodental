@@ -3,8 +3,8 @@
 	//require_once("../lib/classes.php");
 
 
-	require_once("/var/www/html/v2/lib/conf.php");
-	require_once("/var/www/html/v2/lib/classes.php");
+	require_once("/var/www/html/lib/conf.php");
+	require_once("/var/www/html/lib/classes.php");
 
 	$sql = new Mysql(true);
 	$usr = (object) array('id'=>1);
