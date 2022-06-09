@@ -290,7 +290,7 @@
 
 															$('.js-cpf-dd').hide();
 														} else {
-															$('.js-cpf-dd').html(`<i class="iconify" data-icon="fluent:info-16-regular"></i> CPF inválido!`).show();;
+															$('.js-cpf-dd').html(`<i class="iconify" data-icon="fluent:info-16-regular"></i> CPF inválido!`).show();
 														}
 													
 

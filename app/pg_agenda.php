@@ -137,7 +137,7 @@
 																);
 
 						} else {
-							if(isset($_status[$x->id_status_novo])) {
+							if(isset($_status[$x->id_status_novo])) { continue;
 								$_historico[]=array('usr'=>utf8_encode($_profissionais[$x->id_usuario]->nome),
 																	'dt'=>date('d/m H:i',strtotime($x->data)),
 																	'ev'=>'status',

@@ -524,7 +524,7 @@
 								if(!empty($profissionais)) $profissionais=substr($profissionais,0,strlen($profissionais)-2);
 								
 								//31/03 (quinta) • 10:00
-								$dataTimeline=date('d/m • H:i',strtotime($agenda->agenda_data));
+								$dataTimeline=date('d/m/y • H:i',strtotime($agenda->agenda_data));
 							}
 
 							if(empty($agenda) or empty($cadeira)) continue;

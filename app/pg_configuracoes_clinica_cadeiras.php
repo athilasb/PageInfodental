@@ -350,6 +350,7 @@
 										if(rtn.success) {
 											$('#js-aside input[name=titulo]').val(rtn.data.titulo);
 											$('#js-aside input[name=id]').val(rtn.data.id);
+											$('#js-aside .js-carga').parent().parent().show();
 											horariosAtualizar();
 
 											$('.js-fieldset-horarios,.js-btn-remover').show();
@@ -372,6 +373,9 @@
 								
 
 							} else {
+
+								$('#js-aside .js-carga').parent().parent().hide();
+								$('#js-aside input[name=id]').val(0);
 
 								$('.js-fieldset-horarios,.js-btn-remover').hide();
 
@@ -470,11 +474,11 @@
 						} else {
 						?>	
 							<div class="list1">
-								<table>
+								<table class="js-cadeiras-table">
 									<?php
 									while($x=mysqli_fetch_object($sql->mysqry)) {
 									?>
-									<tr class="js-item" data-id="<?php echo $x->id;?>">
+									<tr class="aside-open js-item" data-id="<?php echo $x->id;?>">
 										<td style="width:20px;"><i class="iconify" data-icon="fluent:chevron-up-down-24-regular"></i></td>
 										<td><h1><strong><?php echo utf8_encode($x->titulo);?></strong></h1></td>
 									</tr>
@@ -495,7 +499,18 @@
 						# LISTAGEM #
 						?>
 
-					</div>					
+					</div>	
+
+						<script type="text/javascript">
+							$(function(){
+								$(".js-cadeiras-table").sortable({
+									stop:function(event,ui) {
+										 let id = $(ui.item).attr('data-id');
+										 alert(id);
+									}
+								});
+							})
+						</script>				
 				</div>
 
 			</section>

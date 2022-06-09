@@ -5,7 +5,15 @@
 	if(isset($_SERVER['HTTP_HOST'])) {
 		if($_SERVER['HTTP_HOST']=="163.172.187.183:5000") {
 			$_ENV['MYSQL_HOST']='51.159.74.70:23821';
-			$_ENV['NAME']=$_ENV['MYSQL_DB']='studiodental';
+
+
+			if(basename($_SERVER['PHP_SELF'])=="migracaoDentalOffice.php") {
+				$_ENV['NAME']=$_ENV['MYSQL_DB']='doutorasorriso';
+
+			} else {
+				$_ENV['NAME']=$_ENV['MYSQL_DB']='doutorasorriso';
+
+			}
 			$_ENV['MYSQL_USER']="dentalinfo";
 			$_ENV['MYSQL_PASS']="d3ntaL@inf0"; 
 		} 

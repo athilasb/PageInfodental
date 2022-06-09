@@ -1,4 +1,24 @@
 <?php
+	if(isset($_POST['ajax'])) {
+		require_once("lib/conf.php");	
+		require_once("usuarios/checa.php");
+
+		$sql = new Mysql();
+
+		$rtn = array();
+		if($_POST['ajax']=="logo") {
+
+			
+			$sql->update($_p."clinica","cn_logo='".addslashes($_POST['logo'])."'","");
+			$rtn=array('success'=>true);
+			
+
+		}
+
+		header("Content-type: application/json");
+		echo json_encode($rtn);
+		die();
+	}
 	include "includes/header.php";
 	include "includes/nav.php";
 
@@ -95,13 +115,14 @@
 
 						<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script> 
 						<script type="text/javascript">
+							var cloudinaryURL = '<?php echo $_cloudinaryURL;?>';
 							const tipoPessoa = () => {
 								if($('input[name=tipo]:checked').val()=="PF") {
-									$('.js-cpf').show().find('input').addClass('obg');
-									$('.js-cnpj').hide().find('input').removeClass('obg');
+									$('.js-cpf').show().find('input');
+									$('.js-cnpj').hide().find('input')
 								} else {
-									$('.js-cpf').hide().find('input').removeClass('obg');
-									$('.js-cnpj').show().find('input').addClass('obg');
+									$('.js-cpf').hide().find('input');
+									$('.js-cnpj').show().find('input');
 								}
 							}
 							var logo = cloudinary.createUploadWidget({
@@ -115,12 +136,28 @@
 								(error, result) => {
 									if (!error && result) {
 										if(result.event === "success") {
-											 $('input[name=cn_logo]').val(result.info.path);
+											$('input[name=cn_logo]').val(result.info.path);
+											
+											data = `ajax=logo&logo=${result.info.path}`;
+											$.ajax({
+												type:"POST",
+												data:data,
+												success:function(rtn) {
+													$(".form-image img").attr('src',`${cloudinaryURL}c_thumb,w_600/${result.info.path}`)
+												}
+											});
+											//console.log(`${cloudinaryURL}c_thumb,w_600/${result.info.path}`)
+											$('input[name=foto_cn]').val(result.info.path);
 										}
 									}
 								}
 							);
 							$(function(){
+
+								document.getElementById("logo").addEventListener("click", function(){
+								    logo.open();
+								}, false);
+
 								tipoPessoa();
 								$('input[name=tipo]').click(tipoPessoa);
 
@@ -167,7 +204,7 @@
 											</dl>
 											<dl>
 												<dt>Email</dt>
-												<dd><input type="email" name="email" value="<?php echo $values['email'];?>" class="obg email" /></dd>
+												<dd><input type="email" name="email" value="<?php echo $values['email'];?>" class="email" /></dd>
 											</dl>
 										</div>
 										<div class="colunas">
@@ -180,7 +217,7 @@
 											<dl>
 												<dt>Telefone</dt>
 												<dd class="form-comp">
-													<span class="js-country">BR</span><input type="text" name="telefone" class="obg " attern="\d*" x-autocompletetype="tel" value="<?php echo $values['telefone'];?>" />
+													<span class="js-country">BR</span><input type="text" name="telefone" class=" " attern="\d*" x-autocompletetype="tel" value="<?php echo $values['telefone'];?>" />
 												</dd>
 											</dl>
 										</div>
@@ -200,7 +237,20 @@
 												<dl>
 													<dt>CPF</dt>
 													<dd><input type="text" name="cpf" value="<?php echo $values['cpf'];?>" class="cpf" /></dd>
+													<div class="js-cpf-dd form-alert"></div>
 												</dl>
+												<script type="text/javascript">
+													$(function(){
+														$('input[name=cpf]').change(function(){
+															if(validarCPF($(this).val())) {
+																$('.js-cpf-dd').hide();
+															} else {
+
+																$('.js-cpf-dd').html(`<i class="iconify" data-icon="fluent:info-16-regular"></i> CPF inválido!`).show();
+															}
+														})
+													})
+												</script>
 												<dl>
 													<dt>Nome do Responsável Técnico</dt>
 													<dd><input type="text" name="nome" value="<?php echo $values['nome'];?>" class="" /></dd>
@@ -217,7 +267,20 @@
 												<dl>
 													<dt>CNPJ</dt>
 													<dd><input type="text" name="cnpj" value="<?php echo $values['cnpj'];?>" class="cnpj" /></dd>
+													<div class="js-cnpj-dd form-alert"></div>
 												</dl>
+												<script type="text/javascript">
+													$(function(){
+														$('input[name=cnpj]').change(function(){
+															if(validarCNPJ($(this).val())) {
+																$('.js-cnpj-dd').hide();
+															} else {
+
+																$('.js-cnpj-dd').html(`<i class="iconify" data-icon="fluent:info-16-regular"></i> CNPJ inválido!`).show();
+															}
+														})
+													})
+												</script>
 												<dl>
 													<dt>Inscrição Estadual</dt>
 													<dd><input type="text" name="inscricao_estadual" value="<?php echo $values['inscricao_estadual'];?>" class="" /></dd>
@@ -227,7 +290,7 @@
 										<div class="colunas3">
 												<dl>
 													<dt>CRO Responsável Técnico</dt>
-													<dd><input type="text" name="responsavel_cro" value="<?php echo $values['responsavel_cro'];?>" class="obg" /></dd>
+													<dd><input type="text" name="responsavel_cro" value="<?php echo $values['responsavel_cro'];?>" class="" /></dd>
 												</dl>
 												<dl>
 													<dt>UF do CRO</dt>
@@ -259,13 +322,33 @@
 									</div>
 
 									<div>
+
+										<?php
+											$thumb="";
+											if(is_object($cnt)) { 
+												if(!empty($cnt->cn_logo)) {
+													$image=$_cloudinaryURL.'c_thumb,w_600/'.$cnt->cn_logo;
+													$thumb=$_cloudinaryURL.'c_thumb,w_600/'.$cnt->cn_logo;
+												} 
+											}
+										?>
 										<div class="form-image">
-											<img src="img/logo-cliente.png" alt="" width="484" height="68" />
+											<?php
+											if(empty($thumb)) {
+											?>
+											<span class="iconify" data-icon="carbon:no-image" data-height="80"></span>
+											<?php
+											} else {
+											?>
+											<img src="<?php echo $thumb;?>" alt="" width="484" height="" />
+											<?php
+											}
+											?>
 										</div>
 										<dl>
 											<dt>Logotipo</dt>
 											<dd>
-												<input type="file" name="" />
+												<button id="logo" onclick="return false;" class="button button_main">Procurar</button>
 												<input type="hidden" name="cn_logo" />
 											</dd>
 										</dl>
@@ -273,7 +356,7 @@
 								</div>
 							</fieldset>
 
-							<fieldset>
+							<?php /*<fieldset>
 								<legend>Certificação Digital</legend>
 
 								<div class="colunas3">
@@ -296,7 +379,7 @@
 										<dd><label>10/10/2022</label></dd>
 									</dl>
 								</div>
-							</fieldset>
+							</fieldset>*/?>
 
 
 

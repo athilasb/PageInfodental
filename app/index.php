@@ -14,8 +14,22 @@ include "includes/header.php";
 	<div class="login-form">
 		
 		<div class="login-form__inner1">
-
-			<img src="img/logo-cliente.png" alt="" width="484" height="68" class="login-form__logo" />
+			<?php
+			$image="";
+			$sql = new Mysql();
+			$sql->consult($_p."clinica","*","");
+			if($sql->rows) {
+				$clinica=mysqli_fetch_object($sql->mysqry);
+				if(!empty($clinica->cn_logo)) {
+					$image=$_cloudinaryURL.'c_thumb,w_600/'.$clinica->cn_logo;
+				}
+			}
+			if(!empty($image)) {
+			?>
+			<img src="<?php echo $image;?>" alt="" width="484" height="68" class="login-form__logo" />
+			<?php
+			} 
+			?>
 			
 			<form method="post" action="usuarios/login.php" class="form formulario-validacao">
 				<input type="hidden" name="url" value="<?php echo isset($_GET['url'])?str_replace("erro=1&url=","",str_replace("erro=2&url=","",str_replace("erro=3&url=","",str_replace("erro=4&url=","",str_replace("erro=5&url=","",str_replace("erro=6&url=","",$_SERVER['QUERY_STRING'])))))):"";?>" />

@@ -161,8 +161,7 @@
 			$fim=(isset($_POST['fim']) and !empty($_POST['fim']))?addslashes($_POST['fim']):'';
 			$dia=(isset($_POST['dia']) and is_numeric($_POST['dia']))?addslashes($_POST['dia']):'';
 
-			if(empty($cadeira)) $rtn=array('success'=>false,'error'=>'Cadeira não definida!');
-			else if(empty($colaborador)) $rtn=array('success'=>false,'error'=>'Colaborador não definido!');
+			if(empty($colaborador)) $rtn=array('success'=>false,'error'=>'Colaborador não definido!');
 			else if(empty($inicio)) $rtn=array('success'=>false,'error'=>'Ínicio não definido!');
 			else if(empty($fim)) $rtn=array('success'=>false,'error'=>'Fim não definido!');
 			else if(empty($dia) and $dia!=0) $rtn=array('success'=>false,'error'=>'Dia da semana não definido!');
@@ -171,7 +170,7 @@
 
 				$horarios = new Horarios(array('prefixo'=>$_p));
 
-				$attr=array('id_cadeira'=>$cadeira->id,
+				$attr=array('id_cadeira'=>is_object($cadeira)?$cadeira->id:0,
 							'id_colaborador'=>$colaborador->id,
 							'id_horario'=>is_object($horario)?$horario->id:0,
 							'diaSemana'=>$dia,
@@ -180,11 +179,12 @@
 
 				if($horarios->cadeiraHorariosIntercecao($attr)) {
 
-					$vsql="id_cadeira=$cadeira->id,
-							id_profissional=$colaborador->id,
+					$vsql="id_profissional=$colaborador->id,
 							inicio='".$inicio."',
 							dia='".$dia."',
 							fim='".$fim."'";
+
+					if(is_object($cadeira)) $vsql.=",id_cadeira=$cadeira->id";
 
 					if(isset($_POST['id']) and is_numeric($_POST['id']) and $_POST['id']>0) {
 						$sql->consult($_p."profissionais_horarios","*", "where id='".$_POST['id']."' and id_profissional=$colaborador->id and lixo=0");
@@ -213,11 +213,12 @@
 			else {
 				$horarios=array();
 				$sql->consult($_p."profissionais_horarios","*,date_format(inicio,'%H:%i') as inicio,
-															date_format(fim,'%H:%i') as fim","where id_profissional=$colaborador->id and lixo=0");
+																date_format(fim,'%H:%i') as fim",
+																"where id_profissional=$colaborador->id and lixo=0");
 				if($sql->rows) {
 					while($x=mysqli_fetch_object($sql->mysqry)) {
-						if(isset($_cadeiras[$x->id_cadeira])) {
-							$cadeira=$_cadeiras[$x->id_cadeira];
+						//if(isset($_cadeiras[$x->id_cadeira])) {
+							$cadeira=isset($_cadeiras[$x->id_cadeira])?$_cadeiras[$x->id_cadeira]:(object)array('id'=>0,'titulo'=>'Sem Cadeira');
 							$horarios[$x->id_cadeira][$x->dia][]=array('id'=>$x->id,
 																'id_cadeira'=>$x->id_cadeira,
 																'cadeira'=>utf8_encode($cadeira->titulo),
@@ -225,7 +226,7 @@
 																'inicio'=>$x->inicio,
 																'fim'=>$x->fim
 															);
-						}
+						//}
 					}
 
 				}
@@ -275,7 +276,19 @@
 			} else {
 				$rtn=array('success'=>false,'error'=>'Horário não encontrado!');
 			}
+		} else if($_POST['ajax']=="foto") {
+
+			
+			$sql->update($_p."colaboradores","foto='".addslashes($_POST['foto'])."'","where id=$colaborador->id");
+			$rtn=array('success'=>true);
+			
+
 		}
+
+		header("Content-type: application/json");
+		echo json_encode($rtn);
+		die();
+	
 
 		header("Content-Type: application/json");
 		echo json_encode($rtn);
@@ -364,6 +377,7 @@
 
 				// persistencia
 				if(isset($_POST['acao']) and $_POST['acao']=="wlib") {
+					if(empty($cnt)) $_POST['contratacaoAtiva']=1;
 
 					if(isset($_POST['calendario_iniciais'])) $_POST['calendario_iniciais']=strtoupperWLIB($_POST['calendario_iniciais']);
 
@@ -387,7 +401,6 @@
 							$jsc->jAlert("Já existe colaborador cadastrado com este CPF","erro",""); 
 						}
 					}
-
 					if($processa===true) {	
 
 						if(is_object($cnt)) {
@@ -489,7 +502,14 @@
 				?>	
 
 						<section class="header-profile">
-							<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto" />
+							<?php
+							$ft="img/logo-user.png";
+							if(is_object($cnt) and !empty($cnt->foto)) {
+								$ft=$_cloudinaryURL.',w_100/'.$cnt->foto;
+							}
+							?>
+							<img src="<?php echo $ft;?>" alt="" width="60" height="60" class="header-profile__foto" />
+							
 							<div class="header-profile__inner1">
 								<h1><?php echo utf8_encode($cnt->nome);?></h1>
 								<div>
@@ -558,7 +578,7 @@
 									<section class="tab">
 										<a href="javascript:;" data-tab="dadospessoais" class="active">Dados Pessoais</a>
 										<a href="javascript:;" data-tab="dadosdacontratacao">Dados da Contratação</a>					
-										<a href="javascript:;" data-tab="habilitaragendamento">Habilitar Agendamento</a>					
+										<?php /*<a href="javascript:;" data-tab="habilitaragendamento">Habilitar Agendamento</a>*/?>					
 										<a href="javascript:;" data-tab="acessoaosistema">Acesso ao Sistema</a>
 									</section>
 									<?php
@@ -728,11 +748,58 @@
 											</div>
 											<dl>
 												<dt>Foto</dt>
-												<dd><button id="foto" onclick="return false;" class="button button_main">Procurar</button></dd>
+												<dd>
+													<button id="foto" onclick="return false;" class="button button_main">Procurar</button>
+													<input type="hidden" name="foto" />
+												</dd>
 											</dl>
 										</div>
 										<input type="hidden" name="foto" />
-										<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
+
+										<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script> 
+										<script type="text/javascript">
+											var cloudinaryURL = '<?php echo $_cloudinaryURL;?>';
+
+											var id_colaborador = <?php echo (int)is_object($cnt)?$cnt->id:0;?>;
+											var foto = cloudinary.createUploadWidget({
+												cloudName: '<?php echo $_cloudinaryCloudName;?>',
+												language: 'pt',
+												text: <?php echo json_encode($_cloudinaryText);?>,
+												multiple: false,
+												sources: ["local"],
+												folder: '<?php echo $_dirFoto;?>',
+												uploadPreset: '<?php echo $_cloudinaryUploadPresent;?>'}, 
+												(error, result) => {
+													if (!error && result) {
+														if(result.event === "success") {
+															$('input[name=foto]').val(result.info.path);
+															
+
+															if(id_colaborador>0) {
+																data = `ajax=foto&foto=${result.info.path}&id_colaborador=${id_colaborador}`;
+																$.ajax({
+																	type:"POST",
+																	data:data,
+																	success:function(rtn) {
+																		$(".form-image img").attr('src',`${cloudinaryURL}c_thumb,w_600/${result.info.path}`)
+																	}
+																});
+															}
+														}
+													}
+												}
+											);
+											$(function(){
+
+												document.getElementById("foto").addEventListener("click", function(){
+												    foto.open();
+												}, false);
+
+												
+											})
+										</script>
+
+										<?php /*<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 										<script>
 											$(function(){
 												var foto = cloudinary.createUploadWidget({
@@ -755,7 +822,7 @@
 												    foto.open();
 												}, false);
 											});
-										</script>	
+										</script>	*/?>
 									</div>
 								</fieldset>
 
@@ -841,7 +908,7 @@
 									<input type="hidden" name="lat" id="lat" style="display:none;" />
 								</fieldset>
 
-								<fieldset>
+								<?php /*<fieldset>
 									<legend>Certificação Digital</legend>
 
 									<div class="colunas3">
@@ -864,7 +931,7 @@
 											<dd><label>10/10/2022</label></dd>
 										</dl>
 									</div>
-								</fieldset>
+								</fieldset>*/?>
 							</div><!-- .js-dadospessoais -->
 
 							<?php
@@ -940,8 +1007,16 @@
 													}
 													?>
 												</select>*/?>
-												<input type="text" name="carga_horaria" value="<?php echo $values['carga_horaria'];?>" />
+												<?php /*<input type="text" name="carga_horaria" value="<?php echo $values['carga_horaria'];?>" />*/?>
 											</dd>
+											<?php
+											$horarios = new Horarios(array('prefixo'=>$_p));
+											if($horarios->colaboradorCargaHoraria($cnt->id)) {
+												$carga=$horarios->carga;
+											}
+											?>
+
+											<dd><input type="text" value="<?php echo sec_convert($carga,'HF');?>" class="js-carga" disabled /></dd>
 										</dl>
 										<dl class="dl2">
 											<dt>Observação Geral </dt>
@@ -952,7 +1027,121 @@
 									
 								</fieldset>
 
+								<fieldset class="js-fieldset-horarios">
+									<legend>Horário de Atendimento</legend>
+									<input type="hidden" class="js-id" value="0" />
+
+									<div class="colunas4">
+										<dl>
+											<dt>Dia da Semana</dt>
+											<dd>
+												<select  class="js-dia">
+													<option value="">-</option>
+													<?php
+													for($i=0;$i<=6;$i++) {
+														echo '<option value="'.$i.'">'.$_dias[$i].'</option>';	
+													}
+													?>
+												</select>
+											</dd>
+										</dl>
+										<dl>
+											<dt>Início</dt>
+											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="text" name="inicio" class="js-inicio hora" /></dd>
+										</dl>
+										<dl>
+											<dt>Fim</dt>
+											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="text" name="fim" class="js-fim hora" /></dd>
+										</dl>
+										<dl>
+											<dt>Cadeira</dt>
+											<dd>
+												<select class="js-id_cadeira">
+													<option value="">-</option>
+													<?php
+														foreach($_cadeiras as $x) {
+													?>
+													<option value="<?php echo $x->id;?>"><?php echo utf8_encode($x->titulo);?></option>
+													<?php
+														}
+													?>
+												</select>
+												<a href="javascript:;" class="button button_main js-horarios-submit" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
+												<a href="javascript:;" class="button js-horarios-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+											</dd>
+										</dl>
+									</div>
+									<div class="list2">
+										<table class="js-horario-table">
+											<thead>
+												<tr>
+													<th style="width:13.5%">CADEIRA</th>
+													<th style="width:12.5%">DOM</th>
+													<th style="width:12.5%">SEG</th>
+													<th style="width:12.5%">TER</th>
+													<th style="width:12.5%">QUA</th>
+													<th style="width:12.5%">QUI</th>
+													<th style="width:12.5%">SEX</th>
+													<th style="width:12.5%">SÁB</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr class="js-cadeira js-cadeira-0">
+													<td><strong>Sem Cadeira</strong></td>
+													<?php
+														for($i=0;$i<=6;$i++) {
+															echo '<td class="js-td js-0-'.$i.'"></td>';	
+														}
+													?>
+												</tr>
+												<?php
+												foreach($_cadeiras as $x) {
+												?>
+												<tr class="js-cadeira js-cadeira-<?php echo $x->id;?>">
+													<td><strong><?php echo utf8_encode($x->titulo);?></strong></td>
+													<?php
+														for($i=0;$i<=6;$i++) {
+															echo '<td class="js-td js-'.$x->id.'-'.$i.'"></td>';	
+														}
+													?>
+												</tr>
+												<?php
+													}
+												?>
+											</tbody>
+										</table>
+									</div>
+								</fieldset>
+
 								<fieldset>
+									<legend>Agendamento</legend>
+
+									<div class="colunas4">
+										
+									</div>
+									<div class="colunas4">
+										<dl class="dl">
+											<dt></dt>
+											<dd><label><input type="checkbox" class="input-switch js-check_agendamento" name="check_agendamento" value="1"<?php echo $values['check_agendamento']==1?" checked":"";?> /> Habilitar agendamento</label></dd>
+										</dl>
+										<?php /*<dl class="">
+											<dt>Carga Horária</dt>
+											<dd><input type="text" value="<?php echo sec_convert($carga,'HF');?>" class="js-carga" disabled />
+										</dl>*/?>
+										<dl class="js-box-habilitarAgendamento">
+											<dt>Inicial</dt>
+											<dd><input type="text" name="calendario_iniciais" value="<?php echo $values['calendario_iniciais'];?>" maxlength="2" style="text-transform: uppercase;" /></dd>
+										</dl>
+										<dl class="js-box-habilitarAgendamento">
+											<dt>Cor</dt>
+											<dd><input type="color" name="calendario_cor" value="<?php echo $values['calendario_cor'];?>" /></dd>
+										</dl>
+									</div>
+								</fieldset>
+
+
+								<?php
+								/*<fieldset>
 									<legend><span>Comissionamento</span></legend>
 
 									<script type="text/javascript">
@@ -1313,15 +1502,11 @@
 										</div>
 									</div><!-- .js-valorfixo -->
 
-								</fieldset>
+								</fieldset>*/
+								?>
 							</div><!-- .js-dadosdacontratacao -->
 
-							<?php
-							$horarios = new Horarios(array('prefixo'=>$_p));
-							if($horarios->colaboradorCargaHoraria($cnt->id)) {
-								$carga=$horarios->carga;
-							}
-							?>
+							
 							<script type="text/javascript">
 								var horarios = [];
 								var id_colaborador=<?php echo $cnt->id;?>;
@@ -1529,109 +1714,7 @@
 							</script>
 
 							<div class="js-tabs js-habilitaragendamento" style="display:none;">
-								<fieldset>
-									<legend>Agendamento</legend>
-
-									<div class="colunas4">
-										
-									</div>
-									<div class="colunas4">
-										<dl class="dl">
-											<dt></dt>
-											<dd><label><input type="checkbox" class="input-switch js-check_agendamento" name="check_agendamento" value="1"<?php echo $values['check_agendamento']==1?" checked":"";?> /> Habilitar agendamento</label></dd>
-										</dl>
-										<dl class="js-box-habilitarAgendamento">
-											<dt>Carga Horária</dt>
-											<dd><input type="text" value="<?php echo sec_convert($carga,'HF');?>" class="js-carga" disabled />
-										</dl>
-										<dl class="js-box-habilitarAgendamento">
-											<dt>Inicial</dt>
-											<dd><input type="text" name="calendario_iniciais" value="<?php echo $values['calendario_iniciais'];?>" maxlength="2" style="text-transform: uppercase;" /></dd>
-										</dl>
-										<dl class="js-box-habilitarAgendamento">
-											<dt>Cor</dt>
-											<dd><input type="color" name="calendario_cor" value="<?php echo $values['calendario_cor'];?>" /></dd>
-										</dl>
-									</div>
-								</fieldset>
-
-								<fieldset class="js-fieldset-horarios js-box-habilitarAgendamento">
-									<legend>Horário de Atendimento</legend>
-									<input type="hidden" class="js-id" value="0" />
-
-									<div class="colunas4">
-										<dl>
-											<dt>Dia da Semana</dt>
-											<dd>
-												<select  class="js-dia">
-													<option value="">-</option>
-													<?php
-													for($i=0;$i<=6;$i++) {
-														echo '<option value="'.$i.'">'.$_dias[$i].'</option>';	
-													}
-													?>
-												</select>
-											</dd>
-										</dl>
-										<dl>
-											<dt>Início</dt>
-											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="text" name="inicio" class="js-inicio hora" /></dd>
-										</dl>
-										<dl>
-											<dt>Fim</dt>
-											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="text" name="fim" class="js-fim hora" /></dd>
-										</dl>
-										<dl>
-											<dt>Cadeira</dt>
-											<dd>
-												<select class="js-id_cadeira">
-													<option value="">-</option>
-													<?php
-														foreach($_cadeiras as $x) {
-													?>
-													<option value="<?php echo $x->id;?>"><?php echo utf8_encode($x->titulo);?></option>
-													<?php
-														}
-													?>
-												</select>
-												<a href="javascript:;" class="button button_main js-horarios-submit" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
-												<a href="javascript:;" class="button js-horarios-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-											</dd>
-										</dl>
-									</div>
-									<div class="list2">
-										<table class="js-horario-table">
-											<thead>
-												<tr>
-													<th style="width:13.5%">CADEIRA</th>
-													<th style="width:12.5%">DOM</th>
-													<th style="width:12.5%">SEG</th>
-													<th style="width:12.5%">TER</th>
-													<th style="width:12.5%">QUA</th>
-													<th style="width:12.5%">QUI</th>
-													<th style="width:12.5%">SEX</th>
-													<th style="width:12.5%">SÁB</th>
-												</tr>
-											</thead>
-											<tbody>
-												<?php
-												foreach($_cadeiras as $x) {
-												?>
-												<tr class="js-cadeira js-cadeira-<?php echo $x->id;?>">
-													<td><strong><?php echo utf8_encode($x->titulo);?></strong></td>
-													<?php
-														for($i=0;$i<=6;$i++) {
-															echo '<td class="js-td js-'.$x->id.'-'.$i.'"></td>';	
-														}
-													?>
-												</tr>
-												<?php
-													}
-												?>
-											</tbody>
-										</table>
-									</div>
-								</fieldset>
+								
 							</div>
 
 							<div class="js-tabs js-acessoaosistema" style="display:none;">

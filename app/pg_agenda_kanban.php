@@ -58,23 +58,29 @@
 				}
 
 				$_agendamentosConfirmacaoWts=array();
+				$_agendamentosLembretes=array();
 				if(count($agendaIds)>0) {
-					$sql->consult($_p."whatsapp_mensagens","*","where id_agenda IN (".implode(",",$agendaIds).") and id_tipo=1");
+					$sql->consult($_p."whatsapp_mensagens","*","where id_agenda IN (".implode(",",$agendaIds).") and id_tipo IN (1,2)");
 					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$_agendamentosConfirmacaoWts[$x->id_agenda]=1;
 
-						if($x->resposta_sim==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=2;
-						else if($x->resposta_nao==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=3;
-						else if($x->resposta_naocompreendida>0) $_agendamentosConfirmacaoWts[$x->id_agenda]=4;
-						else if($x->enviado==0 and $x->erro==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=6;
-						else {
-							$dif = strtotime(date('Y-m-d H:i'))-strtotime($x->data_enviado);
-							$dif /= 60;
-							$dif = ceil($dif);
+						if($x->id_tipo==1) {
+							$_agendamentosConfirmacaoWts[$x->id_agenda]=1;
 
-							if($dif>4) {
-								 $_agendamentosConfirmacaoWts[$x->id_agenda]=5;
+							if($x->resposta_sim==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=2;
+							else if($x->resposta_nao==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=3;
+							else if($x->resposta_naocompreendida>0) $_agendamentosConfirmacaoWts[$x->id_agenda]=4;
+							else if($x->enviado==0 and $x->erro==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=6;
+							else {
+								$dif = strtotime(date('Y-m-d H:i'))-strtotime($x->data_enviado);
+								$dif /= 60;
+								$dif = ceil($dif);
+
+								if($dif>4) {
+									 $_agendamentosConfirmacaoWts[$x->id_agenda]=5;
+								}
 							}
+						} else if($x->id_tipo==2) {
+							$_agendamentosLembretes[$x->id_agenda]=1;
 						}
 					}
 				}
@@ -95,7 +101,8 @@
 													'paciente'=>ucwords(strtolowerWLIB(utf8_encode($_pacientes[$x->id_paciente]->nome))),
 													'telefone1'=>mask($_pacientes[$x->id_paciente]->telefone1),
 													'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0,
-													'wts'=>(int)isset($_agendamentosConfirmacaoWts[$x->id])?$_agendamentosConfirmacaoWts[$x->id]:0
+													'wts'=>(int)isset($_agendamentosConfirmacaoWts[$x->id])?$_agendamentosConfirmacaoWts[$x->id]:0,
+													'lembrete'=>isset($_agendamentosLembretes[$x->id])?1:0
 												);
 					}
 				}
@@ -414,6 +421,11 @@
 								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span>aguard resp.</span></div>`;
 							}
 						}
+
+						let wtsLembrete = ``;
+						if(x.lembrete && x.lembrete==1) {
+							wtsLembrete=`<span class="iconify" data-icon="mdi:clock-alert-outline"></span>`;
+						}
 						//wtsIcon+=` ${x.wts}`
 						
 						if(eval(x.id_status)==5) {
@@ -421,7 +433,7 @@
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										<p>${x.telefone1}</p>
-										${wtsIcon}
+										${wtsIcon}${wtsLembrete}
 									</a>`;
 
 						} else {
@@ -429,7 +441,7 @@
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										${x.id_status==2?'':`<p>${x.telefone1}</p>`}
-										${wtsIcon}
+										${wtsIcon}${wtsLembrete}
 									</a>`;
 
 						

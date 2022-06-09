@@ -92,6 +92,17 @@ class Mysql {
 		$this->mysqry=mysqli_query($this->connecting, $sql);
 		
 	}
+	function insertMultiple($ms_table,$ms_fields,$ms_values) {
+
+		$this->connecting->begin_transaction();
+		$inserting="INSERT INTO $ms_table ($ms_fields) VALUES $ms_values";
+	
+		$qry=mysqli_query($this->connecting, $inserting) or die(mysqli_error($this->connecting));
+		if(mysqli_affected_rows($this->connecting)==0) $this->resul="erro";
+		$this->ulid=mysqli_insert_id($this->connecting);
+		$this->connecting->commit();
+		
+	}
 	function consultPagMto2($mysqltabela,$mysqlcampos,$myslimite,$mysargumentos,$mysurl,$inter,$pagnome,$root="") {
 		if(isset($this->bd_info[$mysqltabela])) { 
 			$ms_table="infodentalADM.".$this->bd_info[$ms_table];

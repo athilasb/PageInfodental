@@ -33,7 +33,7 @@
 			}
 
 			$horario = '';
-			if(is_object($cadeira) and isset($attr['id_horario']) and is_numeric($attr['id_horario'])) {
+			if(isset($attr['id_horario']) and is_numeric($attr['id_horario'])) {
 
 				$sql->consult($_table,"*","where id=".$attr['id_horario']);
 				if($sql->rows) $horario=mysqli_fetch_object($sql->mysqry);
@@ -44,19 +44,23 @@
 			$inputHoraFim = (isset($attr['inputHoraFim']) and strlen($attr['inputHoraFim'])==5) ? $attr['inputHoraFim'] : '';
 
 			$err='';
-			if(empty($cadeira)) $err='Cadeira não encontrada!';
-			else if(empty($diaSemana) and $diaSemana!=0) $err='Dia da semana não definido!';
+			if(empty($diaSemana) and $diaSemana!=0) $err='Dia da semana não definido!';
 			else if(empty($inputHoraInicio)) $err='Horário de início não definido!';
 			else if(empty($inputHoraFim)) $err='Horário de fim não definido!';
 			else if(strtotime($inputHoraInicio)>=strtotime($inputHoraFim)) $err='Horário fim deve ser maior que o Horário início';
 
 
 			if(empty($err)) {
+
+
+				if(empty($cadeira)) $cadeira=(object)array('id'=>0);
 				//echo $diaSemana." -> ".$inputHoraInicio." ".$inputHoraFim." -> \n\n";
 
 
 				if(is_object($colaborador)) {
 					$whereCadeira="where id_profissional=$colaborador->id and id_cadeira=$cadeira->id and dia=$diaSemana and lixo=0";
+
+
 					if(is_object($horario)) $whereCadeira.=" and id<>$horario->id";
 					$whereCadeira.=" order by inicio asc";
 
@@ -65,6 +69,7 @@
 					if(is_object($horario)) $whereCadeira.=" and id<>$horario->id";
 					$whereCadeira.=" order by inicio asc";
 				}
+
 				$sql->consult($_table,"*",$whereCadeira);
 				//echo $whereCadeira."\n".$sql->rows;die();
 

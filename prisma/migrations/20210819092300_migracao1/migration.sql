@@ -2545,5 +2545,27 @@ ALTER TABLE `ident_whatsapp_contatos`
 --
 ALTER TABLE `ident_whatsapp_instancias`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+CREATE TABLE `ident_whatsapp_mensagens_tipos` (
+  `id` int NOT NULL,
+  `titulo` varchar(150) NOT NULL,
+  `pub` tinyint(1) NOT NULL,
+  `getProfile` tinyint(1) NOT NULL,
+  `texto` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+INSERT INTO `ident_whatsapp_mensagens_tipos` (`id`, `titulo`, `pub`, `getProfile`, `texto`) VALUES
+(1, 'Confirmação de Agendamento', 0, 0, ''),
+(2, 'Lembrete de Agendamento', 0, 0, ''),
+(3, 'Cancelamento de Agendamento', 0, 0, ''),
+(4, 'Relacionamento Gestão de Tempo', 0, 0, '');
+
+ALTER TABLE `ident_whatsapp_mensagens_tipos`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `ident_whatsapp_mensagens_tipos`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
 COMMIT;
 

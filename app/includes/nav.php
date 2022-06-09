@@ -54,7 +54,6 @@
 
 			$_dirFoto=$_cloudinaryPath."arqs/colaboradores/";
 			$ft="img/ilustra-usuario.jpg";
-
 			if(!empty($usr->foto)) {
 				$ft=$_cloudinaryURL.',w_50/'.$usr->foto;
 			}

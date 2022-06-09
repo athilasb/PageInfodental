@@ -81,12 +81,11 @@
 
 	# Envia confirmacao de 3h de antecedencia para agendamentos confirmados (id_tipo=2)
 		echo "<h1>Lembrete de 3h</h1>";
-		$dataInicio = date('Y-m-d H:i:s',strtotime(date('Y-m-d H:i:s')." + 2 hours"));
+		$dataInicio = date('Y-m-d H:i:s',strtotime(date('Y-m-d H:i:s')." + 1 hours"));
 		$dataFim = date('Y-m-d H:i:s',strtotime(date('Y-m-d H:i:s')." + 3 hours"));
 
 	
 
-		// agendamentos nas proximas 24h - 48h
 		$sql->consult($_p."agenda","*","where agenda_data >= '$dataInicio' and 
 												agenda_data <= '$dataFim' and id_status=2 and lixo=0 order by agenda_data asc");
 		echo $dataInicio."<br />".$dataFim."<BR>Resultado: $sql->rows<BR><BR>";
