@@ -114,6 +114,7 @@
 						</section>
 
 						<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script> 
+
 						<script type="text/javascript">
 							var cloudinaryURL = '<?php echo $_cloudinaryURL;?>';
 							const tipoPessoa = () => {
@@ -128,6 +129,7 @@
 							var logo = cloudinary.createUploadWidget({
 								cloudName: '<?php echo $_cloudinaryCloudName;?>',
 								language: 'pt',
+								button_caption:'a',
 								text: <?php echo json_encode($_cloudinaryText);?>,
 								multiple: false,
 								sources: ["local"],
@@ -174,6 +176,7 @@
 						</script>
 						<form method="post" class="form formulario-validacao">
 							<input type="hidden" name="acao" value="wlib" />
+							<button style="display:none;"></button>
 
 							<fieldset>
 								<legend>Dados Gerais</legend>
@@ -221,10 +224,62 @@
 												</dd>
 											</dl>
 										</div>
+										<script>
+											var marker = '';
+											var map = '';
+											var position = '';
+											var positionEndereco = '';
+											var el = document.getElementById("geolocation");
+											var location_timeout = '';
+											var geocoder = '';
+											var enderecoObj = {};
+											var enderecos = [];	
+											var lat = `-16.688304`;
+											var lng = `-49.267055`;
+
+											function initMap() {
+												let options = {componentRestrictions: {country: "bra"}}
+												var input = document.getElementById('search');
+
+												var autocomplete = new google.maps.places.Autocomplete(input,options);
+												geocoder = new google.maps.Geocoder();
+
+												autocomplete.addListener('place_changed', function() {
+
+													var result = autocomplete.getPlace();
+													lat = result.geometry.location.lat();
+													lng = result.geometry.location.lng();
+													$('input[name=lat]').val(lat);
+													$('input[name=lng]').val(lng);
+
+													let logradouro = '';
+													let numero = '';
+													let bairro = '';
+													let cep = '';
+													let cidade = '';
+													let estado = '';
+													let pais = '';
+													let descricao = '';
+
+													enderecoObj = { logradouro, numero, bairro, cep, cidade, estado, pais, descricao, lat, lng }
+
+													$('input[name=lat]').val(enderecoObj.lat);
+													$('input[name=lng]').val(enderecoObj.lng);
+												});
+
+											}	
+										</script>
+										<script async src="https://maps.googleapis.com/maps/api/js?key=<?php echo $_googleMapsKey;?>&libraries=places&callback=initMap">
+										</script>
 										<div class="colunas">
 											<dl>
 												<dt>Endereço</dt>
-												<dd><input type="text" name="endereco" value="<?php echo $values['endereco'];?>" class="" /></dd>
+												<dd>
+													<input type="text" name="endereco" value="<?php echo $values['endereco'];?>" class="" id="search" />
+
+													<input type="hidden" name="lat" />
+													<input type="hidden" name="lng" />
+												</dd>
 											</dl>
 											<dl>
 												<dt>Complemento</dt>
@@ -348,7 +403,7 @@
 										<dl>
 											<dt>Logotipo</dt>
 											<dd>
-												<button id="logo" onclick="return false;" class="button button_main">Procurar</button>
+												<a href="javascript:;" id="logo" class="button button_main">Procurar</a>
 												<input type="hidden" name="cn_logo" />
 											</dd>
 										</dl>

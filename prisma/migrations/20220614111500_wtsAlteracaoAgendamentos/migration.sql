@@ -1,0 +1,1 @@
+UPDATE ident_whatsapp_mensagens_tipos SET titulo='Alteração de Agendamento que foram Confirmados' where id=5;

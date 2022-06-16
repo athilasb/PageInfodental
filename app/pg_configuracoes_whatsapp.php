@@ -34,7 +34,7 @@
 	$values['tipo']='PJ';
 
 	$cnt='';
-	$sql->consult($_table,"*","limit 1");
+	$sql->consult($_table,"*","where lixo=0 limit 1");
 	if($sql->rows) {
 		$cnt=mysqli_fetch_object($sql->mysqry);
 		$values=$adm->values($campos,$cnt);
@@ -42,7 +42,7 @@
 
 
 	$_tipos=array();
-	$sql->consult($_table,"*","order by id asc");
+	$sql->consult($_table,"*","where lixo=0 order by id asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_tipos[$x->id]=$x;
 	}
@@ -65,8 +65,8 @@
 		foreach($_tipos as $t) {
 
 			$vSQL="pub='".((isset($_POST['pub-'.$t->id]) && $_POST['pub-'.$t->id]==1)?1:0)."',
+					geolocalizacao='".((isset($_POST['geolocalizacao-'.$t->id]) && $_POST['geolocalizacao-'.$t->id]==1)?1:0)."',
 					texto='".($_POST['texto-'.$t->id])."'";
-
 			$vWHERE="where id='".$t->id."'";
 			$sql->update($_table,$vSQL,$vWHERE);
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
@@ -79,7 +79,10 @@
 				pubNaoIdentificado='".((isset($_POST['pubNaoIdentificado']) and $_POST['pubNaoIdentificado']==1)?1:0)."',
 				msgSim='".addslashes($_POST['msgSim'])."',
 				msgNao='".addslashes($_POST['msgNao'])."',
-				msgNaoIdentificado='".addslashes($_POST['msgNaoIdentificado'])."',
+				msgNaoIdentificado='".addslashes($_POST['msgNaoIdentificado'])."'";
+			/*
+			2022-06-14 -> removido por Luciano porque nao tera mais whatsapp no gestao de tempo
+				,
 				pubInteligenciaSim='".((isset($_POST['pubInteligenciaSim']) and $_POST['pubInteligenciaSim']==1)?1:0)."',
 				pubInteligenciaNao='".((isset($_POST['pubInteligenciaNao']) and $_POST['pubInteligenciaNao']==1)?1:0)."',
 				pubInteligenciaNaoIdentificado='".((isset($_POST['pubInteligenciaNaoIdentificado']) and $_POST['pubInteligenciaNaoIdentificado']==1)?1:0)."',
@@ -87,6 +90,7 @@
 				msgInteligenciaNao='".addslashes($_POST['msgInteligenciaNao'])."',
 				msgInteligenciaNaoIdentificado='".addslashes($_POST['msgInteligenciaNaoIdentificado'])."'
 				";
+			*/
 
 		$sql->update($_p."whatsapp_respostasdeconfirmacao",$vSQL,"where id=$wrc->id");
 
@@ -217,6 +221,17 @@
 									<dd>
 										<textarea name="texto-<?php echo $x->id;?>" style="height:200px;"><?php echo ($x->texto);?></textarea>
 									</dd>
+									<?php
+									// Lembrete de Agendamento inclui envio de geolocalizacao
+
+									if($x->id==2) {
+									?>
+									<dd>
+										<label><input type="checkbox" name="geolocalizacao-<?php echo $x->id;?>" value="1"<?php echo $x->geolocalizacao==1?" checked":"";?> /> Enviar geolocalização em seguida</label>
+									</dd>
+									<?php
+									}
+									?>
 								</dl>
 								<?php
 								}
@@ -257,7 +272,8 @@
 
 							</fieldset>
 
-							<fieldset>
+						<?php 
+							/*<fieldset>
 								<legend>Respostas para Relacionamento de Gestão do Tempo</legend>
 
 
@@ -288,7 +304,8 @@
 									</dd>
 								</dl>
 
-							</fieldset>
+							</fieldset>*/
+						?>
 
 							<fieldset class="box-registros">
 								<legend>Palavra Chaves</legend>
@@ -311,6 +328,14 @@
 										<td>Horário do agendamento (HH:mm)</td>
 									</tr>
 									<tr>
+										<td>[agenda_antiga_data]</td>
+										<td>Data do agendamento que foi alterado (dd/mm/AAAA)</td>
+									</tr>
+									<tr>
+										<td>[agenda_antiga_hora]</td>
+										<td>Horário do agendamento que foi alterado (HH:mm)</td>
+									</tr>
+									<tr>
 										<td>[consultorio]</td>
 										<td>Consultório do agendamento</td>
 									</tr>
@@ -325,6 +350,14 @@
 									<tr>
 										<td>[tempo_sem_atendimento]</td>
 										<td>Tempo de cadastro em meses</td>
+									</tr>
+									<tr>
+										<td>[clinica_nome]</td>
+										<td>Nome da Clínica</td>
+									</tr>
+									<tr>
+										<td>[clinica_endereco]</td>
+										<td>Endereço da Clínica</td>
 									</tr>
 								</table>
 							</fieldset>

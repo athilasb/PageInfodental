@@ -15,7 +15,7 @@
 			$_p=$this->prefixo;
 
 			$tipos=array();
-			$sql->consult($_p."whatsapp_mensagens_tipos","*","");
+			$sql->consult($_p."whatsapp_mensagens_tipos","*","where lixo=0");
 			while($x=mysqli_fetch_object($sql->mysqry)) $tipos[$x->id]=$x;
 
 			$this->tipos=$tipos;
@@ -40,6 +40,9 @@
 
 		function mensagemAtalhos($attr) {
 
+			$sql = new Mysql();
+			$_p=$this->prefixo;
+
 			$_dias=array('Domingo',
 						'Segunda-Feira',
 						'Terça-Feira',
@@ -60,13 +63,30 @@
 			}
 			if(is_object($agenda)) {
 
+				$clinica='';
+				$sql->consult($_p."clinica","clinica_nome,endereco","order by id desc limit 1");
+				if($sql->rows) $clinica=mysqli_fetch_object($sql->mysqry);
+
 				$dataFormatada=$_dias[date('w',strtotime($agenda->agenda_data))].", ";
 				$dataFormatada.=date('d/m/Y',strtotime($agenda->agenda_data));
 
 				$msg = str_replace("[agenda_data]",$dataFormatada, $msg);
 				$msg = str_replace("[agenda_hora]",date('H:i',strtotime($agenda->agenda_data)), $msg);
+
+
+				$dataFormatada=$_dias[date('w',strtotime($agenda->agenda_data_original))].", ";
+				$dataFormatada.=date('d/m/Y',strtotime($agenda->agenda_data_original));
+
+				$msg = str_replace("[agenda_antiga_data]",$dataFormatada, $msg);
+				$msg = str_replace("[agenda_antiga_hora]",date('H:i',strtotime($agenda->agenda_data_original)), $msg);
+
 				$msg = str_replace("[profissionais]",($profissionais), $msg);
 				$msg = str_replace("[duracao]",($agenda->agenda_duracao)." minutos", $msg);
+
+				if(is_object($clinica)) {
+					$msg = str_replace("[clinica_nome]",(utf8_encode($clinica->clinica_nome)), $msg);
+					$msg = str_replace("[clinica_endereco]",(utf8_encode($clinica->endereco)), $msg);
+				}
 
 
 				$dias='';
@@ -110,6 +130,15 @@
 				if($tipo->pub==1) {
 
 
+					$profissional = '';
+					if(isset($attr['id_profissional']) and is_numeric($attr['id_profissional'])) {
+						$sql->consult($_p."colaboradores","id,nome,telefone1","where id=".$attr['id_profissional']." and lixo=0");
+						if($sql->rows) {
+							$profissional=mysqli_fetch_object($sql->mysqry);
+						}
+					}
+
+
 					$paciente = '';
 					if(isset($attr['id_paciente']) and is_numeric($attr['id_paciente'])) {
 						$sql->consult($_p."pacientes","id,nome,telefone1","where id=".$attr['id_paciente']." and lixo=0");
@@ -122,7 +151,7 @@
 					if(isset($attr['id_agenda']) and is_numeric($attr['id_agenda'])) {
 						$whereAg="where id=".$attr['id_agenda']." and lixo=0";
 						//echo $whereAg."<BR>";
-						$sql->consult($_p."agenda","id,id_paciente,id_cadeira,agenda_data,agenda_duracao,profissionais",$whereAg);
+						$sql->consult($_p."agenda","id,id_paciente,id_cadeira,agenda_data,agenda_data_original,agenda_duracao,profissionais",$whereAg);
 						//echo $whereAg." => $sql->rows<BR>";
 						if($sql->rows) {
 							$agenda=mysqli_fetch_object($sql->mysqry);
@@ -160,15 +189,16 @@
 					// Lembrete de Agendamento 24-18h (id_tipo=1)
 					// Lembrete de Agendamento 3h (id_tipo=2)
 					// Cancelamento (id_tipo=3)
+					// Alteração de horario da agenda (id_tipo=5)
 					$this->erro='';
-					if($tipo->id==1 or $tipo->id==2 or $tipo->id==3) {
+					if($tipo->id==1 or $tipo->id==2 or $tipo->id==3 or $tipo->id==5) {
 
 						if(is_object($paciente)) {
 
 							if(is_object($agenda)) {
 
 								$ultimoAgendamento='';
-								$sql->consult($_p."agenda","agenda_data,id","where id_paciente=$paciente->id and id_status=5 order by agenda_data desc limit 1");
+								$sql->consult($_p."agenda","agenda_data,id,agenda_data_original","where id_paciente=$paciente->id and id_status=5 order by agenda_data desc limit 1");
 								if($sql->rows) {
 									$ultimoAgendamento=mysqli_fetch_object($sql->mysqry);
 								}
@@ -191,8 +221,9 @@
 													'profissionais'=>$profissionais,
 													'cadeira'=>$cadeira,
 													'msg'=>$msg);
+
 										$msg = $this->mensagemAtalhos($attr);
-										//echo "<br />=> ".$msg."<BR>";
+										//echo "<br />=> ".$msg."<BR>";die();
 
 										// verifica se ja enviou
 										$where="where id_agenda=$agenda->id and 
@@ -216,6 +247,19 @@
 
 											$sqlWts->add($_p."whatsapp_mensagens",$vSQL);
 
+											$id_whatsapp_fila=$sqlWts->ulid;
+
+											// Alteração de horario da agenda (id_tipo=5)
+											if($tipo->id==5) {
+												// atualiza data original, e agenda_alteracao_id_whatsapp
+												$vsql="agenda_alteracao_id_whatsapp='".$id_whatsapp_fila."',
+														agenda_data_original='".$agenda->agenda_data."'";
+												$sql->update($_p."agenda",$vsql,"where id=$agenda->id");
+											}
+
+
+
+
 											return true;
 
 										} else {
@@ -236,11 +280,95 @@
 						} else {
 							$this->erro="Paciente não encontrado!";
 						}
-					} else if($tipo->id==4) {
+					} 
+
+					// Confirmação de agendamento para dentistas (id_tipo=6)
+					else if($tipo->id==6) {
+						if(is_object($paciente)) {
+
+							if(is_object($agenda)) {
+
+								if(is_object($profissional)) {
+									if($agenda->id_paciente == $paciente->id) {
+
+										$msg = $tipo->texto;
+										$numero = telefone($profissional->telefone1);
+
+
+										if(!empty($numero) and !empty($msg)) {
+
+											if(in_array($numero,$this->block)) {
+												$this->erro="Numero bloqueado ($numero)";
+												return false;
+											}
+
+											$attr=array('paciente'=>$paciente,
+														'agenda'=>$agenda,
+														'profissionais'=>$profissionais,
+														'cadeira'=>$cadeira,
+														'msg'=>$msg);
+
+											$msg = $this->mensagemAtalhos($attr);
+											
+											// verifica se ja enviou
+											$where="where id_agenda=$agenda->id and 
+															id_paciente=$paciente->id and 
+															id_tipo=$tipo->id  and 
+															numero='".addslashes($numero)."' and 
+															data > NOW() - INTERVAL 48 HOUR";
+
+											$sql->consult($_p."whatsapp_mensagens","*",$where);
+
+										
+											if($sql->rows==0) {
+
+												$vSQL="data=now(),
+														id_tipo=$tipo->id,
+														id_paciente=$paciente->id,
+														id_agenda=$agenda->id,
+														id_profissional=$profissional->id,
+														numero='$numero',
+														mensagem='$msg'";
+
+
+												$sqlWts->add($_p."whatsapp_mensagens",$vSQL);
+
+												$id_whatsapp_fila=$sqlWts->ulid;
+
+												
+
+												return true;
+
+											} else {
+												$this->erro="Esta mensagem já foi cadastrada nos últimos 60 minutos";
+											}
+										} else {
+											$this->erro="Paciente #$paciente->id não possui número de whatsapp";
+										}
+
+									} else {
+										$this->erro="Agendamento #$agenda->id não é do paciente #$paciente->id";
+									}
+								} else {
+									$this->erro="Profissional não encontrado!";
+								}
+
+							} else {
+								$this->erro="Agendamento não encontrado!";
+							}
+
+						} else {
+							$this->erro="Paciente não encontrado!";
+						}
+					}
+
+
+					// Relacionamento Gestão do Tempo (id_tipo=4)
+					else if($tipo->id==4) {
 						if(is_object($paciente)) {
 
 							$ultimoAgendamento='';
-							$sql->consult($_p."agenda","agenda_data,id","where id_paciente=$paciente->id and id_status=5 order by agenda_data desc limit 1");
+							$sql->consult($_p."agenda","agenda_data,agenda_data_original,id","where id_paciente=$paciente->id and id_status=5 order by agenda_data desc limit 1");
 							if($sql->rows) {
 								$ultimoAgendamento=mysqli_fetch_object($sql->mysqry);
 							}
@@ -396,6 +524,9 @@
 
 				$conexao=$sql->rows?mysqli_fetch_object($sql->mysqry):'';
 				
+				$clinica='';
+				$sql->consult($_p."clinica","clinica_nome,endereco,lat,lng","order by id desc limit 1");
+				if($sql->rows) $clinica=mysqli_fetch_object($sql->mysqry);
 
 				$sql->add($_p."whatsapp_disparos","data=now(),ativo=1");
 				$id_disparo=0;//$sql->ulid;
@@ -420,7 +551,7 @@
 							$paciente = isset($_pacientes[$v->id_paciente])?$_pacientes[$v->id_paciente]:'';
 							$agenda = isset($_agendas[$v->id_agenda])?$_agendas[$v->id_agenda]:'';
 							$profissional = isset($_profissionais[$v->id_profissional])?$_profissionais[$v->id_profissional]:'';
-							if($tipo->id==1 or $tipo->id==2 or $tipo->id==3 or $tipo->id==4) {
+							if($tipo->id==1 or $tipo->id==2 or $tipo->id==3 or $tipo->id==4 or $tipo->id==5 or $tipo->id==6) {
 
 								if(is_object($paciente) and is_object($agenda)) {
 
@@ -454,6 +585,25 @@
 													}*/
 												}
 											}
+										}
+
+
+										// se tiver habilitado para enviar geolozalizacao
+										if($tipo->geolocalizacao==1 and !empty($clinica->lat) and !empty($clinica->lng)) {
+											$attr=array('numero'=>$v->numero,
+															'lat'=>$clinica->lat,
+															'lng'=>$clinica->lng,
+															'id_conexao'=>$conexao->id,
+															'name'=>($clinica->clinica_nome),
+															'descricao'=>($clinica->clinica_nome.(!empty($clinica->endereco)?" ".$clinica->endereco:"")));
+										
+											if($this->enviaLocalizacao($attr)) {
+												echo "localizacao enviada com sucesso!";
+											} else {
+												echo "erro ao enviar localizacao: $this->erro";
+											}
+
+
 										}
 											
 											
@@ -569,27 +719,20 @@
 			$sql=new Mysql(true);
 
 			$numero=(isset($attr['numero']) and is_numeric($attr['numero']))?$attr['numero']:'';
-			$mensagem=(isset($attr['mensagem']) and !empty($attr['mensagem']))?$attr['mensagem']:'';
 			$lat=(isset($attr['lat']) and !empty($attr['lat']))?$attr['lat']:'';
 			$lng=(isset($attr['lng']) and !empty($attr['lng']))?$attr['lng']:'';
+			$descricao=(isset($attr['descricao']) and !empty($attr['descricao']))?$attr['descricao']:'';
 			$name=(isset($attr['name']) and !empty($attr['name']))?$attr['name']:'';
 
-			$unidade='';
-			if(isset($attr['id_unidade']) and is_numeric($attr['id_unidade'])) {
-				$sql->consult($_p."unidades","*","where id=".$attr['id_unidade']);
-				if($sql->rows) $unidade=mysqli_fetch_object($sql->mysqry);
-			}
-
+			
 			$conexao='';
-			if(is_object($unidade) and isset($attr['id_conexao']) and is_numeric($attr['id_conexao'])) {
-				$sql->consult("vucaADM.vuca_contas_vucazaps_unidades","*","where id=".$attr['id_conexao']." and id_unidade=$unidade->id");
+			if(isset($attr['id_conexao']) and is_numeric($attr['id_conexao'])) {
+				$sql->consult("infodentalADM.infod_contas_onlines","*","where id=".$attr['id_conexao']);
 				if($sql->rows) $conexao=mysqli_fetch_object($sql->mysqry);
 			}
 
-			if(empty($unidade)) $erro='Unidade não encontrada';
-			else if(empty($conexao)) $erro="Nenhum whatsapp está conectado a esta unidade";
+			if(empty($conexao)) $erro="Nenhum whatsapp está conectado a esta unidade";
 			else if(empty($numero)) $erro="Número destinatário não definido";
-			//	else if(empty($mensagem)) $erro="Mensagem não definida!";
 			else if(empty($lat) or empty($lng)) $erro="Coordenadas não definida!";
 			else {
 
@@ -598,18 +741,14 @@
 									'location'=>array('lat'=>$lat,
 														'lng'=>$lng,
 														'name'=>$name,
-														'description'=>$mensagem));
-				$sql->add($_p."whatsapp_log","data=now(),
-												endpoint='".$this->endpoint."/send/location',
-												params='".addslashes(json_encode($postfields))."',
-												id_unidade=$unidade->id");
-				$id_log=$sql->ulid;
+														'description'=>$descricao));
+				
 				
 				$curl = curl_init();
 
 				curl_setopt_array($curl, [
 				  CURLOPT_PORT => "8443",
-				  CURLOPT_URL => $this->endpoint."/send/location",
+				  CURLOPT_URL => $this->endpoint."/message/location",
 				  CURLOPT_RETURNTRANSFER => true,
 				  CURLOPT_ENCODING => "",
 				  CURLOPT_MAXREDIRS => 10,
@@ -624,19 +763,21 @@
 				]);
 
 				$response = curl_exec($curl);
+
+				var_dump($response);
+
 				$err = curl_error($curl);
 
 				curl_close($curl);
+				$this->response=$response;
 
 				if($err) {
-				  $this->erro="cURL Error #:" . $err;
-				  $sql->update($_p."whatsapp_log","response='Erro: ".addslashes($err)."'","where id=$id_log");
-				  return false;
+				  $erro="cURL Error #:" . $err;
 				} else {
-				  $this->response=$response;
-				  $sql->update($_p."whatsapp_log","response='".addslashes($this->response)."'","where id=$id_log");
+				 
 				}
 			}
+
 
 			if(empty($erro)) {
 				return true;

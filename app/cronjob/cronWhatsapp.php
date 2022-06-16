@@ -78,7 +78,6 @@
 			}
 		}
 
-
 	# Envia confirmacao de 3h de antecedencia para agendamentos confirmados (id_tipo=2)
 		echo "<h1>Lembrete de 3h</h1>";
 		$dataInicio = date('Y-m-d H:i:s',strtotime(date('Y-m-d H:i:s')." + 1 hours"));
@@ -103,10 +102,8 @@
 			}
 		}
 
+	# Envia mensagens que não foram enviadas por falta de conexao
 
-	# Envia mensagems que não foram enviadas por falta de conexao
-
-		
 		$sql->consult($_p."whatsapp_mensagens","*","where data > NOW() - INTERVAL 24 HOUR and id_tipo=1 and erro=1");
 		if($sql->rows) {
 
@@ -153,6 +150,35 @@
 
 					}
 				}
+			}
+		}
+
+	# Envia mensagens notificando alteracao de data
+
+		$dataInicio=date('Y-m-d H:i',strtotime(date('Y-m-d H:i')." - 60 minutes"));
+		$dataFim=date('Y-m-d H:i',strtotime(date('Y-m-d H:i')." - 31 minutes"));
+
+		$where="where agenda_alteracao_data>='".$dataInicio."' and agenda_alteracao_data<='".$dataFim."' and id_status=2 and agenda_alteracao_id_whatsapp=0 and lixo=0";
+
+		$sql->consult($_p."agenda","id,id_paciente,agenda_data",$where);
+		echo $where."->".$sql->rows."<HR>";;
+		if($sql->rows) {
+			$regs=array();
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$regs[]=$x;
+			}
+
+			foreach($regs as $x) {
+
+				$attr=array('id_tipo'=>5,
+							'id_paciente'=>$x->id_paciente,
+							'id_agenda'=>$x->id);
+				
+				if($wts->adicionaNaFila($attr)) {
+					echo "ok";
+
+				}
+				else echo "erro: ".$wts->erro;
 			}
 		}
 

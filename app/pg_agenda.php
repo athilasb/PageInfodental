@@ -125,6 +125,7 @@
 
 					$_historico=array();
 					$sql->consult($_p."pacientes_historico","*","where id_agenda=$cnt->id and lixo=0 order by data desc");
+
 					
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 
@@ -137,7 +138,7 @@
 																);
 
 						} else {
-							if(isset($_status[$x->id_status_novo])) { continue;
+							if(isset($_status[$x->id_status_novo])) { 
 								$_historico[]=array('usr'=>utf8_encode($_profissionais[$x->id_usuario]->nome),
 																	'dt'=>date('d/m H:i',strtotime($x->data)),
 																	'ev'=>'status',
@@ -150,6 +151,7 @@
 						}
 						
 					}
+
 
 
 					$dias=strtotime(date('Y-m-d H:i:s'))-strtotime($cnt->data);
@@ -364,6 +366,9 @@
 						agenda_data_novo='$agendaAlterado',
 						descricao=''";
 					$sql->add($_p."pacientes_historico",$vSQLHistorico);
+
+					// altera campo agenda_alteracao_data para enviar a notificacao de alteração de horário
+					$sql->update($_p."agenda","agenda_alteracao_data=now(),agenda_alteracao_id_whatsapp=0","where id=$agenda->id");
 				}
 
 
@@ -410,6 +415,10 @@
 						id_status_novo=".$idStatusNovo.",
 						descricao=''";
 					$sql->add($_p."pacientes_historico",$vSQLHistorico);
+
+
+					// altera campo agenda_alteracao_data para enviar a notificacao de alteração de horário
+					$sql->update($_p."agenda","agenda_alteracao_data=now(),agenda_alteracao_id_whatsapp=0","where id=$agenda->id");
 				}
 
 				$rtn=array('success'=>true);
@@ -534,7 +543,6 @@
 					$sql->update($_p."agenda",$vSQL,$vWHERE);
 					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."agenda',id_reg='".$agenda->id."'");
 
-
 					if($agenda->id_status!=$_POST['id_status']) {
 						$vSQLHistorico="data=now(),
 								id_usuario=$usr->id,
@@ -545,6 +553,7 @@
 								id_status_novo=".$idStatusNovo.",
 								descricao=''";
 						$sql->add($_p."pacientes_historico",$vSQLHistorico);
+
 					}
 
 
@@ -561,6 +570,10 @@
 							id_status_novo=".$idStatusNovo.",
 							descricao=''";
 						$sql->add($_p."pacientes_historico",$vSQLHistorico);
+
+
+						// altera campo agenda_alteracao_data para enviar a notificacao de alteração de horário
+						$sql->update($_p."agenda","agenda_alteracao_data=now(),agenda_alteracao_id_whatsapp=0","where id=$agenda->id");
 					}
 
 					// veririca se desmarcou
@@ -574,8 +587,44 @@
 							//var_dump($attr);
 							if($infozap->adicionaNaFila($attr)) $wts=1;
 
+						} else if($idStatusNovo==2) {
+							// se virou para confirmado, envia wts para dentista
+							$sql->consult($_p."agenda","*","where id=$agenda->id and id_status=2");
+							if($sql->rows) {
+								$agendaNew=mysqli_fetch_object($sql->mysqry); // registro de agenda atualizado
+
+								if(!empty($agendaNew->profissionais)) {
+
+									$profissionaisIds=array();
+									$auxProfissionais = explode(",",$agenda->profissionais);
+									foreach($auxProfissionais as $idProfissional) {
+										if(!empty($idProfissional) and is_numeric($idProfissional)) {
+											$profissionaisIds[]=$idProfissional;
+										}
+									}
+
+									if(count($profissionaisIds)>0) {
+										$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisIds).")");
+										while($x=mysqli_fetch_object($sql->mysqry)) {
+											if(!empty($x->telefone1)) {
+												$attr=array('id_tipo'=>6,
+															'id_paciente'=>$agendaNew->id_paciente,
+															'id_profissional'=>$x->id,
+															'id_agenda'=>$agendaNew->id);
+									
+												if($infozap->adicionaNaFila($attr)) {
+													$wts=1;
+
+												}
+											}
+										}
+									}
+
+								}
+							}
 						}
 					//}
+
 
 				
 
@@ -768,6 +817,7 @@
 							id_cadeira=$cadeira->id,
 							id_unidade=1,
 							agenda_data='".$agendaData."',
+							agenda_data_original='".$agendaData."',
 							agenda_data_final='".date('Y-m-d H:i:s',strtotime($agendaData." + $duracao minutes"))."',
 							agenda_duracao='".$duracao."',
 							agendaPessoal=1
@@ -812,6 +862,7 @@
 							id_unidade=1,
 							id_status=$status->id,
 							agenda_data='".$agendaData."',
+							agenda_data_original='".$agendaData."',
 							agenda_data_final='".date('Y-m-d H:i:s',strtotime($agendaData." + $duracao minutes"))."',
 							agenda_duracao='".$duracao."'
 							";

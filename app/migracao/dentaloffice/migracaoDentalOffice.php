@@ -304,6 +304,7 @@
 							id_unidade=1,
 							id_status='".$a['id_status']."',
 							agenda_data='".$a['data']."',
+							agenda_data_original='".$a['data']."',
 							agenda_data_final='".date('Y-m-d H:i:s',strtotime($a['data']." + $duracao minutes"))."',
 							agenda_duracao='".$duracao."',
 							obs='".addslashes(utf8_decode($a['obs']))."'

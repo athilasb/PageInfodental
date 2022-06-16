@@ -3,7 +3,7 @@
 	require_once("../lib/conf.php");
 	require_once("../lib/classes.php");
 
-	
+	$sql = new Mysql();
 	$usr = (object) array('id'=>1);
 
 	$attr=array('prefixo'=>$_p,'usr'=>$usr);
@@ -17,7 +17,7 @@
 	}
 
 
-	$sql = new Mysql();
+	/*
 	$sql->consult($_p."whatsapp_mensagens","*","where data > NOW() - INTERVAL 24 HOUR and id_tipo=1 and erro=1");
 	echo $sql->rows;
 	if($sql->rows) {
@@ -69,22 +69,97 @@
 			}
 		}
 	}
+	die();*/
+
+	/*
+	
+
+	// -> ALTERACAO DE HORARIO
+		$dataInicio=date('Y-m-d H:i',strtotime(date('Y-m-d H:i')." - 60 minutes"));
+		$dataFim=date('Y-m-d H:i',strtotime(date('Y-m-d H:i')." - 31 minutes"));
+
+		$where="where agenda_alteracao_data>='".$dataInicio."' and agenda_alteracao_data<='".$dataFim."' and id_status=5 and agenda_alteracao_id_whatsapp=0 and lixo=0";
+
+		$sql->consult($_p."agenda","id,id_paciente,agenda_data",$where);
+		echo $where."->".$sql->rows."<HR>";;
+		if($sql->rows) {
+			$regs=array();
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$regs[]=$x;
+			}
+
+			foreach($regs as $x) {
+
+				$attr=array('id_tipo'=>5,
+							'id_paciente'=>$x->id_paciente,
+							'id_agenda'=>$x->id);
+				
+				if($wts->adicionaNaFila($attr)) {
+					echo "ok";
+
+				}
+				else echo "erro: ".$wts->erro;
+			}
+		}
+	*/
+
+	// -> CONFIRMAÇÃO DE AGENDAMENTO (id_tipo=6)
+
+		$where="where id=27808";
+
+		$sql->consult($_p."agenda","*",$where);
+		if($sql->rows) {
+			$agenda=mysqli_fetch_object($sql->mysqry);
+
+
+			if(!empty($agenda->profissionais)) {
+
+				$profissionaisIds=array();
+				$auxProfissionais = explode(",",$agenda->profissionais);
+				foreach($auxProfissionais as $idProfissional) {
+					if(!empty($idProfissional) and is_numeric($idProfissional)) {
+						$profissionaisIds[]=$idProfissional;
+					}
+				}
+
+				if(count($profissionaisIds)>0) {
+					$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisIds).")");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						if(!empty($x->telefone1)) {
+							$attr=array('id_tipo'=>6,
+										'id_paciente'=>$agenda->id_paciente,
+										'id_profissional'=>$x->id,
+										'id_agenda'=>$agenda->id);
+				
+							if($wts->adicionaNaFila($attr)) {
+								echo "ok";
+
+							}
+							else echo "erro: ".$wts->erro;
+						}
+					}
+				}
+
+			}
+		}
+
 	die();
-
-
 
 	echo "Starting...";
 
 	echo "<hr >";
 
 	// Novo Agendamento
-	echo "<h1>Confirmação de Agendamento</h1>";
-	$attr=array('id_tipo'=>1,
-				'id_paciente'=>6216,
-				'id_agenda'=>10348);
-	if($wts->adicionaNaFila($attr)) echo "ok";
-	else echo "erro: ".$wts->erro;
-	echo "<br />";
+	if(1==2) {
+		echo "<h1>Confirmação de Agendamento</h1>";
+		$attr=array('id_tipo'=>1,
+					'id_paciente'=>6216,
+					'id_agenda'=>10348);
+		if($wts->adicionaNaFila($attr)) echo "ok";
+		else echo "erro: ".$wts->erro;
+		echo "<br />";
+	}
+
 
 
 

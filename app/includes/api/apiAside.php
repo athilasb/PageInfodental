@@ -894,6 +894,7 @@
 					$vSQL="id_status=$idStatusNovo,
 							id_paciente=$paciente->id,
 							agenda_data='".$agendaData."',
+							agenda_data_original='".$agendaData."',
 							agenda_duracao='".$agenda_duracao."',
 							agenda_data_final='".$agendaFinal."',
 							id_cadeira='".$cadeira->id."',
@@ -1151,7 +1152,7 @@
 				}	
 
 				$wtsMsg = '';
-				$sql->consult($_p."whatsapp_mensagens_tipos","*","where id=4");
+				$sql->consult($_p."whatsapp_mensagens_tipos","*","where id=4 and lixo=0");
 				if($sql->rows) {
 					$wtsMsg=mysqli_fetch_object($sql->mysqry);
 				}

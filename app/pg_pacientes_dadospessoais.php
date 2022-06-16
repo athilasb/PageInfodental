@@ -173,6 +173,7 @@
 
 				<form method="post" class="form formulario-validacao">
 					<input type="hidden"  name="acao" value="wlib" />
+					<button style="display:none;"></button>
 
 					<script type="text/javascript">
 						var initIndicacao = '<?php echo $values['indicacao'];?>';
@@ -426,7 +427,7 @@
 								<dl>
 									<dt>Foto</dt>
 									<dd>
-										<button id="foto" onclick="return false;" class="button button_main">Procurar</button>
+										<a href="javascript:;" id="foto" class="button button_main">Procurar</a>
 										<input type="hidden" name="foto_cn" value="<?php echo $values['foto_cn'];?>" />
 										<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 										<script>

@@ -1,0 +1,1 @@
+ALTER TABLE `ident_agenda` ADD `agenda_data_original` DATETIME NOT NULL AFTER `cancelamento_motivo`, ADD `agenda_alteracao_data` DATETIME NOT NULL AFTER `agenda_data_original`, ADD `agenda_alteracao_id_whatsapp` INT NOT NULL AFTER `agenda_alteracao_data`;

@@ -8,10 +8,10 @@
 
 
 			if(basename($_SERVER['PHP_SELF'])=="migracaoDentalOffice.php") {
-				$_ENV['NAME']=$_ENV['MYSQL_DB']='doutorasorriso';
+				$_ENV['NAME']=$_ENV['MYSQL_DB']='';
 
 			} else {
-				$_ENV['NAME']=$_ENV['MYSQL_DB']='doutorasorriso';
+				$_ENV['NAME']=$_ENV['MYSQL_DB']='studiodental';
 
 			}
 			$_ENV['MYSQL_USER']="dentalinfo";

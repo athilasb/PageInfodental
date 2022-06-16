@@ -547,6 +547,7 @@
 							})
 						</script>
 						<form method="post" class="form formulario-validacao">
+							<button style="display:none;"></button>
 							<input type="hidden" name="acao" value="wlib" />
 							<section class="filter">
 								<div class="filter-group">
@@ -749,10 +750,11 @@
 											<dl>
 												<dt>Foto</dt>
 												<dd>
-													<button id="foto" onclick="return false;" class="button button_main">Procurar</button>
+													<a href="javascript:;" id="foto" class="button button_main">Procurar</a>
 													<input type="hidden" name="foto" />
 												</dd>
 											</dl>
+
 										</div>
 										<input type="hidden" name="foto" />
 
