@@ -482,6 +482,22 @@
 
 					<?php
 					if(is_object($proximaConsulta)) {
+
+
+						$proximaConsultaProfissionais='-';
+
+
+						if(!empty($proximaConsulta->profissionais)) {
+							$aux=explode(",",$proximaConsulta->profissionais);
+							$proximaConsultaProfissionais='';
+							foreach($aux as $idP) { 
+								if(!empty($idP) and is_numeric($idP) and isset($_colaboradores[$idP])) {
+									$proximaConsultaProfissionais.=utf8_encode($_colaboradores[$idP]->nome).", ";
+								}
+							}
+							$proximaConsultaProfissionais=substr($proximaConsultaProfissionais,0,strlen($proximaConsultaProfissionais)-2);
+						}
+
 						$autor='Desconhecido';
 
 						$sql->consult($_p."colaboradores","id,nome","where id=$proximaConsulta->id_colaborador");
@@ -502,9 +518,10 @@
 						
 						<b>Retornar em:</b><br /> <?php echo $proximaConsulta->retorno;?> dias<br /><br />
 						<b>Duração:</b><br /> <?php echo $proximaConsulta->duracao;?><br /><br />
+						<b>Profissional:</b><br /> <?php echo $proximaConsultaProfissionais;?><br /><br />
 						<b>Necessita Laboratório:</b><br /> <?php echo $proximaConsulta->laboratorio==1?"Sim":"Não";?><br /><br />
 						<b>Necessita Imagem:</b><br /> <?php echo $proximaConsulta->imagem==1?"Sim":"Não";?><br /><br />
-						<b>Obs.:</b><br /> <?php echo utf8_encode($proximaConsulta->obs);?><br /><br />
+						<b>Obs.:</b><br /> <?php echo utf8_encode(nl2br($proximaConsulta->obs));?><br /><br />
 						<i style="color:#666">Criado por<br /><b><?php echo $autor;?></b> ás <b><?php echo date('d/m/Y H:i',strtotime($proximaConsulta->data));?></b></i>
 					</div>
 					<?php

@@ -1530,6 +1530,7 @@
 				$("#js-aside-add .js-tab a:eq(0)").click();
 			});
 
+			$('#js-aside-add .js-profissionais').chosen('destroy');
 			$('#js-aside-add .js-profissionais').chosen();
 			$('#js-aside-add .js-profissionais').trigger('chosen:updated');
 			agendamentosProfissionais(`add`);
@@ -2045,12 +2046,12 @@
 
 
 											$("#js-aside-edit").fadeIn(100,function() {
-												$('#js-aside-edit .js-profissionais').chosen();
+												$('#js-aside-edit .js-profissionais').chosen('destroy');
+												setTimeout(function(){$('#js-aside-edit .js-profissionais').chosen();},100);
 												$("#js-aside-edit .aside__inner1").addClass("active");
 												$("#js-aside-edit .js-tab a:eq(0)").click();
 											});
 
-											$('#js-aside-edit .js-profissionais').chosen();
 											
 											$('#js-aside-edit input[name=agenda_data]').trigger('change');
 
@@ -3209,7 +3210,7 @@
 				</script>
 				<section class="tab tab_alt js-tab">
 					<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agenda').show();" class="active">Agenda</a>
-					<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-futuro').show();">Agendamento Futuro</a>
+					<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-futuro').show();">Agendamentos Futuros</a>
 					<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>					
 				</section>
 			
