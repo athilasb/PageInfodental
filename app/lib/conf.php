@@ -49,7 +49,7 @@
 	
 	$_pacienteSituacao=array('BI'=>'BI','EXCLUIDO'=>'DESATIVADO');
 
-	$_pacienteEstadoCivil=array('SOLTEIRO'=>'SOLTEIRO','CASADO'=>'CASADO','SEPARADO'=>'SEPARADO','CASADO'=>'CASADO','VIÚVO'=>'VIÚVO');
+	$_pacienteEstadoCivil=array('SOLTEIRO'=>'SOLTEIRO','CASADO'=>'CASADO','DIVORCIADO'=>'DIVORCIADO','CASADO'=>'CASADO','VIÚVO'=>'VIÚVO');
 
 	$_preferenciaContato=array('LIGACAO'=>'LIGAÇÃO',
 								'WHATSAPP'=>'WHATSAPP');

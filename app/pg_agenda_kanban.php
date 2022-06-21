@@ -18,7 +18,11 @@
 			$id_profissional=(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional']))?$_POST['id_profissional']:0;
 			$id_cadeira=(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira']))?$_POST['id_cadeira']:0;
 
-
+			$_profissionais=array();
+			$sql->consult($_p."colaboradores","id,nome","");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_profissionais[$x->id]=$x;
+			}
 
 			if(!empty($data)) {
 
@@ -51,10 +55,28 @@
 					}
 				}
 
+
+				$camposParaFichaCompleta=explode(",","nome,sexo,rg,rg_orgaoemissor,rg_uf,cpf,data_nascimento,estado_civil,telefone1,lat,lng,endereco");
+
 				$_pacientes=array();
-				$sql->consult($_p."pacientes","id,nome,telefone1,codigo_bi","where id IN (".implode(",",$pacientesIds).")");
+				$sql->consult($_p."pacientes","*","where id IN (".implode(",",$pacientesIds).")");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_pacientes[$x->id]=$x;
+
+					// verifica se a ficha do paciente esta completa
+						$fichaCompleta=1;
+
+						foreach($camposParaFichaCompleta as $c) {
+							if(empty($x->$c)) {
+								$fichaCompleta=0;
+								break;
+							}
+						}
+
+					$_pacientes[$x->id]=(object)array('id'=>$x->id,
+														'nome'=>$x->nome,
+														'telefone1'=>$x->telefone1,
+														'codigo_bi'=>$x->codigo_bi,
+														'fichaCompleta'=>$fichaCompleta);
 				}
 
 				$_agendamentosConfirmacaoWts=array();
@@ -92,6 +114,20 @@
 						$dataAg=date('d/m',strtotime($x->agenda_data));
 						$dia=" ".$diasExtenso[date('w',strtotime($x->agenda_data))];
 
+						$profissionais='';
+						if(!empty($x->profissionais)) {
+							$profAux=explode(",",$x->profissionais);
+							foreach($profAux as $idP) {
+								if(!empty($idP) and isset($_profissionais[$idP])) {
+									$prof=$_profissionais[$idP];
+									$profissionais.=utf8_encode($prof->nome).", ";
+
+								}
+							}
+						}
+
+						if(!empty($profissionais)) $profissionais=substr($profissionais,0,strlen($profissionais)-2);
+ 
 						$agenda[]=(object) array('id_agenda'=>$x->id,
 													'data'=>$dataAg,//.$dia,
 													'hora'=>date('H:i',strtotime($x->agenda_data))." às ".date('H:i',strtotime($x->agenda_data_final)),
@@ -102,7 +138,9 @@
 													'telefone1'=>mask($_pacientes[$x->id_paciente]->telefone1),
 													'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0,
 													'wts'=>(int)isset($_agendamentosConfirmacaoWts[$x->id])?$_agendamentosConfirmacaoWts[$x->id]:0,
-													'lembrete'=>isset($_agendamentosLembretes[$x->id])?1:0
+													'profissionais'=>$profissionais,
+													'lembrete'=>isset($_agendamentosLembretes[$x->id])?1:0,
+													'fichaCompleta'=>$paciente->fichaCompleta
 												);
 					}
 				}
@@ -142,7 +180,51 @@
 
 					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vwhere='".addslashes($vWHERE)."',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$agenda->id."'");
 
-					$rtn=array('success'=>true);
+					$wts=0;
+
+					// Se alterou para confirmado
+					if($status->id==2 and $status->id!=$agenda->id_status) {
+						// se virou para confirmado, envia wts para dentista
+						$sql->consult($_p."agenda","*","where id=$agenda->id and id_status=2");
+						if($sql->rows) {
+							$agendaNew=mysqli_fetch_object($sql->mysqry); // registro de agenda atualizado
+
+							if(!empty($agendaNew->profissionais)) {
+
+								$profissionaisIds=array();
+								$auxProfissionais = explode(",",$agenda->profissionais);
+								foreach($auxProfissionais as $idProfissional) {
+									if(!empty($idProfissional) and is_numeric($idProfissional)) {
+										$profissionaisIds[]=$idProfissional;
+									}
+								}
+
+								$attr=array('prefixo'=>$_p,'usr'=>$usr);
+								$infozap = new Whatsapp($attr);
+
+								if(count($profissionaisIds)>0) {
+									$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisIds).") and whatsapp_notificacoes=1 and lixo=0");
+									while($x=mysqli_fetch_object($sql->mysqry)) {
+										if(!empty($x->telefone1)) {
+											$attr=array('id_tipo'=>6,
+														'id_paciente'=>$agendaNew->id_paciente,
+														'id_profissional'=>$x->id,
+														'id_agenda'=>$agendaNew->id);
+								
+											if($infozap->adicionaNaFila($attr)) {
+												$wts=1;
+											}
+										}
+									}
+								}
+
+							}
+						}
+						
+					}
+
+					$rtn=array('success'=>true,
+								'wts'=>$wts);
 
 				} else {
 					$rtn=array('success'=>false,'error'=>'Status não encontrado');
@@ -427,19 +509,29 @@
 							wtsLembrete=`<span class="iconify" data-icon="mdi:clock-alert-outline"></span>`;
 						}
 						//wtsIcon+=` ${x.wts}`
+
+						let fichaIncompleta = '';
+
+						// A CONFIRMAR, DESMARCADO E FALTOU
+						if(x.fichaCompleta==0 && (x.id_status!=1 && x.id_status!=4 && x.id_status!=3)) {
+							fichaIncompleta='<p style="color:var(--vermelho)"><i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" data-height="20"></i></p>';
+							
+						}
 						
 						if(eval(x.id_status)==5) {
-							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="teste">
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
+										${fichaIncompleta}
 										<p>${x.telefone1}</p>
 										${wtsIcon}${wtsLembrete}
 									</a>`;
 
 						} else {
-							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="teste">
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
+										${fichaIncompleta}
 										${x.id_status==2?'':`<p>${x.telefone1}</p>`}
 										${wtsIcon}${wtsLembrete}
 									</a>`;
@@ -514,7 +606,7 @@
 						document.location.href='pg_agenda.php?initDate='+dtObj;
 					})
 
-					$('.js-profissionais').change(function(){
+					$('.js-filter-agenda .js-profissionais').change(function(){
 						id_profissional=$(this).val();
 						agendaAtualizar();
 					});
@@ -556,6 +648,18 @@
 							success:function(rtn) {
 								if(rtn.success) {
 									agendaAtualizar();
+									if(rtn.wts && rtn.wts==1) {
+										let data = `ajax=whatsappDisparar`;
+										$.ajax({
+											url:"pg_agenda.php",
+											type:"POST",
+											data:data
+										})
+									}
+
+									if(id_status==5) {
+										asideProximaConsulta(id_agenda);
+									}
 								}
 							}
 						})
@@ -670,7 +774,8 @@
 
 <?php 
 	
-	$apiConfig=array('paciente'=>1);
+	$apiConfig=array('paciente'=>1,
+						'proximaConsulta'=>1);
 	require_once("includes/api/apiAside.php");
 
 

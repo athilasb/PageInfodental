@@ -3,7 +3,7 @@
 	class WhatsApp {
 		
 		private $prefixo = "", 
-				$block = array('62982414610'),
+				$block = array(),//'62982414610'),
 				$endpoint = "https://srv.infodental.dental:8443",
 				$token = "b5b9f54a9b11125a63136f3712e853f1023836b3";
 

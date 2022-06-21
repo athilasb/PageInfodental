@@ -1,0 +1,1 @@
+ALTER TABLE `ident_pacientes_proximasconsultas` ADD `duracao` VARCHAR(50) NOT NULL AFTER `obs`, ADD `laboratorio` BOOLEAN NOT NULL AFTER `duracao`, ADD `imagem` BOOLEAN NOT NULL AFTER `laboratorio`, ADD `retorno` VARCHAR(50) NOT NULL AFTER `imagem`;

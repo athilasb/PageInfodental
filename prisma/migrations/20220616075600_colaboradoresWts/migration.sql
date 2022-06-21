@@ -1,0 +1,2 @@
+ALTER TABLE `ident_colaboradores` ADD `whatsapp_notificacoes` BOOLEAN NOT NULL AFTER `primeiro_acesso`;
+CREATE TABLE `ident_pacientes_proximasconsultas` ( `id` INT(11) NOT NULL AUTO_INCREMENT , `lixo` BOOLEAN NOT NULL , `data` DATETIME NOT NULL , `id_paciente` INT NOT NULL , `id_colaborador` INT NOT NULL , `profissionais` VARCHAR(150) NOT NULL , `obs` TEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;

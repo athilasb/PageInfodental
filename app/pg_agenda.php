@@ -579,6 +579,8 @@
 					// veririca se desmarcou
 					$wts=0;
 					//if($agenda->id_status!=$idStatusNovo) {
+						
+						// Se Desmarcou
 						if($idStatusNovo==4) {
 
 							$attr=array('id_tipo'=>3,
@@ -587,7 +589,10 @@
 							//var_dump($attr);
 							if($infozap->adicionaNaFila($attr)) $wts=1;
 
-						} else if($idStatusNovo==2) {
+						} 
+						// Se Confirmou
+						else if($idStatusNovo==2) {
+
 							// se virou para confirmado, envia wts para dentista
 							$sql->consult($_p."agenda","*","where id=$agenda->id and id_status=2");
 							if($sql->rows) {
@@ -604,7 +609,7 @@
 									}
 
 									if(count($profissionaisIds)>0) {
-										$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisIds).")");
+										$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisIds).") and whatsapp_notificacoes=1 and lixo=0");
 										while($x=mysqli_fetch_object($sql->mysqry)) {
 											if(!empty($x->telefone1)) {
 												$attr=array('id_tipo'=>6,
@@ -1743,7 +1748,7 @@
 				calendar.refetchEvents();
 			});
 
-			$('.filter .js-profissionais').change(function(){
+			$('.js-filter-agenda .js-profissionais').change(function(){
 				id_profissional=$(this).val();
 				filtroProfissional=$(this).val();
 				calendar.refetchEvents();
@@ -2057,7 +2062,7 @@
 											$('#js-aside-edit input, #js-aside-edit textarea').prop('readonly',false).css('background','');
 
 											$('#js-aside-edit select').prop('disabled',false).css('background','').trigger('chosen:updated');
-
+											$('#js-aside-edit input[name=id_status_antigo]').val(rtn.data.id_status);
 											// se confirmado
 											if(rtn.data.id_status=="2") {
 												$('#js-aside-edit select[name=id_status]').find('option[value=1]').prop('disabled',true);
@@ -3085,6 +3090,10 @@
 
 							let data = `ajax=agendamentoPersistir&profissionais=${profissionais}&${campos}`;
 							
+							let abrirProximaConsulta = 0;
+							if($('#js-aside-edit input[name=id_status_antigo]').val()!=$('#js-aside-edit select[name=id_status]').val() && $('#js-aside-edit select[name=id_status]').val()==5) {
+								abrirProximaConsulta=$('#js-aside-edit input[name=id]').val();
+							}
 
 							$.ajax({
 								type:'POST',
@@ -3103,6 +3112,8 @@
 												data:data
 											})
 										}
+
+										if(abrirProximaConsulta>0) asideProximaConsulta(abrirProximaConsulta);
 
 
 										//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
@@ -3172,6 +3183,7 @@
 			</header>
 
 			<form method="post" class="aside-content form" onsubmit="return false">
+				<input type="hidden" name="id_status_antigo" />
 				<input type="hidden" name="id" />
 				<input type="hidden" name="alteracao" value="0" />
 				<section class="header-profile">
@@ -3321,7 +3333,7 @@
 
 <?php 
 	
-	$apiConfig=array('paciente'=>1);
+	$apiConfig=array('paciente'=>1,'proximaConsulta'=>1);
 	require_once("includes/api/apiAside.php");
 
 

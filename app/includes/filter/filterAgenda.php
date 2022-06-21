@@ -31,7 +31,7 @@
 	}
 	?>
 
-	<div class="filter-group">
+	<div class="filter-group js-filter-agenda">
 		<div class="filter-form form">
 			<dl style="width:160px;">
 				<dd>

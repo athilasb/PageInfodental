@@ -341,7 +341,7 @@
 			# Formulario de Adição/Edição
 			if(isset($_GET['form'])) {
 
-				$campos=explode(",","nome,sexo,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,estado_civil,telefone1,telefone2,nome_pai,nome_mae,email,instagram,linkedin,facebook,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,escolaridade,cro,uf_cro,tipo_cro,calendario_cor,calendario_iniciais,id_cargo,regime_contrato,salario,contratacao_obs,carga_horaria,comissionamento_tipo,permitir_acesso,lng,lat,check_agendamento,contratacaoAtiva");
+				$campos=explode(",","nome,sexo,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,estado_civil,telefone1,telefone2,nome_pai,nome_mae,email,instagram,linkedin,facebook,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,escolaridade,cro,uf_cro,tipo_cro,calendario_cor,calendario_iniciais,id_cargo,regime_contrato,salario,contratacao_obs,carga_horaria,comissionamento_tipo,permitir_acesso,lng,lat,check_agendamento,contratacaoAtiva,whatsapp_notificacoes");
 
 				foreach($campos as $v) $values[$v]='';
 				$values['calendario_cor']="#c18c6a";
@@ -1138,6 +1138,12 @@
 											<dt>Cor</dt>
 											<dd><input type="color" name="calendario_cor" value="<?php echo $values['calendario_cor'];?>" /></dd>
 										</dl>
+										<dl class="js-box-habilitarAgendamento">
+											<dt>&nbsp;</dt>
+											<dd>
+												<label><input type="checkbox" name="whatsapp_notificacoes" class="input-switch" value="1"<?php echo $values['whatsapp_notificacoes']==1?" checked":"";?> /> Receber Notificações (Whatsapp)</label>
+											</dd>
+										</label>
 									</div>
 								</fieldset>
 

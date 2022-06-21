@@ -103,7 +103,7 @@
 		}
 	*/
 
-	// -> CONFIRMAÇÃO DE AGENDAMENTO (id_tipo=6)
+	// -> CONFIRMAÇÃO DE AGENDAMENTO PARA DENTISTAS (id_tipo=6)
 
 		$where="where id=27808";
 

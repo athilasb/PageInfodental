@@ -1356,6 +1356,115 @@
 				}
 			}
 
+		# Proxima Consulta
+			else if($_POST['ajax']=="proximaConsulta") {
+
+				$agenda = $paciente = '';
+				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
+					$sql->consult($_p."agenda","*","where id=".$_POST['id_agenda']." and lixo=0");
+					if($sql->rows) {
+						$agenda=mysqli_fetch_object($sql->mysqry);
+
+						$sql->consult($_p."pacientes","*","where id=$agenda->id_paciente and lixo=0");
+						if($sql->rows) {
+							$paciente=mysqli_fetch_object($sql->mysqry);
+						}
+					}
+				}
+
+				if(is_object($agenda)) {
+					if(is_object($paciente)) {
+
+						if($paciente->data_nascimento!="0000-00-00") {
+							$dob = new DateTime($paciente->data_nascimento);
+							$now = new DateTime();
+							$idade = $now->diff($dob)->y;
+						} else $idade=0;
+
+						$ft='';
+						if(!empty($paciente->foto_cn)) {
+							$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+						}
+
+						$rtn=array('success'=>true,
+									'data'=>array('id_paciente'=>$paciente->id,
+													'nome'=>utf8_encode($paciente->nome),
+													'idade'=>$idade,
+													'telefone1'=>$paciente->telefone1,
+													'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):"",			
+													'musica'=>utf8_encode($paciente->musica),
+													'ft'=>$ft,
+													'periodicidade'=>isset($_pacientesPeriodicidade[$paciente->periodicidade])?$_pacientesPeriodicidade[$paciente->periodicidade]:$paciente->periodicidade,
+
+													)
+									);
+
+					} else {
+						$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
+					} 
+				} else {
+					$rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
+				}
+
+
+
+			}
+
+			else if($_POST['ajax']=="proximaConsultaPersistir") {
+
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","id","where id=".$_POST['id_paciente']);
+					if($sql->rows) {
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				if(is_object($paciente)) {
+
+					$duracao=isset($_POST['duracao'])?addslashes($_POST['duracao']):'';
+					$laboratorio=isset($_POST['laboratorio'])?addslashes($_POST['laboratorio']):'';
+					$imagem=isset($_POST['imagem'])?addslashes($_POST['imagem']):'';
+					$retorno=isset($_POST['retorno'])?addslashes($_POST['retorno']):'';
+					$obs=isset($_POST['obs'])?utf8_decode(addslashes($_POST['obs'])):'';
+					$profissionaisAux=isset($_POST['profissionais'])?$_POST['profissionais']:'';
+
+
+					$profissionais=array();
+					if(!empty($profissionaisAux)) {
+						$aux=explode(",",$profissionaisAux);
+
+						foreach($aux as $x) {
+							if(!empty($x) and is_numeric($x)) $profissionais[]=$x;
+						}
+					}
+
+					if(count($profissionais)>0) $profissionais=",".implode(",",$profissionais).",";
+					else $profissionais='';
+
+					$vSQL="data=now(),
+							id_colaborador=$usr->id,
+							id_paciente=$paciente->id,
+							duracao='$duracao',
+							laboratorio='$laboratorio',
+							imagem='$imagem',
+							retorno='$retorno',
+							obs='$obs',
+							profissionais='$profissionais'";
+
+
+					$sql->add($_p."pacientes_proximasconsultas",$vSQL);
+
+					$rtn=array('success'=>true);
+
+				} else {
+					$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
+				}
+
+
+				$rtn=array('success'=>true);
+			}
+
 
 		header("Content-type: application/json");
 		echo json_encode($rtn);
@@ -3546,18 +3655,278 @@
 						</dd>
 					</dl>
 					<div class="list2" style="margin-top:2rem;">
-							<table class="js-asProfissoes-table">
-								<thead>
-									<tr>									
-										<th>PROFISSÃO</th>
-										<th></th>
-									</tr>
-								</thead>
-								<tbody>							
-								</tbody>
-							</table>
+						<table class="js-asProfissoes-table">
+							<thead>
+								<tr>									
+									<th>PROFISSÃO</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>							
+							</tbody>
+						</table>
+					</div>
+				</form>
+			</div>
+		</section>
+		<?php
+			}
+	if(isset($apiConfig['proximaConsulta'])) {
+		?>
+		<script type="text/javascript">
+			
+			const asideProximaConsulta = (id_agenda) => {
+
+
+				let data = `ajax=proximaConsulta&id_agenda=${id_agenda}`;
+				$.ajax({
+					type:'POST',
+					data:data,
+					url:baseURLApiAside,
+					success:function(rtn) {
+						if(rtn.success) {
+							$('#js-aside-proximaConsulta .js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
+
+							
+
+							if(rtn.data.ft && rtn.data.ft.length>0) {
+								$('#js-aside-proximaConsulta .js-foto').attr('src',rtn.data.ft);
+							} else {
+								$('#js-aside-proximaConsulta .js-foto').attr('src','img/ilustra-usuario.jpg');
+							}
+
+							if(rtn.data.idade && rtn.data.idade>0) {
+								$('#js-aside-proximaConsulta .js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
+							} else {
+								$('#js-aside-proximaConsulta .js-idade').html(``);
+							}
+
+							if(rtn.data.periodicidade && rtn.data.periodicidade.length>0) {
+								$('#js-aside-proximaConsulta .js-periodicidade').html(`Periodicidade: ${rtn.data.periodicidade}`);
+							} else {
+								$('#js-aside-proximaConsulta .js-periodicidade').html(`Periodicidade: -`);
+							}
+
+							if(rtn.data.musica && rtn.data.musica.length>0) {
+								$('#js-aside-proximaConsulta .js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
+							} else {
+								$('#js-aside-proximaConsulta .js-musica').html(``);
+							}
+
+							if(rtn.data.statusBI && rtn.data.statusBI.length==0) {
+								$('#js-aside-proximaConsulta .js-statusBI').html(``).hide();
+							} else {
+								$('#js-aside-proximaConsulta .js-statusBI').html(`${rtn.data.statusBI}`).show();
+							}
+
+
+							$('#js-aside-proximaConsulta').find('input,select,textarea').removeClass('erro').val('');
+							$('#js-aside-proximaConsulta .js-id_paciente').val(rtn.data.id_paciente);
+							$("#js-aside-proximaConsulta").fadeIn(100,function() {
+								$("#js-aside-proximaConsulta .aside__inner1").addClass("active");
+								$("#js-aside-proximaConsulta .js-tab a:eq(0)").click();
+
+
+								$('#js-aside-proximaConsulta .js-profissionais').chosen();
+								$('#js-aside-proximaConsulta .js-profissionais').trigger('chosen:updated');
+							});
+
+						} else if(rtn.error) {
+							//swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+						} else {
+							//swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+						}
+						
+					},
+					error:function() {
+						//swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+					}
+				}).done(function(){
+
+				});
+
+
+
+				
+
+			}
+			$(function(){
+
+
+				$('.js-proximaConsulta-submit').click(function(){
+					let obj = $(this);
+					if(obj.attr('data-loading')==0) {
+
+
+						let retorno = $(`#js-aside-proximaConsulta .js-retorno`).val();
+						let duracao = $(`#js-aside-proximaConsulta .js-agenda_duracao`).val();
+						let laboratorio = $(`#js-aside-proximaConsulta .js-laboratorio`).prop('checked')===true?1:0;
+						let imagem = $(`#js-aside-proximaConsulta .js-imagem`).prop('checked')===true?1:0;
+						let profissionais = $(`#js-aside-proximaConsulta .js-profissionais`).val();
+						let obs = $(`#js-aside-proximaConsulta .js-obs`).val();
+						let id_paciente = $('#js-aside-proximaConsulta .js-id_paciente').val();
+						let erro = 0;
+						
+						if(retorno.length==0) {
+							$(`#js-aside-proximaConsulta .js-retorno`).addClass('erro')
+							erro=1;
+						} 
+
+						if(obs.length==0) {
+							$(`#js-aside-proximaConsulta .js-obs`).addClass('erro')
+							erro=1;
+						} 
+
+
+						if(erro==1) {
+							swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
+						} else if(duracao.length==0) {
+							swal({title: "Erro!", text: "Defina a duração da consulta!", type:"error", confirmButtonColor: "#424242"});
+						} else if(profissionais.length==0) {
+							
+							swal({title: "Erro!", text: "Selecione pelo menos um profissional!", type:"error", confirmButtonColor: "#424242"});
+						} else {
+
+							obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+							obj.attr('data-loading',1);
+
+							let data = `ajax=proximaConsultaPersistir&retorno=${retorno}&duracao=${duracao}&laboratorio=${laboratorio}&imagem=${imagem}&profissionais=${profissionais}&obs=${obs}&id_paciente=${id_paciente}`;
+							
+
+							$.ajax({
+								type:'POST',
+								data:data,
+								url:baseURLApiAside,
+								success:function(rtn) {
+									if(rtn.success) {
+										$('#js-aside-proximaConsulta .aside-close').click();
+									} else if(rtn.error) {
+										swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+									} else {
+										swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+									}
+									
+								},
+								error:function() {
+									swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+								}
+							}).done(function(){
+								obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+								obj.attr('data-loading',0);
+							});
+
+						}
+					}
+				});
+
+			});
+		</script>
+
+		<section class="aside aside-proximaConsulta" id="js-aside-proximaConsulta">
+			<div class="aside__inner1">
+
+				<header class="aside-header">
+					<h1>Próxima Consulta</h1>
+					<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+				</header>
+
+				<form method="post" class="aside-content form" onsubmit="return false;">
+					<input type="hidden" class="js-id_paciente" value="0" />
+					<section class="header-profile">
+						<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
+						<div class="header-profile__inner1">
+							<h1><a href="" target="_blank" class="js-nome"></a></h1>
+							<div>
+								<p class="js-statusBI"></p>
+								<p class="js-idade"></p>
+								<p class="js-periodicidade">Periodicidade: 6 meses</p>
+								<p class="js-musica"></p>
+							</div>
 						</div>
-					</form>
+					</section>
+
+					<section class="tab tab_alt js-tab">
+						<a href="javascript:;" class="active">Informações</a>				
+					</section>
+
+					<section class="filter">
+						<div class="filter-group">
+							<div class="filter-title">
+								<p class="js-agendou"></p>
+							</div>
+						</div>
+						<div class="filter-group">
+							<div class="filter-form form">
+								<dl>
+									<dd></dd>
+								</dl>
+								<dl>
+									<dd><button class="button button_main js-proximaConsulta-submit" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+								</dl>
+							</div>								
+						</div>
+					</section>
+
+					<input type="hidden" class="js-asProfissoes-id" />
+					<div class="colunas4">
+						<dl>
+							<dt>Retorno em</dt>
+							
+							<dd class="form-comp form-comp_pos">
+								<input type="number" class="js-retorno" maxlength="3" />
+								<span>dias</span>
+							</dd>
+						</dl>
+						<dl>
+							<dt>Duração</dt>
+							
+							<dd class="form-comp form-comp_pos">
+								<select class="js-agenda_duracao">
+									<option value="">-</option>
+									<?php
+									foreach($optAgendaDuracao as $v) {
+										if($values['agenda_duracao']==$v) $possuiDuracao=true;
+										echo '<option value="'.$v.'"'.($values['agenda_duracao']==$v?' selected':'').'>'.$v.'</option>';
+									}
+									?>
+								</select>
+								<span>min</span>
+							</dd>
+						</dl>
+
+						<dl class="dl2">
+							<dt>&nbsp;</dt>
+							<dd>
+								<label>
+									<input type="checkbox" class="input-switch js-laboratorio" /> Laboratório
+								</label>
+								<label>
+									<input type="checkbox" class="input-switch js-imagem" /> Imagem
+								</label>
+							</dd>
+						</dl>
+
+					</div>
+					<dl>
+						<dt>Profissionais</dt>
+						<dd>
+							<select class="js-profissionais" multiple>
+								<option value=""></option>
+								<?php
+								foreach($_profissionais as $p) {
+									if($p->check_agendamento==0) continue;
+									echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+								}
+								?>
+							</select>
+						</dd>
+					</dl>
+					<dl>
+						<dt>Observações</dt>
+						<dd>
+							<textarea class="js-obs" style="height:80px;"></textarea>
+						</dd>
+					</dl>
 				</form>
 			</div>
 		</section>
