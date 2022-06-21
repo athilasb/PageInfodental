@@ -120,15 +120,20 @@
 							foreach($profAux as $idP) {
 								if(!empty($idP) and isset($_profissionais[$idP])) {
 									$prof=$_profissionais[$idP];
-									$profissionais.=utf8_encode($prof->nome).", ";
+									$profissionais.=utf8_encode($prof->nome)."<BR>";
 
 								}
 							}
 						}
 
-						if(!empty($profissionais)) $profissionais=substr($profissionais,0,strlen($profissionais)-2);
+						if(!empty($profissionais)) $profissionais=substr($profissionais,0,strlen($profissionais)-4);
  
+						$mais24="";
+
+						$dif = round((strtotime($x->agenda_data)-strtotime($x->data))/(60*60));
+
 						$agenda[]=(object) array('id_agenda'=>$x->id,
+													'dt'=>$x->data,
 													'data'=>$dataAg,//.$dia,
 													'hora'=>date('H:i',strtotime($x->agenda_data))." às ".date('H:i',strtotime($x->agenda_data_final)),
 													'id_status'=>$x->id_status,
@@ -138,6 +143,7 @@
 													'telefone1'=>mask($_pacientes[$x->id_paciente]->telefone1),
 													'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0,
 													'wts'=>(int)isset($_agendamentosConfirmacaoWts[$x->id])?$_agendamentosConfirmacaoWts[$x->id]:0,
+													'mais24'=>(int)($dif>=24?1:0), // se possui mais de 24h que foi feito o agendamento
 													'profissionais'=>$profissionais,
 													'lembrete'=>isset($_agendamentosLembretes[$x->id])?1:0,
 													'fichaCompleta'=>$paciente->fichaCompleta
@@ -337,6 +343,25 @@
 			$dataAg=date('d/m',strtotime($x->agenda_data));
 			$dia=" ".$diasExtenso[date('w',strtotime($x->agenda_data))];
 
+
+			$profissionais='';
+			if(!empty($x->profissionais)) {
+				$profAux=explode(",",$x->profissionais);
+				foreach($profAux as $idP) {
+					if(!empty($idP) and isset($_profissionais[$idP])) {
+						$prof=$_profissionais[$idP];
+						$profissionais.=utf8_encode($prof->nome)."<br>";
+
+					}
+				}
+			}
+
+						if(!empty($profissionais)) $profissionais=substr($profissionais,0,strlen($profissionais)-4);
+
+			$mais24="";
+
+			$dif = round((strtotime($x->agenda_data)-strtotime($x->data))/(60*60));
+
 			$agenda[]=(object) array('id_agenda'=>$x->id,
 										'id_paciente'=>$x->id_paciente,
 										'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?$_codigoBI[$paciente->codigo_bi]:'',
@@ -346,6 +371,8 @@
 										'paciente'=>ucwords(strtolowerWLIB(utf8_encode($_pacientes[$x->id_paciente]->nome))),
 										'telefone1'=>mask($_pacientes[$x->id_paciente]->telefone1),
 										'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0,
+										'mais24'=>(int)($dif>=24?1:0), // se possui mais de 24h que foi feito o agendamento
+										'profissionais'=>$profissionais,
 										'wts'=>(int)isset($_agendamentosConfirmacaoWts[$x->id])?$_agendamentosConfirmacaoWts[$x->id]:0
 									);
 		}
@@ -477,13 +504,14 @@
 
 						let html = ``;
 						let wtsIcon = ``;
+						let aConfirmar
 						if(x.wts !== undefined && x.wts>0) {
 							if(x.wts == 1) { // aguardando
 								//wtsIcon=` <span class="iconify" data-icon="bi:send" data-inline="true" data-height="16" style="background:var(--cinza5);color:#FFF;padding:7px;border-radius:5px;"></span>`;
 								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span>aguard. resp.</span></div>`;
 							} else if(x.wts == 2) { // sim
 								//wtsIcon=` <span class="iconify" data-icon="bi:send-check" data-inline="true" data-height="16" style="background:var(--verde);color:#FFF;padding:7px;border-radius:5px;"></span>`;
-								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="cib:whatsapp"></i> <span style="color:green">confirmado</span></div>`;
+								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde)"><i class="iconify" data-icon="cib:whatsapp"></i></div>`;
 							} else if(x.wts == 3) { // nao
 								//wtsIcon=` <span class="iconify" data-icon="bi:send-x" data-inline="true" data-height="16" style="background:var(--vermelho);color:#FFF;padding:7px;border-radius:5px;"></span>`;
 								wtsIcon=`<div class="kanban-item-wp kanban-item-wp_destaque"><i class="iconify" data-icon="cib:whatsapp"></i> <span>desmarcado</span></div>`;
@@ -506,33 +534,128 @@
 
 						let wtsLembrete = ``;
 						if(x.lembrete && x.lembrete==1) {
-							wtsLembrete=`<span class="iconify" data-icon="mdi:clock-alert-outline"></span>`;
+							wtsLembrete=`<span class="iconify" data-icon="mdi:clock-alert-outline" style="color:var(--verde)"></span>`;
 						}
 						//wtsIcon+=` ${x.wts}`
 
 						let fichaIncompleta = '';
 
 						// A CONFIRMAR, DESMARCADO E FALTOU
-						if(x.fichaCompleta==0 && (x.id_status!=1 && x.id_status!=4 && x.id_status!=3)) {
-							fichaIncompleta='<p style="color:var(--vermelho)"><i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" data-height="20"></i></p>';
+						if(x.id_status!=1 && x.id_status!=4 && x.id_status!=3) {
+							if(x.fichaCompleta==0) {
+								fichaIncompleta='<p style="color:var(--vermelho)"><i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" data-height="20"></i></p>';
+							} else {
+								fichaIncompleta='<p style="color:var(--verde)"><i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" data-height="20"></i></p>';
+							}
 							
 						}
 						
-						if(eval(x.id_status)==5) {
+						// A CONFIRMAR
+						if(eval(x.id_status)==1) {
+
+							if(x.wts==4 || x.wts==5 || x.wts==6 || x.mais24==0) {
+								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="bxs:phone"></i> <span>Confirmar</span></div>`;
+							}
 							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
-										${fichaIncompleta}
 										<p>${x.telefone1}</p>
+										<p>${x.profissionais}</p>
+										${wtsIcon}${wtsLembrete}
+									</a>`;
+						} 
+						// CONFIRMADO
+						else if(eval(x.id_status)==2) {
+
+							if(x.wts!=2) {
+								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde)"><i class="iconify" data-icon="bxs:phone"></i></div>`;
+							}
+
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
+										<p>${x.data} • ${x.hora}</p>
+										<h1>${x.paciente}</h1>
+										<p>${x.profissionais}</p>
+										${wtsIcon}${wtsLembrete}
+									</a>`;
+						}
+						// FALTOU
+						else if(eval(x.id_status)==3) {
+
+							if(x.wts!=2) {
+								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde)"><i class="iconify" data-icon="bxs:phone"></i></div>`;
+							}
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
+										<p>${x.data} • ${x.hora}</p>
+										<h1>${x.paciente}</h1>
+										<p>${x.profissionais}</p>
+										${fichaIncompleta}
+									</a>`;
+
+						}
+						// DESMARCOU
+						else if(eval(x.id_status)==4) {
+
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
+										<p>${x.data} • ${x.hora}</p>
+										<h1>${x.paciente}</h1>
+										<p>${x.profissionais}</p>
+										${fichaIncompleta}
+									</a>`;
+
+						}
+						// ATENDIDO
+						else if(eval(x.id_status)==5) {
+
+							if(x.wts!=2) {
+								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde)"><i class="iconify" data-icon="bxs:phone"></i></div>`;
+							}
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
+										<p>${x.data} • ${x.hora}</p>
+										<h1>${x.paciente}</h1>
+										<p>${x.profissionais}</p>
+										${fichaIncompleta}
 										${wtsIcon}${wtsLembrete}
 									</a>`;
 
-						} else {
+						}
+
+						// EM ATENDIMENTO
+						else if(eval(x.id_status)==6) {
+
+							if(x.wts!=2) {
+								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde)"><i class="iconify" data-icon="bxs:phone"></i></div>`;
+							}
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
+										<p>${x.data} • ${x.hora}</p>
+										<h1>${x.paciente}</h1>
+										<p>${x.profissionais}</p>
+										${fichaIncompleta}
+										${wtsIcon}${wtsLembrete}
+									</a>`;
+
+						}
+
+						// SALA DE ESPERA
+						else if(eval(x.id_status)==7) {
+
+							if(x.wts!=2) {
+								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde)"><i class="iconify" data-icon="bxs:phone"></i></div>`;
+							}
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
+										<p>${x.data} • ${x.hora}</p>
+										<h1>${x.paciente}</h1>
+										<p>${x.profissionais}</p>
+										${fichaIncompleta}
+										${wtsIcon}${wtsLembrete}
+									</a>`;
+
+						}
+
+						else {
 							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										${fichaIncompleta}
-										${x.id_status==2?'':`<p>${x.telefone1}</p>`}
 										${wtsIcon}${wtsLembrete}
 									</a>`;
 
@@ -541,7 +664,7 @@
 
 						$(`#kanban .js-kanban-status-${x.id_status}`).append(html);
 
-						$(`#kanban .js-kanban-status-${x.id_status} .tooltip:last`).tooltipster({theme:"borderless"});
+						//$(`#kanban .js-kanban-status-${x.id_status} .tooltip:last`).tooltipster({theme:"borderless"});
 					})
 
 				}	
