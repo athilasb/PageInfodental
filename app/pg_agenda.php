@@ -139,7 +139,7 @@
 
 						} else {
 							if(isset($_status[$x->id_status_novo])) { 
-								$_historico[]=array('usr'=>utf8_encode($_profissionais[$x->id_usuario]->nome),
+								$_historico[]=array('usr'=>isset($_profissionais[$x->id_usuario])?utf8_encode($_profissionais[$x->id_usuario]->nome):'',
 																	'dt'=>date('d/m H:i',strtotime($x->data)),
 																	'ev'=>'status',
 																	'desc'=>utf8_encode($x->descricao),
@@ -1462,7 +1462,8 @@
 
 			let dateString = date.getDate()+" "+mesString+" "+date.getFullYear();
 
-			//console.log(dateString+' => '+calendar.view.title);
+			console.log(date.getUTCDay()+' => '+dateString+' => '+calendar.view.title);
+			console.log(date.getTimezoneOffset());
 
 			$('.js-cal-titulo-diames').html(date.getDate()>=9?date.getDate():`0${date.getDate()}`);
 			$('.js-cal-titulo-mes').html(mesString);
@@ -1516,6 +1517,7 @@
 			$('#js-aside-add select[name=id_status]').val(1);
 			$('#js-aside-add select[name=duracao]').val(``);
 			$('#js-aside-add input[name=telefone1]').val(``);
+			$('#js-aside-add select[name=agenda_duracao]').val(30);
 			$('#js-aside-add textarea[name=obs]').val(``);
 			$('#js-aside-add select[name=profissionais] option:checked').prop('checked',false).trigger('chosen:updated');
 			$('#js-aside-add input[name=agenda_data]').val(data);
@@ -2557,6 +2559,7 @@
 
 										$('#js-aside-add select.js-profissionais').val('').trigger('chosen:updated');
 										$('#js-aside-add input,#js-aside-add textarea').val('');
+										$('#js-aside-add select[name=agenda_duracao]').val('');
 
 										$.fancybox.close();
 										calendar.refetchEvents();
@@ -2677,7 +2680,7 @@
 								<?php
 								foreach($optAgendaDuracao as $v) {
 									if($values['agenda_duracao']==$v) $possuiDuracao=true;
-									echo '<option value="'.$v.'"'.($values['agenda_duracao']==$v?' selected':'').'>'.$v.'</option>';
+									echo '<option value="'.$v.'">'.$v.'</option>';
 								}
 								?>
 							</select>

@@ -1033,6 +1033,8 @@
 
 										$dataInicio=$dataFim="";
 
+
+										// retorna o horario mais cedo e mais tarde que a cadeira tem disponibilidade
 										foreach($cadeiraHorarios[$cadeira->id][$dia] as $x) {
 											$dtI=$data." ".$x->inicio;
 											$dtF=$data." ".$x->fim;
@@ -1057,27 +1059,39 @@
 
 										//echo $dataInicio." - $dataFim -> $tempo\n\n";
 										$horariosDisponiveis=array();
+										$di=$dataInicio;
+
+
+
+										// fiz isso para checar de 1 em 1 minuto, mas na hora de rodar coloquei de 30 em 30 minutos
+										/*do {
+											$df=date('Y-m-d H:i:s',strtotime($di." + $agenda_duracao minutes"));
+
+											echo date('H:i',strtotime($di))." - ".date('H:i',strtotime($df))."\n";
+
+
+											$di=date('Y-m-d H:i:s',strtotime($di." + 1 minutes"));
+										} while(strtotime($df)<strtotime($dataFim));
+										die();*/
+
+
+
 										do {
-											$di=$dataInicio;
-											$dataInicio=date('Y-m-d H:i:s',strtotime($dataInicio." + $agenda_duracao minutes"));
-											$df=$dataInicio;
+											
+											$df=date('Y-m-d H:i:s',strtotime($di." + $agenda_duracao minutes"));
 
 											
-
+											// nova condicao de intersessao captada na internet
 											$where="WHERE (agenda_data>='$data 00:00:00' and agenda_data<='$data 23:59:59') and 
-															(
-																('$di'<=agenda_data && '$df'>=DATE_ADD(agenda_data, INTERVAL agenda_duracao MINUTE)) or 
-																('$di'>=agenda_data && '$df'<=DATE_ADD(agenda_data, INTERVAL agenda_duracao MINUTE)) or 
-																('$di'<=agenda_data && '$df'>agenda_data && '$df'<=DATE_ADD(agenda_data, INTERVAL agenda_duracao MINUTE))
-															)";
-
+															(DATE_ADD(agenda_data, INTERVAL agenda_duracao MINUTE)>'$di' and agenda_data<'$df')";
+											//$where="WHERE (agenda_data>='$data 00:00:00' and agenda_data<='$data 23:59:59')";
 											$where.=" and profissionais like '%,$profissional->id,%' and id_status NOT IN (3,4) and lixo=0";
 											$sql->consult($_p."agenda","agenda_data,DATE_ADD(agenda_data, INTERVAL $agenda_duracao MINUTE) as agenda_data_fim,agenda_duracao",$where);
 											//echo $where."->".$sql->rows."\n";
 											//$x=mysqli_fetch_object($sql->mysqry);
 											//echo $x->agenda_data." - ".$x->agenda_data_fim." -> ".$x->agenda_duracao;die();
 											if($sql->rows==0) {
-												$where="WHERE (agenda_data>='$data 00:00:00' and agenda_data<='$data 23:59:59') and 
+												/*$where="WHERE (agenda_data>='$data 00:00:00' and agenda_data<='$data 23:59:59') and 
 															(
 																('$di'<=agenda_data && '$df'>=DATE_ADD(agenda_data, INTERVAL agenda_duracao MINUTE)) or 
 																('$di'>=agenda_data && '$df'<=DATE_ADD(agenda_data, INTERVAL agenda_duracao MINUTE)) or 
@@ -1086,23 +1100,23 @@
 
 												$where.=" and id_cadeira=$cadeira->id and id_status NOT IN (3,4) and lixo=0";
 												$sql->consult($_p."agenda","agenda_data,DATE_ADD(agenda_data, INTERVAL $agenda_duracao MINUTE) as agenda_data_fim,agenda_duracao",$where);
-												if($sql->rows==0) {
+												//echo $where."->".$sql->rows."\n";
+												if($sql->rows==0) {*/
 													$horariosDisponiveis[]=date('H:i',strtotime($di));
-												}
+												//}
 											}
-											//echo $where." -> $sql->rows\n";
-											//while($x=mysqli_fetch_object($sql->mysqry)) {
-											//	echo $x->agenda_data." - $x->agenda_data_final\n";
-											//}
 
-												//$horariosDisponiveis[]=date('H:i',strtotime($di));
 
-										} while(strtotime($dataInicio)<strtotime($dataFim));
+											$di=date('Y-m-d H:i:s',strtotime($di." + 30 minutes")); // de 30 em 30 minutos mas pode mexer 
+										} while(strtotime($df)<strtotime($dataFim));//while(strtotime($dataInicio)<strtotime($dataFim));
 
+										//var_dump($horariosDisponiveis);die();
 
 										$horarios = new Horarios(array('prefixo'=>$_p));
 
 										$horariosDisponiveisNew=array();
+
+										// remove horarios que a cadeira nao tem disponibilidade
 										foreach($horariosDisponiveis as $v) {
 
 											$strData = date('Y-m-d')." $v:00";

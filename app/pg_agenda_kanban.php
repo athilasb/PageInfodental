@@ -575,6 +575,7 @@
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										<p>${x.profissionais}</p>
+										${fichaIncompleta}
 										${wtsIcon}${wtsLembrete}
 									</a>`;
 						}

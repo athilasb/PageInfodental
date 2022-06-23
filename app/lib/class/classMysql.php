@@ -103,6 +103,14 @@ class Mysql {
 		$this->connecting->commit();
 		
 	}
+
+	function sintax($sqlQuery) {
+		$sql=$sqlQuery;
+
+		$this->mysqry=mysqli_query($this->connecting, $sql) or die(mysqli_error($this->connecting));
+		$this->rows=@mysqli_num_rows($this->mysqry);
+		//$this->rows=mysqli_num_rows($this->mysqry);
+	}
 	function consultPagMto2($mysqltabela,$mysqlcampos,$myslimite,$mysargumentos,$mysurl,$inter,$pagnome,$root="") {
 		if(isset($this->bd_info[$mysqltabela])) { 
 			$ms_table="infodentalADM.".$this->bd_info[$ms_table];
