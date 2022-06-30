@@ -5,7 +5,7 @@
 	$sql= new Mysql();
 	$sql->consult($_p."colaboradores","id","where cpf<>'00000000000' and lixo=0");
 	if($sql->rows) {
-		//header("Location: ./");
+		header("Location: ./");
 	}
 
 ?>
@@ -60,23 +60,13 @@
 
 		}
 		?>
-		<header class="header">
-			
-			<section class="header-logo">
-			</section>
 
-			<section class="header-cliente">
-				<img src="img/logo.svg" width="32" height="30" alt="Info Dental" class="header-logo__img" />
-			</section>
-
-			<section class="header-controles">
-				<?php /*<select name="unidade" class="header-controles__select">
-					<option value="">STUDIO DENTAL - OESTE</option>
-					<option value="">STUDIO DENTAL - GYN SHOP</option>
-				</select>*/?>
-			</section>
-
-		</header>
+		<section class="nav">
+			<div class="nav-header">
+				<a href="dashboard.php" class="nav-header__logo"><img src="img/logo-reduzido.svg" alt="" width="30" height="28" /></a>
+				<a href="javascript:;" class="nav-header__menu" onclick="$('.nav-buttons').slideToggle('fast');"><i class="iconify" data-icon="fluent:navigation-24-filled"></i></a>
+			</div>
+		</section>
 
 		<form method="post" class="form formulario-validacao"  autocomplete="off" enctype="multipart/form-data">
 			<input type="hidden" name="acao" value="wlib" />

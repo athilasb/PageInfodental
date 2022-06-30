@@ -34,6 +34,214 @@ Lista Unica
 
 		$rtn = array();
 
+		if($_POST['ajax']=="listaInteligente2") {
+
+			
+			$listaInteligente=array();
+			$todosPacientesIds=array();
+
+
+			# Lista de proximos atendimentos
+
+
+				$di = date('Y-m-d');
+				$df = date('Y-m-d',strtotime(date('Y-m-d H:i:s')." + 10 day"));
+				$pacientesIds=array();
+				$pacienteOrdem=array();
+
+				// pacientes que tem proximo agendamento para hoje ou nos proximos 2 dias
+				$where="where DATE_ADD(data, INTERVAL retorno DAY)>='".$di." 00:00:00' and DATE_ADD(data, INTERVAL retorno DAY)<='".$df." 23:59:59' and lixo=0 order by data desc";
+				$sql->consult($_p."pacientes_proximasconsultas","*,DATE_ADD(data, INTERVAL retorno DAY) as proximaConsulta",$where);
+				//echo $where."->".$sql->rows."\n\n";
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					
+					// se ja encontrou proxima consulta, verifica qual é a mais proxima
+					if(isset($proximaConsulta[$x->id_paciente])) {
+						continue;
+						if(strtotime($proximaConsulta[$x->id_paciente]->proximaConsulta)<strtotime($x->proximaConsulta)) {
+							$proximaConsulta[$x->id_paciente]=$x;
+						}
+					} else {
+						$proximaConsulta[$x->id_paciente]=$x;
+					}
+					$pacientesIds[$x->id_paciente]=$x->id_paciente;
+
+					$index=strtotime($x->proximaConsulta);
+					do {
+						$pacienteOrdem[$index]=$x->id_paciente;
+						$index++;
+					} while(isset($pacienteOrdem[$index]));
+				}
+
+				$preListaInteligente=array();
+				$sql->consult($_p."pacientes","id,nome,periodicidade,data_nascimento,telefone1,codigo_bi,foto_cn","where id IN (".implode(",",$pacientesIds).")");
+				if($sql->rows) {
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+
+						$proximaConsultaJSON='';
+						if(isset($proximaConsulta[$x->id])) {
+							$i=$proximaConsulta[$x->id];
+							$proximaConsultaJSON=array('duracao'=>(int)$i->duracao,
+														'dataProx'=>date('d/m/Y',strtotime("$i->data + $i->retorno day")),
+														'laboratorio'=>(int)$i->laboratorio,
+														'imagem'=>(int)$i->imagem,
+														'obs'=>addslashes(utf8_encode($i->obs)));
+							
+						}
+
+						$atendimentos=$faltou=$tempoMedio=0;
+						$ultimoAtendimento="-";
+
+
+						$ft='';
+						if(!empty($x->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$x->foto_cn;
+
+						$preListaInteligente[$x->id]=array('id_paciente'=>$x->id,
+													'nome'=>addslashes(utf8_encode($x->nome)),
+													'proximaConsulta'=>$proximaConsultaJSON,
+													'periodicidade'=>$x->periodicidade,
+													'telefone'=>telefoneMascara($x->telefone1),
+													'bi'=>isset($_codigoBI[$x->codigo_bi])?utf8_encode($_codigoBI[$x->codigo_bi]):$x->codigo_bi,
+													'idade'=>(int)idade($x->data_nascimento),
+													'atendimentos'=>$atendimentos,
+													'ultimoAtendimento'=>$ultimoAtendimento,
+													'tempoMedio'=>$tempoMedio,
+													'ft'=>$ft,
+													'faltou'=>$faltou);
+						$todosPacientesIds[$x->id]=$x->id;
+					}
+
+					arsort($pacienteOrdem);
+					foreach($pacienteOrdem as $str=>$idPaciente) {
+						if(isset($preListaInteligente[$idPaciente])) {
+							$listaInteligente[]=$preListaInteligente[$idPaciente];
+						}
+					}
+				}
+
+
+			# Lista de pacientes que desmarcaram e nao remarcaram
+
+				$pacientesIds=array();
+				$pacienteQueDesmarcouOuFaltou=array();
+				// pacientes que DESMARCOU ou FALTOU nos ultimos 30 dias
+				$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL 1 MONTH and id_status IN (4,3) and lixo=0 order by agenda_data desc");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$pacientesIds[$x->id_paciente]=$x->id_paciente;
+				}
+
+
+				
+				if(count($pacientesIds)>0) {
+
+					// se pacientes que DESMARCOU/FALTOU possuir agendamentos futuros com status A CONFIRMAR(1), CONFIRMADO (2), SALA DE ESPERA (7), EM ATENDIMENTO (6) ou ATENDIDO (5)
+					$where="where id_paciente IN (".implode(",",$pacientesIds).") and agenda_data>='".date('Y-m-d H:i')."' and id_status IN (1,2,5,6,7) and lixo=0";
+					$sql->consult($_p."agenda","id,id_paciente",$where);
+					if($sql->rows) {
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							unset($pacientesIds[$x->id_paciente]);
+						}
+					}
+				}
+
+				if(count($pacientesIds)>0) {
+
+					// monta lista dos pacientes
+					$sql->consult($_p."pacientes","id,nome,periodicidade,data_nascimento,telefone1,codigo_bi","where id IN (".implode(",",$pacientesIds).")");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+
+						$atendimentos=$faltou=$tempoMedio=0;
+						$ultimoAtendimento="-";
+
+						$ft='';
+						if(!empty($x->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$x->foto_cn;
+
+						$listaInteligente[]=array('id_paciente'=>$x->id,
+													'nome'=>addslashes(utf8_encode($x->nome)),
+													'proximaConsulta'=>'',
+													'periodicidade'=>$x->periodicidade, 
+													'telefone'=>telefoneMascara($x->telefone1),
+													'bi'=>isset($_codigoBI[$x->codigo_bi])?utf8_encode($_codigoBI[$x->codigo_bi]):$x->codigo_bi,
+													'idade'=>(int)idade($x->data_nascimento),
+													'atendimentos'=>$atendimentos,
+													'ultimoAtendimento'=>$ultimoAtendimento,
+													'tempoMedio'=>$tempoMedio,
+													'ft'=>$ft,
+													'faltou'=>$faltou);
+						$todosPacientesIds[$x->id]=$x->id;
+					}
+				}
+
+
+			# Metricas (Ultimo agendamento, atendimentos, faltas...)
+
+				if(count($todosPacientesIds)>0) {
+					$where="where id_paciente IN (".implode(",",$todosPacientesIds).") and lixo=0 order by data desc";
+					//echo $where."\n";
+					$sql->consult($_p."agenda","id,id_status,id_paciente,agenda_data,agenda_duracao",$where);
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+
+
+						if(!isset($pacientesMetricas[$x->id_paciente])) {
+
+							$ultimo='';
+							if($x->id_status==5) {
+								$ultimo=strtotime(date('Y-m-d'))-strtotime($x->agenda_data);
+								$ultimo/=(60*60*24);
+								$ultimo=floor($ultimo)+1;
+							}
+
+							$pacientesMetricas[$x->id_paciente]=array('atendimentos'=>0,
+																'tempo'=>0,
+																'faltou'=>0,
+																'ultimoAtendimento'=>$ultimo);
+						}
+
+						if($x->id_status==5) {
+							$pacientesMetricas[$x->id_paciente]['tempo']+=$x->agenda_duracao;
+							$pacientesMetricas[$x->id_paciente]['atendimentos']++; 
+
+
+							if(empty($pacientesMetricas[$x->id_paciente]['ultimoAtendimento'])) {
+								$ultimo=strtotime(date('Y-m-d'))-strtotime($x->agenda_data);
+								$ultimo/=(60*60*24);
+								$ultimo=floor($ultimo)+1;
+								$pacientesMetricas[$x->id_paciente]['ultimoAtendimento']=$ultimo;
+
+
+							}
+						}
+						else if($x->id_status==3) $pacientesMetricas[$x->id_paciente]['faltou']++; 
+
+
+						
+					}
+				}
+
+
+			$listaInteligenteFinal=array();
+			foreach($listaInteligente as $x) {
+				$x=(object)$x;
+
+				$obj=$x;
+				if(isset($pacientesMetricas[$x->id_paciente])) {
+					$obj->atendimentos=$pacientesMetricas[$x->id_paciente]['atendimentos'];
+					$obj->faltou=$pacientesMetricas[$x->id_paciente]['faltou'];
+					$obj->ultimoAtendimento=$pacientesMetricas[$x->id_paciente]['ultimoAtendimento'];
+					$obj->tempoMedio=$pacientesMetricas[$x->id_paciente]['atendimentos']==0?0:round($pacientesMetricas[$x->id_paciente]['tempo']/$pacientesMetricas[$x->id_paciente]['atendimentos']);
+					//$obj->tempoMedioFormula=$pacientesMetricas[$x->id_paciente]['tempo']." / ".$pacientesMetricas[$x->id_paciente]['atendimentos'];
+				}
+
+
+
+				$listaInteligenteFinal[]=$obj;
+			}
+
+
+			$rtn=array('success'=>true,'pacientes'=>$listaInteligenteFinal);
+
+
+		}
 		if($_POST['ajax']=="atualizaListaInteligente") {
 
 			$_historicoStatus=array();
@@ -837,269 +1045,357 @@ Lista Unica
 					</div>
 				</div>
 
-				<div class="box box-col">
+				<script type="text/javascript">
+					<?php 
+					/*var pacientesDesmarcados = JSON.parse(`<?php echo json_encode($desmarcadosPacientesAgendaJSON);?>`);
+					var pacientesRetorno = JSON.parse(`<?php echo json_encode($retornoPacientesAgendaJSON);?>`);
+					var pacientesExcluidos = JSON.parse(`<?php echo json_encode($pacientesExcluidosJSON);?>`);*/
+					?>
 
-					<div class="box-col__inner1" style="flex:0 1 45%;">
 
+					var pacientesOportunidades = [];
+					var pacientesRetorno = [];
+					var pacientesExcluidos = [];
+
+					var pacientes = [];
+					var pagina = 0;
+					var paginaReg = 1;
+					var paginaQtd = 0;
+
+					const atualizaValorListasInteligentes = () => {
+
+						let data = `ajax=listaInteligente2`;
+
+						$.ajax({
+							type:"POST",
+							data:data,
+							success:function(rtn) {
+								if(rtn.success) {
+
+									pacientesOportunidades = rtn.pacientes;
+
+									
+
+								}
+							}
+						}).done(function(){
+							pacientesLista();
+						})
+
+					}
+
+
+
+					const pacientesLista = () => {
+						
+						$('.js-pacientes').html(``);
+
+						pacientes = pacientesOportunidades;
+
+						let filtro = $('.js-filtro-pacientes option:selected').val();
+
+
+						let status = $('.js-filtro-status option:selected').val();
+
+						if(status>0) {
+							pacientes = pacientes.filter(x=>{return x.status==status});
+						}
+
+
+						let profissional = $('.js-filtro-profissional option:selected').val();
+						if(profissional>0) {
+							pacientes = pacientes.filter(x=>{return x.id_profissional==profissional});
+						}
+
+						if(pacientes.length==0) {
+							$('.js-nenhumpaciente').show();
+							$('.js-paginacao,.js-guia,.js-carregando').hide();
+						} else {
+							$('.js-nenhumpaciente,.js-carregando').hide();
+							$('.js-paginacao,.js-guia').show();
+							paginaQtd =  Math.ceil(pacientes.length/paginaReg);
+
+							for (var i = pagina * paginaReg; i < pacientes.length && i < (pagina + 1) * paginaReg; i++) {
+
+								x = pacientes[i];
+
+								let icone = ``;
+
+								// nao conseguiu contato 
+								if(x.status==1) {
+									icone=`<i class="iconify" data-icon="fluent:call-dismiss-24-regular" style="font-size:2em; color:red;"></i>`;
+								} 
+								// paciente entrara em contato
+								else if(x.status==2) {
+									icone=`<i class="iconify" data-icon="fluent:call-inbound-24-regular" style="font-size:2em; color:orange;"></i>`;
+								} 
+								// paciente pediu para retornar posteriormente
+								else if(x.status==3) {
+									icone=`<i class="iconify" data-icon="fluent:call-missed-24-regular" style="font-size:2em; color:blue;"></i>`;
+								}
+
+								let lista=``;
+								if(filtro=="excluidos") {
+									lista=x.lista;
+								}
+
+
+
+								let ft = (x.ft && x.ft.length>0)?x.ft:'img/ilustra-usuario.jpg';
+								/*$('.js-pacientes').append(`<tr class="js-item" data-filtro="${filtro}" data-id_paciente="${x.id_paciente}" data-lista="${lista}" style="height:420px">
+																<td class="list1__foto"><img src="${ft}" width="54" height="54" /></td>
+																<td>
+																<h1>${x.nome}</h1>
+																<p>${x.telefone}</p>
+																<p>Atendido: ${x.atendidos}</p>
+																<p>Faltas: ${x.faltas}</p>
+																<p>Desmarcado: ${x.desmarcados}</p>
+																<p>Lista: ${x.tipo}</p>
+																<p>Index: ${x.index}</p>
+																</td>
+																<td>${icone}</td>
+															</tr>`);*/
+
+								$('#js-inteligencia-paciente .js-nome').html(`${x.nome} <a href="pg_pacientes_resumo.php?id_paciente=${x.id_paciente}" target="_blank"><i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i></a>`);
+								if(x.bi.length>0) {
+									$('#js-inteligencia-paciente .js-bi').html(x.bi).show();
+								} else {
+									$('#js-inteligencia-paciente .js-bi').html('').hide();
+								}
+ 								$('#js-inteligencia-paciente .js-periodicidade').html(x.periodicidade+' meses');
+								$('#js-inteligencia-paciente .js-idade').html(x.idade>1?x.idade+' anos':x.idade+' ano');
+ 								$('#js-inteligencia-paciente .js-telefone').html(x.telefone);
+ 								$('#js-inteligencia-paciente .js-ft').attr('src',ft);
+
+ 								$('#js-inteligencia-paciente .js-atendimentos').html(x.atendimentos);
+ 								if(x.ultimoAtendimento.length==0) {
+	 								$('#js-inteligencia-paciente .js-ultimoAtendimento').html('-');
+ 								} else {
+	 								$('#js-inteligencia-paciente .js-ultimoAtendimento').html(x.ultimoAtendimento+'d');
+	 							}
+ 								$('#js-inteligencia-paciente .js-tempoMedio').html(x.tempoMedio+'m');
+ 								$('#js-inteligencia-paciente .js-faltou').html(x.faltou);
+
+
+ 								if(x.proximaConsulta && x.proximaConsulta.duracao) {
+ 									$('#js-inteligencia-paciente .js-proxag .js-proxDuracao').html(`${x.proximaConsulta.duracao}m`);
+ 									$('#js-inteligencia-paciente .js-proxag .js-obs').html(x.proximaConsulta.obs);
+ 									$('#js-inteligencia-paciente .js-proxag .js-agendamento').html(x.proximaConsulta.dataProx);
+
+ 									if(x.proximaConsulta.laboratorio==1) {
+ 										$('#js-inteligencia-paciente .js-proxag .js-laboratorio').html(`Necessita de laboratório`).css("color","#ccc");
+ 									} else {
+ 										$('#js-inteligencia-paciente .js-proxag .js-laboratorio').html(`Não necessita de laboratório`).css("color","#666");
+ 									}
+
+ 									if(x.proximaConsulta.imagem==1) {
+ 										$('#js-inteligencia-paciente .js-proxag .js-imagem').html(`Necessita de imagem`).css("color","#ccc");
+ 									} else {
+ 										$('#js-inteligencia-paciente .js-proxag .js-imagem').html(`Não necessita de imagem`).css("color","#666");
+ 									}
+ 								} else {
+ 									$('#js-inteligencia-paciente .js-proxag .js-proxDuracao').html(`-`);
+ 									$('#js-inteligencia-paciente .js-proxag .js-obs').html('-');
+ 									$('#js-inteligencia-paciente .js-proxag .js-agendamento').html('-');
+									$('#js-inteligencia-paciente .js-proxag .js-laboratorio').html('');
+									$('#js-inteligencia-paciente .js-proxag .js-imagem').html('');
+ 									
+ 								}
+
+							};
+
+							$('.js-guia').html(`Página <b>${pagina+1}</b> de <b>${paginaQtd}</b>`);
+
+							if(paginaQtd==1) {
+								$('.js-guia,.js-paginacao').hide();
+							} else {
+
+								$('.js-guia,.js-paginacao').show();
+							}
+						}
+					}
+
+
+					$(function(){
+
+						atualizaValorListasInteligentes();
+
+						$('.js-filtro-status').change(function(){
+							pagina=0;
+							pacientesLista();
+						});
+
+						$('.js-filtro-profissional').change(function(){
+							pagina=0;
+							pacientesLista();
+						}).trigger('change');
+
+						$('.js-anterior').click(function(){
+							if(pagina<=0) {
+								pagina = paginaQtd-1;
+							} else {
+								pagina--;
+							}
+							pacientesLista();
+						});
+
+						$('.js-pacientes').on('click','.js-item',function(){
+							pacienteRelacionamento($(this));
+						})
+
+						
+
+
+						$('.js-proximo').click(function(){
+
+							if(paginaQtd>1) {
+								if((pagina+1)>=paginaQtd) {
+									pagina = 0;
+								} else {
+									pagina++;
+								}
+								pacientesLista();
+							}
+
+						});
+					})
+
+				</script>
+
+				<div class="box">
+
+					<div class="filter">
+						<div class="filter-group">
+							<div class="filter-title">
+								<h1>Horários Disponíveis</h1>
+							</div>
+						</div>
+						<div class="filter-form form">
+							<dl>
+								<dd>
+									<select class="js-filtro-profissional">
+										<option>Todos Profissionais</option>
+										<?php
+										foreach($_profissionais as $p) {
+											if($p->check_agendamento==0) continue;
+											echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+										}
+										?>
+									</select>
+								</dd>
+							</dl>
+						</div>
+					</div>
+
+					<div style="margin-bottom:var(--margin1);">
+						<a href="" class="button button_disabled">08:00 - 09:00</a>
+						<a href="" class="button button_disabled">10:00 - 13:00</a>
+						<a href="" class="button button_disabled">15:00 - 16:00</a>
+						<a href="" class="button button_disabled">17:30 - 18:00</a>
+					</div>
+
+					<div class="box box_inv" id="js-inteligencia-paciente">
+						
 						<div class="filter">
 							<div class="filter-group">
 								<div class="filter-title">
-									<h1>Sugestões</h1>
+									<h1 style="color:var(--cor1);">Sugestões Inteligentes</h1>
 								</div>
 							</div>
 						</div>
 
-						<?php
-
-						
-
-
-
-
-
-						?>
-
-						<div class="list3">
-							<span class="list3-item">
-								<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>
-								<p>Há <b class="js-indicador-oportunidades">0</b> oportunidades de agendamentos</p>
-							</span>
-							
-						</div>
-
-					</div>
-
-					<div class="box-col__inner1 box_inv">
-						
-						<form method="form" class="form">
-							<div class="colunas">
-								<dl>
-									<dd>
-										<select class="js-filtro-profissional">
-											<option>Todos Profissionais</option>
-											<?php
-											foreach($_profissionais as $p) {
-												if($p->check_agendamento==0) continue;
-												echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
-											}
-											?>
-										</select>
-									</dd>
-								</dl>
-								<dl>
-									<dd>
-										<select class="js-filtro-status">
-											<option value="0">Todos Status</option>
-											<?php
-											foreach($_historicoStatus as $v) {
-												echo '<option value="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
-											}
-											?>
-										</select>
-									</dd>
-								</dl>
+						<section class="header-profile">
+							<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-ft" />
+							<div class="header-profile__inner1">
+								<h1 class="js-nome"></h1>
+								<div>
+									<p class="js-bi"></p>
+									<p class="js-idade"></p>
+									<p>Periodicidade: <strong class="js-periodicidade"></strong></p>
+								</div>
 							</div>
-						</form>
+							<div class="header-fone">
+								<i class="iconify" data-icon="fluent:call-connecting-20-regular"></i><p class="js-telefone">(62) 98405-0927</p>
+							</div>
+						</section>
 
-						<div class="list1">
-
-							<script type="text/javascript">
-								<?php 
-								/*var pacientesDesmarcados = JSON.parse(`<?php echo json_encode($desmarcadosPacientesAgendaJSON);?>`);
-								var pacientesRetorno = JSON.parse(`<?php echo json_encode($retornoPacientesAgendaJSON);?>`);
-								var pacientesExcluidos = JSON.parse(`<?php echo json_encode($pacientesExcluidosJSON);?>`);*/
-								?>
-
-
-								var pacientesOportunidades = [];
-								var pacientesRetorno = [];
-								var pacientesExcluidos = [];
-
-								var pacientes = [];
-								var pagina = 0;
-								var paginaReg = 1;
-								var paginaQtd = 0;
-
-								const atualizaValorListasInteligentes = () => {
-
-									let data = `ajax=atualizaListaInteligente`;
-
-									$.ajax({
-										type:"POST",
-										data:data,
-										success:function(rtn) {
-											if(rtn.success) {
-
-												pacientesOportunidades = rtn.pacientes;
-
-												
-
-											}
-										}
-									}).done(function(){
-										pacientesLista();
-									})
-
-								}
-
-
-
-								const pacientesLista = () => {
-									
-									$('.js-pacientes').html(``);
-
-									pacientes = pacientesOportunidades;
-
-									let filtro = $('.js-filtro-pacientes option:selected').val();
-
-									$('.js-indicador-oportunidades').html(pacientesOportunidades.length);
-
-									let status = $('.js-filtro-status option:selected').val();
-
-									if(status>0) {
-										pacientes = pacientes.filter(x=>{return x.status==status});
-									}
-
-
-									let profissional = $('.js-filtro-profissional option:selected').val();
-									if(profissional>0) {
-										pacientes = pacientes.filter(x=>{return x.id_profissional==profissional});
-									}
-
-									if(pacientes.length==0) {
-										$('.js-nenhumpaciente').show();
-										$('.js-paginacao,.js-guia,.js-carregando').hide();
-									} else {
-										$('.js-nenhumpaciente,.js-carregando').hide();
-										$('.js-paginacao,.js-guia').show();
-										paginaQtd =  Math.ceil(pacientes.length/paginaReg);
-
-										for (var i = pagina * paginaReg; i < pacientes.length && i < (pagina + 1) * paginaReg; i++) {
-
-											x = pacientes[i];
-
-											let icone = ``;
-
-											// nao conseguiu contato 
-											if(x.status==1) {
-												icone=`<i class="iconify" data-icon="fluent:call-dismiss-24-regular" style="font-size:2em; color:red;"></i>`;
-											} 
-											// paciente entrara em contato
-											else if(x.status==2) {
-												icone=`<i class="iconify" data-icon="fluent:call-inbound-24-regular" style="font-size:2em; color:orange;"></i>`;
-											} 
-											// paciente pediu para retornar posteriormente
-											else if(x.status==3) {
-												icone=`<i class="iconify" data-icon="fluent:call-missed-24-regular" style="font-size:2em; color:blue;"></i>`;
-											}
-
-											let lista=``;
-											if(filtro=="excluidos") {
-												lista=x.lista;
-											}
-
-		
-											let profissionais = '';
-
-											if(x.profissionais && x.profissionais.length>0) {
-												x.profissionais.forEach(x=>{
-													profissionais+=`${x.nome}: ${x.qtd}<br />`;
-												})
-											}
-
-											let ft = (x.ft && x.ft.length>0)?x.ft:'img/ilustra-usuario.jpg';
-											$('.js-pacientes').append(`<tr class="js-item" data-filtro="${filtro}" data-id_paciente="${x.id_paciente}" data-lista="${lista}" style="height:420px">
-																			<td class="list1__foto"><img src="${ft}" width="54" height="54" /></td>
-																			<td>
-																			<h1>${x.nome}</h1>
-																			<p>${x.telefone}</p>
-																			<p>Atendido: ${x.atendidos}</p>
-																			<p>Faltas: ${x.faltas}</p>
-																			<p>Desmarcado: ${x.desmarcados}</p>
-																			<p>Lista: ${x.tipo}</p>
-																			<p>Index: ${x.index}</p>
-																			<p>${profissionais}</p>
-																			</td>
-																			<td>${icone}</td>
-																		</tr>`);
-
-										};
-
-										$('.js-guia').html(`Página <b>${pagina+1}</b> de <b>${paginaQtd}</b>`);
-
-										if(paginaQtd==1) {
-											$('.js-guia,.js-paginacao').hide();
-										} else {
-
-											$('.js-guia,.js-paginacao').show();
-										}
-									}
-								}
-
-
-								$(function(){
-
-									atualizaValorListasInteligentes();
-
-									$('.js-filtro-status').change(function(){
-										pagina=0;
-										pacientesLista();
-									});
-
-									$('.js-filtro-profissional').change(function(){
-										pagina=0;
-										pacientesLista();
-									}).trigger('change');
-
-									$('.js-anterior').click(function(){
-										if(pagina<=0) {
-											pagina = paginaQtd-1;
-										} else {
-											pagina--;
-										}
-										pacientesLista();
-									});
-
-									$('.js-pacientes').on('click','.js-item',function(){
-										pacienteRelacionamento($(this));
-									})
-
-									
-
-
-									$('.js-proximo').click(function(){
-
-										if(paginaQtd>1) {
-											if((pagina+1)>=paginaQtd) {
-												pagina = 0;
-											} else {
-												pagina++;
-											}
-											pacientesLista();
-										}
-
-									});
-								})
-
-							</script>
-
-							<span class="js-nenhumpaciente"><center>Nenhum paciente</center></span>
-							<span class="js-carregando"><center>Carregando...</center></span>
-							<table class="js-pacientes">
-								
-										
-							</table>
-
-							<div style="display:flex;flex-wrap: nowrap;justify-content:space-between;margin: 10px 10px 0px 10px;" class="js-paginacao">
-								<a href="javascript:;" class="js-anterior"><span class="iconify" data-icon="akar-icons:circle-chevron-left-fill" data-height="25"></span></a>
-								<span class="js-guia"></span>
-								<a href="javascript:;" class="js-proximo"><span class="iconify" data-icon="akar-icons:circle-chevron-right-fill" data-height="25"></span></a>
+						<div class="list6">
+							<div class="list6-item">
+								<h1>Atendimentos</h1>
+								<h2 class="js-atendimentos"></h2>
+							</div>
+							<div class="list6-item">
+								<h1>Último Atend.</h1>
+								<h2 class="js-ultimoAtendimento"></h2>
+							</div>
+							<div class="list6-item">
+								<h1>Tempo Médio</h1>
+								<h2 class="js-tempoMedio"></h2>
+							</div>
+							<div class="list6-item">
+								<h1>Faltou</h1>
+								<h2 class="js-faltou"></h2>
 							</div>
 						</div>
 
-					</div>
+						<div class="proxag js-proxag">
+							<header>
+								<i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i>
+								<center><h1>Agendar em</h1></center>
+								<p class="js-agendamento"></p>
+							</header>
+							<article>
+								<p>Duração: <strong class="js-proxDuracao"></strong></p>
+								<p class="js-laboratorio" style="font-size:12px;"></p>
+								<p class="js-imagem"  style="font-size:12px;"></p>
+							</article>
+							<article>
+								<p>Obs:</p>
+								<p class="js-obs"></p>
+							</article>
+						</div>
 
+						<div class="filter" style="margin-bottom:0;">
+							<div class="filter-group">
+								<div class="filter-form form">
+									<dl>
+										<dd><a href="" class="button tooltip" title="Não atendeu"><i class="iconify" data-icon="fluent:call-dismiss-24-regular"></i></a></dd>
+									</dl>
+									<dl>
+										<dd><a href="" class="button tooltip" title="Paciente pediu para retornar"><i class="iconify" data-icon="fluent:call-missed-24-regular"></i></a></dd>
+									</dl>
+									<dl>
+										<dd><a href="" class="button tooltip" title="Paciente entrará em contato"><i class="iconify" data-icon="fluent:call-inbound-24-regular"></i></a></dd>
+									</dl>
+									<dl>
+										<dd><a href="" class="button tooltip" title="Excluir das sugestões"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
+									</dl>
+									<dl>
+										<dd><a href="" class="button tooltip" title="Pular sugestão"><i class="iconify" data-icon="fluent:skip-forward-tab-24-filled"></i></a></dd>
+									</dl>
+								</div>
+							</div>
+							<div class="filter-group">
+								<div class="filter-form form">
+									<dl>
+										<dd><a href="" class="button button_main"><i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i><span>Agendar</span></a></dd>
+									</dl>
+								</div>
+							</div>
+
+
+						</div>
+
+						<div style="display:flex;flex-wrap: nowrap;justify-content:space-between;margin: 10px 10px 0px 10px;" class="js-paginacao">
+							<a href="javascript:;" class="js-anterior"><span class="iconify" data-icon="akar-icons:circle-chevron-left-fill" data-height="25"></span></a>
+							<span class="js-guia"></span>
+							<a href="javascript:;" class="js-proximo"><span class="iconify" data-icon="akar-icons:circle-chevron-right-fill" data-height="25"></span></a>
+						</div>
+
+					</div>
 				</div>
+
+				
 
 			</section>
 		

@@ -10,7 +10,7 @@ CMD ["/usr/sbin/apache2ctl", "-D", "FOREGROUND"]
 RUN apt-get update
 RUN apt-get install -y build-essential
 RUN apt-get install -y curl
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get install -y gcc g++ make
 RUN apt-get install -y libnode-dev
 RUN apt-get install -y nodejs
