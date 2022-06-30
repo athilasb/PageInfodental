@@ -1535,7 +1535,47 @@
 				}
 
 
-				$rtn=array('success'=>true);
+			}
+
+			else if($_POST['ajax']=="prontuarioPersistir") {
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","id","where id=".$_POST['id_paciente']);
+					if($sql->rows) {
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				if(is_object($paciente)) {
+
+					$id_profissional=isset($_POST['id_profissional'])?addslashes($_POST['id_profissional']):0;
+					$prontuario=isset($_POST['prontuario'])?addslashes($_POST['prontuario']):'';
+
+					if($id_profissional==0) {
+						$erro='Selecione o Profissional';
+					} else if(empty($prontuario)) {
+						$erro='Digite o prontuário';
+					} 
+
+					if(empty($erro)) {
+
+						$vsql="data=now(),id_usuario='".$id_profissional."',
+								texto='".addslashes(utf8_decode($prontuario))."',
+								id_paciente=$paciente->id";
+
+						$sql->add($_p."pacientes_prontuarios",$vsql);
+						$id_reg=$sql->ulid;
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vsql)."',vwhere='',tabela='".$_p."pacientes_prontuarios',id_reg='$id_reg'");
+
+						$rtn=array('success'=>true);
+
+					} else {
+						$rtn=array('success'=>false,'error'=>$erro);
+					}
+
+				}  else {
+					$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
+				}
 			}
 
 
@@ -3762,6 +3802,7 @@
 			const asideProximaConsulta = (id_agenda) => {
 
 
+				$('#js-aside-proximaConsulta .js-tab').show();
 				let data = `ajax=proximaConsulta&id_agenda=${id_agenda}`;
 				$.ajax({
 					type:'POST',
@@ -3854,6 +3895,16 @@
 
 				});
 			}
+
+			const asideProximaConsultaProntuario = () => {
+
+
+				$('#js-aside-proximaConsulta .js-tab').hide();
+				$('#js-aside-proximaConsulta .js-ag-agendamento').hide();
+				$('#js-aside-proximaConsulta .js-ag-agendamentoFuturos').hide();
+				$('#js-aside-proximaConsulta .js-ag-prontuario').show();
+
+			}
 			$(function(){
 
 				$('#js-aside-proximaConsulta .js-btn-acao').click(function(){
@@ -3877,6 +3928,9 @@
 				$('#js-aside-proximaConsulta').on('change','select[name=agenda_duracao], select[name=id_cadeira],  select.js-profissionais-qa, input[name=agenda_data]',function(){
 					horarioDisponivel(0,$('#js-aside-proximaConsulta'));
 				});
+
+
+
 				$('#js-aside-proximaConsulta .js-ag-agendamento .js-salvar').click(function(){
 					let tipo = $('#js-aside-proximaConsulta input[name=tipo]').val();
 					let id_paciente = $('#js-aside-proximaConsulta .js-id_paciente').val();
@@ -3914,16 +3968,9 @@
 										url:baseURLApiAside,
 										success:function(rtn) {
 											if(rtn.success) {
-												$('#js-aside-proximaConsulta input[name=agenda_data]').val('');
-												$('#js-aside-proximaConsulta select[name=agenda_duracao]').val('');
-												$('#js-aside-proximaConsulta select[name=id_cadeira]').val('');
-												$('#js-aside-proximaConsulta select.js-profissionais-qa').val('').trigger('chosen:updated');
-												$('#js-aside-proximaConsulta select[name=agenda_hora]').val('');
-												$('#js-aside-proximaConsulta textarea.js-obs-qa').val('');
 
-												swal({title: "Sucesso!", text: 'Agendamento realizado com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-													$('#js-aside-proximaConsulta .aside-close').click();
-												});
+												asideProximaConsultaProntuario();
+												
 
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -4001,16 +4048,9 @@
 									url:baseURLApiAside,
 									success:function(rtn) {
 										if(rtn.success) {
-											$(`#js-aside-proximaConsulta .js-retorno`).val('');
-											$(`#js-aside-proximaConsulta .js-agenda_duracao`).val('');
-											$(`#js-aside-proximaConsulta .js-laboratorio`).prop('checked',false);
-											$(`#js-aside-proximaConsulta .js-imagem`).prop('checked',false);
-											$(`#js-aside-proximaConsulta .js-profissionais`).val('');
-											$(`#js-aside-proximaConsulta .js-obs`).val('');
-											$('#js-aside-proximaConsulta .js-id_paciente').val('');
-											swal({title: "Sucesso!", text: 'Lembrete criado com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-												$('#js-aside-proximaConsulta .aside-close').click();
-											});
+											
+											asideProximaConsultaProntuario();
+
 										} else if(rtn.error) {
 											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 										} else {
@@ -4032,6 +4072,72 @@
 						}
 					}
 				});
+
+				$('#js-aside-proximaConsulta .js-ag-prontuario .js-salvarProntuario').click(function(){
+
+
+					let obj = $(this);
+					let objTextoAntigo = $(this).html();
+					let id_profissional = $('#js-aside-proximaConsulta .js-prontuario-profissional').val();
+					let prontuario = $('#js-aside-proximaConsulta .js-prontuario').val();
+					let id_paciente = $('#js-aside-proximaConsulta .js-id_paciente').val();
+
+					let erro='';
+
+					if(id_profissional.length==0) erro='Selecione o Profissional';
+					else if(prontuario.length==0) erro='Digite o prontuário para salvar'
+
+					if(erro.length==0) {
+						if(obj.attr('data-loading')==0) {
+
+							obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+							obj.attr('data-loading',1);
+
+							let data = `ajax=prontuarioPersistir&id_profissional=${id_profissional}&prontuario=${prontuario}&id_paciente=${id_paciente}`;
+
+							$.ajax({
+								type:"POST",
+								url:baseURLApiAside,
+								data:data,
+								success:function(rtn) {
+									if(rtn.success) {
+
+										$('#js-aside-proximaConsulta input[name=agenda_data]').val('');
+										$('#js-aside-proximaConsulta select[name=agenda_duracao]').val('');
+										$('#js-aside-proximaConsulta select[name=id_cadeira]').val('');
+										$('#js-aside-proximaConsulta select.js-profissionais-qa').val('').trigger('chosen:updated');
+										$('#js-aside-proximaConsulta select[name=agenda_hora]').val('');
+										$('#js-aside-proximaConsulta textarea.js-obs-qa').val('');
+
+										
+										$(`#js-aside-proximaConsulta .js-retorno`).val('');
+										$(`#js-aside-proximaConsulta .js-agenda_duracao`).val('');
+										$(`#js-aside-proximaConsulta .js-laboratorio`).prop('checked',false);
+										$(`#js-aside-proximaConsulta .js-imagem`).prop('checked',false);
+										$(`#js-aside-proximaConsulta .js-profissionais`).val('');
+										$(`#js-aside-proximaConsulta .js-obs`).val('');
+										$('#js-aside-proximaConsulta .js-id_paciente').val('');
+										swal({title: "Sucesso!", text: 'Dados salvos com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
+											$('#js-aside-proximaConsulta .aside-close').click();
+										});
+									} else if(rtn.error) {
+										swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+									} else {
+										swal({title: "Erro!", text: 'Algum erro ocorreu ao salvar o prontuário. Tente novamente!', type:"error", confirmButtonColor: "#424242"});
+									}
+								}
+							}).done(function(){
+								obj.attr('data-loading',0);
+								obj.html(objTextoAntigo);
+							})
+						}
+					} else {
+						swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
+					}
+
+				});
+
+
 
 			});
 		</script>
@@ -4225,6 +4331,49 @@
 							</table>
 						</div>
 					</div>
+
+					<section class="tab tab_alt js-ag js-ag-prontuario">
+						<a href="javascript:;" class="active">Prontuário</a>
+					</section>
+
+					<div class="js-ag js-ag-prontuario" style="display:none">
+						<section class="filter">
+							<div class="button-group">
+								
+							</div>
+							<div class="filter-group">
+								<div class="filter-form form">
+									<dl>
+										<dd><button class="button button_main js-salvarProntuario" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+									</dl>
+								</div>								
+							</div>
+						</section>
+
+						<dl>
+							<dt>Profissional</dt>
+							<dd>
+								<select class="js-prontuario-profissional">
+									<option value="">-</option>
+									<?php
+									foreach($_profissionais as $p) {
+										if($p->check_agendamento==0) continue;
+										echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+									}
+									?>
+								</select>
+							</dd>
+						</dl>
+						
+						<dl>
+							<dt>Prontuário</dt>
+							<dd>
+								<textarea class="js-prontuario" style="height:250px;"></textarea>
+							</dd>
+						</dl>
+					</div>
+
+
 				</form>
 			</div>
 		</section>

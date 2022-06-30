@@ -1,0 +1,1 @@
+ALTER TABLE `ident_pacientes_proximasconsultas` ADD `situacao` INT NOT NULL COMMENT '0 - nenhuma\r\n1 - nao atendeu, pediu retorno\r\n2 - paciente entrara em contato' AFTER `retorno`;
