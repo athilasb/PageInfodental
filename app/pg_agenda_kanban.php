@@ -8,154 +8,20 @@
 		$rtn = array();
 
 		if($_POST['ajax']=="agenda") {
-			$data='';
-			if(isset($_POST['data']) and !empty($_POST['data'])) {
-				list($ano,$mes,$dia)=explode("-",$_POST['data']);
-				if(checkdate($mes, $dia, $ano)) $data=$_POST['data'];
-			}
 
+			// busca kanban
 
-			$id_profissional=(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional']))?$_POST['id_profissional']:0;
-			$id_cadeira=(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira']))?$_POST['id_cadeira']:0;
-
-			$_profissionais=array();
-			$sql->consult($_p."colaboradores","id,nome","");
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$_profissionais[$x->id]=$x;
-			}
-
-			if(!empty($data)) {
-
-				$agenda=$agendaIds=array();
-				$pacientesIds=$pacientesAtendidosIds=array(-1);
-				$where="where agenda_data>='".$data." 00:00:00' and agenda_data<='".$data." 23:59:59' and lixo=0";
-				if($id_profissional>0) $where.=" and profissionais like '%,$id_profissional,%'";
-				if($id_cadeira>0) $where.=" and id_cadeira = '$id_cadeira'";
-				$sql->consult($_p."agenda","*",$where." order by agenda_data asc");
-
-				$registros=array();
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$registros[]=$x;
-					$pacientesIds[]=$x->id_paciente;
-					$agendaIds[]=$x->id;
-
-					// ATENDIDO
-					if($x->id_status==5) {
-						$pacientesAtendidosIds[]=$x->id_paciente;
-					}
-				}
-
-				$pacientesEvolucoes=array();
-				$where="where data_evolucao='".$data."' and id_paciente IN (".implode(",",$pacientesAtendidosIds).") and lixo=0";
-				
-				$sql->consult($_p."pacientes_evolucoes","*",$where);
-				if($sql->rows) {
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$pacientesEvolucoes[$x->id_paciente][]=$x;
-					}
-				}
-
-
-				$camposParaFichaCompleta=explode(",","nome,sexo,rg,rg_orgaoemissor,rg_uf,cpf,data_nascimento,estado_civil,telefone1,lat,lng,endereco");
-
-				$_pacientes=array();
-				$sql->consult($_p."pacientes","*","where id IN (".implode(",",$pacientesIds).")");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-
-					// verifica se a ficha do paciente esta completa
-						$fichaCompleta=1;
-
-						foreach($camposParaFichaCompleta as $c) {
-							if(empty($x->$c)) {
-								$fichaCompleta=0;
-								break;
-							}
-						}
-
-					$_pacientes[$x->id]=(object)array('id'=>$x->id,
-														'nome'=>$x->nome,
-														'telefone1'=>$x->telefone1,
-														'codigo_bi'=>$x->codigo_bi,
-														'fichaCompleta'=>$fichaCompleta);
-				}
-
-				$_agendamentosConfirmacaoWts=array();
-				$_agendamentosLembretes=array();
-				if(count($agendaIds)>0) {
-					$sql->consult($_p."whatsapp_mensagens","*","where id_agenda IN (".implode(",",$agendaIds).") and id_tipo IN (1,2)");
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-
-						if($x->id_tipo==1) {
-							$_agendamentosConfirmacaoWts[$x->id_agenda]=1;
-
-							if($x->resposta_sim==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=2;
-							else if($x->resposta_nao==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=3;
-							else if($x->resposta_naocompreendida>0) $_agendamentosConfirmacaoWts[$x->id_agenda]=4;
-							else if($x->enviado==0 and $x->erro==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=6;
-							else {
-								$dif = strtotime(date('Y-m-d H:i'))-strtotime($x->data_enviado);
-								$dif /= 60;
-								$dif = ceil($dif);
-
-								if($dif>4) {
-									 $_agendamentosConfirmacaoWts[$x->id_agenda]=5;
-								}
-							}
-						} else if($x->id_tipo==2) {
-							$_agendamentosLembretes[$x->id_agenda]=1;
-						}
-					}
-				}
-
-				foreach($registros as $x) {
-					if(isset($_pacientes[$x->id_paciente])) {
-						$paciente=$_pacientes[$x->id_paciente];
-
-						$dataAg=date('d/m',strtotime($x->agenda_data));
-						$dia=" ".$diasExtenso[date('w',strtotime($x->agenda_data))];
-
-						$profissionais='';
-						if(!empty($x->profissionais)) {
-							$profAux=explode(",",$x->profissionais);
-							foreach($profAux as $idP) {
-								if(!empty($idP) and isset($_profissionais[$idP])) {
-									$prof=$_profissionais[$idP];
-									$profissionais.=utf8_encode($prof->nome)."<BR>";
-
-								}
-							}
-						}
-
-						if(!empty($profissionais)) $profissionais=substr($profissionais,0,strlen($profissionais)-4);
- 
-						$mais24="";
-
-						$dif = round((strtotime($x->agenda_data)-strtotime($x->data))/(60*60));
-
-						$agenda[]=(object) array('id_agenda'=>$x->id,
-													'dt'=>$x->data,
-													'data'=>$dataAg,//.$dia,
-													'hora'=>date('H:i',strtotime($x->agenda_data))." às ".date('H:i',strtotime($x->agenda_data_final)),
-													'id_status'=>$x->id_status,
-													'id_paciente'=>$paciente->id,
-													'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?$_codigoBI[$paciente->codigo_bi]:'',
-													'paciente'=>ucwords(strtolowerWLIB(utf8_encode($_pacientes[$x->id_paciente]->nome))),
-													'telefone1'=>mask($_pacientes[$x->id_paciente]->telefone1),
-													'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0,
-													'wts'=>(int)isset($_agendamentosConfirmacaoWts[$x->id])?$_agendamentosConfirmacaoWts[$x->id]:0,
-													'mais24'=>(int)($dif>=24?1:0), // se possui mais de 24h que foi feito o agendamento
-													'profissionais'=>$profissionais,
-													'lembrete'=>isset($_agendamentosLembretes[$x->id])?1:0,
-													'fichaCompleta'=>$paciente->fichaCompleta
-												);
-					}
-				}
-
-				$rtn=array('success'=>true,'agenda'=>$agenda);
-
+			$agenda = new Agenda(array('prefixo'=>$_p));
+			$attr=array('data'=>$_POST['data'],
+						'id_profissional'=>((isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional']))?$_POST['id_profissional']:0),
+						'id_cadeira'=>((isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional']))?$_POST['id_cadeira']:0)
+					);
+			if($agenda->kanban($attr)) {
+				$rtn=array('success'=>true,'agenda'=>$agenda->kanban);
 			} else {
-				$rtn=array('success'=>false,'error'=>'Data inválida!');
+				$rtn=array('success'=>false,'error'=>$agenda->erro);
 			}
+
 		} else if ($_POST['ajax']=="alterarStatus") {
 
 			$agenda = '';
@@ -288,95 +154,22 @@
 		$dataWH=date('Y-m-d');
 	}
 
-	$agenda=$registros=$agendaIds=array();
-	$pacientesIds=$pacientesAtendidosIds=array(-1);
-	$where="where agenda_data>='".$dataWH." 00:00:00' and agenda_data<='".$dataWH." 23:59:59' and lixo=0";
-	if(isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional']) and $_GET['id_profissional']>0) $where.=" and profissionais like '%,".$_GET['id_profissional'].",%'";
-	if(isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira']) and $_GET['id_cadeira']>0) $where.=" and id_cadeira=".$_GET['id_cadeira'];
-	$sql->consult($_p."agenda","*",$where." order by agenda_data asc");
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$registros[]=$x;
-		$pacientesIds[]=$x->id_paciente;
-		$agendaIds[]=$x->id;
 
-		// ATENDIDO
-		if($x->id_status==5) {
-			$pacientesAtendidosIds[]=$x->id_paciente;
-		}
+	// busca kanban
+
+	$agenda = new Agenda(array('prefixo'=>$_p));
+	$attr=array('data'=>$dataWH,
+				'id_profissional'=>((isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional']))?$_GET['id_profissional']:0),
+				'id_cadeira'=>((isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira']))?$_GET['id_cadeira']:0)
+			);
+
+	if($agenda->kanban($attr)) {
+		$agenda=$agenda->kanban;
+	} else {
+		$agenda=array();
 	}
 
-	$_agendamentosConfirmacaoWts=array();
-	if(count($agendaIds)>0) {
-		$sql->consult($_p."whatsapp_mensagens","*","where id_agenda IN (".implode(",",$agendaIds).") and id_tipo=1");
-		while($x=mysqli_fetch_object($sql->mysqry)) {
-			$_agendamentosConfirmacaoWts[$x->id_agenda]=1;
-			if($x->resposta_sim==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=2;
-			else if($x->resposta_nao==1) $_agendamentosConfirmacaoWts[$x->id_agenda]=3;
-			else if($x->resposta_naocompreendida>0) $_agendamentosConfirmacaoWts[$x->id_agenda]=4;
-		}
-	}
-
-	$pacientesEvolucoes=array();
-	$where="where data_evolucao='".$dataWH."' and id_paciente IN (".implode(",",$pacientesAtendidosIds).") and lixo=0";
-	$sql->consult($_p."pacientes_evolucoes","*",$where);
-	if($sql->rows) {
-		while($x=mysqli_fetch_object($sql->mysqry)) {
-			$pacientesEvolucoes[$x->id_paciente][]=$x;
-		}
-	}
-	$_agendaStatus=array();
-	$sql->consult($_p."agenda_status","*","");
-	while ($x=mysqli_fetch_object($sql->mysqry)) {
-		// code...
-		$_agendaStatus[$x->id]=$x;
-	}
-
-	$_pacientes=array();
-	$sql->consult($_p."pacientes","id,nome,telefone1,codigo_bi","where id IN (".implode(",",$pacientesIds).")");
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_pacientes[$x->id]=$x;
-	}
-	foreach($registros as $x) {
-		if(isset($_pacientes[$x->id_paciente])) {
-			$paciente=$_pacientes[$x->id_paciente];
-
-			$dataAg=date('d/m',strtotime($x->agenda_data));
-			$dia=" ".$diasExtenso[date('w',strtotime($x->agenda_data))];
-
-
-			$profissionais='';
-			if(!empty($x->profissionais)) {
-				$profAux=explode(",",$x->profissionais);
-				foreach($profAux as $idP) {
-					if(!empty($idP) and isset($_profissionais[$idP])) {
-						$prof=$_profissionais[$idP];
-						$profissionais.=utf8_encode($prof->nome)."<br>";
-
-					}
-				}
-			}
-
-						if(!empty($profissionais)) $profissionais=substr($profissionais,0,strlen($profissionais)-4);
-
-			$mais24="";
-
-			$dif = round((strtotime($x->agenda_data)-strtotime($x->data))/(60*60));
-
-			$agenda[]=(object) array('id_agenda'=>$x->id,
-										'id_paciente'=>$x->id_paciente,
-										'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?$_codigoBI[$paciente->codigo_bi]:'',
-										'data'=>$dataAg,
-										'hora'=>date('H:i',strtotime($x->agenda_data))." às ".date('H:i',strtotime($x->agenda_data_final)),
-										'id_status'=>$x->id_status,
-										'paciente'=>ucwords(strtolowerWLIB(utf8_encode($_pacientes[$x->id_paciente]->nome))),
-										'telefone1'=>mask($_pacientes[$x->id_paciente]->telefone1),
-										'evolucao'=>isset($pacientesEvolucoes[$x->id_paciente])?1:0,
-										'mais24'=>(int)($dif>=24?1:0), // se possui mais de 24h que foi feito o agendamento
-										'profissionais'=>$profissionais,
-										'wts'=>(int)isset($_agendamentosConfirmacaoWts[$x->id])?$_agendamentosConfirmacaoWts[$x->id]:0
-									);
-		}
-	}
+	
 ?> 
 	
 	<header class="header">
@@ -504,7 +297,7 @@
 
 						let html = ``;
 						let wtsIcon = ``;
-						let aConfirmar
+						let aConfirmar = ``;
 						if(x.wts !== undefined && x.wts>0) {
 							if(x.wts == 1) { // aguardando
 								//wtsIcon=` <span class="iconify" data-icon="bi:send" data-inline="true" data-height="16" style="background:var(--cinza5);color:#FFF;padding:7px;border-radius:5px;"></span>`;
@@ -532,6 +325,17 @@
 							}
 						}
 
+						let iconsInfo = '<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular" style="color:var(--vermelho);" data-height="20"></i>';
+						if((x.pProx && x.pProx==1) || (x.pHist && x.pHist==1) || (x.pPer && x.pPer==1)) {
+							iconsInfo=' <i class="iconify" data-icon="fluent:lightbulb-filament-20-regular" style="color:var(--verde);" data-height="20"></i>';
+						}
+
+						let iconsInfoProntuario = '<span class="iconify" data-icon="fluent:clipboard-note-20-filled" style="color:var(--vermelho);"></span>';
+						if(x.pPron && x.pPron==1) {
+							iconsInfoProntuario='<span class="iconify" data-icon="fluent:clipboard-note-20-filled" style="color:var(--verde);"></span>';
+						}
+						
+
 						let wtsLembrete = ``;
 						if(x.lembrete && x.lembrete==1) {
 							wtsLembrete=`<span class="iconify" data-icon="mdi:clock-alert-outline" style="color:var(--verde)"></span>`;
@@ -554,14 +358,15 @@
 						if(eval(x.id_status)==1) {
 
 							if(x.wts==4 || x.wts==5 || x.wts==6 || x.mais24==0) {
-								wtsIcon=`<div class="kanban-item-wp"><i class="iconify" data-icon="bxs:phone"></i> <span>Confirmar</span></div>`;
+								wtsIcon=`<div class="kanban-item-wp" style="color:var(--vermelho);"><i class="iconify" data-icon="bxs:phone"></i> <span>Confirmar</span></div>`;
 							}
 							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										<p>${x.telefone1}</p>
 										<p>${x.profissionais}</p>
-										${wtsIcon}${wtsLembrete}
+										${wtsIcon}
+										${wtsLembrete}
 									</a>`;
 						} 
 						// CONFIRMADO
@@ -615,7 +420,10 @@
 										<h1>${x.paciente}</h1>
 										<p>${x.profissionais}</p>
 										${fichaIncompleta}
-										${wtsIcon}${wtsLembrete}
+										${wtsIcon}
+										${wtsLembrete}
+										${iconsInfo}
+										${iconsInfoProntuario}
 									</a>`;
 
 						}
@@ -712,6 +520,10 @@
 					$('.js-cal-titulo-diames').html(dtObj.getDate()>=9?dtObj.getDate():`0${dtObj.getDate()}`);
 					$('.js-cal-titulo-mes').html(mesString);
 					$('.js-cal-titulo-dia').html(diaString);
+
+					let dataURL = d2(date.getDate())+"/"+d2(date.getMonth()+1)+'/'+date.getFullYear();
+
+					window.history.pushState('', '', `/<?php echo basename($_SERVER['PHP_SELF']);?>?data=${dataURL}`);
 
 
 				}

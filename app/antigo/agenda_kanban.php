@@ -1,5 +1,4 @@
 <?php
-
 	if(isset($_POST['ajax'])) {
 		require_once("lib/conf.php");
 		require_once("usuarios/checa.php");
@@ -231,9 +230,54 @@
 
 			$sql->consult($_p."agenda","*",$where);
 			if($sql->rows) {
-
+				$agendaRegistros=$agendaIds=array();
 				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$agendaRegistros[]=$x;
+					if($x->agendaPessoal==0) $agendaIds[]=$x->id;
+				}
+
+				// busca agendamentos que tiveram "Proxima Consulta / Lembrete de proxima consulta ou Quero agendar ou Confirmação de periodicidade"
+				if(count($agendaIds)>0) {
+
+					// Lembrete de proxima consulta
+					$_pacientesProximaConsulta=array();
+					$sql->consult($_p."pacientes_proximasconsultas","id","where id_agenda_origem in (".implode(",",$agendasIds).") and lixo=0");
+					if($sql->rows) {
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_proximaConsultas[$x->id_agenda_origem]=1;
+						}
+					}
+
+
+					// Quero Agendar
+					$_pacientesHistorico=array();
+					$sql->consult($_p."pacientes_historico","id","where id_agenda_origem in (".implode(",",$agendasIds).") and evento='agendaNovo' and lixo=0");
+					if($sql->rows) {
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_pacientesHistorico[$x->id_agenda_origem]=1;
+						}
+					}
+
+
+					// Confirmação de periodicidade
+					$_pacientesPeriodicidade=array();
+					$sql->consult($_p."pacientes","id","where id_agenda_origem in (".implode(",",$agendasIds).") and lixo=0");
+					if($sql->rows) {
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_pacientesPeriodicidade[$x->id_agenda_origem]=1;
+						}
+					}
+
+				}
+
+				foreach($agendaRegistros as $x) {
 					//var_dump($x);
+
+					$pacientePeriodicidade=$pacienteHistorico=$pacienteProximaConsulta=0;
+
+					if(isset($_proximaConsultas[$x->id])) $pacienteProximaConsulta=1;
+					if(isset($_pacientesHistorico[$x->id])) $pacienteHistorico=1;
+					if(isset($_pacientesPeriodicidade[$x->id])) $pacientePeriodicidade=1;
 				
 					if($x->agendaPessoal==0 and isset($_pacientes[$x->id_paciente])) {
 
@@ -355,6 +399,9 @@
 												'agendadoHa'=>$agendadoHa,
 												'agendadoPor'=>$agendadoPor,
 												'obs'=>empty($x->obs)?"-":utf8_encode($x->obs),
+												'pProx'=>$pacienteProximaConsulta,
+												'pHist'=>$pacienteHistorico,
+												'pPer'=>$pacientePeriodicidade,
 												'id'=>$x->id);
 					} else if($x->agendaPessoal==1) {
 

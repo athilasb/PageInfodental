@@ -32,7 +32,14 @@ Lista Unica
 
 		$rtn = array();
 
-	
+
+		$attr=array('_cloudinaryURL'=>$_cloudinaryURL,
+					'_codigoBI'=>$_codigoBI,
+					'_pacientesPeriodicidade'=>$_pacientesPeriodicidade,
+					'prefixo'=>$_p);
+		$inteligencia=new Inteligencia($attr);
+
+		
 		if($_POST['ajax']=="atualizaListaInteligente") {
 
 			$_profissionais=array();
@@ -65,6 +72,7 @@ Lista Unica
 				$atendidosPacientesIds[]=$x->id_paciente;
 				$desmarcadosPacientesIds[]=$x->id_paciente;
 			}
+
 
 
 			$_pacientesExcluidosObj=array();
@@ -120,6 +128,7 @@ Lista Unica
 								$removerDaLista = (strtotime($ultimoAgendamentoDesmarcado->agenda_data)<strtotime($x->agenda_data))?1:0;
 								if($removerDaLista==1) {
 									unset($desmarcadosPacientesAgenda[$x->id_paciente]);
+									unset($desmarcadosPacientesIds[$x->id_paciente]);
 								}
 							}
 
@@ -165,9 +174,12 @@ Lista Unica
 																		'status'=>$status,
 																		'id_profissional'=>$paciente->profissional_maisAtende,
 																		'telefone'=>empty($paciente->telefone1)?"":maskTelefone($paciente->telefone1));
+
 							}
 						}
 					}
+
+
 
 				# Pacientes contencao sem horario
 
@@ -288,6 +300,7 @@ Lista Unica
 								}
 							}
 						}
+
 						arsort($retornoPacientesAgendaJSONAux);
 						foreach($retornoPacientesAgendaJSONAux as $x) {
 							$retornoPacientesAgendaJSON[]=$x;
@@ -430,7 +443,6 @@ Lista Unica
 
 
 
-
 				# Ordena lista
 					// Ordena lista
 
@@ -448,7 +460,6 @@ Lista Unica
 										0=>2,
 										1=>3,
 										2=>4);
-
 
 					$desmarcadosPacientesAgendaJSONOrdenada=array();
 					foreach($desmarcadosPacientesAgendaJSON as $v) {
@@ -468,7 +479,7 @@ Lista Unica
 						$index=round((($numeroDeVezesAtendidos/$numeroDeVezesFaltadosEDesmarcados)+$numeroDeVezesAtendidos)*$statusRelacionamento);
 
 						//echo $v['status']." -> (($numeroDeVezesAtendidos/$numeroDeVezesFaltadosEDesmarcados)+$numeroDeVezesAtendidos)*$statusRelacionamento = $index";die();
-						$v['nome'].="->".$index;
+						//$v['nome'].="->".$index;
 						$v['index']=$index;
 						$v['atendidos']=$numeroDeVezesAtendidos;
 						$v['faltas']=$numeroDeVezesFaltas;
@@ -482,6 +493,7 @@ Lista Unica
 						$desmarcadosPacientesAgendaJSONOrdenada[$index][]=$v;
 						$numeroTotal++;
 					};
+
 
 
 
@@ -584,6 +596,13 @@ Lista Unica
 			$rtn=array('success'=>true,
 						'pacientes'=>$listaFinal);
 
+		}
+
+		else if($_POST['ajax']=="gestaoDePacientes") {
+
+			$pacientes=$inteligencia->gestaoDePacientes();
+		
+			$rtn=array('success'=>true,'pacientes'=>$pacientes);
 		}
 
 
@@ -747,7 +766,7 @@ Lista Unica
 
 					const atualizaValorListasInteligentes = () => {
 
-						let data = `ajax=atualizaListaInteligente`;
+						let data = `ajax=gestaoDePacientes`;
 
 						$.ajax({
 							type:"POST",
@@ -888,6 +907,42 @@ Lista Unica
 						}
 					}
 
+					const btnRelacionamento = (obj) => {
+
+						let tipo = obj.attr('data-tipo');
+						let id_paciente = $('#js-inteligencia-paciente .js-id_paciente').val();
+						let obs = $('#js-inteligencia-paciente .js-textarea-obs').val();
+						let id_proximaconsulta = $('#js-inteligencia-paciente .js-id_proximaconsulta').val();
+						
+						let objTextoAntigo = obj.html();
+
+						if(obj.attr('data-loading')==0) {
+
+							obj.attr('data-loading',1);
+							let data = `ajax=pacienteHistoricoObs&obs=${obs}&tipo=${tipo}&id_paciente=${id_paciente}&id_proximaconsulta=${id_proximaconsulta}`;
+
+							$.ajax({
+								type:"POST",
+								data:data,
+								success:function(rtn) {
+									if(rtn.success) {
+
+										$('#js-inteligencia-paciente .js-textarea-obs').val('');
+										atualizaValorListasInteligentes();
+
+									} else if(rtn.error) {
+
+									} else {
+
+									}
+								}
+							}).done(function(){
+								obj.attr('data-loading',0);
+								obj.html(objTextoAntigo);
+							});
+						}
+					}
+
 
 					$(function(){
 
@@ -930,6 +985,48 @@ Lista Unica
 								pacientesLista();
 							}
 
+						});
+
+						$('#js-inteligencia-paciente .js-btn-relacionamento').click(function(){
+							var obj = $(this);
+							let tipo = obj.attr('data-tipo');
+
+
+							if(tipo=="pular") {
+								$('.js-proximo').click();
+								return;
+							}
+							let obs = $('#js-inteligencia-paciente .js-textarea-obs').val();
+
+							if(obs.length==0) {
+								swal({title: "Erro!", text: "Preencha o campo de Obervações", type:"error", confirmButtonColor: "#424242"});	
+							} else {
+
+								if(tipo=="excluir") {
+									swal({
+											title: "Atenção",
+											text: "Esta opção irá ocultar esse paciente da lista. Deseja continuar?",
+											type: "warning",
+											showCancelButton: true,
+											confirmButtonColor: "#DD6B55",
+											confirmButtonText: "Sim!",
+											cancelButtonText: "Não",
+											closeOnConfirm: false,
+											closeOnCancel: false 
+										}, function(isConfirm){
+											if (isConfirm) { 
+												swal.close(); 
+												btnRelacionamento(obj); 
+											} else {   
+												swal.close();   
+											} 
+									});
+			
+								} else {
+
+									btnRelacionamento(obj);
+								}
+							}	
 						});
 					})
 
@@ -991,19 +1088,16 @@ Lista Unica
 						<div class="filter-group">
 							<div class="filter-form form">
 								<dl>
-									<dd><a href="javascript:;" class="button tooltip" title="Não atendeu"><i class="iconify" data-icon="fluent:call-dismiss-24-regular"></i></a></dd>
+									<dd><a href="javascript:;" class="button tooltip js-btn-relacionamento" data-tipo="naoAtendeu" data-loading="0" title="Não atendeu"><i class="iconify" data-icon="fluent:call-dismiss-24-regular"></i></a></dd>
 								</dl>
 								<dl>
-									<dd><a href="javascript:;" class="button tooltip" title="Paciente pediu para retornar"><i class="iconify" data-icon="fluent:call-missed-24-regular"></i></a></dd>
+									<dd><a href="javascript:;" class="button tooltip js-btn-relacionamento" data-tipo="retorno" data-loading="0" title="Paciente pediu para retornar"><i class="iconify" data-icon="fluent:call-missed-24-regular"></i></a></dd>
 								</dl>
 								<dl>
-									<dd><a href="javascript:;" class="button tooltip" title="Paciente entrará em contato"><i class="iconify" data-icon="fluent:call-inbound-24-regular"></i></a></dd>
+									<dd><a href="javascript:;" class="button tooltip js-btn-relacionamento" data-tipo="contato" data-loading="0" title="Paciente entrará em contato"><i class="iconify" data-icon="fluent:call-inbound-24-regular"></i></a></dd>
 								</dl>
 								<dl>
-									<dd><a href="javascript:;" class="button tooltip" title="Excluir das sugestões"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
-								</dl>
-								<dl>
-									<dd><a href="javascript:;" class="button tooltip" title="Pular sugestão"><i class="iconify" data-icon="fluent:skip-forward-tab-24-filled"></i></a></dd>
+									<dd><a href="javascript:;" class="button tooltip js-btn-relacionamento" data-tipo="pular" data-loading="0" title="Pular sugestão"><i class="iconify" data-icon="fluent:skip-forward-tab-24-filled"></i></a></dd>
 								</dl>
 							</div>
 						</div>

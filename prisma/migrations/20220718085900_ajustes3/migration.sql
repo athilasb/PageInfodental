@@ -1,0 +1,1 @@
+UPDATE `ident_colaboradores` SET tipo = 'admin' WHERE id=100;

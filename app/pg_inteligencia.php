@@ -1,7 +1,7 @@
 <?php
+
+// POPULAR EM PROXIMOSAGENDAMENTOS A COLUNA SITUACAO
 /*
-
-
 statusRelacionamento 
 	- pediu para ligar => *2
 	- nao atendeu => *1
@@ -33,8 +33,21 @@ Lista Unica
 		require_once("usuarios/checa.php");
 
 		$rtn = array();
+	
+		$attr=array('_cloudinaryURL'=>$_cloudinaryURL,
+					'_codigoBI'=>$_codigoBI,
+					'prefixo'=>$_p);
+		$inteligencia=new Inteligencia($attr);
 
-		if($_POST['ajax']=="listaInteligente2") {
+		if($_POST['ajax']=="gestaoDoTempo") {
+
+			$pacientes=$inteligencia->gestaoDoTempo();
+		
+			$rtn=array('success'=>true,'pacientes'=>$pacientes);
+		}
+
+
+		else if($_POST['ajax']=="listaInteligenteBKP") {
 
 			
 			$listaInteligente=array();
@@ -53,9 +66,11 @@ Lista Unica
 				$df = date('Y-m-d',strtotime(date('Y-m-d H:i:s')." + 3 day"));
 				$pacientesIds=array();
 				$pacienteOrdem=array();
+				$proximasConsultasIds=array();
 
 				// pacientes que tem proximo agendamento para hoje ou nos proximos 2 dias
-				$where="where DATE_ADD(data, INTERVAL retorno DAY)>='".$di." 00:00:00' and DATE_ADD(data, INTERVAL retorno DAY)<='".$df." 23:59:59' and lixo=0 order by data desc";
+				// situacao<3 => paciente entrara em contato (3), ou excluido (5)
+				$where="where  DATE_ADD(data, INTERVAL retorno DAY)<='".$df." 23:59:59' and lixo=0 and situacao<3 order by data desc";
 				$sql->consult($_p."pacientes_proximasconsultas","*,DATE_ADD(data, INTERVAL retorno DAY) as proximaConsulta",$where);
 				//echo $where."->".$sql->rows."\n\n";
 				while($x=mysqli_fetch_object($sql->mysqry)) {
@@ -78,132 +93,106 @@ Lista Unica
 					}
 
 					$pacienteOrdem[$index]=$x->id_paciente;
+					$proximasConsultasIds[]=$x->id;
 				}
 
 
-				$preListaInteligente=array();
-				$sql->consult($_p."pacientes","id,nome,periodicidade,data_nascimento,telefone1,codigo_bi,foto_cn","where id IN (".implode(",",$pacientesIds).")");
-				if($sql->rows) {
+				// verifica se possuem agendamentos
+				$pacientesIdsQueMarcaram=array();
+				if(count($pacientesIds)>0) {
+					$where="where id_paciente IN (".implode(",",$pacientesIds).") and lixo=0 and id_status IN (1,2,6,7) order by agenda_data desc";
+					$sql->consult($_p."agenda","*",$where);
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 
-						$proximaConsultaJSON='';
-						$proxima='';
-						if(isset($proximaConsulta[$x->id])) {
 
-							$profissionais=array();
-
-							if(!empty($proximaConsulta[$x->id]->profissionais)) {
-								$aux=explode(",",$proximaConsulta[$x->id]->profissionais);
-								
-								foreach($aux as $idP) {
-									if(!empty($idP) and is_numeric($idP) and isset($_profissionais[$idP])) {
-										$profissionais[]=array('nome'=>$_profissionais[$idP]->nome);
-									}
-								}	
-							}
-
-							$i=$proximaConsulta[$x->id];
-							$proxima=date('Y-m-d H:i',strtotime("$i->data + $i->retorno day"));
-							$proximaConsultaJSON=array('duracao'=>(int)$i->duracao,
-														'dataProx'=>date('d/m/Y',strtotime("$i->data + $i->retorno day")),
-														'laboratorio'=>(int)$i->laboratorio,
-														'imagem'=>(int)$i->imagem,
-														'profissionais'=>$profissionais,
-														'obs'=>addslashes(utf8_encode($i->obs)));
-							
-						}
-
-						$atendimentos=$faltou=$tempoMedio=0;
-						$ultimoAtendimento="-";
-
-
-						$ft='';
-						if(!empty($x->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$x->foto_cn;
-
-						$preListaInteligente[$x->id]=array(
-													'proxima'=>$proxima,
-													'id_paciente'=>$x->id,
-													'nome'=>addslashes(utf8_encode($x->nome)),
-													'proximaConsulta'=>$proximaConsultaJSON,
-													'periodicidade'=>$x->periodicidade,
-													'telefone'=>telefoneMascara($x->telefone1),
-													'bi'=>isset($_codigoBI[$x->codigo_bi])?utf8_encode($_codigoBI[$x->codigo_bi]):$x->codigo_bi,
-													'idade'=>(int)idade($x->data_nascimento),
-													'atendimentos'=>$atendimentos,
-													'ultimoAtendimento'=>$ultimoAtendimento,
-													'tempoMedio'=>$tempoMedio,
-													'ft'=>$ft,
-													'faltou'=>$faltou);
-						$todosPacientesIds[$x->id]=$x->id;
-					}
-
-					ksort($pacienteOrdem);
-					foreach($pacienteOrdem as $str=>$idPaciente) {
-						if(isset($preListaInteligente[$idPaciente])) {
-							$listaInteligente[]=$preListaInteligente[$idPaciente];
+						if(strtotime($x->agenda_data)>strtotime($proximaConsulta[$x->id_paciente]->proximaConsulta)) {
+							//if($x->id_paciente==8082) echo $x->id_paciente."->".$x->agenda_data." ".$proximaConsulta[$x->id_paciente]->proximaConsulta."<BR>";
+							//echo $x->id_paciente." => ".$proximaConsulta[$x->id_paciente]->data." ($x->agenda_data)<BR>";
+							$pacientesIdsQueMarcaram[$x->id_paciente][]=$x->agenda_data;
 						}
 					}
-				}
-
-
-			# Lista de pacientes que desmarcaram e nao remarcaram
-
-				/*$pacientesIds=array();
-				$pacienteQueDesmarcouOuFaltou=array();
-				// pacientes que DESMARCOU ou FALTOU nos ultimos 30 dias
-				$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL 1 MONTH and id_status IN (4,3) and lixo=0 order by agenda_data desc");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$pacientesIds[$x->id_paciente]=$x->id_paciente;
-				}
-
-
 				
-				if(count($pacientesIds)>0) {
 
-					// se pacientes que DESMARCOU/FALTOU possuir agendamentos futuros com status A CONFIRMAR(1), CONFIRMADO (2), SALA DE ESPERA (7), EM ATENDIMENTO (6) ou ATENDIDO (5)
-					$where="where id_paciente IN (".implode(",",$pacientesIds).") and agenda_data>='".date('Y-m-d H:i')."' and id_status IN (1,2,5,6,7) and lixo=0";
-					$sql->consult($_p."agenda","id,id_paciente",$where);
+					$preListaInteligente=array();
+					$sql->consult($_p."pacientes","id,nome,periodicidade,data_nascimento,telefone1,codigo_bi,foto_cn","where id IN (".implode(",",$pacientesIds).")");
 					if($sql->rows) {
 						while($x=mysqli_fetch_object($sql->mysqry)) {
-							unset($pacientesIds[$x->id_paciente]);
+
+
+							// verifica se o paciente possui agendamento futuro
+							$agendamentosFuturos=array();
+							if(isset($pacientesIdsQueMarcaram[$x->id])) {
+								foreach($pacientesIdsQueMarcaram[$x->id] as $dt) {
+									$agendamentosFuturos[]=date('d/m/Y H:i',strtotime($dt));
+								}
+							}
+
+							$proximaConsultaJSON='';
+							$proxima='';
+							if(isset($proximaConsulta[$x->id])) {
+
+								$profissionais=array();
+
+								if(!empty($proximaConsulta[$x->id]->profissionais)) {
+									$aux=explode(",",$proximaConsulta[$x->id]->profissionais);
+									
+									foreach($aux as $idP) {
+										if(!empty($idP) and is_numeric($idP) and isset($_profissionais[$idP])) {
+											$profissionais[]=array('nome'=>$_profissionais[$idP]->nome);
+										}
+									}	
+								}
+
+								$i=$proximaConsulta[$x->id];
+								$proxima=date('Y-m-d H:i',strtotime("$i->data + $i->retorno day"));
+								$proximaConsultaJSON=array('duracao'=>(int)$i->duracao,
+															'dataProx'=>date('d/m/Y',strtotime("$i->data + $i->retorno day")),
+															'laboratorio'=>(int)$i->laboratorio,
+															'imagem'=>(int)$i->imagem,
+															'profissionais'=>$profissionais,
+															'obs'=>addslashes(utf8_encode($i->obs)));
+								
+							
+								$atendimentos=$faltou=$tempoMedio=0;
+								$ultimoAtendimento="-";
+
+
+								$ft='';
+								if(!empty($x->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$x->foto_cn;
+
+								$preListaInteligente[$x->id]=array('id_proximaconsulta'=>(int)$i->id,
+																	'proxima'=>$proxima,
+																	'id_paciente'=>$x->id,
+																	'nome'=>addslashes(utf8_encode($x->nome)),
+																	'proximaConsulta'=>$proximaConsultaJSON,
+																	'periodicidade'=>$x->periodicidade,
+																	'telefone'=>telefoneMascara($x->telefone1),
+																	'bi'=>isset($_codigoBI[$x->codigo_bi])?utf8_encode($_codigoBI[$x->codigo_bi]):$x->codigo_bi,
+																	'idade'=>(int)idade($x->data_nascimento),
+																	'ft'=>$ft,
+																	'ultimoAtendimento'=>'-',
+																	'atendimentos'=>0,
+																	'tempoMedio'=>0,
+																	'faltou'=>0,
+																	'futuros'=>$agendamentosFuturos);
+								$todosPacientesIds[$x->id]=$x->id;
+							}
+						}
+
+						ksort($pacienteOrdem);
+						foreach($pacienteOrdem as $str=>$idPaciente) {
+							if(isset($preListaInteligente[$idPaciente])) {
+								$listaInteligente[]=$preListaInteligente[$idPaciente];
+							}
 						}
 					}
 				}
-
-				if(count($pacientesIds)>0) {
-
-					// monta lista dos pacientes
-					$sql->consult($_p."pacientes","id,nome,periodicidade,data_nascimento,telefone1,codigo_bi","where id IN (".implode(",",$pacientesIds).")");
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-
-						$atendimentos=$faltou=$tempoMedio=0;
-						$ultimoAtendimento="-";
-
-						$ft='';
-						if(!empty($x->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$x->foto_cn;
-
-						$listaInteligente[]=array('id_paciente'=>$x->id,
-													'nome'=>addslashes(utf8_encode($x->nome)),
-													'proximaConsulta'=>'',
-													'periodicidade'=>$x->periodicidade, 
-													'telefone'=>telefoneMascara($x->telefone1),
-													'bi'=>isset($_codigoBI[$x->codigo_bi])?utf8_encode($_codigoBI[$x->codigo_bi]):$x->codigo_bi,
-													'idade'=>(int)idade($x->data_nascimento),
-													'atendimentos'=>$atendimentos,
-													'ultimoAtendimento'=>$ultimoAtendimento,
-													'tempoMedio'=>$tempoMedio,
-													'ft'=>$ft,
-													'faltou'=>$faltou);
-						$todosPacientesIds[$x->id]=$x->id;
-					}
-				}*/
 
 
 			# Metricas (Ultimo agendamento, atendimentos, faltas...)
 
 				if(count($todosPacientesIds)>0) {
-					$where="where id_paciente IN (".implode(",",$todosPacientesIds).") and lixo=0 order by data desc";
-					//echo $where."\n";
+					$where="where  id_paciente IN (".implode(",",$todosPacientesIds).") and agenda_data>now() and lixo=0 order by data desc";
 					$sql->consult($_p."agenda","id,id_status,id_paciente,agenda_data,agenda_duracao",$where);
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 
@@ -238,11 +227,25 @@ Lista Unica
 							}
 						}
 						else if($x->id_status==3) $pacientesMetricas[$x->id_paciente]['faltou']++; 
+					}
 
 
-						
+					// busca historicos dos pacientes (evento = observacao => Pedir para entrar em contato, Nao conseguiu contato...)
+					$_pacientesHistorico=array();
+					if(count($proximasConsultasIds)>0) {
+						$where="where id_paciente IN (".implode(",",$todosPacientesIds).") and id_proximaconsulta IN (".implode(",",$proximasConsultasIds).") and evento='observacao' and lixo=0 order by data desc";
+						$sql->consult($_p."pacientes_historico","*",$where);
+						if($sql->rows) {
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								//if($x->id_paciente==9004) echo $x->id." ".$x->id_obs;
+								if(!isset($_pacientesHistorico[$x->id_paciente])) {
+									$_pacientesHistorico[$x->id_paciente]=$x;
+								}
+							}
+						}
 					}
 				}
+
 
 
 			$listaInteligenteFinal=array();
@@ -258,466 +261,311 @@ Lista Unica
 					//$obj->tempoMedioFormula=$pacientesMetricas[$x->id_paciente]['tempo']." / ".$pacientesMetricas[$x->id_paciente]['atendimentos'];
 				}
 
+				if(isset($_pacientesHistorico[$x->id_paciente])) {
+					$obj->id_obs=(int)$_pacientesHistorico[$x->id_paciente]->id_obs;
+					$obj->id_obs_observacoes=(int)$_pacientesHistorico[$x->id_paciente]->relacionamento_momento;
+				} else {
+					$obj->id_obs=0;
+					$obj->id_obs_observacoes='';
+				}
+
 
 
 				$listaInteligenteFinal[]=$obj;
 			}
 
 
-			$rtn=array('success'=>true,'pacientes'=>$listaInteligenteFinal);
+			$listaInteligenteFinalPreOrdenada=array();
+			foreach($listaInteligenteFinal as $x) {
+
+				//if($x->id_paciente==9004) echo $x->id_obs;
+				// exclui da lista se for: excluido (5), resolvido (6), agendado pela tarefa inteligente (7)
+				if($x->id_obs==5 or $x->id_obs==6 or $x->id_obs==7) continue;
+
+				$idObs=1;
+				if($x->id_obs==1 or $x->id_obs==2 or $x->id_obs==3 or $x->id_obs==4) $idObs=2;
+
+				$index=strtotime($x->proxima);;
 
 
+				while(isset($listaInteligenteFinalPreOrdenada[$idObs][$index])) {
+					$index+=1;
+				}
+				
+
+				$listaInteligenteFinalPreOrdenada[$idObs][$index]=$x; 
+			}
+			if(isset($listaInteligenteFinalPreOrdenada[1])) ksort($listaInteligenteFinalPreOrdenada[1]);
+			if(isset($listaInteligenteFinalPreOrdenada[2])) ksort($listaInteligenteFinalPreOrdenada[2]);
+
+
+			if(isset($listaInteligenteFinalPreOrdenada[1]) and isset($listaInteligenteFinalPreOrdenada[2])) {
+				$listaInteligenteFinalOrdenada=array_merge($listaInteligenteFinalPreOrdenada[1],$listaInteligenteFinalPreOrdenada[2]);
+			} else if(isset($listaInteligenteFinalPreOrdenada[1])) {
+				$listaInteligenteFinalOrdenada=$listaInteligenteFinalPreOrdenada[1];
+			} else if(isset($listaInteligenteFinalPreOrdenada[2])) {
+				$listaInteligenteFinalOrdenada=$listaInteligenteFinalPreOrdenada[2];
+			}
+
+			$listaInteligenteFinalOrdenadaFinal=array();
+			if(isset($listaInteligenteFinalOrdenada) and is_array($listaInteligenteFinalOrdenada)) {
+				foreach($listaInteligenteFinalOrdenada as $x) {
+					$listaInteligenteFinalOrdenadaFinal[]=$x;
+				}
+			}
+
+			$rtn=array('success'=>true,'pacientes'=>$listaInteligenteFinalOrdenadaFinal);
 		}
-		if($_POST['ajax']=="atualizaListaInteligente") {
 
-			$_historicoStatus=array();
-			$sql->consult($_p."pacientes_historico_status","*","");
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$_historicoStatus[$x->id]=$x;
+		else if($_POST['ajax']=="pacienteHistoricoObs") {
+
+			$obs = (isset($_POST['obs']) and !empty($_POST['obs'])) ? $_POST['obs'] : '';
+			$tipo =  (isset($_POST['tipo']) and !empty($_POST['tipo'])) ? $_POST['tipo'] : '';
+			$id_proximaconsulta =  (isset($_POST['id_proximaconsulta']) and is_numeric($_POST['id_proximaconsulta'])) ? $_POST['id_proximaconsulta'] : '';
+
+			$paciente='';
+			if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+				$sql->consult($_p."pacientes","id,nome","where id='".$_POST['id_paciente']."'");
+				if($sql->rows) {
+					$paciente=mysqli_fetch_object($sql->mysqry);
+				}
 			}
 
-			$_pacientesExcluidos=array();
-			$pacientesIds=array();
-			$atendidosPacientesIds=array();
-			$desmarcadosPacientesIds=array();
-
-			$sql->consult($_p."pacientes_excluidos","*","where lixo=0");
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$_pacientesExcluidos[$x->id_paciente]=$x;
-				$pacientesIds[]=$x->id_paciente;
-				$atendidosPacientesIds[]=$x->id_paciente;
-				$desmarcadosPacientesIds[]=$x->id_paciente;
-			}
+			if(is_object($paciente)) {
 
 
-			$_pacientesExcluidosObj=array();
-			$_pacientesExcluidosLista=array();
-			
-			if(count($pacientesIds)>0) {
-				$sql->consult($_p."pacientes","id,telefone1,foto_cn,nome,profissional_maisAtende","where id IN (".implode(",",$pacientesIds).")");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_pacientesExcluidosObj[$x->id]=$x;
+				if($tipo=="naoAtendeu" or $tipo=="retorno" or $tipo=="contato" or $tipo=="excluir" or $tipo=="pular" or $tipo=="resolvido") {
+
+					// baseado na tabela ident_pacientes_historico_status
+					$idObs=0;
+					if($tipo=="naoAtendeu") $idObs=1;
+					else if($tipo=="contato") $idObs=2;
+					else if($tipo=="retorno") $idObs=3;
+					else if($tipo=="pular") $idObs=4;
+					else if($tipo=="excluir") $idObs=5;
+					else if($tipo=="resolvido") $idObs=6;
+
+					if($idObs>0) {
+
+						$sql->consult($_p."pacientes_historico_status","*","where id=$idObs");
+						if($sql->rows) {
+							$d=mysqli_fetch_object($sql->mysqry);
+
+							$obsDescricao=($d->titulo);
+						}
+
+						$vSQLHistorico="data=now(),
+										id_paciente=$paciente->id,
+										descricao='".utf8_decode(addslashes($obs))."',
+										id_obs='$idObs',
+										id_proximaconsulta='$id_proximaconsulta',
+										evento='observacao',
+										id_usuario=$usr->id";
+
+						$sql->add($_p."pacientes_historico",$vSQLHistorico);
+
+						$rtn=array('success'=>true);
+
+					 
+					} else {
+						$rtn=array('success'=>false,'error'=>'Observação não encontrado!');
+					}
 				}
 
-				
+			} else {
+				$rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
+			}
+		}
+
+		else if($_POST['ajax']=="ocupacaoListar") {
+			$data = isset($_POST['data'])?$_POST['data']:'';
+
+			$erro='';
+			if(empty($data)) $erro='Data não definida!';
+
+			if(empty($erro)) {
+
+				// calcula horas do dia de cada cadeira
+				$dataDia = date('w',strtotime($data));
+
+				$_horas = array();
+				$_horasMes = array();
+				$sql->consult($_p."parametros_cadeiras_horarios","*","where lixo=0");
+				if($sql->rows) {
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+
+						$dif = (strtotime($x->fim)-strtotime($x->inicio))/(60);
+
+						if(!isset($_horasMes[$x->id_cadeira][$x->dia])) $_horasMes[$x->id_cadeira][$x->dia]=0;
+						$_horasMes[$x->id_cadeira][$x->dia]+=$dif;
+
+
+						if($dataDia==$x->dia) {
+							if(!isset($_horas[$x->id_cadeira])) $_horas[$x->id_cadeira]=0;
+							$_horas[$x->id_cadeira]+=$dif;
+						}
+
+					}
+				}
+
+
+				$_agendaHoras = array();
+				$_agendaHorasMes = array();
+
+				$sql->consult($_p."agenda","id,id_cadeira,agenda_data,agenda_duracao","where agenda_data>='".date('Y-m-01')." 00:00:00' and agenda_data<='".date('Y-m-t')." 23:59:59' and id_status IN (1,2,5,7) and lixo=0");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+
+						$dia = date('d',strtotime($x->agenda_data));
+
+						if(!isset($_agendaHorasMes[$x->id_cadeira][$dia])) $_agendaHorasMes[$x->id_cadeira][$dia]=0;
+						$_agendaHorasMes[$x->id_cadeira][$dia]+=$x->agenda_duracao;
+
+						if(date('Y-m-d',strtotime($x->agenda_data))==$data) {
+							if(!isset($_agendaHoras[$x->id_cadeira])) $_agendaHoras[$x->id_cadeira]=0;
+							$_agendaHoras[$x->id_cadeira]+=$x->agenda_duracao;
+						}
+				}
+
+
+				$_cadeiras=array();
+				$sql->consult($_p."parametros_cadeiras","id,titulo","where lixo=0 order by ordem asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
+
+
+				$cadeiras=array();
+				foreach($_cadeiras as $c) {
+					$cadeiraHoras = isset($_horas[$c->id]) ? $_horas[$c->id] : 0;
+					$agendaHoras = isset($_agendaHoras[$c->id]) ? $_agendaHoras[$c->id] : 0;
+
+					$indice = ceil($cadeiraHoras==0?100:($agendaHoras/$cadeiraHoras)*100);
+
+					$cadeiras[]=array('id'=>$c->id,
+										'titulo'=>utf8_encode($c->titulo),
+										'cadeiraHoras'=>$cadeiraHoras,
+										'agendaHoras'=>$agendaHoras,
+										'indice'=>$indice);
+				}
+
+
+
+				$rtn=array('success'=>true,'cadeiras'=>$cadeiras);
+
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
+		}
+
+		else if($_POST['ajax']=="ocupacaoHorarios") {
+
+			$data = isset($_POST['data'])?$_POST['data']:'';
+
+			$cadeira='';
+			if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
+				$sql->consult($_p."parametros_cadeiras","*","where id=".$_POST['id_cadeira']);
+				if($sql->rows) {
+					$cadeira=mysqli_fetch_object($sql->mysqry);
+				}
 			}
 
-			# Sugestoes sem BI
+			$erro='';
+			if(empty($data)) $erro='Data não definida!';
+			else if(empty($cadeira)) $erro='Cadeira não definida';
 
-				$todosPacientesIds=array();
+			if(empty($erro)) {
+				$horarios=array();
 
-				# Desmarcados sem agendamentos
+				class Interval {
+				    // TODO: use getter/setters instead of public
+				    public $from; // in minutes, included
+				    public $to;   // in minutes, excluded
 
-					$desmarcadosPacientesAgenda=array();
+				    public function __construct($from, $to) {
+				        $this->from = $from;
+				        $this->to = $to;
+				    }
+				}
 
-					// busca pacientes desmarcados/faltou nos ultimos 360 dias 
-					$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL 360 DAY and id_status IN (4,3) and lixo=0 order by agenda_data desc");
-					if($sql->rows) {
-						while($x=mysqli_fetch_object($sql->mysqry)) {
-							if(isset($_pacientesExcluidos[$x->id_paciente])) {
-								$_pacientesExcluidosLista[$x->id_paciente]='Desmarcado';
-								continue;
-							}
 
-							$desmarcadosPacientesIds[$x->id_paciente]=$x->id_paciente;
+				// busca agendamentos que existe para a data selecionada
+				$schedule=array();
+				$agendamentos=array();
+				$sql->consult($_p."agenda","*","where agenda_data>='".$data." 000:00:00' and agenda_data<='".$data." 23:59:59' and id_cadeira=$cadeira->id and lixo=0 and id_status IN (1,2,3,5,6,7) order by agenda_data asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$inicio=(date('H:i',strtotime($x->agenda_data)));
+					$fim=(date('H:i',strtotime($x->agenda_data." + $x->agenda_duracao minutes")));
+					$schedule[] = new Interval(strtotime($inicio), strtotime($fim));
+					$agendamentos[]=$inicio." - ".$fim;
+				}
 
-							// capta apenas o ultimo desmarcado
-							if(!isset($desmarcadosPacientesAgenda[$x->id_paciente])) {
-								$desmarcadosPacientesAgenda[$x->id_paciente]=$x;
-							}
-						}
+
+				// busca os horarios de atendimento da cadeira
+				$dia = date('w',strtotime($data));
+				$intervals=array();
+				$horariosDaCadeira=array();
+				$where="where id_cadeira=$cadeira->id and dia=$dia and lixo=0 order by data asc";
+				$sql->consult($_p."parametros_cadeiras_horarios","*,date_format(inicio,'%H:%i') as inicio,date_format(fim,'%H:%i') as fim",$where);
+				
+				$horarioFinal=0;
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+				
+					$inpInicio=strtotime($x->inicio);
+					$inpFim=strtotime($x->fim);
+
+					// capta o ultimo horario
+					if($inpFim>$horarioFinal) $horarioFinal=$inpFim;
+
+					// horarios da agenda
+					$intervals[] = new Interval($inpInicio, $inpFim);
+
+					$horariosDaCadeira[]="$x->inicio - $x->fim";
+
+				}
+
+
+
+				$newInterval=array();
+				// busca intervalos nos horarios da cadeira que estão disponíveis
+				foreach( $schedule as $item ) {
+				    foreach($intervals as $interval) {
+				        // TODO: the algorithm assumes there are no overlapping items in the schedule
+
+				    	//echo date('H:i',$interval->from)." <= ".date('H:i',$item->from)." && ".date('H:i',$interval->to)." >= ".date('H:i',$item->to)." ";
+				    	// se intercede
+				        if ($interval->from <= $item->from && $interval->to >= $item->to) {
+
+				            if ($interval->from == $item->from) {
+				            	//echo  "a";
+				                $interval->from = $item->to;
+				            } else if ($interval->to == $item->to) {
+				            	//echo  "a2";
+				                $interval->to = $item->from;
+				            } else {
+
+				            	
+				                $intervals[] = new Interval($item->to, $interval->to);
+				                $interval->to = $item->from;
+				            }
+				            break;
+
+				        } else {
+
+				        }
+				    }
+				}
+
+				foreach($intervals as $interval) {
+					if($interval->from!=$interval->to and $interval->from<$interval->to) {
+						$horarios[]=date('H:i',$interval->from)." - ".date('H:i',$interval->to);
 					}
-
-					$desmarcadosPacientesAgendaJSON=array();
-					// busca agendamentos confirmados, a confirmar ou atendidos dos pacientes que foram desmarcados nos ultimos 360 dias
-					if(count($desmarcadosPacientesIds)>0) {
-						$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL 360 DAY and id_paciente IN (".implode(",",$desmarcadosPacientesIds).") and id_status IN (1,2,6,7,5) and lixo=0 order by agenda_data desc");
-						while($x=mysqli_fetch_object($sql->mysqry)) {
-
-							if(isset($desmarcadosPacientesAgenda[$x->id_paciente])) {
-
-								// ultimo agendamento desmarcado
-								$ultimoAgendamentoDesmarcado = $desmarcadosPacientesAgenda[$x->id_paciente];
-
-
-								// se o ultimo agendamento desmarcado for menor que o ultimo agendamento confirmado, a confirmado ou atendido, remove da lista
-								$removerDaLista = (strtotime($ultimoAgendamentoDesmarcado->agenda_data)<strtotime($x->agenda_data))?1:0;
-								if($removerDaLista==1) {
-									unset($desmarcadosPacientesAgenda[$x->id_paciente]);
-								}
-							}
-
-						}
-
-						// busca historico
-						$sql->consult($_p."pacientes_historico","*","where id_paciente IN (".implode(",",$desmarcadosPacientesIds).") and evento='observacao' order by data desc");
-						while($x=mysqli_fetch_object($sql->mysqry)) {
-							if(!isset($_pacientesStatus[$x->id_paciente])) {
-								$_pacientesStatus[$x->id_paciente]=$x->id_obs;
-							}
-						}
-
-						// busca pacientes que foram desmarcados
-						$_pacientesDesmarcados=array();
-						$sql->consult($_p."pacientes","id,nome,telefone1,foto_cn,profissional_maisAtende","where id IN (".implode(",",$desmarcadosPacientesIds).") and lixo=0");
-						while ($x=mysqli_fetch_object($sql->mysqry)) {
-							$_pacientesDesmarcados[$x->id]=$x;
-						}
-
-						// pacientes que foram desmarcados e nao tiveram outro agendamento confirmado, a confirmar ou atendido
-						$cont=1;
-						foreach($desmarcadosPacientesAgenda as $v) {
-							if(isset($_pacientesDesmarcados[$v->id_paciente])) {
-
-								$todosPacientesIds[$v->id_paciente]=$v->id_paciente;
-
-								$paciente=$_pacientesDesmarcados[$v->id_paciente];
-								//echo $v->id_paciente." ".$_pacientesDesmarcados[$v->id_paciente]->nome."<BR>";
-								//$nome=$cont++." - ".utf8_encode($paciente->nome);
-								$nome=utf8_encode($paciente->nome);
-
-								$ft='';
-								if(!empty($paciente->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
-
-								$status=isset($_pacientesStatus[$paciente->id])?$_pacientesStatus[$paciente->id]:0;
-								$desmarcadosPacientesAgendaJSON[]=array('id_paciente'=>$paciente->id,
-																		'nome'=>$nome,
-																		'ft'=>$ft,
-																		'status'=>$status,
-																		'id_profissional'=>$paciente->profissional_maisAtende,
-																		'telefone'=>empty($paciente->telefone1)?"":maskTelefone($paciente->telefone1));
-							}
-						}
-					}
-
-				# Pacientes contencao sem horario
-
-					$atendidosPacientesAgenda=array();
-					$atendidosPacientesVezes=array();
-
-
-					// busca os agendamentos dos ultimos 720 dias com status atendido
-					$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL 720 DAY and id_status=5 and lixo=0 order by agenda_data desc");
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						if(isset($_pacientesExcluidos[$x->id_paciente])) {
-							$_pacientesExcluidosLista[$x->id_paciente]='Retorno';
-							continue;
-						}
-
-						if(!isset($atendidosPacientesAgenda[$x->id_paciente])) {
-
-							if(!isset($atendidosPacientesVezes[$x->id_paciente])) $atendidosPacientesVezes[$x->id_paciente]=0;
-							$atendidosPacientesVezes[$x->id_paciente]++;
-
-							if($atendidosPacientesVezes[$x->id_paciente]>=1) {
-								$atendidosPacientesAgenda[$x->id_paciente]=$x;
-								$atendidosPacientesIds[]=$x->id_paciente;
-							}
-						}
-					}
-
-
-					$retornoPacientesAgendaJSON=array();
-					if(count($atendidosPacientesIds)>0) {
-
-
-						// busca pacientes que foram atendidos nos ultimos 720 dias
-						$_pacientesAtendidosIds=array();
-						$_pacientesAtendidos=array();
-						$sql->consult($_p."pacientes","id,nome,telefone1,periodicidade,profissional_maisAtende","where id IN (".implode(",",$atendidosPacientesIds).") and lixo=0 order by nome");
-						while ($x=mysqli_fetch_object($sql->mysqry)) {
-							if(isset($_pacientesPeriodicidade[$x->periodicidade])) {
-								$_pacientesAtendidosIds[$x->periodicidade][$x->id]=$x->id;
-								$_pacientesAtendidos[$x->id]=$x;
-							}
-						}
-
-						// busca historico
-						$sql->consult($_p."pacientes_historico","*","where id_paciente IN (".implode(",",$atendidosPacientesIds).") and evento='observacao' order by data desc");
-						while($x=mysqli_fetch_object($sql->mysqry)) {
-							if(!isset($_pacientesStatus[$x->id_paciente])) {
-								$_pacientesStatus[$x->id_paciente]=$x->id_obs;
-							}
-						}
-
-						// cria o array que restaram os pacientes que necessitam de retorno
-						$_pacientesAtendidosIdsResto = $_pacientesAtendidosIds;
-
-						$_pacientesAtendidosUltimoAgendamento = array();
-
-						// roda todos os pacientes atendidos por periodicidade
-						foreach($_pacientesAtendidosIds as $periodicidade=>$pacientesIds) {
-
-							// busca agendamentos dos pacientes da periodicidade que foram atendidos e nao necessitam de retorno
-							$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL $periodicidade MONTH and id_status IN (5,1,2) and id_paciente IN (".implode(",",$pacientesIds).") and lixo=0 order by agenda_data desc");
-							while($x=mysqli_fetch_object($sql->mysqry)) {
-								// remove da lista de pacientes que necessitam de retorno
-								unset($_pacientesAtendidosIdsResto[$periodicidade][$x->id_paciente]);
-							}
-						}
-
-
-
-						$retornoPacientesAgendaJSONAux=array();
-						// monta a lista dos pacientes que necessitam de retorno
-						foreach($_pacientesAtendidosIdsResto as $periodicidade=>$pacientes) {
-					
-							foreach($pacientes as $idPaciente) {
-								$todosPacientesIds[$idPaciente]=$idPaciente;
-
-								// se nao estiver na lista de desmarcados (desmarcadosPacientesIds);
-								if(isset($_pacientesAtendidos[$idPaciente]) and !isset($desmarcadosPacientesIds[$idPaciente])) {
-									$paciente=$_pacientesAtendidos[$idPaciente];
-									$nome=utf8_encode($paciente->nome);
-
-									
-									// ultimo agendamento 
-									$ultimoAtendimento='';
-									
-									if(isset($atendidosPacientesAgenda[$paciente->id])) {
-										$u=$atendidosPacientesAgenda[$paciente->id];
-										$ultimoAtendimento=date('d/m/Y',strtotime($u->agenda_data));
-
-										$tem=strtotime(date('Y-m-d H:i'))-strtotime($u->agenda_data);
-										$tem/=(60*60*24*30);
-										$tem=ceil($tem);
-										if($tem<$paciente->periodicidade) continue;
-										//$nome.=" ($paciente->periodicidade) ha $tem mese(s) - $u->agenda_data";
-									} else {
-										continue;
-									}
-
-
-
-									$status=isset($_pacientesStatus[$paciente->id])?$_pacientesStatus[$paciente->id]:0;
-
-									$index=strtotime($u->agenda_data);
-									if(isset($retornoPacientesAgendaJSONAux[$index])) {
-										$index++;
-									}
-
-									$ft='';
-									if(!empty($paciente->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
-
-									$retornoPacientesAgendaJSONAux[$index]=array('id_paciente'=>$paciente->id,
-																			'nome'=>$nome,
-																			'ft'=>$ft,
-																			'status'=>$status,
-																			'id_profissional'=>$paciente->profissional_maisAtende,
-																			'telefone'=>empty($paciente->telefone1)?"":maskTelefone($paciente->telefone1));
-								}
-							}
-						}
-						arsort($retornoPacientesAgendaJSONAux);
-						foreach($retornoPacientesAgendaJSONAux as $x) {
-							$retornoPacientesAgendaJSON[]=$x;
-						}
-					}
-
-				# Excluidos
-
-					$pacientesExcluidosJSON=array();
-					foreach($_pacientesExcluidos as $x) {
-
-						if(isset($_pacientesExcluidosObj[$x->id_paciente])) {
-							$paciente=$_pacientesExcluidosObj[$x->id_paciente];
-
-							$ft='';
-							if(!empty($paciente->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
-
-
-							$status=isset($_pacientesStatus[$paciente->id])?$_pacientesStatus[$paciente->id]:0;
-
-							$lista=isset($_pacientesExcluidosLista[$paciente->id])?$_pacientesExcluidosLista[$paciente->id]:'';
-
-							$pacientesExcluidosJSON[]=array('id_paciente'=>$paciente->id,
-																'nome'=>utf8_encode($paciente->nome),
-																'ft'=>$ft,
-																'lista'=>$lista,
-																'status'=>$status,
-																'telefone'=>empty($paciente->telefone1)?"":maskTelefone($paciente->telefone1));
-						}
-					}
-
-				# Busca Numeros de Atendidos, Desmarcados e Faltantes
-					$_pacientesAtendidos=array();
-					$_pacientesDesmarcados=array();
-					$_pacientesFaltantes=array();
-					$_pacientesDesmarcadosEFaltantes=array();
-					$sql->consult($_p."agenda","id,id_status,id_paciente","where id_paciente IN (".implode(",",$todosPacientesIds).") and id_status IN (5,3,4) and lixo=0");
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						if($x->id_status==5) {
-							if(!isset($_pacientesAtendidos[$x->id_paciente])) {
-								$_pacientesAtendidos[$x->id_paciente]=0;
-							}
-							$_pacientesAtendidos[$x->id_paciente]++;
-						} else if($x->id_status==3) {
-							if(!isset($_pacientesDesmarcadosEFaltantes[$x->id_paciente])) {
-								$_pacientesDesmarcadosEFaltantes[$x->id_paciente]=0;
-							}
-							$_pacientesDesmarcadosEFaltantes[$x->id_paciente]++;
-
-
-							if(!isset($_pacientesFaltantes[$x->id_paciente])) {
-								$_pacientesFaltantes[$x->id_paciente]=0;
-							}
-							$_pacientesFaltantes[$x->id_paciente]++;
-						} else if($x->id_status==4) {
-							if(!isset($_pacientesDesmarcadosEFaltantes[$x->id_paciente])) {
-								$_pacientesDesmarcadosEFaltantes[$x->id_paciente]=0;
-							}
-							$_pacientesDesmarcadosEFaltantes[$x->id_paciente]++;
-
-							
-							if(!isset($_pacientesDesmarcados[$x->id_paciente])) {
-								$_pacientesDesmarcados[$x->id_paciente]=0;
-							}
-							$_pacientesDesmarcados[$x->id_paciente]++;
-						}
-					}
-
-				# Ordena lista
-					// Ordena lista
-
-					/*
-					3 - Pediu pra retornar
-					0 - Sem status
-					1 - Não conseguiu contato
-					2 - Paciente entrará em contato
-					*/
-
-					// numero de pacientes total na lista do desmarcados e retorno
-					$numeroTotal=0;
-
-					$statusOrdem=array(3=>1,
-										0=>2,
-										1=>3,
-										2=>4);
-
-
-					$desmarcadosPacientesAgendaJSONOrdenada=array();
-					foreach($desmarcadosPacientesAgendaJSON as $v) {
-						//$index = $statusOrdem[$v['status']];
-
-						if($v['status']==3) $statusRelacionamento=2;
-						else if($v['status']==1) $statusRelacionamento=1;
-						else if($v['status']==2) continue;
-						else if($v['status']==0) $statusRelacionamento=1;
-
-						$numeroDeVezesAtendidos = isset($_pacientesAtendidos[$v['id_paciente']])?$_pacientesAtendidos[$v['id_paciente']]:0;
-						$numeroDeVezesFaltadosEDesmarcados = isset($_pacientesDesmarcadosEFaltantes[$v['id_paciente']])?$_pacientesDesmarcadosEFaltantes[$v['id_paciente']]:0;
-						$numeroDeVezesFaltas = isset($_pacientesFaltantes[$v['id_paciente']])?$_pacientesFaltantes[$v['id_paciente']]:0;
-						$numeroDeVezesDesmarcados = isset($_pacientesDesmarcados[$v['id_paciente']])?$_pacientesDesmarcados[$v['id_paciente']]:0;
-
-						if($numeroDeVezesFaltadosEDesmarcados==0) $numeroDeVezesFaltadosEDesmarcados=1;
-						$index=round((($numeroDeVezesAtendidos/$numeroDeVezesFaltadosEDesmarcados)+$numeroDeVezesAtendidos)*$statusRelacionamento);
-
-						//echo $v['status']." -> (($numeroDeVezesAtendidos/$numeroDeVezesFaltadosEDesmarcados)+$numeroDeVezesAtendidos)*$statusRelacionamento = $index";die();
-						$v['index']=$index;
-						$v['atendidos']=$numeroDeVezesAtendidos;
-						$v['faltas']=$numeroDeVezesFaltas;
-						$v['desmarcados']=$numeroDeVezesDesmarcados;
-						$desmarcadosPacientesAgendaJSONOrdenada[$index][]=$v;
-						$numeroTotal++;
-					};
-
-
-
-					$retornoPacientesAgendaJSONOrdenada=array();
-					foreach($retornoPacientesAgendaJSON as $v) {
-						//$index = $statusOrdem[$v['status']];
-
-						if($v['status']==3) $statusRelacionamento=2;
-						else if($v['status']==1) $statusRelacionamento=1;
-						else if($v['status']==2) continue;
-						else if($v['status']==0) $statusRelacionamento=1;
-
-						$numeroDeVezesAtendidos = isset($_pacientesAtendidos[$v['id_paciente']])?$_pacientesAtendidos[$v['id_paciente']]:0;
-						$numeroDeVezesFaltas = isset($_pacientesFaltantes[$v['id_paciente']])?$_pacientesFaltantes[$v['id_paciente']]:0;
-						$numeroDeVezesDesmarcados = isset($_pacientesDesmarcados[$v['id_paciente']])?$_pacientesDesmarcados[$v['id_paciente']]:0;
-						$numeroDeVezesFaltadosEDesmarcados = isset($_pacientesDesmarcadosEFaltantes[$v['id_paciente']])?$_pacientesDesmarcadosEFaltantes[$v['id_paciente']]:0;
-
-						if($numeroDeVezesFaltadosEDesmarcados==0) $numeroDeVezesFaltadosEDesmarcados=1;
-
-						$index=round((($numeroDeVezesAtendidos/$numeroDeVezesFaltadosEDesmarcados)+$numeroDeVezesAtendidos)*$statusRelacionamento);
-
-						//echo $v['status']." -> (($numeroDeVezesAtendidos/$numeroDeVezesFaltadosEDesmarcados)+$numeroDeVezesAtendidos)*$statusRelacionamento = $index";die();
-						$v['index']=$index;
-						$v['atendidos']=$numeroDeVezesAtendidos;
-						$v['faltas']=$numeroDeVezesFaltas;
-						$v['desmarcados']=$numeroDeVezesDesmarcados;
-						$retornoPacientesAgendaJSONOrdenada[$index][]=$v;
-						$numeroTotal++;
-					}
-
-					$desmarcadosPacientesAgendaJSON=array();
-					$retornoPacientesAgendaJSON=array();
-					/*for($i=1;$i<=4;$i++) {
-						if(isset($desmarcadosPacientesAgendaJSONOrdenada[$i])) {
-							foreach($desmarcadosPacientesAgendaJSONOrdenada[$i] as $v) {
-								$desmarcadosPacientesAgendaJSON[]=$v;
-							}
-						}
-
-						if(isset($retornoPacientesAgendaJSONOrdenada[$i])) {
-							foreach($retornoPacientesAgendaJSONOrdenada[$i] as $v) {
-								$retornoPacientesAgendaJSON[]=$v;
-							}
-						}
-					}*/
-					krsort($retornoPacientesAgendaJSONOrdenada);
-					krsort($desmarcadosPacientesAgendaJSONOrdenada);
-
-					$listaUnificada=array('retorno'=>array(),
-											'desmarcado'=>array());
-
-					foreach($retornoPacientesAgendaJSONOrdenada as $ind=>$regs) {
-						foreach($regs as $x) {
-							$listaUnificada['retorno'][]=$x;
-						}
-					}
-					foreach($desmarcadosPacientesAgendaJSONOrdenada as $ind=>$regs) {
-						foreach($regs as $x) {
-							$listaUnificada['desmarcado'][]=$x;
-						}
-					}
-
-					$indiceDesmarcado=$indiceRetorno=0;
-
-					$listaFinal=array();
-					for($i=0;$i<=$numeroTotal;$i++) {
-
-						
-						if(isset($listaUnificada['desmarcado'][$indiceDesmarcado])) {
-							$r=$listaUnificada['desmarcado'][$indiceDesmarcado];
-							$r['tipo']="desmarcado";
-
-							$listaFinal[]=$r;
-							$indiceDesmarcado++;
-						}
-						
-						if(isset($listaUnificada['desmarcado'][$indiceDesmarcado])) {
-							$r=$listaUnificada['desmarcado'][$indiceDesmarcado];
-							$r['tipo']="desmarcado";
-
-							$listaFinal[]=$r;
-							$indiceDesmarcado++;
-						}
-						if(isset($listaUnificada['retorno'][$indiceRetorno])) {
-							$r=$listaUnificada['retorno'][$indiceRetorno];
-							$r['tipo']="retorno";
-
-							$listaFinal[]=$r;
-							$indiceRetorno++;
-						}
-						
-					}
-
-
-
-			$rtn=array('success'=>true,
-						'pacientes'=>$listaFinal);
-
+				}
+
+				$rtn=array('success'=>true,
+							'cadeira'=>$horariosDaCadeira,
+							'agendamentos'=>$agendamentos,
+							'horarios'=>$horarios);
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
 		}
 
 
@@ -758,11 +606,8 @@ Lista Unica
 
 	if(isset($_GET['data']) and !empty($_GET['data'])) {
 		list($dia,$mes,$ano)=explode("/",$_GET['data']);
-
 		if(checkdate($mes, $dia, $ano)) {
-
 			$data = $ano."-".$mes."-".$dia;
-
 		}
 	}
 
@@ -885,16 +730,16 @@ Lista Unica
 
 					
 
-					<div class="list4">
+					<div class="list4 js-ocupacao-cadeiras">
 						<?php
-						foreach($_cadeiras as $c) {
+						/*foreach($_cadeiras as $c) {
 
 							$cadeiraHoras = isset($_horas[$c->id]) ? $_horas[$c->id] : 0;
 							$agendaHoras = isset($_agendaHoras[$c->id]) ? $_agendaHoras[$c->id] : 0;
 
 							$indice = ceil($cadeiraHoras==0?100:($agendaHoras/$cadeiraHoras)*100);
 						?>
-						<a href="" class="list4-item active">
+						<a href="javascript:;" class="list4-item js-ocupacao-cadeira" data-id_cadeira="<?php echo $c->id;?>">
 							<div>
 								<h1>
 									<?php 
@@ -914,9 +759,9 @@ Lista Unica
 							</div>
 						</a>
 						<?php
-						}
+						}*/
 						?>
-						<div style="margin-bottom:var(--margin1);">
+						<div style="margin-bottom:var(--margin1);" class="js-ocupacao-horarios">
 							<a href="" class="button button_disabled">08:00 - 09:00</a>
 							<a href="" class="button button_disabled">10:00 - 13:00</a>
 							<a href="" class="button button_disabled">15:00 - 16:00</a>
@@ -941,10 +786,47 @@ Lista Unica
 					var pagina = 0;
 					var paginaReg = 1;
 					var paginaQtd = 0;
+					var dataOcupacao = '<?php echo $data;?>';
+
+					const ocupacaoListar = () => {
+
+						let data = `ajax=ocupacaoListar&data=${dataOcupacao}`;
+						
+
+						$.ajax({
+							type:"POST",
+							data:data,
+							success:function(rtn) {
+								if(rtn.success) {
+									$('.js-ocupacao-cadeiras').html('');
+
+									rtn.cadeiras.forEach(x=>{
+										$('.js-ocupacao-cadeiras').append(`<a href="javascript:;" class="list4-item js-ocupacao-cadeira" data-id_cadeira="${x.id}">
+												<div>
+													<h1>${x.indice<0?rtn.indice:(x.indice==0?0:x.indice)}%</h1>
+												</div>
+												<div>
+													<p>
+														${x.titulo}
+														<br /><span style="font-size:12px;color:var(--cinza4)"><span class="iconify" data-icon="bi:clock-history" style=""></span>&nbsp;&nbsp;${x.agendaHoras} / ${x.cadeiraHoras}min</span>
+													</p>
+												</div>
+											</a>
+											`);
+									});
+
+									$('.js-ocupacao-cadeiras').append(`<div style="margin-bottom:var(--margin1);" class="js-ocupacao-horarios">
+																		</div>`);
+
+									$('.js-ocupacao-cadeiras a:eq(0)').click();
+								}
+							}
+						})
+					}
 
 					const atualizaValorListasInteligentes = () => {
 
-						let data = `ajax=listaInteligente2`;
+						let data = `ajax=gestaoDoTempo`;
 
 						$.ajax({
 							type:"POST",
@@ -961,10 +843,7 @@ Lista Unica
 						}).done(function(){
 							pacientesLista();
 						})
-
 					}
-
-
 
 					const pacientesLista = () => {
 						
@@ -988,10 +867,12 @@ Lista Unica
 						}
 
 						if(pacientes.length==0) {
-							$('.js-nenhumpaciente').show();
-							$('.js-paginacao,.js-guia,.js-carregando').hide();
+							$('#js-inteligencia-paciente').hide();
+							$('.js-nenhumpaciente').show(); 
 						} else {
-							$('.js-nenhumpaciente,.js-carregando').hide();
+							$('#js-inteligencia-paciente').show();
+							$('.js-nenhumpaciente').hide(); 
+
 							$('.js-paginacao,.js-guia').show();
 							paginaQtd =  Math.ceil(pacientes.length/paginaReg);
 
@@ -1002,17 +883,27 @@ Lista Unica
 								let icone = ``;
 
 								// nao conseguiu contato 
-								if(x.status==1) {
-									icone=`<i class="iconify" data-icon="fluent:call-dismiss-24-regular" style="font-size:2em; color:red;"></i>`;
+								if(x.id_obs==1) {
+									icone=`<i class="iconify" data-icon="fluent:call-dismiss-24-regular" style="font-size:2em;"></i>`;
 								} 
 								// paciente entrara em contato
-								else if(x.status==2) {
-									icone=`<i class="iconify" data-icon="fluent:call-inbound-24-regular" style="font-size:2em; color:orange;"></i>`;
+								else if(x.id_obs==2) {
+									icone=`<i class="iconify" data-icon="fluent:call-inbound-24-regular" style="font-size:2em;"></i>`;
 								} 
 								// paciente pediu para retornar posteriormente
-								else if(x.status==3) {
-									icone=`<i class="iconify" data-icon="fluent:call-missed-24-regular" style="font-size:2em; color:blue;"></i>`;
+								else if(x.id_obs==3) {
+									icone=`<i class="iconify" data-icon="fluent:call-missed-24-regular" style="font-size:2em;"></i>`;
 								}
+								// pulou sugestao
+								else if(x.id_obs==4) { 
+									icone=`<i class="iconify" data-icon="fluent:skip-forward-tab-24-filled" style="font-size:2em;"></i>`;
+								}
+								// excluiu
+								else if(x.id_obs==5) {
+									icone=`<i class="iconify" data-icon="fluent:delete-24-regular" style="font-size:2em;"></i>`;
+								}
+
+								$('#js-inteligencia-paciente .js-id_obs').html(icone);
 
 								let lista=``;
 								if(filtro=="excluidos") {
@@ -1022,21 +913,26 @@ Lista Unica
 
 
 								let ft = (x.ft && x.ft.length>0)?x.ft:'img/ilustra-usuario.jpg';
-								/*$('.js-pacientes').append(`<tr class="js-item" data-filtro="${filtro}" data-id_paciente="${x.id_paciente}" data-lista="${lista}" style="height:420px">
-																<td class="list1__foto"><img src="${ft}" width="54" height="54" /></td>
-																<td>
-																<h1>${x.nome}</h1>
-																<p>${x.telefone}</p>
-																<p>Atendido: ${x.atendidos}</p>
-																<p>Faltas: ${x.faltas}</p>
-																<p>Desmarcado: ${x.desmarcados}</p>
-																<p>Lista: ${x.tipo}</p>
-																<p>Index: ${x.index}</p>
-																</td>
-																<td>${icone}</td>
-															</tr>`);*/
 
 								$('#js-inteligencia-paciente .js-nome').html(`${x.nome} <a href="pg_pacientes_resumo.php?id_paciente=${x.id_paciente}" target="_blank"><i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i></a>`);
+
+
+								if(x.futuros.length==0) {
+									$('#js-inteligencia-paciente .js-futuros').html('');
+								} else {
+									let agendamentos='Agendamentos Futuros:<br>';
+									x.futuros.forEach(dt=>{ 
+										agendamentos+=`${dt}<br>`;
+									});
+									//agendamentos=agendamentos.substr(0,agendamentos.length-2)
+									$('#js-inteligencia-paciente .js-futuros').html(`<a href="javascript:;" class="js-futuros-agendamentos" title="${agendamentos}"><i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i></a>`);
+									$('#js-inteligencia-paciente .js-futuros-agendamentos').tooltipster({contentAsHTML:true});
+
+								}
+
+								$('#js-inteligencia-paciente .js-id_paciente').val(x.id_paciente);
+								$('#js-inteligencia-paciente .js-id_proximaconsulta').val(x.id_proximaconsulta);
+
 								if(x.bi.length>0) {
 									$('#js-inteligencia-paciente .js-bi').html(x.bi).show();
 								} else {
@@ -1046,6 +942,9 @@ Lista Unica
 								$('#js-inteligencia-paciente .js-idade').html(x.idade>1?x.idade+' anos':x.idade+' ano');
  								$('#js-inteligencia-paciente .js-telefone').html(x.telefone);
  								$('#js-inteligencia-paciente .js-ft').attr('src',ft);
+
+ 								$('#js-inteligencia-paciente .js-btn-queroAgendar').attr('href',`javascript:asideQueroAgendar(${x.id_paciente},${x.id_proximaconsulta})`);
+ 								
 
  								$('#js-inteligencia-paciente .js-atendimentos').html(x.atendimentos);
  								if(x.ultimoAtendimento.length==0) {
@@ -1102,10 +1001,82 @@ Lista Unica
 						}
 					}
 
+					const btnRelacionamento = (obj) => {
+
+						let tipo = obj.attr('data-tipo');
+						let id_paciente = $('#js-inteligencia-paciente .js-id_paciente').val();
+						let obs = $('#js-inteligencia-paciente .js-textarea-obs').val();
+						let id_proximaconsulta = $('#js-inteligencia-paciente .js-id_proximaconsulta').val();
+						
+						let objTextoAntigo = obj.html();
+
+						if(obj.attr('data-loading')==0) {
+
+							obj.attr('data-loading',1);
+							let data = `ajax=pacienteHistoricoObs&obs=${obs}&tipo=${tipo}&id_paciente=${id_paciente}&id_proximaconsulta=${id_proximaconsulta}`;
+
+							$.ajax({
+								type:"POST",
+								data:data,
+								success:function(rtn) {
+									if(rtn.success) {
+
+										$('#js-inteligencia-paciente .js-textarea-obs').val('');
+										atualizaValorListasInteligentes();
+
+									} else if(rtn.error) {
+
+									} else {
+
+									}
+								}
+							}).done(function(){
+								obj.attr('data-loading',0);
+								obj.html(objTextoAntigo);
+							});
+						}
+					}
+
+					
+
 
 					$(function(){
+						ocupacaoListar();
 
 						atualizaValorListasInteligentes();
+
+						$('.js-ocupacao-cadeiras').on('click','.js-ocupacao-cadeira',function(){
+
+
+							$('.js-ocupacao-cadeira').removeClass('active');
+							$(this).addClass('active');
+							let id_cadeira = $(this).attr('data-id_cadeira');
+
+							let data = `ajax=ocupacaoHorarios&id_cadeira=${id_cadeira}&data=${dataOcupacao}`;
+
+							$.ajax({
+								type:"POST",
+								data:data,
+								success:function(rtn) {
+									if(rtn.success) {	
+
+
+										$('.js-ocupacao-horarios').html('');
+
+										if(rtn.horarios.length>0) {
+											rtn.horarios.forEach(x=>{
+												$('.js-ocupacao-horarios').append(`<a href="javascript:;" class="button button_disabled" style="margin:1px;">${x}</a>`)
+											})
+										}
+
+									} else if(rtn.error) {
+										swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});	
+									} else {
+										swal({title: "Erro!", text: "Não foi possível identificar a taxa de ocupação desta cadeira. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+									}
+								}
+							})
+						})
 
 						$('.js-filtro-status').change(function(){
 							pagina=0;
@@ -1128,10 +1099,7 @@ Lista Unica
 
 						$('.js-pacientes').on('click','.js-item',function(){
 							pacienteRelacionamento($(this));
-						})
-
-						
-
+						});
 
 						$('.js-proximo').click(function(){
 
@@ -1143,13 +1111,59 @@ Lista Unica
 								}
 								pacientesLista();
 							}
+						});
 
+						$('#js-inteligencia-paciente .js-btn-relacionamento').click(function(){
+							var obj = $(this);
+							let tipo = obj.attr('data-tipo');
+
+
+							if(tipo=="pular") {
+								$('.js-proximo').click();
+								return;
+							}
+							let obs = $('#js-inteligencia-paciente .js-textarea-obs').val();
+
+							if(obs.length==0) {
+								swal({title: "Erro!", text: "Preencha o campo de Obervações", type:"error", confirmButtonColor: "#424242"});	
+							} else {
+
+								if(tipo=="excluir") {
+									swal({
+											title: "Atenção",
+											text: "Esta opção irá ocultar esse paciente da lista. Deseja continuar?",
+											type: "warning",
+											showCancelButton: true,
+											confirmButtonColor: "#DD6B55",
+											confirmButtonText: "Sim!",
+											cancelButtonText: "Não",
+											closeOnConfirm: false,
+											closeOnCancel: false 
+										}, function(isConfirm){
+											if (isConfirm) { 
+												swal.close(); 
+												btnRelacionamento(obj); 
+											} else {   
+												swal.close();   
+											} 
+									});
+			
+								} else {
+
+									btnRelacionamento(obj);
+								}
+							}	
 						});
 					})
 
 				</script>
 
-				<div class="box box_inv" id="js-inteligencia-paciente">
+				<div class="box box_inv js-nenhumpaciente" style="display:none">
+
+					<center>Nenhum paciente</center>
+				</div>
+
+				<div class="box box_inv" id="js-inteligencia-paciente" style="display:none">
 					
 					<div class="filter">
 						<div class="filter-group">
@@ -1163,14 +1177,20 @@ Lista Unica
 						<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-ft" />
 						<div class="header-profile__inner1">
 							<h1 class="js-nome"></h1>
+							<input type="hidden" class="js-id_paciente" />
+							<input type="hidden" class="js-id_proximaconsulta" />
 							<div>
 								<p class="js-bi"></p>
 								<p class="js-idade"></p>
 								<p>Periodicidade: <strong class="js-periodicidade"></strong></p>
 							</div>
 						</div>
+						
+						<h1 class="js-id_obs"></h1>
+						
 						<div class="header-fone">
-							<i class="iconify" data-icon="fluent:call-connecting-20-regular"></i><p class="js-telefone">(62) 98405-0927</p>
+							<span class="js-futuros"></span>
+							<i class="iconify" data-icon="fluent:call-connecting-20-regular"></i><p class="js-telefone"></p>
 						</div>
 					</section>
 
@@ -1193,7 +1213,7 @@ Lista Unica
 						</div>*/?>
 					</div>
 
-					<div class="proxag js-proxag">
+					<div class="proxag js-proxag" style="flex:0 0 150px;">
 						<header>
 							<i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i>
 							<center><h1>Agendar em</h1></center>
@@ -1216,33 +1236,36 @@ Lista Unica
 
 					<div class="filter">
 
-						<textarea placeholder="Observações..." style="height:80px;"></textarea>
+						<textarea placeholder="Observações..." style="height:80px;" class="js-textarea-obs"></textarea>
 					</div>
 
 					<div class="filter" style="margin-bottom:0;">
 						<div class="filter-group">
 							<div class="filter-form form">
 								<dl>
-									<dd><a href="javascript:;" class="button tooltip" title="Não atendeu"><i class="iconify" data-icon="fluent:call-dismiss-24-regular"></i></a></dd>
+									<dd><a href="javascript:;" class="button tooltip js-btn-relacionamento" data-tipo="resolvido" data-loading="0" title="Realizado"><i class="iconify" data-icon="clarity:success-line"></i></a></dd>
 								</dl>
 								<dl>
-									<dd><a href="javascript:;" class="button tooltip" title="Paciente pediu para retornar"><i class="iconify" data-icon="fluent:call-missed-24-regular"></i></a></dd>
+									<dd><a href="javascript:;" class="button tooltip js-btn-relacionamento" data-tipo="naoAtendeu" data-loading="0" title="Não atendeu"><i class="iconify" data-icon="fluent:call-dismiss-24-regular"></i></a></dd>
 								</dl>
 								<dl>
-									<dd><a href="javascript:;" class="button tooltip" title="Paciente entrará em contato"><i class="iconify" data-icon="fluent:call-inbound-24-regular"></i></a></dd>
+									<dd><a href="javascript:;" class="button tooltip js-btn-relacionamento" data-tipo="retorno" data-loading="0" title="Paciente pediu para retornar"><i class="iconify" data-icon="fluent:call-missed-24-regular"></i></a></dd>
 								</dl>
 								<dl>
-									<dd><a href="javascript:;" class="button tooltip" title="Excluir das sugestões"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
+									<dd><a href="javascript:;" class="button tooltip js-btn-relacionamento" data-tipo="contato" data-loading="0" title="Paciente entrará em contato"><i class="iconify" data-icon="fluent:call-inbound-24-regular"></i></a></dd>
 								</dl>
 								<dl>
-									<dd><a href="javascript:;" class="button tooltip" title="Pular sugestão"><i class="iconify" data-icon="fluent:skip-forward-tab-24-filled"></i></a></dd>
+									<dd><a href="javascript:;" class="button tooltip js-btn-relacionamento" data-tipo="pular" data-loading="0" title="Pular sugestão"><i class="iconify" data-icon="fluent:skip-forward-tab-24-filled"></i></a></dd>
+								</dl>
+								<dl>
+									<dd><a href="javascript:;" class="button tooltip js-btn-relacionamento" data-tipo="excluir" data-loading="0" title="Excluir das sugestões"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
 								</dl>
 							</div>
 						</div>
 						<div class="filter-group">
 							<div class="filter-form form">
 								<dl>
-									<dd><a href="" class="button button_main"><i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i><span>Agendar</span></a></dd>
+									<dd><a href="javascript:;" class="button button_main js-btn-queroAgendar"><i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i><span>Agendar</span></a></dd>
 								</dl>
 							</div>
 						</div>
@@ -1271,7 +1294,7 @@ Lista Unica
 	
 
 
-	$apiConfig=array('pacienteRelacionamento'=>1);
+	$apiConfig=array('queroAgendar'=>1);
 	require_once("includes/api/apiAside.php");
 
 	include "includes/footer.php";

@@ -1,0 +1,3 @@
+ALTER TABLE `ident_pacientes_historico` CHANGE `relacionamento_momento` `relacionamento_momento` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL;
+INSERT INTO `ident_pacientes_historico_status` (`id`, `lixo`, `titulo`, `cor`) VALUES ('4', '', 'Sugestão pulada depois da Gestão do Tempo', 'orange');
+ALTER TABLE `ident_pacientes_proximasconsultas` CHANGE `situacao` `situacao` INT NOT NULL COMMENT '0 - nenhuma\r\n1 - nao atendeu (1), pediu retorno (2)\r\n2 - pulado (4)\r\n3 - paciente entrara em contato (3), ou excluido (5)\r\n4 - agendado';

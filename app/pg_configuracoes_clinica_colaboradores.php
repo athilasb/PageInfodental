@@ -1795,6 +1795,7 @@
 							<table>
 								<?php
 								while($x=mysqli_fetch_object($sql->mysqry)) {
+									if($x->id==100) continue;
 									if($x->contratacaoAtiva==1) {
 										$cssOpacity="";
 									} else {

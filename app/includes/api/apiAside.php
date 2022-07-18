@@ -30,7 +30,6 @@
 
 				$rtn=array('success'=>true,
 							'regs'=>$regs);
-				
 			} 
 
 			else if($_POST['ajax']=="asEspecialidadesEditar") {
@@ -50,8 +49,7 @@
 								'cnt'=>$cnt);
 				} else {
 					$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
-				}
-				
+				}	
 			} 
 
 			else if($_POST['ajax']=="asEspecialidadesPersistir") {
@@ -119,8 +117,7 @@
 				}
 
 				$rtn=array('success'=>true,
-							'regs'=>$regs);
-				
+							'regs'=>$regs);	
 			} 
 
 			else if($_POST['ajax']=="asPlanosEditar") {
@@ -844,6 +841,8 @@
 						$paciente=mysqli_fetch_object($sql->mysqry);
 					}
 				}
+
+				$id_agenda_origem = (isset($_POST['id_agenda_origem']) and is_numeric($_POST['id_agenda_origem']))?$_POST['id_agenda_origem']:0;
 				
 				$agendaData='';
 				if(isset($_POST['agenda_data']) and !empty($_POST['agenda_data'])) {
@@ -921,6 +920,7 @@
 											evento='agendaNovo',
 											id_paciente=".$paciente->id.",
 											id_agenda=$id_agenda,
+											id_agenda_origem=$id_agenda_origem,
 											id_status_antigo=0,
 											id_status_novo=".$idStatusNovo;
 						$sql->add($_p."pacientes_historico",$vSQLHistorico);
@@ -1460,6 +1460,7 @@
 
 						$rtn=array('success'=>true,
 									'data'=>array('id_paciente'=>$paciente->id,
+													'periodicidade_select'=>$paciente->periodicidade,
 													'nome'=>utf8_encode($paciente->nome),
 													'idade'=>$idade,
 													'telefone1'=>$paciente->telefone1,
@@ -1478,11 +1479,7 @@
 				} else {
 					$rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
 				}
-
-
-
 			}
-
 			else if($_POST['ajax']=="proximaConsultaPersistir") {
 
 				$paciente = '';
@@ -1501,6 +1498,7 @@
 					$retorno=isset($_POST['retorno'])?addslashes($_POST['retorno']):'';
 					$obs=isset($_POST['obs'])?utf8_decode(addslashes($_POST['obs'])):'';
 					$profissionaisAux=isset($_POST['profissionais'])?$_POST['profissionais']:'';
+					$id_agenda_origem=(isset($_POST['id_agenda_origem']) and is_numeric($_POST['id_agenda_origem']))?$_POST['id_agenda_origem']:0;
 
 
 					$profissionais=array();
@@ -1523,6 +1521,7 @@
 							imagem='$imagem',
 							retorno='$retorno',
 							obs='$obs',
+							id_agenda_origem='$id_agenda_origem',
 							profissionais='$profissionais'";
 
 
@@ -1533,8 +1532,6 @@
 				} else {
 					$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
 				}
-
-
 			}
 
 			else if($_POST['ajax']=="prontuarioPersistir") {
@@ -1546,12 +1543,29 @@
 					}
 				}
 
+				
+
 				if(is_object($paciente)) {
 
 					$id_profissional=isset($_POST['id_profissional'])?addslashes($_POST['id_profissional']):0;
 					$prontuario=isset($_POST['prontuario'])?addslashes($_POST['prontuario']):'';
+					$dataProntuario='';
+					if(isset($_POST['dataProntuario']) and !empty($_POST['dataProntuario'])) {
 
-					if($id_profissional==0) {
+						$aux1 = @explode(" ",$_POST['dataProntuario']);
+						$aux2 = @explode("/",$aux1[0]);
+
+ 
+						if(checkdate($aux2[1], $aux2[0], $aux2[2])) {
+							$dataProntuario=$aux2[2]."-".$aux2[1]."-".$aux2[0]." ".$aux1[1];
+						}
+
+					}
+
+					if(empty($dataProntuario)) {
+						$erro='Preencha uma data válida!';
+					}
+					else if($id_profissional==0) {
 						$erro='Selecione o Profissional';
 					} else if(empty($prontuario)) {
 						$erro='Digite o prontuário';
@@ -1559,10 +1573,10 @@
 
 					if(empty($erro)) {
 
-						$vsql="data=now(),id_usuario='".$id_profissional."',
+						$vsql="data='".$dataProntuario."',id_usuario='".$id_profissional."',
 								texto='".addslashes(utf8_decode($prontuario))."',
 								id_paciente=$paciente->id";
-
+						//echo $vsql;die();
 						$sql->add($_p."pacientes_prontuarios",$vsql);
 						$id_reg=$sql->ulid;
 						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vsql)."',vwhere='',tabela='".$_p."pacientes_prontuarios',id_reg='$id_reg'");
@@ -1575,6 +1589,277 @@
 
 				}  else {
 					$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
+				}
+			}
+
+			else if($_POST['ajax']=="proximaConsultaAltaPeriodicidade") {
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","id","where id=".$_POST['id_paciente']);
+					if($sql->rows) {
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+				$periodicidade=(isset($_POST['periodicidade']) and is_numeric($_POST['periodicidade']))?$_POST['periodicidade']:0;
+
+				$id_agenda_origem=(isset($_POST['id_agenda_origem']) and is_numeric($_POST['id_agenda_origem']))?$_POST['id_agenda_origem']:0;
+
+				if(is_object($paciente)) {
+
+					if($periodicidade>0) {
+
+						$vsql="periodicidade='$periodicidade',id_agenda_origem='$id_agenda_origem'";
+						$vwhere="where id=$paciente->id";
+
+						$sql->update($_p."pacientes",$vsql,$vwhere);
+						$id_reg=$sql->ulid;
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vsql)."',vwhere='".addslashes($vsql)."',tabela='".$_p."pacientes',id_reg='$id_reg'");
+
+						$rtn=array('success'=>true);
+
+					} else {
+						$rtn=array('success'=>false,'error'=>'Periodicidade não definida');
+					}
+				} else {
+					$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
+				}
+			}
+
+		# Quero Agenda
+			else if($_POST['ajax']=="asideQueroAgendarPaciente") {
+
+				$_profissionais=array();
+				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento","where lixo=0 order by nome asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
+
+				$_cadeiras=array();
+				$sql->consult($_p."parametros_cadeiras","*","where lixo=0  order by titulo asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
+
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","*","where id=".$_POST['id_paciente']." and lixo=0");
+					if($sql->rows) {
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+
+
+				
+				if(is_object($paciente)) {
+
+
+					$proximaConsulta=array();
+					if(isset($_POST['id_proximaconsulta']) and is_numeric($_POST['id_proximaconsulta'])) {
+						$id_proximaconsulta=$_POST['id_proximaconsulta'];
+						$sql->consult($_p."pacientes_proximasconsultas","*","where id_paciente=$paciente->id and id=$id_proximaconsulta");
+						if($sql->rows) {
+							$p=mysqli_fetch_object($sql->mysqry);
+
+							$id_profissional='';
+							if(!empty($p->profissionais)) {
+								$aux=explode(",",$p->profissionais);
+								foreach($aux as $idP) {
+									if(!empty($idP) and is_numeric($idP)) {
+										$id_profissional=$idP;
+										break;
+									}
+								}
+							}
+							$proximaConsulta=array('id_proximaconsulta'=>$p->id,
+													'obs'=>utf8_encode(addslashes($p->obs)),
+													'duracao'=>(int)$p->duracao,
+													'id_profissional'=>(int)$id_profissional);
+						}
+
+					}
+
+					if($paciente->data_nascimento!="0000-00-00") {
+						$dob = new DateTime($paciente->data_nascimento);
+						$now = new DateTime();
+						$idade = $now->diff($dob)->y;
+					} else $idade=0;
+
+					$ft='';
+					if(!empty($paciente->foto_cn)) {
+						$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+					}
+
+
+					$agendamentosFuturos=array();
+
+					$_pacientesAgendamentos=array();
+					$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and agenda_data>'".date('Y-m-d')."' and id_status IN (1,2) and lixo=0 order by agenda_data");
+
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+
+						$cor='';
+						$iniciais='';
+
+						$aux = explode(",",$x->profissionais);
+						$profissionais=array();
+						foreach($aux as $id_profissional) {
+							if(!empty($id_profissional) and is_numeric($id_profissional)) {
+
+								if(isset($_profissionais[$id_profissional])) {
+									$cor=$_profissionais[$id_profissional]->calendario_cor;
+									$iniciais=$_profissionais[$id_profissional]->calendario_iniciais;
+
+									$profissionais[]=array('iniciais'=>$iniciais,'cor'=>$cor);
+								}
+							}
+
+						}
+
+						$_pacientesAgendamentos[$x->id_paciente][]=array('id_agenda'=>$x->id,
+																			'data'=>date('d/m/Y H:i',strtotime($x->agenda_data)),
+																			'initDate'=>date('d/m/Y',strtotime($x->agenda_data)),
+																			'cadeira'=>isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'',
+																			'profissionais'=>$profissionais);
+					}
+
+				
+
+					if(isset($_pacientesAgendamentos[$paciente->id])) {
+						$agendamentosFuturos=$_pacientesAgendamentos[$paciente->id];
+					}
+				
+
+
+					$rtn=array('success'=>true,
+								'data'=>array('id_paciente'=>$paciente->id,
+												'periodicidade_select'=>$paciente->periodicidade,
+												'nome'=>utf8_encode($paciente->nome),
+												'idade'=>$idade,
+												'telefone1'=>$paciente->telefone1,
+												'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):"",			
+												'musica'=>utf8_encode($paciente->musica),
+												'ft'=>$ft,
+												'periodicidade'=>isset($_pacientesPeriodicidade[$paciente->periodicidade])?$_pacientesPeriodicidade[$paciente->periodicidade]:$paciente->periodicidade,
+												'agendamentosFuturos'=>$agendamentosFuturos,
+												'proximaConsulta'=>$proximaConsulta
+
+												)
+								);
+
+				} else {
+					$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
+				} 
+				
+			
+			}
+
+			else if($_POST['ajax']=="asideQueroAgendarAgendar") {
+				$erro='';
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","*","where id='".$_POST['id_paciente']."'");
+					if($sql->rows) { 
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+				
+				$agendaData='';
+				if(isset($_POST['agenda_data']) and !empty($_POST['agenda_data'])) {
+					list($dia,$mes,$ano)=explode("/",$_POST['agenda_data']);
+					if(checkdate($mes, $dia, $ano)) {
+						$agendaData=$ano."-".$mes."-".$dia;
+
+						if(isset($_POST['agenda_hora']) and !empty($_POST['agenda_hora']) and strlen($_POST['agenda_hora'])==5) {
+							$agendaData.=" ".$_POST['agenda_hora'];
+						}
+					}
+				}
+
+				$profissional='';
+				if(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional'])) {
+					$sql->consult($_p."colaboradores","id,nome","where id='".$_POST['id_profissional']."'");
+					if($sql->rows) {
+						$profissional=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$cadeira='';
+				if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
+					$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."' and lixo=0");
+					if($sql->rows) {
+						$cadeira=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$agenda_duracao='';
+				if(isset($_POST['agenda_duracao']) and is_numeric($_POST['agenda_duracao'])) {
+					$agenda_duracao=$_POST['agenda_duracao'];
+				}
+
+				$obs = (isset($_POST['obs']) and !empty($_POST['obs']))?addslashes(utf8_decode($_POST['obs'])):'';
+				$id_proximaconsulta = (isset($_POST['id_proximaconsulta']) and is_numeric($_POST['id_proximaconsulta']))?utf8_decode($_POST['id_proximaconsulta']):0;
+
+				if(empty($paciente)) $erro='Paciente não encontrado';
+				else if(empty($agendaData)) $erro='Data/horário não definidos';
+				else if(empty($profissional)) $erro='Profissional não encontrado';
+				else if(empty($cadeira)) $erro='Cadeira não encontrada!';
+				else if(empty($agenda_duracao)) $erro='Duração não definido!';
+
+				if(empty($erro)) {
+
+					$agendaFinal=date('Y-m-d H:i:s',strtotime($agendaData." + $agenda_duracao minutes"));
+					$idStatusNovo=1; // a confirmar
+
+					$vSQL="id_status=$idStatusNovo,
+							id_paciente=$paciente->id,
+							agenda_data='".$agendaData."',
+							agenda_data_original='".$agendaData."',
+							agenda_duracao='".$agenda_duracao."',
+							agenda_data_final='".$agendaFinal."',
+							id_cadeira='".$cadeira->id."',
+							obs='".$obs."',
+							data_atualizacao=now(),
+							data=now(),
+							id_usuario=$usr->id,
+							profissionais=',$profissional->id,'";
+
+					
+					$sql->consult($_p."agenda","id","where id_paciente=$paciente->id and 
+															agenda_data='".$agendaData."' and 
+															agenda_duracao='".$agenda_duracao."' and
+															id_cadeira='".$cadeira->id."' and 
+															lixo=0");
+					if($sql->rows==0) {
+						$sql->add($_p."agenda",$vSQL);
+						$id_agenda=$sql->ulid;
+
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$id_agenda."'");
+
+						$vSQLHistorico="data=now(),
+											id_usuario=$usr->id,
+											evento='agendaNovo',
+											id_paciente=".$paciente->id.",
+											id_agenda=$id_agenda,
+											id_status_antigo=0,
+											id_status_novo=".$idStatusNovo;
+						$sql->add($_p."pacientes_historico",$vSQLHistorico);
+
+						// id_obs = 7 -> Agendado pela Tarefas Inteligentes
+						$vSQL="data=now(),
+							evento='observacao',
+							id_paciente=$paciente->id,
+							id_proximaconsulta=$id_proximaconsulta,
+							id_agenda=0,
+							id_obs=7,
+							descricao='',
+							id_usuario=$usr->id";
+
+						$sql->add($_p."pacientes_historico",$vSQL);
+						
+					}
+
+
+
+					$rtn=array('success'=>true);
+				} else {
+					$rtn=array('success'=>false,'error'=>$erro);
 				}
 			}
 
@@ -3810,6 +4095,8 @@
 					url:baseURLApiAside,
 					success:function(rtn) {
 						if(rtn.success) {
+
+
 							$('#js-aside-proximaConsulta .js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
 
 						
@@ -3855,7 +4142,7 @@
 									})
 									$('#js-aside-proximaConsulta .js-ag-agendamentoFuturos table').append(`<tr>
 																			<td>
-																				<h1>${x.data}</h1>									
+																				<h1>${x.data}</h1>	
 																			</td>
 																			<td>${x.cadeira}</td>
 																			<td>
@@ -3880,7 +4167,11 @@
 								$('#js-aside-proximaConsulta .js-profissionais').trigger('chosen:updated');
 							});
 
+							$('#js-aside-proximaConsulta .js-periodicidade_select').val(rtn.data.periodicidade_select)
+
 							$('#js-aside-proximaConsulta .js-btn-acao-lembrete').click();
+
+							$('#js-aside-proximaConsulta .js-proximaConsulta-id_agenda').val(id_agenda);
 						} else if(rtn.error) {
 							//swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 						} else {
@@ -3898,13 +4189,20 @@
 
 			const asideProximaConsultaProntuario = () => {
 
-
+				$('#js-aside-proximaConsulta .js-prontuario-data').val('<?php echo date('d/m/Y H:i');?>');
 				$('#js-aside-proximaConsulta .js-tab').hide();
 				$('#js-aside-proximaConsulta .js-ag-agendamento').hide();
 				$('#js-aside-proximaConsulta .js-ag-agendamentoFuturos').hide();
 				$('#js-aside-proximaConsulta .js-ag-prontuario').show();
-
+				$('#js-aside-proximaConsulta .js-prontuario-data').datetimepicker({
+																		timepicker:true,
+																		format:'d/m/Y H:i',
+																		scrollMonth:false,
+																		scrollTime:false,
+																		scrollInput:false,
+																	});
 			}
+
 			$(function(){
 
 				$('#js-aside-proximaConsulta .js-btn-acao').click(function(){
@@ -3913,11 +4211,20 @@
 
 					if($(this).attr('data-tipo')=="queroAgendar") {
 						$('#js-aside-proximaConsulta .js-ag-agendamento-lembrete').hide();
+						$('#js-aside-proximaConsulta .js-ag-agendamento-altaPeriodicidade').hide();
 						$('#js-aside-proximaConsulta .js-ag-agendamento-queroAgendar').show();
 
 						$('#js-aside-proximaConsulta .js-profissionais-qa').chosen();
 						$('#js-aside-proximaConsulta input[name=tipo]').val('queroAgendar');
+					} else if($(this).attr('data-tipo')=="altaPeriodicidade") {
+						$('#js-aside-proximaConsulta .js-ag-agendamento-lembrete').hide();
+						$('#js-aside-proximaConsulta .js-ag-agendamento-queroAgendar').hide();
+						$('#js-aside-proximaConsulta .js-ag-agendamento-altaPeriodicidade').show();
+
+						$('#js-aside-proximaConsulta .js-profissionais-qa').chosen();
+						$('#js-aside-proximaConsulta input[name=tipo]').val('altaPeriodicidade');
 					} else {
+						$('#js-aside-proximaConsulta .js-ag-agendamento-altaPeriodicidade').hide();
 						$('#js-aside-proximaConsulta .js-ag-agendamento-queroAgendar').hide();
 						$('#js-aside-proximaConsulta .js-ag-agendamento-lembrete').show();
 						$('#js-aside-proximaConsulta input[name=tipo]').val('lembrete');
@@ -3934,6 +4241,7 @@
 				$('#js-aside-proximaConsulta .js-ag-agendamento .js-salvar').click(function(){
 					let tipo = $('#js-aside-proximaConsulta input[name=tipo]').val();
 					let id_paciente = $('#js-aside-proximaConsulta .js-id_paciente').val();
+					let id_agenda_origem = $('#js-aside-proximaConsulta .js-proximaConsulta-id_agenda').val();
 
 					if(tipo=="queroAgendar") {
 						let agenda_data = $('#js-aside-proximaConsulta input[name=agenda_data]').val();
@@ -3954,14 +4262,14 @@
 
 
 							let obj = $(this);
-							let obHTMLAntigo = $(this).html();
+							let objHTMLAntigo = $(this).html();
 
 							if(obj.attr('data-loading')==0) {
 								
 								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 								obj.attr('data-loading',1);
 
-								let data = `ajax=asRelacionamentoPacienteQueroAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}`;
+								let data = `ajax=asRelacionamentoPacienteQueroAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}&id_agenda_origem=${id_agenda_origem}`;
 								$.ajax({
 										type:'POST',
 										data:data,
@@ -3983,7 +4291,7 @@
 											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
 										} 
 								}).done(function(){
-									obj.html(obHTMLAntigo);
+									obj.html(objHTMLAntigo);
 									obj.attr('data-loading',0);
 								});
 
@@ -4033,14 +4341,14 @@
 						if(erro.length==0) {
 
 							let obj = $(this);
-							let obHTMLAntigo = $(this).html();
+							let objHTMLAntigo = $(this).html();
 
 							if(obj.attr('data-loading')==0) {
 								
 								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 								obj.attr('data-loading',1);
 
-								let data = `ajax=proximaConsultaPersistir&retorno=${retorno}&duracao=${duracao}&laboratorio=${laboratorio}&imagem=${imagem}&profissionais=${profissionais}&obs=${obs}&id_paciente=${id_paciente}`;
+								let data = `ajax=proximaConsultaPersistir&retorno=${retorno}&duracao=${duracao}&laboratorio=${laboratorio}&imagem=${imagem}&profissionais=${profissionais}&obs=${obs}&id_paciente=${id_paciente}&id_agenda_origem=${id_agenda_origem}`;
 								
 								$.ajax({
 									type:'POST',
@@ -4062,7 +4370,57 @@
 										swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
 									}
 								}).done(function(){
-									obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+									obj.html(objHTMLAntigo);
+									obj.attr('data-loading',0);
+								});
+							}
+
+						} else {
+							swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+						}
+					} else if(tipo=="altaPeriodicidade") {
+						let periodicidade = $('#js-aside-proximaConsulta .js-periodicidade_select').val();
+						let periodicidadeDescricao = $('#js-aside-proximaConsulta .js-periodicidade_select option:selected').attr('data-descricao');
+
+						let erro= '';
+						if(periodicidade.length==0) erro='Selecione a Periodicidade do paciente';
+
+						if(erro.length==0) {
+
+							let obj = $(this);
+							let objHTMLAntigo = $(this).html();
+
+							if(obj.attr('data-loading')==0) {
+								
+								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+								obj.attr('data-loading',1);
+
+								let data = `ajax=proximaConsultaAltaPeriodicidade&periodicidade=${periodicidade}&id_paciente=${id_paciente}&id_agenda_origem=${id_agenda_origem}`;
+								
+								$.ajax({
+									type:'POST',
+									data:data,
+									url:baseURLApiAside,
+									success:function(rtn) {
+										if(rtn.success) {
+											
+
+											$('#js-aside-proximaConsulta .js-periodicidade').html(`Periodicidade: ${periodicidadeDescricao}`);
+
+											asideProximaConsultaProntuario();
+
+										} else if(rtn.error) {
+											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+										} else {
+											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										}
+										
+									},
+									error:function() {
+										swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+									}
+								}).done(function(){
+									obj.html(objHTMLAntigo);
 									obj.attr('data-loading',0);
 								});
 							}
@@ -4081,6 +4439,7 @@
 					let id_profissional = $('#js-aside-proximaConsulta .js-prontuario-profissional').val();
 					let prontuario = $('#js-aside-proximaConsulta .js-prontuario').val();
 					let id_paciente = $('#js-aside-proximaConsulta .js-id_paciente').val();
+					let dataProntuario = $('#js-aside-proximaConsulta .js-prontuario-data').val();
 
 					let erro='';
 
@@ -4093,7 +4452,7 @@
 							obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 							obj.attr('data-loading',1);
 
-							let data = `ajax=prontuarioPersistir&id_profissional=${id_profissional}&prontuario=${prontuario}&id_paciente=${id_paciente}`;
+							let data = `ajax=prontuarioPersistir&id_profissional=${id_profissional}&prontuario=${prontuario}&id_paciente=${id_paciente}&dataProntuario=${dataProntuario}`;
 
 							$.ajax({
 								type:"POST",
@@ -4145,12 +4504,14 @@
 		<section class="aside aside-proximaConsulta" id="js-aside-proximaConsulta">
 			<div class="aside__inner1">
 
+
 				<header class="aside-header">
 					<h1>Próxima Consulta</h1>
 					<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 				</header>
 
 				<form method="post" class="aside-content form" onsubmit="return false;">
+					<input type="text" class="js-proximaConsulta-id_agenda" />
 					<input type="hidden" class="js-id_paciente" value="0" />
 					<input type="hidden" name="tipo" value="" />
 					<section class="header-profile">
@@ -4176,6 +4537,7 @@
 							<div class="button-group">
 								<a href="javascript:;" class="js-btn-acao js-btn-acao-lembrete button active" data-tipo="lembrete"><span>Criar Lembrete</span></a>
 								<a href="javascript:;" class="js-btn-acao js-btn-acao-queroAgendar button" data-tipo="queroAgendar"><span>Quero agendar</span></a>
+								<a href="javascript:;" class="js-btn-acao js-btn-acao-altaPeriodicidade button" data-tipo="altaPeriodicidade"><span>Alta por Periodicidade</span></a>
 							</div>
 							<div class="filter-group">
 								<div class="filter-form form">
@@ -4322,6 +4684,28 @@
 								</dd>
 							</dl>
 						</div>
+
+
+						<div class="js-ag-agendamento-altaPeriodicidade">
+							<div class="colunas4">
+								<dl>
+									<dt>Confirme a Periodicidade</dt>
+									<dd>
+										<select class="js-periodicidade_select">
+											<option value="">-</option>
+											<?php
+											foreach($_pacientesPeriodicidade as $k=>$v) {
+												echo '<option value="'.$k.'" data-descricao="'.$v.'">'.$v.'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+
+							</div>
+							
+						</div>
+
 					</div>
 
 
@@ -4349,6 +4733,14 @@
 								</div>								
 							</div>
 						</section>
+						<div class="colunas3">
+							<dl>
+								<dt>Data</dt>
+								<dd>
+									<input type="text" class="js-prontuario-data" class="datahora" />
+								</dd>
+							</dl>
+						</div>
 
 						<dl>
 							<dt>Profissional</dt>
@@ -4371,6 +4763,416 @@
 								<textarea class="js-prontuario" style="height:250px;"></textarea>
 							</dd>
 						</dl>
+					</div>
+
+
+				</form>
+			</div>
+		</section>
+		<?php
+			}
+	if(isset($apiConfig['queroAgendar'])) {
+		?>
+		<script type="text/javascript">
+			
+			const asideQueroAgendar = (id_paciente,id_proximaconsulta) => {
+
+				$('#js-aside-queroAgendar .js-tab').show();
+				let data = `ajax=asideQueroAgendarPaciente&id_paciente=${id_paciente}&id_proximaconsulta=${id_proximaconsulta}`;
+				$.ajax({
+					type:'POST',
+					data:data,
+					url:baseURLApiAside,
+					success:function(rtn) {
+						if(rtn.success) {
+							$('#js-aside-queroAgendar .js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
+
+						
+							if(rtn.data.ft && rtn.data.ft.length>0) {
+								$('#js-aside-queroAgendar .js-foto').attr('src',rtn.data.ft);
+							} else {
+								$('#js-aside-queroAgendar .js-foto').attr('src','img/ilustra-usuario.jpg');
+							}
+
+							if(rtn.data.idade && rtn.data.idade>0) {
+								$('#js-aside-queroAgendar .js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
+							} else {
+								$('#js-aside-queroAgendar .js-idade').html(``);
+							}
+
+							if(rtn.data.periodicidade && rtn.data.periodicidade.length>0) {
+								$('#js-aside-queroAgendar .js-periodicidade').html(`Periodicidade: ${rtn.data.periodicidade}`);
+							} else {
+								$('#js-aside-queroAgendar .js-periodicidade').html(`Periodicidade: -`);
+							}
+
+							if(rtn.data.musica && rtn.data.musica.length>0) {
+								$('#js-aside-queroAgendar .js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
+							} else {
+								$('#js-aside-queroAgendar .js-musica').html(``);
+							}
+
+							if(rtn.data.statusBI && rtn.data.statusBI.length==0) {
+								$('#js-aside-queroAgendar .js-statusBI').html(``).hide();
+							} else {
+								$('#js-aside-queroAgendar .js-statusBI').html(`${rtn.data.statusBI}`).show();
+							}
+
+							$('#js-aside-queroAgendar .js-ag-agendamentoFuturos table tr').remove();
+							if(rtn.data.agendamentosFuturos && rtn.data.agendamentosFuturos.length>0) {
+								rtn.data.agendamentosFuturos.forEach(x=>{
+
+
+									let profissionalIniciais=``;
+
+									x.profissionais.forEach(p=>{
+										profissionalIniciais+=`<div class="badge-prof" title="${p.iniciais}" style="background:${p.cor}">${p.iniciais}</div>`;
+									})
+									$('#js-aside-queroAgendar .js-ag-agendamentoFuturos table').append(`<tr>
+																			<td>
+																				<h1>${x.data}</h1>									
+																			</td>
+																			<td>${x.cadeira}</td>
+																			<td>
+																				${profissionalIniciais}
+																			</td>
+																		</tr>`);
+								});
+
+							} else {
+								$('#js-aside-queroAgendar .js-ag-agendamentoFuturos table').append(`<tr><td><center>Nenhum agendamento futuro</center></td></tr>`);
+							}
+
+
+
+							$('#js-aside-queroAgendar').find('input,select,textarea').removeClass('erro').val('');
+							$('#js-aside-queroAgendar .js-id_paciente').val(rtn.data.id_paciente);
+							$("#js-aside-queroAgendar").fadeIn(100,function() {
+								$("#js-aside-queroAgendar .aside__inner1").addClass("active");
+								$("#js-aside-queroAgendar .js-tab a:eq(0)").click();
+
+
+								$('#js-aside-queroAgendar .js-profissionais').chosen();
+								$('#js-aside-queroAgendar .js-profissionais').trigger('chosen:updated');
+							});
+
+							$('#js-aside-queroAgendar .js-periodicidade_select').val(rtn.data.periodicidade_select)
+
+							$('#js-aside-queroAgendar .js-btn-acao-lembrete').click();
+						} else if(rtn.error) {
+							//swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+						} else {
+							//swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+						}
+
+
+						$('#js-aside-queroAgendar select[name=agenda_duracao]').val('');
+						$('#js-aside-queroAgendar textarea.js-obs-qa').val('');
+						$('#js-aside-queroAgendar textarea.js-profissionais-qa').val('');
+						$('#js-aside-queroAgendar .js-id_proximaconsulta').val(0);
+						if(rtn.data.proximaConsulta) {
+
+							if(rtn.data.proximaConsulta.duracao) {
+								$('#js-aside-queroAgendar select[name=agenda_duracao]').val(rtn.data.proximaConsulta.duracao);
+							} 
+
+
+							if(rtn.data.proximaConsulta.obs) {
+								$('#js-aside-queroAgendar textarea.js-obs-qa').val(rtn.data.proximaConsulta.obs);
+							}
+
+							if(rtn.data.proximaConsulta.id_profissional) {
+								$('#js-aside-queroAgendar select.js-profissionais-qa').val(rtn.data.proximaConsulta.id_profissional);
+							}
+
+							if(rtn.data.proximaConsulta.id_proximaconsulta) {
+								$('#js-aside-queroAgendar .js-id_proximaconsulta').val(rtn.data.proximaConsulta.id_proximaconsulta);
+							}
+						}
+
+						
+					},
+					error:function() {
+						//swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+					}
+				}).done(function(){
+
+				});
+			}
+
+			$(function(){
+
+				
+				$('#js-aside-queroAgendar').on('change','select[name=agenda_duracao], select[name=id_cadeira],  select.js-profissionais-qa, input[name=agenda_data]',function(){
+					horarioDisponivel(0,$('#js-aside-queroAgendar'));
+				});
+
+
+
+				$('#js-aside-queroAgendar .js-ag-agendamento .js-salvar').click(function(){
+					let id_paciente = $('#js-aside-queroAgendar .js-id_paciente').val();
+					
+					let agenda_data = $('#js-aside-queroAgendar input[name=agenda_data]').val();
+					let agenda_duracao = $('#js-aside-queroAgendar select[name=agenda_duracao]').val();
+					let id_cadeira = $('#js-aside-queroAgendar select[name=id_cadeira]').val();
+					let id_profissional = $('#js-aside-queroAgendar select.js-profissionais-qa').val();
+					let agenda_hora = $('#js-aside-queroAgendar select[name=agenda_hora]').val();
+					let id_proximaconsulta = $('#js-aside-queroAgendar .js-id_proximaconsulta').val();
+					let obs = $('#js-aside-queroAgendar textarea.js-obs-qa').val();
+					let erro = '';
+
+					if(agenda_data.length==0) erro='Defina a <b>Data do Agendamento</b>';
+					else if(agenda_duracao.length==0) erro='Defina a <b>Duração de Agendamento</b>';
+					else if(id_cadeira.length==0) erro='Defina o <b>Consultório do Agendamento</b>';
+					else if(id_profissional.length==0) erro='Defina o <b>Profissional do Agendamento</b>';
+					else if(agenda_hora.length==0) erro='Defina a <b>Hora do Agendamento</b>';
+
+					if(erro.length==0) {
+
+
+						let obj = $(this);
+						let obHTMLAntigo = $(this).html();
+
+						if(obj.attr('data-loading')==0) {
+							
+							obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+							obj.attr('data-loading',1);
+
+							let data = `ajax=asideQueroAgendarAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}&id_proximaconsulta=${id_proximaconsulta}`;
+							$.ajax({
+									type:'POST',
+									data:data,
+									url:baseURLApiAside,
+									success:function(rtn) {
+										if(rtn.success) {
+
+											atualizaValorListasInteligentes();
+											$('.aside-close').click();
+
+										} else if(rtn.error) {
+											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+										} else {
+											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										}
+										
+									},
+									error:function() {
+										swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+									} 
+							}).done(function(){
+								obj.html(obHTMLAntigo);
+								obj.attr('data-loading',0);
+							});
+
+
+						}
+
+					} else {
+						swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+					}
+					
+				});
+
+				$('#js-aside-queroAgendar .js-ag-prontuario .js-salvarProntuario').click(function(){
+
+
+					let obj = $(this);
+					let objTextoAntigo = $(this).html();
+					let id_profissional = $('#js-aside-queroAgendar .js-prontuario-profissional').val();
+					let prontuario = $('#js-aside-queroAgendar .js-prontuario').val();
+					let id_paciente = $('#js-aside-queroAgendar .js-id_paciente').val();
+
+					let erro='';
+
+					if(dataProntuario.length==0) erro='Preencha o campo de Data';
+					else if(id_profissional.length==0) erro='Selecione o Profissional';
+					else if(prontuario.length==0) erro='Digite o prontuário para salvar'
+
+					if(erro.length==0) {
+						if(obj.attr('data-loading')==0) {
+
+							obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+							obj.attr('data-loading',1);
+
+							let data = `ajax=prontuarioPersistir&id_profissional=${id_profissional}&prontuario=${prontuario}&id_paciente=${id_paciente}`;
+
+							$.ajax({
+								type:"POST",
+								url:baseURLApiAside,
+								data:data,
+								success:function(rtn) {
+									if(rtn.success) {
+
+										$('#js-aside-queroAgendar input[name=agenda_data]').val('');
+										$('#js-aside-queroAgendar select[name=agenda_duracao]').val('');
+										$('#js-aside-queroAgendar select[name=id_cadeira]').val('');
+										$('#js-aside-queroAgendar select.js-profissionais-qa').val('').trigger('chosen:updated');
+										$('#js-aside-queroAgendar select[name=agenda_hora]').val('');
+										$('#js-aside-queroAgendar textarea.js-obs-qa').val('');
+
+										
+										$(`#js-aside-queroAgendar .js-retorno`).val('');
+										$(`#js-aside-queroAgendar .js-agenda_duracao`).val('');
+										$(`#js-aside-queroAgendar .js-laboratorio`).prop('checked',false);
+										$(`#js-aside-queroAgendar .js-imagem`).prop('checked',false);
+										$(`#js-aside-queroAgendar .js-profissionais`).val('');
+										$(`#js-aside-queroAgendar .js-obs`).val('');
+										$('#js-aside-queroAgendar .js-id_paciente').val('');
+										swal({title: "Sucesso!", text: 'Dados salvos com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
+											$('#js-aside-queroAgendar .aside-close').click();
+										});
+									} else if(rtn.error) {
+										swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+									} else {
+										swal({title: "Erro!", text: 'Algum erro ocorreu ao salvar o prontuário. Tente novamente!', type:"error", confirmButtonColor: "#424242"});
+									}
+								}
+							}).done(function(){
+								obj.attr('data-loading',0);
+								obj.html(objTextoAntigo);
+							})
+						}
+					} else {
+						swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
+					}
+
+				});
+
+
+				$('#js-aside-queroAgendar .js-tab-choises a').click(function() {
+					$("#js-aside-queroAgendar .js-tab-choises a").removeClass("active");
+					$(this).addClass("active");							
+				})
+
+
+
+			});
+		</script>
+
+		<section class="aside aside-queroAgendar" id="js-aside-queroAgendar">
+			<div class="aside__inner1">
+
+				<header class="aside-header">
+					<h1>Quero Agendar</h1>
+					<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+				</header>
+
+				<form method="post" class="aside-content form" onsubmit="return false;">
+					<input type="hidden" class="js-id_paciente" value="0" />
+					<input type="hidden" class="js-id_proximaconsulta" value="0" />
+					<input type="hidden" name="tipo" value="" />
+					<section class="header-profile">
+						<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
+						<div class="header-profile__inner1">
+							<h1><a href="" target="_blank" class="js-nome"></a></h1>
+							<div>
+								<p class="js-statusBI"></p>
+								<p class="js-idade"></p>
+								<p class="js-periodicidade"></p>
+								<p class="js-musica"></p>
+							</div>
+						</div>
+					</section>
+
+					<section class="tab tab_alt js-tab-choises">
+						<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamento').show();" class="active">Agendamento</a>	
+						<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamentoFuturos').show();" class="">Agendamentos Futuros</a>
+					</section>
+
+					<div class="js-ag js-ag-agendamento">
+						<section class="filter">
+							<div class="button-group">
+							</div>
+							<div class="filter-group">
+								<div class="filter-form form">
+									<dl>
+										<dd></dd>
+									</dl>
+									<dl>
+										<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+									</dl>
+								</div>								
+							</div>
+						</section>
+
+						<div class="js-ag-agendamento-queroAgendar">
+							<div class="colunas3">
+								<dl>
+									<dt>Data</dt>
+									<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data datecalendar" /></dd>
+								</dl>
+							
+								<dl>
+									<dt>Duração</dt>
+									<dd class="form-comp form-comp_pos">
+										<?php /*<input type="tel" name="agenda_duracao" class="" />*/?>
+										<select name="agenda_duracao">
+											<option value="">-</option>
+											<?php
+											foreach($optAgendaDuracao as $v) {
+												echo '<option value="'.$v.'">'.$v.'</option>';
+											}
+											?>
+										</select>
+										<span>min</span>
+									</dd>
+								</dl>
+
+								<dl>
+									<dt>Consultório</dt>
+									<dd>
+										<select name="id_cadeira">
+											<option value=""></option>
+											<?php
+											foreach($_cadeiras as $p) {
+												echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+							</div>
+							<div class="colunas3">
+								<dl class="dl2">
+									<dt>Profissionais</dt>
+									<dd>
+										<select class="js-profissionais-qa js-select-profissionais">
+											<option value=""></option>
+											<?php
+											foreach($_profissionais as $p) {
+												if($p->check_agendamento==0) continue;
+												echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+								<dl>
+									<dt>Hora</dt>
+									<dd class="form-comp">
+										<span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span>
+										<select name="agenda_hora">
+											<option value="">Selecione o horário</option>
+										</select>
+									</dd>
+								</dl>
+							</div>
+
+							<dl>
+								<dt>Observações</dt>
+								<dd>
+									<textarea class="js-obs-qa" style="height:80px;"></textarea>
+								</dd>
+							</dl>
+						</div>
+					</div>
+
+
+					<div class="js-ag js-ag-agendamentoFuturos" style="display:none">
+						<div class="list1">
+							<table>
+							</table>
+						</div>
 					</div>
 
 

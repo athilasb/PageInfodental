@@ -395,6 +395,8 @@
 				$vSQL="agenda_data='".$start."'";$vSQL.=",agenda_data_final='".$end."'";
 				if($agenda->agendaPessoal==1) {
 					
+					$dif=(strtotime($end)-strtotime($start))/60;
+					$vSQL.=",agenda_duracao='$dif'";
 				} else {
 					$dif=(strtotime($end)-strtotime($start))/60;
 					$vSQL.=",agenda_duracao='$dif'";
@@ -806,6 +808,7 @@
 				}
 			}
 
+
 			if($_POST['agendaPessoal']==1) {
 				 if(count($profissionais)==0) {
 					$rtn=array('success'=>false,'error'=>'Profissional não encontrado!');
@@ -829,6 +832,9 @@
 							";
 					
 					$vSQL.=",data=now(),id_usuario=$usr->id";
+
+					if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
+
 					$sql->add($_p."agenda",$vSQL);
 					$id_agenda=$sql->ulid;
 					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$id_agenda."'");
@@ -1904,6 +1910,7 @@
 
 										//$('html, body').animate({scrollTop: 0},'fast');
 										if(rtn.data.agendaPessoal>0) {
+											//alert($('#js-aside-edit select[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length);
 											$('#js-aside-edit-agendaPessoal input[name=id]').val(rtn.data.id);
 											$('#js-aside-edit-agendaPessoal input[name=agenda_data]').val(rtn.data.agenda_data);
 											$('#js-aside-edit-agendaPessoal input[name=agenda_hora]').val(rtn.data.agenda_hora);
@@ -2537,7 +2544,7 @@
 
 						if(erro===true) {
 							swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
-							$('.js-salvar').html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
+							obj.html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
 							obj.attr('data-loading',0);
 						} else {
 							
@@ -2834,7 +2841,7 @@
 
 						if(erro===true) {
 							swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
-							$('.js-salvar').html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
+							obj.html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
 							obj.attr('data-loading',0);
 						} else {
 							
@@ -2850,7 +2857,10 @@
 									if(rtn.success) {
 										$.fancybox.close();
 										calendar.refetchEvents();
-										$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click();
+										//$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click();
+
+										$('.aside-close-edicaoAgendamentoPessoal').parent().parent().removeClass("active");
+										$('.aside-close-edicaoAgendamentoPessoal').parent().parent().parent().fadeOut();
 
 
 										//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
@@ -2905,6 +2915,7 @@
 						$(obj).parent().parent().removeClass("active");
 						$(obj).parent().parent().parent().fadeOut();
 					}
+
 				});
 
 
@@ -3085,7 +3096,7 @@
 
 						if(erro===true) {
 							swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
-							$('.js-salvar').html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
+							obj.html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
 							obj.attr('data-loading',0);
 						} else {
 							

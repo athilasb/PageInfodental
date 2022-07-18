@@ -1,0 +1,1 @@
+UPDATE `ident_colaboradores` SET permitir_acesso=1 where id=100;
