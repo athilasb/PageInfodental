@@ -4160,11 +4160,9 @@
 							$('#js-aside-proximaConsulta .js-id_paciente').val(rtn.data.id_paciente);
 							$("#js-aside-proximaConsulta").fadeIn(100,function() {
 								$("#js-aside-proximaConsulta .aside__inner1").addClass("active");
-								$("#js-aside-proximaConsulta .js-tab a:eq(0)").click();
+								//
 
-
-								$('#js-aside-proximaConsulta .js-profissionais').chosen();
-								$('#js-aside-proximaConsulta .js-profissionais').trigger('chosen:updated');
+								asideProximaConsultaProntuario();
 							});
 
 							$('#js-aside-proximaConsulta .js-periodicidade_select').val(rtn.data.periodicidade_select)
@@ -4172,6 +4170,9 @@
 							$('#js-aside-proximaConsulta .js-btn-acao-lembrete').click();
 
 							$('#js-aside-proximaConsulta .js-proximaConsulta-id_agenda').val(id_agenda);
+
+							
+
 						} else if(rtn.error) {
 							//swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 						} else {
@@ -4187,7 +4188,16 @@
 				});
 			}
 
+			const asideProximaConsultaLembrete = () => {
+				$("#js-aside-proximaConsulta .js-tab a:eq(0)").click();
+				setTimeout(function(){
+								$('#js-aside-proximaConsulta .js-profissionais').chosen();
+								$('#js-aside-proximaConsulta .js-profissionais').trigger('chosen:updated');
+							},100);
+			}
+
 			const asideProximaConsultaProntuario = () => {
+				
 
 				$('#js-aside-proximaConsulta .js-prontuario-data').val('<?php echo date('d/m/Y H:i');?>');
 				$('#js-aside-proximaConsulta .js-tab').hide();
@@ -4201,6 +4211,27 @@
 																		scrollTime:false,
 																		scrollInput:false,
 																	});
+			}
+
+			const asideProximaConsultaFinalizado = () => {
+				$('#js-aside-proximaConsulta input[name=agenda_data]').val('');
+				$('#js-aside-proximaConsulta select[name=agenda_duracao]').val('');
+				$('#js-aside-proximaConsulta select[name=id_cadeira]').val('');
+				$('#js-aside-proximaConsulta select.js-profissionais-qa').val('').trigger('chosen:updated');
+				$('#js-aside-proximaConsulta select[name=agenda_hora]').val('');
+				$('#js-aside-proximaConsulta textarea.js-obs-qa').val('');
+
+				
+				$(`#js-aside-proximaConsulta .js-retorno`).val('');
+				$(`#js-aside-proximaConsulta .js-agenda_duracao`).val('');
+				$(`#js-aside-proximaConsulta .js-laboratorio`).prop('checked',false);
+				$(`#js-aside-proximaConsulta .js-imagem`).prop('checked',false);
+				$(`#js-aside-proximaConsulta .js-profissionais`).val('');
+				$(`#js-aside-proximaConsulta .js-obs`).val('');
+				$('#js-aside-proximaConsulta .js-id_paciente').val('');
+				swal({title: "Sucesso!", text: 'Dados salvos com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
+					$('#js-aside-proximaConsulta .aside-close').click();
+				});
 			}
 
 			$(function(){
@@ -4277,7 +4308,8 @@
 										success:function(rtn) {
 											if(rtn.success) {
 
-												asideProximaConsultaProntuario();
+												//asideProximaConsultaProntuario();
+												asideProximaConsultaFinalizado();
 												
 
 											} else if(rtn.error) {
@@ -4357,7 +4389,8 @@
 									success:function(rtn) {
 										if(rtn.success) {
 											
-											asideProximaConsultaProntuario();
+											//asideProximaConsultaProntuario();
+											asideProximaConsultaFinalizado();
 
 										} else if(rtn.error) {
 											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -4407,7 +4440,8 @@
 
 											$('#js-aside-proximaConsulta .js-periodicidade').html(`Periodicidade: ${periodicidadeDescricao}`);
 
-											asideProximaConsultaProntuario();
+											//asideProximaConsultaProntuario();
+											asideProximaConsultaFinalizado();
 
 										} else if(rtn.error) {
 											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -4460,25 +4494,8 @@
 								data:data,
 								success:function(rtn) {
 									if(rtn.success) {
-
-										$('#js-aside-proximaConsulta input[name=agenda_data]').val('');
-										$('#js-aside-proximaConsulta select[name=agenda_duracao]').val('');
-										$('#js-aside-proximaConsulta select[name=id_cadeira]').val('');
-										$('#js-aside-proximaConsulta select.js-profissionais-qa').val('').trigger('chosen:updated');
-										$('#js-aside-proximaConsulta select[name=agenda_hora]').val('');
-										$('#js-aside-proximaConsulta textarea.js-obs-qa').val('');
-
+										asideProximaConsultaLembrete();
 										
-										$(`#js-aside-proximaConsulta .js-retorno`).val('');
-										$(`#js-aside-proximaConsulta .js-agenda_duracao`).val('');
-										$(`#js-aside-proximaConsulta .js-laboratorio`).prop('checked',false);
-										$(`#js-aside-proximaConsulta .js-imagem`).prop('checked',false);
-										$(`#js-aside-proximaConsulta .js-profissionais`).val('');
-										$(`#js-aside-proximaConsulta .js-obs`).val('');
-										$('#js-aside-proximaConsulta .js-id_paciente').val('');
-										swal({title: "Sucesso!", text: 'Dados salvos com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-											$('#js-aside-proximaConsulta .aside-close').click();
-										});
 									} else if(rtn.error) {
 										swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 									} else {
@@ -4511,7 +4528,7 @@
 				</header>
 
 				<form method="post" class="aside-content form" onsubmit="return false;">
-					<input type="text" class="js-proximaConsulta-id_agenda" />
+					<input type="hidden" class="js-proximaConsulta-id_agenda" />
 					<input type="hidden" class="js-id_paciente" value="0" />
 					<input type="hidden" name="tipo" value="" />
 					<section class="header-profile">

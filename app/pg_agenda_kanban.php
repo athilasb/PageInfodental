@@ -416,7 +416,7 @@
 								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde)"><i class="iconify" data-icon="bxs:phone"></i></div>`;
 							}
 							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
-										<p>${x.data} • ${x.hora}</p>
+										<p>${x.id_agenda} - ${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										<p>${x.profissionais}</p>
 										${fichaIncompleta}

@@ -376,65 +376,77 @@
 				}
 
 				// persistencia
-				if(isset($_POST['acao']) and $_POST['acao']=="wlib") {
-					if(empty($cnt)) $_POST['contratacaoAtiva']=1;
+				if(isset($_POST['acao'])) {
+					if($_POST['acao']=="wlib") {
+						if(empty($cnt)) $_POST['contratacaoAtiva']=1;
 
-					if(isset($_POST['calendario_iniciais'])) $_POST['calendario_iniciais']=strtoupperWLIB($_POST['calendario_iniciais']);
+						if(isset($_POST['calendario_iniciais'])) $_POST['calendario_iniciais']=strtoupperWLIB($_POST['calendario_iniciais']);
 
-					// monta sql de insert/update
-					$vSQL=$adm->vSQL($campos,$_POST);
+						// monta sql de insert/update
+						$vSQL=$adm->vSQL($campos,$_POST);
 
-					if(isset($_POST['senha']) and !empty($_POST['senha'])) $vSQL.="senha='".sha1($_POST['senha'])."',";
-			
+						if(isset($_POST['senha']) and !empty($_POST['senha'])) $vSQL.="senha='".sha1($_POST['senha'])."',";
+				
 
-					// popula $values para persistir nos cmapos
-					$values=$adm->values;
-					if(isset($_POST['foto']) and !empty($_POST['foto'])) $vSQL.="foto='".$_POST['foto']."',";
+						// popula $values para persistir nos cmapos
+						$values=$adm->values;
+						if(isset($_POST['foto']) and !empty($_POST['foto'])) $vSQL.="foto='".$_POST['foto']."',";
 
-					$processa=true;
+						$processa=true;
 
-					// verifica se cpf ja esta cadastrado
-					if(empty($cnt) or (is_object($cnt) and $cnt->cpf!=cpf($_POST['cpf']))) {
-						$sql->consult($_table,"*","where cpf='".addslashes(cpf($_POST['cpf']))."' and lixo=0");
-						if($sql->rows) {
-							$processa=false;
-							$jsc->jAlert("Já existe colaborador cadastrado com este CPF","erro",""); 
-						}
-					}
-					if($processa===true) {	
-
-						if(is_object($cnt)) {
-							$vSQL=substr($vSQL,0,strlen($vSQL)-1);
-							$vWHERE="where id='".$cnt->id."'";
-							$sql->update($_table,$vSQL,$vWHERE);
-							$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
-							$id_reg=$cnt->id;
-						} else {
-							$sql->add($_table,$vSQL."data=now(),id_usuario='".$usr->id."'");
-							$id_reg=$sql->ulid;
-							$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$sql->ulid."'");
-						}
-
-						$msgErro='';
-						if(isset($_FILES['foto']) and !empty($_FILES['foto']['tmp_name'])) {
-							$up=new Uploader();
-							$up->uploadCorta("Foto",$_FILES['foto'],"",5242880*2,$_width,$_height,$_dir,$id_reg);
-
-							if($up->erro) {
-								$msgErro=$up->resul;
-							} else {
-								$ext=$up->ext;
-								$vSQL="foto='".$ext."'";
-								$vWHERE="where id='".$id_reg."'";
-								$sql->update($_table,$vSQL,$vWHERE);
-								$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$id_reg."'");
+						// verifica se cpf ja esta cadastrado
+						if(empty($cnt) or (is_object($cnt) and $cnt->cpf!=cpf($_POST['cpf']))) {
+							$sql->consult($_table,"*","where cpf='".addslashes(cpf($_POST['cpf']))."' and lixo=0");
+							if($sql->rows) {
+								$processa=false;
+								$jsc->jAlert("Já existe colaborador cadastrado com este CPF","erro",""); 
 							}
 						}
-						if(!empty($msgErro)) {
-							$jsc->jAlert($msgErro,"erro","");
+						if($processa===true) {	
+
+							if(is_object($cnt)) {
+								$vSQL=substr($vSQL,0,strlen($vSQL)-1);
+								$vWHERE="where id='".$cnt->id."'";
+								$sql->update($_table,$vSQL,$vWHERE);
+								$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
+								$id_reg=$cnt->id;
+							} else {
+								$sql->add($_table,$vSQL."data=now(),id_usuario='".$usr->id."'");
+								$id_reg=$sql->ulid;
+								$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$sql->ulid."'");
+							}
+
+							$msgErro='';
+							if(isset($_FILES['foto']) and !empty($_FILES['foto']['tmp_name'])) {
+								$up=new Uploader();
+								$up->uploadCorta("Foto",$_FILES['foto'],"",5242880*2,$_width,$_height,$_dir,$id_reg);
+
+								if($up->erro) {
+									$msgErro=$up->resul;
+								} else {
+									$ext=$up->ext;
+									$vSQL="foto='".$ext."'";
+									$vWHERE="where id='".$id_reg."'";
+									$sql->update($_table,$vSQL,$vWHERE);
+									$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$id_reg."'");
+								}
+							}
+							if(!empty($msgErro)) {
+								$jsc->jAlert($msgErro,"erro","");
+							} else {
+								$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='$_page?form=1&edita=".$id_reg."&".$url."'");
+								die();
+							}
+						}
+					} else if(is_object($cnt) and $_POST['acao']=="senha") {
+
+						$senha = (isset($_POST['senha']) and !empty($_POST['senha']))?sha1($_POST['senha']):'';
+
+						if(empty($senha)) {
+							$jsc->jAlert("Digite a nova senha para continuar!","erro","$('.tab a:eq(3)').click();swal.close();");
 						} else {
-							$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='$_page?form=1&edita=".$id_reg."&".$url."'");
-							die();
+							$sql->update($_p."colaboradores","senha='".$senha."'","where id=$cnt->id");
+							$jsc->jAlert("Senha alterada com sucesso","sucesso","$('.tab a:eq(3)').click();swal.close();");
 						}
 					}
 				}
@@ -556,7 +568,7 @@
 										$(function() {
 											$('.tab a').click(function() {
 												let tabName = $(this).attr('data-tab');
-												$(".tab a").removeClass("active");
+												$(".js-tab-interna a").removeClass("active");
 												$(this).addClass("active");
 												$(".js-tabs").hide();
 												$(".js-" + tabName).show();
@@ -576,7 +588,7 @@
 									<?php
 									if(is_object($cnt)) {
 									?>
-									<section class="tab">
+									<section class="tab js-tab-interna">
 										<a href="javascript:;" data-tab="dadospessoais" class="active">Dados Pessoais</a>
 										<a href="javascript:;" data-tab="dadosdacontratacao">Dados da Contratação</a>					
 										<?php /*<a href="javascript:;" data-tab="habilitaragendamento">Habilitar Agendamento</a>*/?>					
@@ -952,6 +964,12 @@
 									contratacaoAtiva();
 
 									$('.js-contratacaoAtiva').click(contratacaoAtiva);
+
+									$('.js-btn-alterarSenha').click(function(){
+										$(".aside").fadeIn(100,function() {
+											$(".aside .aside__inner1").addClass("active");
+										});
+									});
 								});
 							</script>
 							<div class="js-tabs js-dadosdacontratacao" style="display:none">
@@ -1733,10 +1751,15 @@
 										<dt>Email de recuperação</dt>
 										<dd><input type="text" name="email" value="<?php echo $values['email'];?>" /></dd>
 									</dl>
-									<dl>
+									<?php /*<dl>
 										<dt>Senha</dt>
 										<dd><input type="password" name="senha" value="" /></dd>
-									</dl>									
+									</dl>	*/?>
+
+									<dl>
+										<dt>&nbsp;</dt>
+										<dd><a href="javascript:;" class="button js-btn-alterarSenha">Alterar Senha</a></dd>
+									</dl>								
 								</div>
 								<dl class="dl2">
 									<dd>
@@ -1749,6 +1772,42 @@
 							}
 							?>
 						</form>
+
+						<section class="aside" id="js-aside">
+							<div class="aside__inner1">
+
+								<header class="aside-header">
+									<h1>Alterar Senha</h1>
+									<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+								</header>
+
+								<form method="post" class="aside-content form formulario-validacao">
+									<input type="hidden" name="acao" value="senha" />
+									<section class="filter">
+										<div class="filter-group"></div>
+										<div class="filter-group">
+											<div class="filter-form form">
+												<dl>
+													<dd><button class="button button_main"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+												</dl>
+											</div>								
+										</div>
+									</section>
+									
+									<fieldset>
+										<legend>Acesso ao Sistema</legend>
+										<div class="colunas3">				
+											<dl class="dl">
+												<dt>Nova senha</dt>
+												<dd><input type="password" name="senha" class="obg" /></dd>
+											</dl>
+										</div>
+									</fieldset>
+								</form>
+
+							</div>
+						</section><!-- .aside -->
+
 
 				<?php
 				}

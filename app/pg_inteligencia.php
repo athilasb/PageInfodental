@@ -43,7 +43,9 @@ Lista Unica
 
 			$pacientes=$inteligencia->gestaoDoTempo();
 		
-			$rtn=array('success'=>true,'pacientes'=>$pacientes);
+			$rtn=array('success'=>true,
+						'indisponiveis'=>$inteligencia->indisponiveis,
+						'pacientes'=>$pacientes);
 		}
 
 
@@ -370,6 +372,11 @@ Lista Unica
 					} else {
 						$rtn=array('success'=>false,'error'=>'Observação não encontrado!');
 					}
+				} else if($tipo=="desativar") {
+					$sql->update($_p."pacientes","situacao='EXCLUIDO'","where id=$paciente->id");
+					$rtn=array('success'=>true);
+				} else {
+					$rtn=array('success'=>false,'error'=>'Ação não compreendida');
 				}
 
 			} else {
@@ -692,6 +699,10 @@ Lista Unica
 				<div class="filter-group">
 					<div class="filter-title">	
 						<p>Valorize o que mais importa, seu tempo! Análise de índices e sugestões guiadas por Inteligência Artificial</p>
+						<?php
+
+						?>
+						<p>Você tem <b class="js-disponiveis">...</b> sugestões disponível(s) pela data e <b class="js-indisponiveis">...</b> ainda não disponível(s)</p>
 					</div>
 				</div>
 				
@@ -835,6 +846,10 @@ Lista Unica
 								if(rtn.success) {
 
 									pacientesOportunidades = rtn.pacientes;
+
+									$('.js-disponiveis').html(rtn.pacientes.length);
+									$('.js-indisponiveis').html(rtn.indisponiveis);
+
 
 									
 
@@ -996,7 +1011,7 @@ Lista Unica
 								$('.js-guia,.js-paginacao').hide();
 							} else {
 
-								$('.js-guia,.js-paginacao').show();
+								$('.js-guia,.js-paginacao').show().hide();
 							}
 						}
 					}

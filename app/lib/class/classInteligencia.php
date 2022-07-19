@@ -33,17 +33,34 @@
 				$di = date('Y-m-d');
 				$df = date('Y-m-d',strtotime(date('Y-m-d H:i:s')." + 3 day"));
 
+
 			// retornos
 				$pacientesIds=array();
 				$pacienteOrdem=array();
 				$proximasConsultasIds=array();
 
 			# pacientes que tem proximo agendamento para hoje ou nos proximos 3 dias
-			
+				
+				// nao disponiveis
+				$this->indisponiveis=0;
+				$where="where  DATE_ADD(data, INTERVAL retorno DAY)>'".$df." 23:59:59' and lixo=0 and situacao<3 order by data desc";
+				$sql->consult($_p."pacientes_proximasconsultas","*,DATE_ADD(data, INTERVAL retorno DAY) as proximaConsulta",$where);
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					
+					// se ja encontrou proxima consulta ignora, pois pega a mais recente
+					if(isset($proximaConsulta[$x->id_paciente])) {
+						continue;
+					} else {
+						$this->indisponiveis++;
+					}
+
+
+				
+				}
+
 				// situacao<3 => paciente entrara em contato (3), ou excluido (5)
 				$where="where  DATE_ADD(data, INTERVAL retorno DAY)<='".$df." 23:59:59' and lixo=0 and situacao<3 order by data desc";
 				$sql->consult($_p."pacientes_proximasconsultas","*,DATE_ADD(data, INTERVAL retorno DAY) as proximaConsulta",$where);
-				
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					
 					// se ja encontrou proxima consulta ignora, pois pega a mais recente
@@ -83,10 +100,11 @@
 
 				# busca pacientes que tem proximo agendamento cadastrado
 					$preListaInteligente=array();
-					$sql->consult($_p."pacientes","id,nome,periodicidade,data_nascimento,telefone1,codigo_bi,foto_cn","where id IN (".implode(",",$pacientesIds).")");
+					$sql->consult($_p."pacientes","id,nome,periodicidade,data_nascimento,telefone1,codigo_bi,foto_cn,situacao","where id IN (".implode(",",$pacientesIds).")");
 					if($sql->rows) {
 						while($x=mysqli_fetch_object($sql->mysqry)) {
 
+							
 
 							// busca agendamentos futuros do paciente
 								$agendamentosFuturos=array();
@@ -152,7 +170,7 @@
 
 				# busca as metricas dos pacientes
 					$pacientesMetricas=array();
-					$where="where  id_paciente IN (".implode(",",$pacientesIds).") and agenda_data>now() and lixo=0 order by data desc";
+					$where="where id_paciente IN (".implode(",",$pacientesIds).") and agenda_data>now() and lixo=0 order by data desc";
 					$sql->consult($_p."agenda","id,id_status,id_paciente,agenda_data,agenda_duracao",$where);
 
 					while($x=mysqli_fetch_object($sql->mysqry)) {
@@ -203,6 +221,7 @@
 					$sql->consult($_p."pacientes_historico","*",$where);
 					if($sql->rows) {
 						while($x=mysqli_fetch_object($sql->mysqry)) {
+							if($x->id_obs==7) continue;
 							if(!isset($_pacientesHistorico[$x->id_paciente])) {
 								$_pacientesHistorico[$x->id_paciente]=$x;
 							}
@@ -315,6 +334,9 @@
 
 			$todosPacientesIds=array();
 
+			// lista dos pacientes que tem historico adicionados na data de hoje (vai para o final da fila)
+			$listaDosComHistoricoNoDia=array();
+
 			# Desmarcados sem agendamentos
 
 				$pacientesDesmarcadosIds=array();
@@ -358,17 +380,25 @@
 
 					// busca historico (evento=observacao) dos pacientes
 						$pacientesHistoricos=array();
-						$sql->consult($_p."pacientes_historico","*","where id_paciente IN (".implode(",",$pacientesDesmarcadosIds).") and evento='observacao' order by data desc");
+						$pacientesHistoricosObj=array();
+						$sql->consult($_p."pacientes_historico","*","where id_paciente IN (".implode(",",$pacientesDesmarcadosIds).") and evento='observacao' and lixo=0 order by data desc");
 						while($x=mysqli_fetch_object($sql->mysqry)) {
+							if($x->id_obs==7) continue;
 							if(!isset($pacientesHistoricos[$x->id_paciente])) {
 								$pacientesHistoricos[$x->id_paciente]=$x->id_obs;
+								$pacientesHistoricosObj[$x->id_paciente]=$x;
 							}
 						}
 
 					// busca pacientes que foram desmarcados
 						$_pacientes=array();
-						$sql->consult($_p."pacientes","id,nome,telefone1,foto_cn,profissional_maisAtende,codigo_bi,data_nascimento,periodicidade","where id IN (".implode(",",$pacientesDesmarcadosIds).") and lixo=0");
+						$sql->consult($_p."pacientes","id,nome,telefone1,foto_cn,profissional_maisAtende,codigo_bi,data_nascimento,periodicidade,situacao","where id IN (".implode(",",$pacientesDesmarcadosIds).") and lixo=0");
 						while ($x=mysqli_fetch_object($sql->mysqry)) {
+							// se desativado
+							if($x->situacao=="EXCLUIDO") {
+								continue;
+							}
+
 							$_pacientes[$x->id]=$x;
 						}
 
@@ -386,6 +416,24 @@
 								// busca ultimo historico evento do paciente
 								$historico=isset($pacientesHistoricos[$paciente->id])?$pacientesHistoricos[$paciente->id]:0;
 
+								// se possui historico adicionado no dia, entra no final
+								if($historico>0) {
+									$historicoObj=$pacientesHistoricosObj[$paciente->id];
+									if(strtotime(date('Y-m-d'))==strtotime(date('Y-m-d',strtotime($historicoObj->data)))) {
+										$listaDosComHistoricoNoDia[]=array('id_paciente'=>$paciente->id,
+																			'nome'=>utf8_encode($paciente->nome),
+																			'periodicidade'=>$paciente->periodicidade,
+																			'ft'=>(!empty($paciente->foto_cn)?$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn:''),
+																			'idade'=>idade($paciente->data_nascimento),
+																			'bi'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):$paciente->codigo_bi,
+																			'status'=>$historico,
+																			'id_profissional'=>$paciente->profissional_maisAtende,
+																		);
+										continue;
+
+									}
+								}
+
 								$pacientesDesmarcadosAUX[]=array('id_paciente'=>$paciente->id,
 																		'nome'=>utf8_encode($paciente->nome),
 																		'periodicidade'=>$paciente->periodicidade,
@@ -402,6 +450,7 @@
 						$pacientesDesmarcados=$pacientesDesmarcadosAUX;
 					
 				}
+
 
 
 			# Pacientes em contencao (precisa retornar) sem horario
@@ -436,9 +485,14 @@
 
 					// filtra pacientes que possuem periodicidade
 						$pacientesAtendidosComPeriodicidade=array();
-						$sql->consult($_p."pacientes","id,nome,telefone1,periodicidade,profissional_maisAtende,codigo_bi,data_nascimento","where id IN (".implode(",",$pacientesContencaoIds).") and lixo=0 order by nome");
+						$sql->consult($_p."pacientes","id,nome,telefone1,periodicidade,profissional_maisAtende,codigo_bi,data_nascimento,situacao","where id IN (".implode(",",$pacientesContencaoIds).") and lixo=0 order by nome");
 						while ($x=mysqli_fetch_object($sql->mysqry)) {
-							if(isset($_pacientesPeriodicidade[$x->periodicidade])) {
+
+							// se desativado
+							if($x->situacao=="EXCLUIDO") {
+								unset($pacientesContencaoIds[$x->id]);
+							} 
+							else if(isset($_pacientesPeriodicidade[$x->periodicidade])) {
 								$pacientesAtendidos[$x->id]=$x;
 								$pacientesAtendidosComPeriodicidade[$x->periodicidade][$x->id]=$x->id;
 							} else {
@@ -448,10 +502,13 @@
 
 					// busca historicos dos pacientes (evento = observacao => Pedir para entrar em contato, Nao conseguiu contato...)
 						$_pacientesHistorico=array();
-						$sql->consult($_p."pacientes_historico","*","where id_paciente IN (".implode(",",$pacientesContencaoIds).") and evento='observacao' order by data desc");
+						$_pacientesHistoricoObj=array();
+						$sql->consult($_p."pacientes_historico","*","where id_paciente IN (".implode(",",$pacientesContencaoIds).") and evento='observacao' and lixo=0 order by data desc");
 						while($x=mysqli_fetch_object($sql->mysqry)) {
+							if($x->id_obs==7) continue;
 							if(!isset($_pacientesHistorico[$x->id_paciente])) {
 								$_pacientesHistorico[$x->id_paciente]=$x->id_obs;
+								$_pacientesHistoricoObj[$x->id_paciente]=$x;
 							}
 						}
 
@@ -508,6 +565,25 @@
 									$ft='';
 									if(!empty($paciente->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
 
+									// se possui historico adicionado no dia, entra no final
+									if($historico>0) {
+										$historicoObj=$_pacientesHistoricoObj[$paciente->id];
+										if(strtotime(date('Y-m-d'))==strtotime(date('Y-m-d',strtotime($historicoObj->data)))) {
+										
+											$listaDosComHistoricoNoDia[]=array('id_paciente'=>$paciente->id,
+																				'nome'=>utf8_encode($paciente->nome),
+																				'periodicidade'=>$paciente->periodicidade,
+																				'ft'=>(!empty($paciente->foto_cn)?$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn:''),
+																				'idade'=>idade($paciente->data_nascimento),
+																				'bi'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):$paciente->codigo_bi,
+																				'status'=>$historico,
+																				'id_profissional'=>$paciente->profissional_maisAtende,
+																			);
+											continue;
+
+										}
+									} 
+
 									$pacientesRetorno[$index]=array('id_paciente'=>$paciente->id,
 																			'nome'=>utf8_encode($paciente->nome),
 																			'periodicidade'=>$paciente->periodicidade,
@@ -517,6 +593,7 @@
 																			'status'=>$historico,
 																			'id_profissional'=>$paciente->profissional_maisAtende,
 																			'telefone'=>empty($paciente->telefone1)?"":maskTelefone($paciente->telefone1));
+								
 								}
 							}
 						}
@@ -535,7 +612,7 @@
 			# Busca metricas de Pacientes Desmarcados e Pacientes em Contencao
 
 				$pacientesMetricas=array();
-				$sql->consult($_p."agenda","id,id_status,id_paciente,agenda_data,agenda_duracao,profissionais","where id_paciente IN (".implode(",",$todosPacientesIds).") and lixo=0 order by data desc");
+				$sql->consult($_p."agenda","id,id_status,id_paciente,agenda_data,agenda_duracao,profissionais","where id_paciente IN (".implode(",",$todosPacientesIds).") and lixo=0 order by agenda_data desc");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 
 
@@ -626,7 +703,6 @@
 										2=>4);
 
 					// ordena pacientes Desmarcados
-						$desmarcadosPacientesAgendaJSONOrdenada=array();
 						$pacientesDesmarcadosAux=array();
 						foreach($pacientesDesmarcados as $v) {
 
@@ -643,8 +719,10 @@
 							if($numeroDeVezesFaltadosEDesmarcados==0) $numeroDeVezesFaltadosEDesmarcados=1;
 							$index=round((($numeroDeVezesAtendidos/$numeroDeVezesFaltadosEDesmarcados)+$numeroDeVezesAtendidos)*$statusRelacionamento);
 
+
 							//echo $v['status']." -> (($numeroDeVezesAtendidos/$numeroDeVezesFaltadosEDesmarcados)+$numeroDeVezesAtendidos)*$statusRelacionamento = $index";die();
 							//$v['nome'].="->".$index;
+							$v['historico']=isset($_pacientesHistorico[$v['id_paciente']])?(int)$_pacientesHistorico[$v['id_paciente']]:0;
 							$v['index']=$index;
 							$v['atendidos']=$numeroDeVezesAtendidos;
 							$v['faltas']=$numeroDeVezesFaltas;
@@ -659,17 +737,18 @@
 							$numeroTotal++;
 						};
 
+					
+
 
 					// ordena pacientes em Contencao/Retorno
-						$retornoPacientesAgendaJSONOrdenada=array();
 						$pacientesRetornoAux=array();
 						foreach($pacientesRetorno as $v) {
 							//$index = $statusOrdem[$v['status']];
 
-							if($v['status']==3) $statusRelacionamento=2;
-							else if($v['status']==1) $statusRelacionamento=1;
-							else if($v['status']==2) continue;
-							else if($v['status']==0) $statusRelacionamento=1;
+							if($v['status']==3) $statusRelacionamento=2; // paciente pediu para retornar
+							else if($v['status']==1) $statusRelacionamento=1; // nao conseguiu contato
+							else if($v['status']==2) $statusRelacionamento=0.5; // paciente entrara em contato
+							else if($v['status']==0) $statusRelacionamento=1; // nenhum
 
 							$numeroDeVezesAtendidos = isset($pacientesMetricas[$v['id_paciente']]['atendimentos'])?$pacientesMetricas[$v['id_paciente']]['atendimentos']:0;
 							$numeroDeVezesFaltadosEDesmarcados = isset($pacientesMetricas[$v['id_paciente']]['faltouOuDesmarcou'])?$pacientesMetricas[$v['id_paciente']]['faltouOuDesmarcou']:0;
@@ -681,7 +760,8 @@
 							$index=round((($numeroDeVezesAtendidos/$numeroDeVezesFaltadosEDesmarcados)+$numeroDeVezesAtendidos)*$statusRelacionamento);
 
 							//echo $v['status']." -> (($numeroDeVezesAtendidos/$numeroDeVezesFaltadosEDesmarcados)+$numeroDeVezesAtendidos)*$statusRelacionamento = $index";die();
-							$v['nome'].="->".$index;
+							//$v['nome'].="->".$index;
+							$v['historico']=isset($_pacientesHistorico[$v['id_paciente']])?(int)$_pacientesHistorico[$v['id_paciente']]:0;
 							$v['index']=$index;
 							$v['atendidos']=$numeroDeVezesAtendidos;
 							$v['faltas']=$numeroDeVezesFaltas;
@@ -694,10 +774,57 @@
 							$numeroTotal++;
 						}
 
+					// ordena pacientes Desmarcados que tiveram historico adicionada na data de hoje
+						$listaDosComHistoricoNoDiaAux=array();
+						foreach($listaDosComHistoricoNoDia as $v) {
+
+							
+							if($v['status']==3) $statusRelacionamento=2; // paciente pediu para retornar
+							else if($v['status']==1) $statusRelacionamento=1; // nao conseguiu contato
+							else if($v['status']==2) $statusRelacionamento=0.5; // paciente entrara em contato
+							else if($v['status']==0) $statusRelacionamento=1; // nenhum
+
+							$numeroDeVezesAtendidos = isset($pacientesMetricas[$v['id_paciente']]['atendimentos'])?$pacientesMetricas[$v['id_paciente']]['atendimentos']:0;
+							$numeroDeVezesFaltadosEDesmarcados = isset($pacientesMetricas[$v['id_paciente']]['faltouOuDesmarcou'])?$pacientesMetricas[$v['id_paciente']]['faltouOuDesmarcou']:0;
+							$numeroDeVezesFaltas = isset($pacientesMetricas[$v['id_paciente']]['faltou'])?$pacientesMetricas[$v['id_paciente']]['faltou']:0;
+							$numeroDeVezesDesmarcados = isset($pacientesMetricas[$v['id_paciente']]['desmarcou'])?$pacientesMetricas[$v['id_paciente']]['desmarcou']:0;
+
+							if($numeroDeVezesFaltadosEDesmarcados==0) $numeroDeVezesFaltadosEDesmarcados=1;
+							$index=round((($numeroDeVezesAtendidos/$numeroDeVezesFaltadosEDesmarcados)+$numeroDeVezesAtendidos)*$statusRelacionamento);
+
+
+							//echo $v['status']." -> (($numeroDeVezesAtendidos/$numeroDeVezesFaltadosEDesmarcados)+$numeroDeVezesAtendidos)*$statusRelacionamento = $index";die();
+							//$v['nome'].="->".$index;
+							$v['historico']=isset($_pacientesHistorico[$v['id_paciente']])?(int)$_pacientesHistorico[$v['id_paciente']]:0;
+							$v['index']=$index;
+							$v['atendidos']=$numeroDeVezesAtendidos;
+							$v['faltas']=$numeroDeVezesFaltas;
+							$v['desmarcados']=$numeroDeVezesDesmarcados;
+							$v['ultimos']=isset($pacientesMetricas[$v['id_paciente']]['ultimos'])?$pacientesMetricas[$v['id_paciente']]['ultimos']:array();
+
+
+							$v['ultimoAtendimento']=$pacientesMetricas[$v['id_paciente']]['ultimoAtendimento'];
+							$v['tempoMedio']=$pacientesMetricas[$v['id_paciente']]['atendimentos']==0?0:round($pacientesMetricas[$v['id_paciente']]['tempo']/$pacientesMetricas[$v['id_paciente']]['atendimentos']);
+
+							$listaDosComHistoricoNoDiaAux[$index][]=$v;
+							
+						};
+
+
+
 
 					// ordena listas de Contencao e Desmarcados
 						krsort($pacientesDesmarcadosAux);
 						krsort($pacientesRetornoAux);
+
+					// ordena lista de pacientes que tiveram historico adicionados na data de hoje
+						ksort($listaDosComHistoricoNoDiaAux);
+						$listaDosComHistoricoNoDia=array();
+						foreach($listaDosComHistoricoNoDiaAux as $ind=>$regs) {
+							foreach($regs as $x) {
+								$listaDosComHistoricoNoDia[]=$x;
+							}
+						}
 
 
 					// unifica lista de Contencao e Desmarcado
@@ -748,9 +875,10 @@
 							}
 							
 						}
+					// adiciona a lista final
 
+						$listaFinal=array_merge($listaFinal,$listaDosComHistoricoNoDia);
 
-			# Remove pacientes que estao na lista do Gestao do Tempo
 
 
 			return $listaFinal;

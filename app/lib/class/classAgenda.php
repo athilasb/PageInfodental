@@ -31,12 +31,12 @@
 			if(!empty($data)) {
 				$agenda=$agendaIds=array();
 				$pacientesIds=$pacientesAtendidosIds=array(-1);
-				$where="where agenda_data>='".$data." 00:00:00' and agenda_data<='".$data." 23:59:59' and lixo=0";
+				$where="where agenda_data>='".$data." 00:00:00' and agenda_data<='".$data." 23:59:59' and lixo=0 order by data asc";
 				if($id_profissional>0) $where.=" and profissionais like '%,$id_profissional,%'";
 				if($id_cadeira>0) $where.=" and id_cadeira = '$id_cadeira'";
-				$sql->consult($_p."agenda","*",$where." order by agenda_data asc");
-
 				$registros=array();
+
+				$sql->consult($_p."agenda","id,id_paciente,data,agenda_data,id_status,agenda_data_final",$where."");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$registros[]=$x;
 					$pacientesIds[]=$x->id_paciente;
@@ -45,6 +45,7 @@
 					// ATENDIDO
 					if($x->id_status==5) {
 						$pacientesAtendidosIds[]=$x->id_paciente;
+						$_pacientesAgendamentos[$x->id_paciente]=$x;
 					}
 				}
 
@@ -93,12 +94,28 @@
 							$_pacientesProntuario[$x->id_paciente]=$x;
 						}
 					}
+				}
 
+
+				// busca se pacientes atendidos foram marcado agendamento na data do atendimento
+				$_pacientesAgendados=array();
+				$sql->consult($_p."agenda","id,data,agenda_data,id_paciente","where id_paciente in (".implode(",",$pacientesAtendidosIds).") and agenda_data>now() and lixo=0");
+
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					if(isset($_pacientesAgendamentos[$x->id_paciente])) {
+						$ag=$_pacientesAgendamentos[$x->id_paciente];
+
+
+						// se a data em que foi marcada a agenda é a mesma data do agendamento em que foi atendido
+						if(strtotime(date('Y-m-d',strtotime($ag->agenda_data)))==strtotime(date('Y-m-d',strtotime($x->data)))) {
+							//echo $ag->id."=> agendado em $x->data => $ag->agenda_data\n<BR>";
+							$_pacientesHistorico[$ag->id]=1;
+						}
+					}
 				}
 
 				$pacientesEvolucoes=array();
 				$where="where data_evolucao='".$data."' and id_paciente IN (".implode(",",$pacientesAtendidosIds).") and lixo=0";
-				
 				$sql->consult($_p."pacientes_evolucoes","*",$where);
 				if($sql->rows) {
 					while($x=mysqli_fetch_object($sql->mysqry)) {
