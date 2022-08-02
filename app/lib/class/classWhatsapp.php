@@ -793,34 +793,45 @@
 
 
 			if(!empty($numero)) {
-				$getUrl=$this->endpoint."/get/profile?instance=".$attr['instance']."&contact=".$numero;
+				$getUrl=$this->endpoint."/profile?instance=".$attr['instance']."&contact=".$numero;
 				//echo $getUrl."\n";
 				
-				$curl = curl_init();
+				$curl = curl_init(); 
 
 				curl_setopt_array($curl, [
-				CURLOPT_PORT => "8443",
-				CURLOPT_URL => $getUrl,
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_ENCODING => "",
-				CURLOPT_MAXREDIRS => 10,
-				CURLOPT_TIMEOUT => 30,
-				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-				CURLOPT_CUSTOMREQUEST => "GET",
-				CURLOPT_HTTPHEADER => [
-				"Content-Type: application/json",
-				"token: ".$this->token
-				],
+				  CURLOPT_PORT => "8443",
+				  CURLOPT_URL => "https://srv.infodental.dental:8443/profile?instance=".$attr['instance']."&contact=".$numero,
+				  CURLOPT_RETURNTRANSFER => true,
+				  CURLOPT_ENCODING => "",
+				  CURLOPT_MAXREDIRS => 10,
+				  CURLOPT_TIMEOUT => 30,
+				  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+				  CURLOPT_CUSTOMREQUEST => "GET",
+				  CURLOPT_POSTFIELDS => "",
+				  CURLOPT_HTTPHEADER => [
+				    "token: b5b9f54a9b11125a63136f3712e853f1023836b3"
+				  ],
 				]);
 
 				$response = curl_exec($curl);
 				$err = curl_error($curl);
+				$info = curl_getinfo($curl);
 
-				$this->response=$response;
-				//var_dump($response);
 				curl_close($curl);
 
-				return true;
+				if ($err) {
+				  $this->erro="cURL Error #:" . $err;
+				  return false;
+				} else {
+					if($info['http_code']==500) {
+						 $this->erro="Whatsapp não liberado para captação de foto";
+						return false;
+					} else {
+						$this->response=json_decode($response);
+						return true;
+					}
+				}
+
 			} else {
 				$this->erro="Número não definido";
 				return false;
