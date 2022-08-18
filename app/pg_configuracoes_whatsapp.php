@@ -64,9 +64,13 @@
 
 		foreach($_tipos as $t) {
 
-			$vSQL="pub='".((isset($_POST['pub-'.$t->id]) && $_POST['pub-'.$t->id]==1)?1:0)."',
+			/*$vSQL="pub='".((isset($_POST['pub-'.$t->id]) && $_POST['pub-'.$t->id]==1)?1:0)."',
 					geolocalizacao='".((isset($_POST['geolocalizacao-'.$t->id]) && $_POST['geolocalizacao-'.$t->id]==1)?1:0)."',
-					texto='".($_POST['texto-'.$t->id])."'";
+					texto='".($_POST['texto-'.$t->id])."'";*/
+
+			$vSQL="pub='".((isset($_POST['pub-'.$t->id]) && $_POST['pub-'.$t->id]==1)?1:0)."',
+					geolocalizacao='".((isset($_POST['geolocalizacao-'.$t->id]) && $_POST['geolocalizacao-'.$t->id]==1)?1:0)."'";
+
 			$vWHERE="where id='".$t->id."'";
 			$sql->update($_table,$vSQL,$vWHERE);
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
@@ -219,7 +223,7 @@
 										<label><input type="checkbox" class="input-switch" name="pub-<?php echo $x->id;?>" value="1"<?php echo $x->pub==1?" checked":"";?> /> <?php echo ($x->titulo);?></label>
 									</dt>
 									<dd>
-										<textarea name="texto-<?php echo $x->id;?>" style="height:200px;"><?php echo ($x->texto);?></textarea>
+										<textarea name="texto-<?php echo $x->id;?>" style="height:200px;" disabled><?php echo ($x->texto);?></textarea>
 									</dd>
 									<?php
 									// Lembrete de Agendamento inclui envio de geolocalizacao

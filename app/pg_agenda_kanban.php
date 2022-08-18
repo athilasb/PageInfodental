@@ -132,7 +132,7 @@
 	while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
 
 	$_profissionais=array();
-	$sql->consult($_p."colaboradores","id,nome,check_agendamento,calendario_iniciais,foto,calendario_cor","where tipo_cro<>'' and lixo=0 order by nome asc");
+	$sql->consult($_p."colaboradores","id,nome,check_agendamento,calendario_iniciais,foto,calendario_cor,contratacaoAtiva","where lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
 
 	$_agendaStatus=array('confirmado'=>'CONFIRMADO','agendado'=>'AGENDADO');
@@ -342,6 +342,11 @@
 						}
 						//wtsIcon+=` ${x.wts}`
 
+						let temAgendamentoFuturo = '<span class="iconify" data-icon="gridicons:scheduled" style="color:var(--vermelho)"></span>';
+						if(x.futuro==1) {
+						 	temAgendamentoFuturo='<span class="iconify" data-icon="gridicons:scheduled" style="color:var(--verde)"></span>';
+						}
+
 						let fichaIncompleta = '';
 
 						// A CONFIRMAR, DESMARCADO E FALTOU
@@ -395,6 +400,7 @@
 										<h1>${x.paciente}</h1>
 										<p>${x.profissionais}</p>
 										${fichaIncompleta}
+										${temAgendamentoFuturo}
 									</a>`;
 
 						}
@@ -406,6 +412,7 @@
 										<h1>${x.paciente}</h1>
 										<p>${x.profissionais}</p>
 										${fichaIncompleta}
+										${temAgendamentoFuturo}
 									</a>`;
 
 						}
@@ -420,8 +427,6 @@
 										<h1>${x.paciente}</h1>
 										<p>${x.profissionais}</p>
 										${fichaIncompleta}
-										${wtsIcon}
-										${wtsLembrete}
 										${iconsInfo}
 										${iconsInfoProntuario}
 									</a>`;

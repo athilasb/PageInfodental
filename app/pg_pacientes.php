@@ -106,7 +106,14 @@
 			$id_reg=$sql->ulid;
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',vwhere='',tabela='$_table',id_reg='$id_reg'");
 			
+			$attr=array('prefixo'=>$_p,'usr'=>$usr);
+			$wts = new Whatsapp($attr);
 
+			if($wts->atualizaFoto($id_reg)) {
+				//echo "ok";
+				
+			}
+			//else echo $wts->erro;
 			$adm->biCategorizacao();
 			$jsc->go("pg_pacientes_dadospessoais.php?id_paciente=$id_reg");
 			die();

@@ -427,8 +427,8 @@
 									            fill:true,
 									            borderDashOffset: 0.0,
 									            label: 'Pacientes',
-									            data: <?php echo json_encode($labelDentistasQtd);?>,
-									            backgroundColor: <?php echo json_encode($labelDentistasCor);?>,
+									            data: <?php echo (isset($labelDentistasQtd) and is_array($labelDentistasQtd))?json_encode($labelDentistasQtd):"[]";?>,
+									            backgroundColor: <?php echo (isset($labelDentistasCor) and is_array($labelDentistasCor))?json_encode($labelDentistasCor):"[]";?>,
 									            borderColor:'transparent',
 									            borderWidth: 1,
 									            borderDash: [],
@@ -506,15 +506,29 @@
 							$autor=utf8_encode($c->nome);
 						}
 					?>
+					<script type="text/javascript">
+						const proximoAgendamento = () => {
+							$('.js-proximoAgendamento-instrucoes').hide();
+							if($('.js-proximoAgendamento').is(':visible')) {
+								$('.js-proximoAgendamento-control').html('Próximo Agendamento <span class="iconify" data-icon="ant-design:caret-down-outlined"></span>');
+							} else {
+								$('.js-proximoAgendamento-control').html('Próximo Agendamento <span class="iconify" data-icon="ant-design:caret-up-outlined"></span>');
+
+							}
+
+							$('.js-proximoAgendamento').slideToggle();
+						}
+					</script>
 					<div class="filter">
 						<div class="filter-group">
-							<div class="filter-title">
-								<h1>Próximo Agendamento</h1>
+							<div class="filter-title" >
+								<h1 onclick="proximoAgendamento();" style="cursor:pointer;" class="js-proximoAgendamento-control">Próximo Agendamento <span class="iconify" data-icon="ant-design:caret-down-outlined"></span></h1>
+								<p style="font-size:12px;" class="js-proximoAgendamento-instrucoes">clique para expandir</p>
 							</div>
 						</div>
 					</div>
 
-					<div class="" style="height:auto">
+					<div style="height:auto;display: none;" class="js-proximoAgendamento">
 						
 						<b>Retornar em:</b><br /> <?php echo $proximaConsulta->retorno;?> dias<br /><br />
 						<b>Duração:</b><br /> <?php echo $proximaConsulta->duracao;?><br /><br />

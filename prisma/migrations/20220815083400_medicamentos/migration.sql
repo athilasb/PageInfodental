@@ -1,0 +1,1 @@
+ALTER TABLE `ident_medicamentos` ADD `quantidade` DOUBLE NOT NULL AFTER `titulo`, ADD `tipo` VARCHAR(50) NOT NULL AFTER `quantidade`, ADD `posologia` VARCHAR(250) NOT NULL AFTER `tipo`, ADD `controleEspecial` BOOLEAN NOT NULL AFTER `posologia`;

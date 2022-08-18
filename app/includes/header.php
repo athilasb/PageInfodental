@@ -108,7 +108,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="css/style.css?v4" />
+<link rel="stylesheet" type="text/css" href="css/style.css?v5" />
 <link rel="stylesheet" type="text/css" href="css/calendario.css" />
 <link rel="stylesheet" type="text/css" href="css/apps.css?v2" />
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
@@ -129,11 +129,13 @@
 <script defer type="text/javascript" src="js/jquery.dad.js"></script>
 <script defer type="text/javascript" src="js/jquery.money.js"></script>
 <script defer type="text/javascript" src="js/jquery.tooltipster.js"></script>
+<script defer type="text/javascript" src="js/jquery.autocomplete.js"></script>
 <script defer type="text/javascript" src="js/jquery.caret.js"></script>
 <script defer type="text/javascript" src="js/jquery.mobilePhoneNumber.js"></script>
 <script type="text/javascript" src="js/jquery.sweetalert.js"></script>
 <script type="text/javascript" src="js/jquery.validacao.js"></script>
 <script type="text/javascript" src="js/jquery.funcoes.js?v3"></script>
+<script type="text/javascript" src="ckeditor/ckeditor.js?<?php echo date('YmdHis');?>"></script>
 <script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
 <script type="text/javascript" src="js/moment.js"></script>
 <script type="text/javascript" src="js/jquery.daterangepicker.js"></script>

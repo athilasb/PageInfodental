@@ -31,12 +31,11 @@
 			if(!empty($data)) {
 				$agenda=$agendaIds=array();
 				$pacientesIds=$pacientesAtendidosIds=array(-1);
-				$where="where agenda_data>='".$data." 00:00:00' and agenda_data<='".$data." 23:59:59' and lixo=0 order by data asc";
+				$where="where agenda_data>='".$data." 00:00:00' and agenda_data<='".$data." 23:59:59' and lixo=0";
 				if($id_profissional>0) $where.=" and profissionais like '%,$id_profissional,%'";
 				if($id_cadeira>0) $where.=" and id_cadeira = '$id_cadeira'";
 				$registros=array();
-
-				$sql->consult($_p."agenda","id,id_paciente,data,agenda_data,id_status,agenda_data_final",$where."");
+				$sql->consult($_p."agenda","id,id_paciente,data,agenda_data,id_status,agenda_data_final",$where." order by data asc");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$registros[]=$x;
 					$pacientesIds[]=$x->id_paciente;
@@ -51,6 +50,13 @@
 
 				// busca agendamentos que tiveram "Proxima Consulta / Lembrete de proxima consulta ou Quero agendar ou Confirmação de periodicidade"
 				if(count($agendaIds)>0) {
+
+					$agendaFuturo=array();
+					$sql->consult($_p."agenda","distinct id_paciente","where agenda_data>'".date('Y-m-d',strtotime($data." + 1 day"))."' and id_paciente IN (".implode(",",$pacientesIds).") and lixo=0 and id_status IN (1,2,5,6,7)");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						//if($x->id_paciente==8454) echo $data." ".$x->id_paciente;
+						$agendaFuturo[$x->id_paciente]=1;
+					}
 
 					// Lembrete de proxima consulta
 					$_pacientesProximaConsulta=array();
@@ -228,7 +234,8 @@
 													'pProx'=>$pacienteProximaConsulta,
 													'pHist'=>$pacienteHistorico,
 													'pPer'=>$pacientePeriodicidade,
-													'pPron'=>$pacienteProntuario
+													'pPron'=>$pacienteProntuario,
+													'futuro'=>isset($agendaFuturo[$x->id_paciente])?1:0
 												);
 					}
 				}

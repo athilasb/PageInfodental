@@ -1,28 +1,28 @@
 // JavaScript Document
-function validaData(valor) {
-	var date=valor;
-	var ardt=new Array;
-	var ExpReg=new RegExp("(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[012])/[12][0-9]{3}");
-	ardt=date.split("/");
-	erro=false;
-	if ( date.search(ExpReg)==-1){
-		erro = true;
+	function validaData(valor) {
+		var date=valor;
+		var ardt=new Array;
+		var ExpReg=new RegExp("(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[012])/[12][0-9]{3}");
+		ardt=date.split("/");
+		erro=false;
+		if ( date.search(ExpReg)==-1){
+			erro = true;
+			}
+		else if (((ardt[1]==4)||(ardt[1]==6)||(ardt[1]==9)||(ardt[1]==11))&&(ardt[0]>30))
+			erro = true;
+		else if ( ardt[1]==2) {
+			if ((ardt[0]>28)&&((ardt[2]%4)!=0))
+				erro = true;
+			if ((ardt[0]>29)&&((ardt[2]%4)==0))
+				erro = true;
 		}
-	else if (((ardt[1]==4)||(ardt[1]==6)||(ardt[1]==9)||(ardt[1]==11))&&(ardt[0]>30))
-		erro = true;
-	else if ( ardt[1]==2) {
-		if ((ardt[0]>28)&&((ardt[2]%4)!=0))
-			erro = true;
-		if ((ardt[0]>29)&&((ardt[2]%4)==0))
-			erro = true;
+		if (erro) {
+			return false;
+		}
+		return true;
 	}
-	if (erro) {
-		return false;
-	}
-	return true;
-}
 
-function isValidEmailAddress(emailAddress) {
+	function isValidEmailAddress(emailAddress) {
 		var pattern = new RegExp(/^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?$/i);
 		return pattern.test(emailAddress);
 	}
@@ -80,7 +80,7 @@ function isValidEmailAddress(emailAddress) {
 
 $(function(){
 	$('form.formulario-validacao').submit(function(){
-		//alert('a');
+		
 		var alertar=false;
 		var alertarEmail=false;
 		var alertaSenha=false;
@@ -124,7 +124,7 @@ $(function(){
 				}
 		});
 		if(alertar) {
-			swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
+			swal({title: "Erro!", text: "Complete os campos destacados...", type:"error", confirmButtonColor: "#424242"});
 			return false;
 		} else if(alertarEmail) {
 			swal({title: "Erro!", text: "Digite um e-mail válido", type:"error", confirmButtonColor: "#424242"});

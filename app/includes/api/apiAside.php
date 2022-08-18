@@ -1497,18 +1497,19 @@
 					$imagem=isset($_POST['imagem'])?addslashes($_POST['imagem']):'';
 					$retorno=isset($_POST['retorno'])?addslashes($_POST['retorno']):'';
 					$obs=isset($_POST['obs'])?utf8_decode(addslashes($_POST['obs'])):'';
-					$profissionaisAux=isset($_POST['profissionais'])?$_POST['profissionais']:'';
+					//$profissionaisAux=isset($_POST['profissionais'])?$_POST['profissionais']:'';
+					$profissionais=isset($_POST['profissionais'])?$_POST['profissionais']:array();
 					$id_agenda_origem=(isset($_POST['id_agenda_origem']) and is_numeric($_POST['id_agenda_origem']))?$_POST['id_agenda_origem']:0;
 
 
-					$profissionais=array();
+					/*$profissionais=array();
 					if(!empty($profissionaisAux)) {
 						$aux=explode(",",$profissionaisAux);
 
 						foreach($aux as $x) {
 							if(!empty($x) and is_numeric($x)) $profissionais[]=$x;
 						}
-					}
+					}*/
 
 					if(count($profissionais)>0) $profissionais=",".implode(",",$profissionais).",";
 					else $profissionais='';
@@ -1887,6 +1888,15 @@
 
 				if(agenda_data.length>0 && agenda_duracao.length>0 && id_profissional.length>0 && id_cadeira.length>0) {
 					let data = `ajax=asRelacionamentoPacienteHorarios&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_profissional=${id_profissional}&id_cadeira=${id_cadeira}&id_agenda=${id_agenda}`;
+
+					data = {
+						'ajax':'asRelacionamentoPacienteHorarios',
+						'agenda_data':agenda_data,
+						'agenda_duracao':agenda_duracao,
+						'id_profissional':id_profissional,
+						'id_cadeira':id_cadeira,
+						'id_agenda':id_agenda
+					}
 					
 					$.ajax({
 						type:"POST",
@@ -2150,23 +2160,24 @@
 							<a href="javascript:;" class="button js-asEspecialidades-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 						</dd>
 					</dl>
+
 					<div class="list2" style="margin-top:2rem;">
-							<table class="js-asEspecialidades-table">
-								<thead>
-									<tr>									
-										<th>ESPECIALIDADE</th>
-										<th></th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr>
-										<td><h1>Título da Especialidade</h1></td>
-										<td style="text-align:right;"><a href="javascript:;" class="js-edit button" data-loading="0"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
-									</tr>								
-								</tbody>
-							</table>
-						</div>
-					</form>
+						<table class="js-asEspecialidades-table">
+							<thead>
+								<tr>									
+									<th>ESPECIALIDADE</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><h1>Título da Especialidade</h1></td>
+									<td style="text-align:right;"><a href="javascript:;" class="js-edit button" data-loading="0"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
+								</tr>								
+							</tbody>
+						</table>
+					</div>
+					
 				</form>
 			</div>
 		</section>
@@ -2409,18 +2420,17 @@
 						</dd>
 					</dl>
 					<div class="list2" style="margin-top:2rem;">
-							<table class="js-asPlanos-table">
-								<thead>
-									<tr>									
-										<th>PLANO</th>
-										<th></th>
-									</tr>
-								</thead>
-								<tbody>							
-								</tbody>
-							</table>
-						</div>
-					</form>
+						<table class="js-asPlanos-table">
+							<thead>
+								<tr>									
+									<th>PLANO</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>							
+							</tbody>
+						</table>
+					</div>
 				</form>
 			</div>
 		</section>
@@ -2709,6 +2719,15 @@
 							obj.attr('data-loading',1);
 
 							let data = `ajax=asPacientePersistir&nome=${nome}&telefone1=${telefone1}&cpf=${cpf}&indicacao_tipo=${indicacao_tipo}&indicacao=${indicacao}`;
+
+							data = {
+								'ajax':'asPacientePersistir',
+								'nome':nome,
+								'telefone1':telefone1,
+								'cpf':cpf,
+								'indicacao_tipo':indicacao_tipo,
+								'indicacao':indicacao
+							}
 							
 							$.ajax({
 								type:'POST',
@@ -3264,6 +3283,17 @@
 												obj.attr('data-loading',1);
 
 												let data = `ajax=asRelacionamentoPacienteQueroAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}`;
+
+												data = {
+													'ajax':'asRelacionamentoPacienteQueroAgendar',
+													'id_paciente':id_paciente,
+													'agenda_data':agenda_data,
+													'agenda_duracao':agenda_duracao,
+													'id_cadeira':id_cadeira,
+													'id_profissional':id_profissional,
+													'agenda_hora':agenda_hora,
+													'obs':obs,
+												}
 												$.ajax({
 														type:'POST',
 														data:data,
@@ -3319,6 +3349,13 @@
 												obj.attr('data-loading',1);
 
 												let data = `ajax=asRelacionamentoPacienteNaoQueroAgendar&id_paciente=${id_paciente}&id_status=${status}&obs=${obs}`;
+
+												data = {
+													'ajax':'asRelacionamentoPacienteNaoQueroAgendar',
+													'id_paciente':id_paciente,
+													'id_status':status,
+													'obs':obs
+												}
 												$.ajax({
 														type:'POST',
 														data:data,
@@ -3370,7 +3407,11 @@
 												obj.attr('data-loading',1);
 
 												let data = `ajax=asRelacionamentoPacienteExcluir&id_paciente=${id_paciente}&motivo=${motivo}`;
-											
+												data = {
+													'ajax':'asRelacionamentoPacienteExcluir',
+													'id_paciente':id_paciente,
+													'motivo':motivo
+												}
 												$.ajax({
 														type:'POST',
 														data:data,
@@ -4301,6 +4342,22 @@
 								obj.attr('data-loading',1);
 
 								let data = `ajax=asRelacionamentoPacienteQueroAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}&id_agenda_origem=${id_agenda_origem}`;
+
+								data = {
+									'ajax':'asRelacionamentoPacienteQueroAgendar',
+									'id_paciente':id_paciente,
+									'agenda_data':agenda_data,
+									'agenda_duracao':agenda_duracao,
+									'id_cadeira':id_cadeira,
+									'id_profissional':id_profissional,
+									'agenda_hora':agenda_hora,
+									'obs':obs,
+									'id_agenda_origem':id_agenda_origem
+
+								}
+
+
+
 								$.ajax({
 										type:'POST',
 										data:data,
@@ -4382,6 +4439,18 @@
 
 								let data = `ajax=proximaConsultaPersistir&retorno=${retorno}&duracao=${duracao}&laboratorio=${laboratorio}&imagem=${imagem}&profissionais=${profissionais}&obs=${obs}&id_paciente=${id_paciente}&id_agenda_origem=${id_agenda_origem}`;
 								
+								data = {
+									'ajax':'proximaConsultaPersistir',
+									'retorno':retorno,
+									'duracao':duracao,
+									'laboratorio':laboratorio,
+									'imagem':imagem,
+									'profissionais':profissionais,
+									'obs':obs,
+									'id_paciente':id_paciente,
+									'id_agenda_origem':id_agenda_origem
+								}
+
 								$.ajax({
 									type:'POST',
 									data:data,
@@ -4487,6 +4556,12 @@
 							obj.attr('data-loading',1);
 
 							let data = `ajax=prontuarioPersistir&id_profissional=${id_profissional}&prontuario=${prontuario}&id_paciente=${id_paciente}&dataProntuario=${dataProntuario}`;
+
+							data = {'ajax':'prontuarioPersistir',
+										'id_profissional':id_profissional,
+										'prontuario':prontuario,
+										'id_paciente':id_paciente,
+										'dataProntuario':dataProntuario}
 
 							$.ajax({
 								type:"POST",
@@ -4956,6 +5031,20 @@
 							obj.attr('data-loading',1);
 
 							let data = `ajax=asideQueroAgendarAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}&id_proximaconsulta=${id_proximaconsulta}`;
+
+							data = {
+								'ajax':'asideQueroAgendarAgendar',
+								'id_paciente':id_paciente,
+								'agenda_data':agenda_data,
+								'agenda_duracao':agenda_duracao,
+								'id_cadeira':id_cadeira,
+								'id_profissional':id_profissional,
+								'agenda_hora':agenda_hora,
+								'obs':obs,
+								'id_proximaconsulta':id_proximaconsulta
+
+							}
+
 							$.ajax({
 									type:'POST',
 									data:data,
@@ -5011,7 +5100,11 @@
 							obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 							obj.attr('data-loading',1);
 
-							let data = `ajax=prontuarioPersistir&id_profissional=${id_profissional}&prontuario=${prontuario}&id_paciente=${id_paciente}`;
+							
+							let data = {'ajax':'prontuarioPersistir',
+										'id_profissional':id_profissional,
+										'prontuario':prontuario,
+										'id_paciente':id_paciente}
 
 							$.ajax({
 								type:"POST",

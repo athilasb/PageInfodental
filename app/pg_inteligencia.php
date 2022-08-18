@@ -116,7 +116,7 @@ Lista Unica
 				
 
 					$preListaInteligente=array();
-					$sql->consult($_p."pacientes","id,nome,periodicidade,data_nascimento,telefone1,codigo_bi,foto_cn","where id IN (".implode(",",$pacientesIds).")");
+					$sql->consult($_p."pacientes","id,nome,periodicidade,data_nascimento,telefone1,codigo_bi,foto_cn,foto","where id IN (".implode(",",$pacientesIds).")");
 					if($sql->rows) {
 						while($x=mysqli_fetch_object($sql->mysqry)) {
 

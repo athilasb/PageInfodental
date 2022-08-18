@@ -160,6 +160,7 @@
 			$inicio=(isset($_POST['inicio']) and !empty($_POST['inicio']))?addslashes($_POST['inicio']):'';
 			$fim=(isset($_POST['fim']) and !empty($_POST['fim']))?addslashes($_POST['fim']):'';
 			$dia=(isset($_POST['dia']) and is_numeric($_POST['dia']))?addslashes($_POST['dia']):'';
+			$obs=(isset($_POST['obs']) and !empty($_POST['obs']))?addslashes(utf8_decode($_POST['obs'])):'';
 
 			if(empty($colaborador)) $rtn=array('success'=>false,'error'=>'Colaborador não definido!');
 			else if(empty($inicio)) $rtn=array('success'=>false,'error'=>'Ínicio não definido!');
@@ -182,7 +183,8 @@
 					$vsql="id_profissional=$colaborador->id,
 							inicio='".$inicio."',
 							dia='".$dia."',
-							fim='".$fim."'";
+							fim='".$fim."',
+							obs='".$obs."'";
 
 					if(is_object($cadeira)) $vsql.=",id_cadeira=$cadeira->id";
 
@@ -224,7 +226,8 @@
 																'cadeira'=>utf8_encode($cadeira->titulo),
 																'dia'=>$x->dia,
 																'inicio'=>$x->inicio,
-																'fim'=>$x->fim
+																'fim'=>$x->fim,
+																'obs'=>utf8_encode($x->obs)
 															);
 						//}
 					}
@@ -255,7 +258,8 @@
 							'id_cadeira'=>$horario->id_cadeira,
 							'inicio'=>$horario->inicio,
 							'fim'=>$horario->fim,
-							'dia'=>$horario->dia);
+							'dia'=>$horario->dia,
+							'obs'=>utf8_encode($horario->obs));
 			} else {
 				$rtn=array('success'=>false,'error'=>'Horário não encontrado!');
 			}
@@ -558,7 +562,7 @@
 								}).trigger('keyup');
 							})
 						</script>
-						<form method="post" class="form formulario-validacao">
+						<form method="post" class="form formulario-validacao js-form-colaboradores">
 							<button style="display:none;"></button>
 							<input type="hidden" name="acao" value="wlib" />
 							<section class="filter">
@@ -616,7 +620,7 @@
 										}
 										?>
 										<dl>
-											<dd><a href="javascript:;" class="button button_main js-submit"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>
+											<dd><a href="javascript:;" class="button button_main" onclick="$('.js-form-colaboradores').submit();"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>
 										</dl>
 									</div>
 								</div>
@@ -714,7 +718,8 @@
 																echo '<option value="'.$uf.'"'.($values['uf_cro']==$uf?' selected':'').'>'.$titulo.'</option>';
 															}
 															?>
-														</select></dd>
+														</select>
+													</dd>
 												</dl>
 												<dl>
 													<dt>Tipo do CRO</dt>
@@ -1086,6 +1091,18 @@
 														}
 													?>
 												</select>
+											</dd>
+										</dl>
+										<dl class="dl3">
+											<dt>Obs.:</dt>
+											<dd>
+												<input type="text" class="js-obs" />
+											</dd>
+										</dl>
+										<dl>
+											<dt>&nbsp;</dt>
+											<dd>
+
 												<a href="javascript:;" class="button button_main js-horarios-submit" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
 												<a href="javascript:;" class="button js-horarios-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 											</dd>
@@ -1549,7 +1566,10 @@
 												if(cadeirasComHorarios.includes(id_cadeira)===false) cadeirasComHorarios.push(id_cadeira);
 												horarios[id_cadeira][dia].forEach(x=>{
 													
-													$(`${index}-${dia}`).append(`<a href="javascript:;" class="js-editar" data-id="${x.id}">${x.inicio}~${x.fim}<br />`);
+													$(`${index}-${dia}`).append(`<a href="javascript:;" class="js-editar" data-id="${x.id}" title="${x.obs}">${x.inicio}~${x.fim}<br />`);
+													if(x.obs.length>0) {
+														$(`${index}-${dia}`).find('.js-editar:last').tooltipster();
+													}
 												})
 											}
 										}
@@ -1592,6 +1612,7 @@
 												$(`.js-dia`).val(rtn.dia);
 												$(`.js-inicio`).val(rtn.inicio);
 												$(`.js-fim`).val(rtn.fim);
+												$(`.js-obs`).val(rtn.obs);
 												$('.js-horarios-submit').html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
 												$('.js-horarios-remover').show();
 											}
@@ -1624,6 +1645,7 @@
 											let dia = $(`.js-dia`).val();
 											let inicio = $(`.js-inicio`).val();
 											let fim = $(`.js-fim`).val();
+											let obs = $(`.js-obs`).val();
 										    
 
 											errInicio = validaHoraMinuto(inicio);
@@ -1642,7 +1664,7 @@
 												obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 												obj.attr('data-loading',1);
 
-												let data = `ajax=horariosPersistir&id_cadeira=${id_cadeira}&dia=${dia}&inicio=${inicio}&fim=${fim}&id_colaborador=${id_colaborador}&id=${id}`;
+												let data = `ajax=horariosPersistir&id_cadeira=${id_cadeira}&dia=${dia}&inicio=${inicio}&fim=${fim}&id_colaborador=${id_colaborador}&id=${id}&obs=${obs}`;
 												$.ajax({
 													type:'POST',
 													data:data,
@@ -1653,6 +1675,7 @@
 															$(`.js-id_cadeira`).val('');
 															$(`.js-id`).val(0);
 															$(`.js-dia`).val('');
+															$(`.js-obs`).val('');
 															$(`.js-fim`).val('');
 															$(`.js-inicio`).val('');
 														} else if(rtn.error) {

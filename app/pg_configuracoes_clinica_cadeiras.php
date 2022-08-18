@@ -182,10 +182,10 @@
 								//echo 1;
 								$intercede=true;
 							} */
-
-							if(($inpInicio <= $hFim) && ($inpFim >= $hInicio)){
+							if(($inpInicio <= $hFim) && ($inpFim >= $hInicio) && $x->dia==$h->dia){
 								$intercede=true;
 							}
+							//echo $h->id." ".$_colaboradores[$h->id_profissional]->nome." ".$h->inicio." ".$h->fim." ($h->dia $x->dia)\n";
 
 							//if($x->id==22) echo $x->inicio."-".$x->fim." x ".$h->inicio."-".$h->fim." => ".($intercede===true?1:0)."\n";
 
@@ -196,7 +196,7 @@
 								$jaEntrou[$h->id_profissional]=true;
 								//break;
 							}
-						}
+						}//die();
 
 						
 

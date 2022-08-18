@@ -18,6 +18,18 @@
 			$_ENV['MYSQL_PASS']="d3ntaL@inf0"; 
 		} 
 	}
+	require_once("classes.php"); 
+
+	// S3 Wasabi
+	$_wasabiBucket="storage.infodental.dental"; 
+	$_wasabiPathRoot= $_ENV['NAME'] . "/";
+	$_wasabiS3endpoint = "s3.us-west-1.wasabisys.com";
+	$_wasabiS3Region = "us-west-1";
+	$_wasabiURL="https://$_wasabiS3endpoint/$_wasabiBucket/$_wasabiPathRoot";
+	$_wasabiAccessKey="LAGIJRFHMRFXMH6NMTEJ";
+	$_wasabiSecretKey="fnyL7tFloprpYpke3UKSV1JDPk2b4jzOzRmc2O7q";
+	$_wasabiURLBase="https://$_wasabiS3endpoint/$_wasabiBucket/";
+	$wasabiS3 = new S3($_wasabiAccessKey,$_wasabiSecretKey,false,$_wasabiS3endpoint,$_wasabiS3Region);
 
 	$_cloudinaryURL='https://res.cloudinary.com/infodental/image/upload/';
 	$_cloudinaryPath=$_ENV['S3_BUCKET']."/".$_ENV['NAME']."/";
@@ -43,7 +55,7 @@
 
 	ksort($_usuariosTipos);
 
-	$_googleMapsKey="AIzaSyDsahBPe1gVi2BGiTwo1I9EU9rvu4Z_0LQ";
+	$_googleMapsKey="AIzaSyDgOJkDVcG7dfYCZoAi2BXoaDs7QnSKhcQ";//AIzaSyDsahBPe1gVi2BGiTwo1I9EU9rvu4Z_0LQ";
 
 	$_dias=explode(",","Domingo,Segunda-Feira,Terça-Feira,Quarta-Feira,Quinta-Feira,Sexta-Feira,Sábado");
 	
@@ -190,6 +202,14 @@
 						'email'=>'E-mail',
 						'chave'=>'Chave Aletória'
 					);
+
+	$_medicamentosTipos=array('ampola'=>'Ampola(s)',
+							 'caixa'=>'Caixa(s)',
+							 'comprimido'=>'Comprimido(s)',
+							 'fraco'=>'Fraco(s)',
+							 'pacote'=>'Pacote(s)',
+							 'tubo'=>'Tubo(s)',
+							 'capsula'=>'Capsula(s)');
 
 	
 ?>

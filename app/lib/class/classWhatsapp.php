@@ -19,7 +19,6 @@
 			while($x=mysqli_fetch_object($sql->mysqry)) $tipos[$x->id]=$x;
 
 			$this->tipos=$tipos;
-
 		}
 
 		function wtsNumero($numero) {
@@ -27,9 +26,18 @@
 			
 			$novoNumero='';
 
-			$dddsComOitoDigitos=array(62,61,64,84);
+			/*$dddsComOitoDigitos=array(62,61,64,84);
 
 			if(in_array(substr($numero,0,2),$dddsComOitoDigitos)) {
+				$novoNumero=substr($numero,0,2).substr($numero,3,8);
+			} else {
+				$novoNumero=$numero;
+			}*/
+
+			$dddsComNoveDigitos=array(11,12,21,19,13,15,16,17,18,20,22,24,27,28);
+			if(in_array(substr($numero,0,2),$dddsComNoveDigitos)) {
+				$novoNumero=$numero;
+			} else if(strlen($numero)==11){ 
 				$novoNumero=substr($numero,0,2).substr($numero,3,8);
 			} else {
 				$novoNumero=$numero;
@@ -113,8 +121,8 @@
 			}
 
 			return $msg;
-
 		}
+
 		function adicionaNaFila($attr) {
 			$_p=$this->prefixo;
 			$sql=new Mysql();
@@ -451,10 +459,7 @@
 			}
 
 			return false;
-
-
 		}
-
 		
 		function dispara() {
 			
@@ -711,7 +716,6 @@
 				$this->erro=$erro;
 				return false;
 			}
-
 		}
 
 		function enviaLocalizacao($attr) {
@@ -742,13 +746,19 @@
 														'lng'=>$lng,
 														'name'=>$name,
 														'description'=>$descricao));
-				
+
+				$textMessage="📍 Nossa Localização:\n\n*GOOGLE MAPS*\nhttps://www.google.com/maps/search/".$lat.",".$lng."\n\n*WAZE*\nhttps://www.waze.com/pt-BR/live-map/directions?locale=pt_BR&utm_source=waze_app&to=ll.".$lat."%2C".$lng;
+
+				$postfields=array('number'=>$this->wtsNumero($numero),
+									'instance'=>$conexao->wid,
+									'text'=>$textMessage);
 				
 				$curl = curl_init();
 
 				curl_setopt_array($curl, [
 				  CURLOPT_PORT => "8443",
-				  CURLOPT_URL => $this->endpoint."/message/location",
+				  //CURLOPT_URL => $this->endpoint."/message/location",
+				  CURLOPT_URL => $this->endpoint."/message/text",
 				  CURLOPT_RETURNTRANSFER => true,
 				  CURLOPT_ENCODING => "",
 				  CURLOPT_MAXREDIRS => 10,
@@ -836,6 +846,63 @@
 				$this->erro="Número não definido";
 				return false;
 
+			}
+		}
+
+		function atualizaFoto($id_paciente) {
+			$sql = new Mysql();
+			$_p =  $this->prefixo;
+
+			$paciente='';
+			if(isset($id_paciente) and is_numeric($id_paciente)) {
+				$sql->consult($_p."pacientes","id,telefone1","where id=$id_paciente");
+				if($sql->rows) {
+					$paciente=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+			if(is_object($paciente)) {
+
+				$curl = curl_init();
+
+				$postfields=array('token'=>'d048aa153c175d827a8603c60ce03ad81b01573a',
+									'ajax'=>'wtsFoto',
+									'id_paciente'=>$paciente->id);
+
+				curl_setopt_array($curl, [
+				  CURLOPT_PORT => "5000",
+				  CURLOPT_URL => "http://163.172.187.183:5000/api/wts.php",
+				  CURLOPT_RETURNTRANSFER => true,
+				  CURLOPT_ENCODING => "",
+				  CURLOPT_MAXREDIRS => 10,
+				  CURLOPT_TIMEOUT => 30,
+				  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+				  CURLOPT_CUSTOMREQUEST => "POST",
+				  CURLOPT_POSTFIELDS => $postfields,
+				  CURLOPT_HTTPHEADER => [
+				    "Content-Type: multipart/form-data;"
+				  ],
+				]);
+
+				$response = json_decode(curl_exec($curl));
+				$err = curl_error($curl);
+
+				curl_close($curl);
+
+				if ($err) {
+				 	$this->erro="cURL Error #:" . $err;
+				 	return false;
+				} else {
+				 	if(isset($response->success) and $response->success===true) {
+				 		return true;
+				 	} else {
+				 		$this->erro=isset($response->erro)?$response->erro:'Algum erro ocorreu';
+				 		return false;
+				 	}
+				}
+			} else {
+				$this->erro="Paciente não encontrado!";
+				return false;
 			}
 		}
 		

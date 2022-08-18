@@ -55,7 +55,7 @@
 						<option value="">Profissional...</option>
 						<?php
 						foreach($_profissionais as $v) {
-							if($v->check_agendamento==0) continue;
+							if($v->check_agendamento==0 or $v->contratacaoAtiva==0) continue;
 							echo '<option value="'.$v->id.'"'.((isset($values['id_profissional']) and $values['id_profissional']==$v->id)?' selected':'').'>'.utf8_encode($v->nome).'</option>';
 						}
 						?>

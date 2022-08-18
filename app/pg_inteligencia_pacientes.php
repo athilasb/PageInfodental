@@ -79,7 +79,7 @@ Lista Unica
 			$_pacientesExcluidosLista=array();
 			
 			if(count($pacientesIds)>0) {
-				$sql->consult($_p."pacientes","id,telefone1,foto_cn,nome,profissional_maisAtende","where id IN (".implode(",",$pacientesIds).")");
+				$sql->consult($_p."pacientes","id,telefone1,foto_cn,foto,nome,profissional_maisAtende","where id IN (".implode(",",$pacientesIds).")");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$_pacientesExcluidosObj[$x->id]=$x;
 				}
@@ -144,7 +144,7 @@ Lista Unica
 
 						// busca pacientes que foram desmarcados
 						$_pacientesDesmarcados=array();
-						$sql->consult($_p."pacientes","id,nome,telefone1,foto_cn,profissional_maisAtende,codigo_bi,data_nascimento,periodicidade","where id IN (".implode(",",$desmarcadosPacientesIds).") and lixo=0");
+						$sql->consult($_p."pacientes","id,nome,telefone1,foto,foto_cn,profissional_maisAtende,codigo_bi,data_nascimento,periodicidade","where id IN (".implode(",",$desmarcadosPacientesIds).") and lixo=0");
 						while ($x=mysqli_fetch_object($sql->mysqry)) {
 							$_pacientesDesmarcados[$x->id]=$x;
 						}
@@ -163,6 +163,9 @@ Lista Unica
 
 								$ft='';
 								if(!empty($paciente->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+								else if(!empty($paciente->foto)) {
+									$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+								}
 
 								$status=isset($_pacientesStatus[$paciente->id])?$_pacientesStatus[$paciente->id]:0;
 								$desmarcadosPacientesAgendaJSON[]=array('id_paciente'=>$paciente->id,
@@ -213,7 +216,7 @@ Lista Unica
 
 						$_pacientesAtendidosIds=array();
 						$_pacientesAtendidos=array();
-						$sql->consult($_p."pacientes","id,nome,telefone1,periodicidade,profissional_maisAtende,codigo_bi,data_nascimento","where id IN (".implode(",",$atendidosPacientesIds).") and lixo=0 order by nome");
+						$sql->consult($_p."pacientes","id,nome,telefone1,periodicidade,profissional_maisAtende,codigo_bi,data_nascimento,foto,foto_cn","where id IN (".implode(",",$atendidosPacientesIds).") and lixo=0 order by nome");
 						while ($x=mysqli_fetch_object($sql->mysqry)) {
 							if(isset($_pacientesPeriodicidade[$x->periodicidade])) {
 								$_pacientesAtendidosIds[$x->periodicidade][$x->id]=$x->id;
@@ -287,6 +290,9 @@ Lista Unica
 
 									$ft='';
 									if(!empty($paciente->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+									else if(!empty($paciente->foto)) {
+										$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+									}
 
 									$retornoPacientesAgendaJSONAux[$index]=array('id_paciente'=>$paciente->id,
 																			'nome'=>$nome,
@@ -317,6 +323,9 @@ Lista Unica
 
 							$ft='';
 							if(!empty($paciente->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+							else if(!empty($paciente->foto)) {
+								$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+							}
 
 
 							$status=isset($_pacientesStatus[$paciente->id])?$_pacientesStatus[$paciente->id]:0;
@@ -1138,8 +1147,6 @@ Lista Unica
 	
 
 <?php 
-	
-
 
 	$apiConfig=array('pacienteRelacionamento'=>1,'queroAgendar'=>1);
 	require_once("includes/api/apiAside.php");

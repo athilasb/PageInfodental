@@ -15,7 +15,7 @@
 										 'quantidade'=>utf8_encode($x->quantidade),
 										 'tipo'=>utf8_encode($x->tipo),
 										 'posologia'=>utf8_encode($x->posologia),
-										 'controleespecial'=>utf8_encode($x->controleespecial));
+										 'controleEspecial'=>utf8_encode($x->controleEspecial));
 			}
 
 			header("Content-type: json/application");

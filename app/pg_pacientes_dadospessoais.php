@@ -132,6 +132,15 @@
 		$sql->update($_table,$vSQL,$vWHERE);
 		$id_reg=$paciente->id;
 		$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='$_table',id_reg='$id_reg'");
+
+		$attr=array('prefixo'=>$_p,'usr'=>$usr);
+		$wts = new Whatsapp($attr);
+
+		if($wts->atualizaFoto($paciente->id)) {
+			//echo "ok";
+			
+		}
+		//else echo $wts->erro;
 		
 		$adm->biCategorizacao();
 		$jsc->go($_page."?id_paciente=$paciente->id");
@@ -193,7 +202,7 @@
 										success:function(rtn) {
 											$('select[name=indicacao] option').remove();
 											$('select[name=indicacao]').append(`<option value=""></option>`);
-											console.log(rtn.indicacoes);
+											//console.log(rtn.indicacoes);
 											if(rtn.indicacoes) {
 												rtn.indicacoes.forEach(x => {
 													if(initIndicacao_tipo==indicacao_tipo && initIndicacao==x.id) sel = ' selected';
@@ -418,7 +427,9 @@
 										if(!empty($paciente->foto_cn)) {
 											$image=$_cloudinaryURL.'c_thumb,w_600/'.$paciente->foto_cn;
 											$thumb=$_cloudinaryURL.'c_thumb,w_600/'.$paciente->foto_cn;
-										} 
+										} else if(!empty($paciente->foto)) {
+											$thumb=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+										}
 									}
 								?>
 								<div class="form-image">

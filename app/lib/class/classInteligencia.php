@@ -19,6 +19,11 @@
 
 		// Gestao de Tempo (basea nos registros de proximo atendimento)
 		function gestaoDoTempo() {
+			$_wasabiBucket="storage.infodental.dental"; 
+			$_wasabiPathRoot= $_ENV['NAME'] . "/";
+			$_wasabiS3endpoint = "s3.us-west-1.wasabisys.com";
+			$_wasabiS3Region = "us-west-1";
+			$_wasabiURL="https://$_wasabiS3endpoint/$_wasabiBucket/$_wasabiPathRoot";
 			$_p=$this->prefixo;
 			$_cloudinaryURL=$this->_cloudinaryURL;
 			$_codigoBI=$this->_codigoBI;
@@ -100,7 +105,7 @@
 
 				# busca pacientes que tem proximo agendamento cadastrado
 					$preListaInteligente=array();
-					$sql->consult($_p."pacientes","id,nome,periodicidade,data_nascimento,telefone1,codigo_bi,foto_cn,situacao","where id IN (".implode(",",$pacientesIds).")");
+					$sql->consult($_p."pacientes","id,nome,periodicidade,foto,data_nascimento,telefone1,codigo_bi,foto_cn,situacao","where id IN (".implode(",",$pacientesIds).")");
 					if($sql->rows) {
 						while($x=mysqli_fetch_object($sql->mysqry)) {
 
@@ -141,6 +146,13 @@
 																'obs'=>addslashes(utf8_encode($i->obs)));
 								
 								// cria objeto do paciente da lista inteligente
+
+									$ft='img/ilustra-perfil.png';
+									if(!empty($x->foto_cn)) {
+										$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$x->foto_cn;
+									} else if(!empty($x->foto)) {
+										$ft=$_wasabiURL."arqs/clientes/".$x->id.".jpg";
+									}
 									$preListaInteligente[$x->id]=array('id_proximaconsulta'=>(int)$i->id,
 																		'proxima'=>$proxima,
 																		'id_paciente'=>$x->id,
@@ -150,7 +162,7 @@
 																		'telefone'=>telefoneMascara($x->telefone1),
 																		'bi'=>isset($_codigoBI[$x->codigo_bi])?utf8_encode($_codigoBI[$x->codigo_bi]):$x->codigo_bi,
 																		'idade'=>(int)idade($x->data_nascimento),
-																		'ft'=>(!empty($x->foto_cn)?$_cloudinaryURL.'c_thumb,w_100,h_100/'.$x->foto_cn:''),
+																		'ft'=>$ft,
 																		'ultimoAtendimento'=>'-',
 																		'atendimentos'=>0,
 																		'tempoMedio'=>0,
@@ -309,6 +321,12 @@
 
 		// Gestao de Pacientes
 		function gestaoDePacientes() {
+			$_wasabiBucket="storage.infodental.dental"; 
+			$_wasabiPathRoot= $_ENV['NAME'] . "/";
+			$_wasabiS3endpoint = "s3.us-west-1.wasabisys.com";
+			$_wasabiS3Region = "us-west-1";
+			$_wasabiURL="https://$_wasabiS3endpoint/$_wasabiBucket/$_wasabiPathRoot";
+
 			$_p=$this->prefixo;
 			$_cloudinaryURL=$this->_cloudinaryURL;
 			$_codigoBI=$this->_codigoBI;
@@ -392,7 +410,7 @@
 
 					// busca pacientes que foram desmarcados
 						$_pacientes=array();
-						$sql->consult($_p."pacientes","id,nome,telefone1,foto_cn,profissional_maisAtende,codigo_bi,data_nascimento,periodicidade,situacao","where id IN (".implode(",",$pacientesDesmarcadosIds).") and lixo=0");
+						$sql->consult($_p."pacientes","id,nome,telefone1,foto,foto_cn,profissional_maisAtende,codigo_bi,data_nascimento,periodicidade,situacao","where id IN (".implode(",",$pacientesDesmarcadosIds).") and lixo=0");
 						while ($x=mysqli_fetch_object($sql->mysqry)) {
 							// se desativado
 							if($x->situacao=="EXCLUIDO") {
@@ -415,15 +433,25 @@
 
 								// busca ultimo historico evento do paciente
 								$historico=isset($pacientesHistoricos[$paciente->id])?$pacientesHistoricos[$paciente->id]:0;
+								
+								$ft='img/ilustra-perfil.png';
+								if(!empty($paciente->foto_cn)) {
+									$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+								} else if(!empty($paciente->foto)) {
+									$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+								}
 
 								// se possui historico adicionado no dia, entra no final
 								if($historico>0) {
 									$historicoObj=$pacientesHistoricosObj[$paciente->id];
 									if(strtotime(date('Y-m-d'))==strtotime(date('Y-m-d',strtotime($historicoObj->data)))) {
+
+										
+
 										$listaDosComHistoricoNoDia[]=array('id_paciente'=>$paciente->id,
 																			'nome'=>utf8_encode($paciente->nome),
 																			'periodicidade'=>$paciente->periodicidade,
-																			'ft'=>(!empty($paciente->foto_cn)?$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn:''),
+																			'ft'=>$ft,
 																			'idade'=>idade($paciente->data_nascimento),
 																			'bi'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):$paciente->codigo_bi,
 																			'status'=>$historico,
@@ -437,7 +465,7 @@
 								$pacientesDesmarcadosAUX[]=array('id_paciente'=>$paciente->id,
 																		'nome'=>utf8_encode($paciente->nome),
 																		'periodicidade'=>$paciente->periodicidade,
-																		'ft'=>(!empty($paciente->foto_cn)?$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn:''),
+																		'ft'=>$ft,
 																		'idade'=>idade($paciente->data_nascimento),
 																		'bi'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):$paciente->codigo_bi,
 																		'status'=>$historico,
@@ -485,7 +513,7 @@
 
 					// filtra pacientes que possuem periodicidade
 						$pacientesAtendidosComPeriodicidade=array();
-						$sql->consult($_p."pacientes","id,nome,telefone1,periodicidade,profissional_maisAtende,codigo_bi,data_nascimento,situacao","where id IN (".implode(",",$pacientesContencaoIds).") and lixo=0 order by nome");
+						$sql->consult($_p."pacientes","id,nome,telefone1,foto,foto_cn,periodicidade,profissional_maisAtende,codigo_bi,data_nascimento,situacao","where id IN (".implode(",",$pacientesContencaoIds).") and lixo=0 order by nome");
 						while ($x=mysqli_fetch_object($sql->mysqry)) {
 
 							// se desativado
@@ -562,8 +590,14 @@
 										$index++;
 									}
 
-									$ft='';
-									if(!empty($paciente->foto_cn)) $ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+									$ft='img/ilustra-perfil.png';
+									if(!empty($paciente->foto_cn)) {
+										$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+									} else if(!empty($paciente->foto)) {
+										$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+									}
+
+
 
 									// se possui historico adicionado no dia, entra no final
 									if($historico>0) {
@@ -573,7 +607,7 @@
 											$listaDosComHistoricoNoDia[]=array('id_paciente'=>$paciente->id,
 																				'nome'=>utf8_encode($paciente->nome),
 																				'periodicidade'=>$paciente->periodicidade,
-																				'ft'=>(!empty($paciente->foto_cn)?$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn:''),
+																				'ft'=>$ft,
 																				'idade'=>idade($paciente->data_nascimento),
 																				'bi'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):$paciente->codigo_bi,
 																				'status'=>$historico,
@@ -705,11 +739,12 @@
 					// ordena pacientes Desmarcados
 						$pacientesDesmarcadosAux=array();
 						foreach($pacientesDesmarcados as $v) {
-
+							$statusRelacionamento=1;
 							if($v['status']==3) $statusRelacionamento=2;
 							else if($v['status']==1) $statusRelacionamento=1;
 							else if($v['status']==2) continue;
 							else if($v['status']==0) $statusRelacionamento=1;
+
 
 							$numeroDeVezesAtendidos = isset($pacientesMetricas[$v['id_paciente']]['atendimentos'])?$pacientesMetricas[$v['id_paciente']]['atendimentos']:0;
 							$numeroDeVezesFaltadosEDesmarcados = isset($pacientesMetricas[$v['id_paciente']]['faltouOuDesmarcou'])?$pacientesMetricas[$v['id_paciente']]['faltouOuDesmarcou']:0;

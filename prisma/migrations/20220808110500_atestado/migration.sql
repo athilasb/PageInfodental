@@ -1,0 +1,1 @@
+ALTER TABLE `ident_pacientes_evolucoes_atestados` ADD `id_tipo` INT NOT NULL AFTER `id_cid`, ADD `id_fim` INT NOT NULL AFTER `id_tipo`, ADD `duracao` INT NOT NULL AFTER `id_fim`;

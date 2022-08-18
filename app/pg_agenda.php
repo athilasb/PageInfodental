@@ -5,7 +5,7 @@
 	$_table = $_p."agenda";
 
 	$_profissionais=array();
-	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento","where lixo=0 order by nome asc");
+	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento,contratacaoAtiva","where lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
 
 	$_cadeiras=array();
@@ -34,9 +34,11 @@
 				if($sql->rows) {
 					$cnt=mysqli_fetch_object($sql->mysqry);
 
-					$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,codigo_bi,musica,periodicidade,foto_cn","where id=$cnt->id_paciente");
+					$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,foto,codigo_bi,musica,periodicidade,foto_cn","where id=$cnt->id_paciente");
 					if($sql->rows) {
 						$paciente=mysqli_fetch_object($sql->mysqry);
+
+					
 					}
 
 				
@@ -161,6 +163,8 @@
 					$ft='';
 					if(!empty($paciente->foto_cn)) {
 						$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+					} else if(!empty($paciente->foto)) {
+						$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
 					}
 
 
@@ -898,7 +902,7 @@
 						id_status_novo=".$idStatusNovo.",
 						descricao=''";
 					$sql->add($_p."pacientes_historico",$vSQLHistorico);
-					$rtn=array('success'=>true);
+					$rtn=array('success'=>true,'id_paciente'=>$paciente->id);
 
 				}
 			}
@@ -923,7 +927,7 @@
 				$profissionaisDestaque=array();
 				$where="where dia='$diaSemana' and 
 								inicio<='$hora' and 
-								fim>='$hora' and 
+								fim>'$hora' and 
  								lixo=0";
  				if($id_cadeira>0) $where.=" and id_cadeira=$id_cadeira";
 				$sql->consult($_p."profissionais_horarios","distinct id_profissional",$where);
@@ -935,7 +939,7 @@
 
 				$listaProfissionais=$listaProfissionaisDestaque=array();
 				foreach($_profissionais as $x) {
-					if($x->check_agendamento==0) continue;
+					if($x->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
 					if(isset($profissionaisDestaque[$x->id])) {
 						$listaProfissionaisDestaque[]=(object)array('id'=>$x->id,'nome'=>utf8_encode($x->nome),'destaque'=>1);
 					}
@@ -943,7 +947,7 @@
 
 
 				foreach($_profissionais as $x) {
-					if($x->check_agendamento==0) continue;
+					if($x->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
 					if(!isset($profissionaisDestaque[$x->id])) {
 						$listaProfissionais[]=(object)array('id'=>$x->id,'nome'=>utf8_encode($x->nome),'destaque'=>0);
 					}
@@ -954,6 +958,23 @@
 							'listaProfissionais'=>$listaProfissionais);
 
 
+			}
+		}
+
+		else if($_POST['ajax']=="atualizaFoto") {
+
+
+			$id_paciente = (isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente']))?$_POST['id_paciente']:0;
+
+
+			if(!empty($id_paciente)) {
+				if($infozap->atualizaFoto($id_paciente)) {
+					$rtn=array('success'=>true);
+				} else {
+					$rtn=array('success'=>false,'erro'=>$infozap->erro);
+				}
+			} else {
+				$rtn=array('success'=>false,'Paciente não passado!');
 			}
 		}
 
@@ -1105,6 +1126,7 @@
 												'start'=>$dtStart,
 												'end'=>$dtEnd,
 												'hora'=>$hora,
+												'duracao'=>(int)$x->agenda_duracao,
 												'horaFinal'=>$horaFinal,
 												'futuro'=>$futuro,
 												'cadeira'=>$cadeira,
@@ -1237,7 +1259,7 @@
 			//echo "<BR><BR>";
 
 			$dif = ceil((strtotime($data_fim) - strtotime($data_inicio))/86400);
-
+	
 			if($dif<=1) {
 
 				// cria backgrounds dos dias nao disponiveis
@@ -1349,13 +1371,22 @@
 			if(!empty($primeiraLetra)) $where.=" ORDER BY CASE WHEN nome >= '$primeiraLetra' THEN 1 ELSE 0 END DESC, nome ASC";
 			else $where.=" order by nome asc";
 
-			$sql->consult($_p."pacientes","nome,id,telefone1,cpf",$where);
+			$sql->consult($_p."pacientes","nome,id,telefone1,cpf,foto_cn,foto",$where);
 			//echo $where;
 			while($x=mysqli_fetch_object($sql->mysqry)) {
+
+				$ft='img/ilustra-perfil.png';
+				if(!empty($x->foto_cn)) {
+					$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$x->foto_cn;
+				} else if(!empty($x->foto)) {
+					$ft=$_wasabiURL."arqs/clientes/".$x->id.".jpg";
+				}
+
 				$rtn['items'][]=array('id'=>$x->id,
 										'text'=>utf8_encode($x->nome),
 										'nome'=>utf8_encode($x->nome),
 										'telefone'=>utf8_encode($x->telefone1),
+										'ft'=>$ft,
 										'cpf'=>utf8_encode($x->cpf));
 			}
 
@@ -1468,8 +1499,8 @@
 
 			let dateString = date.getDate()+" "+mesString+" "+date.getFullYear();
 
-			console.log(date.getUTCDay()+' => '+dateString+' => '+calendar.view.title);
-			console.log(date.getTimezoneOffset());
+			//console.log(date.getUTCDay()+' => '+dateString+' => '+calendar.view.title);
+			//console.log(date.getTimezoneOffset());
 
 			$('.js-cal-titulo-diames').html(date.getDate()>=9?date.getDate():`0${date.getDate()}`);
 			$('.js-cal-titulo-mes').html(mesString);
@@ -1523,7 +1554,7 @@
 			$('#js-aside-add select[name=id_status]').val(1);
 			$('#js-aside-add select[name=duracao]').val(``);
 			$('#js-aside-add input[name=telefone1]').val(``);
-			$('#js-aside-add select[name=agenda_duracao]').val(30);
+			$('#js-aside-add input[name=agenda_duracao]').val(30);
 			$('#js-aside-add textarea[name=obs]').val(``);
 			$('#js-aside-add select[name=profissionais] option:checked').prop('checked',false).trigger('chosen:updated');
 			$('#js-aside-add input[name=agenda_data]').val(data);
@@ -1550,7 +1581,7 @@
 			infoComplementar=``;
 			infoComplementar+= !! state.cpf ? ` - CPF: ${state.cpf}` : '';
 			infoComplementar+= !! state.telefone ? ` - Tel.: ${state.telefone}` : '';
-			var $state = $('<span style="display:flex; align-items:center; gap:.5rem;"><img src="img/ilustra-perfil.png" style="width:40px;height:40px;border-radius:100%;" /> ' + state.text + infoComplementar + '</span>');
+			var $state = $('<span style="display:flex; align-items:center; gap:.5rem;"><img src="'+state.ft+'" style="width:40px;height:40px;border-radius:100%;" /> ' + state.text + infoComplementar + '</span>');
 			return $state;
 		}
 
@@ -1676,7 +1707,8 @@
 				calendarView=view;
 
 				if(view=='resourceTimeGridOneDay') {
-					
+					//console.log('today');
+					calendar.refetchEvents();
 					calendar.today();
 					calendarioVisualizacaoData();
 
@@ -1907,7 +1939,10 @@
 								data:data,
 								success:function(rtn){ 
 									if(rtn.success) {
-
+										$.ajax({
+											type:"POST",
+											data:`ajax=atualizaFoto&id_paciente=${rtn.data.id_paciente}`
+										});
 										//$('html, body').animate({scrollTop: 0},'fast');
 										if(rtn.data.agendaPessoal>0) {
 											//alert($('#js-aside-edit select[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length);
@@ -1915,11 +1950,11 @@
 											$('#js-aside-edit-agendaPessoal input[name=agenda_data]').val(rtn.data.agenda_data);
 											$('#js-aside-edit-agendaPessoal input[name=agenda_hora]').val(rtn.data.agenda_hora);
 											
-											$('#js-aside-edit-agendaPessoal select[name=agenda_duracao] option.js-duracaoAdicional').remove();
-											if($('#js-aside-edit-agendaPessoal select[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length==0) {
-												$('#js-aside-edit-agendaPessoal select[name=agenda_duracao]').append(`<option class="js-duracaoAdicional" value="${rtn.data.agenda_duracao}">${rtn.data.agenda_duracao}</option>`);
+											$('#js-aside-edit-agendaPessoal input[name=agenda_duracao] option.js-duracaoAdicional').remove();
+											if($('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length==0) {
+												$('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').append(`<option class="js-duracaoAdicional" value="${rtn.data.agenda_duracao}">${rtn.data.agenda_duracao}</option>`);
 											}
-											$('#js-aside-edit-agendaPessoal select[name=agenda_duracao]').val(rtn.data.agenda_duracao);
+											$('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').val(rtn.data.agenda_duracao);
 
 											$('#js-aside-edit-agendaPessoal textarea[name=obs]').val(rtn.data.obs);
 											$('#js-aside-edit-agendaPessoal select[name=id_cadeira]').val(rtn.data.id_cadeira);
@@ -1971,11 +2006,11 @@
 											$('#js-aside-edit input[name=agenda_data]').val(rtn.data.agenda_data);
 											$('#js-aside-edit input[name=agenda_hora]').val(rtn.data.agenda_hora);
 
-											$('#js-aside-edit select[name=agenda_duracao] option.js-duracaoAdicional').remove();
-											if($('#js-aside-edit select[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length==0) {
-												$('#js-aside-edit select[name=agenda_duracao]').append(`<option class="js-duracaoAdicional" value="${rtn.data.agenda_duracao}">${rtn.data.agenda_duracao}</option>`);
+											$('#js-aside-edit input[name=agenda_duracao] option.js-duracaoAdicional').remove();
+											if($('#js-aside-edit input[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length==0) {
+												$('#js-aside-edit input[name=agenda_duracao]').append(`<option class="js-duracaoAdicional" value="${rtn.data.agenda_duracao}">${rtn.data.agenda_duracao}</option>`);
 											}
-											$('#js-aside-edit select[name=agenda_duracao]').val(rtn.data.agenda_duracao);
+											$('#js-aside-edit input[name=agenda_duracao]').val(rtn.data.agenda_duracao);
 
 											$('#js-aside-edit select[name=id_cadeira]').val(rtn.data.id_cadeira);
 											$('#js-aside-edit input[name=telefone1]').val(rtn.data.telefone1);
@@ -2133,6 +2168,8 @@
 									swal({title: "Erro!", text: 'Algum erro ocorreu durante a abertura deste agendamento', type:"error", confirmButtonColor: "#424242"});
 								}
 						});
+
+						
 					}
 
 					const agendamentosDesmarcados = () => {
@@ -2279,7 +2316,6 @@
 						var calendarEl = document.getElementById('calendar'); 
 						calendar = new FullCalendar.Calendar(calendarEl, {
 						  	schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-
 							locale: 'pt-br',
 							contentHeight: 'auto',
 						    headerToolbar: {
@@ -2407,6 +2443,7 @@
 								let profissionais = arg.event.extendedProps.profissionais;
 								let id_agenda = arg.event.id;
 								let wts = arg.event.extendedProps.wts;
+								let duracao = arg.event.extendedProps.duracao;
 
 								let wtsIcon = ``;
 								/*if(wts !== undefined && wts == 1) {
@@ -2427,31 +2464,39 @@
 									})
 								}
 	   							
-	   							
 								if(profissionaisHTML.length!=0) profissionaisHTML = `<div class="cal-item__fotos">${profissionaisHTML}</div>`; 
 								
-
-
 							    if(view=="dayGridMonth") {
 							    	eventHTML=`<section class="cal-item" style="height:100%;border-left:6px solid ${statusColor};" >
 													
 													<section onclick="popView(${id_agenda});">
-														 <p>${hora}</p>
 														 <h1 class="cal-item__titulo">${nome}</h1>
+														 <p>${hora}</p>
 													</section>
 													${wtsIcon}
 												</section>`
 							    } else {
-							    	eventHTML=`<section class="cal-item" style="height:100%;border-left:6px solid ${statusColor};" >
+							    	if(duracao<30) {
+							    		eventHTML=`<section class="cal-item" style="height:20px;border-left:6px solid ${statusColor};padding:0;padding-left:0.5em;" >
 													<section class="cal-item__inner1" style="height:100%"  onclick="popView(${id_agenda});">
 														<div class="cal-item-dados">
+															<h2 style="margin-top:0">${nome}</h2>
 															<h1>${hora} - ${cadeira}</h1>
-															<h2>${nome}</h2>
+														</div>
+													</section>
+												</section>`;
+							    	} else {
+							    		eventHTML=`<section class="cal-item" style="height:100%;border-left:6px solid ${statusColor};" >
+													<section class="cal-item__inner1" style="height:100%"  onclick="popView(${id_agenda});">
+														<div class="cal-item-dados">
+															<h2 style="margin-top:0">${nome}</h2>
+															<h1>${hora} - ${cadeira}</h1>
 														</div>
 														${wtsIcon}
 														${profissionaisHTML}
 													</section>
-												</section>`
+												</section>`;
+									}
 							    }
 							    //console.log(agendaPessoal);
 							    if(agendaPessoal==2) {
@@ -2562,11 +2607,18 @@
 								success:function(rtn) {
 									if(rtn.success) {
 
+										if(rtn.id_paciente) {
+											$.ajax({
+												type:"POST",
+												data:`ajax=atualizaFoto&id_paciente=${rtn.id_paciente}`
+											});
+										}
+
 										$('#js-aside-add select[name=id_paciente]').val('').trigger('change.select2');
 
 										$('#js-aside-add select.js-profissionais').val('').trigger('chosen:updated');
 										$('#js-aside-add input,#js-aside-add textarea').val('');
-										$('#js-aside-add select[name=agenda_duracao]').val('');
+										$('#js-aside-add input[name=agenda_duracao]').val('');
 
 										$.fancybox.close();
 										calendar.refetchEvents();
@@ -2682,7 +2734,7 @@
 					<dl>
 						<dt>Duração</dt>
 						<dd class="form-comp form-comp_pos">
-							<select name="agenda_duracao" class="obg-0">
+							<?php /*<select name="agenda_duracao" class="obg-0">
 								<option value="">-</option>
 								<?php
 								foreach($optAgendaDuracao as $v) {
@@ -2690,7 +2742,9 @@
 									echo '<option value="'.$v.'">'.$v.'</option>';
 								}
 								?>
-							</select>
+							</select>*/?>
+							<input type="number" name="agenda_duracao" class="obg-0" value="30" />
+
 							<span>min</span>
 						</dd>
 					</dl>
@@ -2735,7 +2789,7 @@
 								<option value=""></option>
 								<?php
 								foreach($_profissionais as $p) {
-									if($p->check_agendamento==0) continue;
+									if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
 									echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
 								}
 								?>
@@ -2969,14 +3023,15 @@
 					<dl>
 						<dt>Duração</dt>
 						<dd class="form-comp form-comp_pos">
-							<select name="agenda_duracao">
+							<?php /*<select name="agenda_duracao">
 								<?php
 								foreach($optAgendaDuracao as $v) {
 									if($values['agenda_duracao']==$v) $possuiDuracao=true;
 									echo '<option value="'.$v.'"'.($values['agenda_duracao']==$v?' selected':'').'>'.$v.'</option>';
 								}
 								?>
-							</select>
+							</select>*/?>
+							<input type="number" name="agenda_duracao" value="<?php echo $values['agenda_duracao'];?>" />
 							<span>min</span>
 						</dd>
 					</dl>
@@ -2989,7 +3044,7 @@
 								<option value=""></option>
 								<?php
 								foreach($_profissionais as $p) {
-									if($p->check_agendamento==0) continue;
+									if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
 									echo '<option value="'.$p->id.'"'.(in_array($p->id, $values['profissionais'])?' selected':'').'>'.utf8_encode($p->nome).'</option>';
 								}
 								?>
@@ -3259,14 +3314,15 @@
 						<dl>
 							<dt>Duração</dt>
 							<dd class="form-comp form-comp_pos">
-								<?php /*<input type="tel" name="agenda_duracao" class="" />*/?>
+								<?php /*<input type="tel" name="agenda_duracao" class="" />
 								<select name="agenda_duracao">
 									<?php
 									foreach($optAgendaDuracao as $v) {
 										echo '<option value="'.$v.'"'.($values['agenda_duracao']==$v?' selected':'').'>'.$v.'</option>';
 									}
 									?>
-								</select>
+								</select>*/?>
+								<input type="text" name="agenda_duracao" value="" />
 								<span>min</span>
 							</dd>
 						</dl>
@@ -3311,7 +3367,7 @@
 									<option value=""></option>
 									<?php
 									foreach($_profissionais as $p) {
-										if($p->check_agendamento==0) continue;
+										if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
 										echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
 									}
 									?>

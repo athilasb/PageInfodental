@@ -7,4 +7,5 @@
 
 <section class="tab">
 	<a href="pg_configuracoes_clinica_colaboradores.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesClinica)?' class="active"':'';?>>Clínica</a>
+	<a href="pg_configuracoes_evolucao_anamnese.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesEvolucao)?' class="active"':'';?>>Evolução</a>
 </section>
