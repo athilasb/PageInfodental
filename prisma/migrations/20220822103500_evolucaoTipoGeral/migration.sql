@@ -1,0 +1,1 @@
+INSERT INTO `ident_pacientes_evolucoes_tipos` (`id`, `tipo`, `titulo`, `tituloSingular`, `icone`, `pagina`) VALUES ('9', 'geral', 'Geral', 'Geral', 'clarity:note-edit-line', '')

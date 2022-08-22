@@ -1455,7 +1455,20 @@
 						if(isset($_pacientesAgendamentos[$paciente->id])) {
 							$agendamentosFuturos=$_pacientesAgendamentos[$paciente->id];
 						}
-					
+						
+
+						$idProfissional=0;
+						if(!empty($agenda->profissionais)) {
+
+							$aux = explode(",",$agenda->profissionais);
+
+							foreach($aux as $x) {
+								if(!empty($x) and is_numeric($x)) {
+									$idProfissional=$x;
+									break;
+								}
+							}
+						}
 
 
 						$rtn=array('success'=>true,
@@ -1469,6 +1482,7 @@
 													'ft'=>$ft,
 													'periodicidade'=>isset($_pacientesPeriodicidade[$paciente->periodicidade])?$_pacientesPeriodicidade[$paciente->periodicidade]:$paciente->periodicidade,
 													'agendamentosFuturos'=>$agendamentosFuturos,
+													'id_profissional'=>$idProfissional
 
 													)
 									);
@@ -1544,7 +1558,6 @@
 					}
 				}
 
-				
 
 				if(is_object($paciente)) {
 
@@ -1574,13 +1587,50 @@
 
 					if(empty($erro)) {
 
-						$vsql="data='".$dataProntuario."',id_usuario='".$id_profissional."',
+						/*$vsql="data='".$dataProntuario."',id_usuario='".$id_profissional."',
 								texto='".addslashes(utf8_decode($prontuario))."',
 								id_paciente=$paciente->id";
 						//echo $vsql;die();
 						$sql->add($_p."pacientes_prontuarios",$vsql);
 						$id_reg=$sql->ulid;
-						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vsql)."',vwhere='',tabela='".$_p."pacientes_prontuarios',id_reg='$id_reg'");
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vsql)."',vwhere='',tabela='".$_p."pacientes_prontuarios',id_reg='$id_reg'");*/
+
+						// id_tipo = 9 -> geral
+						$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
+																								id_paciente=$paciente->id and
+																								id_tipo=9 and  
+																								id_usuario=$usr->id");	
+						if($sql->rows) {
+							$e=mysqli_fetch_object($sql->mysqry);
+							$sql->update($_p."pacientes_evolucoes","id_profissional='$id_profissional'","where id=$e->id");
+							$id_evolucao=$e->id;
+						} else {
+							$sql->add($_p."pacientes_evolucoes","data=now(),
+																	id_tipo=9,
+																	id_paciente=$paciente->id,
+																	id_usuario=$usr->id,
+																	id_profissional='".$id_profissional."'");
+							$id_evolucao=$sql->ulid;
+						}
+
+
+						$geral='';
+						$sql->consult($_p."pacientes_evolucoes_geral","*","where id_evolucao=$id_evolucao and lixo=0");
+						if($sql->rows) {
+							$geral=mysqli_fetch_object($sql->mysqry);
+						}
+
+						$vSQLGeral="id_evolucao=$id_evolucao,
+									data='".$dataProntuario."',
+									id_profissional='".$id_profissional."',
+									texto='".addslashes(utf8_decode($prontuario))."',
+									id_usuario=$usr->id";
+
+						if(is_object($geral)) {
+							$sql->update($_p."pacientes_evolucoes_geral",$vSQLGeral,"where id=$geral->id");
+						} else {
+							$sql->add($_p."pacientes_evolucoes_geral",$vSQLGeral);
+						}
 
 						$rtn=array('success'=>true);
 
@@ -4212,6 +4262,9 @@
 
 							$('#js-aside-proximaConsulta .js-proximaConsulta-id_agenda').val(id_agenda);
 
+
+							if(rtn.data.id_profissional.length>0) $('#js-aside-proximaConsulta .js-prontuario-profissional').val(rtn.data.id_profissional);
+							else  $('#js-aside-proximaConsulta .js-prontuario-profissional').val('');
 							
 
 						} else if(rtn.error) {

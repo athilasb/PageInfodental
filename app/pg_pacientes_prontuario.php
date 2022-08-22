@@ -29,16 +29,63 @@
 		$_profissionais[$x->id]=$x;
 	}
 
+	// geral
+		$_geral=array();
+		if(isset($evolucoesIds[9])) {
+			$sql->consult($_p."pacientes_evolucoes_geral","*","where id_evolucao IN (".implode(",",$evolucoesIds[9]).")");
+			if($sql->rows) {
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_geral[$x->id_evolucao]=$x;
+				}
+			}
+		}
+
+
+	// anamnese
+		$_anamnesePerguntas=array();
+		if(isset($evolucoesIds[1])) {
+			$sql->consult($_p."pacientes_evolucoes_anamnese","*","where id_evolucao IN (".implode(",",$evolucoesIds[1]).")");
+			if($sql->rows) {
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_anamnesePerguntas[$x->id_evolucao][]=$x;
+				}
+			}
+		}
+
+	// receituario
+		$_medicamentosReceituario=array();
+		if(isset($evolucoesIds[7])) {
+			$sql->consult($_p."pacientes_evolucoes_receitas","*","where id_evolucao IN (".implode(",",$evolucoesIds[7]).")");
+			if($sql->rows) {
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_medicamentosReceituario[$x->id_evolucao][]=$x;
+				}
+			}
+		}
+
 	// pedido de exames
 		$_pedidosDeExames=array();
 		if(isset($evolucoesIds[6])) {
 			$sql->consult($_p."pacientes_evolucoes_pedidosdeexames","*","where id_evolucao IN (".implode(",",$evolucoesIds[6]).")");
 			if($sql->rows) {
 				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_pedidosDeExames[$x->id_evolucao]=$x;
+					$_pedidosDeExames[$x->id_evolucao][]=$x;
 				}
 			}
 		}
+
+		$_exames=array();
+		$sql->consult($_p."parametros_examedeimagem","id,titulo","");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$_exames[$x->id]=$x;
+		}
+
+		$_clinicas=array();
+		$sql->consult($_p."parametros_fornecedores","id,IF(tipo_pessoa='PF',nome,razao_social) as titulo","");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$_clinicas[$x->id]=$x;
+		}
+
 	// atestado
 		$_atestados=array();
 		if(isset($evolucoesIds[4])) {
@@ -116,37 +163,48 @@
 						</header>
 						<article>
 							<?php
+								$correcoes='';
+
 								// anamnese
 								if($eTipo->id==1) {
+									$correcoes=1;
+									if(isset($_anamnesePerguntas[$e->id])) {
+										$perguntas=$_anamnesePerguntas[$e->id];
+
+
 									?>
 									<div class="list-toggle-topics">
-										<div class="list-toggle-topic">
-											<h1>1. Por qual motivo veio a Studio Dental</h1>
-											<p>Arrumar uma faceta quebrada</p>
-										</div>
-										<div class="list-toggle-topic">
-											<h1>2. Qual nota você da ao seu Sorriso?</h1>
-											<p>9</p>
-										</div>
-										<div class="list-toggle-topic">
-											<h1>3. O que você prioriza mais no seu tratamento? Biologia, Função ou Estética.</h1>
-											<p>Estética</p>
-										</div>
-										<div class="list-toggle-topic">
-											<h1>4. Se tivesse que escolher entre um tratamento mais longo porem mais conservador e um tratamento mais rápido porem mais agressivo, qual você escolheria?</h1>
-											<p>Mais longo e conservador</p>
-										</div>
-										<div class="list-toggle-topic">
-											<h1>5. Tem sensibilidade com alimentos frios ou doce?</h1>
-											<p>Sim. Frios</p>
-										</div>
-										<div class="list-toggle-topic">
-											<h1>6. Tem bruxismo, se sim ele acontece durante o dia ou noite?</h1>
-											<p>Não</p>
-										</div>
-									</div>		
-
 									<?php
+										foreach($perguntas as $p) {
+											$pergunta=json_decode($p->json_pergunta);
+
+
+									?>
+										<div class="list-toggle-topic">
+											<h1><?php echo ($pergunta->pergunta);?></h1>
+											<p>
+												<?php 
+												if($pergunta->tipo=="simnao" or $pergunta->tipo=="simnaotexto") {
+													if($p->resposta=="SIM") echo "Sim";
+													else echo "Não";
+												} else if($pergunta->tipo=="nota") {
+													echo "Nota: ".$p->resposta;
+												} 
+												?>	
+											</p>
+											<?php
+											if(!empty($p->resposta_texto)) {
+												echo "<p>Resposta: ".utf8_encode($p->resposta_texto)."</p>";
+											}
+											?>
+										</div>
+									<?php
+										}
+									?>
+									
+									</div>		
+									<?php
+									}
 								}
 								// atestado
 								else if($eTipo->id==4) {
@@ -173,18 +231,39 @@
 
 								// pedidos de exame
 								else if($eTipo->id==6) {
+
 									if(isset($_pedidosDeExames[$e->id])) {
-										$pedido=$_pedidosDeExames[$e->id];
+										$pedidos=$_pedidosDeExames[$e->id];
+										
 									?>
 									<div class="list-toggle-topics">
 										<div class="list-toggle-topic">
-											<h1><?php echo isset($_clinicas[$pedido->id_clinica])?utf8_encode($_clinicas[$pedido->id_clinica]->titulo):"Clínica Desconhecida";?></h1>
-											<p>Imagem Dental</p>
+											<h1><?php echo isset($_clinicas[$e->id_clinica])?utf8_encode($_clinicas[$e->id_clinica]->titulo):"Clínica Desconhecida";?></h1>
+											
 										</div>
 										<div class="list-toggle-topic">
 											<h1>Exames:</h1>
-											<p>Cefalometria - GERAL</p>
-											<p>Fotos Intra e Extra Oral - Por arcada - Maxila - Pedir urgência</p>
+											<?php
+											foreach($pedidos as $p) {
+												if(isset($_exames[$p->id_exame])) {
+													$exame=$_exames[$p->id_exame];
+													$regiao=' - GERAL';
+													if(isset($p->opcao) and !empty($p->opcao)) {
+														$opcoes=explode(",",utf8_encode($p->opcao));
+														$regiao=' -';
+														foreach($opcoes as $opcao) {
+															$regiao.=" ".$opcao.", ";
+														}
+														$regiao=substr($regiao,0,strlen($regiao)-2);
+													}
+													$obs=!empty($p->obs)?" - ".utf8_encode($p->obs):"";
+
+											?>
+											<p><?php echo utf8_encode($exame->titulo).$regiao.$obs;?></p>
+											<?php
+												}
+											}
+											?>
 										</div>
 									</div>		
 									<?php
@@ -193,26 +272,53 @@
 
 								// receituario
 								else if($eTipo->id==7) {
+
+									if(isset($_medicamentosReceituario[$e->id])) {
+										$medicamentos=$_medicamentosReceituario[$e->id];
+											
+												
 									?>
 									<div class="list-toggle-topics">
 										<div class="list-toggle-topic">
 											<h1>Tipo de Uso</h1>
-											<p>Comprimido</p>
-										</div>
-										<div class="list-toggle-topic">
-											<h1>Tipo de Uso</h1>
-											<p>Comprimido</p>
+											<p><?php echo isset($_tiposReceitas[$e->tipo_receita])?$_tiposReceitas[$e->tipo_receita]:"-";?></p>
 										</div>
 										<div class="list-toggle-topic">
 											<h1>Medicamentos</h1>
-											<p>Azitromicina - 2 caixas - Tomar a cada 10 minutos</p>
-											<p>Amoxilina com Clavulanato 250gm - 1 caixa - Tomar a cada 8 horas</p>
+										<?php
+										foreach($medicamentos as $m) {
+										?>
+											<p><?php echo utf8_encode($m->medicamento)." - ".$m->quantidade." ".$_medicamentosTipos[$m->tipo]." - ".utf8_encode($m->posologia);?></p>
+										<?php
+										}
+										?>
 										</div>
 										
 									</div>			
 									<?php
+									}
 								}
 
+								// receituario
+								else if($eTipo->id==9) {
+
+									if(isset($_geral[$e->id])) {
+										$g=$_geral[$e->id];
+									?>
+									<div class="list-toggle-topics">
+										<div class="list-toggle-topic">
+										
+											<p><?php echo utf8_encode($g->texto);?></p>
+										
+										</div>
+										
+									</div>			
+									<?php
+									}
+								}
+
+
+								if($correcoes!="") {
 							?>
 
 							<div class="list-toggle-com">
@@ -237,10 +343,14 @@
 										<p>Lorem, ipsum dolor sit amet consectetur adipisicing, elit. Atque voluptates, enim laudantium quis perferendis exercitationem tempora mollitia, ipsum nisi modi!</p>
 									</article>
 								</article>
-							</div>							
+							</div>	
+							<?php
+							}
+							?>						
 						</article>
 					</div>
 					<?php
+							
 						}
 					}
 					/*?>
@@ -370,7 +480,8 @@
 <?php 
 			
 
-	$apiConfig=array('anamnese'=>1,
+	$apiConfig=array('geral'=>1,
+						'anamnese'=>1,
 						'atestado'=>1,
 						'pedidoExame'=>1,
 						'receituario'=>1);

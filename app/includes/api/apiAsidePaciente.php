@@ -632,7 +632,78 @@
 					$rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
 				}
 			}
+		# Geral (Prontuario simples/normal)
+			else if($_POST['ajax']=="asPGeralPersistir") {
+				$paciente='';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","*", "where id=".$_POST['id_paciente']." and lixo=0");
+					if($sql->rows) $paciente=mysqli_fetch_object($sql->mysqry);
+				}
 
+
+				if(is_object($paciente)) {
+
+					$data = (isset($_POST['data']) and !empty($_POST['data']))?$_POST['data']:'';
+					$id_profissional = (isset($_POST['id_profissional']) and !empty($_POST['id_profissional']) and is_numeric($_POST['id_profissional']))?$_POST['id_profissional']:'';
+					$texto = (isset($_POST['texto']) and !empty($_POST['texto']))?$_POST['texto']:'';
+
+					$erro='';
+					if(empty($data)) $erro='Preencha o campo de Data';
+					else if(empty($id_profissional)) $erro='Preencha o campo de Profissional';
+					else if(empty($texto)) $erro='Preencha o campo de Evolução';
+					else {
+
+
+						// id_tipo = 9 -> geral
+						$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
+																								id_paciente=$paciente->id and
+																								id_tipo=9 and  
+																								id_usuario=$usr->id");	
+						if($sql->rows) {
+							$e=mysqli_fetch_object($sql->mysqry);
+							$sql->update($_p."pacientes_evolucoes","id_profissional='".addslashes(utf8_decode($_POST['id_profissional']))."'","where id=$e->id");
+							$id_evolucao=$e->id;
+						} else {
+							$sql->add($_p."pacientes_evolucoes","data=now(),
+																	id_tipo=9,
+																	id_paciente=$paciente->id,
+																	id_usuario=$usr->id,
+																	id_profissional='".addslashes(utf8_decode($_POST['id_profissional']))."'");
+							$id_evolucao=$sql->ulid;
+						}
+
+
+						$geral='';
+						$sql->consult($_p."pacientes_evolucoes_geral","*","where id_evolucao=$id_evolucao and lixo=0");
+						if($sql->rows) {
+							$geral=mysqli_fetch_object($sql->mysqry);
+						}
+
+						$vSQLGeral="id_evolucao=$id_evolucao,
+									data='".invDatetime($data)."',
+									id_profissional='".$id_profissional."',
+									texto='".addslashes(utf8_decode($texto))."',
+									id_usuario=$usr->id";
+
+						if(is_object($geral)) {
+							$sql->update($_p."pacientes_evolucoes_geral",$vSQLGeral,"where id=$geral->id");
+						} else {
+							$sql->add($_p."pacientes_evolucoes_geral",$vSQLGeral);
+						}
+
+						$rtn=array('success'=>true);
+
+					}
+
+					if(!empty($erro)) {
+						$rtn=array('success'=>false,'error'=>$erro);
+					}
+
+
+				} else {
+					$rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
+				}
+			}
 
 
 		header("Content-type: application/json");
@@ -707,6 +778,14 @@
 				<article class="aside-content">
 					<div class="list5">
 						<?php
+						if(isset($apiConfig['geral'])) {
+						?>
+						<a href="javascript:;" data-aside="prontuario-geral" data-aside class="list5-item">
+							<i class="iconify" data-icon="clarity:note-edit-line"></i>
+							<p>Geral</p>
+						</a>
+						<?php
+						}
 						if(isset($apiConfig['anamnese'])) {
 						?>
 						<a href="javascript:;" data-aside="prontuario-anamnese" data-aside class="list5-item">
@@ -759,6 +838,156 @@
 			</div>
 		</section>
 		<?php
+	# GERAL
+		if(isset($apiConfig['geral'])) {
+
+				
+			?>
+			<script type="text/javascript">
+				
+			
+
+				$(function(){
+
+
+					$('.aside-prontuario-geral .js-asideGeral-data').datetimepicker({
+						timepicker:true,
+						format:'d/m/Y H:i',
+						scrollMonth:false,
+						scrollTime:false,
+						scrollInput:false,
+					});
+
+					$('.aside-prontuario-geral .js-salvarGeral').click(function(){
+						
+
+						let erro = '';
+						
+						let dataGeral = $('.aside-prontuario-geral .js-asideGeral-data').val();
+						let id_profissional = $('.aside-prontuario-geral .js-asideGeral-id_profissional').val();
+						let texto = $('.aside-prontuario-geral .js-asideGeral-texto').val();
+
+						if(dataGeral.length==0) erro='Preencha o campo de Data';
+						else if(id_profissional.length==0) erro='Preencha o campo de Profissional';
+						else if(texto.length==0) erro='Preencha o campo de Evolução';
+
+						
+						if(erro.length>0) {
+							swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+						} else {
+							let obj = $(this);
+							let obHTMLAntigo = $(this).html();
+
+							if(obj.attr('data-loading')==0) {
+								
+								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+								obj.attr('data-loading',1);
+
+								let data = {'ajax':'asPGeralPersistir',
+											'id_paciente':id_paciente,
+											'data':dataGeral,
+											'id_profissional':id_profissional,
+											'texto':texto};
+
+								$.ajax({
+										type:'POST',
+										data:data,
+										url:baseURLApiAsidePaciente,
+										success:function(rtn) {
+											if(rtn.success) {
+
+												$('.aside-prontuario-geral .js-asideGeral-inputs').val('');
+												$('.aside-close').click();
+												document.location.reload();
+
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+											}
+											
+										},
+										error:function() {
+											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										} 
+								}).done(function(){
+									obj.html(obHTMLAntigo);
+									obj.attr('data-loading',0);
+								});
+
+							}
+
+
+
+						}
+					});
+
+					
+				});
+			</script>
+
+			<section class="aside aside-prontuario-geral" style="display: none;">
+				<div class="aside__inner1">
+					<header class="aside-header">
+						<h1>GERAL</h1>
+						<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+					</header>
+
+					<form method="post" class="aside-content form js-form-geral">
+						<section class="filter">
+							<div class="filter-group"></div>
+							<div class="filter-group">
+								<div class="filter-form form">
+									<dl>
+										<dd><a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
+									</dl>
+									<dl>
+										<dd><button type="button" class="button button_main js-salvarGeral" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+									</dl>
+								</div>								
+							</div>
+						</section>
+
+						<fieldset>
+							<legend>Informações</legend>
+							<div class="colunas3">
+								<dl>
+									<dt>Data e Hora</dt>
+									<dd>
+										<input type="tel" name="" class="datahora js-asideGeral-data js-asideGeral-inputs" /></dd>
+									</dd>
+								</dl>
+								<dl class="dl2">
+									<dt>Cirurgião Dentista</dt>
+									<dd>
+										<select class="js-asideGeral-id_profissional js-asideGeral-inputs">
+											<option value="">-</option>
+											<?php
+											foreach($_profissionais as $x) {
+												if($x->check_agendamento==0) continue;
+												echo '<option value="'.$x->id.'">'.utf8_encode($x->nome).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+							</div>
+						</fieldset>
+						<fieldset>
+							<legend>Evolução</legend>
+							<dl>
+								<dd>
+									<textarea class="js-asideGeral-texto js-asideGeral-inputs" style="height:320px;width:100%;"></textarea>
+								</dd>
+							</dl>
+						</fieldset>
+					</form>
+				</div>
+			</section>
+
+
+			<?php
+		}
 
 	# ANAMNESE
 		if(isset($apiConfig['anamnese'])) {
@@ -967,7 +1196,8 @@
 										url:baseURLApiAsidePaciente,
 										success:function(rtn) {
 											if(rtn.success) {
-
+												$('.aside-close').click();
+												document.location.reload();
 
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -1240,6 +1470,7 @@
 												CKEDITOR.instances['asideAtestado-texto'].setData('');
 												$('.aside-close').click();
 
+												document.location.reload();
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 											} else {
@@ -1602,6 +1833,7 @@
 												$('.js-asidePedidoExame-inputs').val('');
 												
 												$('.aside-close').click();
+												document.location.reload();
 
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -1912,6 +2144,7 @@
 												medicamentos=[];
 												receituarioMedicamentosListar();
 												$('.aside-close').click();
+												document.location.reload();
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 											} else {
@@ -2276,6 +2509,7 @@
 												$('.aside-medicamento .aside-close').trigger('click');
 												var newOption = new Option(medicamento, rtn.id_medicamento, false, false);
 												$('.js-asideReceituario-id_medicamento').append(newOption).trigger('change');
+												document.location.reload();
 											}
 
 											$(`.js-asideReceituarioMedicamento-id`).val(0);
