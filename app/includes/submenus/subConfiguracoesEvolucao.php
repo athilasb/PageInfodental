@@ -15,4 +15,8 @@
 		<i class="iconify" data-icon="mdi:flask-empty-plus-outline"></i>
 		<p>Exame Complementar</p>
 	</a>
+	<a href="pg_configuracoes_evolucao_documentos.php" class="list5-item<?php echo basename($_SERVER['PHP_SELF'])=="pg_configuracoes_evolucao_documentos.php"?" active":"";?>">
+		<i class="iconify" data-icon="carbon:document"></i>
+		<p>Documentos</p>
+	</a>
 </div>

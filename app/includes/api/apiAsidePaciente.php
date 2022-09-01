@@ -704,7 +704,128 @@
 					$rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
 				}
 			}
+		# Documentos
+			else if($_POST['ajax']=="asPDocumentoSubstituir") {
+				
+				$paciente='';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","*", "where id=".$_POST['id_paciente']." and lixo=0");
+					if($sql->rows) $paciente=mysqli_fetch_object($sql->mysqry);
+				}
 
+				$documento='';
+				if(isset($_POST['id_documento']) and is_numeric($_POST['id_documento'])) {
+					$sql->consult($_p."parametros_documentos","*", "where id=".$_POST['id_documento']." and lixo=0");
+					if($sql->rows) $documento=mysqli_fetch_object($sql->mysqry);
+				}
+
+
+				$clinica='';
+				$sql->consult($_p."clinica","clinica_nome,endereco,lat,lng","order by id desc limit 1");
+				if($sql->rows) $clinica=mysqli_fetch_object($sql->mysqry);
+
+				if(is_object($paciente)) {
+					if(is_object($documento)) {
+						if(is_object($clinica)) {
+
+
+							$texto = utf8_encode($documento->texto);
+
+							$dadosPacientes="<b>".trim(utf8_encode($paciente->nome))."</b>, brasileiro, ".trim(utf8_encode($paciente->estado_civil)).", inscrito no CPF de nº <b>".maskCPF($paciente->cpf)."</b> e RG de n°. <b>".trim($paciente->rg).", ".trim($paciente->rg_orgaoemissor)."</b>, com telefone de n° <b>".mask($paciente->telefone1)."</b> e email: <b>".($paciente->email)."</b>, residente e domiciliado à <b>".trim(utf8_encode($paciente->endereco))."</b>";
+
+
+							$dataExtenso=diaDaSemana(date('d')).", ".date('d')." de ".outMes(date('m'))." de ".date('Y');;
+
+							$texto = str_replace("[nome]",utf8_encode($paciente->nome),$texto);
+							$texto = str_replace("[cpf]",maskCPF($paciente->cpf),$texto);
+							$texto = str_replace("[endereco]",utf8_encode($paciente->endereco),$texto);
+							$texto = str_replace("[clinica_nome]",utf8_encode($clinica->clinica_nome),$texto);
+							$texto = str_replace("[clinica_endereco]",utf8_encode($clinica->endereco),$texto);
+							$texto = str_replace("[dados_paciente]",$dadosPacientes,$texto);
+							$texto = str_replace("[data]",date('d/m/Y'),$texto);
+							$texto = str_replace("[data_leitura]",$dataExtenso,$texto);
+
+
+							$rtn=array('success'=>true,'texto'=>$texto);
+						} else {
+							$rtn=array('success'=>false,'error'=>'Clínica não encontrada!');
+						}
+
+					} else {
+						$rtn=array('success'=>false,'error'=>'Modelo de documento não encontrado!');
+					}
+				} else {
+					$rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
+				}
+
+			}
+			else if($_POST['ajax']=="asPDocumentosPersistir") {
+				$paciente='';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","*", "where id=".$_POST['id_paciente']." and lixo=0");
+					if($sql->rows) $paciente=mysqli_fetch_object($sql->mysqry);
+				}
+
+				$documento='';
+				if(isset($_POST['id_documento']) and is_numeric($_POST['id_documento'])) {
+					$sql->consult($_p."parametros_documentos","*", "where id=".$_POST['id_documento']." and lixo=0");
+					if($sql->rows) $documento=mysqli_fetch_object($sql->mysqry);
+				}
+
+				$texto = (isset($_POST['texto']) and !empty($_POST['texto']))?$_POST['texto']:'';
+				$data = (isset($_POST['data']) and !empty($_POST['data']))?$_POST['data']:'';
+
+
+				$erro='';
+				if(empty($paciente)) $erro='Paciente não encontrado!';
+				else if(empty($documento)) $erro='Documento não encontrado!';
+				else if(empty($texto)) $erro='Texto não preenchido!';
+				
+
+				if(empty($erro)) {
+					// id_tipo = 10 -> documento
+					$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
+																							id_paciente=$paciente->id and
+																							id_tipo=10 and  
+																							id_usuario=$usr->id");	
+					if($sql->rows) {
+						$e=mysqli_fetch_object($sql->mysqry);
+						$id_evolucao=$e->id;
+					} else {
+						$sql->add($_p."pacientes_evolucoes","data=now(),
+																id_tipo=10,
+																id_paciente=$paciente->id,
+																id_usuario=$usr->id");
+						$id_evolucao=$sql->ulid;
+					}
+
+
+					$geral='';
+					$sql->consult($_p."pacientes_evolucoes_documentos","*","where id_evolucao=$id_evolucao and lixo=0");
+					if($sql->rows) {
+						$geral=mysqli_fetch_object($sql->mysqry);
+					}
+
+					$vSQLGeral="id_evolucao=$id_evolucao,
+								data='".invDate($data)."',
+								id_documento='".$documento->id."',
+								texto='".addslashes(utf8_decode($texto))."',
+								id_usuario=$usr->id";
+
+					if(is_object($geral)) {
+						$sql->update($_p."pacientes_evolucoes_documentos",$vSQLGeral,"where id=$geral->id");
+					} else {
+						$sql->add($_p."pacientes_evolucoes_documentos",$vSQLGeral);
+					}
+
+					$rtn=array('success'=>true);
+
+
+
+				} else {
+					$rtn=array('success'=>false,'error'=>$erro);
+				}
+			}
 
 		header("Content-type: application/json");
 		echo json_encode($rtn);
@@ -830,11 +951,15 @@
 						</a>
 						<?php
 						}
+						if(isset($apiConfig['documentos'])) {
 						?>
-						<a href="javascript:;" class="list5-item" style="opacity:0.4;">
+						<a href="javascript:;" data-aside="prontuario-documentos" class="list5-item">
 							<i class="iconify" data-icon="fluent:document-add-28-regular"></i>
 							<p>Documentos</p>
 						</a>
+						<?php
+						}
+						?>
 						<a href="javascript:;" class="list5-item" style="opacity:0.4;">
 							<i class="iconify" data-icon="clarity:list-outline-badged"></i>
 							<p>Estoque</p>
@@ -935,7 +1060,7 @@
 			<section class="aside aside-prontuario-geral" style="display: none;">
 				<div class="aside__inner1">
 					<header class="aside-header">
-						<h1>GERAL</h1>
+						<h1>Geral</h1>
 						<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 					</header>
 
@@ -960,7 +1085,7 @@
 								<dl>
 									<dt>Data e Hora</dt>
 									<dd>
-										<input type="tel" name="" class="datahora js-asideGeral-data js-asideGeral-inputs" /></dd>
+										<input type="tel" name="" class="datahora js-asideGeral-data js-asideGeral-inputs" value="<?php echo date('d/m/Y H:i');?>" /></dd>
 									</dd>
 								</dl>
 								<dl class="dl2">
@@ -1547,7 +1672,7 @@
 								<dl>
 									<dt>Data e Hora</dt>
 									<dd>
-										<input type="tel" name="" class="datahora js-asideAtestado-data js-asideAtestado-inputs" /></dd>
+										<input type="tel" name="" class="datahora js-asideAtestado-data js-asideAtestado-inputs"  value="<?php echo date('d/m/Y H:i');?>" /></dd>
 									</dd>
 								</dl>
 								<dl>
@@ -3184,4 +3309,201 @@
 
 			<?php
 		}
+	
+	# DOCUMENTOS
+		if(isset($apiConfig['documentos'])) {	
+
+			$_documentos=array();
+			$sql->consult($_p."parametros_documentos","*","where lixo=0 order by titulo asc") ;
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_documentos[$x->id]=$x;
+			}
+
+				
+			?>
+			<script type="text/javascript">
+			
+				$(function(){
+
+					$('.aside-prontuario-documentos .js-asideDocumentos-data').datetimepicker({
+						timepicker:false,
+						format:'d/m/Y',
+						scrollMonth:false,
+						scrollTime:false,
+						scrollInput:false,
+					});
+
+					$('.aside-prontuario-documentos .js-salvarDocumentos').click(function(){
+						
+
+						let erro = '';
+						
+						let dataDocumentos = $('.aside-prontuario-documentos .js-asideDocumentos-data').val();
+						let id_documento = $('.aside-prontuario-documentos .js-asideDocumentos-id_documento').val();
+						let texto = CKEDITOR.instances['asideDocumentos-documento'].getData();
+
+						if(dataDocumentos.length==0) erro='Preencha o campo de Data';
+						else if(id_documento.length==0) erro='Preencha o campo de Modelo de Documento';
+						else if(texto.length==0) erro='Preencha o campo de Documento';
+
+						
+						if(erro.length>0) {
+							swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+						} else {
+							let obj = $(this);
+							let obHTMLAntigo = $(this).html();
+
+							if(obj.attr('data-loading')==0) {
+								
+								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+								obj.attr('data-loading',1);
+
+								let data = {'ajax':'asPDocumentosPersistir',
+											'id_paciente':id_paciente,
+											'data':dataDocumentos,
+											'id_documento':id_documento,
+											'texto':texto};
+
+								$.ajax({
+										type:'POST',
+										data:data,
+										url:baseURLApiAsidePaciente,
+										success:function(rtn) {
+											if(rtn.success) {
+
+												$('.aside-prontuario-documentos .js-asideDocumentos-inputs').val('');
+												$('.aside-close').click();
+												document.location.reload();
+
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+											}
+											
+										},
+										error:function() {
+											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										} 
+								}).done(function(){
+									obj.html(obHTMLAntigo);
+									obj.attr('data-loading',0);
+								});
+
+							}
+
+
+
+						}
+					});
+
+					
+					$('.aside-prontuario-documentos .js-asideDocumentos-id_documento').change(function(){
+						let id_documento = $(this).val();
+
+						if(id_documento.length>0) {
+
+							let data = {'ajax':'asPDocumentoSubstituir',
+										'id_documento':id_documento,
+										'id_paciente':id_paciente}
+
+							$.ajax({
+									type:'POST',
+									data:data,
+									url:baseURLApiAsidePaciente,
+									success:function(rtn) {
+										if(rtn.success) {
+
+											CKEDITOR.instances['asideDocumentos-documento'].setData(rtn.texto);
+
+										} else if(rtn.error) {
+											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+										} else {
+											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										}
+										
+									},
+									error:function() {
+										swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+									} 
+							}).done(function(){
+								//obj.html(obHTMLAntigo);
+								//obj.attr('data-loading',0);
+							});
+
+						}
+					});
+
+					var fck_documento = CKEDITOR.replace('asideDocumentos-documento',{
+																			language: 'pt-br',
+																			width:'100%',
+																			height:450
+																			});
+					
+				});
+			</script>
+
+			<section class="aside aside-prontuario-documentos" style="display: none;">
+				<div class="aside__inner1">
+					<header class="aside-header">
+						<h1>Documentos</h1>
+						<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+					</header>
+
+					<form method="post" class="aside-content form js-form-documentos">
+						<section class="filter">
+							<div class="filter-group"></div>
+							<div class="filter-group">
+								<div class="filter-form form">
+									<dl>
+										<dd><a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
+									</dl>
+									<dl>
+										<dd><button type="button" class="button button_main js-salvarDocumentos" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+									</dl>
+								</div>								
+							</div>
+						</section>
+
+						<fieldset>
+							<legend>Informações</legend>
+							<div class="colunas3">
+								<dl>
+									<dt>Data</dt>
+									<dd>
+										<input type="tel" name="" class="datahora js-asideDocumentos-data js-asideDocumentos-inputs" value="<?php echo date('d/m/Y');?>" /></dd>
+									</dd>
+								</dl>
+								<dl class="dl2">
+									<dt>Modelo de Documento</dt>
+									<dd>
+										<select class="js-asideDocumentos-id_documento js-asideDocumentos-inputs">
+											<option value="">-</option>
+											<?php
+											foreach($_documentos as $x) {
+												echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+							</div>
+
+						</fieldset>
+						<fieldset>
+							<legend>Documento</legend>
+							<dl>
+								<dd>
+									<textarea class="js-asideDocumentos-texto js-asideDocumentos-inputs" id="asideDocumentos-documento" style="height:320px;width:100%;"></textarea>
+								</dd>
+							</dl>
+						</fieldset>
+					</form>
+				</div>
+			</section>
+
+
+			<?php
+		}
+
 ?>

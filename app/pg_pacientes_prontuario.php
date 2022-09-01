@@ -11,7 +11,8 @@
 
 	$evolucoes=array();
 	$evolucoesIds=array();
-	$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id order by data desc");
+	//$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id order by data desc");
+	$sql->consultPagMto2($_p."pacientes_evolucoes","*",10,"where id_paciente=$paciente->id order by data desc","",15,"pagina",$_page."?".$url."&pagina=");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$evolucoes[]=$x;
 		$evolucoesIds[$x->id_tipo][]=$x->id;
@@ -164,6 +165,10 @@
 							else if($e->id_tipo==7) {
 								$pdf="impressao/receituario.php?id=".md5($e->id);
 							}
+							// receituario
+							else if($e->id_tipo==10) {
+								$pdf="impressao/documentos.php?id=".md5($e->id);
+							}
 					?>
 					<div class="list-toggle-item">
 						<header>
@@ -174,7 +179,7 @@
 									<p><?php echo date('d/m/Y H:i',strtotime($e->data));?></p>
 								</div>
 							</div>
-							<p><?php echo isset($_profissionais[$e->id_profissional])?utf8_encode($_profissionais[$e->id_profissional]->nome):"Desconhecido";?></p>
+							<p><?php echo isset($_profissionais[$e->id_profissional])?utf8_encode($_profissionais[$e->id_profissional]->nome):"";?></p>
 							<div class="list-toggle-buttons">									
 								<a href="<?php echo $pdf;?>" target="_blank" class="button"><i class="iconify" data-icon="ant-design:file-pdf-outlined"></i></a>
 								<a href="javascript:;" class="button"><i class="iconify" data-icon="fa:whatsapp"></i></a>
@@ -492,8 +497,20 @@
 						</article>
 					</div>*/?>
 
-				</div>				
+				</div>	
 			</div>
+
+			<center>
+				<?php
+					if(isset($sql->myspaginacao) and !empty($sql->myspaginacao)) {
+				?>
+				<div class="pagination" style="margin:15px;">						
+					<?php echo $sql->myspaginacao;?>
+				</div>
+				<?php
+				}
+				?>		
+			</center>
 			
 		</div>
 	</main>
@@ -506,7 +523,8 @@
 						'atestado'=>1,
 						'pedidoExame'=>1,
 						'receituario'=>1,
-						'proximaConsulta'=>1);
+						'proximaConsulta'=>1,
+						'documentos'=>1);
 	
 	require_once("includes/api/apiAsidePaciente.php");
 

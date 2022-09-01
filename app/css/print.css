@@ -48,3 +48,20 @@ body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font
 .no-padding td {padding:4px !important;}
 
 @page { size: auto;  margin: 0mm; }
+
+.fck {font-weight:300;}
+.fck hr {border:0; border-bottom:1px solid var(--cinza2); margin:2rem 0;}
+.fck > *:first-child, .titulo1:first-child, .titulo2:first-child, .titulo3:first-child {margin-top:0;}
+.fck p {margin:1.25rem 0; font-size:1.125em; line-height:1.6;}
+.fck h1, .titulo1 {margin:2rem 0; line-height:1.1; font-size:2.5em; font-weight:300; color:var(--cor1);}
+.fck h2, .titulo2 {margin:2rem 0; line-height:1.1; font-size:2em; font-weight:300; letter-spacing:-0.02em; color:var(--cor1);}
+.fck h3, .titulo3 {margin:2rem 0; line-height:1.1; font-size:1.5em; font-weight:300;}
+.fck ul {list-style:disc outside; margin:0 0 1rem 30px;}
+.fck ol {list-style:decimal outside; margin:0 0 1rem 30px;}
+.fck li {margin-bottom:.3rem;}
+.fck table {width:100%; margin:2rem 0;}
+.fck table p {margin:0;}
+.fck table th {color:var(--cor2); padding:.5rem; border-bottom:2px solid var(--cor2); text-align:left;}
+.fck table td {padding:.5rem; border-bottom:1px solid var(--cinza2);}
+.fck a {text-decoration:underline; color:var(--cor1);}
+.fck img {max-width:100%; height:auto;}

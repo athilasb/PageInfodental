@@ -1,0 +1,1 @@
+CREATE TABLE `ident_parametros_documentos` (`id` INT NOT NULL AUTO_INCREMENT , `lixo` BOOLEAN NOT NULL , `titulo` VARCHAR(150) NOT NULL , `texto` LONGTEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;

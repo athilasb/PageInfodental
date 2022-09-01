@@ -147,7 +147,7 @@ code {font-size:0.875em; background:rgba(0,0,0,0.1); margin:0 .5rem;}
 	.form-row dt {flex:1; margin-bottom:.375em;}	
 }
 
-/*
+
 .pagination {display:inline-block; border:1px solid var(--cinza3); border-radius:4px;}
 .pagination > * {display:inline-block; padding:.625em 1em; border-right:1px solid var(--cinza3); transition:all 100ms;}
 .pagination > a:last-child {border:0;}
@@ -155,12 +155,12 @@ code {font-size:0.875em; background:rgba(0,0,0,0.1); margin:0 .5rem;}
 .pagination .active {background-color:var(--cor1); color:#fff;}
 .pagination_sm {font-size:0.875em;}
 .pagination_lg {font-size:1.25em;}
-*/
 
-.pagination {display:flex; justify-content:center;}
+
+/*.pagination {display:flex; justify-content:center;}
 .pagination input {flex:0 0 50px; text-align:center;}
 .pagination a {font-size:1.125em; color:var(--cinza4); padding:0 .5rem;}
-.pagination a.active {color:var(--cinza5); font-weight:bold;}
+.pagination a.active {color:var(--cinza5); font-weight:bold;}*/
 
 .table-container {max-width:100%; overflow:auto;}
 .table {width:100%;}
