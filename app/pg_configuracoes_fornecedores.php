@@ -35,6 +35,7 @@
 				$data = array('id'=>$cnt->id,
 								'tipo_pessoa'=>utf8_encode($cnt->tipo_pessoa),
 								'nome'=>utf8_encode($cnt->nome),
+								'tipo'=>utf8_encode($cnt->tipo),
 								'cpf'=>utf8_encode($cnt->cpf),
 								'razao_social'=>utf8_encode($cnt->razao_social),
 								'nome_fantasia'=>utf8_encode($cnt->nome_fantasia),
@@ -202,7 +203,7 @@
 	include "includes/nav.php";
 
 	$values=$adm->get($_GET);
-	$campos=explode(",","tipo_pessoa,nome,cpf,razao_social,nome_fantasia,responsavel,cnpj,telefone1,telefone2,email,endereco,lat,lng,complemento,pix_tipo,pix_chave,pix_beneficiario");
+	$campos=explode(",","tipo_pessoa,tipo,nome,cpf,razao_social,nome_fantasia,responsavel,cnpj,telefone1,telefone2,email,endereco,lat,lng,complemento,pix_tipo,pix_chave,pix_beneficiario");
 
 	if(isset($_POST['acao'])) {
 
@@ -224,8 +225,8 @@
 			$id_reg=$cnt->id;
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='$_table',id_reg='$id_reg'");
 		} else {
-			//$vSQL=substr($vSQL,0,strlen($vSQL)-1);
-			$vSQL.="tipo='FORNECEDOR'";
+			$vSQL=substr($vSQL,0,strlen($vSQL)-1);
+			//$vSQL.="tipo='FORNECEDOR'";
 			$sql->add($_table,$vSQL);
 			$id_reg=$sql->ulid;
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',vwhere='',tabela='$_table',id_reg='$id_reg'");
@@ -291,6 +292,7 @@
 											}
 
 											$('#js-aside input[name=id]').val(rtn.data.id);
+											$('#js-aside select[name=tipo]').val(rtn.data.tipo);
 											$('#js-aside input[name=nome]').val(rtn.data.nome);
 											$('#js-aside input[name=cpf]').val(rtn.data.cpf);
 											$('#js-aside input[name=razao_social]').val(rtn.data.razao_social);
@@ -505,14 +507,27 @@
 				
 				<fieldset>
 					<legend>Dados do Fornecedor</legend>
-									
-					<dl>
-						<dt>Tipo</dt>
-						<dd>
-							<label><input type="radio" name="tipo_pessoa" value="pf" checked onclick="$('.js-pessoa').hide(); $('.js-pessoa-pf').show();">Pessoa Física</label>
-							<label><input type="radio" name="tipo_pessoa" value="pj" onclick="$('.js-pessoa').hide(); $('.js-pessoa-pj').show();" />Pessoa Jurídica</label>
-						</dd>
-					</dl>
+					
+					<div class="colunas3">		
+						<dl class="dl">
+							<dt>Tipo</dt>
+							<dd>
+								<select name="tipo" class="obg">
+									<option value="">-</option>
+									<?php
+									foreach($_tiposFornecedores as $k=>$v) echo '<option value="'.$k.'">'.$v.'</option>';
+									?>
+								</select>
+							</dd>
+						</dl>
+						<dl class="dl2">
+							<dt>&nbsp;</dt>
+							<dd>
+								<label><input type="radio" name="tipo_pessoa" value="pf" checked onclick="$('.js-pessoa').hide(); $('.js-pessoa-pf').show();">Pessoa Física</label>
+								<label><input type="radio" name="tipo_pessoa" value="pj" onclick="$('.js-pessoa').hide(); $('.js-pessoa-pj').show();" />Pessoa Jurídica</label>
+							</dd>
+						</dl>
+					</div>
 					<div class="js-pessoa js-pessoa-pf">
 						<div class="colunas3">
 							<dl class="dl2">
@@ -608,7 +623,7 @@
 
 						}	
 					</script>
-					<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDi3GasDqpa_yfvnd9303Dz_shp5XSLqAY&libraries=places&callback=initMap">
+					<script async src="https://maps.googleapis.com/maps/api/js?key=<?php echo $_googleMapsKey;?>&libraries=places&callback=initMap">
 					</script>				
 					<dl>
 						<dt>Endereço</dt>
@@ -735,6 +750,14 @@
 
 					
 					$(function(){
+
+						$('form').on('keyup keypress', function(e) {
+						  var keyCode = e.keyCode || e.which;
+						  if (keyCode === 13) { 
+						    e.preventDefault();
+						    return false;
+						  }
+						});
 
 						$('input.money').maskMoney({symbol:'', allowZero:true, showSymbol:true, thousands:'.', decimal:',', symbolStay: true});
 						$('input[name=telefone1]').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {

@@ -1,0 +1,18 @@
+TRUNCATE TABLE `ident_whatsapp_respostasdeconfirmacao`;
+
+INSERT INTO `ident_whatsapp_respostasdeconfirmacao` (`id`, `pubSim`, `pubNao`, `pubNaoIdentificado`, `msgSim`, `msgNao`, `msgNaoIdentificado`, `pubInteligenciaSim`, `pubInteligenciaNao`, `pubInteligenciaNaoIdentificado`, `msgInteligenciaSim`, `msgInteligenciaNao`, `msgInteligenciaNaoIdentificado`) VALUES
+(1, 1, 1, 1, 'Obrigado pela ajuda  🙏\r\n\r\nSeu horário está *CONFIRMADO* ✅\r\n\r\nAté breve.', 'Obrigado pela ajuda  🙏\r\n\r\nSeu horário está *DESMARCADO* ❌\r\n\r\nEntraremos em contato em  breve', 'Nosso *assistente é VIRTUAL* e entende *APENAS 1 OU 2* 🙁\n\nDigite *1* - Para *Confirmar* \nDigite *2* - Para *Desmarcar*', 0, 0, 0, '', '', '');
+COMMIT;
+
+TRUNCATE TABLE `ident_whatsapp_mensagens_tipos`;
+
+INSERT INTO `ident_whatsapp_mensagens_tipos` (`id`, `lixo`, `titulo`, `pub`, `getProfile`, `texto`, `geolocalizacao`) VALUES
+(1, 0, 'Confirmação de Agendamento', 1, 0, 'Olá *[nome]*, aqui é o assistente virtual da *[clinica_nome]*! \n\nPreciso da sua ajuda para confirmar seu horário. 🙏\n\nSeu agendamento está no dia: *[agenda_data]*,  às *[agenda_hora]*, com duração de *[duracao]*, podemos confirmar? 😁 📅\n\nÉ importante que na resposta digite *APENAS 1 OU 2*:\n\nDigite 1 - Para *Confirmar* \nDigite 2 - Para *Desmarcar*', 0),
+(2, 0, 'Lembrete de Agendamento', 1, 0, 'Olá *[nome]*. Apenas lembrando que seu horário é daqui há pouco às *[agenda_hora]* ✅\n\n*[clinica_nome]* - [clinica_endereco] 📍\n[clinica_geolocalizacao]', 1),
+(3, 0, 'Cancelamento de Agendamento', 1, 0, 'Olá *[nome]*, aqui é o assistente virtual da *[clinica_nome]*! \n\nSeu agendamento na *[agenda_data]*,  às *[agenda_hora]*, foi *DESMARCADO* ❌\n\nEm breve entraremos em contato para novo agendamento 😉', 0),
+(4, 1, 'Relacionamento Gestão de Tempo', 0, 0, 'Olá *[nome]*, aqui é o Heitor Pires, Gestor de Pacientes da Studio Dental! \r\n\r\nEm nosso sistema, consta que seu último atendimento já tem [tempo_sem_atendimento] 😱\r\n\r\nÉ importante lembrar que a prevenção é essencial para identificar qualquer alteração na sua saúde bucal! ⚠️\r\n\r\nDigite *APENAS 1 OU 2*:\r\n\r\nDigite 1 - Para *Cuidar da minha Saúde Bucal* ✅\r\nDigite 2 - Para *Não quero cuidar* ❌', 0),
+(5, 0, 'Alteração de Agendamento que foram Confirmados', 1, 0, 'Olá *[nome]*, aqui é o assistente virtual da *[clinica_nome]*! \n\nHove uma alteração no seu agendamento  🔄\nHorário Antigo:  *[agenda_antiga_data]*,  às *[agenda_antiga_hora]*  ❌\nHorário Novo: *[agenda_data]*,  às *[agenda_hora]*, com duração de *[duracao]*. ✅\n\nQualquer dúvida entre em contato, com nossa secretária. ', 0),
+(6, 0, 'Confirmação de Agendamento para o(s) Dentista(s)', 1, 0, 'Olá *[profissionais]*, aqui é o assistente virtual da *[clinica_nome]*! \n\nO agendamento do *[nome]* está *CONFIRMADO* ✅\n\n*[agenda_data]*,  às *[agenda_hora]*, com duração de *[duracao]*.', 0),
+(7, 0, 'Alteração de Agendamento para o(s) Dentista(s)', 1, 0, 'Olá *[profissionais]*, aqui é o assistente virtual da *[clinica_nome]*! \n\nO agendamento do *[paciente] foi alterado de *[agenda_antiga_data]*,  às *[agenda_antiga_hora]*  para *[agenda_data]*,  às *[agenda_hora]*, com duração de *[duracao]*.', 0),
+(8, 0, 'Cancelamento de Agendamento para o(s) Dentista(s)', 1, 0, 'Olá *[profissionais]*, aqui é o assistente virtual da *[clinica_nome]! \n\nO agendamento do *[paciente]* está *DESMARCADO* ❌\n\n*[agenda_data]*,  às *[agenda_hora]*, com duração de *[duracao]*.', 0);
+COMMIT;

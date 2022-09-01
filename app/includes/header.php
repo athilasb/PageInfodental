@@ -17,7 +17,7 @@
                   
                   if(is_object($paciente)) {
 
-                        if(isset($_POST['periodicidade']) and is_numeric($_POST['periodicidade']) and isset($_pacientesPeriodicidade[$_POST['periodicidade']])) {
+                        if(isset($_POST['periodicidade'])) {
 
                               $vSQL="periodicidade='".$_POST['periodicidade']."'";
                               $vWHERE="where id=$paciente->id";
@@ -27,7 +27,7 @@
 
                               $rtn=array('success'=>true,
                                           'periodicidade'=>$_POST['periodicidade'],
-                                          'periodicidadeHTML'=>$_pacientesPeriodicidade[$_POST['periodicidade']]);
+                                          'periodicidadeHTML'=>isset($_pacientesPeriodicidade[$_POST['periodicidade']])?$_pacientesPeriodicidade[$_POST['periodicidade']]:'-');
                    
 
                         } else {
@@ -49,9 +49,9 @@
       if(basename($_SERVER['PHP_SELF'])=="index.php") {
             require_once("lib/conf.php");
             require_once("lib/classes.php");
+            $str = new StringW();         
+            $sql = new Mysql();
             if(isset($_COOKIE[$_p.'adm_cpf']) and isset($_COOKIE[$_p.'adm_senha']) and isset($_COOKIE[$_p.'adm_id'])) {
-                  $str = new StringW();         
-                  $sql = new Mysql();
                   $sql->consult($_p."colaboradores","*","where id='".addslashes($_COOKIE[$_p.'adm_id'])."' and 
                                                                                                       cpf='".addslashes($_COOKIE[$_p.'adm_cpf'])."' and 
                                                                                                       senha='".addslashes($_COOKIE[$_p.'adm_senha'])."' and 
@@ -61,6 +61,11 @@
                         echo "<html><head><title>Redirecionando...</title></head><body><font size=4>Redirecionando...</font></body></html>";
                         die();
                   }
+            }
+
+            $sql->consult($_p."colaboradores","id","where cpf<>'00000000000'and lixo=0");
+            if($sql->rows==0) {
+                  header("Location: primeiro-acesso.php");
             }
       } else {
             

@@ -40,6 +40,7 @@
 
 				$data = array('id'=>$cnt->id,
 								'titulo'=>utf8_encode($cnt->titulo),
+								'obs'=>utf8_encode($cnt->obs),
 								'id_regiao'=>$cnt->id_regiao);
 
 				$rtn=array('success'=>true,'data'=>$data);
@@ -86,7 +87,7 @@
 	include "includes/nav.php";
 
 	$values=$adm->get($_GET);
-	$campos=explode(",","titulo,id_regiao");
+	$campos=explode(",","titulo,id_regiao,obs");
 
 	if(isset($_POST['acao'])) {
 
@@ -166,6 +167,7 @@
 											$('#js-aside input[name=titulo]').val(rtn.data.titulo);
 											$('#js-aside input[name=id]').val(rtn.data.id);
 											$('#js-aside select[name=id_regiao]').val(rtn.data.id_regiao);
+											$('#js-aside input[name=obs]').val(rtn.data.obs);
 
 											$(".aside").fadeIn(100,function() {
 												$(".aside .aside__inner1").addClass("active");
@@ -293,8 +295,7 @@
 									?>
 									<tr class="js-item" data-id="<?php echo $x->id;?>">
 										<td><h1><strong><?php echo utf8_encode($x->titulo);?></strong></h1></td>
-										<td><?php echo isset($_regioes[$x->id_regiao])?utf8_encode($_regioes[$x->id_regiao]->titulo):"-";?></td>
-										<td><?php echo isset($_especialidades[$x->id_regiao])?utf8_encode($_especialidades[$x->id_regiao]->titulo):"-";?></td>
+										<td><?php echo utf8_encode($x->obs);?></td>
 									<?php
 									}
 									?>
@@ -346,13 +347,13 @@
 				</section>
 
 				<fieldset>
-					<legend>Dados do Serviço</legend>
-					<div class="colunas3">
+					<legend>Dados do Exame</legend>
+					<div class="colunas">
 						<dl class="dl2">
-							<dt>Nome do Serviço</dt>
+							<dt>Nome do Exame</dt>
 							<dd><input type="text" name="titulo" /></dd>
 						</dl>
-						<dl>
+						<?php /*<dl>
 							<dt>Região</dt>
 							<dd>
 								<select name="id_regiao" class="">
@@ -366,8 +367,15 @@
 									?>
 								</select>
 							</dd>
-						</dl>
+						</dl>*/?>
 					</div>
+
+					<dl>
+						<dt>Observação</dt>
+						<dd>
+							<input type="text" name="obs" />
+						</dd>
+					</dl>
 
 				</fieldset>
 

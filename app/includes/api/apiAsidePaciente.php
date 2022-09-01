@@ -817,14 +817,20 @@
 							<i class="iconify" data-icon="carbon-user-x-ray"></i>
 							<p>Pedido de Exame</p>
 						</a>
-						<a href="javascript:;"  data-aside="prontuario-receituario" class="list5-item">
+						<a href="javascript:;" data-aside="prontuario-receituario" class="list5-item">
 							<i class="iconify" data-icon="mdi-pill"></i>
 							<p>Receituário</p>
 						</a>
-						<a href="javascript:;" class="list5-item" style="opacity:0.4;">
+						<?php
+						if(isset($apiConfig['proximaConsulta'])) {
+						?>
+						<a href="javascript:;" data-aside="prontuario-proximaConsulta" onclick="asideEvolucaoProximaConsulta()" class="list5-item">
 							<i class="iconify" data-icon="mdi-calendar-cursor"></i>
 							<p>Próxima Consulta</p>
 						</a>
+						<?php
+						}
+						?>
 						<a href="javascript:;" class="list5-item" style="opacity:0.4;">
 							<i class="iconify" data-icon="fluent:document-add-28-regular"></i>
 							<p>Documentos</p>
@@ -964,7 +970,7 @@
 											<option value="">-</option>
 											<?php
 											foreach($_profissionais as $x) {
-												if($x->check_agendamento==0) continue;
+												if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
 												echo '<option value="'.$x->id.'">'.utf8_encode($x->nome).'</option>';
 											}
 											?>
@@ -1257,7 +1263,7 @@
 										<option value="">-</option>
 										<?php
 										foreach($_profissionais as $x) {
-											if($x->check_agendamento==0) continue;
+											if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
 											echo '<option value="'.$x->id.'">'.utf8_encode($x->nome).'</option>';
 										}
 										?>
@@ -1579,7 +1585,7 @@
 											<option value="">-</option>
 											<?php
 											foreach($_profissionais as $x) {
-												if($x->check_agendamento==0) continue;
+												if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
 												echo '<option value="'.$x->id.'">'.utf8_encode($x->nome).'</option>';
 											}
 											?>
@@ -1692,9 +1698,12 @@
 						} else {
 							swal({title: "Erro!", text: 'Exame não encontrado!', html:true, type:"error", confirmButtonColor: "#424242"});
 						}
-
 					});
 
+					$('.aside-prontuario-pedidoExame .js-asidePedidoExame-id_exame').change(function(){
+						let obs = $(this).find('option:selected').attr('data-obs');
+						$('.aside-prontuario-pedidoExame .js-asidePedidoExame-obs').val(obs);
+					})
 
 					$('.aside-prontuario-pedidoExame .js-asidePedidoExame-id_regiao').change(function(){
 						let id_regiao = $(this).val();
@@ -1895,7 +1904,7 @@
 								<dl>
 									<dt>Data do Pedido</dt>
 									<dd>
-										<input type="tel" class="data js-asidePedidoExame-data js-asidePedidoExame-inputs"></dd>
+										<input type="tel" class="data js-asidePedidoExame-data js-asidePedidoExame-inputs" value="<?php echo date('d/m/Y');?>" /></dd>
 									</dd>
 								</dl>
 								<dl>
@@ -1905,7 +1914,7 @@
 											<option value=""></option>
 											<?php
 											foreach($_clinicas as $v) {
-												echo '<option value="'.$v->id.'"'.((is_object($evolucao) and $evolucao->id_clinica==$v->id)?' selected':'').'>'.utf8_encode($v->tipo_pessoa=="PJ"?$v->razao_social:$v->nome).'</option>';
+												echo '<option value="'.$v->id.'"'.((is_object($evolucao) and $evolucao->id_clinica==$v->id)?' selected':'').'>'.utf8_encode($v->tipo_pessoa=="PJ"?$v->nome_fantasia:$v->nome).'</option>';
 											}
 											?>
 										</select>
@@ -1918,7 +1927,7 @@
 											<option value=""></option>
 											<?php
 											foreach($_profissionais as $v) {
-												if($v->check_agendamento==0) continue;
+												if($v->check_agendamento==0 or $v->contratacaoAtiva==0) continue;
 												echo '<option value="'.$v->id.'"'.((is_object($evolucao) and $evolucao->id_profissional==$v->id)?' selected':'').'>'.utf8_encode($v->nome).'</option>';
 											}
 											?>
@@ -2269,7 +2278,7 @@
 								<dl>
 									<dt>Data do Receituário</dt>
 									<dd>
-										<input type="tel" class="data js-asideReceituario-data js-asideReceituario-inputs2" /></dd>
+										<input type="tel" class="data js-asideReceituario-data js-asideReceituario-inputs2" value="<?php echo date('d/m/Y');?>" /></dd>
 									</dd>
 								</dl>
 								<dl>
@@ -2279,7 +2288,7 @@
 											<option value="">-</option>
 											<?php
 											foreach($_tiposReceitas as $k=>$v) {
-												echo '<option value="'.$k.'">'.$v.'</option>';
+												echo '<option value="'.$k.'"'.($k=='interno'?' selected':'').'>'.$v.'</option>';
 											}
 											?>
 										</select>
@@ -2453,6 +2462,13 @@
 
 					asMedicamentosAtualizar();
 
+					$('.aside-medicamento .aside-close').click(function(){
+						$(`.js-asideReceituarioMedicamento-id`).val(0);
+						$(`.js-asideReceituarioMedicamento-inputs`).val(``);
+						$(`.js-asideReceituarioMedicamento-controleEspecial`).prop('checked',false);
+						$('.js-asMedicamentos-remover').hide();
+					})
+
 					$('.aside-medicamento .js-salvarMedicamento').click(function(){
 						let obj = $(this);
 						let objHTMLAntigo = $(this).html();
@@ -2509,7 +2525,6 @@
 												$('.aside-medicamento .aside-close').trigger('click');
 												var newOption = new Option(medicamento, rtn.id_medicamento, false, false);
 												$('.js-asideReceituario-id_medicamento').append(newOption).trigger('change');
-												document.location.reload();
 											}
 
 											$(`.js-asideReceituarioMedicamento-id`).val(0);
@@ -2676,6 +2691,497 @@
 					</form>
 				</div>
 			</section>
+			<?php
+		}
+
+	# PRÓXIMA CONSULTA
+		if(isset($apiConfig['proximaConsulta'])) {
+			$_cadeiras=array();
+			$sql->consult($_p."parametros_cadeiras","*","where lixo=0  order by titulo asc");
+			while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
+
+			?>
+
+			<script type="text/javascript" src="js/aside.funcoes.js"></script>
+			<script type="text/javascript">
+
+				
+				/*var medicamentos = [];
+
+				const receituarioMedicamentosListar = () => {
+
+					$('.js-asideReceituario-tabela tbody').html('');
+
+					medicamentos.forEach(x=>{
+						$('.js-asideReceituario-tabela tbody').append(`<tr class="js-receituarioMedicacao-item"><td><h1>${x.medicamento} - ${x.quantidade} ${x.tipo}</h1><p>${x.posologia}</p></td></tr>`);
+					});
+
+					$('.js-asideReceituario-receitas').val(JSON.stringify(medicamentos));
+
+				}*/
+
+				const asideEvolucaoProximaConsulta = () => {
+
+					$('.aside-prontuario-proximaConsulta .aside-header h1').html('Próxima Consulta');
+					$(".aside-prontuario-proximaConsulta .js-btn-acao:eq(0)").click();
+					setTimeout(function(){
+									$('.aside-prontuario-proximaConsulta .js-profissionais').chosen();
+									$('.aside-prontuario-proximaConsulta .js-profissionais').trigger('chosen:updated');
+								},100);
+				}
+
+				$(function(){
+
+					$('.aside-prontuario-proximaConsulta').on('change','select[name=agenda_duracao], select[name=id_cadeira],  select.js-profissionais, input[name=agenda_data]',function(){
+						horarioDisponivel(0,$('.aside-prontuario-proximaConsulta'));
+					});
+
+					$('.aside-prontuario-proximaConsulta .js-salvarProximaConsulta').click(function(){
+						let agenda_data = $('.aside-prontuario-Proximaconsulta input[name=agenda_data]').val();
+						let agenda_duracao = $('.aside-prontuario-Proximaconsulta select[name=agenda_duracao]').val();
+						let id_cadeira = $('.aside-prontuario-Proximaconsulta select[name=id_cadeira]').val();
+						let id_profissional = $('.aside-prontuario-Proximaconsulta select.js-profissionais').val();
+						let agenda_hora = $('.aside-prontuario-Proximaconsulta select[name=agenda_hora]').val();
+						let obs = $('.aside-prontuario-Proximaconsulta textarea[name=obs]').val();
+						let erro = '';
+
+						if(agenda_data.length==0) erro='Defina a <b>Data do Agendamento</b>';
+						else if(agenda_duracao.length==0) erro='Defina a <b>Duração de Agendamento</b>';
+						else if(id_cadeira.length==0) erro='Defina o <b>Consultório do Agendamento</b>';
+						else if(id_profissional.length==0) erro='Defina o <b>Profissional do Agendamento</b>';
+						else if(agenda_hora.length==0) erro='Defina a <b>Hora do Agendamento</b>';
+
+						if(erro.length==0) {
+
+							let obj = $(this);
+							let obHTMLAntigo = $(this).html();
+
+							if(obj.attr('data-loading')==0) {
+								
+								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+								obj.attr('data-loading',1);
+
+								let data = `ajax=asRelacionamentoPacienteQueroAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}`;
+
+								data = {
+									'ajax':'asRelacionamentoPacienteQueroAgendar',
+									'id_paciente':id_paciente,
+									'agenda_data':agenda_data,
+									'agenda_duracao':agenda_duracao,
+									'id_cadeira':id_cadeira,
+									'id_profissional':id_profissional,
+									'agenda_hora':agenda_hora,
+									'obs':obs,
+								}
+
+								console.log(data);return;
+								$.ajax({
+										type:'POST',
+										data:data,
+										url:baseURLApiAside,
+										success:function(rtn) {
+											if(rtn.success) {
+												$('.aside-prontuario-Proximaconsulta input[name=agenda_data]').val('');
+												$('.aside-prontuario-Proximaconsulta select[name=agenda_duracao]').val('');
+												$('.aside-prontuario-Proximaconsulta select[name=id_cadeira]').val('');
+												$('.aside-prontuario-Proximaconsulta select.js-profissionais').val('');
+												$('.aside-prontuario-Proximaconsulta select[name=agenda_hora]').val('');
+
+												atualizaValorListasInteligentes();
+												swal({title: "Sucesso!", text: 'Agendamento realizado com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
+													$('.aside-close').click();
+												});
+
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+											}
+											
+										},
+										error:function() {
+											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										} 
+								}).done(function(){
+									obj.html(obHTMLAntigo);
+									obj.attr('data-loading',0);
+								});
+
+
+							}
+
+						} else {
+							swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+						}
+					})
+
+					/*$('.js-asideReceituario-tabela').on('click','.js-receituarioMedicacao-item',function(){
+
+						
+						let index = $(this).index('.js-asideReceituario-tabela .js-receituarioMedicacao-item');
+						if(medicamentos[index]) {
+
+							$('.js-asideReceituario-id_medicamento').val(medicamentos[index].id_medicamento).trigger('change');
+							$('.js-asideReceituario-medicamento').val(medicamentos[index].medicamento);
+							$('.js-asideReceituario-quantidade').val(medicamentos[index].quantidade);
+							$('.js-asideReceituario-tipo').val(medicamentos[index].tipo);
+							$('.js-asideReceituario-posologia').val(medicamentos[index].posologia);
+							$('.js-asideReceituario-index').val(index);
+							$('.js-asideReceituario-controleEspecial').prop('checked',medicamentos[index].controleespecial==1?true:false);
+							$('.js-asideReceituario-medicamento-remover').show();
+
+						}
+
+					});
+					$('.aside-prontuario-receituario .js-asideReceituario-data').datetimepicker({
+						timepicker:false,
+						format:'d/m/Y',
+						scrollMonth:false,
+						scrollTime:false,
+						scrollInput:false,
+					});
+
+					$('.aside-prontuario-receituario .js-salvarReceituario').click(function(){
+						
+						let erro = '';
+						
+						let dataReceita = $('.aside-prontuario-receituario .js-asideReceituario-data').val();
+						let tipo_receita = $('.aside-prontuario-receituario .js-asideReceituario-tipo_receita').val();
+						let id_profissional = $('.aside-prontuario-receituario .js-asideReceituario-id_profissional').val();
+
+						
+
+						if(dataReceita.length==0) erro='Preencha o campo de Data do Receituário';
+						else if(tipo_receita.length==0) erro='Preencha o campo de Tipo do Receituário';
+						else if(id_profissional.length==0) erro='Preencha o campo de Profissional';
+
+						
+						if(erro.length>0) {
+							swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+						} else {
+							let obj = $(this);
+							let obHTMLAntigo = $(this).html();
+
+							if(obj.attr('data-loading')==0) {
+								
+								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+								obj.attr('data-loading',1);
+
+								let data = {'ajax':'asReceituarioPersistir',
+											'id_paciente':id_paciente,
+											'data':dataReceita,
+											'tipo_receita':tipo_receita,
+											'id_profissional':id_profissional,
+											'medicamentos':medicamentos};
+
+								$.ajax({
+										type:'POST',
+										data:data,
+										url:baseURLApiAsidePaciente,
+										success:function(rtn) {
+											if(rtn.success) {
+												$('.js-asideReceituario-inputs2').val('');
+												$('.js-asideReceituario-inputs').val('').trigger('change');
+												$('.js-asideReceituario-controleEspecial').prop('checked',false);
+												$('.js-asideReceituario-medicamento-remover').hide();
+												medicamentos=[];
+												receituarioMedicamentosListar();
+												$('.aside-close').click();
+												document.location.reload();
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+											}
+											
+										},
+										error:function() {
+											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										} 
+								}).done(function(){
+									obj.html(obHTMLAntigo);
+									obj.attr('data-loading',0);
+								});
+
+							}
+
+
+
+						}
+					});
+
+					$('.aside-prontuario-receituario select.js-asideReceituario-id_medicamento').select2({
+						ajax: {
+							url: 'includes/api/apiAsidePaciente.php?ajax=medicamentos',
+							data: function (params) {
+									var query = {
+										search: params.term,
+										type: 'public'
+									}
+								// ?search=[term]&type=public
+								return query;
+							},
+							processResults: function (data) {
+								// Transforms the top-level key of the response object from 'items' to 'results'
+								return {
+									results: data.items
+								};
+							}
+
+						},
+						templateResult:formatTemplate,
+						//	templateSelection:formatTemplateSelection,
+						//dropdownParent: $(".modal")
+					});
+
+					$('.aside-prontuario-receituario select.js-asideReceituario-id_medicamento').on('select2:select',function(e){
+						//console.log(e.params.data)
+
+						if(e.params.data.medicamento) $('.js-asideReceituario-medicamento').val(e.params.data.medicamento);
+						if(e.params.data.quantidade) $('.js-asideReceituario-quantidade').val(e.params.data.quantidade);
+						if(e.params.data.tipo) $('.js-asideReceituario-tipo').val(e.params.data.tipo);
+						if(e.params.data.posologia) $('.js-asideReceituario-posologia').val(e.params.data.posologia);
+						
+						if(e.params.data.controleEspecial==1) $('.js-asideReceituario-controleEspecial').prop('checked',true);
+						else $('.js-asideReceituario-controleEspecial').prop('checked',false);
+					});
+
+					$('.aside-prontuario-receituario .js-asideReceituario-medicamento-add').click(function(){
+
+						let index = $('.js-asideReceituario-index').val();
+						let id_medicamento = $('.js-asideReceituario-id_medicamento').val();
+						let medicamento = $('.js-asideReceituario-medicamento').val();
+						let quantidade = $('.js-asideReceituario-quantidade').val();
+						let tipo = $('.js-asideReceituario-tipo').val();
+						let tipoExibe = $('.js-asideReceituario-tipo option:selected').text();
+						let posologia = $('.js-asideReceituario-posologia').val();
+						let controleespecial = $('.js-asideReceituario-controleEspecial').prop('checked')===true?1:0;
+
+						let novoMedicamento = { medicamento, id_medicamento, quantidade, tipo, tipoExibe, posologia, controleespecial }
+
+
+						if(index.length>0 && $.isNumeric(eval(index))) medicamentos[index]=novoMedicamento;
+						else medicamentos.push(novoMedicamento);
+
+						receituarioMedicamentosListar();
+
+						$('.js-asideReceituario-inputs').val('').trigger('change');
+						$('.js-asideReceituario-controleEspecial').prop('checked',false);
+						$('.js-asideReceituario-medicamento-remover').hide();
+
+					});
+
+					$('.aside-prontuario-receituario .js-asideReceituario-medicamento-remover').click(function(){
+						let index = $('.js-asideReceituario-index').val();
+						if(index.length>0 && $.isNumeric(eval(index))) {
+							medicamentos.splice(index,1);
+						}
+						receituarioMedicamentosListar();
+						$('.js-asideReceituario-inputs').val('').trigger('change');
+
+					});*/
+					
+
+					
+
+					$('.aside-prontuario-proximaConsulta .js-btn-acao').click(function(){
+						$('.aside-prontuario-proximaConsulta .js-btn-acao').removeClass('active');
+						$(this).addClass('active');
+
+						if($(this).attr('data-tipo')=="queroAgendar") {
+							$('.aside-prontuario-proximaConsulta .js-ag-agendamento-lembrete').hide();
+							$('.aside-prontuario-proximaConsulta .js-ag-agendamento-altaPeriodicidade').hide();
+							$('.aside-prontuario-proximaConsulta .js-ag-agendamento-queroAgendar').show();
+
+							$('.aside-prontuario-proximaConsulta .js-profissionais-qa').chosen();
+							$('.aside-prontuario-proximaConsulta input[name=tipo]').val('queroAgendar');
+						} else {
+							$('.aside-prontuario-proximaConsulta .js-ag-agendamento-altaPeriodicidade').hide();
+							$('.aside-prontuario-proximaConsulta .js-ag-agendamento-queroAgendar').hide();
+							$('.aside-prontuario-proximaConsulta .js-ag-agendamento-lembrete').show();
+							$('.aside-prontuario-proximaConsulta input[name=tipo]').val('lembrete');
+						}
+					});
+
+				});
+
+			</script>
+
+			<section class="aside aside-prontuario-proximaConsulta" style="display: none;">
+				<div class="aside__inner1">
+					<header class="aside-header">
+						<h1>Próxima Consulta</h1>
+						<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+					</header>
+
+					<form method="post" class="aside-content form">
+						<div class="js-ag js-ag-agendamento">
+
+							<section class="filter">
+								<div class="button-group">
+									<a href="javascript:;" class="js-btn-acao js-btn-acao-lembrete button active" data-tipo="lembrete"><span>Criar Lembrete</span></a>
+									<a href="javascript:;" class="js-btn-acao js-btn-acao-queroAgendar button" data-tipo="queroAgendar"><span>Quero agendar</span></a>
+								</div>
+								<div class="filter-group">
+									<div class="filter-form form">
+										<dl>
+											<dd></dd>
+										</dl>
+										<dl>
+											<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+										</dl>
+									</div>								
+								</div>
+							</section>
+
+							<div class="js-ag-agendamento-lembrete">
+								<input type="hidden" class="js-asProfissoes-id" />
+								<div class="colunas4">
+									<dl>
+										<dt>Retorno em</dt>
+										
+										<dd class="form-comp form-comp_pos">
+											<input type="number" class="js-retorno" maxlength="3" />
+											<span>dias</span>
+										</dd>
+									</dl>
+									<dl>
+										<dt>Duração</dt>
+										
+										<dd class="form-comp form-comp_pos">
+											<select class="js-agenda_duracao">
+												<option value="">-</option>
+												<?php
+												foreach($optAgendaDuracao as $v) {
+													if($values['agenda_duracao']==$v) $possuiDuracao=true;
+													echo '<option value="'.$v.'"'.($values['agenda_duracao']==$v?' selected':'').'>'.$v.'</option>';
+												}
+												?>
+											</select>
+											<span>min</span>
+										</dd>
+									</dl>
+
+									<dl class="dl2">
+										<dt>&nbsp;</dt>
+										<dd>
+											<label>
+												<input type="checkbox" class="input-switch js-laboratorio" /> Laboratório
+											</label>
+											<label>
+												<input type="checkbox" class="input-switch js-imagem" /> Imagem
+											</label>
+										</dd>
+									</dl>
+
+								</div>
+								<dl>
+									<dt>Profissionais</dt>
+									<dd>
+										<select class="js-profissionais js-profissionais-lembrete" multiple>
+											<option value=""></option>
+											<?php
+											foreach($_profissionais as $p) {
+												if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
+												echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+								<dl>
+									<dt>Observações</dt>
+									<dd>
+										<textarea class="js-obs" style="height:80px;"></textarea>
+									</dd>
+								</dl>
+
+								<div class="js-ag-agendamentoFuturos" style="">
+									<div class="list1">
+										<table>
+										</table>
+									</div>
+								</div>
+							</div>
+
+
+							<div class="js-ag-agendamento-queroAgendar">
+								<div class="colunas3">
+									<dl>
+										<dt>Data</dt>
+										<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data datecalendar" /></dd>
+									</dl>
+								
+									<dl>
+										<dt>Duração</dt>
+										<dd class="form-comp form-comp_pos">
+											<?php /*<input type="tel" name="agenda_duracao" class="" />*/?>
+											<select name="agenda_duracao">
+												<option value="">-</option>
+												<?php
+												foreach($optAgendaDuracao as $v) {
+													echo '<option value="'.$v.'">'.$v.'</option>';
+												}
+												?>
+											</select>
+											<span>min</span>
+										</dd>
+									</dl>
+
+									<dl>
+										<dt>Consultório</dt>
+										<dd>
+											<select name="id_cadeira">
+												<option value=""></option>
+												<?php
+												foreach($_cadeiras as $p) {
+													echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+								</div>
+								<div class="colunas3">
+									<dl class="dl2">
+										<dt>Profissionais</dt>
+										<dd>
+											<select class="js-profissionais-qa js-select-profissionais">
+												<option value=""></option>
+												<?php
+												foreach($_profissionais as $p) {
+													if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
+													echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+									<dl>
+										<dt>Hora</dt>
+										<dd class="form-comp">
+											<span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span>
+											<select name="agenda_hora">
+												<option value="">Selecione o horário</option>
+											</select>
+										</dd>
+									</dl>
+								</div>
+
+								<dl>
+									<dt>Observações</dt>
+									<dd>
+										<textarea class="js-obs-qa" style="height:80px;"></textarea>
+									</dd>
+								</dl>
+							</div>
+
+						</div>
+					
+					</form>
+				</div>
+			</section>
+
 			<?php
 		}
 ?>

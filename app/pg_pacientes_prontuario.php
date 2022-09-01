@@ -81,7 +81,7 @@
 		}
 
 		$_clinicas=array();
-		$sql->consult($_p."parametros_fornecedores","id,IF(tipo_pessoa='PF',nome,razao_social) as titulo","");
+		$sql->consult($_p."parametros_fornecedores","id,IF(tipo_pessoa='PF',nome,nome_fantasia) as titulo","");
 		while($x=mysqli_fetch_object($sql->mysqry)) {
 			$_clinicas[$x->id]=$x;
 		}
@@ -144,6 +144,26 @@
 					foreach($evolucoes as $e) {
 						if(isset($evolucoesTipos[$e->id_tipo])) {
 							$eTipo=$evolucoesTipos[$e->id_tipo];
+
+
+							$pdf="javascript:;";
+
+							// anamnese
+							if($e->id_tipo==1) {
+								$pdf="impressao/anamnese.php?id=".md5($e->id);
+							} 
+							// atestado
+							else if($e->id_tipo==4) {
+								$pdf="impressao/atestado.php?id=".md5($e->id);
+							} 
+							// pedido de exame
+							else if($e->id_tipo==6) {
+								$pdf="impressao/pedidodeexame.php?id=".md5($e->id);
+							} 
+							// receituario
+							else if($e->id_tipo==7) {
+								$pdf="impressao/receituario.php?id=".md5($e->id);
+							}
 					?>
 					<div class="list-toggle-item">
 						<header>
@@ -156,8 +176,9 @@
 							</div>
 							<p><?php echo isset($_profissionais[$e->id_profissional])?utf8_encode($_profissionais[$e->id_profissional]->nome):"Desconhecido";?></p>
 							<div class="list-toggle-buttons">									
-								<?php /*<a href="" class="button"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>*/?>
-								<a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+								<a href="<?php echo $pdf;?>" target="_blank" class="button"><i class="iconify" data-icon="ant-design:file-pdf-outlined"></i></a>
+								<a href="javascript:;" class="button"><i class="iconify" data-icon="fa:whatsapp"></i></a>
+								<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 								<a href="javascript:;" class="button button_main js-expande"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i></a>
 							</div>							
 						</header>
@@ -484,7 +505,9 @@
 						'anamnese'=>1,
 						'atestado'=>1,
 						'pedidoExame'=>1,
-						'receituario'=>1);
+						'receituario'=>1,
+						'proximaConsulta'=>1);
+	
 	require_once("includes/api/apiAsidePaciente.php");
 
 	include "includes/footer.php";

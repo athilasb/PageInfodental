@@ -1406,9 +1406,16 @@
 							$idade = $now->diff($dob)->y;
 						} else $idade=0;
 
+						/*$ft='';
+						if(!empty($paciente->foto_cn)) {
+							$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+						}*/
+
 						$ft='';
 						if(!empty($paciente->foto_cn)) {
 							$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+						} else if(!empty($paciente->foto)) {
+							$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
 						}
 
 
@@ -1444,6 +1451,7 @@
 							}
 
 							$_pacientesAgendamentos[$x->id_paciente][]=array('id_agenda'=>$x->id,
+																				'obs'=>str_replace("'","`",utf8_encode($x->obs)),
 																				'data'=>date('d/m/Y H:i',strtotime($x->agenda_data)),
 																				'initDate'=>date('d/m/Y',strtotime($x->agenda_data)),
 																				'cadeira'=>isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'',
@@ -1922,8 +1930,9 @@
 
 	# JS All Asides
 ?>
+	<script type="text/javascript" src="js/aside.funcoes.js"></script>
 	<script type="text/javascript">
-			const horarioDisponivel = (id_agenda,obj) => {
+			/*const horarioDisponivel = (id_agenda,obj) => {
 				let agenda_data = obj.find('input[name=agenda_data]').val();
 				let agenda_duracao = obj.find('select[name=agenda_duracao]').val();
 				let id_cadeira = obj.find('select[name=id_cadeira]').val();
@@ -1974,7 +1983,7 @@
 					agenda_horaObj.find('option').remove();
 					agenda_horaObj.append(`<option value="">Complete os campos</option>`);
 				}
-			}
+			}*/
 	</script>
 <?php
 
@@ -4235,6 +4244,7 @@
 																			<td>
 																				<h1>${x.data}</h1>	
 																			</td>
+																			<td>${x.obs}</td>
 																			<td>${x.cadeira}</td>
 																			<td>
 																				${profissionalIniciais}
@@ -4283,6 +4293,8 @@
 			}
 
 			const asideProximaConsultaLembrete = () => {
+
+				$('#js-aside-proximaConsulta .aside-header h1').html('Próxima Consulta');
 				$("#js-aside-proximaConsulta .js-tab a:eq(0)").click();
 				setTimeout(function(){
 								$('#js-aside-proximaConsulta .js-profissionais').chosen();
@@ -4292,11 +4304,11 @@
 
 			const asideProximaConsultaProntuario = () => {
 				
-
+				$('#js-aside-proximaConsulta .aside-header h1').html('Evolução Geral');
 				$('#js-aside-proximaConsulta .js-prontuario-data').val('<?php echo date('d/m/Y H:i');?>');
 				$('#js-aside-proximaConsulta .js-tab').hide();
 				$('#js-aside-proximaConsulta .js-ag-agendamento').hide();
-				$('#js-aside-proximaConsulta .js-ag-agendamentoFuturos').hide();
+				//$('#js-aside-proximaConsulta .js-ag-agendamentoFuturos').hide();
 				$('#js-aside-proximaConsulta .js-ag-prontuario').show();
 				$('#js-aside-proximaConsulta .js-prontuario-data').datetimepicker({
 																		timepicker:true,
@@ -4757,7 +4769,17 @@
 									<textarea class="js-obs" style="height:80px;"></textarea>
 								</dd>
 							</dl>
+
+							<div class="js-ag-agendamentoFuturos" style="">
+								<div class="list1">
+									<table>
+									</table>
+								</div>
+							</div>
+
 						</div>
+
+
 
 						<div class="js-ag-agendamento-queroAgendar">
 							<div class="colunas3">
@@ -4854,12 +4876,7 @@
 					</div>
 
 
-					<div class="js-ag js-ag-agendamentoFuturos" style="display:none">
-						<div class="list1">
-							<table>
-							</table>
-						</div>
-					</div>
+					
 
 					<section class="tab tab_alt js-ag js-ag-prontuario">
 						<a href="javascript:;" class="active">Prontuário</a>

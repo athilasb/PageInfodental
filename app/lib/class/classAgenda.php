@@ -94,7 +94,14 @@
 				$_pacientesProntuario=array();
 				if(count($pacientesIds)>0) {
 
-					$sql->consult($_p."pacientes_prontuarios","id_paciente","where data>='".$data." 00:00:00' and data<='".$data." 23:59:59' and id_paciente IN (".implode(",",$pacientesIds).") and lixo=0");
+					/*$sql->consult($_p."pacientes_prontuarios","id_paciente","where data>='".$data." 00:00:00' and data<='".$data." 23:59:59' and id_paciente IN (".implode(",",$pacientesIds).") and lixo=0");
+					if($sql->rows) {
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_pacientesProntuario[$x->id_paciente]=$x;
+						}
+					}*/
+
+					$sql->consult($_p."pacientes_evolucoes","id_paciente","where data>='".$data." 00:00:00' and data<='".$data." 23:59:59' and id_paciente IN (".implode(",",$pacientesIds).") and id_tipo=9 and lixo=0");
 					if($sql->rows) {
 						while($x=mysqli_fetch_object($sql->mysqry)) {
 							$_pacientesProntuario[$x->id_paciente]=$x;

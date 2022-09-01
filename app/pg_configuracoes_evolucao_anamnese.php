@@ -169,17 +169,16 @@
 		} 
 
 		else if($_POST['ajax']=="perguntasRemover") {
-			$horario='';
-			if(isset($_POST['id_horario']) and is_numeric($_POST['id_horario'])) {
-				$sql->consult($_p."parametros_cadeiras_horarios","*,date_format(inicio,'%H:%i') as inicio,
-																date_format(fim,'%H:%i') as fim","where id='".$_POST['id_horario']."'");
+			$pergunta='';
+			if(isset($_POST['id_pergunta']) and is_numeric($_POST['id_pergunta'])) {
+				$sql->consult($_p."parametros_anamnese_formulario","*","where id='".$_POST['id_pergunta']."'");
 				if($sql->rows) {
-					$horario=mysqli_fetch_object($sql->mysqry);
+					$pergunta=mysqli_fetch_object($sql->mysqry);
 				}
 			}
 
-			if(is_object($horario)) {
-				$sql->update($_p."parametros_cadeiras_horarios","lixo=$usr->id,lixo_data=now()","where id=$horario->id");
+			if(is_object($pergunta)) {
+				$sql->update($_p."parametros_anamnese_formulario","lixo=$usr->id","where id=$pergunta->id");
 
 				$rtn=array('success'=>true);
 			} else {
@@ -312,7 +311,7 @@
 							} else {
 
 								$('.js-fieldset-perguntas,.js-btn-remover').hide();
-
+								$('#js-aside input[name=id]').val(0);
 								$(".aside").fadeIn(100,function() {
 									$(".aside .aside__inner1").addClass("active");
 								});
@@ -643,7 +642,7 @@
 
 							if(obj.attr('data-loading')==0) {
 
-								let id_horario = $('.js-id').val();
+								let id_pergunta = $('.js-id').val();
 								swal({
 									title: "Atenção",
 									text: "Você tem certeza que deseja remover este registro?",
@@ -657,10 +656,9 @@
 									function(isConfirm){   
 										if (isConfirm) {   
 
-											return false;
 											obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 											obj.attr('data-loading',1);
-											let data = `ajax=perguntasRemover&id_horario=${id_horario}`; 
+											let data = `ajax=perguntasRemover&id_pergunta=${id_pergunta}`; 
 											$.ajax({
 												type:"POST",
 												data:data,
@@ -768,6 +766,7 @@
 						<dl>
 							<dt></dt>
 							<dd style="justify-content:end;">
+								<a href="javascript:;" class="button js-perguntas-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 								<button type="button" class="js-perguntas-submit button button_main" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
 							</dd>
 						</dl>

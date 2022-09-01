@@ -14,10 +14,8 @@
 
 				if($_SERVER['REMOTE_ADDR']=="187.73.183.121" or $_SERVER['REMOTE_ADDR']=="179.108.104.96" or $_SERVER['REMOTE_ADDR']=="177.148.191.13") {
 					$_ENV['NAME']=$_ENV['MYSQL_DB']='studiodental';
-				} else if($_SERVER['REMOTE_ADDR']=="179.214.18.204") {
-					$_ENV['NAME']=$_ENV['MYSQL_DB']='artoral';
 				} else {
-					$_ENV['NAME']=$_ENV['MYSQL_DB']='doutorasorriso';
+					$_ENV['NAME']=$_ENV['MYSQL_DB']='artoral';
 				}
 
 			}

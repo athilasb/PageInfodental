@@ -111,6 +111,7 @@
 						}
 
 						$_pacientesAgendamentos[$x->id_paciente][]=array('id_agenda'=>$x->id,
+																			'obs'=>str_replace("'","`",utf8_encode($x->obs)),
 																			'data'=>date('d/m/Y H:i',strtotime($x->agenda_data)),
 																			'initDate'=>date('d/m/Y',strtotime($x->agenda_data)),
 																			'cadeira'=>isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'',
@@ -939,7 +940,7 @@
 
 				$listaProfissionais=$listaProfissionaisDestaque=array();
 				foreach($_profissionais as $x) {
-					if($x->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
+					if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
 					if(isset($profissionaisDestaque[$x->id])) {
 						$listaProfissionaisDestaque[]=(object)array('id'=>$x->id,'nome'=>utf8_encode($x->nome),'destaque'=>1);
 					}
@@ -947,7 +948,7 @@
 
 
 				foreach($_profissionais as $x) {
-					if($x->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
+					if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
 					if(!isset($profissionaisDestaque[$x->id])) {
 						$listaProfissionais[]=(object)array('id'=>$x->id,'nome'=>utf8_encode($x->nome),'destaque'=>0);
 					}
@@ -2051,6 +2052,7 @@
 																							<td>
 																								<h1>${x.data}</h1>									
 																							</td>
+																							<td>${x.obs}</td>
 																							<td>${x.cadeira}</td>
 																							<td>
 																								${profissionalIniciais}
