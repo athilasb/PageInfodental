@@ -916,7 +916,7 @@ Lista Unica
 								$('.js-guia,.js-paginacao').hide();
 							} else {
 
-								$('.js-guia,.js-paginacao').show().hide();
+								$('.js-guia,.js-paginacao').show();//.hide();
 							}
 						}
 					}

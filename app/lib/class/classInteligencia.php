@@ -372,9 +372,26 @@
 							}
 						}
 					}
+
 				
 
 				if(count($pacientesDesmarcadosIds)>0) {
+
+					// remove pacientes que nao foram atendidos só uma vez
+					$sql->consult($_p."agenda","id_paciente","where id_paciente IN (".implode(",",$pacientesDesmarcadosIds).") and lixo=0 and id_status=5");
+					if($sql->rows) {
+						$pacientesAtendidos=$pacientesAtendidosIds=array();
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							if(!isset($pacientesAtendidos[$x->id_paciente])) {
+								$pacientesAtendidos[$x->id_paciente]=1;
+							} else {
+								$pacientesAtendidos[$x->id_paciente]++;
+								$pacientesAtendidosIds[]=$x->id_paciente;
+							}
+						}
+					}
+
+					$pacientesDesmarcadosIds=$pacientesAtendidosIds;
 
 					// remove pacientes que desmarcaram e que foram agendados novamente
 						$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL 360 DAY and id_paciente IN (".implode(",",$pacientesDesmarcadosIds).") and id_status IN (1,2,6,7,5) and lixo=0 order by agenda_data desc");
@@ -494,6 +511,7 @@
 
 						if(!isset($agendaPacientesAtendidos[$x->id_paciente])) {
 
+
 							// cotabiliza quantas vezes foi atendido
 								if(!isset($pacientesAtendidosQtdVezes[$x->id_paciente])) $pacientesAtendidosQtdVezes[$x->id_paciente]=0;
 								$pacientesAtendidosQtdVezes[$x->id_paciente]++;
@@ -542,15 +560,19 @@
 
 					// roda todos os pacientes atendidos por periodicidade para remover os que foram atendidos dentro da periodicidade
 						$pacientesAtendidosComPeriodicidadeAux = $pacientesAtendidosComPeriodicidade;
+						$contencaoTodosIds=array();
 						foreach($pacientesAtendidosComPeriodicidade as $periodicidade=>$pacientesContencaoIds) {
 
+							$contencaoTodosIds = array_merge($pacientesContencaoIds,$contencaoTodosIds);
 							// busca agendamentos dos pacientes da periodicidade que foram atendidos e nao necessitam de retorno
-							$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL $periodicidade MONTH and id_status IN (5,1,2) and id_paciente IN (".implode(",",$pacientesContencaoIds).") and lixo=0 order by agenda_data desc");
+							//echo "WHERE data > NOW() - INTERVAL $periodicidade MONTH and id_status IN (5,1,2) and id_paciente IN (".implode(",",$pacientesContencaoIds).") and lixo=0 order by agenda_data desc\n\n";
+							$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE agenda_data > NOW() - INTERVAL $periodicidade MONTH and id_status IN (5,1,2) and id_paciente IN (".implode(",",$pacientesContencaoIds).") and lixo=0 order by agenda_data desc");
 							while($x=mysqli_fetch_object($sql->mysqry)) {
 								// remove da lista de pacientes que necessitam de retorno
 								unset($pacientesAtendidosComPeriodicidadeAux[$periodicidade][$x->id_paciente]);
 							}
 						}
+					
 
 						$pacientesAtendidosComPeriodicidade=$pacientesAtendidosComPeriodicidadeAux;
 					

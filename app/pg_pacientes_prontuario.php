@@ -1,9 +1,95 @@
 <?php
+	if(isset($_POST['ajax'])) {
+		require_once("lib/conf.php");	
+		require_once("usuarios/checa.php");
+
+		$paciente = '';
+		if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+			$sql->consult($_p."pacientes","id,nome","where id=".$_POST['id_paciente']);
+			if($sql->rows) {
+				$paciente=mysqli_fetch_object($sql->mysqry);
+			}
+		}
+
+		$evolucao = '';
+		if(is_object($paciente) and isset($_POST['id_evolucao']) and is_numeric($_POST['id_evolucao'])) {
+			$sql->consult($_p."pacientes_evolucoes","id","where id=".$_POST['id_evolucao']." and id_paciente=$paciente->id and lixo=0");
+			if($sql->rows) {
+				$evolucao=mysqli_fetch_object($sql->mysqry);
+			}
+		}
+
+
+		$rtn = array();
+
+		if($_POST['ajax']=="evolucaoErrataPersisitr") {
+
+			$texto = (isset($_POST['texto']) and !empty($_POST['texto']))?$_POST['texto']:'';
+
+			$erro='';
+			if(empty($paciente)) $erro='Paciente não encontrado!';
+			else if(empty($evolucao)) $erro='Evolução não encontrada!';
+			else if(empty($texto)) $erro='Preencha o campo da errata!';
+
+			if(empty($erro)) {
+
+				$vsql="data=now(),
+						id_usuario=$usr->id,
+						id_evolucao=$evolucao->id,
+						id_paciente=$paciente->id,
+						texto='".addslashes(utf8_decode($texto))."'";
+
+				$sql->add($_p."pacientes_evolucoes_erratas",$vsql);
+
+				$rtn=array('success'=>true);
+
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
+
+		}
+
+		else if($_POST['ajax']=="evolucaoErrataListar") {
+
+			$_profissionais=array();
+			$sql->consult($_p."colaboradores","id,nome","");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_profissionais[$x->id]=$x;
+			}
+
+			$erratas=array();
+			if(is_object($paciente) and is_object($evolucao)) {
+				$sql->consult($_p."pacientes_evolucoes_erratas","*","where id_evolucao=$evolucao->id and id_paciente=$paciente->id and lixo=0 order by data desc");
+				if($sql->rows){
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$erratas[]=array('id'=>$x->id,
+										'id_evolucao'=>$x->id_evolucao,
+										'data'=>date('d/m/Y H:i',strtotime($x->data)),
+										'profissional'=>isset($_profissionais[$x->id_usuario])?utf8_encode($_profissionais[$x->id_usuario]->nome):'',
+										'texto'=>utf8_encode($x->texto));
+					}
+				}
+			}
+
+			$rtn=array('success'=>true,'erratas'=>$erratas,'id_evolucao'=>is_object($evolucao)?$evolucao->id:0);
+		}
+
+		header("Content-type: application/json");
+		echo json_encode($rtn);
+		die();
+
+	}
 	include "includes/header.php";
 	include "includes/nav.php";
 
 	$_table=$_p."pacientes_prontuarios";
 	require_once("includes/header/headerPacientes.php");
+	
+	// remove evolução
+	if(isset($_GET['deleta']) and is_numeric($_GET['deleta'])) {
+		$sql->update($_p."pacientes_evolucoes","lixo=1","where id=".$_GET['deleta']." and id_paciente=$paciente->id");
+		
+	}
 
 	$_usuarios=array();
 	$sql->consult($_p."colaboradores","id,nome","");
@@ -11,11 +97,13 @@
 
 	$evolucoes=array();
 	$evolucoesIds=array();
+	$evolucoesTodosIds=array();
 	//$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id order by data desc");
-	$sql->consultPagMto2($_p."pacientes_evolucoes","*",10,"where id_paciente=$paciente->id order by data desc","",15,"pagina",$_page."?".$url."&pagina=");
+	$sql->consultPagMto2($_p."pacientes_evolucoes","*",10,"where id_paciente=$paciente->id and lixo=0 order by data desc","",15,"pagina",$_page."?".$url."&pagina=");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$evolucoes[]=$x;
 		$evolucoesIds[$x->id_tipo][]=$x->id;
+		$evolucoesTodosIds[]=$x->id;
 	}
 
 	$evolucoesTipos=array();
@@ -30,6 +118,17 @@
 		$_profissionais[$x->id]=$x;
 	}
 
+	// erratas
+		$_erratas=array();
+		if(count($evolucoesTodosIds)>0) {
+			$sql->consult($_p."pacientes_evolucoes_erratas","*","where id_evolucao IN (".implode(",",$evolucoesTodosIds).") and id_paciente=$paciente->id order by data desc");
+			if($sql->rows) {
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_erratas[$x->id_evolucao][]=$x;
+				}
+			}
+		}
+
 	// geral
 		$_geral=array();
 		if(isset($evolucoesIds[9])) {
@@ -40,7 +139,6 @@
 				}
 			}
 		}
-
 
 	// anamnese
 		$_anamnesePerguntas=array();
@@ -109,6 +207,8 @@
 		while($x=mysqli_fetch_object($sql->mysqry)) {
 			$_atestadosFins[$x->id]=$x;
 		}
+
+
 ?>
 
 
@@ -183,7 +283,7 @@
 							<div class="list-toggle-buttons">									
 								<a href="<?php echo $pdf;?>" target="_blank" class="button"><i class="iconify" data-icon="ant-design:file-pdf-outlined"></i></a>
 								<a href="javascript:;" class="button"><i class="iconify" data-icon="fa:whatsapp"></i></a>
-								<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+								<a href="<?php echo $_page."?deleta=".$e->id."&pagina=".((isset($_GET['pagina']) and is_numeric($_GET['pagina']))?$_GET['pagina']:'')."&$url";?>" class="button js-confirmarDeletar"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 								<a href="javascript:;" class="button button_main js-expande"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i></a>
 							</div>							
 						</header>
@@ -347,28 +447,47 @@
 								if($correcoes!="") {
 							?>
 
-							<div class="list-toggle-com">
+							<div class="list-toggle-com js-erratas js-errata-<?php echo $e->id;?>">
 								<header>
 									<h1>Correções</h1>
 								</header>
-								<article>
+
+								<?php
+								if(isset($_erratas[$e->id])) {
+									foreach($_erratas[$e->id] as $errata) {
+								?>
+								<article class="js-errata-item">
 									<header>
-										<p>Kroner Machado Costa</p>
-										<p>12/08/2022 14:34</p>
+										<?php
+										if(isset($_profissionais[$errata->id_usuario])) {
+										?>
+										<p><?php echo utf8_encode($_profissionais[$errata->id_usuario]->nome);?></p>
+										<?php
+										}
+										?>
+										<p><?php echo date('d/m/Y H:i',strtotime($errata->data));?></p>
 									</header>
 									<article>
-										<p>Lorem, ipsum dolor sit amet consectetur adipisicing, elit. Atque voluptates, enim laudantium quis perferendis exercitationem tempora mollitia, ipsum nisi modi!</p>
+										<p><?php echo utf8_encode($errata->texto);?></p>
 									</article>
 								</article>
-								<article>
-									<header>
-										<p>Kroner Machado Costa</p>
-										<p>12/08/2022 14:34</p>
-									</header>
-									<article>
-										<p>Lorem, ipsum dolor sit amet consectetur adipisicing, elit. Atque voluptates, enim laudantium quis perferendis exercitationem tempora mollitia, ipsum nisi modi!</p>
-									</article>
+								<?php
+									}
+								} else {
+								?>
+								<article class="js-errata-item">
+									<center>Nenhuma errata realizada.</center>
 								</article>
+								<?php	
+								}
+								?>
+
+								<dl class="js-errata-item">
+									<textarea style="height: 50px;" class="js-errata-texto-<?php echo $e->id;?>"></textarea>
+									<button class="button button_main js-errata-adicionar" data-loading="0" style="float: right;" data-id_evolucao="<?php echo $e->id;?>"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> Adicionar</button>
+								</dl>
+								
+								
 							</div>	
 							<?php
 							}
@@ -379,126 +498,104 @@
 							
 						}
 					}
-					/*?>
-
-					<div class="list-toggle-item">
-						<header>
-							<div class="list-toggle-cat">
-								<i class="iconify" data-icon="mdi-file-document-outline"></i>
-								<div>
-									<h1>Atestado</h1>
-									<p>26/07/2022 - 10:33</p>
-								</div>
-							</div>
-							<p>Kroner Machado Costa</p>
-							<div class="list-toggle-buttons">									
-								<a href="" class="button"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
-								<a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-								<a href="javascript:;" class="button button_main js-expande"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i></a>
-							</div>							
-						</header>
-						<article>
-							<div class="list-toggle-topics">
-								<div class="list-toggle-topic">
-									<h1>Tipo de atestado</h1>
-									<p>Acompanhamento</p>
-								</div>
-								<div class="list-toggle-topic">
-									<h1>Fim do Atestado</h1>
-									<p>Escolar</p>
-								</div>
-								<div class="list-toggle-topic">
-									<h1>Duração do Atestado</h1>
-									<p>60 mins</p>
-								</div>
-							</div>								
-							<div class="list-toggle-com">
-								<header>
-									<h1>Correções</h1>
-								</header>								
-							</div>							
-						</article>
-					</div>
-
-					<div class="list-toggle-item">
-						<header>
-							<div class="list-toggle-cat">
-								<i class="iconify" data-icon="carbon-user-x-ray"></i>
-								<div>
-									<h1>Pedido de Exame</h1>
-									<p>26/07/2022 - 10:33</p>
-								</div>
-							</div>
-							<p>Kroner Machado Costa</p>
-							<div class="list-toggle-buttons">									
-								<a href="" class="button"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
-								<a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-								<a href="javascript:;" class="button button_main js-expande"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i></a>
-							</div>							
-						</header>
-						<article>
-							<div class="list-toggle-topics">
-								<div class="list-toggle-topic">
-									<h1>Clínica Radiológica</h1>
-									<p>Imagem Dental</p>
-								</div>
-								<div class="list-toggle-topic">
-									<h1>Exames:</h1>
-									<p>Cefalometria - GERAL</p>
-									<p>Fotos Intra e Extra Oral - Por arcada - Maxila - Pedir urgência</p>
-								</div>
-							</div>								
-							<div class="list-toggle-com">
-								<header>
-									<h1>Correções</h1>
-								</header>								
-							</div>							
-						</article>
-					</div>
-
-					<div class="list-toggle-item">
-						<header>
-							<div class="list-toggle-cat">
-								<i class="iconify" data-icon="mdi-pill"></i>
-								<div>
-									<h1>Receituário</h1>
-									<p>26/07/2022 - 10:33</p>
-								</div>
-							</div>
-							<p>Kroner Machado Costa</p>
-							<div class="list-toggle-buttons">									
-								<a href="" class="button"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
-								<a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-								<a href="javascript:;" class="button button_main js-expande"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i></a>
-							</div>							
-						</header>
-						<article>
-							<div class="list-toggle-topics">
-								<div class="list-toggle-topic">
-									<h1>Tipo de Uso</h1>
-									<p>Comprimido</p>
-								</div>
-								<div class="list-toggle-topic">
-									<h1>Tipo de Uso</h1>
-									<p>Comprimido</p>
-								</div>
-								<div class="list-toggle-topic">
-									<h1>Medicamentos</h1>
-									<p>Azitromicina - 2 caixas - Tomar a cada 10 minutos</p>
-									<p>Amoxilina com Clavulanato 250gm - 1 caixa - Tomar a cada 8 horas</p>
-								</div>
-								
-							</div>								
-							<div class="list-toggle-com">
-								<header>
-									<h1>Correções</h1>
-								</header>								
-							</div>							
-						</article>
-					</div>*/?>
+					?>
 
 				</div>	
 			</div>
+
+			<script type="text/javascript">
+
+				const erratasListar = (id_evolucao,id_paciente) => {
+					let data = {'ajax':'evolucaoErrataListar',
+								'id_evolucao':id_evolucao,
+								'id_paciente':id_paciente}
+
+					$.ajax({
+						type:"POST",
+						data:data,
+						success:function(rtn) {
+							if(rtn.success) {
+								$(`.js-errata-${rtn.id_evolucao}`).find('.js-errata-item').remove();
+								if(rtn.erratas.length>0) {
+									rtn.erratas.forEach(x=>{
+										$(`.js-errata-${rtn.id_evolucao}`).append(`<article class="js-errata-item">
+																						<header>
+																							<p>${x.profissional}</p>
+																							<p>${x.data}</p>
+																						</header>
+																						<article>
+																							<p>${x.texto}</p>
+																						</article>
+																					</article>`);
+									});
+									$(`.js-errata-${rtn.id_evolucao}`).append(`<dl class="js-errata-item">
+																					<textarea style="height: 50px;" class="js-errata-texto-${rtn.id_evolucao}"></textarea>
+																					<button class="button button_main js-errata-adicionar" data-loading="0" style="float: right;" data-id_evolucao="${rtn.id_evolucao}"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> Adicionar</button>
+																				</dl>`);
+								} else {
+									$(`.js-errata-${rtn.id_evolucao}`).append(`<article class="js-errata-item"><center>Nenhuma errata realizada.</center></article>`);
+								}
+							}
+						}
+					})
+				}
+				$(function(){
+
+					$('.js-erratas').on('click','.js-errata-adicionar',function(){
+
+						let id_evolucao = $(this).attr('data-id_evolucao');
+						let texto = $(`.js-errata-texto-${id_evolucao}`).val();
+
+						let erro='';
+						if(id_evolucao.length==0) erro='Evolução não definida';
+						else if(texto.length==0) {
+							erro='Peencha o campo da erratada!';
+							$(`.js-errata-texto-${id_evolucao}`).addClass('erro');
+						}
+
+
+						if(erro.length==0) {
+
+							let obj = $(this);
+							let objHTMLAntigo = $(this).html();
+
+							if(obj.attr('data-loading')==0) {
+
+								obj.attr('data-loading',1);
+								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+
+								let data = {'ajax':'evolucaoErrataPersisitr',
+											'id_evolucao':id_evolucao,
+											'id_paciente':id_paciente,
+											'texto':texto};
+
+								$.ajax({
+									type:"POST",
+									data:data,
+									success:function(rtn) {
+										if(rtn.success) {
+											erratasListar(id_evolucao,id_paciente);
+											$(`.js-errata-texto-${id_evolucao}`).val('');
+										} else if(rtn.error) {
+											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+										} else {
+											swal({title: "Erro!", text: 'Algum erro ocorreu. Tente novamente!', type:"error", confirmButtonColor: "#424242"});
+										}
+									}
+								}).done(function(){
+									obj.attr('data-loading',0);
+									obj.html(objHTMLAntigo)
+								})
+							}
+
+
+						} else {
+							swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
+						}
+
+					})
+				})
+			</script>
 
 			<center>
 				<?php

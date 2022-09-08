@@ -345,7 +345,7 @@
 				$rtn=array('success'=>false,'error'=>'Agendamento não encontrado!');
 			} else {
 				$novaData=date('Y-m-d H:i:s',strtotime($_POST['novaData']));
-				$vSQL="agenda_data='".$novaData."'";
+				$vSQL="agenda_data_original='$agenda->agenda_data',agenda_data='".$novaData."'";
 				if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) $vSQL.=",id_cadeira='".$_POST['id_cadeira']."'";
 				if($agenda->agendaPessoal==1) {
 					if($agenda->dia_inteiro==0) {
@@ -2389,23 +2389,33 @@
 								});
 							},
 							eventDrop: function(ev) {
-								let id = ev.event.id;
-								let novaData=ev.event.startStr;
-								let id_cadeira = (ev.newResource)?ev.newResource.id:'';
-								let data=`ajax=persistirNovoAgendamento&id_agenda=${id}&novaData=${novaData}&id_cadeira=${id_cadeira}`;
-								$.ajax({
-									type:"POST",
-									data:data,
-									success:function(rtn) {
-										if(rtn.success) {
-											calendar.refetchEvents();
-										} else if(rtn.error) {
-											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-										} else {
-											swal({title: "Erro!", text: 'Algum erro ocorreu durante a alteração de data deste agendamento!', type:"error", confirmButtonColor: "#424242"});
-										}
-									}
+								swal({   title: "Atenção",   text: 'Tem certeza que deseja alterar o horário deste agendamento',   type: "warning",   showCancelButton: true,   confirmButtonColor: "#DD6B55",   confirmButtonText: "Sim!",   cancelButtonText: "Não",   closeOnConfirm: false,   closeOnCancel: false }, function(isConfirm){   
+									if (isConfirm) {    
+										let id = ev.event.id;
+										let novaData=ev.event.startStr;
+										let id_cadeira = (ev.newResource)?ev.newResource.id:'';
+										let data=`ajax=persistirNovoAgendamento&id_agenda=${id}&novaData=${novaData}&id_cadeira=${id_cadeira}`;
+										$.ajax({
+											type:"POST",
+											data:data,
+											success:function(rtn) {
+												if(rtn.success) {
+													calendar.refetchEvents();
+												} else if(rtn.error) {
+													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+												} else {
+													swal({title: "Erro!", text: 'Algum erro ocorreu durante a alteração de data deste agendamento!', type:"error", confirmButtonColor: "#424242"});
+												}
+											}
+										});
+										swal.close();
+									 } else {  
+										calendar.refetchEvents();
+										swal.close();   
+									} 
 								});
+		
+								
 						    },
 							resourcesSet:function(arg) {
 								setTimeout(function(){$('.fc-scrollgrid-sync-inner ').css('height','30px');},10);

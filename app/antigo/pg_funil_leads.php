@@ -55,7 +55,7 @@
 		$tratamentosIds[]=$x->id;
 
 		if(!empty($x->procedimentos)) {
-			$proc=json_decode($x->procedimentos);
+			$proc=json_decode(utf8_encode($x->procedimentos));
 			foreach($proc as $p) {
 				if(!isset($_tratamentosProcedimentos[$x->id_paciente])) $_tratamentosProcedimentos[$x->id_paciente]=0;
 				$_tratamentosProcedimentos[$x->id_paciente]+=$p->valorCorrigido;
@@ -197,6 +197,7 @@
 
 		<?php
 		require_once("includes/nav2.php");
+		
 		?>
 
 		<script type="text/javascript">
