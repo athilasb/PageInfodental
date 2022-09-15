@@ -43,7 +43,8 @@
 								'titulo'=>utf8_encode($cnt->titulo),
 								'id_especialidade'=>$cnt->id_especialidade,
 								'id_regiao'=>$cnt->id_regiao,
-								'quantitativo'=>$cnt->quantitativo);
+								'quantitativo'=>$cnt->quantitativo,
+								'face'=>$cnt->face);
 
 				$rtn=array('success'=>true,'data'=>$data);
 
@@ -193,6 +194,7 @@
 		$_regioes[$x->id]=$x;
 	}
 
+
 	$_fases=array();
 	$sql->consult($_p."parametros_fases","*","where lixo=0 order by titulo asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
@@ -209,7 +211,7 @@
 	include "includes/nav.php";
 
 	$values=$adm->get($_GET);
-	$campos=explode(",","titulo,id_regiao,quantitativo,id_especialidade");
+	$campos=explode(",","titulo,id_regiao,quantitativo,id_especialidade,face");
 
 	if(isset($_POST['acao'])) {
 
@@ -289,8 +291,9 @@
 											$('#js-aside input[name=titulo]').val(rtn.data.titulo);
 											$('#js-aside input[name=id]').val(rtn.data.id);
 											$('#js-aside select[name=id_especialidade]').val(rtn.data.id_especialidade);
-											$('#js-aside select[name=id_regiao]').val(rtn.data.id_regiao);
+											$('#js-aside select[name=id_regiao]').val(rtn.data.id_regiao).trigger('change');
 											$('#js-aside input[name=quantitativo]').prop('checked',rtn.data.quantitativo==1?true:false);
+											$('#js-aside input[name=face]').prop('checked',rtn.data.face==1?true:false);
 											regsAtualizar(true);
 
 											$('.js-fieldset-regs,.js-btn-remover').show();
@@ -441,7 +444,27 @@
 		
 		</div>
 	</main>
+	<script type="text/javascript">
+		$(function(){
+			$('select[name=id_regiao]').change(function(){
+				let quantitativo = $(this).find(":selected").attr('data-quantitativo');
+				let face = $(this).find(":selected").attr('data-face');
+				
 
+				if(quantitativo==1) {
+					$('input[name=quantitativo]').parent().parent().parent().show();
+				} else {
+					$('input[name=quantitativo]').parent().parent().parent().hide();
+				}
+
+				if(face==1) {
+					$('input[name=face]').parent().parent().parent().show();
+				} else {
+					$('input[name=face]').parent().parent().parent().hide();
+				}
+			}).trigger('change');
+		})
+	</script>
 	<section class="aside aside-form" id="js-aside">
 		<div class="aside__inner1">
 
@@ -491,6 +514,7 @@
 								<a href="javascript:;" class="js-btn-aside" data-aside="especialidade" data-aside-sub><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
 							</dd>
 						</dl>
+
 						<dl>
 							<dt>Região</dt>
 							<dd>
@@ -499,20 +523,27 @@
 									<?php
 									foreach($_regioes as $e) {
 									?>
-									<option value="<?php echo $e->id;?>"><?php echo utf8_encode($e->titulo);?></option>
+									<option value="<?php echo $e->id;?>" data-quantitativo="<?php echo $e->quantitativo;?>" data-face="<?php echo $e->face;?>"><?php echo utf8_encode($e->titulo);?></option>
 									<?php	
 									}
 									?>
 								</select>
 							</dd>
 						</dl>
+
 						<dl>
 							<dt></dt>
-							<dd><label><input type="checkbox" name="quantitativo" value="1" class="input-switch" /> Quantitativo</label>
+							<dd><label><input type="checkbox" name="face" value="1" class="input-switch" /> Por Face</label></dd>
 						</dl>
-					</dd>
-				</fieldset>
 
+						<dl>
+							<dt></dt>
+							<dd><label><input type="checkbox" name="quantitativo" value="1" class="input-switch" /> Quantitativo</label></dd>
+						</dl>
+					</div>
+
+				</fieldset>
+				<br />
 				<script type="text/javascript">
 					var regs = [];
 

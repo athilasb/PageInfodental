@@ -1,0 +1,16 @@
+INSERT INTO `ident_parametros_procedimentos_regioes` (`id`, `lixo`, `titulo`, `ordem`, `face`, `quantitativo`) VALUES (NULL, '0', 'HOF', '5', '0', '1');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (86, '5', '0', 'Bochecha', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (87, '5', '0', 'Canto de Olhos', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (88, '5', '0', 'Glabela', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (89, '5', '0', 'Lábios', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (90, '5', '0', 'Malar', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (91, '5', '0', 'Mandíbula', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (92, '5', '0', 'Mento', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (93, '5', '0', 'Nariz', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (94, '5', '0', 'Olheiras', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (95, '5', '0', 'Pescoço', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (96, '5', '0', 'Pré Jowl', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (97, '5', '0', 'Região Frontal', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (98, '5', '0', 'Submental - Papada', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (99, '5', '0', 'Sulco Nasogeninano', '0', '0', '0');
+INSERT INTO `ident_parametros_procedimentos_regioes_opcoes` (`id`, `id_regiao`, `lixo`, `titulo`, `permanente`, `superior`, `direito`) VALUES (100, '5', '0', 'Têmpora', '0', '0', '0');

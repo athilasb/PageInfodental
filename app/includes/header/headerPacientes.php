@@ -60,6 +60,7 @@
 				*/ ?>
 				<a href="pg_pacientes_resumo.php?id_paciente=<?php echo $paciente->id;?>"<?php echo $_page=="pg_pacientes_resumo.php"?' class="active"':'';?>>Resumo</a>
 				<a href="pg_pacientes_prontuario.php?id_paciente=<?php echo $paciente->id;?>"<?php echo $_page=="pg_pacientes_prontuario.php"?' class="active"':'';?>>Prontuário</a>
+				<a href="pg_pacientes_planosdetratamento.php?id_paciente=<?php echo $paciente->id;?>"<?php echo ($_page=="pg_pacientes_planosdetratamento.php" or $_page=="pg_pacientes_planosdetratamento_form.php")?' class="active"':'';?>>Planos de Tratamento</a>
 				<?php /*<a href="pg_pacientes_prontuario_antigo.php?id_paciente=<?php echo $paciente->id;?>"<?php echo $_page=="pg_pacientes_prontuario_antigo.php"?' class="active"':'';?>>Prontuário Antigo</a>*/?>
 				<a href="pg_pacientes_dadospessoais.php?id_paciente=<?php echo $paciente->id;?>"<?php echo $_page=="pg_pacientes_dadospessoais.php"?' class="active"':'';?>>Dados Pessoais</a>
 			</section>
