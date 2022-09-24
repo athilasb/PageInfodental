@@ -106,8 +106,10 @@
 	$sql->consult($_p."parametros_cartoes_bandeiras","*","where lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_bandeiras[$x->id]=$x;
+			//var_dump($x);die();
 	}
 
+			//var_dump($_bandeiras);die();
 	$_regioesOpcoes=array();
 	$sql->consult($_p."parametros_procedimentos_regioes_opcoes","*","order by titulo asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_regioesOpcoes[$x->id_regiao][]=$x;
@@ -346,6 +348,7 @@
 
 				if(isset($_bandeiras[$x->id_bandeira])) {
 					$bandeira=$_bandeiras[$x->id_bandeira];
+							//var_dump($bandeira);die();
 
 					if($x->operacao=="credito") {
 						if(isset($creditoBandeiras[$x->id_operadora])) {

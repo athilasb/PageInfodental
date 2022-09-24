@@ -202,7 +202,6 @@
 																'ultimoAtendimento'=>$ultimo);
 						}
 						if($x->id_status==5) {
-							echo $x->agenda_duracao;
 							$pacientesMetricas[$x->id_paciente]['tempo']+=$x->agenda_duracao;
 							$pacientesMetricas[$x->id_paciente]['atendimentos']++; 
 

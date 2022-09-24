@@ -55,54 +55,275 @@
 
 	var facesInfos = JSON.parse(`<?php echo json_encode($_regioesInfos);?>`);
 
+	const atualizaValor = () => {
+		valorTotal=0;
+
+		let cont = 1;
+		procedimentos.forEach(x=> {
+			if(x.situacao!='naoAprovado') {
+
+				if(x.desconto>0) {
+					valorTotal+=$.isNumeric(x.valorCorrigido)?eval(x.valorCorrigido):unMoney(x.valorCorrigido);
+					//if(eval(x.quantitativo)==1) valorTotal*=x.quantidade;
+				}
+				else {
+					if(eval(x.quantitativo)==1) {
+						valorTotal+=$.isNumeric(x.valor)?eval(x.valor*x.quantidade):unMoney(x.valor*x.quantidade);
+					} else if(x.face==1) {
+
+						valorTotal+=$.isNumeric(x.valor)?eval(x.valor*x.faces.length):unMoney(x.valor*x.faces.length);
+					} else {
+						valorTotal+=$.isNumeric(x.valor)?eval(x.valor):unMoney(x.valor);
+					}
+				}
+			}
+
+			if(cont==procedimentos.length) {
+				$('.js-valorTotal').html(number_format(valorTotal,2,",","."));
+			}
+			cont++;
+			
+		});
+
+
+		let parcelas = [];
+
+		if($('input[name=pagamento]:checked').length>0) {
+			let pagamento = $('input[name=pagamento]:checked').val();
+
+			if(pagamento=="avista") {
+				$('.js-pagamentos-quantidade').hide();
+			} else {
+				$('.js-pagamentos-quantidade').show();
+				let numeroParcelas = $('.js-pagamentos-quantidade').val();
+
+				if(numeroParcelas.length==0 || numeroParcelas<=0) numeroParcelas=2;
+				
+				valorParcela=valorTotal/numeroParcelas;
+
+				let startDate = new Date();
+				for(var i=1;i<=numeroParcelas;i++) {
+					/*val = -1;
+					if($(`.js-pagamentos .js-valor:eq(${i})`).length) {
+						val = $(`.js-pagamentos .js-valor:eq(${(i-1)})`).val();
+					}
+					//console.log(`${$(`.js-pagamentos .js-valor:eq(${i})`).length} -> .js-pagamentos .js-valor:eq(${(i-1)}) => ${val}`);*/
+
+					let item = {};
+					let mes = startDate.getMonth()+1;
+					mes = mes <= 9 ? `0${mes}`:mes;
+
+					let dia = startDate.getDate();
+					dia = dia <= 9 ? `0${dia}`:dia;
+					item.vencimento=`${dia}/${mes}/${startDate.getFullYear()}`;
+					item.valor=valorParcela;
+					parcelas.push(item);
+
+					newDate = startDate;
+					newDate.setMonth(newDate.getMonth()+1);
+
+					startDate=newDate;
+				}
+
+			}
+
+			pagamentos=parcelas;
+		}
+
+		pagamentosListar();
+	}
+
+	const pagamentosListar = () => {
+		$('.js-pagamentos').html('');
+
+		//console.log(pagamentos);
+		if(pagamentos.length>0) {
+
+			/*if(pagamentos.length>1) {
+				$('.js-pagamento-parcelado').prop('checked',true);
+
+			}
+			else {
+				$('.js-pagamento-avista').prop('checked',true);
+			}*/
+			let index=1;
+			pagamentos.forEach(x=>{
+				$('.js-pagamentos').append(`<div class="fpag-item js-pagamento-item">
+												<aside>${index++}</aside>
+												<article>
+													<div class="colunas3">
+														<dl>
+															<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data js-vencimento" value="${x.vencimento}" /></dd>
+														</dl>
+														<dl>
+															<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor js-valor" value="${number_format(x.valor,2,",",".")}" /></dd>
+														</dl>
+														<dl>
+															<dd>
+																<select class="js-id_formadepagamento js-tipoPagamento">
+																	<option value="">Forma de Pagamento...</option>
+																	<?php echo $optionFormasDePagamento;?>
+																</select>
+															</dd>
+														</dl>
+													</div>
+														
+													<div class="colunas3">
+
+														<dl style="display:none">
+															<dt>Bandeira</dt>
+															<dd>
+
+															<select class="js-debitoBandeira js-tipoPagamento">
+																<option value="">selecione</option>
+																<?php
+																foreach($debitoBandeiras as $id_operadora=>$x) {
+																	echo '<optgroup label="'.utf8_encode($x['titulo']).'">';
+																	foreach($x['bandeiras'] as $band) {
+																		echo '<option value="'.$band['id_bandeira'].'" data-id_operadora="'.$id_operadora.'"data-id_operadorabandeira="'.$id_operadora.$band['id_bandeira'].'" data-taxa="'.$band['taxa'].'" data-cobrarTaxa="'.$band['cobrarTaxa'].'">'.utf8_encode($band['titulo']).'</option>';
+																	}
+																	echo '</optgroup>';
+																}
+																?>
+															</select>
+														</dd></dl>
+
+
+														<dl style="display:none">
+															<dt>Bandeira</dt>
+															<dd>
+																<select class="js-creditoBandeira js-tipoPagamento">
+																	<option value="">selecione</option>
+																	<?php
+																	foreach($creditoBandeiras as $id_operadora=>$x) {
+																		echo '<optgroup label="'.utf8_encode($x['titulo']).'">';
+																		foreach($x['bandeiras'] as $band) {
+																			echo '<option value="'.$band['id_bandeira'].'" data-id_operadora="'.$id_operadora.'" data-id_operadorabandeira="'.$id_operadora.$band['id_bandeira'].'" data-parcelas="'.$band['parcelas'].'" data-taxa="'.$band['taxa'].'">'.utf8_encode($band['titulo']).'</option>';
+																		}
+																		echo '</optgroup>';
+																	}
+																	?>
+																</select>
+															</dd>
+														</dl>
+
+														<dl style="display:none">
+															<dt>Qtd. Parcelas</dt>
+															<dd>
+																<select class="js-parcelas js-tipoPagamento">
+																	<option value="">selecione a bandeira</option>
+																</select>
+															</dd>
+														</dl>
+
+														<dl style="display:none">
+															<dt>Identificador</dt>
+															<dd><input type="text" class="js-identificador js-tipoPagamento" /></dd>
+														</dl>
+
+													</div>
+												</article>
+											</div>`);
+
+
+
+				$('.js-pagamento-item .js-vencimento:last').inputmask('99/99/9999');
+				$('.js-pagamento-item .js-vencimento:last').datetimepicker({timepicker:false,
+																		format:'d/m/Y',
+																		scrollMonth:false,
+																		scrollTime:false,
+																		scrollInput:false});
+				$('.js-pagamento-item .js-valor:last').maskMoney({symbol:'', allowZero:true, showSymbol:true, thousands:'.', decimal:',', symbolStay: true});
+
+				if(x.id_formapagamento) {
+					$('.js-pagamento-item .js-id_formadepagamento:last').val(x.id_formapagamento).trigger('change');
+					$('.js-pagamento-item .js-identificador:last').val(x.identificador);
+					let tipo = $('.js-pagamento-item .js-id_formadepagamento:last option:selected').attr('data-tipo');
+
+					if(tipo=="credito") {
+						parcelaProv=x.qtdParcelas;
+						//alert(parcelaProv);
+						$('.js-pagamento-item .js-creditoBandeira:last').find(`option[data-id_operadorabandeira=${x.operadora}${x.creditoBandeira}]`).prop('selected',true);
+						$('.js-pagamento-item .js-creditoBandeira:last').trigger('change');
+					
+					} else if(tipo=="debito") {
+						$('.js-pagamento-item .js-debitoBandeira:last').find(`option[data-id_operadorabandeira=${x.operadora}${x.debitoBandeira}]`).prop('selected',true);
+
+						//$('.js-pagamento-item .js-debitoBandeira:last').val(x.debitoBandeira);//   .trigger('change');
+					}	
+				}
+			});
+
+			if(pagamentos.length==1) $('.js-pagamento-item .js-valor:last').prop('disabled',true);
+		}
+		//console.log(pagamentos);
+		$('#js-textarea-pagamentos').val(JSON.stringify(pagamentos))
+		//atualizaValor();
+		//desativarCampos();
+	}
+
 	const procedimentosListar = () => {
 
 		$('#js-table-procedimentos').html('');
-		procedimentos.forEach(x=>{
+		let cont = 1;
 
-			let valor = '';
+		if(procedimentos.length>0) {
+			procedimentos.forEach(x=>{
 
-			if(x.desconto) {
-				valor = `<strike>${number_format((eval(x.quantitativo)==1?x.quantidade*x.valor:x.valor),2,",",".")}</strike><br />${number_format(x.valorCorrigido,2,",",".")}`;
-			} else {
-				valor = number_format(x.valorCorrigido?x.valorCorrigido:x.valor,2,",",".");
-			}
+				let valor = '';
 
-			let opcao = '';
-			if(x.id_regiao==4) {
-				opcaoAux='';
-				if(x.face==1) {
-					
-					let cont = 1;
-					x.faces.forEach(fId=>{
-						opcaoAux+=facesInfos[fId].abreviacao+', ';
-
-						if(cont==x.faces.length) {
-							opcaoAux=opcaoAux.substr(0,opcaoAux.length-2);
-						}
-						cont++;
-					})
+				if(x.desconto) {
+					valor = `<strike>${number_format((eval(x.quantitativo)==1?x.quantidade*x.valor:x.valor),2,",",".")}</strike><br />${number_format(x.valorCorrigido,2,",",".")}`;
+				} else {
+					valor = number_format(x.valorCorrigido?x.valorCorrigido:x.valor,2,",",".");
 				}
-				opcao=`<i class="iconify" data-icon="mdi:tooth-outline"></i> ${x.opcao}<br />${opcaoAux}`;
-			}
-			else {
-				if(x.quantitativo==1) opcao=`Qtd. ${x.quantidade}`;
-				else opcao=x.opcao;
-			}
 
-			let tr = `<tr class="js-tr-item">								
-						<td>
-							<h1>${x.procedimento}</h1>
-							<p>${x.plano}</p>
-						</td>
-						<td><div class="list1__icon">${opcao}</td>
-						<td style="text-align:right;">${valor}</td>
-					</tr>`;
+				let opcao = '';
+				if(x.id_regiao==4) {
+					opcaoAux='';
+					if(x.face==1) {
+						
+						let cont = 1;
+						x.faces.forEach(fId=>{
+							opcaoAux+=facesInfos[fId].abreviacao+', ';
+
+							if(cont==x.faces.length) {
+								opcaoAux=opcaoAux.substr(0,opcaoAux.length-2);
+							}
+							cont++;
+						})
+					}
+					opcao=`<i class="iconify" data-icon="mdi:tooth-outline"></i> ${x.opcao}<br />${opcaoAux}`;
+				}
+				else {
+					if(x.quantitativo==1) opcao=`Qtd. ${x.quantidade}`;
+					else opcao=x.opcao;
+				}
+
+				let reprovadoCss='';
+				if(x.situacao=="naoAprovado") reprovadoCss=` style="opacity:0.3"`;
+
+				let tr = `<tr class="js-tr-item"${reprovadoCss}>								
+							<td>
+								<h1>${x.procedimento}</h1>
+								<p>${x.plano}</p>
+							</td>
+							<td><div class="list1__icon">${opcao}</td>
+							<td style="text-align:right;">${valor}</td>
+						</tr>`;
 
 
-			$('#js-table-procedimentos').append(tr);
+				$('#js-table-procedimentos').append(tr);
+				if(cont==procedimentos.length) { 
+					atualizaValor();
+				}
+				cont++;
 
-		});
+			});
+			$('input[name=pagamento]').prop('disabled',false);
+		} else {	
+			$('input[name=pagamento]').prop('disabled',true);
+		}
 
 		$('#js-textarea-procedimentos').val(JSON.stringify(procedimentos));
 		$('.aside-plano-procedimento-adicionar .js-fieldset-adicionar').find('select').val('').trigger('chosen:updated').trigger('change');
@@ -134,12 +355,14 @@
 			if(pEd.quantitativo==1) valorTabela*=pEd.quantidade;
 			else if(pEd.face==1) valorTabela*=pEd.faces.length;
  
+			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-index').val(index);
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-valorTabela').val(number_format(valorTabela,2,",","."));
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-valorDesconto').val(number_format(pEd.desconto,2,",","."));
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-valorCorrigido').val(number_format(pEd.valorCorrigido,2,",","."));
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-valorUnitario').val(number_format(pEd.valor,2,",","."));
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-obs').val(pEd.obs);
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-procedimento').val(pEd.procedimento);
+			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-situacao').val(pEd.situacao);
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-plano').val(pEd.plano);
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-regiao').val(regiao);
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-quantidade').val(pEd.quantidade);
@@ -166,13 +389,251 @@
 
 	$(function(){
 
-		// quando edita um procedimento
+		$('.js-pagamentos').on('change','.js-debitoBandeira,.js-creditoBandeira,.js-parcelas,.js-valor',function(){
+						
+			//	creditoDebitoValorParcela($(this));
+			let obj = $(this);
+			setTimeout(function(){$(obj).parent().parent().parent().parent().find('.js-valor').trigger('keyup');},200);	
+		});
+
+		$('.js-pagamentos').on('change','.js-creditoBandeira',function(){
+
+			let obj = $(this).parent().parent().parent();
+
+
+			$(obj).find('select.js-parcelas option').remove();
+			
+			if($(this).val().length>0) {
+				let semJuros = eval($(this).find('option:checked').attr('data-semjuros'));
+				let parcelas = eval($(this).find('option:checked').attr('data-parcelas'));
+			
+				if($.isNumeric(parcelas)) {
+					$(obj).find('select.js-parcelas').append(`<option value="">-</option>`);
+					for(var i=1;i<=parcelas;i++) {
+						semjuros='';
+						if($.isNumeric(semJuros) && semJuros>=i) semjuros=` - sem juros`;
+						if(parcelaProv && eval(parcelaProv)==i) sel=' selected';
+						else sel ='';
+
+						$(obj).find('select.js-parcelas').append(`<option value="${i}"${sel}>${i}x${semjuros}</option>`);
+					}
+				} else {
+					$(obj).find('select.js-parcelas').append(`<option value="">erro</option>`);
+				}
+			} else {
+				$(obj).find('select.js-parcelas').append(`<option value="">selecione a bandeira</option>`);
+			}
+
+			setTimeout(function(){$(obj).find('.js-valor').trigger('keyup');},200);
+		});
+
+		$('.js-pagamentos').on('change','.js-id_formadepagamento',function(){
+
+			let obj = $(this).parent().parent().parent();
+
+			setTimeout(function(){$(obj).find('.js-valor').trigger('keyup');},200);
+		});
+
+		$('.js-pagamentos').on('keyup','.js-identificador',function(){
+
+			let obj = $(this).parent().parent().parent().parent();
+
+			setTimeout(function(){$(obj).find('.js-valor').trigger('keyup');},200);
+		});
+
+
+		$('.js-pagamentos').on('blur','.js-valor',function(){
+			pagamentosListar();
+		});
+
+		$('.js-pagamentos').on('keyup','.js-valor',function(){
+			let index = $(this).index('.js-pagamentos .js-valor');
+			let numeroParcelas = eval($('.js-pagamentos-quantidade').val());
+			let valorTotalAux = valorTotal;
+			let valorAcumulado = 0;
+			let parcelas = [];
+			let val = unMoney($(this).val());
+
+
+
+
+			for(i=0;i<=index;i++) {
+				val = unMoney($(`.js-pagamentos .js-valor:eq(${i})`).val());
+
+				id_formapagamento = $(`.js-pagamentos .js-id_formadepagamento:eq(${i})`).val();
+				identificador = $(`.js-pagamentos .js-identificador:eq(${i})`).val();
+				creditoBandeira = $(`.js-pagamentos .js-creditoBandeira:eq(${i})`).val();
+				operadora=0;
+				if(id_formapagamento==2) {
+					operadora = $(`.js-pagamentos .js-creditoBandeira:eq(${i}) option:selected`).attr('data-id_operadora');
+				} else if(id_formapagamento==3) {
+					operadora = $(`.js-pagamentos .js-debitoBandeira:eq(${i}) option:selected`).attr('data-id_operadora');
+				}
+				
+				debitoBandeira = $(`.js-pagamentos .js-debitoBandeira:eq(${i})`).val();
+				qtdParcelas = $(`.js-pagamentos .js-parcelas:eq(${i})`).val();
+				valorAcumulado += val;
+				//console.log(`${i} => ${val} = ${valorAcumulado}`);
+
+				let item = {};
+				item.vencimento=pagamentos[i].vencimento;
+				item.valor=val;
+				item.id_formapagamento=id_formapagamento;
+				item.identificador=identificador;
+				item.creditoBandeira=creditoBandeira;
+				item.operadora=operadora;
+				item.debitoBandeira=debitoBandeira;
+				item.qtdParcelas=qtdParcelas;
+
+				parcelas.push(item);
+			}
+
+			let valorRestante = valorTotal-valorAcumulado;
+			let continua = true;
+			if(valorAcumulado>valorTotal) {
+
+				let dif = valorAcumulado - valorTotal;
+				dif=dif.toFixed(2);
+
+				if(dif>0.1) {
+					continua=false;
+					swal({title: "Erro!", text: 'Os valores das parcelas não podem superar o valor total', html:true, type:"error", confirmButtonColor: "#424242"});
+				}
+			}  
+
+
+			if(continua) {
+
+
+				numeroParcelasRestantes = numeroParcelas - (index+1);
+				valorParcela=valorRestante/numeroParcelasRestantes;
+
+				let valorInputado=0;
+				for(i=(index+1);i<numeroParcelas;i++) {
+
+					if(pagamentos[i]) {
+						let item = {};
+						item.vencimento=pagamentos[i].vencimento;
+						item.valor=valorParcela;
+						parcelas.push(item);
+					}
+
+				}
+
+				// se alterou a ultima parcela
+				if(numeroParcelas==(index+1)) {
+
+					// verifica todos os valores inputados batem com o valor total
+					if(valorAcumulado<valorTotal) {
+						dif = valorTotal-valorAcumulado;
+						parcelas[index].valor+=dif;
+					} else if(valorAcumulado>valorTotal) {
+						dif = valorTotal-valorAcumulado;
+						parcelas[index].valor=dif;
+					}
+
+					//alert('alterou o ulitmo '+valorTotal+' = '+valorAcumulado)
+				}
+
+
+				pagamentos=parcelas;
+
+
+				$('textarea.js-textarea-pagamentos').val(JSON.stringify(pagamentos))
+			}
+		});
+
+		$('.js-pagamentos').on('change','.js-id_formadepagamento',function(){
+			let id_formadepagamento  = $(this).val();
+			let obj = $(this).parent().parent().parent().parent();
+			let tipo = $(obj).find('select.js-id_formadepagamento option:checked').attr('data-tipo');
+
+			$(obj).find('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
+
+			if(tipo=="credito") {
+				$(obj).find('.js-parcelas,.js-creditoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
+			} else if(tipo=="debito") {
+				$(obj).find('.js-debitoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
+			} else {
+				$(obj).find('.js-identificador').parent().parent().show();
+
+				if(tipo=="permuta") {
+					//$(obj).find('.js-obs').parent().parent().show();
+				}
+			}
+		});
+
+		// altera quantidade de parcelas
+		$('.js-pagamentos-quantidade').change(function(){
+
+			let qtd = $(this).val();
+
+			if(!$.isNumeric(eval(qtd))) qtd=1;
+			else if(qtd<1) qtd=2;
+			else if(qtd>=36) qtd=36;
+
+			$('.js-pagamentos-quantidade').val(qtd);
+
+			atualizaValor();
+		});
+
+		// seleciona o tipo de pagamento
+		$('input[name=pagamento]').change(function(){
+			atualizaValor();
+		})
+
+		// remove procedimento
+		$('.aside-plano-procedimento-editar .js-removerProcedimento').click(function(){
+			swal({
+					title: "Atenção",
+					text: 'Tem certeza que deseja excluir este procedimento?',
+					type: "warning",
+					showCancelButton: true,
+					confirmButtonColor: "#DD6B55",   
+					confirmButtonText: "Sim!",   
+					cancelButtonText: "Não",
+					closeOnConfirm: false,  
+					closeOnCancel: false 
+				}, function(isConfirm){   
+						if (isConfirm) {    
+							let index = $('.aside-plano-procedimento-editar .js-asidePlanoEditar-index').val();
+							procedimentos.splice(index,1);
+							procedimentosListar();	
+							swal.close();
+							$('.aside-plano-procedimento-editar .aside-close').click();
+						} else {  
+							swal.close();   
+						} 
+				});
+			
+		})
+
+		// edita procedimento
+		$('.aside-plano-procedimento-editar .js-salvarEditarProcedimento').click(function(){
+
+
+			// capta dados
+			let index = $('.aside-plano-procedimento-editar .js-asidePlanoEditar-index').val();
+			let situacao = $('.aside-plano-procedimento-editar .js-asidePlanoEditar-situacao').val();
+			let obs = $('.aside-plano-procedimento-editar .js-asidePlanoEditar-obs').val();
+
+
+			procedimentos[index].situacao=situacao;
+			procedimentos[index].obs=obs;
+
+			procedimentosListar();
+
+			$('.aside-plano-procedimento-editar .aside-close').click();
+
+		})
+
+		// clica em um procedimento para editar
 		$('#js-table-procedimentos').on('click','.js-tr-item',function(){
 			let index = $('#js-table-procedimentos .js-tr-item').index(this);
 			procedimentoEditar(index);
 		})
 
-		// quando clica no botão adicionar procedimento
+		// adiciona procedimento
 		$('.aside-plano-procedimento-adicionar .js-salvarAdicionarProcedimento').click(function(){
 			
 			// capta dados 
@@ -402,17 +863,18 @@
 		</header>
 
 		<form method="post" class="aside-content form js-form-editar-procedimento">
+			<input type="hidden" class="js-asidePlanoEditar-index" value="" />
 			<section class="filter">
 				<div class="filter-group"></div>
 				<div class="filter-group">
 					<div class="filter-form form">
 
 						<dl>
-							<dd><a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
+							<dd><a href="javascript:;" class="button js-removerProcedimento"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
 						</dl>
 
 						<dl>
-							<dd><button type="button" class="button button_main js-salvarAdicionarProcedimento" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span> Salvar</button></dd>
+							<dd><button type="button" class="button button_main js-salvarEditarProcedimento" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span> Salvar</button></dd>
 						</dl>
 					</div>								
 				</div>

@@ -683,7 +683,7 @@
 									data='".invDatetime($data)."',
 									id_profissional='".$id_profissional."',
 									texto='".addslashes(utf8_decode($texto))."',
-									id_usuario=$usr->id";
+									id_usuario=$usr->id"; 
 
 						if(is_object($geral)) {
 							$sql->update($_p."pacientes_evolucoes_geral",$vSQLGeral,"where id=$geral->id");

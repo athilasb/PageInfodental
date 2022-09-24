@@ -4,6 +4,15 @@
 
 	$_table=$_p."financeiro_bancosecontas";
 
+	$_bancos = array();
+	$sql->consult("infodentalADM.infod_parametros_bancos","*","where lixo=0 order by titulo asc") ;
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_bancos[$x->id]=$x;
+	}
+
+	$_tiposBancoeContas=array('contacorrente'=>'Conta Corrente',
+								'dinheiro'=>'Dinheiro');
+
 	if(isset($_POST['ajax'])) {
 
 		require_once("usuarios/checa.php");
@@ -31,10 +40,10 @@
 								'tipo'=>utf8_encode($cnt->tipo),
 								'agencia'=>utf8_encode($cnt->agencia),
 								'conta'=>utf8_encode($cnt->conta),
-								/*'banco'=>utf8_encode($cnt->banco),
+								'id_banco'=>utf8_encode($cnt->id_banco),
 								'pix_tipo'=>utf8_encode($cnt->pix_tipo),
 								'pix_chave'=>utf8_encode($cnt->pix_chave),
-								'pix_beneficiario'=>utf8_encode($cnt->pix_beneficiario)*/);
+								'pix_beneficiario'=>utf8_encode($cnt->pix_beneficiario));
 
 				$rtn=array('success'=>true,'data'=>$data);
 
@@ -74,7 +83,7 @@
 	include "includes/nav.php";
 
 	$values=$adm->get($_GET);
-	$campos=explode(",","titulo,agencia,conta,tipo");
+	$campos=explode(",","titulo,tipo,agencia,conta,id_banco,pix_tipo,pix_chave,pix_beneficiario");
 
 	if(isset($_POST['acao'])) {
 
@@ -90,6 +99,14 @@
 				$cnt=mysqli_fetch_object($sql->mysqry);
 			}
 		}
+		if(empty($cnt)) {
+			$where = "where data > NOW() - INTERVAL 5 MINUTE and 
+							tipo='".addslashes($values['tipo'])."' and 
+							id_banco='".addslashes($values['id_banco'])."' and
+							titulo='".addslashes($values['titulo'])."' and lixo=0";
+			$sql->consult($_table,"*",$where);
+			if($sql->rows) $cnt=mysqli_fetch_object($sql->mysqry);
+		}
 
 		if(is_object($cnt)) {
 			$vWHERE="where id=$cnt->id";
@@ -98,15 +115,14 @@
 			$id_reg=$cnt->id;
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='$_table',id_reg='$id_reg'");
 		} else {
-			$vSQL=substr($vSQL,0,strlen($vSQL)-1);
+
+
+			$vSQL.="data=now()";
 			$sql->add($_table,$vSQL);
 			$id_reg=$sql->ulid;
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',vwhere='',tabela='$_table',id_reg='$id_reg'");
 		}
 
-		?>
-		<script type="text/javascript">$(function(){openAside(<?php echo $id_reg;?>)});</script>
-		<?php
 	}
 
 ?>
@@ -154,20 +170,21 @@
 											$(`#js-aside input[name=tipo][value=${rtn.data.tipo}`).click();
 											$('#js-aside input[name=titulo]').val(rtn.data.titulo);
 											$('#js-aside input[name=id]').val(rtn.data.id);
-											$('#js-aside select[name=banco]').val(rtn.data.banco);
+											$('#js-aside select[name=id_banco]').val(rtn.data.id_banco);
 											$('#js-aside input[name=agencia]').val(rtn.data.agencia);
 											$('#js-aside input[name=conta]').val(rtn.data.conta);
-											$('#js-aside input[name=pix_tipo]').val(rtn.data.pix_tipo);
+											$('#js-aside select[name=pix_tipo]').val(rtn.data.pix_tipo);
 											$('#js-aside input[name=pix_chave]').val(rtn.data.pix_chave);
 											$('#js-aside input[name=pix_beneficiario]').val(rtn.data.pix_beneficiario);
 
 
-
+											$('#js-aside select[name=id_banco]').chosen('destroy')
 											$('.js-fieldset-regs,.js-btn-remover').show();
 											
 											$(".aside-form").fadeIn(100,function() {
 												$(".aside-form .aside__inner1").addClass("active");
 												tipoConta();
+												setTimeout(function(){$('#js-aside select[name=id_banco]').chosen({allow_single_deselect:true });},500);
 											});
 										} else if(rtn.error) {
 											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -186,13 +203,20 @@
 								$('.js-fieldset-regs,.js-btn-remover').hide();
 
 								
+								$('#js-aside select[name=id_banco]').chosen('destroy');
 								$(".aside-form").fadeIn(100,function() {
 									$(".aside-form .aside__inner1").addClass("active");
+									setTimeout(function(){$('#js-aside select[name=id_banco]').chosen({allow_single_deselect:true });},500);
 									tipoConta();
 								});
 							}
 						}
 						$(function(){
+
+							$('#js-aside .aside-close').click(function(){
+
+							});
+
 							$('#js-aside .js-btn-remover').click(function(){
 								let id = $('input[name=id]').val();
 								if($.isNumeric(id) && id>0) {
@@ -290,8 +314,26 @@
 									?>
 									<tr class="js-item" data-id="<?php echo $x->id;?>">
 										<td><h1><strong><?php echo utf8_encode($x->titulo);?></strong></h1></td>
-										<td><?php echo $x->tipo=="dinheiro"?"Dinheiro":"Conta Corrente";?></td>
-										<td><?php echo $x->tipo!="dinheiro"?"$x->agencia / $x->conta":"";?></td>
+										<td>
+											<?php 
+											echo isset($_tiposBancoeContas[$x->tipo])?$_tiposBancoeContas[$x->tipo]:$x->tipo;
+											echo isset($_bancos[$x->id_banco])?'<br /><b>'.utf8_encode($_bancos[$x->id_banco]->titulo).'</b>':"";
+											?>
+										</td>
+										<td>
+											<?php 
+											if($x->tipo=="contacorrente") {
+												if(!empty($x->agencia) and !empty($x->agencia)) echo "Agência/Conta<br /><b>$x->agencia / $x->conta</b>";
+											}
+											?>
+										</td>
+										<td>
+											<?php 
+											if($x->tipo=="contacorrente") {
+												if(isset($_pixTipos[$x->pix_tipo]) and !empty($x->pix_chave)) echo "PIX ".$_pixTipos[$x->pix_tipo]."<br /><b>$x->pix_chave</b>";
+											}
+											?>
+										</td>
 									</tr>
 									<?php
 									}
@@ -317,11 +359,11 @@
 		
 		</div>
 	</main>
-	<section class="aside-form aside-form" id="js-aside">
+	<section class="aside aside-form" id="js-aside">
 		<div class="aside__inner1">
 
 			<header class="aside-header">
-				<h1>Produto</h1>
+				<h1>Bancos e Contas</h1>
 				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 			</header>
 
@@ -349,7 +391,6 @@
 						<dt>Tipo de Conta</dt>
 						<dd>
 							<label><input type="radio" name="tipo" value="contacorrente" checked />Conta Corrente</label>
-							<label><input type="radio" name="tipo" value="pix" />Pix</label>
 							<label><input type="radio" name="tipo" value="dinheiro" />Dinheiro</label>
 						</dd>
 					</dl>
@@ -357,23 +398,26 @@
 						<dt>Título</dt>
 						<dd><input type="text" name="titulo" class="obg" /></dd>
 					</dl>
+
+					<div class="js-tipo js-tipo-cc">
+						<dl>
+							<dt>Banco</dt>
+							<dd>
+								<select name="id_banco">
+									<option value=""></option>
+									<?php
+									foreach($_bancos as $v) {
+									?>
+									<option value="<?php echo $v->id?>"><?php echo $v->codigo." - ".utf8_encode($v->titulo);?></option>
+									<?php	
+									}
+									?>
+								</select>
+							</dd>
+						</dl>
+					</div>
 					<div class="js-tipo js-tipo-cc">
 						<div class="colunas3">
-							<dl>
-								<dt>Banco</dt>
-								<dd>
-									<select name="banco">
-										<option value="">-</option>
-										<?php
-										foreach($_bancos as $k=>$v) {
-										?>
-										<option value="<?php echo $k;?>"><?php echo $v;?></option>
-										<?php	
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
 							<dl>
 								<dt>Agência</dt>
 								<dd><input type="text" name="agencia" /></dd>
@@ -384,7 +428,7 @@
 							</dl>
 						</div>
 					</div>
-					<div class="js-tipo js-tipo-pix" style="display:none;">
+					<div class="js-tipo js-tipo-cc" style="display:none;">
 						<div class="colunas3">
 							<dl>
 								<dt>Tipo</dt>
@@ -418,9 +462,7 @@
 
 						if(val==="contacorrente") {
 							$('.js-tipo-cc').show();
-						} else if(val==="pix") {
-							$('.js-tipo-pix').show();
-						}
+						} 
 					}
 					$(function(){
 						$('input[name=tipo]').click(tipoConta);

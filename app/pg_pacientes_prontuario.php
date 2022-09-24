@@ -276,7 +276,16 @@
 								<i class="iconify" data-icon="<?php echo $eTipo->icone;?>"></i>
 								<div>
 									<h1><?php echo utf8_encode($eTipo->titulo);?></h1>
-									<p><?php echo date('d/m/Y H:i',strtotime($e->data));?></p>
+									<p>
+										<?php 
+										// se geral (prontuario), usa a data definida no cadastro
+										if($eTipo->id==9 and isset($_geral[$e->id])) {
+											echo date('d/m/Y H:i',strtotime($_geral[$e->id]->data));
+										} else {
+											echo date('d/m/Y H:i',strtotime($e->data));
+										}
+										?>
+									</p>
 								</div>
 							</div>
 							<p><?php echo isset($_profissionais[$e->id_profissional])?utf8_encode($_profissionais[$e->id_profissional]->nome):"";?></p>

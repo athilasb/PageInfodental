@@ -49,8 +49,8 @@
 			}*/
 
 
-			$bi = new BI(array('prefixo'=>$_p));
-			$bi->classificaTodos();
+			//$bi = new BI(array('prefixo'=>"studiodental.ident_"));
+			//$bi->classificaTodos();
 		}
 		
 		function values($campos,$cnt) {

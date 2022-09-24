@@ -10,41 +10,108 @@
 
 
 	// dados
-		$_profissionais=array();
-		$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento,contratacaoAtiva","where tipo_cro<>'' and lixo=0 order by nome asc");
-		while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
+		// profissionais
+			$_profissionais=array();
+			$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento,contratacaoAtiva","where tipo_cro<>'' and lixo=0 order by nome asc");
+			while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
 
-		$_procedimentos=array();
-		$sql->consult($_p."parametros_procedimentos","*","where lixo=0");
-		while($x=mysqli_fetch_object($sql->mysqry)) $_procedimentos[$x->id]=$x;
+		// procedimentos
+			$_procedimentos=array();
+			$sql->consult($_p."parametros_procedimentos","*","where lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) $_procedimentos[$x->id]=$x;
 
-		$_regioesOpcoes=array();
-		$sql->consult($_p."parametros_procedimentos_regioes_opcoes","*","order by titulo asc");
-		while($x=mysqli_fetch_object($sql->mysqry)) $_regioesOpcoes[$x->id_regiao][]=$x;
+		// regioes
+			$_regioesOpcoes=array();
+			$sql->consult($_p."parametros_procedimentos_regioes_opcoes","*","order by titulo asc");
+			while($x=mysqli_fetch_object($sql->mysqry)) $_regioesOpcoes[$x->id_regiao][]=$x;
 
-		$_regioes=array();
-		$sql->consult($_p."parametros_procedimentos_regioes","*","");
-		while($x=mysqli_fetch_object($sql->mysqry)) $_regioes[$x->id]=$x;
+			$_regioes=array();
+			$sql->consult($_p."parametros_procedimentos_regioes","*","");
+			while($x=mysqli_fetch_object($sql->mysqry)) $_regioes[$x->id]=$x;
 
-		$_regioesFaces=array();
-		$_regioesFacesOptions='';
-		$_regioesInfos=array();
-		$sql->consult($_p."parametros_procedimentos_regioes_faces","*"," order by titulo asc");
-		while($x=mysqli_fetch_object($sql->mysqry)) {
-			$_regioesFaces[$x->id]=$x;
-			$_regioesFacesOptions.='<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
-			$_regioesInfos[$x->id]=array('abreviacao'=>$x->abreviacao,'titulo'=>utf8_encode($x->titulo));
-		}
+			$_regioesFaces=array();
+			$_regioesFacesOptions='';
+			$_regioesInfos=array();
+			$sql->consult($_p."parametros_procedimentos_regioes_faces","*"," order by titulo asc");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_regioesFaces[$x->id]=$x;
+				$_regioesFacesOptions.='<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
+				$_regioesInfos[$x->id]=array('abreviacao'=>$x->abreviacao,'titulo'=>utf8_encode($x->titulo));
+			}
 
-		$_selectSituacaoOptions=array('aprovado'=>array('titulo'=>'APROVADO','cor'=>'green'),
-										'naoAprovado'=>array('titulo'=>'REPROVADO','cor'=>'red'));
+		// situacao
+			$_selectSituacaoOptions=array('aprovado'=>array('titulo'=>'APROVADO','cor'=>'green'),
+											'naoAprovado'=>array('titulo'=>'REPROVADO','cor'=>'red'));
 
-		$selectSituacaoOptions='';
-		foreach($_selectSituacaoOptions as $key=>$value) {
-			$selectSituacaoOptions.='<option value="'.$key.'">'.$value['titulo'].'</option>';
-		}
+			$selectSituacaoOptions='';
+			foreach($_selectSituacaoOptions as $key=>$value) {
+				$selectSituacaoOptions.='<option value="'.$key.'">'.$value['titulo'].'</option>';
+			}
+
+		// formas de pagamento
+			$_formasDePagamento=array();
+			$optionFormasDePagamento='';
+			$sql->consult($_p."parametros_formasdepagamento","*","order by titulo asc");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_formasDePagamento[$x->id]=$x;
+				$optionFormasDePagamento.='<option value="'.$x->id.'" data-tipo="'.$x->tipo.'">'.utf8_encode($x->titulo).'</option>';
+			}
+
+		// credito, debito, bandeiras
+			$_bandeiras=array();
+			$sql->consult($_p."parametros_cartoes_bandeiras","*","where lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_bandeiras[$x->id]=$x;
+			}
 
 
+			$creditoBandeiras=array();
+			$debitoBandeiras=array();
+	
+			$sql->consult($_p."parametros_cartoes_operadoras","*","where lixo=0 order by titulo");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$creditoBandeiras[$x->id]=array('titulo'=>utf8_encode($x->titulo),'bandeiras'=>array());
+				$debitoBandeiras[$x->id]=array('titulo'=>utf8_encode($x->titulo),'bandeiras'=>array());
+			}
+
+
+			$_semJuros=array();
+			$sql->consult($_p."parametros_cartoes_taxas_semjuros","*","where lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_semJuros[$x->id_operadora][$x->id_bandeira]=$x->semjuros;
+			}
+
+
+			$sql->consult($_p."parametros_cartoes_taxas","*","where lixo=0");
+			$_taxasCredito=$_taxasCreditoSemJuros=array();
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				if(isset($_bandeiras[$x->id_bandeira])) {
+					$bandeira=$_bandeiras[$x->id_bandeira];
+					if($x->operacao=="credito") {
+						if(isset($creditoBandeiras[$x->id_operadora])) {
+							$semJurosTexto="";
+							if($bandeira->parcelasAte>0) {
+								$semJurosTexto.=" - em ate ".$bandeira->parcelasAte."x";
+							}
+							if(!isset($_taxasCredito[$x->id_operadora][$bandeira->id][$x->parcela])) {
+								$_taxasCredito[$x->id_operadora][$bandeira->id][$x->parcela]=$x->taxa;
+							}
+
+							$creditoBandeiras[$x->id_operadora]['bandeiras'][$bandeira->id]=array('id_bandeira'=>$bandeira->id,
+																								//	'semJuros'=>$semJuros,
+																									'parcelas'=>$bandeira->parcelasAte,
+																									'taxa'=>$x->taxa,	
+																									'titulo'=>utf8_encode($bandeira->titulo).$semJurosTexto);
+						}
+					} else {
+
+						$debitoBandeiras[$x->id_operadora]['bandeiras'][$bandeira->id]=array('id_bandeira'=>$bandeira->id,
+																								'titulo'=>utf8_encode($bandeira->titulo),
+																								'taxa'=>$x->taxa);
+					}
+
+				}
+			}
 	// formulario
 		$cnt='';
 		$campos=explode(",","titulo,id_profissional");
@@ -60,6 +127,7 @@
 ?>
 	<script type="text/javascript">
 		var procedimentos = [];
+		var pagamentos = [];
 		var usuario = '<?php echo utf8_encode($usr->nome);?>';
 		var id_usuario = <?php echo $usr->id;?>;
 
@@ -161,6 +229,7 @@
 					<!-- Financeiro -->
 					<fieldset style="grid-row:span 2">
 						<legend>Financeiro</legend>
+						<textarea id="js-textarea-pagamentos" style="display:none;"></textarea>
 
 						<dl>
 							<dd>
@@ -170,20 +239,24 @@
 
 						<div class="colunas3">
 							<dl>
-								<dt>Valor Total</dt>
-								<dd style="font-size:1.75em; font-weight:bold;">R$ 350,00</dd>
+								<dt>Valor Total (R$)</dt>
+								<dd style="font-size:1.75em; font-weight:bold;" class="js-valorTotal">0,00</dd>
 							</dl>
 							<dl class="dl2">
 								<dt>Forma de Pagamento</dt>
 								<dd>
-									<label><input type="radio" name="forma_pagto" value="1">A Vista</label>
-									<label><input type="radio" name="forma_pagto" value="2" checked>Parcelado em</label>
-									<label><input type="number" name="" value="2" style="width:50px;" /></label>
+									<label><input type="radio" name="pagamento" value="avista" disabled />A Vista</label>
+									<label><input type="radio" name="pagamento" value="parcelado" disabled />Parcelado em</label>
+									<label><input type="number" name="parcelas" class="js-pagamentos-quantidade" value="2" style="width:50px;display:none;" /></label>
 								</dd>
 							</dl>							
 						</div>
 
-						<div class="fpag" style="margin-top:2rem;">
+						<div class="fpag js-pagamentos" style="margin-top:2rem;">
+							<?php
+
+							/*
+							?>
 							<div class="fpag-item">
 								<aside>1</aside>
 								<article>
@@ -210,6 +283,7 @@
 									</div>
 								</article>
 							</div>
+
 							<div class="fpag-item">
 								<aside>2</aside>
 								<article>
@@ -244,6 +318,7 @@
 									</div>
 								</article>
 							</div>
+							*/?>
 						</div>
 					</fieldset>
 

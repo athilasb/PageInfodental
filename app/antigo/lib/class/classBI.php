@@ -258,7 +258,7 @@
 		// Codigo BI versao simples
 		function classificaTodos() {
 			$sql = new Mysql();
-			$_p=$this->prefixo;
+			$_p="ident_";//$this->prefixo;
 
 			
 
