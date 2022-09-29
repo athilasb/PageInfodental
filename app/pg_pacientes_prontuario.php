@@ -238,6 +238,45 @@
 								$(this).parent().parent().next('article').toggleClass('active');
 								$(this).toggleClass('button-reverse');
 							});
+
+							$('.js-btn-whatsapp').click(function(){
+								let id_evolucao = $(this).attr('data-id_evolucao');
+								let obj = $(this);
+								let objHTMLAntigo = $(this).html();
+
+								if(obj.attr('data-loading')==0) {
+
+									obj.attr('data-loading',1);
+									obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>');
+
+									let data = {'token':'ee7a1554b556f657e8659a56d1a19c315684c39d',
+												'method':'generatePDF',
+												'id_evolucao':id_evolucao};
+
+									$.ajax({
+										type:"POST",
+										url:'services/api.php',
+										data:JSON.stringify(data),
+										success:function(rtn){
+											if(rtn.success) {
+												swal({title: "Sucesso!", text: `PDF enviado para o número ${rtn.numero} com sucesso!`, type:"success", confirmButtonColor: "#424242"});
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												swal({title: "Erro!", text: 'Algum erro ocorreu durante o envio do PDF. Tente novamente!', type:"error", confirmButtonColor: "#424242"});
+											}
+
+											obj.html(objHTMLAntigo);
+											obj.attr('data-loading',0);
+										},
+										error:function(){
+												swal({title: "Erro!", text: 'Algum erro ocorreu durante o envio do PDF. Tente novamente.', type:"error", confirmButtonColor: "#424242"});
+											obj.html(objHTMLAntigo);
+											obj.attr('data-loading',0);
+										}
+									})
+								}
+							})
 						});
 					</script>
 
@@ -291,7 +330,7 @@
 							<p><?php echo isset($_profissionais[$e->id_profissional])?utf8_encode($_profissionais[$e->id_profissional]->nome):"";?></p>
 							<div class="list-toggle-buttons">									
 								<a href="<?php echo $pdf;?>" target="_blank" class="button"><i class="iconify" data-icon="ant-design:file-pdf-outlined"></i></a>
-								<a href="javascript:;" class="button"><i class="iconify" data-icon="fa:whatsapp"></i></a>
+								<a href="javascript:;" class="button js-btn-whatsapp" data-id_evolucao="<?php echo $e->id;?>" data-loading="0"><i class="iconify" data-icon="fa:whatsapp"></i></a>
 								<a href="<?php echo $_page."?deleta=".$e->id."&pagina=".((isset($_GET['pagina']) and is_numeric($_GET['pagina']))?$_GET['pagina']:'')."&$url";?>" class="button js-confirmarDeletar"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 								<a href="javascript:;" class="button button_main js-expande"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i></a>
 							</div>							

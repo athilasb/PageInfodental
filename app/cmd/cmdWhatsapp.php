@@ -9,14 +9,27 @@
 	$attr=array('prefixo'=>$_p,'usr'=>$usr);
 	$wts = new Whatsapp($attr);
 
+
 	if(isset($_GET['dispara'])) {
 
 		if($wts->dispara()) echo "Disparado!";
 		else echo "Erro: $wts->erro";
 		die();
+	} else if(isset($_GET['foto'])) {
+		if($wts->atualizaFoto(8988)) {
+			echo "ok";
+			
+		} else echo  "erro $wts->erro";
+	} else {
+
+		$attr=array('id_tipo'=>2,
+					'id_paciente'=>6216,//8988,
+					'id_agenda'=>10348);//29507);
+
+		if($wts->adicionaNaFila($attr)) $wts=1;
 	}
 
-
+	die();
 	/*
 	$sql->consult($_p."whatsapp_mensagens","*","where data > NOW() - INTERVAL 24 HOUR and id_tipo=1 and erro=1");
 	echo $sql->rows;

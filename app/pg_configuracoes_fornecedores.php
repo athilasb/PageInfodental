@@ -384,6 +384,7 @@
 
 							$('.js-openAside').click(function(){
 								$('#js-aside form.formulario-validacao').trigger('reset');
+								$('#js-aside input[name=id]').val(0);
 								openAside(0);
 							});
 

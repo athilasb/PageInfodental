@@ -11,13 +11,7 @@
 				$_ENV['NAME']=$_ENV['MYSQL_DB']='';
 
 			} else {
-
-				if($_SERVER['REMOTE_ADDR']=="187.73.183.121" or $_SERVER['REMOTE_ADDR']=="179.108.104.96" or $_SERVER['REMOTE_ADDR']=="177.148.191.13") {
-					$_ENV['NAME']=$_ENV['MYSQL_DB']='studiodental';
-				} else {
-					$_ENV['NAME']=$_ENV['MYSQL_DB']='studiodental';
-				}
-
+				$_ENV['NAME']=$_ENV['MYSQL_DB']='agenda';
 			}
 			$_ENV['MYSQL_USER']="dentalinfo";
 			$_ENV['MYSQL_PASS']="d3ntaL@inf0"; 

@@ -303,7 +303,8 @@
 
 	<script type="text/javascript">
 
-		var financeiroBandeiras = JSON.parse(`<?php echo json_encode($financeiroBandeiras);?>`)
+		var financeiroBandeiras = JSON.parse(`<?php echo json_encode($financeiroBandeiras);?>`);
+		var bandeirasLiberadoParaAtualizacao = false;
 
 		// abre aside para adição (id=0) ou edição (id>0) de operadora
 		const openAside = (id) => {
@@ -323,7 +324,7 @@
 								$('#js-aside .js-bandeiras-json').val(JSON.stringify(rtn.data.bandeiras));
 
 								let cont = 1;
-								financeiroBandeiras.forEach(b=> { console.log(b.id);console.log(rtn.data.bandeiras[b.id]);
+								financeiroBandeiras.forEach(b=> { 
 									if(rtn.data.bandeiras[b.id]) {
 										let bandeira=rtn.data.bandeiras[b.id];
 										$(`#js-aside .js-input-bandeira-${b.id}`).prop('checked',true)
@@ -365,6 +366,7 @@
 		// atualiza obj das bandeiras de acordo com habilitação de credito/debito e select das parcelas creditos
 		const atualizaBandeiras = () => {
 			
+
 			bandeiras = {};
 
 			bandeirasAtual = $('.js-bandeiras-json').val().length>0?JSON.parse($('.js-bandeiras-json').val()):{};
@@ -410,6 +412,9 @@
 
 		// ao clicar na bandeira e em credito/debito, habilita/desabilita select de parcelas e botão de editar taxas
 		const bandeirasComplemento = () => {
+
+
+
 			$('#js-aside .js-input-bandeira').each(function(index,el){
 				let id_bandeira = $(el).val(); 
 
@@ -427,13 +432,12 @@
 				} else {
 					$(`.js-bandeira-taxas-${id_bandeira}`).css('opacity',0.2);
 				}
-				
 
 			});
 		}
 
 		$(function(){
-
+			
 			// Configuração de Taxas: abertura e configuração tela de configuração de taxas ao clicar no botão de edição de taxas da bandeira
 			$('#js-aside .js-bandeira-taxas').click(function(){
 
@@ -492,6 +496,9 @@
 						if(objeto[id_bandeira].debitoTaxas) {
 							$('#js-aside-taxas .js-debito-taxa').val(objeto[id_bandeira].debitoTaxas.taxa);
 							$('#js-aside-taxas .js-debito-dias').val(objeto[id_bandeira].debitoTaxas.dias);
+						} else {
+							$('#js-aside-taxas .js-debito-taxa').val('');
+							$('#js-aside-taxas .js-debito-dias').val('');
 						}
 
 
@@ -504,9 +511,12 @@
 										if(objMin[parcela][interno]) {
 											$(`#js-aside-taxas .js-parcela-${parcela} .js-taxa-${interno}`).val(objMin[parcela][interno].taxa);
 											$(`#js-aside-taxas .js-parcela-${parcela} .js-dias-${interno}`).val(objMin[parcela][interno].dias);
+										} else {
+											$(`#js-aside-taxas .js-parcela-${parcela} .js-taxa-${interno}`).val('');
+											$(`#js-aside-taxas .js-parcela-${parcela} .js-dias-${interno}`).val('');
 										}
 									}
-								}
+								} 
 							}
 						}
 
@@ -523,8 +533,41 @@
 				}
 			});
 
+			$('#js-aside').find('.js-input-credito,.js-input-debito').click(bandeirasComplemento);
+
 			// clicar nos checkbox de bandeira, credito e debito
-			$('#js-aside').find('.js-input-bandeira,.js-input-credito,.js-input-debito').click(bandeirasComplemento);
+			$('#js-aside').find('.js-input-bandeira').click(function(){
+
+					if($(this).prop('checked')==false) {
+						let obj = $(this);
+
+						swal({   
+								title: "Atenção",   
+								text: "Você tem certeza que deseja desativar essa opção?<br />Ao desativar, todas configurações de taxas serão perdidas.",   
+								type: "warning",   
+								html:true,
+								showCancelButton: true,   
+								confirmButtonColor: "#DD6B55",   
+								confirmButtonText: "Sim!",   
+								cancelButtonText: "Não",   
+								closeOnConfirm: false,   
+								closeOnCancel: false 
+							}, function(isConfirm){   
+								if (isConfirm) {    
+									swal.close();  
+									bandeirasComplemento();
+								} else {   
+									swal.close();  
+									obj.prop('checked',true);
+									return false; 
+								} 
+							});
+						
+					} else {
+						bandeirasComplemento();
+					}
+					
+			});
 
 			// ao alterar informações no fieldset de bandeiras, salva objeto
 			$('#js-aside .js-fieldset-bandeiras input').click(atualizaBandeiras);
@@ -575,6 +618,7 @@
 			// nova operadora/maquininha
 			$('.js-openAside').click(function(){
 				$('#js-aside form.formulario-validacao').trigger('reset');
+				$('#js-aside input[name=id]').val(0);
 				openAside(0);
 			});
 
@@ -611,6 +655,7 @@
 							closeOnCancel: false 
 						}, function(isConfirm){   
 							if (isConfirm) {   
+								$('#js-aside-taxas').find('.js-input-taxa,.js-input-dias,.js-credito-parcelasSemJuros').val('');
 								$(obj).parent().parent().removeClass("active");
 								$(obj).parent().parent().parent().fadeOut(); 
 								swal.close();
@@ -619,6 +664,7 @@
 					  		 } 
 					  	});
 				} else {
+					$('#js-aside-taxas').find('.js-input-taxa,.js-input-dias,.js-credito-parcelasSemJuros').val('');
 					$(obj).parent().parent().removeClass("active");
 					$(obj).parent().parent().parent().fadeOut();
 				}
@@ -780,7 +826,7 @@
 
 
 				<fieldset class="js-fieldset-bandeiras">
-					<textarea name="bandeiras_json" class="js-bandeiras-json"></textarea>
+					<textarea name="bandeiras_json" class="js-bandeiras-json" style="display:none;"></textarea>
 					
 					<legend>Bandeiras</legend>
 					<?php

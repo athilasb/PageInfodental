@@ -93,6 +93,24 @@
 
 			if(pagamento=="avista") {
 				$('.js-pagamentos-quantidade').hide();
+
+				let startDate = new Date();
+				let item = {};
+				let mes = startDate.getMonth()+1;
+				mes = mes <= 9 ? `0${mes}`:mes;
+
+				let dia = startDate.getDate();
+				dia = dia <= 9 ? `0${dia}`:dia;
+				item.vencimento=`${dia}/${mes}/${startDate.getFullYear()}`;
+				item.valor=valorTotal;
+				parcelas.push(item);
+
+				newDate = startDate;
+				newDate.setMonth(newDate.getMonth()+1);
+
+				startDate=newDate;
+				
+
 			} else {
 				$('.js-pagamentos-quantidade').show();
 				let numeroParcelas = $('.js-pagamentos-quantidade').val();
@@ -100,6 +118,8 @@
 				if(numeroParcelas.length==0 || numeroParcelas<=0) numeroParcelas=2;
 				
 				valorParcela=valorTotal/numeroParcelas;
+
+				valorParcela=valorParcela.toFixed(2);
 
 				let startDate = new Date();
 				for(var i=1;i<=numeroParcelas;i++) {
@@ -180,7 +200,7 @@
 																foreach($debitoBandeiras as $id_operadora=>$x) {
 																	echo '<optgroup label="'.utf8_encode($x['titulo']).'">';
 																	foreach($x['bandeiras'] as $band) {
-																		echo '<option value="'.$band['id_bandeira'].'" data-id_operadora="'.$id_operadora.'"data-id_operadorabandeira="'.$id_operadora.$band['id_bandeira'].'" data-taxa="'.$band['taxa'].'" data-cobrarTaxa="'.$band['cobrarTaxa'].'">'.utf8_encode($band['titulo']).'</option>';
+																		echo '<option value="'.$band['id_bandeira'].'">'.utf8_encode($band['titulo']).'</option>';
 																	}
 																	echo '</optgroup>';
 																}
@@ -198,7 +218,7 @@
 																	foreach($creditoBandeiras as $id_operadora=>$x) {
 																		echo '<optgroup label="'.utf8_encode($x['titulo']).'">';
 																		foreach($x['bandeiras'] as $band) {
-																			echo '<option value="'.$band['id_bandeira'].'" data-id_operadora="'.$id_operadora.'" data-id_operadorabandeira="'.$id_operadora.$band['id_bandeira'].'" data-parcelas="'.$band['parcelas'].'" data-taxa="'.$band['taxa'].'">'.utf8_encode($band['titulo']).'</option>';
+																			echo '<option value="'.$band['id_bandeira'].'" data-parcelas="'.$band['parcelas'].'" data-parcelas-semjuros="'.$band['semJuros'].'">'.utf8_encode($band['titulo']).'</option>';
 																		}
 																		echo '</optgroup>';
 																	}
@@ -389,6 +409,46 @@
 
 	$(function(){
 
+		// clica no botao desconto
+		$('.js-btn-desconto').click(function(){
+			$(".aside-plano-desconto").fadeIn(100,function() {
+				$(".aside-plano-desconto .aside__inner1").addClass("active");
+			});
+
+			let totalDesconto = 0;
+			let totalProcedimentos = 0;
+
+			procedimentos.forEach(x => {
+
+				opcao='';
+				if(x.opcao.length>0) opcao=x.opcao+' - ';
+
+
+				let valorHTML = '';
+				if(x.desconto>0) {
+					totalDesconto+=x.desconto;
+					valorHTML = `<strike>${number_format(x.valor,2,",",".")}<strike><br />${number_format(x.valorCorrigido,2,",",".")}`
+				} else {
+					valorHTML = number_format(x.valorCorrigido,2,",",".");
+				}
+				totalProcedimentos+=x.valorCorrigido;
+
+				let tr = `<tr class="js-tr-item">								
+								<td>
+									<h1>${x.procedimento}</h1>
+									<p>${opcao}${x.plano}</p>
+								</td>
+								<td style="text-align:right;">
+									${valorHTML}
+								</td>
+							</tr>`;
+
+
+				$('#js-descontos-table-procedimentos').append(tr);
+			});
+
+		})
+
 		$('.js-pagamentos').on('change','.js-debitoBandeira,.js-creditoBandeira,.js-parcelas,.js-valor',function(){
 						
 			//	creditoDebitoValorParcela($(this));
@@ -404,7 +464,7 @@
 			$(obj).find('select.js-parcelas option').remove();
 			
 			if($(this).val().length>0) {
-				let semJuros = eval($(this).find('option:checked').attr('data-semjuros'));
+				let semJuros = eval($(this).find('option:checked').attr('data-parcelas-semjuros'));
 				let parcelas = eval($(this).find('option:checked').attr('data-parcelas'));
 			
 				if($.isNumeric(parcelas)) {
@@ -412,7 +472,7 @@
 					for(var i=1;i<=parcelas;i++) {
 						semjuros='';
 						if($.isNumeric(semJuros) && semJuros>=i) semjuros=` - sem juros`;
-						if(parcelaProv && eval(parcelaProv)==i) sel=' selected';
+						//if(parcelaProv && eval(parcelaProv)==i) sel=' selected';
 						else sel ='';
 
 						$(obj).find('select.js-parcelas').append(`<option value="${i}"${sel}>${i}x${semjuros}</option>`);
@@ -507,7 +567,7 @@
 
 				numeroParcelasRestantes = numeroParcelas - (index+1);
 				valorParcela=valorRestante/numeroParcelasRestantes;
-
+				valorParcela=valorParcela.toFixed(2);
 				let valorInputado=0;
 				for(i=(index+1);i<numeroParcelas;i++) {
 
@@ -605,8 +665,7 @@
 							swal.close();   
 						} 
 				});
-			
-		})
+		});
 
 		// edita procedimento
 		$('.aside-plano-procedimento-editar .js-salvarEditarProcedimento').click(function(){
@@ -624,14 +683,13 @@
 			procedimentosListar();
 
 			$('.aside-plano-procedimento-editar .aside-close').click();
-
-		})
+		});
 
 		// clica em um procedimento para editar
 		$('#js-table-procedimentos').on('click','.js-tr-item',function(){
 			let index = $('#js-table-procedimentos .js-tr-item').index(this);
 			procedimentoEditar(index);
-		})
+		});
 
 		// adiciona procedimento
 		$('.aside-plano-procedimento-adicionar .js-salvarAdicionarProcedimento').click(function(){
@@ -1073,6 +1131,84 @@
 				<legend>Faces</legend>
 
 
+			</fieldset>
+		</form>
+	</div>
+</section>
+
+
+<section class="aside aside-plano-desconto" style="display: none;">
+	<div class="aside__inner1">
+		<header class="aside-header">
+			<h1>Aplicar Desconto</h1>
+			<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+		</header>
+
+		<form method="post" class="aside-content form js-form-adicionar-procedimento">
+			<?php /*<section class="filter">
+				<div class="filter-group"></div>
+				<div class="filter-group">
+					<div class="filter-form form">
+						<dl>
+							<dd><button type="button" class="button button_main js-salvarAdicionarProcedimento" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Adicionar</span></button></dd>
+						</dl>
+					</div>								
+				</div>
+			</section>*/?>
+
+			<fieldset class="js-descontos-fieldset-procedimentos">
+				<legend>Procedimentos</legend>
+
+				<div class="list1">
+					<table id="js-descontos-table-procedimentos">
+						
+					</table>
+				</div>
+			</fieldset>
+
+			<fieldset>
+				<legend>Desconto</legend>
+
+				<div class="colunas4">
+					<dl>
+						<dt>Desconto em</dt>
+						<dd>
+							<select>
+								<option>Dinheiro</option>
+								<option>Porcentagem</option>
+							</select>
+						</dd>
+					</dl>
+
+					<dl>
+						<dt>Valor</dt>
+						<dd>
+							<input type="text" />
+						</dd>
+					</dl>
+
+					<dl>
+						<dt>&nbsp;</dt>
+						<dd>
+							<a href="javascript:;" class="button">Aplicar Desconto</a>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="colunas4">
+					<dl>
+						<dt>Total</dt>
+						<dd><input type="text" /></dd>
+					</dl>
+					<dl>
+						<dt>Descontos</dt>
+						<dd><input type="text" /></dd>
+					</dl>
+					<dl>
+						<dt>Total com descontos</dt>
+						<dd><input type="text" /></dd>
+					</dl>
+				</div>
 			</fieldset>
 		</form>
 	</div>

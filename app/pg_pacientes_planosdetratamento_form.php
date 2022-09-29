@@ -74,8 +74,34 @@
 				$debitoBandeiras[$x->id]=array('titulo'=>utf8_encode($x->titulo),'bandeiras'=>array());
 			}
 
+			$sql->consult($_p."parametros_cartoes_operadoras_bandeiras","*","where lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				if(isset($_bandeiras[$x->id_bandeira])) {
+					$bandeira=$_bandeiras[$x->id_bandeira];
+					
+					$txJson = json_decode($x->taxas);
 
-			$_semJuros=array();
+
+					if($x->check_debito==1) {
+						$debitoTaxa=isset($txJson->debitoTaxas->taxa)?$txJson->debitoTaxas->taxa:0;
+						$debitoDias=isset($txJson->debitoTaxas->dias)?$txJson->debitoTaxas->dias:0;
+						$debitoBandeiras[$x->id_operadora]['bandeiras'][$x->id_bandeira]=array('id_bandeira'=>$x->id_bandeira,
+																								'titulo'=>utf8_encode($bandeira->titulo),
+																							 	'taxa'=>$debitoTaxa,
+																							 	'dias'=>$debitoDias);
+					}
+					if($x->check_credito==1) {
+						$creditoBandeiras[$x->id_operadora]['bandeiras'][$x->id_bandeira]=array('id_bandeira'=>$x->id_bandeira,
+																								'titulo'=>utf8_encode($bandeira->titulo),
+																								'parcelas'=>$x->credito_parcelas,
+																								'semJuros'=>$x->credito_parcelas_semjuros);
+					}
+				}
+			}
+
+
+
+			/*$_semJuros=array();
 			$sql->consult($_p."parametros_cartoes_taxas_semjuros","*","where lixo=0");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$_semJuros[$x->id_operadora][$x->id_bandeira]=$x->semjuros;
@@ -111,7 +137,9 @@
 					}
 
 				}
-			}
+			}*/
+
+
 	// formulario
 		$cnt='';
 		$campos=explode(",","titulo,id_profissional");
@@ -229,11 +257,11 @@
 					<!-- Financeiro -->
 					<fieldset style="grid-row:span 2">
 						<legend>Financeiro</legend>
-						<textarea id="js-textarea-pagamentos" style="display:none;"></textarea>
+						<textarea id="js-textarea-pagamentos" style="display:;"></textarea>
 
 						<dl>
 							<dd>
-								<a href="" class="button button_main"><i class="iconify" data-icon="fluent:money-calculator-24-filled"></i><span>Descontos</span></a>
+								<a href="javascript:;" class="button button_main js-btn-desconto"><i class="iconify" data-icon="fluent:money-calculator-24-filled"></i><span>Descontos</span></a>
 							</dd>
 						</dl>
 
@@ -338,6 +366,7 @@
 							</table>
 						</div>
 					</fieldset>
+
 
 				</div>
 

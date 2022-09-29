@@ -1,1 +1,1 @@
-docker build ./ -t rg.fr-par.scw.cloud/infodental/app:2.76 && docker push rg.fr-par.scw.cloud/infodental/app:2.76
+docker build ./ -t rg.fr-par.scw.cloud/infodental/app:2.78 && docker push rg.fr-par.scw.cloud/infodental/app:2.78

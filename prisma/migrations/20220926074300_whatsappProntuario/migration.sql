@@ -1,0 +1,1 @@
+INSERT INTO `ident_whatsapp_mensagens_tipos` (`id`, `lixo`, `titulo`, `pub`, `getProfile`, `texto`, `geolocalizacao`) VALUES (9, '', 'Envio de PDF de Prontuários', '1', '0', 'Olá *[nome]*, segue o PDF de seu prontuário', '')

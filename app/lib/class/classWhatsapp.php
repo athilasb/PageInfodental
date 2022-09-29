@@ -243,7 +243,7 @@
 										$sql->consult($_p."whatsapp_mensagens","*",$where);
 
 									
-										if($sql->rows==0) {
+										if(1==1 or $sql->rows==0) {
 
 											$vSQL="data=now(),
 													id_tipo=$tipo->id,
@@ -446,7 +446,14 @@
 						} else {
 							$this->erro="Paciente não encontrado!";
 						}
-					} else {
+					} 
+
+					// Envio de PDF de evolução
+					else if($tipo->id==9) {
+
+					}
+
+					else {
 						$this->erro="Nenhum tipo encontrado";
 					}
 
@@ -590,11 +597,11 @@
 													}*/
 												}
 											}
-										}
-
+										}	
 
 										// se tiver habilitado para enviar geolozalizacao
 										if($tipo->geolocalizacao==1 and !empty($clinica->lat) and !empty($clinica->lng)) {
+										
 											$attr=array('numero'=>$v->numero,
 															'lat'=>$clinica->lat,
 															'lng'=>$clinica->lng,
@@ -660,12 +667,20 @@
 			else {
 
 
+				if($conexao->versao==2) {
+					$url=$this->endpoint."/v2/message/text";
+				} else {
+					$url=$this->endpoint."/message/text";
+				}
+
+
 				$postfields=array("number"=>$this->wtsNumero($numero),
 									"quotedMessageId"=>$quotedMessageId,
 									"text"=>$mensagem,
 									"instance"=>$conexao->wid);
 
 				if($offline===true) $postfields['offline']=true;
+				
 
 				//var_dump($postfields);
 
@@ -681,7 +696,7 @@
 
 				curl_setopt_array($curl, [
 				  CURLOPT_PORT => "8443",
-				  CURLOPT_URL => $this->endpoint."/message/text",
+				  CURLOPT_URL => $url,
 				  CURLOPT_RETURNTRANSFER => true,
 				  CURLOPT_ENCODING => "",
 				  CURLOPT_MAXREDIRS => 10,
@@ -701,6 +716,7 @@
 
 				curl_close($curl);
 				$this->response=$response;
+				
 
 				if($err) {
 				  $erro="cURL Error #:" . $err;
@@ -739,47 +755,91 @@
 			else if(empty($numero)) $erro="Número destinatário não definido";
 			else if(empty($lat) or empty($lng)) $erro="Coordenadas não definida!";
 			else {
+				if($conexao->versao==2) {
+					$postfields=array('number'=>$this->wtsNumero($numero),
+										'instance'=>$conexao->wid,
+										'location'=>array('lat'=>$lat,
+															'lng'=>$lng,
+															'name'=>$name,
+															'address'=>$descricao));
+					
+					$curl = curl_init();
 
-				$postfields=array('number'=>$this->wtsNumero($numero),
-									'instance'=>$conexao->wid,
-									'location'=>array('lat'=>$lat,
-														'lng'=>$lng,
-														'name'=>$name,
-														'description'=>$descricao));
+					curl_setopt_array($curl, [
+					  CURLOPT_PORT => "8443",
+					  //CURLOPT_URL => $this->endpoint."/message/location",
+					  CURLOPT_URL => $this->endpoint."/v2/message/location",
+					  CURLOPT_RETURNTRANSFER => true,
+					  CURLOPT_ENCODING => "",
+					  CURLOPT_MAXREDIRS => 10,
+					  CURLOPT_TIMEOUT => 30,
+					  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+					  CURLOPT_CUSTOMREQUEST => "POST",
+					  CURLOPT_POSTFIELDS => json_encode($postfields),
+					  CURLOPT_HTTPHEADER => [
+					    "Content-Type: application/json",
+					    "token: ".$this->token
+					  ],
+					]);
 
-				$textMessage="📍 Nossa Localização:\n\n*GOOGLE MAPS*\nhttps://www.google.com/maps/search/".$lat.",".$lng."\n\n*WAZE*\nhttps://www.waze.com/pt-BR/live-map/directions?locale=pt_BR&utm_source=waze_app&to=ll.".$lat."%2C".$lng;
+					$response = curl_exec($curl);
 
-				$postfields=array('number'=>$this->wtsNumero($numero),
-									'instance'=>$conexao->wid,
-									'text'=>$textMessage);
+					$err = curl_error($curl);
+
+					curl_close($curl);
+					$this->response=$response;
+
+					/*$textMessage="📍 Nossa Localização:\n\n*GOOGLE MAPS*\nhttps://www.google.com/maps/search/".$lat.",".$lng."\n\n*WAZE*\nhttps://www.waze.com/pt-BR/live-map/directions?locale=pt_BR&utm_source=waze_app&to=ll.".$lat."%2C".$lng;
+
+					$attr=array('numero'=>$numero,
+								'mensagem'=>$textMessage,
+								'id_conexao'=>$conexao->id);
+
+					if($this->enviaMensagem($attr)) {
+						echo "localizacao enviada com sucesso!";
+					}*/
+
+				} else {
 				
-				$curl = curl_init();
+					$postfields=array('number'=>$this->wtsNumero($numero),
+										'instance'=>$conexao->wid,
+										'location'=>array('lat'=>$lat,
+															'lng'=>$lng,
+															'name'=>$name,
+															'description'=>$descricao));
 
-				curl_setopt_array($curl, [
-				  CURLOPT_PORT => "8443",
-				  //CURLOPT_URL => $this->endpoint."/message/location",
-				  CURLOPT_URL => $this->endpoint."/message/text",
-				  CURLOPT_RETURNTRANSFER => true,
-				  CURLOPT_ENCODING => "",
-				  CURLOPT_MAXREDIRS => 10,
-				  CURLOPT_TIMEOUT => 30,
-				  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-				  CURLOPT_CUSTOMREQUEST => "POST",
-				  CURLOPT_POSTFIELDS => json_encode($postfields),
-				  CURLOPT_HTTPHEADER => [
-				    "Content-Type: application/json",
-				    "token: ".$this->token
-				  ],
-				]);
+					$textMessage="📍 Nossa Localização:\n\n*GOOGLE MAPS*\nhttps://www.google.com/maps/search/".$lat.",".$lng."\n\n*WAZE*\nhttps://www.waze.com/pt-BR/live-map/directions?locale=pt_BR&utm_source=waze_app&to=ll.".$lat."%2C".$lng;
 
-				$response = curl_exec($curl);
+					$postfields=array('number'=>$this->wtsNumero($numero),
+										'instance'=>$conexao->wid,
+										'text'=>$textMessage);
+					
+					$curl = curl_init();
 
-				var_dump($response);
+					curl_setopt_array($curl, [
+					  CURLOPT_PORT => "8443",
+					  //CURLOPT_URL => $this->endpoint."/message/location",
+					  CURLOPT_URL => $this->endpoint."/message/text",
+					  CURLOPT_RETURNTRANSFER => true,
+					  CURLOPT_ENCODING => "",
+					  CURLOPT_MAXREDIRS => 10,
+					  CURLOPT_TIMEOUT => 30,
+					  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+					  CURLOPT_CUSTOMREQUEST => "POST",
+					  CURLOPT_POSTFIELDS => json_encode($postfields),
+					  CURLOPT_HTTPHEADER => [
+					    "Content-Type: application/json",
+					    "token: ".$this->token
+					  ],
+					]);
 
-				$err = curl_error($curl);
+					$response = curl_exec($curl);
 
-				curl_close($curl);
-				$this->response=$response;
+					$err = curl_error($curl);
+
+					curl_close($curl);
+					$this->response=$response;
+				}
 
 				if($err) {
 				  $erro="cURL Error #:" . $err;
@@ -801,51 +861,74 @@
 
 			$numero=(isset($attr['numero']) and is_numeric($attr['numero']))?$this->wtsNumero($attr['numero']):'';
 
+			$conexao='';
+			if(isset($attr['id_conexao']) and is_numeric($attr['id_conexao'])) {
+				$sql->consult("infodentalADM.infod_contas_onlines","*","where id=".$attr['id_conexao']);
+				if($sql->rows) $conexao=mysqli_fetch_object($sql->mysqry);
+			}
 
+			var_dump($attr);die();
 			if(!empty($numero)) {
 				$getUrl=$this->endpoint."/profile?instance=".$attr['instance']."&contact=".$numero;
 				//echo $getUrl."\n";
 				
-				$curl = curl_init(); 
 
-				curl_setopt_array($curl, [
-				  CURLOPT_PORT => "8443",
-				  CURLOPT_URL => "https://srv.infodental.dental:8443/profile?instance=".$attr['instance']."&contact=".$numero,
-				  CURLOPT_RETURNTRANSFER => true,
-				  CURLOPT_ENCODING => "",
-				  CURLOPT_MAXREDIRS => 10,
-				  CURLOPT_TIMEOUT => 30,
-				  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-				  CURLOPT_CUSTOMREQUEST => "GET",
-				  CURLOPT_POSTFIELDS => "",
-				  CURLOPT_HTTPHEADER => [
-				    "token: b5b9f54a9b11125a63136f3712e853f1023836b3"
-				  ],
-				]);
+			
+				if(empty($conexao)) $erro="Nenhum whatsapp está conectado a esta unidade";
+				else {
 
-				$response = curl_exec($curl);
-				$err = curl_error($curl);
-				$info = curl_getinfo($curl);
-
-				curl_close($curl);
-
-				if ($err) {
-				  $this->erro="cURL Error #:" . $err;
-				  return false;
-				} else {
-					if($info['http_code']==500) {
-						 $this->erro="Whatsapp não liberado para captação de foto";
-						return false;
+					if($conexao->versao==2) {
+						$url="https://srv.infodental.dental:8443/v2/profile?instance=".$attr['instance']."&contact=".$numero;
 					} else {
-						$this->response=json_decode($response);
-						return true;
+						$url="https://srv.infodental.dental:8443/profile?instance=".$attr['instance']."&contact=".$numero;
+					}
+
+					$curl = curl_init(); 
+
+					curl_setopt_array($curl, [
+					  CURLOPT_PORT => "8443",
+					  CURLOPT_URL => $url,
+					  CURLOPT_RETURNTRANSFER => true,
+					  CURLOPT_ENCODING => "",
+					  CURLOPT_MAXREDIRS => 10,
+					  CURLOPT_TIMEOUT => 30,
+					  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+					  CURLOPT_CUSTOMREQUEST => "GET",
+					  CURLOPT_POSTFIELDS => "",
+					  CURLOPT_HTTPHEADER => [
+					    "token: b5b9f54a9b11125a63136f3712e853f1023836b3"
+					  ],
+					]);
+
+					$response = curl_exec($curl);
+					$err = curl_error($curl);
+					$info = curl_getinfo($curl);
+
+					curl_close($curl);
+
+					if ($err) {
+					  $erro="cURL Error #:" . $err;
+					} else {
+						if($info['http_code']==500) {
+							 $erro="Whatsapp não liberado para captação de foto";
+						} else {
+							$this->response=json_decode($response);
+						}
 					}
 				}
 
 			} else {
-				$this->erro="Número não definido";
-				return false;
+				$erro="Número não definido";
 
+			}
+
+
+
+			if(empty($erro)) {
+				return true;
+			} else {
+				$this->erro=$erro;
+				return false;
 			}
 		}
 
@@ -887,6 +970,7 @@
 				$response = json_decode(curl_exec($curl));
 				$err = curl_error($curl);
 
+
 				curl_close($curl);
 
 				if ($err) {
@@ -896,12 +980,95 @@
 				 	if(isset($response->success) and $response->success===true) {
 				 		return true;
 				 	} else {
+				 		var_dump($response);
 				 		$this->erro=isset($response->erro)?$response->erro:'Algum erro ocorreu';
 				 		return false;
 				 	}
 				}
 			} else {
 				$this->erro="Paciente não encontrado!";
+				return false;
+			}
+		}
+
+		function enviaArquivo($attr) {
+			$_p=$this->prefixo;
+			$sql=new Mysql(true);
+
+			$numero=(isset($attr['numero']) and is_numeric($attr['numero']))?$attr['numero']:'';
+			$arq=(isset($attr['arq']) and !empty($attr['arq']))?$attr['arq']:'';
+
+	
+			$conexao='';
+			if(isset($attr['id_conexao']) and is_numeric($attr['id_conexao'])) {
+				$sql->consult("infodentalADM.infod_contas_onlines","*","where id=".$attr['id_conexao']);
+				if($sql->rows) $conexao=mysqli_fetch_object($sql->mysqry);
+			}
+
+			$documentName = (isset($attr['documentName']) and !empty($attr['documentName']))?$attr['documentName']:'';
+
+
+
+			if(empty($conexao)) $erro="Nenhum whatsapp está conectado a esta unidade";
+			else if(is_object($conexao) and $conexao->versao!=2) $erro='Versão do infozap não disponível para envio de documentos';
+			else if(empty($numero)) $erro="Número destinatário não definido";
+			else if(empty($arq)) $erro="Mensagem não definida!";
+			else {
+
+				$url=$this->endpoint."/v2/message/document";
+				//$url="http://163.172.187.183:5000/services/teste.php";
+
+				$cf = new CURLFile($arq);
+
+				$cf->setMimeType('application/pdf');
+
+				$postfields=array("number"=>$this->wtsNumero($numero),
+								"instance"=>$conexao->wid,
+								"quotedMessageId"=>"",
+							//	"debug"=>1,
+								"document" => $cf,
+								"documentName"=>$documentName);
+
+				$ch = curl_init();
+				curl_setopt($ch, CURLOPT_URL, $url);
+				curl_setopt($ch, CURLOPT_POST, true);
+				curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+				curl_setopt($ch, CURLOPT_POSTFIELDS,$postfields);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($ch, CURLOPT_HTTPHEADER,["Content-Type: multipart/form-data","token: b5b9f54a9b11125a63136f3712e853f1023836b3"]);
+				
+				$response = curl_exec($ch);
+				$info = curl_getinfo($ch);
+				$err = curl_error($ch);
+				curl_close($ch);
+
+				if($err) {
+					$this->erro='Erro na Requisição: '.$err;
+					return false;
+				} else {
+					$erro='';
+					
+					$response = json_decode($response);
+
+					if(isset($info['http_code']) and $info['http_code']==200) {
+						if(isset($response->error)) {
+							if(isset($response->message)) $erro='Erro: '.$response->message;
+							else $erro='Erro: '.$response->error;
+						} 
+					} else {
+						if(isset($response->error)) {
+							if(isset($response->message)) $erro='Erro: '.$response->message;
+							else $erro='Erro: '.$response->error;
+						}
+					}
+				}
+			}
+
+
+			if(empty($erro)) {
+				return true;
+			} else {
+				$this->erro=$erro;
 				return false;
 			}
 		}

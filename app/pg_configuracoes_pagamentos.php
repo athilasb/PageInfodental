@@ -174,6 +174,9 @@
 				<section class="header-title">
 					<h1>Configurações</h1>
 				</section>
+				<?php
+				require_once("includes/menus/menuConfiguracoes.php");
+				?>
 			</div>
 		</div>
 	</header>
