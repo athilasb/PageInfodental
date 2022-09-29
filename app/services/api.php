@@ -7,6 +7,7 @@
 
 	use Dompdf\Dompdf;
 	$dompdf = new Dompdf(array('enable_remote'=>true));
+	$dompdf = new Dompdf(array('isRemoteEnabled'=>true));
 	$sql = new Mysql();
 	$id_evolucao=1990;
 
@@ -107,9 +108,9 @@
 							$clinica=mysqli_fetch_object($sql->mysqry);
 
 							if($clinica->tipo_pessoa=='PF') {
-								$clinicaTitulo='<b>Nome</b><br />'.utf8_encode($clinica->nome);
+								$clinicaTitulo='<small>Nome</small><br />'.utf8_encode($clinica->nome);
 							} else {
-								$clinicaTitulo='<b>Razão Social</b><br />'.utf8_encode($clinica->razao_social);
+								$clinicaTitulo='<small>Razão Social</small><br />'.utf8_encode($clinica->razao_social);
 							}
 
 							$clinicaTelefone=mask($clinica->telefone1);
@@ -118,7 +119,7 @@
 							if(!empty($clinica->lat) and !empty($clinica->lng)) {
 								$lat=$clinica->lat;
 								$lng=$clinica->lng;
-								$clinicaComoChegar='<b>Como Chegar</b><br /><a href="https://www.google.com/maps/search/'.$lat.','.$lng.'">Google Maps</a> &nbsp;&nbsp;
+								$clinicaComoChegar='<small>Como Chegar</small><br /><a href="https://www.google.com/maps/search/'.$lat.','.$lng.'">Google Maps</a> &nbsp;&nbsp;
 													<a href="https://www.waze.com/pt-BR/live-map/directions?locale=pt_BR&utm_source=waze_app&to=ll.'.$lat.'%2C'.$lng.';">Waze</a>';
 							}
 						}
@@ -160,7 +161,7 @@
 									$regiao=substr($regiao,0,strlen($regiao)-2);
 								}
 								$examesSolicitados.='<tr><td>';
-								$examesSolicitados.='<b>'.$cont++.') '.utf8_encode($_exames[$x->id_exame]->titulo).'</b><br />
+								$examesSolicitados.='<small>'.$cont++.') '.utf8_encode($_exames[$x->id_exame]->titulo).'</small><br />
 													Região: '.$regiao.'<br />';
 								
 								if(!empty($x->obs)) $examesSolicitados.='Obs: '.utf8_encode($x->obs).'<br />';
@@ -171,65 +172,67 @@
 						
 						
 
-						$html='<style>
-									body { text-align:center}
-									a {
-										color:#000;
-									}
-								</style>
-
-								<center>
-								<header>
-									<img src="http://163.172.187.183:5000/img/logo-cliente.png" height="50" />
-								</header>
-									
-									<h1>Pedido de Exame Complementar</h1>
-									<p>'.date('d/m/Y',strtotime($evolucao->data)).'</p>
-
-
-									<table style="width:100%;border-radius:8px;padding:10px;background:#e5e5e5;text-align:center">
-										<tr>
-											<td><b>'.utf8_encode($paciente->nome).'</b></td>
-											<td>'.$idade.'</td>
-											<td>'.$sexo.'</td>
-											<td>'.$celular.'</td>
-										</tr>
-									</table>
-
-									<h2>Clínica Radiológica</h2>
-
-
-									<table style="width:100%;border-radius:8px;padding:10px;border: solid 1px #CCC;text-align:center">
-										<tr>
-											<td>'.$clinicaTitulo.'</td>
-											<td><b>Telefone</b><br />'.$clinicaTelefone.'</td>
-											<td><b>Solicitado por</b><br />'.utf8_encode($solicitante->nome).'</td>
-										</tr>
-										<tr>
-											<td colspan="3">
-												<b>Endereço</b><br />
-												'.$clinicaEndereco.'
-											</td>
-										</tr>
-										<tr>
-											<td colspan="3">
-												'.$clinicaComoChegar.'
-											</td>
-										</tr>
-									</table>
-
-									<h2>Exames Solicitados</h2>
-
-									<table style="width:100%;border-radius:8px;padding:10px;border: solid 1px #CCC;text-align:left">
-										'.$examesSolicitados.'
-									</table>
-
-									<table style="width:100%;border-radius:8px;padding:10px;text-align:center;margin-top:20px;">
+						$html='
+								<html>
+								<head>
+									<style>		
+										@import url("http://163.172.187.183:5000/css/pdf.css");
+									</style>
+								</head>
+								<body>							
+									<header>
+										<img src="http://163.172.187.183:5000/img/logo-cliente.png" />
+									</header>
+									<footer>
+										<table>
 										'.$unidadeTelefones.$unidadeEndereco.$unidadeDigital.'
-									</table>
+										</table>
+									</footer>
+									<main>									
 
+										<h1>Pedido de Exame Complementar</h1>
 
-								</center>
+										<p style="text-align:center;">'.date('d/m/Y',strtotime($evolucao->data)).'</p>
+
+										<table>
+											<tr>
+												<td><small>'.utf8_encode($paciente->nome).'</small></td>
+												<td>'.$idade.'</td>
+												<td>'.$sexo.'</td>
+												<td>'.$celular.'</td>
+											</tr>
+										</table>
+
+										<h2>Clínica Radiológica</h2>
+
+										<table>
+											<tr>
+												<td>'.$clinicaTitulo.'</td>
+												<td><small>Telefone</small><br />'.$clinicaTelefone.'</td>
+												<td><small>Solicitado por</small><br />'.utf8_encode($solicitante->nome).'</td>
+											</tr>
+											<tr>
+												<td colspan="3">
+													<small>Endereço</small><br />
+													'.$clinicaEndereco.'
+												</td>
+											</tr>
+											<tr>
+												<td colspan="3">
+													'.$clinicaComoChegar.'
+												</td>
+											</tr>
+										</table>
+
+										<h2>Exames Solicitados</h2>
+
+										<table>
+											'.$examesSolicitados.'
+										</table>
+									</main>
+								</body>
+								</html>
+									
 							';
 
 
