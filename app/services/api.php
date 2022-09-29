@@ -250,8 +250,7 @@
 
 				if(empty($erro)) {
 
-					
-
+					die();
 					// envia whatsapp
 					$numero=$paciente->telefone1;
 					$attr=array('numero'=>$numero,
