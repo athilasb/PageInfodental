@@ -57,6 +57,8 @@
 				$where="where instancia='".$_ENV['NAME']."' and lixo=0 order by data desc limit 1";
 				$sql->consult("infodentalADM.infod_contas_onlines","*",$where);
 				$conexao=$sql->rows?mysqli_fetch_object($sql->mysqry):'';
+
+				//var_dump($conexao);
 				
 				if(empty($evolucao)) $erro='Evolução não encontrada!';
 				else if(empty($evolucaoTipo)) $erro='Tipo de evolução não encontrado!';
@@ -253,7 +255,7 @@
 
 				if(empty($erro)) {
 
-					die();
+				
 					// envia whatsapp
 					$numero=$paciente->telefone1;
 					$attr=array('numero'=>$numero,

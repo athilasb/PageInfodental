@@ -655,7 +655,7 @@
 
 
 						// id_tipo = 9 -> geral
-						$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
+						/*$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
 																								id_paciente=$paciente->id and
 																								id_tipo=9 and  
 																								id_usuario=$usr->id");	
@@ -663,14 +663,14 @@
 							$e=mysqli_fetch_object($sql->mysqry);
 							$sql->update($_p."pacientes_evolucoes","id_profissional='".addslashes(utf8_decode($_POST['id_profissional']))."'","where id=$e->id");
 							$id_evolucao=$e->id;
-						} else {
+						} else {*/
 							$sql->add($_p."pacientes_evolucoes","data=now(),
 																	id_tipo=9,
 																	id_paciente=$paciente->id,
 																	id_usuario=$usr->id,
 																	id_profissional='".addslashes(utf8_decode($_POST['id_profissional']))."'");
 							$id_evolucao=$sql->ulid;
-						}
+						//}
 
 
 						$geral='';

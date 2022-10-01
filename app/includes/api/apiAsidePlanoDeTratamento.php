@@ -407,61 +407,65 @@
 		}
 	}
 
+	// atualiza valores dos campos do box desconto
 	const descontoAtualizar = () => {
 
 		let cont = 0;
 		let totalProcedimentos = 0;
+		let totalDescontoAplicado = 0;
 		$('#js-descontos-table-procedimentos .js-desconto-procedimento').each(function(ind,el) {
 			
 			if($(el).prop('checked')===true) {
 				totalProcedimentos+=eval(procedimentos[cont].valor);
+				totalDescontoAplicado+=eval(procedimentos[cont].desconto);
 			}
 
 			cont++;
 
 			if(cont==procedimentos.length) {
-				$('.aside-plano-desconto .js-total-procedimentos').val(number_format(totalProcedimentos,2,",","."));
 
-				let valor = 0;
-				
-				if($('.aside-plano-desconto .js-select-tipoDesconto').val()=="dinheiro") {
-					valor = unMoney($('.aside-plano-desconto .js-input-desconto').val());
-					$('.aside-plano-desconto .js-total-descontos').val(number_format(valor,2,",","."));
-				} else {
-
-					valor = unMoney($('.aside-plano-desconto .js-input-desconto').val().replace(".",","));
-				
-					if(valor>100) {
-						valor = 100;
-						$('.aside-plano-desconto .js-input-desconto').val('100')
-					}
-
-					valor = totalProcedimentos * (valor/100);
-					valor = valor.toFixed(2);
-
-
-
-
-					$('.aside-plano-desconto .js-total-descontos').val(number_format(valor,2,",","."));
-				}
-
-				$('.aside-plano-desconto .js-total-procedimentosdescontos').val(number_format(totalProcedimentos-valor,2,",","."));
 			}
 		});
+
+		$('.aside-plano-desconto .js-total-procedimentos').val(number_format(totalProcedimentos,2,",","."));
+		$('.aside-plano-desconto .js-total-descontosAplicados').val(number_format(totalDescontoAplicado,2,",","."));
+
+		let valor = 0;
+		if($('.aside-plano-desconto .js-input-desconto').val().length>0) {
+			if($('.aside-plano-desconto .js-select-tipoDesconto').val()=="dinheiro") {
+				valor = unMoney($('.aside-plano-desconto .js-input-desconto').val());
+				$('.aside-plano-desconto .js-total-descontos').val(number_format(valor,2,",","."));
+			} else {
+
+				valor = unMoney($('.aside-plano-desconto .js-input-desconto').val().replace(".",","));
+			
+				if(valor>100) {
+					valor = 100;
+					$('.aside-plano-desconto .js-input-desconto').val('100')
+				}
+
+				valor = totalProcedimentos * (valor/100);
+				valor = valor.toFixed(2);
+
+				$('.aside-plano-desconto .js-total-descontos').val(number_format(valor,2,",","."));
+			}
+		}
+		console.log(totalProcedimentos);
+		console.log(valor);
+		$('.aside-plano-desconto .js-total-procedimentosdescontos').val(number_format(totalProcedimentos-totalDescontoAplicado,2,",","."));
 	}
 
-	$(function(){
+	// lista procedimentos no box desconto
+	/*
+		@checked: 1 para checar os checkbox e 0 para não checar os checkbox
+	*/
+	const descontoListarProcedimentos = (checked) => {
+		let totalDesconto = 0;
+		let cont = 1;
+		$('#js-descontos-table-procedimentos').html('');
+		procedimentos.forEach(x => {
 
-		// clica no botao desconto
-		$('.js-btn-desconto').click(function(){
-			$(".aside-plano-desconto").fadeIn(100,function() {
-				$(".aside-plano-desconto .aside__inner1").addClass("active");
-			});
-
-			let totalDesconto = 0;
-
-			procedimentos.forEach(x => {
-
+			if(x.situacao=="aprovado") {
 				opcao='';
 				if(x.opcao.length>0) opcao=x.opcao+' - ';
 
@@ -469,14 +473,16 @@
 				let valorHTML = '';
 				if(x.desconto>0) {
 					totalDesconto+=x.desconto;
-					valorHTML = `<strike>${number_format(x.valor,2,",",".")}<strike><br />${number_format(x.valorCorrigido,2,",",".")}`
+					valorHTML = `<strike>${number_format(x.valor,2,",",".")}</strike><br />${number_format(x.valorCorrigido,2,",",".")}`
 				} else {
 					valorHTML = number_format(x.valorCorrigido,2,",",".");
 				}
 
+				let iniciarChecado = checked==1?' checked':'';
+				if(x.desconto>0) iniciarChecado=' checked';
 				let tr = `<tr class="js-tr-item">			
 								<td style="width:25px;">
-									<label><input type="checkbox" class="js-desconto-procedimento" /></label>
+									<label><input type="checkbox" class="js-desconto-procedimento"${iniciarChecado} /></label>
 								</td>					
 								<td>
 									<h1>${x.procedimento}</h1>
@@ -489,7 +495,137 @@
 
 
 				$('#js-descontos-table-procedimentos').append(tr);
+			}
+
+			if(cont==procedimentos.length) {
+				descontoAtualizar();
+			}
+			cont++;
+		});
+	}
+
+	$(function(){
+
+		// remove descontos
+		$('.aside-plano-desconto .js-btn-removerDesconto').click(function(){
+
+			let cont = 0;
+			procedimentos.forEach(x=>{
+				procedimentos[cont].desconto=0;
+				procedimentos[cont].valorCorrigido=procedimentos[cont].valor;
+				cont++;
 			});
+			descontoListarProcedimentos(0);
+			procedimentosListar();
+		});
+
+		// clica no botao de aplicar desconto na janela de desconto
+		$('.aside-plano-desconto .js-btn-aplicarDesconto').click(function(){
+			let tipoDesconto = $('.aside-plano-desconto .js-select-tipoDesconto').val();
+			let quantidadeDesconto = $('.aside-plano-desconto .js-desconto-procedimento:checked').length;
+			let desconto = unMoney($(`.aside-plano-desconto .js-input-desconto`).val());
+			//console.log('Descontando '+desconto);
+			if(quantidadeDesconto==0) {
+				swal({title: "Erro", text: 'Selecione pelo menos um procedimento para aplicar desconto!', html:true, type:"error", confirmButtonColor: "#424242"});
+					
+			} else if(desconto==0 || desconto===undefined || desconto==='' || !desconto) {
+				swal({title: "Erro", text: 'Defina o desconto que deverá ser aplicado!', html:true, type:"error", confirmButtonColor: "#424242"});
+			} else {
+				let valorTotal = 0;
+				let cont = 0;
+				let qtdItensDesconto = 0;
+
+				procedimentos.forEach(x=>{
+					//console.log(cont+' '+x.situacao);
+					if(x.situacao!="naoAprovado" && x.situacao!="observado") {
+						if($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked')===true) {
+							valorTotal+=eval(x.valor);
+							console.log(cont+' '+x.situacao+'->'+x.valorCorrigido);
+							qtdItensDesconto++;
+						}
+						cont++;
+					}
+				});
+
+				if(tipoDesconto!="dinheiro") {
+					desconto = unMoney($(`.aside-plano-desconto .js-input-desconto`).val().replace('.',','));
+					desconto = (valorTotal*(desconto/100)).toFixed(2);
+				}
+
+				// calcula percentual do desconto em cima do valor total
+				let descontoParcentual = ((desconto/valorTotal)*100).toFixed(4);
+
+
+				//alert(descontoParcentual+' '+desconto);
+
+				console.log('Valor Total:'+valorTotal+' Desconto: '+desconto+' Perc:'+descontoParcentual);;
+				
+				if(desconto==0 || desconto===undefined || desconto==='' || !desconto) {
+					swal({title: "Erro", text: 'Defina o desconto que deverá ser aplicado!', html:true, type:"error", confirmButtonColor: "#424242"});
+					$(`.aside-plano-desconto .js-input-desconto`).addClass('erro');
+				} else {
+					let cont = 0;
+					let contProcedimento = 0;
+					procedimentos.forEach(x=>{
+						//console.log(x);
+						if(x.situacao=="aprovado") {
+
+							if($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked')===true) {
+								let desc = 0;
+
+								if(x.desconto>0) {
+									valorProc=procedimentos[contProcedimento].valor;
+								} else {
+									valorProc=procedimentos[contProcedimento].valor;
+									if(eval(x.quantitativo)==1) valorProc*=eval(x.quantidade);
+								}
+
+								equivalente = (valorProc/valorTotal).toFixed(8);
+								descontoAplicar = desconto*equivalente;
+
+								console.log(valorProc+' eq '+equivalente+' = '+descontoAplicar);
+
+								//descontoAplicar = desconto/qtdItensDesconto;
+
+
+								if(procedimentos[contProcedimento].desconto && $.isNumeric(procedimentos[contProcedimento].desconto)) {
+									desc=procedimentos[contProcedimento].desconto+descontoAplicar;
+								} else {
+									desc=descontoAplicar;
+								}
+								valorProc=procedimentos[contProcedimento].valor;
+								if(eval(x.quantitativo)==1) {
+									valorProc*=eval(x.quantidade);
+									procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
+									procedimentos[contProcedimento].desconto=desc;///eval(x.quantidade);
+								} else {
+
+									procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
+									procedimentos[contProcedimento].desconto=desc
+								}
+
+								//console.log('desconto em '+cont+'\n'+procedimentos[contProcedimento].valor+' - '+desc)
+							}
+							cont++;
+						}
+						contProcedimento++;
+					});
+
+					procedimentosListar();
+					descontoListarProcedimentos(0);
+					$('.js-input-desconto').val('');
+
+				}
+			}
+		})
+
+		// abre janela de desconto
+		$('.js-btn-desconto').click(function(){
+			$(".aside-plano-desconto").fadeIn(100,function() {
+				$(".aside-plano-desconto .aside__inner1").addClass("active");
+			});
+
+			descontoListarProcedimentos(1);
 
 		});
 
@@ -1247,10 +1383,11 @@
 						</dd>
 					</dl>
 
-					<dl>
+					<dl class="dl2">
 						<dt>&nbsp;</dt>
 						<dd>
-							<a href="javascript:;" class="button">Aplicar Desconto</a>
+							<a href="javascript:;" class="button button_main js-btn-aplicarDesconto">Aplicar Desconto</a>
+							<a href="javascript:;" class="button js-btn-removerDesconto">Remover Descontos</a>
 						</dd>
 					</dl>
 				</div>
@@ -1260,7 +1397,7 @@
 						<dt>Total dos Procedimentos</dt>
 						<dd><input type="text" class="js-total-procedimentos" disabled /></dd>
 					</dl>
-					<dl>
+					<dl style="display:none">
 						<dt>Desconto a ser aplicado</dt>
 						<dd><input type="text" class="js-total-descontos" disabled /></dd>
 					</dl>
