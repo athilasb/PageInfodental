@@ -407,6 +407,49 @@
 		}
 	}
 
+	const descontoAtualizar = () => {
+
+		let cont = 0;
+		let totalProcedimentos = 0;
+		$('#js-descontos-table-procedimentos .js-desconto-procedimento').each(function(ind,el) {
+			
+			if($(el).prop('checked')===true) {
+				totalProcedimentos+=eval(procedimentos[cont].valor);
+			}
+
+			cont++;
+
+			if(cont==procedimentos.length) {
+				$('.aside-plano-desconto .js-total-procedimentos').val(number_format(totalProcedimentos,2,",","."));
+
+				let valor = 0;
+				
+				if($('.aside-plano-desconto .js-select-tipoDesconto').val()=="dinheiro") {
+					valor = unMoney($('.aside-plano-desconto .js-input-desconto').val());
+					$('.aside-plano-desconto .js-total-descontos').val(number_format(valor,2,",","."));
+				} else {
+
+					valor = unMoney($('.aside-plano-desconto .js-input-desconto').val().replace(".",","));
+				
+					if(valor>100) {
+						valor = 100;
+						$('.aside-plano-desconto .js-input-desconto').val('100')
+					}
+
+					valor = totalProcedimentos * (valor/100);
+					valor = valor.toFixed(2);
+
+
+
+
+					$('.aside-plano-desconto .js-total-descontos').val(number_format(valor,2,",","."));
+				}
+
+				$('.aside-plano-desconto .js-total-procedimentosdescontos').val(number_format(totalProcedimentos-valor,2,",","."));
+			}
+		});
+	}
+
 	$(function(){
 
 		// clica no botao desconto
@@ -416,7 +459,6 @@
 			});
 
 			let totalDesconto = 0;
-			let totalProcedimentos = 0;
 
 			procedimentos.forEach(x => {
 
@@ -431,9 +473,11 @@
 				} else {
 					valorHTML = number_format(x.valorCorrigido,2,",",".");
 				}
-				totalProcedimentos+=x.valorCorrigido;
 
-				let tr = `<tr class="js-tr-item">								
+				let tr = `<tr class="js-tr-item">			
+								<td style="width:25px;">
+									<label><input type="checkbox" class="js-desconto-procedimento" /></label>
+								</td>					
 								<td>
 									<h1>${x.procedimento}</h1>
 									<p>${opcao}${x.plano}</p>
@@ -447,7 +491,23 @@
 				$('#js-descontos-table-procedimentos').append(tr);
 			});
 
-		})
+		});
+
+		// ao selecionar procedimento em desconto
+		$('#js-descontos-table-procedimentos').on('click','.js-desconto-procedimento',descontoAtualizar);
+		$('.aside-plano-desconto .js-input-desconto').change(descontoAtualizar);
+
+		$('.aside-plano-desconto .js-select-tipoDesconto').change(function(){
+			$('.aside-plano-desconto .js-input-desconto').maskMoney('destroy');
+			$('.aside-plano-desconto .js-input-desconto').val('');
+			if($(this).val()=="dinheiro") {
+				$('.aside-plano-desconto .js-input-desconto').maskMoney({symbol:'', allowZero:true, showSymbol:true, thousands:'.', decimal:',', symbolStay: true}).attr('maxlength',10);
+				
+			} else {
+				$('.aside-plano-desconto .js-input-desconto').maskMoney({symbol:'', precision:1, suffix:'%', allowZero:true, showSymbol:true, thousands:'', decimal:'.', symbolStay: true}).attr('maxlength',6);
+			}
+			$('.aside-plano-desconto .js-input-desconto').trigger('keyup');
+		}).trigger('change');
 
 		$('.js-pagamentos').on('change','.js-debitoBandeira,.js-creditoBandeira,.js-parcelas,.js-valor',function(){
 						
@@ -1173,17 +1233,17 @@
 					<dl>
 						<dt>Desconto em</dt>
 						<dd>
-							<select>
-								<option>Dinheiro</option>
-								<option>Porcentagem</option>
+							<select class="js-select-tipoDesconto">
+								<option value="dinheiro">Dinheiro</option>
+								<option value="porcentual">Porcentagem</option>
 							</select>
 						</dd>
 					</dl>
 
 					<dl>
-						<dt>Valor</dt>
+						<dt>&nbsp;</dt>
 						<dd>
-							<input type="text" />
+							<input type="text" class="js-input-desconto" />
 						</dd>
 					</dl>
 
@@ -1197,16 +1257,20 @@
 
 				<div class="colunas4">
 					<dl>
-						<dt>Total</dt>
-						<dd><input type="text" /></dd>
+						<dt>Total dos Procedimentos</dt>
+						<dd><input type="text" class="js-total-procedimentos" disabled /></dd>
 					</dl>
 					<dl>
-						<dt>Descontos</dt>
-						<dd><input type="text" /></dd>
+						<dt>Desconto a ser aplicado</dt>
+						<dd><input type="text" class="js-total-descontos" disabled /></dd>
+					</dl>
+					<dl>
+						<dt>Descontos aplicados</dt>
+						<dd><input type="text" class="js-total-descontosAplicados" disabled /></dd>
 					</dl>
 					<dl>
 						<dt>Total com descontos</dt>
-						<dd><input type="text" /></dd>
+						<dd><input type="text" class="js-total-procedimentosdescontos" disabled /></dd>
 					</dl>
 				</div>
 			</fieldset>

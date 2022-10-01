@@ -11,7 +11,7 @@
 				$_ENV['NAME']=$_ENV['MYSQL_DB']='';
 
 			} else {
-				$_ENV['NAME']=$_ENV['MYSQL_DB']='agenda';
+				$_ENV['NAME']=$_ENV['MYSQL_DB']='studiodental';
 			}
 			$_ENV['MYSQL_USER']="dentalinfo";
 			$_ENV['MYSQL_PASS']="d3ntaL@inf0"; 
