@@ -15,6 +15,7 @@
 	}
 
 	$jsc = new Js();
+	$encoding = new Encoding();
 
 	if(empty($tratamento)) {
 		$jsc->alert("Tratamento não cadastrado!","document.location.href='../dashboard.php'");
@@ -35,13 +36,16 @@
 
 
 	if($tratamento->status!="APROVADO") {
-		$procedimentosObj = json_decode($tratamento->procedimentos);
+		$procedimentosObj = json_decode(utf8_encode($tratamento->procedimentos));
 		$pagamentosObj = json_decode($tratamento->pagamentos);
 
 
 		foreach($procedimentosObj as $x) {
 			$procedimentosIds[$x->id_procedimento]=$x->id_procedimento;
 			if($x->situacao=="aprovado" or $x->situacao=="aguardandoAprovacao") {
+
+				if(empty($x->quantidade)) $x->quantidade=1;
+
 				$descontoTotal+=$x->desconto;
 
 				$valorTotalSemDesconto+=$x->valor*$x->quantidade;
@@ -109,7 +113,7 @@
 			
 <header class="titulo1">
 	<h1>Plano de Tratamento</h1>
-	<p style="font-size:1.25em;">
+	<p style="font-size:0.45em;">
 		<?php
 		if($tratamento->status=="APROVADO") {
 		?>
@@ -171,9 +175,8 @@
 				<h1>Procedimento</h1>
 				<p><strong><?php echo utf8_encode($procedimento->titulo);?></strong>
 					<?php echo $proc->quantidade>1?" - Qtd. $proc->quantidade":"";?>
-					<?php echo !empty($proc->opcao)?" - ".utf8_encode($proc->opcao):"";?> - 
-					<?php echo utf8_encode($proc->plano);?>
-					<?php echo isset($_profissionais[$proc->id_profissional])?' - '.utf8_encode($_profissionais[$proc->id_profissional]->nome):'';?></p>				
+					<?php echo !empty($proc->opcao)?" - ".$encoding->toUTF8($proc->opcao):"";?> - 
+					<?php echo utf8_encode($proc->plano);?></p>				
 				<?php echo (isset($proc->obs) and !empty($proc->obs))?"<p>".utf8_encode($proc->obs)."</p>":"";?>
 			</td>			
 		</tr>

@@ -196,6 +196,22 @@
 										<td>[data_leitura]</td>
 										<td>{Dia da Semana}, {Dia do Mês} de {Mês Por Extenso} de {Ano}</td>
 									</tr>
+									<tr>
+										<td>[procedimentos]</td>
+										<td>Tabela de procedimentos aprovados do plano de tratamento selecionado</td>
+									</tr>
+									<tr>
+										<td>[procedimentos_valor]</td>
+										<td>Valor total dos procedimentos aprovados do plano de tratamento selecionado</td>
+									</tr>
+									<tr>
+										<td>[procedimentos_tempo_extimado]</td>
+										<td>Prazo extimado do plano de tratamento selecionado</td>
+									</tr>
+									<tr>
+										<td>[pagamentos]</td>
+										<td>Formas de pagamentos (vencimento, valor) do plano de tratamento selecionado</td>
+									</tr>
 								</table>
 							</fieldset>
 						</form>

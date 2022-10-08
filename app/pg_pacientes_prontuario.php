@@ -129,6 +129,25 @@
 			}
 		}
 
+	// documentos
+		$_documentosTipos=array();
+		$sql->consult($_p."parametros_documentos","*","order by titulo");
+		if($sql->rows) {
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_documentosTipos[$x->id]=$x;
+			}
+		}
+
+		$_documentos=array();
+		if(isset($evolucoesIds[10])) {
+			$sql->consult($_p."pacientes_evolucoes_documentos","*","where id_evolucao IN (".implode(",",$evolucoesIds[10]).")");
+			if($sql->rows) {
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_documentos[$x->id_evolucao]=$x;
+				}
+			}
+		}
+
 	// geral
 		$_geral=array();
 		if(isset($evolucoesIds[9])) {
@@ -328,6 +347,16 @@
 								</div>
 							</div>
 							<p><?php echo isset($_profissionais[$e->id_profissional])?utf8_encode($_profissionais[$e->id_profissional]->nome):"";?></p>
+							<?php
+							if($eTipo->id==10 and isset($_documentos[$e->id])) {
+								$d=$_documentos[$e->id];
+								if(isset($_documentosTipos[$d->id_documento])) {
+							?>
+							<p><?php echo utf8_encode($_documentosTipos[$d->id_documento]->titulo);?></p>
+							<?php
+								}
+							}
+							?>
 							<div class="list-toggle-buttons">									
 								<a href="<?php echo $pdf;?>" target="_blank" class="button"><i class="iconify" data-icon="ant-design:file-pdf-outlined"></i></a>
 								<a href="javascript:;" class="button js-btn-whatsapp" data-id_evolucao="<?php echo $e->id;?>" data-loading="0"><i class="iconify" data-icon="fa:whatsapp"></i></a>
@@ -396,7 +425,7 @@
 										</div>
 										<div class="list-toggle-topic">
 											<h1>Duração do Atestado</h1>
-											<p><?php echo utf8_encode($atestado->duracao);?> dia(s)</p>
+											<p><?php echo utf8_encode($atestado->duracao);?> min(s)</p>
 										</div>
 									</div>		
 									<?php
@@ -483,6 +512,28 @@
 										<div class="list-toggle-topic">
 										
 											<p><?php echo utf8_encode($g->texto);?></p>
+										
+										</div>
+										
+									</div>			
+									<?php
+									}
+								}
+
+								// documentos
+								else if($eTipo->id==10) {
+
+									if(isset($_documentos[$e->id])) {
+										$g=$_documentos[$e->id];
+									?>
+									<div class="list-toggle-topics">
+										<div class="list-toggle-topic">
+										
+											<p>
+												<?php
+												if(isset($_documentosTipos[$g->id_documento])) echo utf8_encode($_documentosTipos[$g->id_documento]->titulo);
+												?>
+											</p>
 										
 										</div>
 										

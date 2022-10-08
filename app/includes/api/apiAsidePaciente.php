@@ -187,13 +187,13 @@
 
 						$texto = str_replace("[dias]",utf8_encode($dias),$texto);
 						$texto = str_replace("[data]",utf8_encode($data),$texto);
-						$texto = str_replace("[duracao]",utf8_encode($duracao),$texto);
+						$texto = str_replace("[duracao]",utf8_encode($duracao)." minutos",$texto);
 						$texto = str_replace("[nome]",utf8_encode($paciente->nome),$texto);
 						$texto = str_replace("[cpf]",maskCPF($paciente->cpf),$texto);
 
 						$rtn=array('success'=>true,'texto'=>$texto);
 					} else {
-						$rtn=array('success'=>false,'erro'=>'Nenhum modelo para este tipo e fim');
+						$rtn=array('success'=>false,'error'=>'Nenhum modelo para este tipo e fim');
 					}
 				} else {
 					$rtn=array('success'=>false);
@@ -224,6 +224,7 @@
 				if(isset($_POST['id_tipo']) and is_numeric($_POST['id_tipo'])) {
 					$sql->consult("infodentalADM.infod_parametros_atestados_tipos","*","where id=".$_POST['id_tipo']." and lixo=0");
 					if($sql->rows) $tipo=mysqli_fetch_object($sql->mysqry);
+					else echo "nao achou ".$_POST['id_tipo'];
 				}
 
 				$fim='';
@@ -270,14 +271,14 @@
 					else {
 
 						// id_tipo = 4 -> Atestado
-						$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
+						/*$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
 																								id_paciente=$paciente->id and
 																								id_tipo=4 and  
 																								id_usuario=$usr->id");	
 						if($sql->rows) {
 							$e=mysqli_fetch_object($sql->mysqry);
 							$id_evolucao=$e->id;
-						} else {
+						} else {*/
 							$sql->add($_p."pacientes_evolucoes","data=now(),
 																	id_tipo=4,
 																	id_profissional=$profissional->id,
@@ -286,7 +287,7 @@
 							$id_evolucao=$sql->ulid;
 
 							
-						}
+						//}
 
 						$sql->consult($_p."pacientes_evolucoes_atestados","*","where id_evolucao=$id_evolucao order by id desc limit 1");
 						if($sql->rows) {
@@ -307,7 +308,7 @@
 					}
 
 				} else {
-					$rtn=array('success'=>false,'erro'=>$erro);
+					$rtn=array('success'=>false,'error'=>$erro);
 				}
 			}
 		# Pedido de Exame
@@ -719,6 +720,12 @@
 					if($sql->rows) $documento=mysqli_fetch_object($sql->mysqry);
 				}
 
+				$plano = '';
+				if(isset($_POST['id_planodetratamento']) and is_numeric($_POST['id_planodetratamento'])) {
+					$sql->consult($_p."pacientes_tratamentos","*", "where id=".$_POST['id_planodetratamento']." and lixo=0");
+					if($sql->rows) $plano=mysqli_fetch_object($sql->mysqry);
+				}
+
 
 				$clinica='';
 				$sql->consult($_p."clinica","clinica_nome,endereco,lat,lng","order by id desc limit 1");
@@ -744,6 +751,34 @@
 							$texto = str_replace("[dados_paciente]",$dadosPacientes,$texto);
 							$texto = str_replace("[data]",date('d/m/Y'),$texto);
 							$texto = str_replace("[data_leitura]",$dataExtenso,$texto);
+
+							if(is_object($plano)) {
+
+								$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento=$plano->id and lixo=0 and situacao='aprovado'");
+
+								if($sql->rows) {
+									$procedimentos='<table width=100% border=1><tr><th>Procedimento</th><th>Valor</th><th>Obs.:</th></tr>';
+									$valorTotal=0;
+									while($x=mysqli_fetch_object($sql->mysqry)) {
+										$valorTotal+=number_format($x->valor-$x->desconto,2,".","");
+										if($x->desconto>0) {
+											$valor="<strike>R$".number_format($x->valor,2,",",".")."</strike><br />R$".number_format($x->valor-$x->desconto,2,",",".");
+										} else {
+											$valor="R$".number_format($x->valor,2,",",".");
+										}
+										$regiao="";
+										if(!empty($x->opcao)) $regiao=' - '.$x->opcao;
+										$procedimentos.="<tr><td>".utf8_encode(str_replace("'","",$x->procedimento)).$regiao."</td><td>".$valor."</td><td>".$x->obs."</td></tr>";
+									}
+									$procedimentos.='</table>';
+									$texto = str_replace("[procedimentos]",$procedimentos,$texto);
+									$texto = str_replace("[procedimentos_tempo_extimado]",$plano->tempo_extimado,$texto);
+									$texto = str_replace("[procedimentos_valor_total]",number_format($valorTotal,2,",","."),$texto);
+								}
+
+
+
+							}
 
 
 							$rtn=array('success'=>true,'texto'=>$texto);
@@ -775,6 +810,8 @@
 				$texto = (isset($_POST['texto']) and !empty($_POST['texto']))?$_POST['texto']:'';
 				$data = (isset($_POST['data']) and !empty($_POST['data']))?$_POST['data']:'';
 
+				
+
 
 				$erro='';
 				if(empty($paciente)) $erro='Paciente não encontrado!';
@@ -788,16 +825,16 @@
 																							id_paciente=$paciente->id and
 																							id_tipo=10 and  
 																							id_usuario=$usr->id");	
-					if($sql->rows) {
+					/*if($sql->rows) {
 						$e=mysqli_fetch_object($sql->mysqry);
 						$id_evolucao=$e->id;
-					} else {
+					} else {*/
 						$sql->add($_p."pacientes_evolucoes","data=now(),
 																id_tipo=10,
 																id_paciente=$paciente->id,
 																id_usuario=$usr->id");
 						$id_evolucao=$sql->ulid;
-					}
+					//}
 
 
 					$geral='';
@@ -883,6 +920,8 @@
 	$_profissionais=array();
 	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento,contratacaoAtiva","where lixo=0 order by nome asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
+
+
 
 	# OPÇÕES
 		?>
@@ -1511,7 +1550,7 @@
 						(possuiDuracao==0 || duracao.length>0)
 						) {
 
-						let data = `ajax=asPAtestadoTexto&data=${dataAtestado}&id_tipo=${id_tipo}&fim=${fim}&id_profissional=${id_profissional}&dias=${dias}&id_paciente=${id_paciente}`;	
+						let data = `ajax=asPAtestadoTexto&data=${dataAtestado}&id_tipo=${id_tipo}&fim=${fim}&id_profissional=${id_profissional}&dias=${dias}&id_paciente=${id_paciente}&duracao=${duracao}`;	
 						
 						$.ajax({
 							type:"POST",
@@ -1563,6 +1602,7 @@
 						let duracao = $('.aside-prontuario-atestado .js-asideAtestado-duracao').val();
 						let atestado = CKEDITOR.instances['asideAtestado-texto'].getData();
 
+						if(atestado.length==0) setTimeout(function(){atestado = CKEDITOR.instances['asideAtestado-texto'].getData();},500);
 						if(dataAtestado.length==0) erro='Preencha o campo de Data';
 						else if(id_tipo.length==0) erro='Preencha o campo de Tipo do Atestado';
 						else if(fim.length==0) erro='Preencha o campo de Fim do Atestado';
@@ -3313,16 +3353,61 @@
 	# DOCUMENTOS
 		if(isset($apiConfig['documentos'])) {	
 
+		
 			$_documentos=array();
 			$sql->consult($_p."parametros_documentos","*","where lixo=0 order by titulo asc") ;
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$_documentos[$x->id]=$x;
 			}
 
+			$_planosDeTratamento=array();
+			$sql->consult($_p."pacientes_tratamentos","*","where id_paciente=$paciente->id and lixo=0 order by data desc");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_planosDeTratamento[$x->id]=$x;
+			}
+
 				
 			?>
 			<script type="text/javascript">
-			
+				
+				const documentoAtualizaInformacoes = () => {
+
+					let id_documento = $('.aside-prontuario-documentos .js-asideDocumentos-id_documento').val();
+					let id_planodetratamento = $('.aside-prontuario-documentos .js-asideDocumentos-id_planodetratamento').val();
+
+					if(id_documento.length>0) {
+
+						let data = {'ajax':'asPDocumentoSubstituir',
+											'id_documento':id_documento,
+											'id_planodetratamento':id_planodetratamento,
+											'id_paciente':id_paciente}
+
+						$.ajax({
+								type:'POST',
+								data:data,
+								url:baseURLApiAsidePaciente,
+								success:function(rtn) {
+									if(rtn.success) {
+
+										CKEDITOR.instances['asideDocumentos-documento'].setData(rtn.texto);
+
+									} else if(rtn.error) {
+										swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+									} else {
+										swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+									}
+									
+								},
+								error:function() {
+									swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+								} 
+						}).done(function(){
+							//obj.html(obHTMLAntigo);
+							//obj.attr('data-loading',0);
+						});
+					}
+				}
+
 				$(function(){
 
 					$('.aside-prontuario-documentos .js-asideDocumentos-data').datetimepicker({
@@ -3398,41 +3483,8 @@
 					});
 
 					
-					$('.aside-prontuario-documentos .js-asideDocumentos-id_documento').change(function(){
-						let id_documento = $(this).val();
-
-						if(id_documento.length>0) {
-
-							let data = {'ajax':'asPDocumentoSubstituir',
-										'id_documento':id_documento,
-										'id_paciente':id_paciente}
-
-							$.ajax({
-									type:'POST',
-									data:data,
-									url:baseURLApiAsidePaciente,
-									success:function(rtn) {
-										if(rtn.success) {
-
-											CKEDITOR.instances['asideDocumentos-documento'].setData(rtn.texto);
-
-										} else if(rtn.error) {
-											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-										} else {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										}
-										
-									},
-									error:function() {
-										swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-									} 
-							}).done(function(){
-								//obj.html(obHTMLAntigo);
-								//obj.attr('data-loading',0);
-							});
-
-						}
-					});
+					$('.aside-prontuario-documentos .js-asideDocumentos-id_documento').change(documentoAtualizaInformacoes);
+					$('.aside-prontuario-documentos .js-asideDocumentos-id_planodetratamento').change(documentoAtualizaInformacoes);
 
 					var fck_documento = CKEDITOR.replace('asideDocumentos-documento',{
 																			language: 'pt-br',
@@ -3449,6 +3501,8 @@
 						<h1>Documentos</h1>
 						<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 					</header>
+
+
 
 					<form method="post" class="aside-content form js-form-documentos">
 						<section class="filter">
@@ -3489,6 +3543,19 @@
 								</dl>
 							</div>
 
+							<dl class="dl2">
+								<dt>Plano de Tratamento</dt>
+								<dd>
+									<select class="js-asideDocumentos-id_planodetratamento js-asideDocumentos-inputs">
+										<option value="">-</option>
+										<?php
+										foreach($_planosDeTratamento as $x) {
+											echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
+										}
+										?>
+									</select>
+								</dd>
+							</dl>
 						</fieldset>
 						<fieldset>
 							<legend>Documento</legend>

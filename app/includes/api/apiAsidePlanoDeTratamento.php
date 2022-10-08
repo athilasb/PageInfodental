@@ -55,7 +55,7 @@
 
 	var facesInfos = JSON.parse(`<?php echo json_encode($_regioesInfos);?>`);
 
-	const atualizaValor = () => {
+	const atualizaValor = (atualizarParcelas) => {
 		valorTotal=0;
 
 		let cont = 1;
@@ -88,7 +88,7 @@
 
 		let parcelas = [];
 
-		if($('input[name=pagamento]:checked').length>0) {
+		if(atualizarParcelas===true && $('input[name=pagamento]:checked').length>0) {
 			let pagamento = $('input[name=pagamento]:checked').val();
 
 			if(pagamento=="avista") {
@@ -122,6 +122,14 @@
 				valorParcela=valorParcela.toFixed(2);
 
 				let startDate = new Date();
+
+				if($('.js-vencimento:eq(0)').val()!=undefined) {
+					aux = $('.js-vencimento:eq(0)').val().split('/');
+					startDate = new Date();//`${aux[2]}-${aux[1]}-${aux[0]}`);
+					startDate.setDate(aux[0]);
+					startDate.setMonth(eval(aux[1])-1);
+					startDate.setFullYear(aux[2]);
+				}
 				for(var i=1;i<=numeroParcelas;i++) {
 					/*val = -1;
 					if($(`.js-pagamentos .js-valor:eq(${i})`).length) {
@@ -130,6 +138,11 @@
 					//console.log(`${$(`.js-pagamentos .js-valor:eq(${i})`).length} -> .js-pagamentos .js-valor:eq(${(i-1)}) => ${val}`);*/
 
 					let item = {};
+					if(pagamentos[i-1]) {
+						//item = pagamentos[i-1];
+						console.log('-');
+						console.log(pagamentos[i-1]);
+					}
 					let mes = startDate.getMonth()+1;
 					mes = mes <= 9 ? `0${mes}`:mes;
 
@@ -137,6 +150,10 @@
 					dia = dia <= 9 ? `0${dia}`:dia;
 					item.vencimento=`${dia}/${mes}/${startDate.getFullYear()}`;
 					item.valor=valorParcela;
+
+
+
+
 					parcelas.push(item);
 
 					newDate = startDate;
@@ -200,7 +217,7 @@
 																foreach($debitoBandeiras as $id_operadora=>$x) {
 																	echo '<optgroup label="'.utf8_encode($x['titulo']).'">';
 																	foreach($x['bandeiras'] as $band) {
-																		echo '<option value="'.$band['id_bandeira'].'">'.utf8_encode($band['titulo']).'</option>';
+																		echo '<option value="'.$band['id_bandeira'].'" data-id_operadora="'.$id_operadora.'">'.utf8_encode($band['titulo']).'</option>';
 																	}
 																	echo '</optgroup>';
 																}
@@ -218,7 +235,7 @@
 																	foreach($creditoBandeiras as $id_operadora=>$x) {
 																		echo '<optgroup label="'.utf8_encode($x['titulo']).'">';
 																		foreach($x['bandeiras'] as $band) {
-																			echo '<option value="'.$band['id_bandeira'].'" data-parcelas="'.$band['parcelas'].'" data-parcelas-semjuros="'.$band['semJuros'].'">'.utf8_encode($band['titulo']).'</option>';
+																			echo '<option value="'.$band['id_bandeira'].'" data-parcelas="'.$band['parcelas'].'" data-parcelas-semjuros="'.$band['semJuros'].'" data-id_operadora="'.$id_operadora.'">'.utf8_encode($band['titulo']).'</option>';
 																		}
 																		echo '</optgroup>';
 																	}
@@ -335,7 +352,7 @@
 
 				$('#js-table-procedimentos').append(tr);
 				if(cont==procedimentos.length) { 
-					atualizaValor();
+					atualizaValor(false);
 				}
 				cont++;
 
@@ -415,9 +432,10 @@
 		let totalDescontoAplicado = 0;
 		$('#js-descontos-table-procedimentos .js-desconto-procedimento').each(function(ind,el) {
 			
+			let index = $(el).attr('data-index');
 			if($(el).prop('checked')===true) {
-				totalProcedimentos+=eval(procedimentos[cont].valor);
-				totalDescontoAplicado+=eval(procedimentos[cont].desconto);
+				totalProcedimentos+=eval(procedimentos[index].valor);
+				totalDescontoAplicado+=eval(procedimentos[index].desconto);
 			}
 
 			cont++;
@@ -426,6 +444,8 @@
 
 			}
 		});
+
+		console.log(totalProcedimentos);
 
 		$('.aside-plano-desconto .js-total-procedimentos').val(number_format(totalProcedimentos,2,",","."));
 		$('.aside-plano-desconto .js-total-descontosAplicados').val(number_format(totalDescontoAplicado,2,",","."));
@@ -450,8 +470,6 @@
 				$('.aside-plano-desconto .js-total-descontos').val(number_format(valor,2,",","."));
 			}
 		}
-		console.log(totalProcedimentos);
-		console.log(valor);
 		$('.aside-plano-desconto .js-total-procedimentosdescontos').val(number_format(totalProcedimentos-totalDescontoAplicado,2,",","."));
 	}
 
@@ -482,7 +500,7 @@
 				if(x.desconto>0) iniciarChecado=' checked';
 				let tr = `<tr class="js-tr-item">			
 								<td style="width:25px;">
-									<label><input type="checkbox" class="js-desconto-procedimento"${iniciarChecado} /></label>
+									<label><input type="checkbox" class="js-desconto-procedimento" data-index="${(cont-1)}"${iniciarChecado} /></label>
 								</td>					
 								<td>
 									<h1>${x.procedimento}</h1>
@@ -506,6 +524,14 @@
 
 	$(function(){
 
+		procedimentos=JSON.parse($('textarea#js-textarea-procedimentos').val());
+		procedimentosListar();
+		pagamentosListar();
+
+		$('.js-pagamentos').on('change','.js-vencimento:eq(0)',function(){
+			atualizaValor(true);
+		});
+
 		// remove descontos
 		$('.aside-plano-desconto .js-btn-removerDesconto').click(function(){
 
@@ -517,6 +543,7 @@
 			});
 			descontoListarProcedimentos(0);
 			procedimentosListar();
+			atualizaValor(true);
 		});
 
 		// clica no botao de aplicar desconto na janela de desconto
@@ -558,7 +585,7 @@
 
 				//alert(descontoParcentual+' '+desconto);
 
-				console.log('Valor Total:'+valorTotal+' Desconto: '+desconto+' Perc:'+descontoParcentual);;
+				//console.log('Valor Total:'+valorTotal+' Desconto: '+desconto+' Perc:'+descontoParcentual);;
 				
 				if(desconto==0 || desconto===undefined || desconto==='' || !desconto) {
 					swal({title: "Erro", text: 'Defina o desconto que deverá ser aplicado!', html:true, type:"error", confirmButtonColor: "#424242"});
@@ -583,7 +610,7 @@
 								equivalente = (valorProc/valorTotal).toFixed(8);
 								descontoAplicar = desconto*equivalente;
 
-								console.log(valorProc+' eq '+equivalente+' = '+descontoAplicar);
+								//console.log(valorProc+' eq '+equivalente+' = '+descontoAplicar);
 
 								//descontoAplicar = desconto/qtdItensDesconto;
 
@@ -613,6 +640,7 @@
 
 					procedimentosListar();
 					descontoListarProcedimentos(0);
+					atualizaValor(true);
 					$('.js-input-desconto').val('');
 
 				}
@@ -732,14 +760,16 @@
 				//console.log(`${i} => ${val} = ${valorAcumulado}`);
 
 				let item = {};
+
+
 				item.vencimento=pagamentos[i].vencimento;
 				item.valor=val;
-				item.id_formapagamento=id_formapagamento;
+				/*item.id_formapagamento=id_formapagamento;
 				item.identificador=identificador;
 				item.creditoBandeira=creditoBandeira;
 				item.operadora=operadora;
 				item.debitoBandeira=debitoBandeira;
-				item.qtdParcelas=qtdParcelas;
+				item.qtdParcelas=qtdParcelas;*/
 
 				parcelas.push(item);
 			}
@@ -771,6 +801,7 @@
 						let item = {};
 						item.vencimento=pagamentos[i].vencimento;
 						item.valor=valorParcela;
+
 						parcelas.push(item);
 					}
 
@@ -817,6 +848,10 @@
 					//$(obj).find('.js-obs').parent().parent().show();
 				}
 			}
+
+
+			let index = $('.js-pagamentos .js-id_formadepagamento').index(this);
+
 		});
 
 		// altera quantidade de parcelas
@@ -830,12 +865,12 @@
 
 			$('.js-pagamentos-quantidade').val(qtd);
 
-			atualizaValor();
+			atualizaValor(true);
 		});
 
 		// seleciona o tipo de pagamento
 		$('input[name=pagamento]').change(function(){
-			atualizaValor();
+			atualizaValor(true);
 		})
 
 		// remove procedimento
@@ -996,6 +1031,7 @@
 					if((i+1)==linhas) {
 						$(`.aside-plano-procedimento-adicionar .js-asidePlano-quantidade`).val(1).parent().parent().hide();;  
 						procedimentosListar();
+						atualizaValor(true);
 					}
 				}
 			}
@@ -1103,7 +1139,10 @@
 
 				$('.aside-plano-procedimento-adicionar .js-fieldset-faces').hide();
 			}
-		})
+		});
+
+
+		desativarCampos();
 
 	})
 </script>
@@ -1331,7 +1370,6 @@
 		</form>
 	</div>
 </section>
-
 
 <section class="aside aside-plano-desconto" style="display: none;">
 	<div class="aside__inner1">

@@ -9,7 +9,7 @@
 		if($sql->rows) {
 			$evolucao=mysqli_fetch_object($sql->mysqry);
 
-			$sql->consult($_p."colaboradores","*","where id=$evolucao->id_usuario");
+			$sql->consult($_p."colaboradores","*","where id=$evolucao->id_profissional");
 			if($sql->rows) {
 				$solicitante=mysqli_fetch_object($sql->mysqry);
 			}
@@ -63,11 +63,15 @@
 
 <p><?php echo utf8_encode($atestado->atestado);?></p>
 
+<p style="font-weight:bold;margin-top: 25px;font-size: 10px;">
+	Conforme artigo 9° da Resolução CFO-118/2012 - É dever do profissional de odontologia resguardar o sigilo profissional do paciente, e, quando necessário, a depender do caso, não expor o procedimento realizado, bem como a CID correspondente.
+</p>
+
 <div class="box" style="margin-top:2.5rem;">
 	<table>
 		<tr>
 			<td colspan="2">
-				<h1>NOME DO MÉDICO</h1>
+				<h1>NOME DO PROFISSIONAL</h1>
 				<p><?php echo utf8_encode($solicitante->nome);?></p>
 			</td>
 			<td>

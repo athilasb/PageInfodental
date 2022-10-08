@@ -5,7 +5,7 @@
 	$sql= new Mysql();
 	$sql->consult($_p."colaboradores","id","where cpf<>'00000000000' and lixo=0");
 	if($sql->rows) {
-		header("Location: ./");
+		//header("Location: ./");
 	}
 
 ?>

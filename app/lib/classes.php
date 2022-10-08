@@ -5,6 +5,8 @@
 	define("_permissoes_","auditoria,atlas,relatorios,naoserializados,parceiros");
 	define("_permissoesOut_","Auditoria,Base Atlas,Relatórios,Não Serializados,Parceiros");
 	$_optOpcoes=array(1=>1,2=>2,3=>3,4=>4,5=>5,0=>'não sei informar');
+
+
 	function telefoneMascara($str) {
 		
 		return "(".substr($str,0,2).") ".substr($str,2,9);
