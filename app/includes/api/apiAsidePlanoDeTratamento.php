@@ -54,6 +54,8 @@
 <script type="text/javascript">
 
 	var facesInfos = JSON.parse(`<?php echo json_encode($_regioesInfos);?>`);
+	var id_usuario = '<?php echo $usr->id;?>';
+	var autor = '<?php echo utf8_encode($usr->nome);?>';
 
 	const atualizaValor = (atualizarParcelas) => {
 		valorTotal=0;
@@ -62,19 +64,19 @@
 		procedimentos.forEach(x=> {
 			if(x.situacao!='naoAprovado') {
 
+
+				valorProcedimento=x.valor;
+				if(x.quantitativo==1) valorProcedimento*=x.quantidade;
+				if(x.face==1) valorProcedimento*=x.faces.length;
+
+				//valorProcedimento=valorProcedimento.toFixed(2);
 				if(x.desconto>0) {
-					valorTotal+=$.isNumeric(x.valorCorrigido)?eval(x.valorCorrigido):unMoney(x.valorCorrigido);
-					//if(eval(x.quantitativo)==1) valorTotal*=x.quantidade;
+					valorTotal+=eval(valorProcedimento-x.desconto);
+					//valorTotal=valorTotal.toFixed(2);
 				}
 				else {
-					if(eval(x.quantitativo)==1) {
-						valorTotal+=$.isNumeric(x.valor)?eval(x.valor*x.quantidade):unMoney(x.valor*x.quantidade);
-					} else if(x.face==1) {
-
-						valorTotal+=$.isNumeric(x.valor)?eval(x.valor*x.faces.length):unMoney(x.valor*x.faces.length);
-					} else {
-						valorTotal+=$.isNumeric(x.valor)?eval(x.valor):unMoney(x.valor);
-					}
+					valorTotal+=eval(valorProcedimento);
+					//valorTotal=valorTotal.toFixed(2);
 				}
 			}
 
@@ -176,13 +178,6 @@
 		//console.log(pagamentos);
 		if(pagamentos.length>0) {
 
-			/*if(pagamentos.length>1) {
-				$('.js-pagamento-parcelado').prop('checked',true);
-
-			}
-			else {
-				$('.js-pagamento-avista').prop('checked',true);
-			}*/
 			let index=1;
 			pagamentos.forEach(x=>{
 				$('.js-pagamentos').append(`<div class="fpag-item js-pagamento-item">
@@ -235,7 +230,7 @@
 																	foreach($creditoBandeiras as $id_operadora=>$x) {
 																		echo '<optgroup label="'.utf8_encode($x['titulo']).'">';
 																		foreach($x['bandeiras'] as $band) {
-																			echo '<option value="'.$band['id_bandeira'].'" data-parcelas="'.$band['parcelas'].'" data-parcelas-semjuros="'.$band['semJuros'].'" data-id_operadora="'.$id_operadora.'">'.utf8_encode($band['titulo']).'</option>';
+																			echo '<option value="'.$band['id_bandeira'].'" data-parcelas="'.$band['parcelas'].'" data-parcelas-semjuros="'.$band['semJuros'].'" data-id_operadora="'.$id_operadora.'" data-id_operadorabandeira="'.($id_operadora.$band['id_bandeira']).'">'.utf8_encode($band['titulo']).'</option>';
 																		}
 																		echo '</optgroup>';
 																	}
@@ -262,8 +257,6 @@
 												</article>
 											</div>`);
 
-
-
 				$('.js-pagamento-item .js-vencimento:last').inputmask('99/99/9999');
 				$('.js-pagamento-item .js-vencimento:last').datetimepicker({timepicker:false,
 																		format:'d/m/Y',
@@ -272,22 +265,21 @@
 																		scrollInput:false});
 				$('.js-pagamento-item .js-valor:last').maskMoney({symbol:'', allowZero:true, showSymbol:true, thousands:'.', decimal:',', symbolStay: true});
 
-				if(x.id_formapagamento) {
-					$('.js-pagamento-item .js-id_formadepagamento:last').val(x.id_formapagamento).trigger('change');
+				if(x.id_formapagamento) { 
+					$('.js-pagamento-item .js-id_formadepagamento:last').val(x.id_formapagamento);
 					$('.js-pagamento-item .js-identificador:last').val(x.identificador);
 					let tipo = $('.js-pagamento-item .js-id_formadepagamento:last option:selected').attr('data-tipo');
 
 					if(tipo=="credito") {
 						parcelaProv=x.qtdParcelas;
-						//alert(parcelaProv);
-						$('.js-pagamento-item .js-creditoBandeira:last').find(`option[data-id_operadorabandeira=${x.operadora}${x.creditoBandeira}]`).prop('selected',true);
-						$('.js-pagamento-item .js-creditoBandeira:last').trigger('change');
+
+						$('.js-pagamento-item .js-creditoBandeira:last').find(`option[data-id_operadorabandeira=${x.id_operadora}${x.creditoBandeira}]`).prop('selected',true);
+						creditoBandeiraAtualizaParcelas($('.js-pagamento-item .js-creditoBandeira:last'),x.qtdParcelas);
 					
 					} else if(tipo=="debito") {
-						$('.js-pagamento-item .js-debitoBandeira:last').find(`option[data-id_operadorabandeira=${x.operadora}${x.debitoBandeira}]`).prop('selected',true);
-
-						//$('.js-pagamento-item .js-debitoBandeira:last').val(x.debitoBandeira);//   .trigger('change');
+						$('.js-pagamento-item .js-debitoBandeira:last').val(x.debitoBandeira);
 					}	
+					pagamentosAtualizaCampos($('.js-pagamento-item .js-id_formadepagamento:last'),false);
 				}
 			});
 
@@ -309,11 +301,33 @@
 
 				let valor = '';
 
-				if(x.desconto) {
-					valor = `<strike>${number_format((eval(x.quantitativo)==1?x.quantidade*x.valor:x.valor),2,",",".")}</strike><br />${number_format(x.valorCorrigido,2,",",".")}`;
-				} else {
-					valor = number_format(x.valorCorrigido?x.valorCorrigido:x.valor,2,",",".");
+
+				/*procedimentoValor=x.valor;
+				procedimentoValorCorrigido=x.valorCorrigido;
+				if(eval(x.quantitativo)==1) {
+					procedimentoValor*=x.quantidade;
+					procedimentoValorCorrigido*=x.quantidade;
 				}
+
+				if(x.desconto) {
+					valor = `<strike>${number_format(procedimentoValor,2,",",".")}</strike><br />${number_format(procedimentoValorCorrigido,2,",",".")}`;
+				} else {
+					valor = number_format(procedimentoValorCorrigido?procedimentoValorCorrigido:procedimentoValor,2,",",".");
+				}*/
+
+
+				procedimentoValor=x.valor;
+				if(x.quantitativo==1) procedimentoValor*=x.quantidade;
+				if(x.face==1) procedimentoValor*=x.faces.length;
+
+				if(x.desconto>0) {
+					procedimentoValorComDesconto=procedimentoValor-x.desconto;
+					valor = `<strike>${number_format(procedimentoValor,2,",",".")}</strike><br />${number_format(procedimentoValorComDesconto,2,",",".")}`;
+				} else {
+					valor = number_format(procedimentoValor,2,",",".");
+				}
+
+
 
 				let opcao = '';
 				if(x.id_regiao==4) {
@@ -404,7 +418,7 @@
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-regiao').val(regiao);
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-quantidade').val(pEd.quantidade);
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-data').html(pEd.data);
-			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-usuario').html(pEd.usuario);
+			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-usuario').html(pEd.autor);
 
 			if(pEd.quantitativo==1) {
 				$('.aside-plano-procedimento-editar .js-asidePlanoEditar-quantidade').parent().parent().parent().show();
@@ -434,7 +448,12 @@
 			
 			let index = $(el).attr('data-index');
 			if($(el).prop('checked')===true) {
-				totalProcedimentos+=eval(procedimentos[index].valor);
+				console.log(eval(procedimentos[index].quantitativo));
+				if(eval(procedimentos[index].quantitativo)==1) {
+					totalProcedimentos+=(eval(procedimentos[index].valor)*procedimentos[index].quantidade);
+				} else {
+					totalProcedimentos+=eval(procedimentos[index].valor);
+				}
 				totalDescontoAplicado+=eval(procedimentos[index].desconto);
 			}
 
@@ -445,7 +464,6 @@
 			}
 		});
 
-		console.log(totalProcedimentos);
 
 		$('.aside-plano-desconto .js-total-procedimentos').val(number_format(totalProcedimentos,2,",","."));
 		$('.aside-plano-desconto .js-total-descontosAplicados').val(number_format(totalDescontoAplicado,2,",","."));
@@ -489,11 +507,17 @@
 
 
 				let valorHTML = '';
+
+				let valorProcedimento=x.valor;
+				if(x.quantitativo==1) valorProcedimento*=x.quantidade;
+				if(x.face==1) valorProcedimento*=x.faces.length;
+
 				if(x.desconto>0) {
 					totalDesconto+=x.desconto;
-					valorHTML = `<strike>${number_format(x.valor,2,",",".")}</strike><br />${number_format(x.valorCorrigido,2,",",".")}`
+					valorProcedimentoComDesconto=valorProcedimento-x.desconto;
+					valorHTML = `<strike>${number_format(valorProcedimento,2,",",".")}</strike><br />${number_format(valorProcedimentoComDesconto,2,",",".")}`
 				} else {
-					valorHTML = number_format(x.valorCorrigido,2,",",".");
+					valorHTML = number_format(valorProcedimento,2,",",".");
 				}
 
 				let iniciarChecado = checked==1?' checked':'';
@@ -520,6 +544,105 @@
 			}
 			cont++;
 		});
+	}
+
+	// atualiza os campos de pagamento (ex.: quando credito exibe bandeira etc..)
+	const pagamentosAtualizaCampos = (formaDePagamento,atualizaObjetoPagamento) => {
+		let id_formadepagamento  = formaDePagamento.val();
+		let obj = formaDePagamento.parent().parent().parent().parent();
+		let tipo = $(obj).find('select.js-id_formadepagamento option:checked').attr('data-tipo');
+
+		$(obj).find('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
+
+		if(tipo=="credito") {
+			$(obj).find('.js-parcelas,.js-creditoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
+		} else if(tipo=="debito") {
+			$(obj).find('.js-debitoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
+		} else {
+			$(obj).find('.js-identificador').parent().parent().show();
+
+			if(tipo=="permuta") {
+				//$(obj).find('.js-obs').parent().parent().show();
+			}
+		}
+
+
+		let index = $('.js-pagamentos .js-id_formadepagamento').index(this);
+
+		if(atualizaObjetoPagamento===true) {
+			pagamentosPersistirObjeto();	
+		}
+	}
+
+
+	const pagamentosPersistirObjeto = () => {
+		console.log('salvando...');
+		parcelas = [];
+		$('.js-pagamento-item').each(function(index,el) {
+			let vencimento = $(el).find('.js-vencimento').val();
+			let valor = eval(unMoney($(el).find('.js-valor').val()));
+			let id_formapagamento = $(el).find('.js-id_formadepagamento').val();
+			let identificador = $(el).find('.js-identificador').val();
+
+			let item = { vencimento, 
+							valor,
+							id_formapagamento,
+							identificador };
+
+			// se credito
+			if(id_formapagamento==2) {
+				let creditoBandeira = $(el).find('.js-creditoBandeira').val();;
+				let id_operadora = $(el).find('.js-creditoBandeira option:selected').attr('data-id_operadora');
+				let qtdParcelas = $(el).find('.js-parcelas').val();;
+
+				item.creditoBandeira=creditoBandeira;
+				item.qtdParcelas=qtdParcelas;
+				item.id_operadora=id_operadora;
+			}
+			// se debito
+			else if(id_formapagamento==3) {
+				debitoBandeira = $(el).find('.js-debitoBandeira').val();
+				let id_operadora = $(el).find('.js-debitoBandeira option:selected').attr('data-id_operadora');
+
+				item.debitoBandeira=debitoBandeira;
+				item.id_operadora=id_operadora;
+			}
+
+
+			parcelas.push(item);
+		});
+
+		pagamentos=parcelas;
+		$('textarea#js-textarea-pagamentos').val(JSON.stringify(pagamentos));
+		//pagamentosListar();
+	}
+
+	const creditoBandeiraAtualizaParcelas = (selectCreditoBandeira,qtdParcelasSelecionar) => {
+		let obj = $(selectCreditoBandeira).parent().parent().parent();
+		$(obj).find('select.js-parcelas option').remove();
+		
+		if($(selectCreditoBandeira).val().length>0) {
+			let semJuros = eval($(selectCreditoBandeira).find('option:checked').attr('data-parcelas-semjuros'));
+			let parcelas = eval($(selectCreditoBandeira).find('option:checked').attr('data-parcelas'));
+		
+			if($.isNumeric(parcelas)) {
+				$(obj).find('select.js-parcelas').append(`<option value="">-</option>`);
+				for(var i=1;i<=parcelas;i++) {
+					semjuros='';
+					if($.isNumeric(semJuros) && semJuros>=i) semjuros=` - sem juros`;
+					else sel ='';
+
+					if(i==qtdParcelasSelecionar) sel=' selected';
+					else sel='';
+
+					$(obj).find('select.js-parcelas').append(`<option value="${i}"${sel}>${i}x${semjuros}</option>`);
+				}
+			} else {
+				$(obj).find('select.js-parcelas').append(`<option value="">erro</option>`);
+			}
+		} else {
+			$(obj).find('select.js-parcelas').append(`<option value="">selecione a bandeira</option>`);
+		}
 	}
 
 	$(function(){
@@ -567,7 +690,7 @@
 					if(x.situacao!="naoAprovado" && x.situacao!="observado") {
 						if($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked')===true) {
 							valorTotal+=eval(x.valor);
-							console.log(cont+' '+x.situacao+'->'+x.valorCorrigido);
+							//console.log(cont+' '+x.situacao+'->'+x.valorCorrigido);
 							qtdItensDesconto++;
 						}
 						cont++;
@@ -604,7 +727,7 @@
 									valorProc=procedimentos[contProcedimento].valor;
 								} else {
 									valorProc=procedimentos[contProcedimento].valor;
-									if(eval(x.quantitativo)==1) valorProc*=eval(x.quantidade);
+									//if(eval(x.quantitativo)==1) valorProc*=eval(x.quantidade);
 								}
 
 								equivalente = (valorProc/valorTotal).toFixed(8);
@@ -620,9 +743,11 @@
 								} else {
 									desc=descontoAplicar;
 								}
+
+								//console.log('desc '+desc);
 								valorProc=procedimentos[contProcedimento].valor;
 								if(eval(x.quantitativo)==1) {
-									valorProc*=eval(x.quantidade);
+									//valorProc*=eval(x.quantidade);
 									procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
 									procedimentos[contProcedimento].desconto=desc;///eval(x.quantidade);
 								} else {
@@ -681,41 +806,15 @@
 		});
 
 		$('.js-pagamentos').on('change','.js-creditoBandeira',function(){
-
-			let obj = $(this).parent().parent().parent();
-
-
-			$(obj).find('select.js-parcelas option').remove();
-			
-			if($(this).val().length>0) {
-				let semJuros = eval($(this).find('option:checked').attr('data-parcelas-semjuros'));
-				let parcelas = eval($(this).find('option:checked').attr('data-parcelas'));
-			
-				if($.isNumeric(parcelas)) {
-					$(obj).find('select.js-parcelas').append(`<option value="">-</option>`);
-					for(var i=1;i<=parcelas;i++) {
-						semjuros='';
-						if($.isNumeric(semJuros) && semJuros>=i) semjuros=` - sem juros`;
-						//if(parcelaProv && eval(parcelaProv)==i) sel=' selected';
-						else sel ='';
-
-						$(obj).find('select.js-parcelas').append(`<option value="${i}"${sel}>${i}x${semjuros}</option>`);
-					}
-				} else {
-					$(obj).find('select.js-parcelas').append(`<option value="">erro</option>`);
-				}
-			} else {
-				$(obj).find('select.js-parcelas').append(`<option value="">selecione a bandeira</option>`);
-			}
-
-			setTimeout(function(){$(obj).find('.js-valor').trigger('keyup');},200);
+			creditoBandeiraAtualizaParcelas($(this),0);
+			pagamentosPersistirObjeto();
 		});
 
-		$('.js-pagamentos').on('change','.js-id_formadepagamento',function(){
+		$('.js-pagamentos').on('keyup','.js-identificador',pagamentosPersistirObjeto);
+		$('.js-pagamentos').on('change','.js-debitoBandeira,.js-creditoBandeira,.js-parcelas',pagamentosPersistirObjeto);
 
-			let obj = $(this).parent().parent().parent();
-
-			setTimeout(function(){$(obj).find('.js-valor').trigger('keyup');},200);
+		$('.js-pagamentos').on('blur','.js-valor',function(){
+			pagamentosListar();
 		});
 
 		$('.js-pagamentos').on('keyup','.js-identificador',function(){
@@ -725,11 +824,6 @@
 			setTimeout(function(){$(obj).find('.js-valor').trigger('keyup');},200);
 		});
 
-
-		$('.js-pagamentos').on('blur','.js-valor',function(){
-			pagamentosListar();
-		});
-
 		$('.js-pagamentos').on('keyup','.js-valor',function(){
 			let index = $(this).index('.js-pagamentos .js-valor');
 			let numeroParcelas = eval($('.js-pagamentos-quantidade').val());
@@ -737,9 +831,6 @@
 			let valorAcumulado = 0;
 			let parcelas = [];
 			let val = unMoney($(this).val());
-
-
-
 
 			for(i=0;i<=index;i++) {
 				val = unMoney($(`.js-pagamentos .js-valor:eq(${i})`).val());
@@ -831,27 +922,7 @@
 		});
 
 		$('.js-pagamentos').on('change','.js-id_formadepagamento',function(){
-			let id_formadepagamento  = $(this).val();
-			let obj = $(this).parent().parent().parent().parent();
-			let tipo = $(obj).find('select.js-id_formadepagamento option:checked').attr('data-tipo');
-
-			$(obj).find('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
-
-			if(tipo=="credito") {
-				$(obj).find('.js-parcelas,.js-creditoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
-			} else if(tipo=="debito") {
-				$(obj).find('.js-debitoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
-			} else {
-				$(obj).find('.js-identificador').parent().parent().show();
-
-				if(tipo=="permuta") {
-					//$(obj).find('.js-obs').parent().parent().show();
-				}
-			}
-
-
-			let index = $('.js-pagamentos .js-id_formadepagamento').index(this);
-
+			pagamentosAtualizaCampos($(this),true);
 		});
 
 		// altera quantidade de parcelas
@@ -907,6 +978,11 @@
 			let situacao = $('.aside-plano-procedimento-editar .js-asidePlanoEditar-situacao').val();
 			let obs = $('.aside-plano-procedimento-editar .js-asidePlanoEditar-obs').val();
 
+			if(procedimentos[index].quantitativo==1) {
+				let quantidade = $('.aside-plano-procedimento-editar .js-asidePlanoEditar-quantidade').val();
+				procedimentos[index].quantidade=quantidade;
+			}
+
 
 			procedimentos[index].situacao=situacao;
 			procedimentos[index].obs=obs;
@@ -937,7 +1013,9 @@
 				let quantidade = $(`.aside-plano-procedimento-adicionar .js-asidePlano-quantidade`).val();
 				let obs = $('.aside-plano-procedimento-adicionar .js-asidePlano-obs').val();
 				let valorCorrigido=valor;
-				if(quantitativo==1) valorCorrigido=quantidade*valor;
+				//if(quantitativo==1) valorCorrigido=quantidade*valor;
+
+
 			
 			// valida
 				let erro='';
@@ -997,6 +1075,7 @@
 						let data = `${dia}/${mes}/${dt.getFullYear()} ${hrs}:${min}`;
 						item.data=data;
 						item.id_usuario=id_usuario;
+						item.autor=autor;
 
 					// Opcoes
 						opcao = id_opcao = ``;
@@ -1026,6 +1105,7 @@
 						item.faces=faces;
 
 					item.valorCorrigido=valorCorrigido;
+
 					procedimentos.push(item);
 
 					if((i+1)==linhas) {
@@ -1052,7 +1132,9 @@
 				if(quantitativo==1) {
 					$(`.js-asidePlano-quantidade`).parent().parent().show();
 					$(`.js-asidePlano-quantidade`).val(1);
-				}	
+				} else {
+					$(`.js-asidePlano-quantidade`).parent().parent().hide();
+				}
 
 				$(`.js-regiao-${id_regiao}-select`).find('option:selected').prop('selected',false).trigger('change').trigger('chosen:updated');
 
@@ -1178,23 +1260,23 @@
 
 				<dl>
 					<dt>Procedimento</dt>
-					<dd><input type="text" class="js-asidePlanoEditar-procedimento" /></dd>
+					<dd><input type="text" class="js-asidePlanoEditar-procedimento" disabled style="background:#ccc" /></dd>
 				</dl>
 
 				<dl>
 					<dt>Plano</dt>
-					<dd><input type="text" class="js-asidePlanoEditar-plano" /></dd>
+					<dd><input type="text" class="js-asidePlanoEditar-plano" disabled style="background:#ccc" /></dd>
 				</dl>	
 
 				<dl>
 					<dt>Região</dt>
-					<dd><input type="text" class="js-asidePlanoEditar-regiao" /></dd>
+					<dd><input type="text" class="js-asidePlanoEditar-regiao" disabled style="background:#ccc" /></dd>
 				</dl>
 
 				<div class="colunas4">
 					<dl>
 						<dt>Quantidade</dt>
-						<dd><input type="text" class="js-asidePlanoEditar-quantidade" /></dd>
+						<dd><input type="number" class="js-asidePlanoEditar-quantidade" min=0 oninput="validity.valid||(value='');" /></dd>
 					</dl>
 				</div>
 
@@ -1245,7 +1327,7 @@
 					<div class="colunas2">
 						<dl>
 							<dt>Adicionado por</dt>
-							<dd class="js-asidePlanoEditar-usuario">Luciano Dexheimer Morais</dd>
+							<dd class="js-asidePlanoEditar-usuario"></dd>
 						</dl>
 						<dl>
 							<dt>Data</dt>
@@ -1304,7 +1386,7 @@
 					
 					<dl style="display: none">
 						<dt>Quantidade</dt>
-						<dd><input type="number" class="js-asidePlano-quantidade" value="1" /></dd>
+						<dd><input type="number" class="js-asidePlano-quantidade" value="1" min=0 oninput="validity.valid||(value='');" /></dd>
 					</dl>
 
 					<dl class="js-regiao-2 js-regiao" style="display: none;">

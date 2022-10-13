@@ -243,7 +243,7 @@
 										$sql->consult($_p."whatsapp_mensagens","*",$where);
 
 									
-										if(1==1 or $sql->rows==0) {
+										if($sql->rows==0) {
 
 											$vSQL="data=now(),
 													id_tipo=$tipo->id,
@@ -569,6 +569,7 @@
 
 									$attr=array('numero'=>$v->numero,
 												'mensagem'=>$v->mensagem,
+												'id_tipo'=>$tipo->id,
 												'id_conexao'=>$conexao->id);
 									if($this->enviaMensagem($attr)) {
 										$vsql="data_enviado=now(),enviado=1,retorno_json='".addslashes($this->response)."',id_conexao=$conexao->id";
@@ -667,22 +668,32 @@
 			else {
 
 
-				if($conexao->versao==2) {
-					$url=$this->endpoint."/v2/message/text";
-				} else {
-					$url=$this->endpoint."/message/text";
-				}
-
-
 				$postfields=array("number"=>$this->wtsNumero($numero),
 									"quotedMessageId"=>$quotedMessageId,
 									"text"=>$mensagem,
 									"instance"=>$conexao->wid);
 
+
+				if($conexao->versao==2) {
+					$url=$this->endpoint."/v2/message/text";
+
+					if(isset($attr['id_tipo']) and $attr['id_tipo']==1) {
+						 $postfields['buttons'][]=array('id'=>"nao",'text'=>'Não');
+						$postfields['buttons'][]=array('id'=>"sim",'text'=>'Sim');
+					}
+				} else {
+					$url=$this->endpoint."/message/text";
+				}
+
+
+
+
+
+
 				if($offline===true) $postfields['offline']=true;
 				
 
-				//var_dump($postfields);
+				echo json_encode($postfields);
 
 				/*$sql->add($_p."whatsapp_log","data=now(),
 												endpoint='".$this->endpoint."/send/text',
@@ -980,7 +991,7 @@
 				 	if(isset($response->success) and $response->success===true) {
 				 		return true;
 				 	} else {
-				 		var_dump($response);
+				 		//var_dump($response);
 				 		$this->erro=isset($response->erro)?$response->erro:'Algum erro ocorreu';
 				 		return false;
 				 	}
@@ -1028,7 +1039,7 @@
 							//	"debug"=>1,
 								"document" => $cf,
 								"documentName"=>$documentName);
-
+				//var_dump($postfields);
 				$ch = curl_init();
 				curl_setopt($ch, CURLOPT_URL, $url);
 				curl_setopt($ch, CURLOPT_POST, true);

@@ -576,13 +576,13 @@
 																								id_paciente=$paciente->id and
 																								id_tipo=7 and  
 																								id_usuario=$usr->id");	
-						if($sql->rows) {
+						/*if($sql->rows) {
 							$e=mysqli_fetch_object($sql->mysqry);
 							$sql->update($_p."pacientes_evolucoes","data_pedido='".addslashes(invDate($_POST['data']))."',
 																		id_profissional='".addslashes(utf8_decode($_POST['id_profissional']))."',
 																		tipo_receita='".addslashes(utf8_decode($_POST['tipo_receita']))."'","where id=$e->id");
 							$id_evolucao=$e->id;
-						} else {
+						} else {*/
 							$sql->add($_p."pacientes_evolucoes","data=now(),
 																	id_tipo=7,
 																	id_paciente=$paciente->id,
@@ -592,7 +592,7 @@
 																	tipo_receita='".addslashes(utf8_decode($_POST['tipo_receita']))."'");
 																	//obs='".addslashes(utf8_decode($_POST['obs']))."'");
 							$id_evolucao=$sql->ulid;
-						}
+						//}
 
 						foreach($medicamentosJSON as $obj) {
 							$obj=(object)$obj;
@@ -735,6 +735,11 @@
 					if(is_object($documento)) {
 						if(is_object($clinica)) {
 
+							$_formasDePagamento=array();
+							$sql->consult($_p."parametros_formasdepagamento","*","order by titulo asc");
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$_formasDePagamento[$x->id]=$x;
+							}
 
 							$texto = utf8_encode($documento->texto);
 
@@ -754,12 +759,20 @@
 
 							if(is_object($plano)) {
 
+
+								$texto = str_replace("[procedimentos_tempo_extimado]",$plano->tempo_extimado,$texto); 
+
+
+								// busca os procedimentos aprovados
 								$sql->consult($_p."pacientes_tratamentos_procedimentos","*","where id_tratamento=$plano->id and lixo=0 and situacao='aprovado'");
 
 								if($sql->rows) {
 									$procedimentos='<table width=100% border=1><tr><th>Procedimento</th><th>Valor</th><th>Obs.:</th></tr>';
 									$valorTotal=0;
 									while($x=mysqli_fetch_object($sql->mysqry)) {
+
+										if($x->quantitativo==1) $x->valor*=$x->quantidade;
+										$x->opcao=encodingToJson($x->opcao);
 										$valorTotal+=number_format($x->valor-$x->desconto,2,".","");
 										if($x->desconto>0) {
 											$valor="<strike>R$".number_format($x->valor,2,",",".")."</strike><br />R$".number_format($x->valor-$x->desconto,2,",",".");
@@ -768,19 +781,37 @@
 										}
 										$regiao="";
 										if(!empty($x->opcao)) $regiao=' - '.$x->opcao;
-										$procedimentos.="<tr><td>".utf8_encode(str_replace("'","",$x->procedimento)).$regiao."</td><td>".$valor."</td><td>".$x->obs."</td></tr>";
+										$procedimentos.="<tr><td>".encodingToJson($x->procedimento).$regiao."</td><td>".$valor."</td><td>".encodingToJson($x->obs)."</td></tr>";
 									}
 									$procedimentos.='</table>';
+
+
+
 									$texto = str_replace("[procedimentos]",$procedimentos,$texto);
-									$texto = str_replace("[procedimentos_tempo_extimado]",$plano->tempo_extimado,$texto);
 									$texto = str_replace("[procedimentos_valor_total]",number_format($valorTotal,2,",","."),$texto);
+								} else {
+									$texto = str_replace("[procedimentos]","<font color=red>Nenhum procedimento aprovado</font>",$texto);
+									$texto = str_replace("[procedimentos_valor_total]","<font color=red>??</font>",$texto);
 								}
 
-
-
+								// busca os pagamentos
+								$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id_tratamento=$plano->id and lixo=0");
+								if($sql->rows) {
+									$pagamentos='<table width=100% border=1><tr><th>Data Vencimento</th><th>Forma de Pagamento</th><th>Valor</th></tr>';
+									while ($x=mysqli_fetch_object($sql->mysqry))  {
+										if(isset($_formasDePagamento[$x->id_formapagamento])) {
+											$fp=$_formasDePagamento[$x->id_formapagamento];
+											$complemento='';
+											if($fp->tipo=="credito") $complemento.=" - ".$x->qtdParcelas."x";
+											$pagamentos.='<tr><td>'.date('d/m/Y',strtotime($x->data_vencimento)).'</td><td>'.encodingToJson($fp->titulo).$complemento.'</td><td>'.number_format($x->valor,2,",",".").'</td></tr>';
+										}
+									}
+									$pagamentos.='</table>';
+									$texto = str_replace("[pagamentos]",$pagamentos,$texto);
+								} else {
+									$texto = str_replace("[pagamentos]","<font color=red>Nenhum pagamento definido</font>",$texto);
+								}
 							}
-
-
 							$rtn=array('success'=>true,'texto'=>$texto);
 						} else {
 							$rtn=array('success'=>false,'error'=>'Clínica não encontrada!');
@@ -3456,8 +3487,6 @@
 										success:function(rtn) {
 											if(rtn.success) {
 
-												$('.aside-prontuario-documentos .js-asideDocumentos-inputs').val('');
-												$('.aside-close').click();
 												document.location.reload();
 
 											} else if(rtn.error) {
@@ -3482,6 +3511,44 @@
 						}
 					});
 
+					$('.aside-prontuario-documentos ').find('input,select,textarea').change(function(x){
+						$('.aside-prontuario-documentos  input[name=alteracao]').val(1);
+					});
+
+					$('.aside-prontuario-documentos .aside-close-documentos').click(function(){
+						let obj = $(this);
+						if($('.aside-prontuario-documentos input[name=alteracao]').val()=="1") {
+							swal({   
+									title: "Atenção",   
+									text: "Tem certeza que deseja fechar sem salvar as informações?",
+									type: "warning",   
+									showCancelButton: true,   
+									confirmButtonColor: "#DD6B55",   
+									confirmButtonText: "Sim!",   
+									cancelButtonText: "Não",   
+									closeOnConfirm: false,   
+									closeOnCancel: false 
+								}, function(isConfirm){   
+									if (isConfirm) {   
+										$(obj).parent().parent().removeClass("active");
+										$(obj).parent().parent().parent().fadeOut(); 
+
+											$('.aside-prontuario-documentos .js-asideDocumentos-inputs').val('');
+											CKEDITOR.instances['asideDocumentos-documento'].setData('');
+										swal.close();
+							  		 } else {   
+							  		 	swal.close();   
+							  		 } 
+							  	});
+			
+						} else {
+							$(obj).parent().parent().removeClass("active");
+							$(obj).parent().parent().parent().fadeOut();
+						}
+
+					});
+
+
 					
 					$('.aside-prontuario-documentos .js-asideDocumentos-id_documento').change(documentoAtualizaInformacoes);
 					$('.aside-prontuario-documentos .js-asideDocumentos-id_planodetratamento').change(documentoAtualizaInformacoes);
@@ -3499,7 +3566,7 @@
 				<div class="aside__inner1">
 					<header class="aside-header">
 						<h1>Documentos</h1>
-						<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+						<a href="javascript:;" class="aside-header__fechar aside-close-documentos"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 					</header>
 
 
@@ -3519,13 +3586,14 @@
 							</div>
 						</section>
 
+						<input type="hidden" name="alteracao" value="0" />
 						<fieldset>
 							<legend>Informações</legend>
 							<div class="colunas3">
 								<dl>
 									<dt>Data</dt>
 									<dd>
-										<input type="tel" name="" class="datahora js-asideDocumentos-data js-asideDocumentos-inputs" value="<?php echo date('d/m/Y');?>" /></dd>
+										<input type="tel" name="" class="datahora js-asideDocumentos-data" value="<?php echo date('d/m/Y');?>" /></dd>
 									</dd>
 								</dl>
 								<dl class="dl2">
@@ -3550,6 +3618,7 @@
 										<option value="">-</option>
 										<?php
 										foreach($_planosDeTratamento as $x) {
+											if($x->status!="APROVADO") continue;
 											echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
 										}
 										?>

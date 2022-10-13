@@ -10,6 +10,11 @@
 
 
 	// dados
+		// clinica
+			$clinica='';
+			$sql->consult($_p."clinica","*","");
+			$clinica=mysqli_fetch_object($sql->mysqry);
+
 		// profissionais
 			$_profissionais=array();
 			$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento,contratacaoAtiva","where tipo_cro<>'' and lixo=0 order by nome asc");
@@ -253,7 +258,137 @@
 		$tratamentoAprovado=(is_object($cnt) and $cnt->status=="APROVADO")?true:false;
 	
 
-	// submit
+	
+?>
+	<script type="text/javascript">
+		var procedimentos = [];
+		var pagamentos = JSON.parse(`<?php echo ($values['pagamentos']);;?>`);
+		var usuario = '<?php echo utf8_encode($usr->nome);?>';
+		var id_usuario = <?php echo $usr->id;?>;
+		var tratamentoAprovado = <?php echo ($tratamentoAprovado===true)?1:0;?>;
+
+		const desativarCampos = () => {
+			if(tratamentoAprovado===1) { 
+				$('.js-pagamento-item').find('select,input').prop('disabled',true);
+				$('#cal-popup').find('select:not(.js-profissional),input').prop('disabled',true);
+				$('#cal-popup').find('.js-btn-excluir,.js-btn-descontoAplicarEmTodos').hide();
+			}
+		}
+
+
+		$(function(){
+
+			
+			$('.js-btn-salvar').click(function(){
+				let erro = ``;
+
+				if($('input[name=titulo]').val().length==0) {
+					erro='Digite o título do <b>Tratamento</b>';
+					$('input[name=titulo]').addClass('erro');
+				} /*else if($('select[name=id_profissional]').val().length==0) {
+					erro='Selecione o <b>Profissional</b>';
+					$('select[name=id_profissional]').addClass('erro');
+				}*/else if(procedimentos.length==0) {
+					erro='Adicione pelo menos um procedimento para iniciar um Plano de Tratamento';
+				}
+
+				if(erro.length==0) {
+					$('.js-pagamento-item').each(function(index,elem) {
+						if($(elem).find('.js-vencimento').val().length==0) {
+							$(elem).find('.js-vencimento').addClass('erro');
+							erro='Defina a(s) <b>Data(s) de Vencimento</b> do(s) pagamento(s)';
+						}
+					})
+				}
+
+				if(erro.length>0) {
+					swal({title:"Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+				} else {
+
+					$('.js-form-plano').submit();
+
+				}
+			});
+
+			$('.js-btn-status').click(function(){
+				let status = $(this).attr('data-status');
+				if(status=="PENDENTE") {
+					$('input[name=status]').val('PENDENTE');
+				} else if(status=="APROVADO") {
+					$('input[name=status]').val('APROVADO');
+
+				} else if(status=="CANCELADO") {
+					$('input[name=status]').val('CANCELADO');
+
+				} else  {
+
+					$('input[name=status]').val('');
+				}
+
+				$('form.js-form-plano').submit();
+			});
+
+			$('.js-btn-adicionarProcedimento').click(function(){
+				$(".aside-plano-procedimento-adicionar").fadeIn(100,function() {
+					$(".aside-plano-procedimento-adicionar .aside__inner1").addClass("active");
+				});
+
+				$('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento').chosen('destroy');
+				$('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento').chosen();
+				
+			})
+		});
+
+	</script>
+
+	<main class="main">
+		<div class="main__content content">
+
+			<section class="filter">
+				
+				<div class="filter-group">				
+				</div>
+
+				<div class="filter-group">
+					<div class="filter-form form">
+						<dl>
+							<dd><a href="pg_pacientes_planosdetratamento.php?<?php echo $url;?>" class="button"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></a></dd>
+						</dl>
+						<?php
+						if(is_object($cnt)) {
+
+						?>
+						<dl>
+							<dd>
+								<?php
+								if($cnt->status=="APROVADO") {
+								?>
+								<a href="javascript:;" class="button" style="opacity: 0.3;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+								<?php
+								} else {
+								?>
+								<a href="pg_pacientes_planosdetratamento_form.php?<?php echo $url;?>edita=<?php echo $cnt->id;?>&deletaTratamento=<?php echo $cnt->id;?>" class="button js-confirmarDeletar" data-msg="Deseja realmente remover este plano de tratamento?"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+								<?php
+								}
+								?>
+							</dd>
+						</dl>
+						<dl>
+							<dd><a href="impressao/planodetratamento.php?id=<?php echo md5($cnt->id);?>" class="button" target="_blank"><i class="iconify" data-icon="fluent:print-24-regular"></i></a></dd>
+						</dl>
+						<?php
+						}
+						?>
+						<dl>
+							<dd><a href="javascript:;" class="button button_main js-btn-salvar"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>
+						</dl>
+					</div>
+				</div>
+				
+			</section>
+
+			<?php
+			// submit
 		if(isset($_POST['acao'])) {
 
 
@@ -289,7 +424,7 @@
 
 						if(isset($_POST['parcelas']) and is_numeric($_POST['parcelas'])) $vSQL.="parcelas='".$_POST['parcelas']."',";
 						if(isset($_POST['pagamento'])) $vSQL.="pagamento='".$_POST['pagamento']."',";
-					
+
 						if(is_object($cnt)) {
 							$vSQL=substr($vSQL,0,strlen($vSQL)-1);
 							$vWHERE="where id='".$cnt->id."'";
@@ -350,7 +485,7 @@
 
 
 							// APROVACAO
-								if($_POST['status']=="APROVADO") { echo "ai";
+								if($_POST['status']=="APROVADO") { 
 
 									// verifica se todos procedimentos estao com situacao/status APROVADO, OBSERVADO e/ou REPROVADO
 										$erro="";
@@ -386,7 +521,10 @@
 													foreach($procedimetosJSON as $x) {
 														$x=(object)$x;
 														if($x->situacao=='aprovado') {
-															$valorProcedimento+=$x->valorCorrigido;
+
+															$qtd=1;
+															if($x->quantitativo==1) $qtd=$x->quantidade;
+															$valorProcedimento+=number_format($x->valorCorrigido*$qtd,2,".","");
 														}
 													}
 												}
@@ -604,8 +742,7 @@
 															$b = $_bandeiras[$x->creditoBandeira];
 
 															$id_bandeira=$b->id;
-															$id_operadora=$x->operadora;
-															
+															$id_operadora=$x->id_operadora;
 
 															if(isset($x->qtdParcelas) and is_numeric($x->qtdParcelas)) {
 																$valorParcela=$x->valor/$x->qtdParcelas;
@@ -639,7 +776,7 @@
 															$b = $_bandeiras[$x->debitoBandeira];
 
 															$id_bandeira=$b->id;
-															$id_operadora=$x->operadora;
+															$id_operadora=$x->id_operadora;
 
 															$prazo=$taxa=0;
 															if(is_object($taxasPrazos)) {
@@ -833,133 +970,7 @@
 			}
 
 		}
-?>
-	<script type="text/javascript">
-		var procedimentos = [];
-		var pagamentos = JSON.parse(`<?php echo ($values['pagamentos']);;?>`);
-		var usuario = '<?php echo utf8_encode($usr->nome);?>';
-		var id_usuario = <?php echo $usr->id;?>;
-		var tratamentoAprovado = <?php echo ($tratamentoAprovado===true)?1:0;?>;
-
-		const desativarCampos = () => {
-			if(tratamentoAprovado===1) { 
-				$('.js-pagamento-item').find('select,input').prop('disabled',true);
-				$('#cal-popup').find('select:not(.js-profissional),input').prop('disabled',true);
-				$('#cal-popup').find('.js-btn-excluir,.js-btn-descontoAplicarEmTodos').hide();
-			}
-		}
-
-
-		$(function(){
-
-			
-			$('.js-btn-salvar').click(function(){
-				let erro = ``;
-
-				if($('input[name=titulo]').val().length==0) {
-					erro='Digite o título do <b>Tratamento</b>';
-					$('input[name=titulo]').addClass('erro');
-				} else if($('select[name=id_profissional]').val().length==0) {
-					erro='Selecione o <b>Profissional</b>';
-					$('select[name=id_profissional]').addClass('erro');
-				} else if(procedimentos.length==0) {
-					erro='Adicione pelo menos um procedimento para iniciar um Plano de Tratamento';
-				}
-
-				if(erro.length==0) {
-					$('.js-pagamento-item').each(function(index,elem) {
-						if($(elem).find('.js-vencimento').val().length==0) {
-							$(elem).find('.js-vencimento').addClass('erro');
-							erro='Defina a(s) <b>Data(s) de Vencimento</b> do(s) pagamento(s)';
-						}
-					})
-				}
-
-				if(erro.length>0) {
-					swal({title:"Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
-				} else {
-
-					$('.js-form-plano').submit();
-
-				}
-			});
-
-			$('.js-btn-status').click(function(){
-				let status = $(this).attr('data-status');
-				if(status=="PENDENTE") {
-					$('input[name=status]').val('PENDENTE');
-				} else if(status=="APROVADO") {
-					$('input[name=status]').val('APROVADO');
-
-				} else if(status=="CANCELADO") {
-					$('input[name=status]').val('CANCELADO');
-
-				} else  {
-
-					$('input[name=status]').val('');
-				}
-
-				$('form.js-form-plano').submit();
-			});
-
-			$('.js-btn-adicionarProcedimento').click(function(){
-				$(".aside-plano-procedimento-adicionar").fadeIn(100,function() {
-					$(".aside-plano-procedimento-adicionar .aside__inner1").addClass("active");
-				});
-
-				$('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento').chosen('destroy');
-				$('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento').chosen();
-				
-			})
-		});
-
-	</script>
-
-	<main class="main">
-		<div class="main__content content">
-
-			<section class="filter">
-				
-				<div class="filter-group">				
-				</div>
-
-				<div class="filter-group">
-					<div class="filter-form form">
-						<dl>
-							<dd><a href="pg_pacientes_planosdetratamento.php?<?php echo $url;?>" class="button"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></a></dd>
-						</dl>
-						<?php
-						if(is_object($cnt)) {
-
-						?>
-						<dl>
-							<dd>
-								<?php
-								if($cnt->status=="APROVADO") {
-								?>
-								<a href="javascript:;" class="button" style="opacity: 0.3;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-								<?php
-								} else {
-								?>
-								<a href="pg_pacientes_planosdetratamento_form.php?<?php echo $url;?>edita=<?php echo $cnt->id;?>&deletaTratamento=<?php echo $cnt->id;?>" class="button js-confirmarDeletar" data-msg="Deseja realmente remover este plano de tratamento?"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-								<?php
-								}
-								?>
-							</dd>
-						</dl>
-						<dl>
-							<dd><a href="impressao/planodetratamento.php?id=<?php echo md5($cnt->id);?>" class="button" target="_blank"><i class="iconify" data-icon="fluent:print-24-regular"></i></a></dd>
-						</dl>
-						<?php
-						}
-						?>
-						<dl>
-							<dd><a href="javascript:;" class="button button_main js-btn-salvar"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>
-						</dl>
-					</div>
-				</div>
-				
-			</section>
+			?>
 
 			<form method="post" class="form js-form-plano">
 				<input type="hidden" name="acao" value="wlib" />
@@ -1001,8 +1012,8 @@
 							<dl>
 								<dt>Profissional</dt>
 								<dd>
-									<select name="id_profissional" class="js-id_profissional" placeholder="Selecione o Profissional">
-										<option value="">Selecione o Profissional...</option>
+									<select name="id_profissional" class="js-id_profissional">
+										<option value=""><?php echo utf8_encode($clinica->clinica_nome);?></option>
 										<?php
 										foreach($_profissionais as $x) {
 											if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
@@ -1052,7 +1063,7 @@
 								<dd>
 									<label><input type="radio" name="pagamento" value="avista"<?php echo (is_object($cnt) and $cnt->pagamento=="avista")?" checked":"";?> disabled />A Vista</label>
 									<label><input type="radio" name="pagamento" value="parcelado"<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?" checked":"";?> disabled />Parcelado em</label>
-									<label><input type="number" name="parcelas" class="js-pagamentos-quantidade" value="2" style="width:50px;display:none;" /></label>
+									<label><input type="number" name="parcelas" class="js-pagamentos-quantidade" value="<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?$cnt->parcelas:"2";?>" style="width:50px;<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?"":"display:none;";?>" /></label>
 								</dd>
 							</dl>	
 							<?php

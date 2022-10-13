@@ -25,7 +25,7 @@
 		$_pacientes['novos'][]=$x;
 		$_pacientes['novosIds'][]=$x->id;
 	}
-	$sql->consult($_p."agenda","*","where id_paciente in (".implode(",",$_pacientes['novosIds']).")");
+	$sql->consult($_p."agenda","*","where id_paciente in (".implode(",",$_pacientes['novosIds']).") and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		if($x->id_status==1 or $x->id_status==2) $pacientesNovosComAgendamento[$x->id_paciente]=1;
 		if($x->id_status==5) $pacientesNovosAtendidos[$x->id_paciente]=1;
@@ -61,15 +61,30 @@
 	}
 
 	$pacientesAtendidosIds=array(0);
-	$sql->consult($_p."agenda","distinct id_paciente","where id_status=5 and id_paciente in (".implode(",",$_pacientes['novosIds']).") and lixo=0");
+	$pacientesAtendidosIdsQueVaoSair=array();
+	$sql->consult($_p."agenda","*","where id_status=5 and id_paciente in (".implode(",",$_pacientes['novosIds']).") and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$pacientesAtendidosIds[]=$x->id_paciente;
+		if(isset($pacientesAtendidosIds[$x->id_paciente])) $pacientesAtendidosIdsQueVaoSair[]=$x->id_paciente;
+		else {
+			$pacientesAtendidosIds[$x->id_paciente]=$x->id_paciente;
+		}
 	}
 
-	$sql->consult($_p."pacientes","id,nome,telefone1","where id IN (".implode(",",$pacientesAtendidosIds).") and lixo=0");
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_pacientes['retorno'][]=$x;
+	// se tiver paciente que foi atendido mais de uma vez, sai da lista de retorno
+	if(count($pacientesAtendidosIdsQueVaoSair)>0) {
+		foreach($pacientesAtendidosIdsQueVaoSair as $idPaciente) {
+			unset($pacientesAtendidosIds[$idPaciente]);
+		}
 	}
+
+	if(count($pacientesAtendidosIds)) {
+		$sql->consult($_p."pacientes","id,nome,telefone1","where id IN (".implode(",",$pacientesAtendidosIds).") and lixo=0");
+		//echo "where id IN (".implode(",",$pacientesAtendidosIds).") and lixo=0 $sql->rows;";die();
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$_pacientes['retorno'][]=$x;
+		}
+	}
+	
 
 	
 ?> 
@@ -145,6 +160,24 @@
 					<div class="kanban-item" style="background:">
 						<header>
 							<h1 class="kanban-item__titulo">Para Retorno</h1>
+						</header>
+						<article class="kanban-card" style="min-height: 100px;">
+							<?php
+							foreach($_pacientes['retorno'] as $p) {
+							?>
+								<a href="pg_pacientes_resumo.php?id_paciente=<?php echo $p->id;?>" target="_blank">
+									<h1><?php echo utf8_encode($p->nome);?> <?php echo $p->id;?></h1>
+									<p><?php echo maskTelefone($p->telefone1);?></p>
+								</a>
+							<?php	
+							}
+							?>
+						</article>
+					</div>
+
+					<div class="kanban-item" style="background:">
+						<header>
+							<h1 class="kanban-item__titulo">Aguardando Aprovação</h1>
 						</header>
 						<article class="kanban-card" style="min-height: 100px;">
 							<?php

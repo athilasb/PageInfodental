@@ -48,7 +48,7 @@
 						$sql->consult($_p."pacientes_evolucoes_tipos","*","where id='$evolucao->id_tipo'");
 						if($sql->rows) $evolucaoTipo=mysqli_fetch_object($sql->mysqry);
 
-						$sql->consult($_p."pacientes","id,telefone1","where id=$evolucao->id_paciente");
+						$sql->consult($_p."pacientes","id,telefone1,nome","where id=$evolucao->id_paciente");
 						if($sql->rows) $paciente=mysqli_fetch_object($sql->mysqry);
 					}
 				}
@@ -255,13 +255,28 @@
 
 				if(empty($erro)) {
 
+					// verifica se possui conexao
+					$conexao='';
+					$sql->consult("infodentalADM.infod_contas_onlines","*","where instancia='".$_ENV['NAME']."' and lixo=0");
+					if($sql->rows) {
+						$conexao=mysqli_fetch_object($sql->mysqry);
+					}	
+
+
+					$numero=$paciente->telefone1;
+
+					// teste
+					/*$attr=array('numero'=>$numero,
+								'mensagem'=>'oi',
+								'id_conexao'=>$conexao->id);
+					echo $infozap->enviaMensagem($attr)?1:$infozap->erro;
+					die();*/
 				
 					// envia whatsapp
-					$numero=$paciente->telefone1;
 					$attr=array('numero'=>$numero,
 								'arq'=>'arqs/temp.pdf',
 								'documentName'=>utf8_encode($evolucaoTipo->titulo)." ".date('d/m/Y',strtotime($evolucao->data))." - ".utf8_encode($paciente->nome).".pdf",
-								'id_conexao'=>1286);
+								'id_conexao'=>$conexao->id);
 
 					if($infozap->enviaArquivo($attr)) {
 

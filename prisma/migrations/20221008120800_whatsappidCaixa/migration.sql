@@ -1,0 +1,1 @@
+ALTER TABLE `lbox_whatsapp_mensagens` ADD `id_caixa` INT NOT NULL AFTER `id_delivery_pedido`;

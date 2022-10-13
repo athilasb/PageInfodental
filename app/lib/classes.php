@@ -6,6 +6,12 @@
 	define("_permissoesOut_","Auditoria,Base Atlas,Relatórios,Não Serializados,Parceiros");
 	$_optOpcoes=array(1=>1,2=>2,3=>3,4=>4,5=>5,0=>'não sei informar');
 
+	function encodingToJson($str) {
+		$encoding = new Encoding();
+		$str = $encoding->toUTF8($str);
+
+		return $str;
+	}
 
 	function telefoneMascara($str) {
 		

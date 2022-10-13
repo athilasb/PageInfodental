@@ -332,7 +332,7 @@
 								?>
 							</fieldset>
 							<fieldset>
-								<legend>Dados de Pagamento</legend>
+								<legend>Dados Cadastrais</legend>
 
 									<div>
 										<dl>
@@ -415,6 +415,26 @@
 									</div>
 							</fieldset>
 
+							
+							<fieldset>
+								
+								<legend>Cartão de Crédito</legend>
+
+								<a href="javascript:;" class="button button_main js-btn-novoCartao" data-loading="0" style="float:right"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Novo Cartão</span></a>
+
+								<div class="list1">
+									<table>
+										<tr class="js-item">
+											<td class="list1__border" style="color:green"></td>
+											<td>MASTERCARD **** 1440</td>
+										</tr>
+										<tr class="js-item">
+											<td class="list1__border" style="color:"></td>
+											<td>VISA **** 1145</td>
+										</tr>
+									</table>
+								</div>
+							</fieldset>
 
 							<fieldset>
 								<legend>Faturas Recentes</legend>
@@ -477,6 +497,208 @@
 		
 		</div>
 	</main>
+
+	<script type="text/javascript" src="https://js.iugu.com/v2"></script>
+	<script type="text/javascript">
+		Iugu.setAccountID("DDFADAF26C374DBEA50C6359289855A1");
+		
+		Iugu.setup();
+		var bandeira = '';
+
+		$(function(){ 
+
+			$('.js-form-adicionar-cartao input[name=validade]').inputmask('99/99');
+
+			$('.js-btn-novoCartao').click(function(){
+				$(".aside-cartao").fadeIn(100,function() {
+					$(".aside-cartao .aside__inner1").addClass("active");
+				});
+			});
+
+			$('.js-navHaderback').attr('href','pagamentos');
+			$('.js-navHaderback').html(`<span class="iconify" data-icon="eva:arrow-ios-back-fill" data-inline="false" data-height="30"></span>`)
+
+
+
+			$('.js-salvarCartao').click(function(){
+
+				let obj = $(this);
+				let objAntigo = $(this).html();
+
+				if(obj.attr('data-loading')==0) {
+
+					let erro = ``;
+					$('form.js-form-adicionar-cartao input[type=tel],form.js-form-adicionar-cartao input[type=text]').each(function(index,elem){
+						if(erro.length==0 && $(elem).hasClass('obg')===true && $(elem).val().length==0) {
+							erro = $(elem).attr('data-msg');
+							$(elem).addClass('erro');
+						}
+					})
+
+					if(erro.length>0) {
+						swal({title: "Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+					} else {
+
+
+
+						let number = numero($('input[name=number]').val());
+						let expiration = $('input[name=expiration]').val().split('/');
+						let expiration_mes = expiration[0] ? expiration[0] : '';
+						let expiration_ano = expiration[1] ? expiration[1] : '';
+						let verification_value = $('input[name=verification_value]').val();
+						let full_name = $('input[name=full_name]').val().split(' ');
+						let first_name = full_name[0];
+						let apelido = $('input[name=apelido]').val();
+						let email = $('input[name=email]').val();
+
+						let last_name = '';
+						for(var i = 0;i<full_name.length; i++) {
+							if(i>0) last_name+=full_name[i]+' ';
+						}
+
+						if(Iugu.utils.validateCreditCardNumber(number)===false) {
+							erro='Número de cartão inválido!';
+						} else if(Iugu.utils.validateExpiration(expiration_mes, expiration_ano)===false) {
+							erro='Data de validade inválida!';
+						} else if(Iugu.utils.validateCVV(verification_value, bandeira)===false) {
+							erro='CVV inválido!';
+						} 
+
+						if(erro.length>0) {
+							swal({title: "Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+						} else {
+
+							alert('chegou aqui');return;
+							cc = Iugu.CreditCard(number,expiration_mes,expiration_ano,first_name,last_name,verification_value);
+
+							if(cc.valid()===false) {
+								alert('Dados do cartão de crédito inválido!');
+							} else {
+
+								obj.html(`<span class="iconify" data-icon="eos-icons:three-dots-loading"></span> Cadastrando...`);
+								obj.attr('data-loading',1);
+
+								Iugu.createPaymentToken(cc, function(response) {
+								    if (response.errors) {
+
+								    	console.log(response.errors);
+								        alert("Algum erro ocorreu durante o registro de seu cartão. Tente novamente!");
+
+										obj.html(objAntigo);
+										obj.attr('data-loading',0);
+								    } else {
+
+								    	cc_token = response.id;
+
+								    	let data = `act=pagamentosAdicionarCartao&id_cliente=${id_cliente}&email=${email}&cc_token=${cc_token}&token=${vfapiToken}&apelido=${apelido}`;
+								    
+
+										obj.html(`<span class="iconify" data-icon="eos-icons:three-dots-loading"></span> Criando forma de pagamento...`);
+								        $.ajax({
+								        	type:"POST",
+								        	data:data,
+											url:vfapiURL,
+								        	success:function(rtn){
+								        		if(rtn.success===true) {
+													/*swal({title: "Sucesso", text: "Cartão cadastrado com sucesso!<br /><br />Agora valide o cartão para poder utilizá-lo!", html:true, type:"success", confirmButtonColor: "#424242"},function(){
+														document.location.href='pagamentos/';
+													});*/
+													document.location.href='pagamentos/';
+								        		} else if(rtn.error) {
+													swal({title: "Erro", text: rtn.error, html:true, type:"error", confirmButtonColor: "#424242"});
+								        		} else {
+													swal({title: "Erro", text: 'Algum erro ocorreu. Tente novamente!', html:true, type:"error", confirmButtonColor: "#424242"});
+								        		}
+								        	},
+								        	error:function(){
+								        		swal({title: "Erro", text: 'Algum erro ocorreu. Tente novamente.', html:true, type:"error", confirmButtonColor: "#424242"});
+								        	}
+								        }).done(function(){
+								        	obj.html(objAntigo);
+											obj.attr('data-loading',0);
+								        });
+
+								    }   
+								});
+							}
+						}
+					}
+				}
+			});
+
+			$('form.js-cadastro input[type=tel],form.js-cadastro input[type=text]').keyup(function(){
+				$(this).removeClass('erro')
+			})
+
+			$('input[name=number]').keyup(function(){
+				let number = numero($(this).val());
+				if(number.length>=4) {
+					bandeira = Iugu.utils.getBrandByCreditCardNumber(number);
+					/*if(bandeira=="visa") {
+						$('.js-dd-bandeira').html(`<span class="iconify" data-icon="logos:visa"></span>`);
+					} else if(bandeira=="mastercard") {
+						$('.js-dd-bandeira').html(`<span class="iconify" data-icon="logos:mastercard"></span>`);
+
+					} else if(bandeira=="amex") {
+						$('.js-dd-bandeira').html(`<span class="iconify" data-icon="logos:amex"></span>`);
+					} else {*/
+						$('.js-dd-bandeira').html(bandeira);
+					//}
+				} else {
+					$('.js-dd-bandeira').html(``);
+				}
+			})
+		})
+	</script>
+
+	<section class="aside aside-cartao" style="display: none;">
+		<div class="aside__inner1">
+			<header class="aside-header">
+				<h1>Cartão de Crédito</h1>
+				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+			</header>
+
+			<form method="post" class="aside-content form js-form-adicionar-cartao">
+				
+				<section class="filter">
+					<div class="filter-group"></div>
+					<div class="filter-group">
+						<div class="filter-form form">
+							<dl>
+								<dd><button type="button" class="button button_main js-salvarCartao" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Salvar</span></button></dd>
+							</dl>
+						</div>								
+					</div>
+				</section>
+
+
+				<fieldset>
+					<legend>Informações</legend>
+
+					<div class="colunas4">
+						<dl class="dl2">
+							<dt>Número do Cartão</dt>
+							<dd><input type="text" name="numero" class="obg" data-msg="Digite o número do cartão" /></dd>	
+						</dl>
+						<dl class="dl2">
+							<dt>Nome impresso no Cartão</dt>
+							<dd><input type="text" name="nome" placeholder="Joao A Silva" class="obg" data-msg="Digite o nome impresso no cartão" /></dd>	
+						</dl>
+					</div>
+					<div class="colunas4">
+						<dl class="">
+							<dt>Validade</dt>
+							<dd><input type="text" name="validade" placeholder="mm/aa" class="obg" data-msg="Digite a Data de Validade do cartão" /></dd>	
+						</dl>
+						<dl>
+							<dt>CVV</dt>
+							<dd><input type="text" name="cvv" placeholder="123" class="obg" data-msg="Digite o código CVV do cartão" maxlength="3" /></dd>	
+						</dl>
+					</div>
+				</fieldset>
+			</form>
+		</div>
+	</section>
 
 <?php 
 include "includes/footer.php";

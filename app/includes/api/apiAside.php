@@ -4715,7 +4715,7 @@
 									<dt>Retorno em</dt>
 									
 									<dd class="form-comp form-comp_pos">
-										<input type="number" class="js-retorno" maxlength="3" />
+										<input type="number" class="js-retorno" maxlength="3" min=0 oninput="validity.valid||(value='');" />
 										<span>dias</span>
 									</dd>
 								</dl>

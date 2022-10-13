@@ -7,7 +7,7 @@
 
 	$_table=$_p."pacientes_tratamentos";
 
-	$where="WHERE id_paciente=$paciente->id and lixo=0";
+	$where="WHERE id_paciente=$paciente->id and lixo=0 order by data desc";
 	$sql->consult($_table,"*",$where);
 
 	$registros=array();
@@ -145,7 +145,7 @@
 							</td>
 							<td>
 								<?php
-								if($x->status=="PENDETE") {
+								if($x->status=="PENDENTE") {
 									echo '<div class="list1__icon" style="color:gray;"><i class="iconify" data-icon="fluent:timer-24-regular"></i> Aguardando Aprovação</div>';
 								}
 								else if($x->status=="CANCELADO") {
