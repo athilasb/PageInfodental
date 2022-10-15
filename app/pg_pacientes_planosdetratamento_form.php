@@ -389,130 +389,106 @@
 
 			<?php
 			// submit
-		if(isset($_POST['acao'])) {
+			if(isset($_POST['acao'])) {
 
 
-			if($_POST['acao']=="wlib") {
+				if($_POST['acao']=="wlib") {
 
-				$processa=true;
-				if(empty($cnt)) {
-					$sql->consult($_p."pacientes_tratamentos","*","where id_paciente=$paciente->id and titulo='".addslashes($_POST['titulo'])."' and lixo=0");
-					if($sql->rows) {
-						$x=mysqli_fetch_object($sql->mysqry);	
-						//$processa=false;
-						//$jsc->go("?form=1&id_paciente=$paciente->id&edita=$x->id");
-						//die();
-					}
-				}
-
-
-				
-				if($processa===true) {	
-
-
-					// persiste as informacoes do tratamento
-					if($_POST['acao']=="wlib") {
-						$vSQL=$adm->vSQL($campos,$_POST);
-						$values=$adm->values;
-
-						if($tratamentoAprovado===false) {
-							$vSQL.="procedimentos='".addslashes(utf8_decode($_POST['procedimentos']))."',";
-							$vSQL.="pagamentos='".addslashes(utf8_decode($_POST['pagamentos']))."',";
+					$processa=true;
+					if(empty($cnt)) {
+						$sql->consult($_p."pacientes_tratamentos","*","where id_paciente=$paciente->id and titulo='".addslashes($_POST['titulo'])."' and lixo=0");
+						if($sql->rows) {
+							$x=mysqli_fetch_object($sql->mysqry);	
+							//$processa=false;
+							//$jsc->go("?form=1&id_paciente=$paciente->id&edita=$x->id");
+							//die();
 						}
+					}
 
-						$idProfissional=(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional']))?$_POST['id_profissional']:0;
 
-						if(isset($_POST['parcelas']) and is_numeric($_POST['parcelas'])) $vSQL.="parcelas='".$_POST['parcelas']."',";
-						if(isset($_POST['pagamento'])) $vSQL.="pagamento='".$_POST['pagamento']."',";
+					
+					if($processa===true) {	
 
-						if(is_object($cnt)) {
-							$vSQL=substr($vSQL,0,strlen($vSQL)-1);
-							$vWHERE="where id='".$cnt->id."'";
-							$sql->update($_table,$vSQL,$vWHERE);
-							$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
-							$id_tratamento=$cnt->id;
+
+						// persiste as informacoes do tratamento
+						if($_POST['acao']=="wlib") {
+							$vSQL=$adm->vSQL($campos,$_POST);
+							$values=$adm->values;
 
 							if($tratamentoAprovado===false) {
-								$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
-								$sql->update($_table."_pagamentos","lixo=1,lixo_obs=1,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
+								$vSQL.="procedimentos='".addslashes(utf8_decode($_POST['procedimentos']))."',";
+								$vSQL.="pagamentos='".addslashes(utf8_decode($_POST['pagamentos']))."',";
 							}
-						} else {
-							$vSQL.="data=now(),id_paciente=$paciente->id";
-							//echo $_table." ".$vSQL;die();
-							$sql->add($_table,$vSQL);
-							$id_tratamento=$sql->ulid;
-							$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$id_tratamento."'");
-						}
 
-						$sql->update($_table."_procedimentos","id_profissional=$idProfissional","where id_tratamento=$id_tratamento");
-					}
-					if(isset($_POST['status']) and !empty($_POST['status'])) {
+							$idProfissional=(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional']))?$_POST['id_profissional']:0;
 
-						if(is_object($cnt)) {
-							$persistir=true;
-							$msgOk='';
-							$erro='';
+							if(isset($_POST['parcelas']) and is_numeric($_POST['parcelas'])) $vSQL.="parcelas='".$_POST['parcelas']."',";
+							if(isset($_POST['pagamento'])) $vSQL.="pagamento='".$_POST['pagamento']."',";
 
+							if(is_object($cnt)) {
+								$vSQL=substr($vSQL,0,strlen($vSQL)-1);
+								$vWHERE="where id='".$cnt->id."'";
+								$sql->update($_table,$vSQL,$vWHERE);
+								$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
+								$id_tratamento=$cnt->id;
 
-							// Baixas de pagamento
-							$pagamentosUnidosIds=array(-1);
-							$pagamentosBaixas=0;
-							$sql->consult($_table."_pagamentos","*","where id_tratamento=$cnt->id and lixo=0");
-							if($sql->rows) {
-								$pagamentosIds=array(-1);
-								while($x=mysqli_fetch_object($sql->mysqry)) {
-									$pagamentosIds[]=$x->id;
-
-									// se for pagamento de fusao/uniao
-									if($x->id_fusao>0) {
-										$pagamentosUnidosIds[$x->id_fusao]=$x->id_fusao;
-									}
+								if($tratamentoAprovado===false) {
+									$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
+									$sql->update($_table."_pagamentos","lixo=1,lixo_obs=1,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
 								}
+							} else {
+								$vSQL.="data=now(),id_paciente=$paciente->id";
+								//echo $_table." ".$vSQL;die();
+								$sql->add($_table,$vSQL);
+								$id_tratamento=$sql->ulid;
+								$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$id_tratamento."'");
+							}
 
-								// retorna pagamentos unidos
-								$sql->consult($_table."_pagamentos","*","where id IN (".implode(",",$pagamentosUnidosIds).") and fusao=1 and lixo=0");
+							$sql->update($_table."_procedimentos","id_profissional=$idProfissional","where id_tratamento=$id_tratamento");
+						}
+						if(isset($_POST['status']) and !empty($_POST['status'])) {
+
+							if(is_object($cnt)) {
+								$persistir=true;
+								$msgOk='';
+								$erro='';
+
+
+								// Baixas de pagamento
+								$pagamentosUnidosIds=array(-1);
+								$pagamentosBaixas=0;
+								$sql->consult($_table."_pagamentos","*","where id_tratamento=$cnt->id and lixo=0");
 								if($sql->rows) {
+									$pagamentosIds=array(-1);
 									while($x=mysqli_fetch_object($sql->mysqry)) {
 										$pagamentosIds[]=$x->id;
+
+										// se for pagamento de fusao/uniao
+										if($x->id_fusao>0) {
+											$pagamentosUnidosIds[$x->id_fusao]=$x->id_fusao;
+										}
 									}
+
+									// retorna pagamentos unidos
+									$sql->consult($_table."_pagamentos","*","where id IN (".implode(",",$pagamentosUnidosIds).") and fusao=1 and lixo=0");
+									if($sql->rows) {
+										while($x=mysqli_fetch_object($sql->mysqry)) {
+											$pagamentosIds[]=$x->id;
+										}
+									}
+
+									
+									$sql->consult($_table."_pagamentos_baixas","*","where id_pagamento IN (".implode(",",$pagamentosIds).") and lixo=0");
+									$pagamentosBaixas=$sql->rows;
+
 								}
 
-								
-								$sql->consult($_table."_pagamentos_baixas","*","where id_pagamento IN (".implode(",",$pagamentosIds).") and lixo=0");
-								$pagamentosBaixas=$sql->rows;
 
-							}
+								// APROVACAO
+									if($_POST['status']=="APROVADO") { 
 
-
-							// APROVACAO
-								if($_POST['status']=="APROVADO") { 
-
-									// verifica se todos procedimentos estao com situacao/status APROVADO, OBSERVADO e/ou REPROVADO
-										$erro="";
-										if(isset($_POST['procedimentos'])  and !empty($_POST['procedimentos'])) {
-									
-											$procedimetosJSON=!empty($_POST['procedimentos'])?json_decode($_POST['procedimentos']):array();
-
-											if(is_array($procedimetosJSON)){ 
-												foreach($procedimetosJSON as $x) {
-													$x=(object)$x;
-													if($x->situacao=='aguardandoAprovacao') {
-														$erro='Para aprovar o tratamento, é necessário aprovar/reprovar todos os procedimentos';
-														$persistir=false;
-														break;
-													}
-													/*if($x->situacao=="aprovado" and ($x->id_profissional==0 or empty($x->id_profissional))) {
-														$erro='Para aprovar o tratamento, é necessário selecionar o Profissional para todos os procedimentos aprovados';
-														$persistir=false;
-														break;
-													}*/
-												}
-											}
-										};
-
-									// verifica se financeiro bate
-										if(empty($erro)) {
-											$valorProcedimento=0;
+										// verifica se todos procedimentos estao com situacao/status APROVADO, OBSERVADO e/ou REPROVADO
+											$erro="";
 											if(isset($_POST['procedimentos'])  and !empty($_POST['procedimentos'])) {
 										
 												$procedimetosJSON=!empty($_POST['procedimentos'])?json_decode($_POST['procedimentos']):array();
@@ -520,62 +496,137 @@
 												if(is_array($procedimetosJSON)){ 
 													foreach($procedimetosJSON as $x) {
 														$x=(object)$x;
-														if($x->situacao=='aprovado') {
-
-															$qtd=1;
-															if($x->quantitativo==1) $qtd=$x->quantidade;
-															$valorProcedimento+=number_format($x->valorCorrigido*$qtd,2,".","");
+														if($x->situacao=='aguardandoAprovacao') {
+															$erro='Para aprovar o tratamento, é necessário aprovar/reprovar todos os procedimentos';
+															$persistir=false;
+															break;
 														}
+														/*if($x->situacao=="aprovado" and ($x->id_profissional==0 or empty($x->id_profissional))) {
+															$erro='Para aprovar o tratamento, é necessário selecionar o Profissional para todos os procedimentos aprovados';
+															$persistir=false;
+															break;
+														}*/
 													}
 												}
 											};
 
-											$valorPagamento=0;
+										// verifica se financeiro bate
+											if(empty($erro)) {
+												$valorProcedimento=0;
+												if(isset($_POST['procedimentos'])  and !empty($_POST['procedimentos'])) {
 											
-											if(isset($_POST['pagamentos'])  and !empty($_POST['pagamentos'])) {
-												$pagamentosJSON=json_decode($_POST['pagamentos']);
-												if(is_array($pagamentosJSON)) {
-													foreach($pagamentosJSON as $x) {
-														$x=(object)$x;
-														$valorPagamento+=$x->valor;
-													} 
+													$procedimetosJSON=!empty($_POST['procedimentos'])?json_decode($_POST['procedimentos']):array();
+
+													if(is_array($procedimetosJSON)){ 
+														foreach($procedimetosJSON as $x) {
+															$x=(object)$x;
+															if($x->situacao=='aprovado') {
+
+																$qtd=1;
+																if($x->quantitativo==1) $qtd=$x->quantidade;
+																$valorProcedimento+=number_format($x->valorCorrigido*$qtd,2,".","");
+															}
+														}
+													}
+												};
+
+												$valorPagamento=0;
+												
+												if(isset($_POST['pagamentos'])  and !empty($_POST['pagamentos'])) {
+													$pagamentosJSON=json_decode($_POST['pagamentos']);
+													if(is_array($pagamentosJSON)) {
+														foreach($pagamentosJSON as $x) {
+															$x=(object)$x;
+															$valorPagamento+=$x->valor;
+														} 
+													}
 												}
+												$valorPagamento=number_format($valorPagamento,2,".","");
+												$valorProcedimento=number_format($valorProcedimento,2,".","");
+
+												//echo $valorPagamento." ".$valorProcedimento." = ".abs($valorPagamento - $valorProcedimento);die();
+												if(!(abs($valorPagamento - $valorProcedimento) < 0.50000001)) {
+													$erro="Defina as parcelas de pagamento!";
+												} 
 											}
-											$valorPagamento=number_format($valorPagamento,2,".","");
-											$valorProcedimento=number_format($valorProcedimento,2,".","");
 
-											//echo $valorPagamento." ".$valorProcedimento." = ".abs($valorPagamento - $valorProcedimento);die();
-											if(!(abs($valorPagamento - $valorProcedimento) < 0.50000001)) {
-												$erro="Defina as parcelas de pagamento!";
-											} 
+										
+
+
+										if(empty($erro)) {
+											if($cnt->status=="PENDENTE" or $cnt->status=="CANCELADO") {
+												$sql->update($_table,"status='APROVADO',id_aprovado=$usr->id,data_aprovado=now()","where id=$cnt->id");
+												$msgOk="Plano de Tratamento foi <b>APROVADO</b> com sucesso!";
+											} else {
+												$erro="Este tratamento já está APROVADO";
+												$persistir=false;
+											}
 										}
+									}
 
-									
+								// PENDENTE
+									else if($_POST['status']=="PENDENTE") {
+										if($pagamentosBaixas==0) {
+											if($cnt->status=="APROVADO" || $cnt->status=="CANCELADO") {
 
 
-									if(empty($erro)) {
-										if($cnt->status=="PENDENTE" or $cnt->status=="CANCELADO") {
-											$sql->update($_table,"status='APROVADO',id_aprovado=$usr->id,data_aprovado=now()","where id=$cnt->id");
-											$msgOk="Plano de Tratamento foi <b>APROVADO</b> com sucesso!";
+												if(empty($erro)) {
+
+													$sql->update($_table,"status='PENDENTE',id_aprovado=0,data_aprovado='0000-00-00 00:00:00'","where id=$cnt->id");
+													$msgOk="Plano de Tratamento foi <b>ABERTO</b> com sucesso!";
+													$persistir=false;
+
+
+													// remove os pagamentos com fusao
+													$sql->consult($_table."_pagamentos","*","where id_tratamento=$cnt->id and id_fusao>0");
+													$pagamentosUnidosIds=array(-1);
+													while($x=mysqli_fetch_object($sql->mysqry)) {
+														$pagamentosUnidosIds[$x->id_fusao]=$x->id_fusao;
+													}
+
+													// retorna pagamentos de uniao
+													$pagamentosFusaoIds=array(-1);
+													$sql->consult($_table."_pagamentos","*","where id IN (".implode(",",$pagamentosUnidosIds).") and fusao=1");
+													while($x=mysqli_fetch_object($sql->mysqry)) {
+														$pagamentosFusaoIds[$x->id_fusao]=$x->id_fusao;
+													}
+
+													// retorna procedimentos de evolucao
+													$tratamentosProdecimentosIds=array(0);
+													$sql->consult($_table."_procedimentos","id","where id_tratamento=$cnt->id");
+													while($x=mysqli_fetch_object($sql->mysqry)) $tratamentosProdecimentosIds[]=$x->id;
+
+													$sql->update($_table."_procedimentos_evolucao","lixo=1","where id_tratamento_procedimento IN (".implode(",",$tratamentosProdecimentosIds).")");
+
+													$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$cnt->id");
+													$sql->update($_table."_pagamentos","lixo=1,lixo_obs='2 $cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")',lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$cnt->id");// or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
+													//$sql->update($_table,"pagamentos=''","where id=$cnt->id");
+
+												}
+
+
+
+											} else {
+												$erro="Este tratamento já está PENDENTE";
+												$persistir=false;
+											}
 										} else {
-											$erro="Este tratamento já está APROVADO";
+											$erro="Para <b>REABRIR</b> este tratamento, estorne todas as suas baixas de pagamento!";
 											$persistir=false;
 										}
 									}
-								}
 
-							// PENDENTE
-								else if($_POST['status']=="PENDENTE") {
-									if($pagamentosBaixas==0) {
-										if($cnt->status=="APROVADO" || $cnt->status=="CANCELADO") {
+								// CANCELADO
+									else if($_POST['status']=="CANCELADO") {
 
+										
 
-											if(empty($erro)) {
+										if($pagamentosBaixas==0) {
 
-												$sql->update($_table,"status='PENDENTE',id_aprovado=0,data_aprovado='0000-00-00 00:00:00'","where id=$cnt->id");
-												$msgOk="Plano de Tratamento foi <b>ABERTO</b> com sucesso!";
+											if($cnt->status=="APROVADO" || $cnt->status=="PENDENTE") {
+												$sql->update($_table,"status='CANCELADO',id_aprovado=0,data_aprovado='0000-00-00 00:00:00'","where id=$cnt->id");
+												$msgOk="Plano de Tratamento foi <b>REPROVADO</b> com sucesso!";
 												$persistir=false;
-
 
 												// remove os pagamentos com fusao
 												$sql->consult($_table."_pagamentos","*","where id_tratamento=$cnt->id and id_fusao>0");
@@ -591,385 +642,334 @@
 													$pagamentosFusaoIds[$x->id_fusao]=$x->id_fusao;
 												}
 
-												// retorna procedimentos de evolucao
-												$tratamentosProdecimentosIds=array(0);
-												$sql->consult($_table."_procedimentos","id","where id_tratamento=$cnt->id");
-												while($x=mysqli_fetch_object($sql->mysqry)) $tratamentosProdecimentosIds[]=$x->id;
 
-												$sql->update($_table."_procedimentos_evolucao","lixo=1","where id_tratamento_procedimento IN (".implode(",",$tratamentosProdecimentosIds).")");
+												// retorna procedimentos de evolucao
+												$tratamentosProcedimentosIds=array(-1);
+												$sql->consult($_table."_procedimentos","id","where id_tratamento=$cnt->id");
+												while($x=mysqli_fetch_object($sql->mysqry)) $tratamentosProcedimentosIds[]=$x->id;
+
+												$sql->update($_table."_procedimentos_evolucao","lixo=1","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIds).")");
 
 												$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$cnt->id");
-												$sql->update($_table."_pagamentos","lixo=1,lixo_obs='2 $cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")',lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$cnt->id");// or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
+												$sql->update($_table."_pagamentos","lixo=1,lixo_obs=3,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
 												//$sql->update($_table,"pagamentos=''","where id=$cnt->id");
-
+											} else {
+												$erro="Este tratamento já está REPROVADO";
+												$persistir=false;
 											}
-
-
-
 										} else {
-											$erro="Este tratamento já está PENDENTE";
+											$erro="Não é possível REPROVAR este tratamento, pois ele já teve baixas de pagamentos. Estorne as baixas para poder REPROVÁ-LO!";
 											$persistir=false;
 										}
-									} else {
-										$erro="Para <b>REABRIR</b> este tratamento, estorne todas as suas baixas de pagamento!";
-										$persistir=false;
 									}
-								}
-
-							// CANCELADO
-								else if($_POST['status']=="CANCELADO") {
-
-									
-
-									if($pagamentosBaixas==0) {
-
-										if($cnt->status=="APROVADO" || $cnt->status=="PENDENTE") {
-											$sql->update($_table,"status='CANCELADO',id_aprovado=0,data_aprovado='0000-00-00 00:00:00'","where id=$cnt->id");
-											$msgOk="Plano de Tratamento foi <b>REPROVADO</b> com sucesso!";
-											$persistir=false;
-
-											// remove os pagamentos com fusao
-											$sql->consult($_table."_pagamentos","*","where id_tratamento=$cnt->id and id_fusao>0");
-											$pagamentosUnidosIds=array(-1);
-											while($x=mysqli_fetch_object($sql->mysqry)) {
-												$pagamentosUnidosIds[$x->id_fusao]=$x->id_fusao;
-											}
-
-											// retorna pagamentos de uniao
-											$pagamentosFusaoIds=array(-1);
-											$sql->consult($_table."_pagamentos","*","where id IN (".implode(",",$pagamentosUnidosIds).") and fusao=1");
-											while($x=mysqli_fetch_object($sql->mysqry)) {
-												$pagamentosFusaoIds[$x->id_fusao]=$x->id_fusao;
-											}
-
-
-											// retorna procedimentos de evolucao
-											$tratamentosProcedimentosIds=array(-1);
-											$sql->consult($_table."_procedimentos","id","where id_tratamento=$cnt->id");
-											while($x=mysqli_fetch_object($sql->mysqry)) $tratamentosProcedimentosIds[]=$x->id;
-
-											$sql->update($_table."_procedimentos_evolucao","lixo=1","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIds).")");
-
-											$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$cnt->id");
-											$sql->update($_table."_pagamentos","lixo=1,lixo_obs=3,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
-											//$sql->update($_table,"pagamentos=''","where id=$cnt->id");
-										} else {
-											$erro="Este tratamento já está REPROVADO";
-											$persistir=false;
-										}
-									} else {
-										$erro="Não é possível REPROVAR este tratamento, pois ele já teve baixas de pagamentos. Estorne as baixas para poder REPROVÁ-LO!";
-										$persistir=false;
-									}
-								}
 
 
 
-							// Persiste informações
-							if($persistir===true) {
+								// Persiste informações
+								if($persistir===true) {
 
-								// Pagamentos
-									if(isset($_POST['pagamentos'])  and !empty($_POST['pagamentos'])) {
-										$pagamentosJSON=json_decode($_POST['pagamentos']);
-										if(is_array($pagamentosJSON)) {
-											$vSQLBaixa=array();
-											foreach($pagamentosJSON as $x) {
+									// Pagamentos
+										if(isset($_POST['pagamentos'])  and !empty($_POST['pagamentos'])) {
+											$pagamentosJSON=json_decode($_POST['pagamentos']);
+											if(is_array($pagamentosJSON)) {
+												$vSQLBaixa=array();
+												foreach($pagamentosJSON as $x) {
 
-												$taxasPrazos=array();
+													$taxasPrazos=array();
 
-												// se for credito
-												if(isset($x->id_formapagamento)) {
-													if($x->id_formapagamento==2 and isset($x->creditoBandeira) and isset($x->operadora) and isset($x->qtdParcelas)) {
-														$where="where id_bandeira='".$x->creditoBandeira."' and id_operadora='".$x->operadora."' and vezes='".$x->qtdParcelas."' and operacao='credito' and lixo=0";
-														$sql->consult($_p."parametros_cartoes_taxas","parcela,taxa,prazo",$where);
-														
-														if($sql->rows) {
-															while($t=mysqli_fetch_object($sql->mysqry)) {
-																$taxasPrazos[$t->parcela]=$t;
-															}
-														}
-													}
-													// se for debito
-													else if($x->id_formapagamento==3 and isset($x->debitoBandeira) and isset($x->operadora)) {
-														$where="where id_bandeira='".$x->debitoBandeira."' and id_operadora='".$x->operadora."' and operacao='debito' and lixo=0";
-														$sql->consult($_p."parametros_cartoes_taxas","parcela,taxa,prazo",$where);
-														
-														if($sql->rows) {
-															while($t=mysqli_fetch_object($sql->mysqry)) {
-																$taxasPrazos=$t;
-															}
-														}
-													}
-												}
-												
-												$vSQLPagamento="lixo=0,
-																id_paciente=$paciente->id,
-																id_tratamento=$id_tratamento,
-																id_formapagamento='".addslashes(isset($x->id_formapagamento)?$x->id_formapagamento:0)."',
-																qtdParcelas='".addslashes(isset($x->qtdParcelas)?$x->qtdParcelas:0)."',
-																data_vencimento='".addslashes(invDate($x->vencimento))."',
-																valor='".addslashes(($x->valor))."',";
-
-												$pagamento='';
-												if(isset($x->id) and is_numeric($x->id)) {
-													$sql->consult($_table."_pagamentos","*","where id_tratamento=$id_tratamento and id=$x->id");
-													if($sql->rows) {
-														$pagamento=mysqli_fetch_object($sql->mysqry);
-													}
-												}
-
-												if(is_object($pagamento)) {
-													$vSQLPagamento.="data_alteracao=now(),id_usuario_alteracao=$usr->id";
-													$vWHERE="WHERE id=$pagamento->id";
-													$sql->update($_table."_pagamentos",$vSQLPagamento,$vWHERE);
-													$id_tratamento_pagamento=$sql->ulid;
-													$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQLPagamento)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."_pagamentos',id_reg='".$id_tratamento_pagamento."'");
-
-												} else {
-													$vSQLPagamento.="data=now(),id_usuario=$usr->id";
-													$sql->add($_table."_pagamentos",$vSQLPagamento);
-													$id_tratamento_pagamento=$sql->ulid;
-													$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQLPagamento)."',tabela='".$_table."_pagamentos',id_reg='".$id_tratamento_pagamento."'");
-												}
-
-
-												if(isset($x->id_formapagamento) and is_numeric($x->id_formapagamento) and isset($_formasDePagamento[$x->id_formapagamento])) {
-													$f=$_formasDePagamento[$x->id_formapagamento];
-													if($f->tipo=="credito") {
-
-														if(isset($x->creditoBandeira) and is_numeric($x->creditoBandeira) and isset($_bandeiras[$x->creditoBandeira])) {
-
-															$b = $_bandeiras[$x->creditoBandeira];
-
-															$id_bandeira=$b->id;
-															$id_operadora=$x->id_operadora;
-
-															if(isset($x->qtdParcelas) and is_numeric($x->qtdParcelas)) {
-																$valorParcela=$x->valor/$x->qtdParcelas;
-																for($i=1;$i<=$x->qtdParcelas;$i++) {
-
-																	$prazo=$taxa=0;
-																	if(isset($taxasPrazos[$i])) {
-																		$prazo=$taxasPrazos[$i]->prazo;
-																		$taxa=$taxasPrazos[$i]->taxa;
-																	}
-
-																	$dtVencimento=date('Y-m-d',strtotime(invDate($x->vencimento)." + $prazo days"));
-
-
-																	$vSQLBaixa[]=array("id_pagamento"=>$id_tratamento_pagamento,
-																						"data_vencimento"=>$dtVencimento,
-																						"valor"=>$valorParcela,
-																						"id_formadepagamento"=>$f->id,
-																						"parcela"=>$i,
-																						"taxa"=>$taxa,
-																						"parcelas"=>$x->qtdParcelas,
-																						"id_bandeira"=>$id_bandeira,
-																						"id_operadora"=>$id_operadora,
-																						"tipo"=>"credito");
+													// se for credito
+													if(isset($x->id_formapagamento)) {
+														if($x->id_formapagamento==2 and isset($x->creditoBandeira) and isset($x->operadora) and isset($x->qtdParcelas)) {
+															$where="where id_bandeira='".$x->creditoBandeira."' and id_operadora='".$x->operadora."' and vezes='".$x->qtdParcelas."' and operacao='credito' and lixo=0";
+															$sql->consult($_p."parametros_cartoes_taxas","parcela,taxa,prazo",$where);
+															
+															if($sql->rows) {
+																while($t=mysqli_fetch_object($sql->mysqry)) {
+																	$taxasPrazos[$t->parcela]=$t;
 																}
 															}
 														}
-													} else if($f->tipo=="debito") {
-														if(isset($x->debitoBandeira) and is_numeric($x->debitoBandeira) and isset($_bandeiras[$x->debitoBandeira])) {
-
-															$b = $_bandeiras[$x->debitoBandeira];
-
-															$id_bandeira=$b->id;
-															$id_operadora=$x->id_operadora;
-
-															$prazo=$taxa=0;
-															if(is_object($taxasPrazos)) {
-																$prazo=$taxasPrazos->prazo;
-																$taxa=$taxasPrazos->taxa;
+														// se for debito
+														else if($x->id_formapagamento==3 and isset($x->debitoBandeira) and isset($x->operadora)) {
+															$where="where id_bandeira='".$x->debitoBandeira."' and id_operadora='".$x->operadora."' and operacao='debito' and lixo=0";
+															$sql->consult($_p."parametros_cartoes_taxas","parcela,taxa,prazo",$where);
+															
+															if($sql->rows) {
+																while($t=mysqli_fetch_object($sql->mysqry)) {
+																	$taxasPrazos=$t;
+																}
 															}
-
-															$dtVencimento=date('Y-m-d',strtotime(invDate($x->vencimento)." + $prazo days"));
-															
-
-															$vSQLBaixa[]=array("id_pagamento"=>$id_tratamento_pagamento,
-																			"data_vencimento"=>$dtVencimento,
-																			"valor"=>$x->valor,
-																			"id_formadepagamento"=>$f->id,
-																			"taxa"=>$taxa,
-																			"id_bandeira"=>$id_bandeira,
-																			"id_operadora"=>$id_operadora,
-																			"tipo"=>"debito");
-																
-															
 														}
-													} else {
-														$vSQLBaixa[]=array("id_pagamento"=>$id_tratamento_pagamento,
-																			"data_vencimento"=>invDate($x->vencimento),
-																			"valor"=>$x->valor,
-																			"id_formadepagamento"=>$f->id,
-																			"tipo"=>"outros");
-
 													}
-												}
-											} 
-
-											foreach($vSQLBaixa as $x) {
-												$x=(object)$x;
-												$vsql="";
-												$where="where id_pagamento=$x->id_pagamento";
-
-												if($x->tipo=="credito") $where.=" and id_operadora='".$x->id_operadora."'
-																					and id_bandeira='".$x->id_bandeira."' 
-																					and parcela='".$x->parcelas."' 
-																					and parcela='".$x->parcela."'";
-												$baixa='';
-												$sql->consult($_p."pacientes_tratamentos_pagamentos_baixas","*",$where);
-												if($sql->rows) {
-													$baixa=mysqli_fetch_object($sql->mysqry);
-												} 
-
-												if(!isset($x->id_operadora)) $x->id_operadora=0;
-												if(!isset($x->id_bandeira)) $x->id_bandeira=0;
-												if(!isset($x->parcelas)) $x->parcelas=0;
-												if(!isset($x->parcela)) $x->parcela=0;
-
-												$vsql="id_pagamento='$x->id_pagamento',
-														id_usuario=$usr->id,
-														tipoBaixa='pagamento',
-														valor='$x->valor',
-														taxa='".(isset($x->taxa)?$x->taxa:0)."',
-														id_formadepagamento='$x->id_formadepagamento',
-														data_vencimento='".($x->data_vencimento)."',
-														parcelas='$x->parcelas',
-														parcela='$x->parcela',
-														id_operadora='$x->id_operadora',
-														id_bandeira='$x->id_bandeira'";
-														//echo $vsql."<BR>";die();
-												if(is_object($baixa)) {
-													$sql->update($_p."pacientes_tratamentos_pagamentos_baixas",$vsql,"where id=$baixa->id");
-												} else {
-													$sql->add($_p."pacientes_tratamentos_pagamentos_baixas","data=now(),".$vsql);
-
-												}
-
-											}
-										}
-									}
-
-								// Procedimentos
-									if(isset($_POST['procedimentos'])  and !empty($_POST['procedimentos'])) {
-										
-										$procedimetosJSON=!empty($_POST['procedimentos'])?json_decode($_POST['procedimentos']):array();
-										//echo json_encode($procedimetosJSON);die();
-										if(is_array($procedimetosJSON)){ 
-
-
-											$procedimentosEvolucao=array();
-											foreach($procedimetosJSON as $x) {
-												
-
-												$vSQLProcedimento="lixo=0,
+													
+													$vSQLPagamento="lixo=0,
 																	id_paciente=$paciente->id,
 																	id_tratamento=$id_tratamento,
-																	id_procedimento='".addslashes($x->id_procedimento)."',
-																	procedimento='".addslashes(utf8_decode($x->procedimento))."',
-																	id_plano='".addslashes($x->id_plano)."',
-																	plano='".addslashes(utf8_decode($x->plano))."',
-																	profissional='".addslashes(utf8_decode($x->profissional))."',
-																	situacao='".addslashes($x->situacao)."',
-																	id_profissional='".$idProfissional."',
-																	valor='".addslashes($x->valor)."',
-																	desconto='".addslashes($x->desconto)."',
-																	valorSemDesconto='".addslashes($x->valor)."',
-																	quantitativo='".addslashes($x->quantitativo)."',
-																	quantidade='".addslashes($x->quantidade)."',
-																	id_opcao='".addslashes($x->id_opcao)."',
-																	obs='".addslashes(utf8_decode($x->obs))."',
-																	opcao='".addslashes(utf8_decode($x->opcao))."',";
-																	//id_profissional='".addslashes($x->id_profissional)."',
-												//echo $vSQLProcedimento."<BR>";die();
-												$procedimento='';
-												if(isset($x->id) and is_numeric($x->id)) {
-													$sql->consult($_table."_procedimentos","*","where id_tratamento=$id_tratamento and id=$x->id");
+																	id_formapagamento='".addslashes(isset($x->id_formapagamento)?$x->id_formapagamento:0)."',
+																	qtdParcelas='".addslashes(isset($x->qtdParcelas)?$x->qtdParcelas:0)."',
+																	data_vencimento='".addslashes(invDate($x->vencimento))."',
+																	valor='".addslashes(($x->valor))."',";
+
+													$pagamento='';
+													if(isset($x->id) and is_numeric($x->id)) {
+														$sql->consult($_table."_pagamentos","*","where id_tratamento=$id_tratamento and id=$x->id");
+														if($sql->rows) {
+															$pagamento=mysqli_fetch_object($sql->mysqry);
+														}
+													}
+
+													if(is_object($pagamento)) {
+														$vSQLPagamento.="data_alteracao=now(),id_usuario_alteracao=$usr->id";
+														$vWHERE="WHERE id=$pagamento->id";
+														$sql->update($_table."_pagamentos",$vSQLPagamento,$vWHERE);
+														$id_tratamento_pagamento=$sql->ulid;
+														$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQLPagamento)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."_pagamentos',id_reg='".$id_tratamento_pagamento."'");
+
+													} else {
+														$vSQLPagamento.="data=now(),id_usuario=$usr->id";
+														$sql->add($_table."_pagamentos",$vSQLPagamento);
+														$id_tratamento_pagamento=$sql->ulid;
+														$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQLPagamento)."',tabela='".$_table."_pagamentos',id_reg='".$id_tratamento_pagamento."'");
+													}
+
+
+													if(isset($x->id_formapagamento) and is_numeric($x->id_formapagamento) and isset($_formasDePagamento[$x->id_formapagamento])) {
+														$f=$_formasDePagamento[$x->id_formapagamento];
+														if($f->tipo=="credito") {
+
+															if(isset($x->creditoBandeira) and is_numeric($x->creditoBandeira) and isset($_bandeiras[$x->creditoBandeira])) {
+
+																$b = $_bandeiras[$x->creditoBandeira];
+
+																$id_bandeira=$b->id;
+																$id_operadora=$x->id_operadora;
+
+																if(isset($x->qtdParcelas) and is_numeric($x->qtdParcelas)) {
+																	$valorParcela=$x->valor/$x->qtdParcelas;
+																	for($i=1;$i<=$x->qtdParcelas;$i++) {
+
+																		$prazo=$taxa=0;
+																		if(isset($taxasPrazos[$i])) {
+																			$prazo=$taxasPrazos[$i]->prazo;
+																			$taxa=$taxasPrazos[$i]->taxa;
+																		}
+
+																		$dtVencimento=date('Y-m-d',strtotime(invDate($x->vencimento)." + $prazo days"));
+
+
+																		$vSQLBaixa[]=array("id_pagamento"=>$id_tratamento_pagamento,
+																							"data_vencimento"=>$dtVencimento,
+																							"valor"=>$valorParcela,
+																							"id_formadepagamento"=>$f->id,
+																							"parcela"=>$i,
+																							"taxa"=>$taxa,
+																							"parcelas"=>$x->qtdParcelas,
+																							"id_bandeira"=>$id_bandeira,
+																							"id_operadora"=>$id_operadora,
+																							"tipo"=>"credito");
+																	}
+																}
+															}
+														} else if($f->tipo=="debito") {
+															if(isset($x->debitoBandeira) and is_numeric($x->debitoBandeira) and isset($_bandeiras[$x->debitoBandeira])) {
+
+																$b = $_bandeiras[$x->debitoBandeira];
+
+																$id_bandeira=$b->id;
+																$id_operadora=$x->id_operadora;
+
+																$prazo=$taxa=0;
+																if(is_object($taxasPrazos)) {
+																	$prazo=$taxasPrazos->prazo;
+																	$taxa=$taxasPrazos->taxa;
+																}
+
+																$dtVencimento=date('Y-m-d',strtotime(invDate($x->vencimento)." + $prazo days"));
+																
+
+																$vSQLBaixa[]=array("id_pagamento"=>$id_tratamento_pagamento,
+																				"data_vencimento"=>$dtVencimento,
+																				"valor"=>$x->valor,
+																				"id_formadepagamento"=>$f->id,
+																				"taxa"=>$taxa,
+																				"id_bandeira"=>$id_bandeira,
+																				"id_operadora"=>$id_operadora,
+																				"tipo"=>"debito");
+																	
+																
+															}
+														} else {
+															$vSQLBaixa[]=array("id_pagamento"=>$id_tratamento_pagamento,
+																				"data_vencimento"=>invDate($x->vencimento),
+																				"valor"=>$x->valor,
+																				"id_formadepagamento"=>$f->id,
+																				"tipo"=>"outros");
+
+														}
+													}
+												} 
+
+												foreach($vSQLBaixa as $x) {
+													$x=(object)$x;
+													$vsql="";
+													$where="where id_pagamento=$x->id_pagamento";
+
+													if($x->tipo=="credito") $where.=" and id_operadora='".$x->id_operadora."'
+																						and id_bandeira='".$x->id_bandeira."' 
+																						and parcela='".$x->parcelas."' 
+																						and parcela='".$x->parcela."'";
+													$baixa='';
+													$sql->consult($_p."pacientes_tratamentos_pagamentos_baixas","*",$where);
 													if($sql->rows) {
-														$procedimento=mysqli_fetch_object($sql->mysqry);
+														$baixa=mysqli_fetch_object($sql->mysqry);
+													} 
+
+													if(!isset($x->id_operadora)) $x->id_operadora=0;
+													if(!isset($x->id_bandeira)) $x->id_bandeira=0;
+													if(!isset($x->parcelas)) $x->parcelas=0;
+													if(!isset($x->parcela)) $x->parcela=0;
+
+													$vsql="id_pagamento='$x->id_pagamento',
+															id_usuario=$usr->id,
+															tipoBaixa='pagamento',
+															valor='$x->valor',
+															taxa='".(isset($x->taxa)?$x->taxa:0)."',
+															id_formadepagamento='$x->id_formadepagamento',
+															data_vencimento='".($x->data_vencimento)."',
+															parcelas='$x->parcelas',
+															parcela='$x->parcela',
+															id_operadora='$x->id_operadora',
+															id_bandeira='$x->id_bandeira'";
+															//echo $vsql."<BR>";die();
+													if(is_object($baixa)) {
+														$sql->update($_p."pacientes_tratamentos_pagamentos_baixas",$vsql,"where id=$baixa->id");
+													} else {
+														$sql->add($_p."pacientes_tratamentos_pagamentos_baixas","data=now(),".$vsql);
+
 													}
-												}
 
-												if(is_object($procedimento)) {
-													$vSQLProcedimento.="data_alteracao=now(),id_usuario_alteracao=$usr->id";
-													$vWHERE="WHERE id=$procedimento->id";
-													$sql->update($_table."_procedimentos",$vSQLProcedimento,$vWHERE);
-													$id_tratamento_procedimento=$procedimento->id;
-													$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQLProcedimento)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."_procedimentos',id_reg='".$id_tratamento_procedimento."'");
-
-												} else {
-													$vSQLProcedimento.="data=now(),id_usuario=$usr->id";
-													$sql->add($_table."_procedimentos",$vSQLProcedimento);
-													$id_tratamento_procedimento=$sql->ulid;
-													$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQLProcedimento)."',tabela='".$_table."_procedimentos',id_reg='".$id_tratamento_procedimento."'");
-												}
-
-												if($id_tratamento_procedimento>0) {
-
-													for($i=1;$i<=$x->quantidade;$i++) {
-														$procedimentosEvolucao[]=array('id_tratamento_procedimento'=>$id_tratamento_procedimento,
-																						'id_paciente'=>$paciente->id,
-																						'id_procedimento'=>$x->id_procedimento,
-																						'id_profissional'=>$idProfissional,
-																						'status_evolucao'=>'iniciar',
-																						'numeroTotal'=>$x->quantidade,
-																						'numero'=>$i);
-													}
-												}
-
-											}
-
-											// cria os procedimentos de evolucao
-											foreach($procedimentosEvolucao as $x) {
-												$x=(object)$x;
-
-												$vSQL="id_tratamento_procedimento=$x->id_tratamento_procedimento,
-														id_paciente=$x->id_paciente,
-														id_procedimento=$x->id_procedimento,
-														id_profissional=$idProfissional,
-														status_evolucao='$x->status_evolucao',
-														numeroTotal='$x->numeroTotal',
-														numero='$x->numero'";
-												//echo $vSQL;die();
-
-												$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento='$x->id_tratamento_procedimento' and numero='$x->numero' and numeroTotal='$x->numeroTotal' and lixo=0");
-												if($sql->rows) {
-													$reg=mysqli_fetch_object($sql->mysqry);
-													
-													$sql->add($_p."pacientes_tratamentos_procedimentos_evolucao",$vSQL,"where id=$reg->id");
-												} else {
-													$sql->add($_p."pacientes_tratamentos_procedimentos_evolucao",$vSQL);
 												}
 											}
 										}
-									}
-							}
 
-							$adm->biCategorizacao();
-							if(empty($erro)) {
-								$jsc->jAlert($msgOk,"sucesso","document.location.href='$_page?form=1&edita=$cnt->id&$url'");
-								die();
+									// Procedimentos
+										if(isset($_POST['procedimentos'])  and !empty($_POST['procedimentos'])) {
+											
+											$procedimetosJSON=!empty($_POST['procedimentos'])?json_decode($_POST['procedimentos']):array();
+											//echo json_encode($procedimetosJSON);die();
+											if(is_array($procedimetosJSON)){ 
+
+
+												$procedimentosEvolucao=array();
+												foreach($procedimetosJSON as $x) {
+													
+
+													$vSQLProcedimento="lixo=0,
+																		id_paciente=$paciente->id,
+																		id_tratamento=$id_tratamento,
+																		id_procedimento='".addslashes($x->id_procedimento)."',
+																		procedimento='".addslashes(utf8_decode($x->procedimento))."',
+																		id_plano='".addslashes($x->id_plano)."',
+																		plano='".addslashes(utf8_decode($x->plano))."',
+																		profissional='".addslashes(utf8_decode($x->profissional))."',
+																		situacao='".addslashes($x->situacao)."',
+																		id_profissional='".$idProfissional."',
+																		valor='".addslashes($x->valor)."',
+																		desconto='".addslashes($x->desconto)."',
+																		valorSemDesconto='".addslashes($x->valor)."',
+																		quantitativo='".addslashes($x->quantitativo)."',
+																		quantidade='".addslashes($x->quantidade)."',
+																		id_opcao='".addslashes($x->id_opcao)."',
+																		obs='".addslashes(utf8_decode($x->obs))."',
+																		opcao='".addslashes(utf8_decode($x->opcao))."',";
+																		//id_profissional='".addslashes($x->id_profissional)."',
+													//echo $vSQLProcedimento."<BR>";die();
+													$procedimento='';
+													if(isset($x->id) and is_numeric($x->id)) {
+														$sql->consult($_table."_procedimentos","*","where id_tratamento=$id_tratamento and id=$x->id");
+														if($sql->rows) {
+															$procedimento=mysqli_fetch_object($sql->mysqry);
+														}
+													}
+
+													if(is_object($procedimento)) {
+														$vSQLProcedimento.="data_alteracao=now(),id_usuario_alteracao=$usr->id";
+														$vWHERE="WHERE id=$procedimento->id";
+														$sql->update($_table."_procedimentos",$vSQLProcedimento,$vWHERE);
+														$id_tratamento_procedimento=$procedimento->id;
+														$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQLProcedimento)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."_procedimentos',id_reg='".$id_tratamento_procedimento."'");
+
+													} else {
+														$vSQLProcedimento.="data=now(),id_usuario=$usr->id";
+														$sql->add($_table."_procedimentos",$vSQLProcedimento);
+														$id_tratamento_procedimento=$sql->ulid;
+														$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQLProcedimento)."',tabela='".$_table."_procedimentos',id_reg='".$id_tratamento_procedimento."'");
+													}
+
+													if($id_tratamento_procedimento>0) {
+
+														for($i=1;$i<=$x->quantidade;$i++) {
+															$procedimentosEvolucao[]=array('id_tratamento_procedimento'=>$id_tratamento_procedimento,
+																							'id_paciente'=>$paciente->id,
+																							'id_procedimento'=>$x->id_procedimento,
+																							'id_profissional'=>$idProfissional,
+																							'status_evolucao'=>'iniciar',
+																							'numeroTotal'=>$x->quantidade,
+																							'numero'=>$i);
+														}
+													}
+
+												}
+
+												// cria os procedimentos de evolucao
+												foreach($procedimentosEvolucao as $x) {
+													$x=(object)$x;
+
+													$vSQL="id_tratamento_procedimento=$x->id_tratamento_procedimento,
+															id_paciente=$x->id_paciente,
+															id_procedimento=$x->id_procedimento,
+															id_profissional=$idProfissional,
+															status_evolucao='$x->status_evolucao',
+															numeroTotal='$x->numeroTotal',
+															numero='$x->numero'";
+													//echo $vSQL;die();
+
+													$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento='$x->id_tratamento_procedimento' and numero='$x->numero' and numeroTotal='$x->numeroTotal' and lixo=0");
+													if($sql->rows) {
+														$reg=mysqli_fetch_object($sql->mysqry);
+														
+														$sql->add($_p."pacientes_tratamentos_procedimentos_evolucao",$vSQL,"where id=$reg->id");
+													} else {
+														$sql->add($_p."pacientes_tratamentos_procedimentos_evolucao",$vSQL);
+													}
+												}
+											}
+										}
+								}
+
+								$adm->biCategorizacao();
+								if(empty($erro)) {
+									$jsc->jAlert($msgOk,"sucesso","document.location.href='$_page?form=1&edita=$cnt->id&$url'");
+									die();
+								} else {
+									$jsc->jAlert($erro,"erro","document.location.href='$_page?form=1&edita=$cnt->id&$url'");
+									die();
+								}
+
 							} else {
-								$jsc->jAlert($erro,"erro","document.location.href='$_page?form=1&edita=$cnt->id&$url'");
+								$jsc->jAlert("Tratamento não encontrado!","erro","document.location.href='$_page?$url'");
 								die();
 							}
-
 						} else {
-							$jsc->jAlert("Tratamento não encontrado!","erro","document.location.href='$_page?$url'");
+							//$adm->biCategorizacao();e
+							$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='".$_page."?form=1&edita=$id_tratamento&id_paciente=$paciente->id'");
 							die();
 						}
-					} else {
-						//$adm->biCategorizacao();e
-						$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='".$_page."?form=1&edita=$id_tratamento&id_paciente=$paciente->id'");
-						die();
 					}
+
 				}
 
 			}
-
-		}
 			?>
 
 			<form method="post" class="form js-form-plano">

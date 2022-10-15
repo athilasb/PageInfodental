@@ -22,6 +22,7 @@ html, button, input, textarea, select, figure, article, section, aside, header, 
 
 	--verde:darkseagreen;
 	--vermelho: red;
+	--laranja: orange;
 }
 
 html {scroll-behavior: smooth;}
@@ -249,7 +250,7 @@ code {font-size:0.875em; background:rgba(0,0,0,0.1); margin:0 .5rem;}
 .filter {display:flex; justify-content:space-between; gap:1rem; align-items:center; margin-bottom:var(--margin1);}
 .main__content > .filter {height:74px;}
 .filter ~ .filter {margin-top:var(--margin1);}
-.filter-group {display:flex; gap:2rem;}
+.filter-group {display:flex; gap:2rem; align-items:baseline;}
 .filter-title h1 {font-size:1.375em; font-weight:normal;}
 .filter-title h2 {font-size:1.25em; font-weight:normal;}
 .filter-title p {color:var(--cinza4);}
