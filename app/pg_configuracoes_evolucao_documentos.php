@@ -205,8 +205,8 @@
 										<td>Valor total dos procedimentos aprovados do plano de tratamento selecionado</td>
 									</tr>
 									<tr>
-										<td>[procedimentos_tempo_extimado]</td>
-										<td>Prazo extimado do plano de tratamento selecionado</td>
+										<td>[procedimentos_tempo_estimado]</td>
+										<td>Prazo estimado do plano de tratamento selecionado</td>
 									</tr>
 									<tr>
 										<td>[pagamentos]</td>

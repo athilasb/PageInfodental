@@ -760,7 +760,7 @@
 							if(is_object($plano)) {
 
 
-								$texto = str_replace("[procedimentos_tempo_extimado]",$plano->tempo_extimado,$texto); 
+								$texto = str_replace("[procedimentos_tempo_estimado]",$plano->tempo_estimado,$texto); 
 
 
 								// busca os procedimentos aprovados

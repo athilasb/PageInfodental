@@ -56,7 +56,7 @@
 		// formas de pagamento
 			$_formasDePagamento=array();
 			$optionFormasDePagamento='';
-			$sql->consult($_p."parametros_formasdepagamento","*","order by titulo asc");
+			$sql->consult($_p."parametros_formasdepagamento","*","where lixo=0 order by titulo asc");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$_formasDePagamento[$x->id]=$x;
 				$optionFormasDePagamento.='<option value="'.$x->id.'" data-tipo="'.$x->tipo.'">'.utf8_encode($x->titulo).'</option>';
@@ -72,16 +72,18 @@
 
 			$creditoBandeiras=array();
 			$debitoBandeiras=array();
+			$_operadoras=array();
 	
 			$sql->consult($_p."parametros_cartoes_operadoras","*","where lixo=0 order by titulo");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_operadoras[$x->id]=$x;
 				$creditoBandeiras[$x->id]=array('titulo'=>utf8_encode($x->titulo),'bandeiras'=>array());
 				$debitoBandeiras[$x->id]=array('titulo'=>utf8_encode($x->titulo),'bandeiras'=>array());
 			}
 
 			$sql->consult($_p."parametros_cartoes_operadoras_bandeiras","*","where lixo=0");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
-				if(isset($_bandeiras[$x->id_bandeira])) {
+				if(isset($_bandeiras[$x->id_bandeira]) and isset($_operadoras[$x->id_operadora])) {
 					$bandeira=$_bandeiras[$x->id_bandeira];
 					
 					$txJson = json_decode($x->taxas);
@@ -147,7 +149,7 @@
 
 	// formulario
 		$cnt='';
-		$campos=explode(",","titulo,id_profissional,tempo_extimado");
+		$campos=explode(",","titulo,id_profissional,tempo_estimado");
 			
 		foreach($campos as $v) $values[$v]='';
 		$values['procedimentos']="[]";
@@ -522,9 +524,12 @@
 															$x=(object)$x;
 															if($x->situacao=='aprovado') {
 
+
 																$qtd=1;
 																if($x->quantitativo==1) $qtd=$x->quantidade;
-																$valorProcedimento+=number_format($x->valorCorrigido*$qtd,2,".","");
+																$valorProcedimento+=number_format($x->valor*$qtd,2,".","");
+																$valorProcedimento-=$x->desconto;
+
 															}
 														}
 													}
@@ -677,30 +682,47 @@
 
 													$taxasPrazos=array();
 
-													// se for credito
+													// se for credito/debito
 													if(isset($x->id_formapagamento)) {
-														if($x->id_formapagamento==2 and isset($x->creditoBandeira) and isset($x->operadora) and isset($x->qtdParcelas)) {
-															$where="where id_bandeira='".$x->creditoBandeira."' and id_operadora='".$x->operadora."' and vezes='".$x->qtdParcelas."' and operacao='credito' and lixo=0";
+
+														// se for credito
+														if($x->id_formapagamento==2 and isset($x->creditoBandeira) and isset($x->id_operadora) and isset($x->qtdParcelas)) {
+															/*$where="where id_bandeira='".$x->creditoBandeira."' and id_operadora='".$x->id_operadora."' and vezes='".$x->qtdParcelas."' and operacao='credito' and lixo=0";
 															$sql->consult($_p."parametros_cartoes_taxas","parcela,taxa,prazo",$where);
 															
 															if($sql->rows) {
 																while($t=mysqli_fetch_object($sql->mysqry)) {
 																	$taxasPrazos[$t->parcela]=$t;
 																}
+															}*/
+
+															$where="where id_bandeira='".$x->creditoBandeira."' and id_operadora='".$x->id_operadora."' and check_credito=1 and lixo=0";
+															$sql->consult($_p."parametros_cartoes_operadoras_bandeiras","*",$where);
+															if($sql->rows) {
+																$tx=mysqli_fetch_object($sql->mysqry);
+																$taxasPrazos = json_decode($tx->taxas,true);
 															}
 														}
 														// se for debito
-														else if($x->id_formapagamento==3 and isset($x->debitoBandeira) and isset($x->operadora)) {
-															$where="where id_bandeira='".$x->debitoBandeira."' and id_operadora='".$x->operadora."' and operacao='debito' and lixo=0";
+														else if($x->id_formapagamento==3 and isset($x->debitoBandeira) and isset($x->id_operadora)) {
+															/*$where="where id_bandeira='".$x->debitoBandeira."' and id_operadora='".$x->id_operadora."' and operacao='debito' and lixo=0";
 															$sql->consult($_p."parametros_cartoes_taxas","parcela,taxa,prazo",$where);
 															
 															if($sql->rows) {
 																while($t=mysqli_fetch_object($sql->mysqry)) {
 																	$taxasPrazos=$t;
 																}
+															}*/
+
+															$where="where id_bandeira='".$x->debitoBandeira."' and id_operadora='".$x->id_operadora."' and check_debito=1 and lixo=0";
+															$sql->consult($_p."parametros_cartoes_operadoras_bandeiras","*",$where);
+															if($sql->rows) {
+																$tx=mysqli_fetch_object($sql->mysqry);
+																$taxasPrazos = json_decode($tx->taxas,true);
 															}
 														}
 													}
+
 													
 													$vSQLPagamento="lixo=0,
 																	id_paciente=$paciente->id,
@@ -749,10 +771,19 @@
 																	for($i=1;$i<=$x->qtdParcelas;$i++) {
 
 																		$prazo=$taxa=0;
-																		if(isset($taxasPrazos[$i])) {
+																		/*if(isset($taxasPrazos[$i])) {
 																			$prazo=$taxasPrazos[$i]->prazo;
 																			$taxa=$taxasPrazos[$i]->taxa;
-																		}
+																		}*/
+
+																		if(isset($taxasPrazos['creditoTaxas'][$x->qtdParcelas][$i])) {
+																			$tx=$taxasPrazos['creditoTaxas'][$x->qtdParcelas][$i];
+
+																			$taxa=valor($tx['taxa']);
+																			$prazo=$tx['dias'];
+																			//var_dump($taxasPrazos['creditoTaxas'][$x->qtdParcelas][$i]);
+																		} else echo "n";
+																		
 
 																		$dtVencimento=date('Y-m-d',strtotime(invDate($x->vencimento)." + $prazo days"));
 
@@ -763,6 +794,7 @@
 																							"id_formadepagamento"=>$f->id,
 																							"parcela"=>$i,
 																							"taxa"=>$taxa,
+																							"dias"=>$prazo,
 																							"parcelas"=>$x->qtdParcelas,
 																							"id_bandeira"=>$id_bandeira,
 																							"id_operadora"=>$id_operadora,
@@ -770,6 +802,8 @@
 																	}
 																}
 															}
+
+															//echo json_encode($vSQLBaixa);die();
 														} else if($f->tipo=="debito") {
 															if(isset($x->debitoBandeira) and is_numeric($x->debitoBandeira) and isset($_bandeiras[$x->debitoBandeira])) {
 
@@ -834,6 +868,7 @@
 															tipoBaixa='pagamento',
 															valor='$x->valor',
 															taxa='".(isset($x->taxa)?$x->taxa:0)."',
+															dias='".(isset($x->dias)?$x->dias:0)."',
 															id_formadepagamento='$x->id_formadepagamento',
 															data_vencimento='".($x->data_vencimento)."',
 															parcelas='$x->parcelas',
@@ -1028,8 +1063,8 @@
 
 						<div class="colunas">
 							<dl>
-								<dt>Tempo Extimado</dt>
-								<dd class="form-comp form-comp_pos"><input type="number" name="tempo_extimado" value="<?php echo $values['tempo_extimado'];?>" /><span>dias</span></dd>
+								<dt>Tempo Estimado</dt>
+								<dd class="form-comp form-comp_pos"><input type="number" name="tempo_estimado" value="<?php echo $values['tempo_estimado'];?>" /><span>dias</span></dd>
 							</dl>
 						</div>
 					</fieldset>

@@ -60,6 +60,8 @@
 ?>
 
 <script type="text/javascript">
+
+	// carrega campos de complemento da forma de pagamento
 	const pagamentosAtualizaCampos = (formaDePagamento) => {
 		if(formaDePagamento) {
 			let id_formadepagamento  = formaDePagamento.val();
@@ -83,22 +85,24 @@
 
 			let index = $('.js-pagamentos .js-id_formadepagamento').index(this);
 
-			if(atualizaObjetoPagamento===true) {
-				pagamentosPersistirObjeto();	
-			}
 		} else {
 			$('#js-aside-asFinanceiro').find('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
 		}
 	}
 	$(function(){
+
+
+		// se clicar nas abas
 		$('#js-aside-asFinanceiro .js-tab a').click(function() {
 			$(".js-tab a").removeClass("active");
 			$(this).addClass("active");							
 		});
 
+
+		// desfaz uniao de agrupamento de pagametnos
 		$('#js-aside-asFinanceiro').on('click','.js-desfazerUniao',function(){
-			let id_pagamento = $(this).attr('data-id_pagamento');
-			let data = `ajax=desfazerUniao&id_pagamento=${id_pagamento}`;
+			let idPagamento = $('#js-aside-asFinanceiro .js-id_pagamento').val();
+			let data = `ajax=desfazerUniao&id_pagamento=${idPagamento}`;
 
 			swal({   
 					title: "Atenção",   
@@ -134,11 +138,156 @@
 				});
 		});
 
+		// atualiza complementos das formas de pagamento 
 		$('select.js-id_formadepagamento').change(function(){
 			pagamentosAtualizaCampos($(this));
 		});
+
+		// se alterar o tipo de baixa
+		$('input[name=tipoBaixa]').click(function(){
+			
+			if($(this).val()=="pagamento") {
+				$('.js-tipoPagamento').parent().parent().show();
+				$('.js-tipoDescontoDespesa').parent().parent().hide();
+				$('.js-obs').parent().parent().hide();
+				$('select.js-id_formadepagamento').trigger('change');
+			} else { 
+				$('.js-tipoPagamento').parent().parent().hide();
+				$('.js-tipoDescontoDespesa').parent().parent().show();
+				$('.js-obs').parent().parent().show();
+			}
+		});
+
 		pagamentosAtualizaCampos('');
-	})
+
+		// se clicar em adicionar baixa
+		$('.js-btn-addBaixa').click(function(){
+
+
+			let obj = $(this);
+			let objHTMLAntigo = obj.html();
+			let loading = obj.attr('data-loading');
+
+			if(loading==0) {
+				obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>');
+				obj.attr('data-loading',1);
+
+				let tipoPagamento = $('.js-id_formadepagamento option:checked').attr('data-tipo');
+
+				saldoAPagar = unMoney($('.js-saldoPagar').val());
+				
+				let tipoBaixa = $('input[name=tipoBaixa]:checked').val();
+
+				if(tipoBaixa=="despesa" || tipoBaixa=="desconto" || tipoPagamento!==undefined) {
+
+					let dataPagamento = $('input.js-dataPagamento').val();
+					let dataVencimento = $('input.js-vencimento').val();
+					let valor = ($('input.js-valor').val().length>0 && unMoney($('input.js-valor').val())>0)?unMoney($('input.js-valor').val()):'';
+					let id_formadepagamento = $('.js-id_formadepagamento').val();
+					let obs = $('input.js-obs').val();
+					let debitoBandeira=$('select.js-debitoBandeira').val();
+					let creditoBandeira=$('select.js-creditoBandeira').val();
+					let creditoParcelas=$('select.js-parcelas').val();
+					let id_operadora=0;
+					let taxa=0;
+					id_pagamento = $('#js-aside-asFinanceiro .js-id_pagamento').val();
+
+					let erro = '';
+
+					if(tipoBaixa=='pagamento') {
+						if(tipoPagamento=='credito') {
+							if(dataVencimento.length==0) erro= 'Defina a <b>Data do Vencimento</b>';
+							else if(valor.length==0) erro= 'Defina o <b>Valor do Pagamento</b>';
+							else if(creditoBandeira.length==0) erro= 'Selecione a <b>Bandeira</b> do Cartão de Crédito';
+							else if(creditoParcelas.length==0) erro= 'Selecione o <b>Nº de Parcelas</b> do Cartão de Crédito';
+
+							id_operadora=$('select.js-creditoBandeira option:selected').attr('data-id_operadora');
+							taxa=$('input.js-valorCreditoDebitoTaxa').val().replace(/[^\d,-.]+/g,'');
+							valorParcela=$('input.js-valorCreditoDebito').val().replace(/[^\d,-.]+/g,'');
+
+						} else if(tipoPagamento=='debito') {
+							if(dataVencimento.length==0) erro= 'Defina a <b>Data do Vencimento</b>';
+							else if(valor.length==0) erro= 'Defina o <b>Valor do Pagamento</b>';
+							else if(debitoBandeira.length==0) erro= 'Selecione a <b>Bandeira</b> do Cartão de Débito';
+							
+							id_operadora=$('select.js-debitoBandeira option:selected').attr('data-id_operadora');
+							taxa=$('input.js-valorCreditoDebitoTaxa').val().replace(/[^\d,-.]+/g,'');
+							valorParcela=$('input.js-valorCreditoDebito').val().replace(/[^\d,-.]+/g,'');
+
+						} else {
+
+							id_operadora=0;
+							taxa=0;
+							valorParcela=$('input.js-valor').val().replace(/[^\d,-.]+/g,'');
+
+							if(dataVencimento.length==0) erro= 'Defina a <b>Data do Vencimento</b>';
+							else if(valor.length==0) erro= 'Defina o <b>Valor do Pagamento</b>';
+						}
+					} else if(tipoBaixa=='desconto' || tipoBaixa=='despesa') {
+						if(dataPagamento.length==0) erro= 'Defina a <b>Data do Pagamento</b>';
+						else if(valor.length==0) erro= 'Defina o <b>Valor</b>';
+						else if(obs.length==0) erro= 'Digite uma <b>Observação</b>';
+						valorParcela=$('input.js-valor').val().replace(/[^\d,-.]+/g,'');
+					}
+
+
+
+					if(dataPagamento.length==0) erro='Defina a <b>Data</b>';
+					else if(tipoBaixa.length==0) erro='Defina o <b>Tipo de Baixa</b>';
+					else if(valor.length==0) erro= 'Defina o <b>Valor</b> a ser pago';
+					else if(tipoBaixa=="pagamento" && id_formadepagamento.length==0) erro='Defina a <b>Forma de Pagamento</b>';
+					else if(saldoAPagar<=0) erro=`Não existe mais débitos!`; 
+					else if(saldoAPagar<unMoney(valorParcela)) erro=`O valor não pode ser maior que <b>${number_format(saldoAPagar,2,",",".")}`;
+				
+					if(erro.length==0) {
+						//return;
+						let data = `ajax=pagamentoBaixa&tipoBaixa=${tipoBaixa}&id_pagamento=${id_pagamento}&dataPagamento=${dataPagamento}&dataVencimento=${dataVencimento}&valor=${valor}&id_formadepagamento=${id_formadepagamento}&debitoBandeira=${debitoBandeira}&creditoBandeira=${creditoBandeira}&creditoParcelas=${creditoParcelas}&obs=${obs}&id_operadora=${id_operadora}&taxa=${taxa}&valorParcela=${unMoney(valorParcela)}`;
+
+						$.ajax({
+							type:"POST",
+							data:data,
+							success:function(rtn) {
+								if(rtn.success) {
+									baixas=rtn.baixas;
+									baixasAtualizar();
+									$('.js-dataPagamento').val('<?php echo date('d/m/Y');?>');
+									$('.js-valor').val('');
+									$('.js-desconto').val('');
+									$('.js-id_formadepagamento').val('');
+									$('.js-obs').val('');
+									$('.js-identificador').val('');
+									if(saldoAPagar<=0) $('.js-form-pagamentos').hide();
+
+								} else if(rtn.error) {
+									swal({title: "Erro!", text: rtn.error,  html:true,type:"error", confirmButtonColor: "#424242"});
+								} else {
+									swal({title: "Erro!", text: "Algum erro ocorreu durante a baixa deste pagamento!",  html:true,type:"error", confirmButtonColor: "#424242"});
+								}
+							},
+							error:function() {
+								swal({title: "Erro!", text: "Algum erro ocorreu durante a baixa deste pagamento",  html:true,type:"error", confirmButtonColor: "#424242"});
+								obj.html(objHTMLAntigo);
+								obj.attr('data-loading',0);
+							}
+						}).done(function(){
+							obj.html(objHTMLAntigo);
+							obj.attr('data-loading',0);
+						});
+					} else {
+						swal({title: "Erro!", text: erro,  html:true,type:"error", confirmButtonColor: "#424242"});
+						obj.html(objHTMLAntigo);
+						obj.attr('data-loading',0);
+					}
+				} else {
+					swal({title: "Erro!", text: "Define a <b>Forma de Pagamento</b>",  html:true,type:"error", confirmButtonColor: "#424242"});	
+					obj.html(objHTMLAntigo);
+					obj.attr('data-loading',0);
+				}
+			}
+		});
+		
+		$('input.money').maskMoney({symbol:'', allowZero:false, showSymbol:true, thousands:'.', decimal:',', symbolStay: true});
+	});
 </script>
 <section class="aside" id="js-aside-asFinanceiro">
 	<div class="aside__inner1">
@@ -149,17 +298,17 @@
 		</header>
 
 		<form method="post" class="aside-content form">
-			
+			<input type="hidden" class="js-id_pagamento" value="0" />
 
 			<section class="tab tab_alt js-tab">
-				<a href="javascript:;" onclick="$('.js-fin').hide(); $('.js-fin-resumo').show();" class="active">Informações</a>	
+				<?php /*<a href="javascript:;" onclick="$('.js-fin').hide(); $('.js-fin-resumo').show();" class="active">Informações</a>*/?>
 				<a href="javascript:;" onclick="$('.js-fin').hide(); $('.js-fin-programacao').show();" class="">Programação de Pagamento</a>
 				<a href="javascript:;" onclick="$('.js-fin').hide(); $('.js-fin-agrupamento').show();" class="js-tab-agrupamento">Agrupamento</a>
 			</section>
 
 
 			<!-- Resumo do pagamento -->
-			<div class="js-fin js-fin-resumo">
+			<?php /*<div class="js-fin js-fin-resumo">
 				<section class="filter"></section>
 				<fieldset>
 					<legend>Informações da Parcela</legend>
@@ -194,10 +343,10 @@
 						</dl>
 					</div>
 				</fieldset>
-			</div>
+			</div>*/?>
 
 			<!-- Programacao de pagamento -->
-			<div class="js-fin js-fin-programacao" style="display: none;">
+			<div class="js-fin js-fin-programacao" style="display: ;">
 				<section class="filter">
 					<?php /*<div class="filter-group"></div>
 					<div class="filter-group">
@@ -260,8 +409,12 @@
 					</div>
 					<div class="colunas5">
 						<dl>
-							<dt>Data Pagamento</dt>
-							<dd><input type="text" class="js-dataPagamento js-tipoDescontoDespesa datahora" value="<?php echo date('d/m/Y H:i');?>" /></dd>
+							<dt>Pagamento</dt>
+							<dd><input type="text" class="js-dataPagamento js-tipoDescontoDespesa data" value="<?php echo date('d/m/Y');?>" /></dd>
+						</dl>
+						<dl>
+							<dt>Valor</dt>
+							<dd><input type="text" class="js-valor money" /></dd>
 						</dl>
 						<dl class="dl2">
 							<dt>Forma de Pagamento</dt>
@@ -274,27 +427,13 @@
 						</dl>
 						
 						<dl>
-							<dt class="js-txt-vencimento">Pagamento</dt>
+							<dt class="js-txt-vencimento">Vencimento</dt>
 							<dd><input type="text" class="js-vencimento js-tipoPagamento data" value="<?php echo date('d/m/Y');?>" /></dd>
-						</dl>
-						<dl>
-							<dt>Valor</dt>
-							<dd><input type="text" class="js-valor money" /></dd>
 						</dl>
 
 						<dl>
 							<dt>Identificador</dt>
 							<dd><input type="text" class="js-identificador js-tipoPagamento" /></dd>
-						</dl>
-
-						<dl>
-							<dt>Valor da Parcela</dt>
-							<dd><input type="text" class="js-valorCreditoDebito js-tipoPagamento" readonly style="background:#CCC" /></dd>
-						</dl>
-
-						<dl>
-							<dt>Taxa (%)</dt>
-							<dd><input type="text" class="js-valorCreditoDebitoTaxa js-tipoPagamento" readonly style="background:#CCC" /></dd>
 						</dl>
 
 
@@ -324,7 +463,6 @@
 								</select>
 							</dd>
 						</dl>
-
 						<dl class="dl2">
 							<dt>Qtd. Parcelas</dt>
 							<dd>
@@ -332,6 +470,16 @@
 									<option value="">selecione a bandeira</option>
 								</select>
 							</dd>
+						</dl>
+
+						<dl>
+							<dt>Valor da Parcela</dt>
+							<dd><input type="text" class="js-valorCreditoDebito js-tipoPagamento" readonly style="background:#CCC" /></dd>
+						</dl>
+
+						<dl>
+							<dt>Taxa (%)</dt>
+							<dd><input type="text" class="js-valorCreditoDebitoTaxa js-tipoPagamento" readonly style="background:#CCC" /></dd>
 						</dl>
 
 						<script type="text/javascript">
@@ -357,16 +505,6 @@
 								});
 							});
 						</script>
-
-
-						
-
-						<?php
-						/*
-							copiar sistema do cartao decolar formas de pagamento
-							
-						*/
-						?>
 						
 
 					</div>
@@ -392,7 +530,7 @@
 					</div>
 
 					<dl>
-						<dd><a href="javascript:;" class="button__full button js-btn-addPagamento" data-loading="0">adicionar baixa</a></dd>
+						<dd><a href="javascript:;" class="button__full button button_main js-btn-addBaixa" data-loading="0">adicionar baixa</a></dd>
 					</dl>
 
 					
@@ -402,7 +540,7 @@
 					<legend>Pagamentos</legend>
 
 					<div class="list2">
-						<table class="js-table-baixas">
+						<table class="js-baixas">
 							<tr>
 								<th></th>
 								<th>Data Recebimento</th>

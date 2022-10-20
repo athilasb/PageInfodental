@@ -49,7 +49,6 @@
 		echo json_encode($rtn);
 		die();
 	}
-
 ?>
 <script type="text/javascript">
 
@@ -66,18 +65,21 @@
 
 
 				valorProcedimento=x.valor;
+
 				if(x.quantitativo==1) valorProcedimento*=x.quantidade;
 				if(x.face==1) valorProcedimento*=x.faces.length;
 
-				//valorProcedimento=valorProcedimento.toFixed(2);
+
 				if(x.desconto>0) {
-					valorTotal+=eval(valorProcedimento-x.desconto);
-					//valorTotal=valorTotal.toFixed(2);
+					valorProcedimento=eval(number_format((valorProcedimento-x.desconto),2,".",""));
 				}
 				else {
-					valorTotal+=eval(valorProcedimento);
-					//valorTotal=valorTotal.toFixed(2);
+					valorProcedimento=eval(number_format((valorProcedimento),2,".",""));
 				}
+
+
+				valorTotal+=valorProcedimento;
+
 			}
 
 			if(cont==procedimentos.length) {
@@ -326,7 +328,6 @@
 				} else {
 					valor = number_format(procedimentoValor,2,",",".");
 				}
-
 
 
 				let opcao = '';
