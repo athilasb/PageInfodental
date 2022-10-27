@@ -781,9 +781,17 @@
 									</select>
 								</dd>
 							</dl>
-
+							<script type="text/javascript">
+								$(function(){
+									$('input[name=busca]').keydown(function(e){
+										if(e.which==13) {
+											$('.js-btn-buscar').click();
+										}
+									});
+								})
+							</script>
 							<dl>
-								<dd class="form-comp form-comp_pos"><input type="text" name="busca" placeholder="Buscar..." value="<?php echo isset($_GET['busca'])?($_GET['busca']):"";?>" /><a href="javascript:;" onclick="$('form.js-filtro').submit();"><i class="iconify" data-icon="fluent:search-12-filled"></i></a></dd>
+								<dd class="form-comp form-comp_pos"><input type="text" name="busca" placeholder="Buscar..." value="<?php echo isset($_GET['busca'])?($_GET['busca']):"";?>" /><a href="javascript:;" class="js-btn-buscar" onclick="$('form.js-filtro').submit();"><i class="iconify" data-icon="fluent:search-12-filled"></i></a></dd>
 							</dl>
 						</div>					
 					</div>

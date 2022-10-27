@@ -235,372 +235,357 @@
 		var id_paciente = <?php echo $paciente->id;?>; 
 	</script>
 
+
+
+
 	<main class="main">
 		<div class="main__content content">
 
 			<section class="filter">
 				<div class="filter-group">
-					<div class="filter-form form">
-						<dl>
-							<dd><a href="javascript:;" data-aside="prontuario-opcoes" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar Evolução</span></a>
-						</dl>
+					<div class="filter-title">
+						<h1>Ficha do Paciente</h1>
 					</div>
 				</div>
 			</section>
 
-			<div class="box">
-				<div class="list-toggle">
+			<section class="grid">
 
-					<script>
-						$(function() {
-							$('.js-expande').click(function() {
-								$(this).parent().parent().next('article').toggleClass('active');
-								$(this).toggleClass('button-reverse');
-							});
+				<div class="box box-col">
 
-							$('.js-btn-whatsapp').click(function(){
-								let id_evolucao = $(this).attr('data-id_evolucao');
-								let obj = $(this);
-								let objHTMLAntigo = $(this).html();
-
-								if(obj.attr('data-loading')==0) {
-
-									obj.attr('data-loading',1);
-									obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>');
-
-									let data = {'token':'ee7a1554b556f657e8659a56d1a19c315684c39d',
-												'method':'generatePDF',
-												'id_evolucao':id_evolucao};
-
-									$.ajax({
-										type:"POST",
-										url:'services/api.php',
-										data:JSON.stringify(data),
-										success:function(rtn){
-											if(rtn.success) {
-												swal({title: "Sucesso!", text: `PDF enviado para o número ${rtn.numero} com sucesso!`, type:"success", confirmButtonColor: "#424242"});
-											} else if(rtn.error) {
-												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-											} else {
-												swal({title: "Erro!", text: 'Algum erro ocorreu durante o envio do PDF. Tente novamente!', type:"error", confirmButtonColor: "#424242"});
-											}
-
-											obj.html(objHTMLAntigo);
-											obj.attr('data-loading',0);
-										},
-										error:function(){
-												swal({title: "Erro!", text: 'Algum erro ocorreu durante o envio do PDF. Tente novamente.', type:"error", confirmButtonColor: "#424242"});
-											obj.html(objHTMLAntigo);
-											obj.attr('data-loading',0);
-										}
-									})
-								}
-							})
-						});
-					</script>
-
-					<?php
-					foreach($evolucoes as $e) {
-						if(isset($evolucoesTipos[$e->id_tipo])) {
-							$eTipo=$evolucoesTipos[$e->id_tipo];
-
-
-							$pdf="javascript:;";
-
-							// anamnese
-							if($e->id_tipo==1) {
-								$pdf="impressao/anamnese.php?id=".md5($e->id);
-							} 
-							// atestado
-							else if($e->id_tipo==4) {
-								$pdf="impressao/atestado.php?id=".md5($e->id);
-							} 
-							// pedido de exame
-							else if($e->id_tipo==6) {
-								$pdf="impressao/pedidodeexame.php?id=".md5($e->id);
-							} 
-							// receituario
-							else if($e->id_tipo==7) {
-								$pdf="impressao/receituario.php?id=".md5($e->id);
-							}
-							// receituario
-							else if($e->id_tipo==10) {
-								$pdf="impressao/documentos.php?id=".md5($e->id);
-							}
+					<?php 
+					require_once("includes/submenus/subPacientesFichaDoPaciente.php");
 					?>
-					<div class="list-toggle-item">
-						<header>
-							<div class="list-toggle-cat">
-								<i class="iconify" data-icon="<?php echo $eTipo->icone;?>"></i>
-								<div>
-									<h1><?php echo utf8_encode($eTipo->titulo);?></h1>
-									<p>
-										<?php 
-										// se geral (prontuario), usa a data definida no cadastro
-										if($eTipo->id==9 and isset($_geral[$e->id])) {
-											echo date('d/m/Y H:i',strtotime($_geral[$e->id]->data));
-										} else {
-											echo date('d/m/Y H:i',strtotime($e->data));
-										}
-										?>
-									</p>
+
+					<div class="box-col__inner1">
+				
+						<section class="filter">
+							<div class="filter-group"></div>
+							<div class="filter-group">
+								<div class="filter-form form">
+									<dl>
+										<dd>
+											<a href="javascript:;" data-aside="prontuario-opcoes" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar Evolução</span></a>
+										</dd>
+									</dl>
 								</div>
-							</div>
-							<p><?php echo isset($_profissionais[$e->id_profissional])?utf8_encode($_profissionais[$e->id_profissional]->nome):"";?></p>
-							<?php
-							if($eTipo->id==10 and isset($_documentos[$e->id])) {
-								$d=$_documentos[$e->id];
-								if(isset($_documentosTipos[$d->id_documento])) {
-							?>
-							<p><?php echo utf8_encode($_documentosTipos[$d->id_documento]->titulo);?></p>
-							<?php
-								}
-							}
-							?>
-							<div class="list-toggle-buttons">									
-								<a href="<?php echo $pdf;?>" target="_blank" class="button"><i class="iconify" data-icon="ant-design:file-pdf-outlined"></i></a>
-								<a href="javascript:;" class="button js-btn-whatsapp" data-id_evolucao="<?php echo $e->id;?>" data-loading="0"><i class="iconify" data-icon="fa:whatsapp"></i></a>
-								<a href="<?php echo $_page."?deleta=".$e->id."&pagina=".((isset($_GET['pagina']) and is_numeric($_GET['pagina']))?$_GET['pagina']:'')."&$url";?>" class="button js-confirmarDeletar"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-								<a href="javascript:;" class="button button_main js-expande"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i></a>
 							</div>							
-						</header>
-						<article>
-							<?php
-								$correcoes='';
+						</section>
 
-								// anamnese
-								if($eTipo->id==1) {
-									$correcoes=1;
-									if(isset($_anamnesePerguntas[$e->id])) {
-										$perguntas=$_anamnesePerguntas[$e->id];
+						<div class="box">
+							<div class="list-toggle">
 
-
-									?>
-									<div class="list-toggle-topics">
-									<?php
-										foreach($perguntas as $p) {
-											$pergunta=json_decode($p->json_pergunta);
-
-
-									?>
-										<div class="list-toggle-topic">
-											<h1><?php echo ($pergunta->pergunta);?></h1>
-											<p>
-												<?php 
-												if($pergunta->tipo=="simnao" or $pergunta->tipo=="simnaotexto") {
-													if($p->resposta=="SIM") echo "Sim";
-													else echo "Não";
-												} else if($pergunta->tipo=="nota") {
-													echo "Nota: ".$p->resposta;
-												} 
-												?>	
-											</p>
-											<?php
-											if(!empty($p->resposta_texto)) {
-												echo "<p>Resposta: ".utf8_encode($p->resposta_texto)."</p>";
-											}
-											?>
-										</div>
-									<?php
-										}
-									?>
-									
-									</div>		
-									<?php
-									}
-								}
-								// atestado
-								else if($eTipo->id==4) {
-									if(isset($_atestados[$e->id])) {
-										$atestado=$_atestados[$e->id];
-									?>
-									<div class="list-toggle-topics">
-										<div class="list-toggle-topic">
-											<h1>Tipo de atestado</h1>
-											<p><?php echo utf8_encode($atestado->tipo);?></p>
-										</div>
-										<div class="list-toggle-topic">
-											<h1>Fim do Atestado</h1>
-											<p><?php echo isset($_atestadosFins[$atestado->id_fim])?utf8_encode($_atestadosFins[$atestado->id_fim]->titulo):'-';?></p>
-										</div>
-										<div class="list-toggle-topic">
-											<h1>Duração do Atestado</h1>
-											<p><?php echo utf8_encode($atestado->duracao);?> min(s)</p>
-										</div>
-									</div>		
-									<?php
-									}
-								}
-
-								// pedidos de exame
-								else if($eTipo->id==6) {
-
-									if(isset($_pedidosDeExames[$e->id])) {
-										$pedidos=$_pedidosDeExames[$e->id];
-										
-									?>
-									<div class="list-toggle-topics">
-										<div class="list-toggle-topic">
-											<h1><?php echo isset($_clinicas[$e->id_clinica])?utf8_encode($_clinicas[$e->id_clinica]->titulo):"Clínica Desconhecida";?></h1>
-											
-										</div>
-										<div class="list-toggle-topic">
-											<h1>Exames:</h1>
-											<?php
-											foreach($pedidos as $p) {
-												if(isset($_exames[$p->id_exame])) {
-													$exame=$_exames[$p->id_exame];
-													$regiao=' - GERAL';
-													if(isset($p->opcao) and !empty($p->opcao)) {
-														$opcoes=explode(",",utf8_encode($p->opcao));
-														$regiao=' -';
-														foreach($opcoes as $opcao) {
-															$regiao.=" ".$opcao.", ";
-														}
-														$regiao=substr($regiao,0,strlen($regiao)-2);
-													}
-													$obs=!empty($p->obs)?" - ".utf8_encode($p->obs):"";
-
-											?>
-											<p><?php echo utf8_encode($exame->titulo).$regiao.$obs;?></p>
-											<?php
-												}
-											}
-											?>
-										</div>
-									</div>		
-									<?php
-									}
-								}
-
-								// receituario
-								else if($eTipo->id==7) {
-
-									if(isset($_medicamentosReceituario[$e->id])) {
-										$medicamentos=$_medicamentosReceituario[$e->id];
-											
-												
-									?>
-									<div class="list-toggle-topics">
-										<div class="list-toggle-topic">
-											<h1>Tipo de Uso</h1>
-											<p><?php echo isset($_tiposReceitas[$e->tipo_receita])?$_tiposReceitas[$e->tipo_receita]:"-";?></p>
-										</div>
-										<div class="list-toggle-topic">
-											<h1>Medicamentos</h1>
-										<?php
-										foreach($medicamentos as $m) {
-										?>
-											<p><?php echo utf8_encode($m->medicamento)." - ".$m->quantidade." ".$_medicamentosTipos[$m->tipo]." - ".utf8_encode($m->posologia);?></p>
-										<?php
-										}
-										?>
-										</div>
-										
-									</div>			
-									<?php
-									}
-								}
-
-								// receituario
-								else if($eTipo->id==9) {
-
-									if(isset($_geral[$e->id])) {
-										$g=$_geral[$e->id];
-									?>
-									<div class="list-toggle-topics">
-										<div class="list-toggle-topic">
-										
-											<p><?php echo utf8_encode($g->texto);?></p>
-										
-										</div>
-										
-									</div>			
-									<?php
-									}
-								}
-
-								// documentos
-								else if($eTipo->id==10) {
-
-									if(isset($_documentos[$e->id])) {
-										$g=$_documentos[$e->id];
-									?>
-									<div class="list-toggle-topics">
-										<div class="list-toggle-topic">
-										
-											<p>
-												<?php
-												if(isset($_documentosTipos[$g->id_documento])) echo utf8_encode($_documentosTipos[$g->id_documento]->titulo);
-												?>
-											</p>
-										
-										</div>
-										
-									</div>			
-									<?php
-									}
-								}
-
-
-								if($correcoes!="") {
-							?>
-
-							<div class="list-toggle-com js-erratas js-errata-<?php echo $e->id;?>">
-								<header>
-									<h1>Correções</h1>
-								</header>
-
+								
 								<?php
-								if(isset($_erratas[$e->id])) {
-									foreach($_erratas[$e->id] as $errata) {
+								foreach($evolucoes as $e) {
+									if(isset($evolucoesTipos[$e->id_tipo])) {
+										$eTipo=$evolucoesTipos[$e->id_tipo];
+
+
+										$pdf="javascript:;";
+
+										// anamnese
+										if($e->id_tipo==1) {
+											$pdf="impressao/anamnese.php?id=".md5($e->id);
+										} 
+										// atestado
+										else if($e->id_tipo==4) {
+											$pdf="impressao/atestado.php?id=".md5($e->id);
+										} 
+										// pedido de exame
+										else if($e->id_tipo==6) {
+											$pdf="impressao/pedidodeexame.php?id=".md5($e->id);
+										} 
+										// receituario
+										else if($e->id_tipo==7) {
+											$pdf="impressao/receituario.php?id=".md5($e->id);
+										}
+										// receituario
+										else if($e->id_tipo==10) {
+											$pdf="impressao/documentos.php?id=".md5($e->id);
+										}
 								?>
-								<article class="js-errata-item">
+								<div class="list-toggle-item">
 									<header>
+										<div class="list-toggle-cat">
+											<i class="iconify" data-icon="<?php echo $eTipo->icone;?>"></i>
+											<div>
+												<h1><?php echo utf8_encode($eTipo->titulo);?></h1>
+												<p>
+													<?php 
+													// se geral (prontuario), usa a data definida no cadastro
+													if($eTipo->id==9 and isset($_geral[$e->id])) {
+														echo date('d/m/Y H:i',strtotime($_geral[$e->id]->data));
+													} else {
+														echo date('d/m/Y H:i',strtotime($e->data));
+													}
+													?>
+												</p>
+											</div>
+										</div>
+										<p><?php echo isset($_profissionais[$e->id_profissional])?utf8_encode($_profissionais[$e->id_profissional]->nome):"";?></p>
 										<?php
-										if(isset($_profissionais[$errata->id_usuario])) {
+										if($eTipo->id==10 and isset($_documentos[$e->id])) {
+											$d=$_documentos[$e->id];
+											if(isset($_documentosTipos[$d->id_documento])) {
 										?>
-										<p><?php echo utf8_encode($_profissionais[$errata->id_usuario]->nome);?></p>
+										<p><?php echo utf8_encode($_documentosTipos[$d->id_documento]->titulo);?></p>
 										<?php
+											}
 										}
 										?>
-										<p><?php echo date('d/m/Y H:i',strtotime($errata->data));?></p>
+										<div class="list-toggle-buttons">									
+											<a href="<?php echo $pdf;?>" target="_blank" class="button"><i class="iconify" data-icon="ant-design:file-pdf-outlined"></i></a>
+											<a href="javascript:;" class="button js-btn-whatsapp" data-id_evolucao="<?php echo $e->id;?>" data-loading="0"><i class="iconify" data-icon="fa:whatsapp"></i></a>
+											<a href="<?php echo $_page."?deleta=".$e->id."&pagina=".((isset($_GET['pagina']) and is_numeric($_GET['pagina']))?$_GET['pagina']:'')."&$url";?>" class="button js-confirmarDeletar"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+											<a href="javascript:;" class="button button_main js-expande"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i></a>
+										</div>							
 									</header>
 									<article>
-										<p><?php echo utf8_encode($errata->texto);?></p>
+										<?php
+											$correcoes='';
+
+											// anamnese
+											if($eTipo->id==1) {
+												$correcoes=1;
+												if(isset($_anamnesePerguntas[$e->id])) {
+													$perguntas=$_anamnesePerguntas[$e->id];
+
+
+												?>
+												<div class="list-toggle-topics">
+												<?php
+													foreach($perguntas as $p) {
+														$pergunta=json_decode($p->json_pergunta);
+
+
+												?>
+													<div class="list-toggle-topic">
+														<h1><?php echo ($pergunta->pergunta);?></h1>
+														<p>
+															<?php 
+															if($pergunta->tipo=="simnao" or $pergunta->tipo=="simnaotexto") {
+																if($p->resposta=="SIM") echo "Sim";
+																else echo "Não";
+															} else if($pergunta->tipo=="nota") {
+																echo "Nota: ".$p->resposta;
+															} 
+															?>	
+														</p>
+														<?php
+														if(!empty($p->resposta_texto)) {
+															echo "<p>Resposta: ".utf8_encode($p->resposta_texto)."</p>";
+														}
+														?>
+													</div>
+												<?php
+													}
+												?>
+												
+												</div>		
+												<?php
+												}
+											}
+											// atestado
+											else if($eTipo->id==4) {
+												if(isset($_atestados[$e->id])) {
+													$atestado=$_atestados[$e->id];
+												?>
+												<div class="list-toggle-topics">
+													<div class="list-toggle-topic">
+														<h1>Tipo de atestado</h1>
+														<p><?php echo utf8_encode($atestado->tipo);?></p>
+													</div>
+													<div class="list-toggle-topic">
+														<h1>Fim do Atestado</h1>
+														<p><?php echo isset($_atestadosFins[$atestado->id_fim])?utf8_encode($_atestadosFins[$atestado->id_fim]->titulo):'-';?></p>
+													</div>
+													<div class="list-toggle-topic">
+														<h1>Duração do Atestado</h1>
+														<p><?php echo utf8_encode($atestado->duracao);?> min(s)</p>
+													</div>
+												</div>		
+												<?php
+												}
+											}
+
+											// pedidos de exame
+											else if($eTipo->id==6) {
+
+												if(isset($_pedidosDeExames[$e->id])) {
+													$pedidos=$_pedidosDeExames[$e->id];
+													
+												?>
+												<div class="list-toggle-topics">
+													<div class="list-toggle-topic">
+														<h1><?php echo isset($_clinicas[$e->id_clinica])?utf8_encode($_clinicas[$e->id_clinica]->titulo):"Clínica Desconhecida";?></h1>
+														
+													</div>
+													<div class="list-toggle-topic">
+														<h1>Exames:</h1>
+														<?php
+														foreach($pedidos as $p) {
+															if(isset($_exames[$p->id_exame])) {
+																$exame=$_exames[$p->id_exame];
+																$regiao=' - GERAL';
+																if(isset($p->opcao) and !empty($p->opcao)) {
+																	$opcoes=explode(",",utf8_encode($p->opcao));
+																	$regiao=' -';
+																	foreach($opcoes as $opcao) {
+																		$regiao.=" ".$opcao.", ";
+																	}
+																	$regiao=substr($regiao,0,strlen($regiao)-2);
+																}
+																$obs=!empty($p->obs)?" - ".utf8_encode($p->obs):"";
+
+														?>
+														<p><?php echo utf8_encode($exame->titulo).$regiao.$obs;?></p>
+														<?php
+															}
+														}
+														?>
+													</div>
+												</div>		
+												<?php
+												}
+											}
+
+											// receituario
+											else if($eTipo->id==7) {
+
+												if(isset($_medicamentosReceituario[$e->id])) {
+													$medicamentos=$_medicamentosReceituario[$e->id];
+														
+															
+												?>
+												<div class="list-toggle-topics">
+													<div class="list-toggle-topic">
+														<h1>Tipo de Uso</h1>
+														<p><?php echo isset($_tiposReceitas[$e->tipo_receita])?$_tiposReceitas[$e->tipo_receita]:"-";?></p>
+													</div>
+													<div class="list-toggle-topic">
+														<h1>Medicamentos</h1>
+													<?php
+													foreach($medicamentos as $m) {
+													?>
+														<p><?php echo utf8_encode($m->medicamento)." - ".$m->quantidade." ".$_medicamentosTipos[$m->tipo]." - ".utf8_encode($m->posologia);?></p>
+													<?php
+													}
+													?>
+													</div>
+													
+												</div>			
+												<?php
+												}
+											}
+
+											// geral
+											else if($eTipo->id==9) {
+												$correcoes=1;
+												if(isset($_geral[$e->id])) {
+													$g=$_geral[$e->id];
+												?>
+												<div class="list-toggle-topics">
+													<div class="list-toggle-topic">
+													
+														<p><?php echo utf8_encode($g->texto);?></p>
+													
+													</div>
+													
+												</div>			
+												<?php
+												}
+											}
+
+											// documentos
+											else if($eTipo->id==10) {
+
+												if(isset($_documentos[$e->id])) {
+													$g=$_documentos[$e->id];
+												?>
+												<div class="list-toggle-topics">
+													<div class="list-toggle-topic">
+													
+														<p>
+															<?php
+															if(isset($_documentosTipos[$g->id_documento])) echo utf8_encode($_documentosTipos[$g->id_documento]->titulo);
+															?>
+														</p>
+													
+													</div>
+													
+												</div>			
+												<?php
+												}
+											}
+
+
+											if($correcoes!="") {
+										?>
+
+										<div class="list-toggle-com js-erratas js-errata-<?php echo $e->id;?>">
+											<header>
+												<h1>Correções</h1>
+											</header>
+
+											<?php
+											if(isset($_erratas[$e->id])) {
+												foreach($_erratas[$e->id] as $errata) {
+											?>
+											<article class="js-errata-item">
+												<header>
+													<?php
+													if(isset($_profissionais[$errata->id_usuario])) {
+													?>
+													<p><?php echo utf8_encode($_profissionais[$errata->id_usuario]->nome);?></p>
+													<?php
+													}
+													?>
+													<p><?php echo date('d/m/Y H:i',strtotime($errata->data));?></p>
+												</header>
+												<article>
+													<p><?php echo utf8_encode($errata->texto);?></p>
+												</article>
+											</article>
+											<?php
+												}
+											} else {
+											?>
+											<article class="js-errata-item">
+												<center>Nenhuma errata realizada.</center>
+											</article>
+											<?php	
+											}
+											?>
+
+											<dl class="js-errata-item">
+												<textarea style="height: 50px;" class="js-errata-texto-<?php echo $e->id;?>"></textarea>
+												<button class="button button_main js-errata-adicionar" data-loading="0" style="float: right;" data-id_evolucao="<?php echo $e->id;?>"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> Adicionar</button>
+											</dl>
+											
+											
+										</div>	
+										<?php
+										}
+										?>						
 									</article>
-								</article>
+								</div>
 								<?php
+										
 									}
-								} else {
-								?>
-								<article class="js-errata-item">
-									<center>Nenhuma errata realizada.</center>
-								</article>
-								<?php	
 								}
 								?>
 
-								<dl class="js-errata-item">
-									<textarea style="height: 50px;" class="js-errata-texto-<?php echo $e->id;?>"></textarea>
-									<button class="button button_main js-errata-adicionar" data-loading="0" style="float: right;" data-id_evolucao="<?php echo $e->id;?>"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> Adicionar</button>
-								</dl>
-								
-								
 							</div>	
-							<?php
-							}
-							?>						
-						</article>
+						</div>
 					</div>
-					<?php
-							
-						}
-					}
-					?>
+					
+				</div>
 
-				</div>	
-			</div>
+			</section>
+
+
+			
 
 			<script type="text/javascript">
 
@@ -639,6 +624,50 @@
 					})
 				}
 				$(function(){
+
+					$('.js-expande').click(function() {
+						$(this).parent().parent().next('article').toggleClass('active');
+						$(this).toggleClass('button-reverse');
+					});
+
+					$('.js-btn-whatsapp').click(function(){
+						let id_evolucao = $(this).attr('data-id_evolucao');
+						let obj = $(this);
+						let objHTMLAntigo = $(this).html();
+
+						if(obj.attr('data-loading')==0) {
+
+							obj.attr('data-loading',1);
+							obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>');
+
+							let data = {'token':'ee7a1554b556f657e8659a56d1a19c315684c39d',
+										'method':'generatePDF',
+										'id_evolucao':id_evolucao};
+
+							$.ajax({
+								type:"POST",
+								url:'services/api.php',
+								data:JSON.stringify(data),
+								success:function(rtn){
+									if(rtn.success) {
+										swal({title: "Sucesso!", text: `PDF enviado para o número ${rtn.numero} com sucesso!`, type:"success", confirmButtonColor: "#424242"});
+									} else if(rtn.error) {
+										swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+									} else {
+										swal({title: "Erro!", text: 'Algum erro ocorreu durante o envio do PDF. Tente novamente!', type:"error", confirmButtonColor: "#424242"});
+									}
+
+									obj.html(objHTMLAntigo);
+									obj.attr('data-loading',0);
+								},
+								error:function(){
+										swal({title: "Erro!", text: 'Algum erro ocorreu durante o envio do PDF. Tente novamente.', type:"error", confirmButtonColor: "#424242"});
+									obj.html(objHTMLAntigo);
+									obj.attr('data-loading',0);
+								}
+							})
+						}
+					})
 
 					$('.js-erratas').on('click','.js-errata-adicionar',function(){
 

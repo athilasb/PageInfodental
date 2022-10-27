@@ -162,10 +162,25 @@
 				$values=$adm->values($campos,$cnt);
 
 				// Procedimentos
-					$procedimentos=array();
+					$procedimentosRegs=$usuariosIds=array();
 					$where="where id_tratamento=$cnt->id and id_paciente=$paciente->id and lixo=0";
 					$sql->consult($_table."_procedimentos","*",$where);
 					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$usuariosIds[$x->id_usuario]=$x->id_usuario;
+						$procedimentosRegs[]=$x;
+					}
+
+					$_usuarios=array();
+					if(count($usuariosIds)>0) {
+						$sql->consult($_p."colaboradores","id,nome","where id IN (".implode(",",$usuariosIds).")");
+						while ($x=mysqli_fetch_object($sql->mysqry)) {
+							$_usuarios[$x->id]=$x;
+						}
+					}
+
+
+					$procedimentos=array();
+					foreach($procedimentosRegs as $x) {
 
 						/*$profissional=isset($_profissionais[$x->id_profissional])?$_profissionais[$x->id_profissional]:'';
 						$iniciaisCor='';
@@ -179,7 +194,12 @@
 						$valor=$x->valorSemDesconto;
 						//if($x->quantitativo==1) $valor*=$x->quantidade;
 
+						$autor = isset($_usuarios[$x->id_usuario]) ? utf8_encode($_usuarios[$x->id_usuario]->nome) : 'Desconhecido';
+
+
 						$procedimentos[]=array('id'=>$x->id,
+												'autor'=>$autor,
+												'data'=>date('d/m/Y H:i',strtotime($x->data)),
 												'id_procedimento'=>(int)$x->id_procedimento,
 												'procedimento'=>utf8_encode($x->procedimento),
 												//'id_profissional'=>(int)$x->id_profissional,
@@ -380,10 +400,14 @@
 						</dl>
 						<?php
 						}
+						if($tratamentoAprovado===false) {
 						?>
 						<dl>
 							<dd><a href="javascript:;" class="button button_main js-btn-salvar"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>
 						</dl>
+						<?php
+						}
+						?>
 					</div>
 				</div>
 				
@@ -428,15 +452,21 @@
 							if(isset($_POST['pagamento'])) $vSQL.="pagamento='".$_POST['pagamento']."',";
 
 							if(is_object($cnt)) {
-								$vSQL=substr($vSQL,0,strlen($vSQL)-1);
-								$vWHERE="where id='".$cnt->id."'";
-								$sql->update($_table,$vSQL,$vWHERE);
-								$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
-								$id_tratamento=$cnt->id;
 
-								if($tratamentoAprovado===false) {
-									$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
-									$sql->update($_table."_pagamentos","lixo=1,lixo_obs=1,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
+								if(!empty($vSQL)) {
+									$vSQL=substr($vSQL,0,strlen($vSQL)-1);
+									$vWHERE="where id='".$cnt->id."'";
+									$sql->update($_table,$vSQL,$vWHERE);
+									$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
+									$id_tratamento=$cnt->id;
+
+									if($tratamentoAprovado===false) {
+										$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
+										$sql->update($_table."_pagamentos","lixo=1,lixo_obs=1,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
+									}
+								} else {
+
+									$id_tratamento=$cnt->id;
 								}
 							} else {
 								$vSQL.="data=now(),id_paciente=$paciente->id";
@@ -1042,12 +1072,12 @@
 						<div class="colunas">
 							<dl>
 								<dt>Título</dt>
-								<dd><input type="text" name="titulo" value="<?php echo $values['titulo'];?>" /></dd>
+								<dd><input type="text" name="titulo" value="<?php echo $values['titulo'];?>"<?php echo $tratamentoAprovado==true?" disabled":"";?> /></dd>
 							</dl>
 							<dl>
 								<dt>Profissional</dt>
 								<dd>
-									<select name="id_profissional" class="js-id_profissional">
+									<select name="id_profissional" class="js-id_profissional"<?php echo $tratamentoAprovado==true?" disabled":"";?>>
 										<option value=""><?php echo utf8_encode($clinica->clinica_nome);?></option>
 										<?php
 										foreach($_profissionais as $x) {
@@ -1064,7 +1094,7 @@
 						<div class="colunas">
 							<dl>
 								<dt>Tempo Estimado</dt>
-								<dd class="form-comp form-comp_pos"><input type="number" name="tempo_estimado" value="<?php echo $values['tempo_estimado'];?>" /><span>dias</span></dd>
+								<dd class="form-comp form-comp_pos"><input type="number" name="tempo_estimado" value="<?php echo $values['tempo_estimado'];?>"<?php echo $tratamentoAprovado==true?" disabled":"";?> /><span>dias</span></dd>
 							</dl>
 						</div>
 					</fieldset>

@@ -1,6 +1,6 @@
 <?php
 	include "print-header.php";
-	$evolucao = $paciente = $clinica = $solicitante = "";
+	$evolucao = $paciente = $clinica = $solicitante = $profissional = "";
 	$receituario = array();
 	if(isset($_GET['id'])) {
 		$sql->consult($_p."pacientes_evolucoes","*","where md5(id)='".addslashes($_GET['id'])."' and id_tipo=7");
@@ -8,12 +8,17 @@
 			$evolucao=mysqli_fetch_object($sql->mysqry);
 
 
+			$sql->consult($_p."colaboradores","id,nome,cro,uf_cro","where id=$evolucao->id_profissional");
+			if($sql->rows) {
+				$profissional=mysqli_fetch_object($sql->mysqry);
+			}
+
 			$sql->consult($_p."colaboradores","id,nome","where id=$evolucao->id_usuario");
 			if($sql->rows) {
 				$solicitante=mysqli_fetch_object($sql->mysqry);
 			}
 
-			$sql->consult($_p."parametros_fornecedores","*","where lixo=0 and tipo='CLINICA' order by razao_social, nome asc");
+			$sql->consult($_p."clinica","*","");
 			if($sql->rows) {
 				$clinica=mysqli_fetch_object($sql->mysqry);
 			}
@@ -60,7 +65,7 @@
 
 	$idade=idade($paciente->data_nascimento);
 
-	$endereco="";
+	$endereco=$cidade="";
 
 	if(!empty($clinica->logradouro)) $endereco=utf8_encode($clinica->logradouro);
 	if(!empty($clinica->numero)) $endereco.=", ".utf8_encode($clinica->logradouro);
@@ -70,6 +75,7 @@
 		$sql->consult($_p."cidades","*","where id=$clinica->id_cidade");
 		if($sql->rows) {
 			$c=mysqli_fetch_object($sql->mysqry);
+			$cidade=utf8_encode($c->titulo);
 			$endereco.=", ".utf8_encode($c->titulo);
 			if(!empty($clinica->estado)) $endereco.="-".$clinica->estado;
 		}
@@ -126,43 +132,25 @@
 		<tr>
 			<td colspan="2">
 				<h1>NOME DO MÉDICO</h1>
-				<p>KRONER MACHADO COSTA</p>
+				<p><?php echo utf8_encode($profissional->nome);?></p>
 			</td>
 			<td>
-				<h1>CRM</h1>
-				<p>284984874</p>
+				<h1>CRO</h1>
+				<p><?php echo $profissional->cro;?></p>
 			</td>
 			<td>
 				<h1>UF</h1>
-				<p>GO</p>
+				<p><?php echo $profissional->uf_cro;?></p>
 			</td>
 		</tr>
 		<tr>
 			<td colspan="3">
 				<h1>LOCAL DE ATENDIMENTO</h1>
-				<p>Rua 5, 691, The Prime Tamandaré Office, Térreo Loja 1, Setor Bueno</p>
-			</td>
-			<td>
-				<h1>CNES</h1>
-				<p>4787248</p>
-			</td>
-		</tr>
-		<tr>		
-			<td>
-				<h1>CIDADE</h1>
-				<p>GOIÂNIA</p>
-			</td>
-			<td>
-				<h1>UF</h1>
-				<p>GO</p>
-			</td>
-			<td>
-				<h1>TELEFONE</h1>
-				<p>(62) 3515-1717</p>
-			</td>
+				<p><?php echo utf8_encode($clinica->endereco);?></p>
+			</td>	
 			<td>
 				<h1>DATA DE EMISSÃO</h1>
-				<p>08/10/2021</p>
+				<p><?php echo date('d/m/Y',strtotime($evolucao->data));?></p>
 			</td>
 		</tr>
 	</table>

@@ -99,16 +99,14 @@
 
 	<main class="main">
 		<div class="main__content content">
-
 			<section class="filter">
 				<div class="filter-group">
-					<div class="filter-form form">
-						<dl>
-							<dd><a href="pg_pacientes_planosdetratamento_form.php?id_paciente=<?php echo $paciente->id;?>" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar Tratamento</span></a>
-						</dl>
+					<div class="filter-title">
+						<h1>Ficha do Paciente</h1>
 					</div>
 				</div>
 			</section>
+
 
 			<script type="text/javascript">
 				$(function(){
@@ -118,254 +116,276 @@
 					})
 				})
 			</script>
+			<section class="grid">
 
-			<div class="box">
-				<div class="list1">
-					<?php
-					if(count($registros)==0) {
-						echo '<center>Nenhum Plano de Tratamento</center>';
-					} else {
+				<div class="box box-col">
+
+					<?php 
+					require_once("includes/submenus/subPacientesFichaDoPaciente.php");
 					?>
-					<table>
-						<?php
-						foreach($registros as $x) {
 
-							$procedimentos=array();
-							if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
-
-							$pagamentos=array();
-							if(isset($_pagamentos[$x->id])) $pagamentos=$_pagamentos[$x->id];
-
-						?>
-
-						<tr class="js-item" data-id="<?php echo $x->id;?>">								
-							<td>
-								<h1><?php echo utf8_encode($x->titulo);?></h1>
-								<p><?php echo date('d/m/Y H:i',strtotime($x->data));?></p>
-							</td>
-							<td>
+					<div class="box-col__inner1">
+				
+						<section class="filter">
+							<div class="filter-group"></div>
+							<div class="filter-group">
+								<div class="filter-form form">
+									<dl>
+										<dd>
+											<a href="pg_pacientes_planosdetratamento_form.php?id_paciente=<?php echo $paciente->id;?>" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar Tratamento</span></a>
+										</dd>
+									</dl>
+								</div>
+							</div>							
+						</section>
+						<div class="box">
+							<div class="list1">
 								<?php
-								if($x->status=="PENDENTE") {
-									echo '<div class="list1__icon" style="color:gray;"><i class="iconify" data-icon="fluent:timer-24-regular"></i> Aguardando Aprovação</div>';
-								}
-								else if($x->status=="CANCELADO") {
-									echo '<div class="list1__icon" style="color:var(--vermelho)"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i> Reprovado</div>';
-								} 
-								else if($x->status=="APROVADO") {
-									echo '<div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div>';
-								}
-								?>
-							</td>
-							<td style="width:20%;">
-								<?php
-								if($x->id_aprovado==0) {
-									echo '-';
+								if(count($registros)==0) {
+									echo '<center>Nenhum Plano de Tratamento</center>';
 								} else {
-									$pagamentos=array();
-									if(isset($_pagamentos[$x->id])) $pagamentos=$_pagamentos[$x->id];
-
-									$procedimentos=array();
-									if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
-
-									$total=isset($_todosProcedimentos[$x->id])?count($_todosProcedimentos[$x->id]):0;
-									$finalizados=isset($_procedimentosFinalizados[$x->id])?count($_procedimentosFinalizados[$x->id]):0;
-									$perc=($total)==0?0:number_format(($finalizados/($total))*100,0,"","");
-
-
-
-									$pagPago=$pagTotal=0;
-									foreach($pagamentos as $p) { 
-										$p=(object)$p;
-										if($p->pago==1) $pagPago+=$p->valor;
-
-										$pagTotal+=$p->valor;
-									}
-									$percPag=($pagTotal)==0?0:number_format(($pagPago/($pagTotal))*100,0,"","");
-
 								?>
-								<div class="chart-bar">
-									<header>
-										<p>Evolução (<?php echo $finalizados." de ".$total;?>)</p>
-									</header>
-									<article>
-										<span style="width:<?php echo $perc;?>%"></span>
-									</article>
-								</div>
+								<table>
+									<?php
+									foreach($registros as $x) {
+
+										$procedimentos=array();
+										if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
+
+										$pagamentos=array();
+										if(isset($_pagamentos[$x->id])) $pagamentos=$_pagamentos[$x->id];
+
+									?>
+
+									<tr class="js-item" data-id="<?php echo $x->id;?>">								
+										<td>
+											<h1><?php echo utf8_encode($x->titulo);?></h1>
+											<p><?php echo date('d/m/Y H:i',strtotime($x->data));?></p>
+										</td>
+										<td>
+											<?php
+											if($x->status=="PENDENTE") {
+												echo '<div class="list1__icon" style="color:gray;"><i class="iconify" data-icon="fluent:timer-24-regular"></i> Aguardando Aprovação</div>';
+											}
+											else if($x->status=="CANCELADO") {
+												echo '<div class="list1__icon" style="color:var(--vermelho)"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i> Reprovado</div>';
+											} 
+											else if($x->status=="APROVADO") {
+												echo '<div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div>';
+											}
+											?>
+										</td>
+										<td style="width:20%;">
+											<?php
+											if($x->id_aprovado==0) {
+												echo '-';
+											} else {
+												$pagamentos=array();
+												if(isset($_pagamentos[$x->id])) $pagamentos=$_pagamentos[$x->id];
+
+												$procedimentos=array();
+												if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
+
+												$total=isset($_todosProcedimentos[$x->id])?count($_todosProcedimentos[$x->id]):0;
+												$finalizados=isset($_procedimentosFinalizados[$x->id])?count($_procedimentosFinalizados[$x->id]):0;
+												$perc=($total)==0?0:number_format(($finalizados/($total))*100,0,"","");
+
+
+
+												$pagPago=$pagTotal=0;
+												foreach($pagamentos as $p) { 
+													$p=(object)$p;
+													if($p->pago==1) $pagPago+=$p->valor;
+
+													$pagTotal+=$p->valor;
+												}
+												$percPag=($pagTotal)==0?0:number_format(($pagPago/($pagTotal))*100,0,"","");
+
+											?>
+											<div class="chart-bar">
+												<header>
+													<p>Evolução (<?php echo $finalizados." de ".$total;?>)</p>
+												</header>
+												<article>
+													<span style="width:<?php echo $perc;?>%"></span>
+												</article>
+											</div>
+											<?php
+											}
+											?>
+										</td>
+										<td style="width:20%;">
+											<?php
+											if($x->id_aprovado==0) {
+												echo '-';
+											} else {
+												if(count($pagamentos)==0) echo '';//<a href="javascript" class="tooltip" title="Nenhum pagamento foi adicionado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
+												else {
+											?>
+											<div class="chart-bar">
+												<header>
+													<p>Pagamento (<?php echo "<b>".number_format($pagPago,2,",",".")."</b> de <b>".number_format($pagTotal,2,",",".")."</b>";?>)</p>
+												</header>
+												<article>
+													<span style="width:<?php echo $percPag;?>%"></span>
+												</article>
+											</div>
+											<?php
+												}
+											}
+											?>
+										</td>
+									</tr>
+									<?php
+									}
+
+									/*
+									?>
+									<tr>								
+										<td>
+											<h1>Plano Teste</h1>
+											<p>18/11/2021 07:56</p>
+										</td>
+										<td><div class="list1__icon" style="color:gray;"><i class="iconify" data-icon="fluent:timer-24-regular"></i> Aguardando Aprovação</div></td>
+										<td style="width:20%;">
+											<div class="chart-bar">
+												<header>
+													<p>Evolução (0 de 4)</p>
+												</header>
+												<article>
+													<span style="width:0%"></span>
+												</article>
+											</div>
+										</td>
+										<td style="width:20%;">
+											<div class="chart-bar">
+												<header>
+													<p>Pagamento (recebido 0%)</p>
+												</header>
+												<article>
+													<span style="width:0%"></span>
+												</article>
+											</div>
+										</td>
+									</tr>
+									<tr>								
+										<td>
+											<h1>Plano Teste</h1>
+											<p>18/11/2021 07:56</p>
+										</td>
+										<td><div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div></td>
+										<td style="width:20%;">
+											<div class="chart-bar">
+												<header>
+													<p>Evolução (3 de 4)</p>
+												</header>
+												<article>
+													<span style="width:75%"></span>
+												</article>
+											</div>
+										</td>
+										<td style="width:20%;">
+											<div class="chart-bar">
+												<header>
+													<p>Pagamento (recebido 33%)</p>
+												</header>
+												<article>
+													<span style="width:33%"></span>
+												</article>
+											</div>
+										</td>
+									</tr>
+									<tr>								
+										<td>
+											<h1>Plano Teste</h1>
+											<p>18/11/2021 07:56</p>
+										</td>
+										<td><div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div></td>
+										<td style="width:20%;">
+											<div class="chart-bar">
+												<header>
+													<p>Evolução (1 de 4)</p>
+												</header>
+												<article>
+													<span style="width:25%"></span>
+												</article>
+											</div>
+										</td>
+										<td style="width:20%;">
+											<div class="chart-bar">
+												<header>
+													<p>Pagamento (recebido 0%)</p>
+												</header>
+												<article>
+													<span style="width:0%"></span>
+												</article>
+											</div>
+										</td>
+									</tr>
+									<tr>								
+										<td>
+											<h1>Plano Teste</h1>
+											<p>18/11/2021 07:56</p>
+										</td>
+										<td><div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div></td>
+										<td style="width:20%;">
+											<div class="chart-bar">
+												<header>
+													<p>Evolução (5 de 10)</p>
+												</header>
+												<article>
+													<span style="width:50%"></span>
+												</article>
+											</div>
+										</td>
+										<td style="width:20%;">
+											<div class="chart-bar">
+												<header>
+													<p>Pagamento (recebido 100%)</p>
+												</header>
+												<article>
+													<span style="width:100%"></span>
+												</article>
+											</div>
+										</td>
+									</tr>
+									<tr>								
+										<td>
+											<h1>Plano Teste</h1>
+											<p>18/11/2021 07:56</p>
+										</td>
+										<td><div class="list1__icon" style="color:var(--vermelho)"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i> Reprovado</div></td>
+										<td style="width:20%;">
+											<div class="chart-bar">
+												<header>
+													<p>Evolução (1 de 10)</p>
+												</header>
+												<article>
+													<span style="width:25%"></span>
+												</article>
+											</div>
+										</td>
+										<td style="width:20%;">
+											<div class="chart-bar">
+												<header>
+													<p>Pagamento (recebido 33%)</p>
+												</header>
+												<article>
+													<span style="width:33%"></span>
+												</article>
+											</div>
+										</td>
+									</tr>
+									*/
+									?>
+								</table>
 								<?php
 								}
 								?>
-							</td>
-							<td style="width:20%;">
-								<?php
-								if($x->id_aprovado==0) {
-									echo '-';
-								} else {
-									if(count($pagamentos)==0) echo '';//<a href="javascript" class="tooltip" title="Nenhum pagamento foi adicionado"><span class="iconify" data-icon="eva:alert-triangle-fill" data-inline="false" data-height="25"></span></a>';
-									else {
-								?>
-								<div class="chart-bar">
-									<header>
-										<p>Pagamento (<?php echo "<b>".number_format($pagPago,2,",",".")."</b> de <b>".number_format($pagTotal,2,",",".")."</b>";?>)</p>
-									</header>
-									<article>
-										<span style="width:<?php echo $percPag;?>%"></span>
-									</article>
-								</div>
-								<?php
-									}
-								}
-								?>
-							</td>
-						</tr>
-						<?php
-						}
-
-						/*
-						?>
-						<tr>								
-							<td>
-								<h1>Plano Teste</h1>
-								<p>18/11/2021 07:56</p>
-							</td>
-							<td><div class="list1__icon" style="color:gray;"><i class="iconify" data-icon="fluent:timer-24-regular"></i> Aguardando Aprovação</div></td>
-							<td style="width:20%;">
-								<div class="chart-bar">
-									<header>
-										<p>Evolução (0 de 4)</p>
-									</header>
-									<article>
-										<span style="width:0%"></span>
-									</article>
-								</div>
-							</td>
-							<td style="width:20%;">
-								<div class="chart-bar">
-									<header>
-										<p>Pagamento (recebido 0%)</p>
-									</header>
-									<article>
-										<span style="width:0%"></span>
-									</article>
-								</div>
-							</td>
-						</tr>
-						<tr>								
-							<td>
-								<h1>Plano Teste</h1>
-								<p>18/11/2021 07:56</p>
-							</td>
-							<td><div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div></td>
-							<td style="width:20%;">
-								<div class="chart-bar">
-									<header>
-										<p>Evolução (3 de 4)</p>
-									</header>
-									<article>
-										<span style="width:75%"></span>
-									</article>
-								</div>
-							</td>
-							<td style="width:20%;">
-								<div class="chart-bar">
-									<header>
-										<p>Pagamento (recebido 33%)</p>
-									</header>
-									<article>
-										<span style="width:33%"></span>
-									</article>
-								</div>
-							</td>
-						</tr>
-						<tr>								
-							<td>
-								<h1>Plano Teste</h1>
-								<p>18/11/2021 07:56</p>
-							</td>
-							<td><div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div></td>
-							<td style="width:20%;">
-								<div class="chart-bar">
-									<header>
-										<p>Evolução (1 de 4)</p>
-									</header>
-									<article>
-										<span style="width:25%"></span>
-									</article>
-								</div>
-							</td>
-							<td style="width:20%;">
-								<div class="chart-bar">
-									<header>
-										<p>Pagamento (recebido 0%)</p>
-									</header>
-									<article>
-										<span style="width:0%"></span>
-									</article>
-								</div>
-							</td>
-						</tr>
-						<tr>								
-							<td>
-								<h1>Plano Teste</h1>
-								<p>18/11/2021 07:56</p>
-							</td>
-							<td><div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div></td>
-							<td style="width:20%;">
-								<div class="chart-bar">
-									<header>
-										<p>Evolução (5 de 10)</p>
-									</header>
-									<article>
-										<span style="width:50%"></span>
-									</article>
-								</div>
-							</td>
-							<td style="width:20%;">
-								<div class="chart-bar">
-									<header>
-										<p>Pagamento (recebido 100%)</p>
-									</header>
-									<article>
-										<span style="width:100%"></span>
-									</article>
-								</div>
-							</td>
-						</tr>
-						<tr>								
-							<td>
-								<h1>Plano Teste</h1>
-								<p>18/11/2021 07:56</p>
-							</td>
-							<td><div class="list1__icon" style="color:var(--vermelho)"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i> Reprovado</div></td>
-							<td style="width:20%;">
-								<div class="chart-bar">
-									<header>
-										<p>Evolução (1 de 10)</p>
-									</header>
-									<article>
-										<span style="width:25%"></span>
-									</article>
-								</div>
-							</td>
-							<td style="width:20%;">
-								<div class="chart-bar">
-									<header>
-										<p>Pagamento (recebido 33%)</p>
-									</header>
-									<article>
-										<span style="width:33%"></span>
-									</article>
-								</div>
-							</td>
-						</tr>
-						*/
-						?>
-					</table>
-					<?php
-					}
-					?>
-				</div>	
-			</div>
-
+							</div>	
+						</div>
+					</div>
+				</div>
 		</div>
 	</main>
 

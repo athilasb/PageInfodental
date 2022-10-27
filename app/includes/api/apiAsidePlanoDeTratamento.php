@@ -57,6 +57,7 @@
 	var autor = '<?php echo utf8_encode($usr->nome);?>';
 
 	const atualizaValor = (atualizarParcelas) => {
+
 		valorTotal=0;
 
 		let cont = 1;
@@ -88,7 +89,7 @@
 			cont++;
 			
 		});
-
+ 
 
 		let parcelas = [];
 
@@ -107,6 +108,7 @@
 				dia = dia <= 9 ? `0${dia}`:dia;
 				item.vencimento=`${dia}/${mes}/${startDate.getFullYear()}`;
 				item.valor=valorTotal;
+
 				parcelas.push(item);
 
 				newDate = startDate;
@@ -114,7 +116,7 @@
 
 				startDate=newDate;
 				
-
+				pagamentos=parcelas;
 			} else {
 				$('.js-pagamentos-quantidade').show();
 				let numeroParcelas = $('.js-pagamentos-quantidade').val();
@@ -134,6 +136,12 @@
 					startDate.setMonth(eval(aux[1])-1);
 					startDate.setFullYear(aux[2]);
 				}
+
+				//console.log(pagamentos);
+
+				pagamentosTextarea = JSON.parse($('#js-textarea-pagamentos').val());
+				console.log(pagamentosTextarea);
+				teste2 = [];
 				for(var i=1;i<=numeroParcelas;i++) {
 					/*val = -1;
 					if($(`.js-pagamentos .js-valor:eq(${i})`).length) {
@@ -142,11 +150,12 @@
 					//console.log(`${$(`.js-pagamentos .js-valor:eq(${i})`).length} -> .js-pagamentos .js-valor:eq(${(i-1)}) => ${val}`);*/
 
 					let item = {};
-					if(pagamentos[i-1]) {
-						//item = pagamentos[i-1];
-						console.log('-');
-						console.log(pagamentos[i-1]);
+					if(pagamentosTextarea[i-1]) {
+						item = pagamentosTextarea[i-1];
+						console.log('inc '+i );
+						console.log(item);
 					}
+
 					let mes = startDate.getMonth()+1;
 					mes = mes <= 9 ? `0${mes}`:mes;
 
@@ -159,16 +168,21 @@
 
 
 					parcelas.push(item);
+					teste2.push(item);
 
 					newDate = startDate;
 					newDate.setMonth(newDate.getMonth()+1);
 
 					startDate=newDate;
+
+					if(i==numeroParcelas) {
+						pagamentos=parcelas;
+					}
 				}
 
 			}
 
-			pagamentos=parcelas;
+			
 		}
 
 		pagamentosListar();
@@ -391,7 +405,7 @@
 			valorTabela=pEd.valor;
 			regiao=pEd.opcao;
 
-			if(pEd.faces.length>0) {
+			if(pEd.faces && pEd.faces.length>0) {
 				regiaoAux='';
 				cont = 1;
 				pEd.faces.forEach(idF=>{
@@ -432,6 +446,17 @@
 				$('.aside-plano-procedimento-editar .js-asidePlanoEditar-regiao').parent().parent().hide();
 			}
 
+
+			if(tratamentoAprovado==1) {
+				$('.js-salvarEditarProcedimento').hide();
+				$('.js-removerProcedimento').hide();
+				$('.aside-plano-procedimento-editar input,.aside-plano-procedimento-editar select,.aside-plano-procedimento-editar textarea').prop('disabled',true);
+			} else {
+				$('.js-salvarEditarProcedimento').show();
+				$('.js-removerProcedimento').show();
+				$('.aside-plano-procedimento-editar input,.aside-plano-procedimento-editar select,.aside-plano-procedimento-editar textarea').prop('disabled',false);
+			}
+
 			$(".aside-plano-procedimento-editar").fadeIn(100,function() {
 				$(".aside-plano-procedimento-editar .aside__inner1").addClass("active");
 			});
@@ -449,7 +474,7 @@
 			
 			let index = $(el).attr('data-index');
 			if($(el).prop('checked')===true) {
-				console.log(eval(procedimentos[index].quantitativo));
+				//console.log(eval(procedimentos[index].quantitativo));
 				if(eval(procedimentos[index].quantitativo)==1) {
 					totalProcedimentos+=(eval(procedimentos[index].valor)*procedimentos[index].quantidade);
 				} else {
@@ -653,7 +678,55 @@
 		pagamentosListar();
 
 		$('.js-pagamentos').on('change','.js-vencimento:eq(0)',function(){
-			atualizaValor(true);
+			//console.log(pagamentos);
+			//atualizaValor(true);
+
+			let pagamento = $('input[name=pagamento]:checked').val();
+
+			if(pagamento!="avista") {
+				$('.js-pagamentos-quantidade').show();
+				let numeroParcelas = $('.js-pagamentos-quantidade').val();
+
+				if(numeroParcelas.length==0 || numeroParcelas<=0) numeroParcelas=2;
+				
+				valorParcela=valorTotal/numeroParcelas;
+
+				valorParcela=valorParcela.toFixed(2);
+
+				let startDate = new Date();
+
+				if($('.js-vencimento:eq(0)').val()!=undefined) {
+					aux = $('.js-vencimento:eq(0)').val().split('/');
+					startDate = new Date();//`${aux[2]}-${aux[1]}-${aux[0]}`);
+					startDate.setDate(aux[0]);
+					startDate.setMonth(eval(aux[1])-1);
+					startDate.setFullYear(aux[2]);
+				}
+
+				//console.log(pagamentos);
+
+				for(var i=1;i<=numeroParcelas;i++) {
+					
+
+					let mes = startDate.getMonth()+1;
+					mes = mes <= 9 ? `0${mes}`:mes;
+					let dia = startDate.getDate();
+					dia = dia <= 9 ? `0${dia}`:dia;
+
+					pagamentos[i-1].vencimento=`${dia}/${mes}/${startDate.getFullYear()}`;
+
+
+					newDate = startDate;
+					newDate.setMonth(newDate.getMonth()+1);
+
+					startDate=newDate;
+
+					if(i==numeroParcelas) {
+						pagamentosListar();
+					}
+				}
+
+			}
 		});
 
 		// remove descontos
@@ -806,6 +879,8 @@
 			setTimeout(function(){$(obj).parent().parent().parent().parent().find('.js-valor').trigger('keyup');},200);	
 		});
 
+		$('.js-pagamentos').on('change','.js-vencimento',pagamentosPersistirObjeto);
+
 		$('.js-pagamentos').on('change','.js-creditoBandeira',function(){
 			creditoBandeiraAtualizaParcelas($(this),0);
 			pagamentosPersistirObjeto();
@@ -818,12 +893,12 @@
 			pagamentosListar();
 		});
 
-		$('.js-pagamentos').on('keyup','.js-identificador',function(){
+		/*$('.js-pagamentos').on('keyup','.js-identificador',function(){
 
 			let obj = $(this).parent().parent().parent().parent();
 
 			setTimeout(function(){$(obj).find('.js-valor').trigger('keyup');},200);
-		});
+		});*/
 
 		$('.js-pagamentos').on('keyup','.js-valor',function(){
 			let index = $(this).index('.js-pagamentos .js-valor');
@@ -851,7 +926,7 @@
 				valorAcumulado += val;
 				//console.log(`${i} => ${val} = ${valorAcumulado}`);
 
-				let item = {};
+				let item = pagamentos[i];
 
 
 				item.vencimento=pagamentos[i].vencimento;
@@ -891,6 +966,7 @@
 
 					if(pagamentos[i]) {
 						let item = {};
+						item=pagamentos[i];
 						item.vencimento=pagamentos[i].vencimento;
 						item.valor=valorParcela;
 
@@ -914,11 +990,8 @@
 					//alert('alterou o ulitmo '+valorTotal+' = '+valorAcumulado)
 				}
 
-
 				pagamentos=parcelas;
-
-
-				$('textarea.js-textarea-pagamentos').val(JSON.stringify(pagamentos))
+				$('textarea#js-textarea-pagamentos').val(JSON.stringify(pagamentos));
 			}
 		});
 
@@ -1224,12 +1297,9 @@
 			}
 		});
 
-
 		desativarCampos();
-
-	})
+	});
 </script>
-
 
 <section class="aside aside-plano-procedimento-editar" style="display: none;">
 	<div class="aside__inner1">

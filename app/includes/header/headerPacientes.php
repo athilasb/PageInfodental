@@ -51,18 +51,19 @@
 			</section>
 			
 			<section class="tab">
-				<?php /*
-				<a href="">Resumo</a>
-				<a href="">Prontuário</a>
-				<a href="">Plano de Tratamento</a>
-				<a href="">Financeiro</a>
-				<a href="">Arquivos</a>
-				*/ ?>
 				<a href="pg_pacientes_resumo.php?id_paciente=<?php echo $paciente->id;?>"<?php echo $_page=="pg_pacientes_resumo.php"?' class="active"':'';?>>Resumo</a>
-				<a href="pg_pacientes_prontuario.php?id_paciente=<?php echo $paciente->id;?>"<?php echo $_page=="pg_pacientes_prontuario.php"?' class="active"':'';?>>Prontuário</a>
+
+				<?php
+				$_pagesFichaDoPaciente=array('pg_pacientes_prontuario.php','pg_pacientes_financeiro.php','pg_pacientes_planosdetratamento.php','pg_pacientes_planosdetratamento_form.php');
+				?>
+				<a href="pg_pacientes_prontuario.php?id_paciente=<?php echo $paciente->id;?>"<?php echo in_array($_page,$_pagesFichaDoPaciente)?' class="active"':'';?>>Ficha do Paciente</a>
+
+
+				<?php /*<a href="pg_pacientes_prontuario.php?id_paciente=<?php echo $paciente->id;?>"<?php echo $_page=="pg_pacientes_prontuario.php"?' class="active"':'';?>>Prontuário</a>
 				<a href="pg_pacientes_planosdetratamento.php?id_paciente=<?php echo $paciente->id;?>"<?php echo ($_page=="pg_pacientes_planosdetratamento.php" or $_page=="pg_pacientes_planosdetratamento_form.php")?' class="active"':'';?>>Planos de Tratamento</a>
-				<a href="pg_pacientes_financeiro.php?id_paciente=<?php echo $paciente->id;?>"<?php echo ($_page=="pg_pacientes_financeiro.php")?' class="active"':'';?>>Financeiro</a>
-				<?php /*<a href="pg_pacientes_prontuario_antigo.php?id_paciente=<?php echo $paciente->id;?>"<?php echo $_page=="pg_pacientes_prontuario_antigo.php"?' class="active"':'';?>>Prontuário Antigo</a>*/?>
+				<a href="pg_pacientes_financeiro.php?id_paciente=<?php echo $paciente->id;?>"<?php echo ($_page=="pg_pacientes_financeiro.php")?' class="active"':'';?>>Financeiro</a>*/?>
+
+		
 				<a href="pg_pacientes_dadospessoais.php?id_paciente=<?php echo $paciente->id;?>"<?php echo $_page=="pg_pacientes_dadospessoais.php"?' class="active"':'';?>>Dados Pessoais</a>
 			</section>
 		</div>

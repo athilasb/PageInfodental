@@ -46,11 +46,7 @@
 		}
 	}
 
-	$_selectSituacaoOptions=array('aguardando'=>array('titulo'=>'AGUARDANDO EXAME','cor'=>'blue'),
-											'concluido'=>array('titulo'=>'CONCLUÍDO','cor'=>'green'),
-											'naoRealizado'=>array('titulo'=>'NÃO REALIZADO','cor'=>'red')
-											//'cancelado'=>array('titulo'=>'CANCELADO');
-										);
+	
 
 	$selectSituacaoOptions='<select class="js-situacao">';
 	foreach($_selectSituacaoOptions as $key=>$value) {

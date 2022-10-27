@@ -178,14 +178,19 @@
 					<div class="kanban-item" style="background:">
 						<header>
 							<h1 class="kanban-item__titulo">Aguardando Aprovação</h1>
+
 						</header>
+						<p style="text-align:center;color:#ccc;margin-top:-15px;margin-bottom: 10px;">R$<?php echo number_format($aguardandoAprovacaoAReceber,2,",",".");?></p>
 						<article class="kanban-card" style="min-height: 100px;">
 							<?php
-							foreach($_pacientes['retorno'] as $p) {
+							foreach($_pacientes['aguardandoAprovacao'] as $p) {
+								$valor=isset($_tratamentosProcedimentos[$p->id])?$_tratamentosProcedimentos[$p->id]:0;
 							?>
 								<a href="pg_pacientes_resumo.php?id_paciente=<?php echo $p->id;?>" target="_blank">
 									<h1><?php echo utf8_encode($p->nome);?> <?php echo $p->id;?></h1>
 									<p><?php echo maskTelefone($p->telefone1);?></p>
+									<p>Tratamentos: <?php echo count($_pacientesTratamentos[$p->id]);?></p>
+									<p>Valor: <?php echo number_format($valor,2,",",".");?></p>
 								</a>
 							<?php	
 							}

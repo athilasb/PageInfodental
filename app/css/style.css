@@ -72,7 +72,7 @@ body {height:100vh; text-rendering: optimizeSpeed; -webkit-font-smoothing:antial
 .box_inv .button_main {background:var(--cor1hover); border-color:var(--cor1hover); color:#fff;}
 .box_inv .button_main .iconify {color:#fff;}
 
-input[type=datetime-local], input[type=text], input[type=number], input[type=tel], input[type=date], input[type=password], input[type=email], input[type=password],
+input[type=datetime-local], input[type=text], input[type=number], input[type=tel], input[type=date], input[type=password], input[type=email], input[type=password], input[type=file],
 select, textarea {-webkit-appearance:none; -moz-appearance:none; appearance:none; font-family:inherit; width:100%; line-height:20px; transition:all 150ms; border:1px solid var(--cinza3); background-color:var(--cinza1); height:38px; padding:0 8px; border-radius:8px;}
 textarea {height:auto;}
 select {background:url(../img/select-icon.png) no-repeat right center var(--cinza1); min-width:100px; padding-right:1.5rem;}
