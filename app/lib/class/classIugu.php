@@ -3,8 +3,8 @@
 		private 
 			$prefixo = "",
 			$iuguID="DDFADAF26C374DBEA50C6359289855A1",
-			$token="8330F109B6BD34DAEC888D399CBA879138096816AF1A5CBEA4B605EB10500D0E", //-> teste
-		//	$token="",
+			//$token="8330F109B6BD34DAEC888D399CBA879138096816AF1A5CBEA4B605EB10500D0E", //-> teste
+			$token="DB69363750CF25B664B9AF4E737E733DBA0805E93979E127A8C73949F3D299E2", // -> producao
 			$baseURL = "https://api.iugu.com/v1/";
 
 		public 
@@ -480,7 +480,7 @@
 
 				$this->response=json_decode($response);
 				$this->info=($info);
-
+				//var_dump($response);
 
 				
 				//$sql->add("apictp_usuarios_iugu_api_log","data=now(),endpoint='$endpoint',entrada='".addslashes(json_encode($fields))."',response='".addslashes(utf8_decode($response))."',http_code='".$info['http_code']."'");

@@ -69,6 +69,7 @@
 
 				if(x.quantitativo==1) valorProcedimento*=x.quantidade;
 				if(x.face==1) valorProcedimento*=x.faces.length;
+				if(x.id_regiao==5) valorProcedimento*=x.hof;
 
 
 				if(x.desconto>0) {
@@ -163,9 +164,6 @@
 					dia = dia <= 9 ? `0${dia}`:dia;
 					item.vencimento=`${dia}/${mes}/${startDate.getFullYear()}`;
 					item.valor=valorParcela;
-
-
-
 
 					parcelas.push(item);
 					teste2.push(item);
@@ -335,6 +333,7 @@
 				procedimentoValor=x.valor;
 				if(x.quantitativo==1) procedimentoValor*=x.quantidade;
 				if(x.face==1) procedimentoValor*=x.faces.length;
+				if(x.id_regiao==5) procedimentoValor*=eval(x.hof);
 
 				if(x.desconto>0) {
 					procedimentoValorComDesconto=procedimentoValor-x.desconto;
@@ -360,6 +359,9 @@
 						})
 					}
 					opcao=`<i class="iconify" data-icon="mdi:tooth-outline"></i> ${x.opcao}<br />${opcaoAux}`;
+				}
+				else if(x.id_regiao==5) {
+					opcao=`${x.hof} unidade(s)`;
 				}
 				else {
 					if(x.quantitativo==1) opcao=`Qtd. ${x.quantidade}`;
@@ -394,6 +396,8 @@
 		$('#js-textarea-procedimentos').val(JSON.stringify(procedimentos));
 		$('.aside-plano-procedimento-adicionar .js-fieldset-adicionar').find('select').val('').trigger('chosen:updated').trigger('change');
 		$('.aside-plano-procedimento-adicionar .js-fieldset-faces .js-faces').remove();
+		$('.aside-plano-procedimento-adicionar .js-fieldset-hof .js-hofs').remove();
+		$('.aside-plano-procedimento-adicionar .js-fieldset-hof').hide();
 		$('.aside-plano-procedimento-adicionar .js-fieldset-adicionar').find('textarea,input').val('');
 		$('.aside-plano-procedimento-adicionar .aside-close').click();
 	}
@@ -416,10 +420,14 @@
 					}
 					cont++;
 				})
+			} 
+			else if(pEd.id_regiao==5) {
+				regiao+=`: ${pEd.hof} unidade(s)`;
 			}
 
 			if(pEd.quantitativo==1) valorTabela*=pEd.quantidade;
 			else if(pEd.face==1) valorTabela*=pEd.faces.length;
+			else if(pEd.id_regiao==5) valorTabela*=pEd.hof;
  
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-index').val(index);
 			$('.aside-plano-procedimento-editar .js-asidePlanoEditar-valorTabela').val(number_format(valorTabela,2,",","."));
@@ -475,11 +483,24 @@
 			let index = $(el).attr('data-index');
 			if($(el).prop('checked')===true) {
 				//console.log(eval(procedimentos[index].quantitativo));
-				if(eval(procedimentos[index].quantitativo)==1) {
-					totalProcedimentos+=(eval(procedimentos[index].valor)*procedimentos[index].quantidade);
-				} else {
-					totalProcedimentos+=eval(procedimentos[index].valor);
+				valorProcedimento = eval(procedimentos[index].valor);
+
+				// verifica se possui faces
+				if(procedimentos[index].face==1) {
+					valorProcedimento*=procedimentos[index].faces.length;
 				}
+
+				// verifica se id_regiao = 5 (hof)
+				if(procedimentos[index].id_regiao==5) {
+					valorProcedimento*=eval(procedimentos[index].hof);
+				}
+
+				if(eval(procedimentos[index].quantitativo)==1) {
+					totalProcedimentos+=(valorProcedimento*procedimentos[index].quantidade);
+				} else {
+					totalProcedimentos+=valorProcedimento;
+				}
+
 				totalDescontoAplicado+=eval(procedimentos[index].desconto);
 			}
 
@@ -537,6 +558,7 @@
 				let valorProcedimento=x.valor;
 				if(x.quantitativo==1) valorProcedimento*=x.quantidade;
 				if(x.face==1) valorProcedimento*=x.faces.length;
+				if(x.id_regiao==5) valorProcedimento*=eval(x.hof);
 
 				if(x.desconto>0) {
 					totalDesconto+=x.desconto;
@@ -735,7 +757,7 @@
 			let cont = 0;
 			procedimentos.forEach(x=>{
 				procedimentos[cont].desconto=0;
-				procedimentos[cont].valorCorrigido=procedimentos[cont].valor;
+				//procedimentos[cont].valorCorrigido=procedimentos[cont].valor;
 				cont++;
 			});
 			descontoListarProcedimentos(0);
@@ -748,10 +770,9 @@
 			let tipoDesconto = $('.aside-plano-desconto .js-select-tipoDesconto').val();
 			let quantidadeDesconto = $('.aside-plano-desconto .js-desconto-procedimento:checked').length;
 			let desconto = unMoney($(`.aside-plano-desconto .js-input-desconto`).val());
-			//console.log('Descontando '+desconto);
+
 			if(quantidadeDesconto==0) {
 				swal({title: "Erro", text: 'Selecione pelo menos um procedimento para aplicar desconto!', html:true, type:"error", confirmButtonColor: "#424242"});
-					
 			} else if(desconto==0 || desconto===undefined || desconto==='' || !desconto) {
 				swal({title: "Erro", text: 'Defina o desconto que deverá ser aplicado!', html:true, type:"error", confirmButtonColor: "#424242"});
 			} else {
@@ -760,10 +781,9 @@
 				let qtdItensDesconto = 0;
 
 				procedimentos.forEach(x=>{
-					//console.log(cont+' '+x.situacao);
 					if(x.situacao!="naoAprovado" && x.situacao!="observado") {
 						if($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked')===true) {
-							valorTotal+=eval(x.valor);
+							valorTotal+=eval(x.valorCorrigido);
 							//console.log(cont+' '+x.situacao+'->'+x.valorCorrigido);
 							qtdItensDesconto++;
 						}
@@ -773,16 +793,12 @@
 
 				if(tipoDesconto!="dinheiro") {
 					desconto = unMoney($(`.aside-plano-desconto .js-input-desconto`).val().replace('.',','));
+					//console.log(`(${valorTotal}*(${desconto}/100))`);
 					desconto = (valorTotal*(desconto/100)).toFixed(2);
 				}
 
 				// calcula percentual do desconto em cima do valor total
 				let descontoParcentual = ((desconto/valorTotal)*100).toFixed(4);
-
-
-				//alert(descontoParcentual+' '+desconto);
-
-				//console.log('Valor Total:'+valorTotal+' Desconto: '+desconto+' Perc:'+descontoParcentual);;
 				
 				if(desconto==0 || desconto===undefined || desconto==='' || !desconto) {
 					swal({title: "Erro", text: 'Defina o desconto que deverá ser aplicado!', html:true, type:"error", confirmButtonColor: "#424242"});
@@ -791,7 +807,7 @@
 					let cont = 0;
 					let contProcedimento = 0;
 					procedimentos.forEach(x=>{
-						//console.log(x);
+
 						if(x.situacao=="aprovado") {
 
 							if($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked')===true) {
@@ -801,16 +817,19 @@
 									valorProc=procedimentos[contProcedimento].valor;
 								} else {
 									valorProc=procedimentos[contProcedimento].valor;
-									//if(eval(x.quantitativo)==1) valorProc*=eval(x.quantidade);
+								}
+
+								if(procedimentos[contProcedimento].face==1) {
+									valorProc*=procedimentos[contProcedimento].faces.length;
+
+								} else if(procedimentos[contProcedimento].quantitativo==1) {
+									valorProc*=procedimentos[contProcedimento].quantidade;
+								} else if(procedimentos[contProcedimento].id_regiao==5) {
+									valorProc*=procedimentos[contProcedimento].hof;
 								}
 
 								equivalente = (valorProc/valorTotal).toFixed(8);
 								descontoAplicar = desconto*equivalente;
-
-								//console.log(valorProc+' eq '+equivalente+' = '+descontoAplicar);
-
-								//descontoAplicar = desconto/qtdItensDesconto;
-
 
 								if(procedimentos[contProcedimento].desconto && $.isNumeric(procedimentos[contProcedimento].desconto)) {
 									desc=procedimentos[contProcedimento].desconto+descontoAplicar;
@@ -818,19 +837,15 @@
 									desc=descontoAplicar;
 								}
 
-								//console.log('desc '+desc);
-								valorProc=procedimentos[contProcedimento].valor;
+								valorProc=procedimentos[contProcedimento].valorCorrigido;
 								if(eval(x.quantitativo)==1) {
-									//valorProc*=eval(x.quantidade);
-									procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
+									//procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
 									procedimentos[contProcedimento].desconto=desc;///eval(x.quantidade);
 								} else {
 
-									procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
+									//procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
 									procedimentos[contProcedimento].desconto=desc
 								}
-
-								//console.log('desconto em '+cont+'\n'+procedimentos[contProcedimento].valor+' - '+desc)
 							}
 							cont++;
 						}
@@ -1062,6 +1077,7 @@
 			procedimentos[index].obs=obs;
 
 			procedimentosListar();
+			atualizaValor(true);
 
 			$('.aside-plano-procedimento-editar .aside-close').click();
 		});
@@ -1083,10 +1099,10 @@
 				let face = $('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento option:selected').attr('data-face');
 				let id_plano = $(`.aside-plano-procedimento-adicionar .js-asidePlano-id_plano option:selected`).val();
 				let plano = $(`.aside-plano-procedimento-adicionar .js-asidePlano-id_plano option:selected`).text();
-				let valor = $(`.aside-plano-procedimento-adicionar .js-asidePlano-id_plano option:selected`).attr('data-valor');
+				let valor = eval($(`.aside-plano-procedimento-adicionar .js-asidePlano-id_plano option:selected`).attr('data-valor'));
 				let quantidade = $(`.aside-plano-procedimento-adicionar .js-asidePlano-quantidade`).val();
 				let obs = $('.aside-plano-procedimento-adicionar .js-asidePlano-obs').val();
-				let valorCorrigido=valor;
+				let valorCorrigido=eval(valor);
 				//if(quantitativo==1) valorCorrigido=quantidade*valor;
 
 
@@ -1095,7 +1111,7 @@
 				let erro='';
 				if(id_procedimento.length==0) erro='Selecione o Procedimento para adicionar';
 				else if(id_plano.length==0) erro='Selecione o Plano';
-				else if(id_regiao>2 && $(`.js-regiao-${id_regiao}-select`).val().length==0) erro='Preencha a Região';
+				else if(id_regiao>2 && id_regiao<5 && $(`.js-regiao-${id_regiao}-select`).val().length==0) erro='Preencha a Região';
 				else if(quantitativo==1 && quantidade<=0) erro=`A quantidade não pode ser valor negativo!`; 
 				else if(face==1) {
 					$(`.js-regiao-${id_regiao}-select option:selected`).each(function(index,el){
@@ -1105,10 +1121,24 @@
 						}
 					});
 				}
+				// se for hof
+				else if(id_regiao==5) {
+					$(`.js-regiao-${id_regiao}-select option:selected`).each(function(index,el){
+						let idO=$(el).val();
+						if(erro.length==0){
+							if($(`.aside-plano-procedimento-adicionar input.js-hof-${idO}-input`).val().length==0 || 
+								$.isNumeric($(`.aside-plano-procedimento-adicionar input.js-hof-${idO}-input`).val())===false || 
+								eval($(`.aside-plano-procedimento-adicionar input.js-hof-${idO}-input`).val())==0) {
+								erro=`Defina a quantidade de <b>${$(el).text()}</b>`;
+							}
+						}
+					});
+				}
 
 			if(erro.length>0) {
-				swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
+				swal({title: "Erro!", text: erro, type:"error", html:true, confirmButtonColor: "#424242"});
 			} else {
+
 
 				let linhas=1;
 				if(id_regiao>=2) linhas = eval($(`.js-regiao-${id_regiao}-select option:selected`).length);
@@ -1127,10 +1157,10 @@
 					item.face=face;
 					item.plano=plano;
 					item.profissional=0;
-					item.quantidade=quantidade;
+					item.quantidade=eval(quantidade);
 					item.situacao='aprovado';
 					item.valor=valor;
-					item.quantitativo=quantitativo;
+					item.quantitativo=eval(quantitativo);
 					item.desconto=0;
 
 				
@@ -1160,8 +1190,12 @@
 						item.opcao=opcao;
 						item.id_opcao=id_opcao;
 
-					// Faces
+
+						console.log('quantitativo:'+ quantitativo+' ('+quantidade+')');
+
+					// Faces, Quantitativo ou Hof (id_regiao=5)
 						faces=[];
+						hof='';
 						if(face==1) {
 
 							$(`.aside-plano-procedimento-adicionar select.js-regiao-${id_regiao}-select option:selected:eq(${i})`).each(function(index,el){
@@ -1174,8 +1208,18 @@
 							});
 
 							valorCorrigido=faces.length*valor;
-
 						}
+						else if(quantitativo==1) {
+							valorCorrigido=quantidade*valor;
+						}
+						else if(id_regiao==5) {
+							$(`.aside-plano-procedimento-adicionar select.js-regiao-${id_regiao}-select option:selected:eq(${i})`).each(function(index,el){
+								let id_opcao = $(el).val();
+								hof = eval($(`.aside-plano-procedimento-adicionar input.js-hof-${id_opcao}-input`).val());
+							});
+							valorCorrigido=valor*eval(hof);
+						}
+						item.hof=hof;
 						item.faces=faces;
 
 					item.valorCorrigido=valorCorrigido;
@@ -1215,6 +1259,17 @@
 				$(`.js-regiao`).hide();
 				$(`.js-regiao-${id_regiao}`).show();
 				$(`.js-regiao-${id_regiao}`).find('select').chosen({hide_results_on_select:false,allow_single_deselect:true});
+
+				if(id_regiao!=5) {
+					$('.aside-plano-procedimento-adicionar .js-fieldset-hof').hide();
+					$('.aside-plano-procedimento-adicionar .js-fieldset-hof .js-hofs').remove();
+				} 
+
+				if(face==0) {
+					$('.aside-plano-procedimento-adicionar .js-fieldset-faces').hide();
+					$('.aside-plano-procedimento-adicionar .js-fieldset-faces .js-faces').remove();
+
+				}
 
 				
 				let data = `ajax=planos&id_procedimento=${id_procedimento}`;
@@ -1296,6 +1351,37 @@
 				$('.aside-plano-procedimento-adicionar .js-fieldset-faces').hide();
 			}
 		});
+
+		// quando seleciona a regiao 5 (hof)
+		$('.aside-plano-procedimento-adicionar select.js-regiao-5-select').change(function(){
+	
+			$('.aside-plano-procedimento-adicionar .js-fieldset-hof').show();
+
+			let cont = 0;
+			let selectRegiao5 = $(this);
+			selectRegiao5.find('option:selected').each(function(index,el) {
+				let id_regiao = $(el).val();
+				let regiao = $(el).text();
+
+				if($('.aside-plano-procedimento-adicionar .js-fieldset-hof .js-hof-'+id_regiao).length>0) {
+					$('.aside-plano-procedimento-adicionar .js-fieldset-hof .js-hof-'+id_regiao).show();
+				} else {
+					$('.aside-plano-procedimento-adicionar .js-fieldset-hof').append(`<dl class="js-hofs js-hof-${id_regiao}">
+																							<dt>${regiao}</dt>
+																							<dd>
+																								<input type="text" class="js-input-hofs js-hof-${id_regiao}-input" style="width:80px;" maxlength="2" /> unidade(s)
+																							</dd>
+																						</dl>`);
+				}
+			})
+		});
+
+		$('.aside-plano-procedimento-adicionar').on('keyup','.js-input-hofs',function(){
+			var regexp = (/[^0-9]|^\.+(?!$)|^0+(?=[0-9]+)|\.(?=\.|.+\.)/g);
+		    if (regexp.test(this.value)) {
+		    	this.value = this.value.replace(regexp, '');
+		    }
+		})
 
 		desativarCampos();
 	});
@@ -1440,7 +1526,11 @@
 								<option value=""></option>
 								<?php
 								foreach($_procedimentos as $p) {
-									echo '<option value="'.$p->id.'" data-id_regiao="'.$p->id_regiao.'" data-regiao="'.(isset($_regioes[$p->id_regiao])?utf8_encode($_regioes[$p->id_regiao]->titulo):"-").'" data-quantitativo="'.($p->quantitativo==1?1:0).'" data-face="'.$p->face.'">'.utf8_encode($p->titulo).'</option>';
+									echo '<option value="'.$p->id.'" 
+													data-id_regiao="'.$p->id_regiao.'" 
+													data-regiao="'.(isset($_regioes[$p->id_regiao])?utf8_encode($_regioes[$p->id_regiao]->titulo):"-").'" 
+													data-quantitativo="'.($p->quantitativo==1?1:0).'" 
+													data-face="'.$p->face.'">'.utf8_encode($p->titulo).'</option>';
 								}
 								?>
 							</select>
@@ -1506,6 +1596,22 @@
 					</dl>
 
 
+					<dl class="js-regiao-5 js-regiao" style="display: none">
+						<dt>Região</dt>
+						<dd>
+							<select class="js-regiao-5-select" multiple>
+								<?php
+								if(isset($_regioesOpcoes[5])) {
+									foreach($_regioesOpcoes[5] as $o) {
+										echo '<option value="'.$o->id.'" data-titulo="'.utf8_encode($o->titulo).'">'.utf8_encode($o->titulo).'</option>';
+									}
+								}
+								?>
+							</select>
+						</dd>
+					</dl>
+
+
 					<dl>
 						<dt>Observações</dt>
 						<dd>
@@ -1517,6 +1623,14 @@
 
 			<fieldset class="js-fieldset-faces" style="display:none">
 				<legend>Faces</legend>
+
+
+			</fieldset>
+
+
+
+			<fieldset class="js-fieldset-hof" style="display:none">
+				<legend>HOF</legend>
 
 
 			</fieldset>

@@ -38,13 +38,22 @@
 	if($tratamento->status!="APROVADO") {
 		$procedimentosObj = json_decode(utf8_encode($tratamento->procedimentos));
 		$pagamentosObj = json_decode($tratamento->pagamentos);
-
-
+		
 		foreach($procedimentosObj as $x) {
 			$procedimentosIds[$x->id_procedimento]=$x->id_procedimento;
 			if($x->situacao=="aprovado" or $x->situacao=="aguardandoAprovacao") {
 
 				if(empty($x->quantidade)) $x->quantidade=1;
+
+				// verifica se possui face
+				if($x->face==1) {
+					$x->quantidade=count($x->faces);
+				}
+
+				// verifica se é de regiao hof (id_regiao=5)
+				else if($x->id_regiao==5) {
+					$x->quantidade=($x->hof);
+				}
 
 				$descontoTotal+=$x->desconto;
 
@@ -67,12 +76,24 @@
 			$procedimentos[]=$x;
 			$procedimentosIds[$x->id_procedimento]=$x->id_procedimento;
 			if($x->situacao=="aprovado" or $x->situacao=="aguardandoAprovacao") {
+
+				if($x->quantidade==0) $x->quantidade=1;
+
+				// verifica se possui face
+				if($x->face==1) {
+					$x->quantidade=count($x->faces);
+				}
+
+				// verifica se é de regiao hof (id_regiao=5)
+				else if($x->id_regiao==5) {
+					$x->quantidade=($x->hof);
+				}
+
 				$descontoTotal+=$x->desconto;
 
 				$valorTotalSemDesconto+=$x->valor*$x->quantidade;
 
 				$x->valorSemDesconto=$x->valor*$x->quantidade;
-
 				$valorTotal+=($x->valor*$x->quantidade)-$x->desconto;
 			}
 		}
@@ -102,6 +123,12 @@
 	$sql->consult($_p."parametros_formasdepagamento","*","order by titulo asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_formasDePagamento[$x->id]=$x;
+	}
+
+	$_faces=array();
+	$sql->consult($_p."parametros_procedimentos_regioes_faces","*","");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_faces[$x->id]=$x;
 	}
 
 	$_status=array('aprovado'=>'Aprovado',
@@ -167,6 +194,29 @@
 	foreach($procedimentos as $proc) { 
 		if(isset($_procedimentos[$proc->id_procedimento])) {
 			$procedimento=$_procedimentos[$proc->id_procedimento];
+
+			// verifica se possui faces
+			$facesTexto='';
+			if($proc->face==1) {
+				$facesTexto='<p>Faces: ';
+
+				$faces='';
+				$facesQtd=0;
+				foreach($proc->faces as $id_face) {
+					if(isset($_faces[$id_face])) {
+						$facesQtd++;
+						$faces.=utf8_encode($_faces[$id_face]->titulo).", ";
+					}
+				}
+				$faces=substr($faces,0,strlen($faces)-2).".";
+				$facesTexto.=$faces.'</p>';
+				$proc->valor*=$facesQtd;
+			}
+
+			if($proc->id_regiao==5) {
+				$proc->valor*=$proc->hof;
+			}
+
 ?>
 <div class="box" style="margin-bottom:-1px; border-radius:0 0 0 0;">
 	<table>
@@ -176,8 +226,9 @@
 				<p><strong><?php echo utf8_encode($procedimento->titulo);?></strong>
 					<?php echo $proc->quantidade>1?" - Qtd. $proc->quantidade":"";?>
 					<?php echo !empty($proc->opcao)?" - ".$encoding->toUTF8($proc->opcao):"";?> - 
-					<?php echo utf8_encode($proc->plano);?></p>				
-				<?php echo (isset($proc->obs) and !empty($proc->obs))?"<p>".utf8_encode($proc->obs)."</p>":"";?>
+					<?php echo $encoding->toUTF8($proc->plano);?></p>			
+					<?php echo (isset($proc->obs) and !empty($proc->obs))?"<p>".$encoding->toUTF8($proc->obs)."</p>":"";?>	
+					<?php echo $facesTexto;?>
 			</td>			
 		</tr>
 
@@ -204,7 +255,15 @@
 			?>
 			<td>
 				<h1>Valor</h1>
-				<p>R$ <?php echo number_format($proc->valorSemDesconto,2,",",".");?></p>
+				<p>
+				<?php
+				if($proc->desconto>0) {
+					echo "<strike>".number_format($proc->valor,2,",",".")."</strike>";
+				} else {
+					echo number_format($proc->valor,2,",",".");
+				}
+				?>		
+				</p>
 			</td>
 			<td>
 				<h1>Desconto</h1>
@@ -212,7 +271,7 @@
 			</td>
 			<td>
 				<h1>Valor Corrigido</h1>
-				<p>R$ <?php echo number_format(($proc->valorSemDesconto)-$proc->desconto,2,",",".");?></p>
+				<p>R$ <?php echo number_format(($proc->valor)-$proc->desconto,2,",",".");?></p>
 			</td>
 			<?php
 			} else {

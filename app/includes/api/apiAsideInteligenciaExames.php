@@ -1,4 +1,5 @@
 <?php
+	$_dirPedidosDeExameDir="arqs/pacientes/exames/";
 	if(isset($_POST['ajax'])) {
 
 
@@ -12,7 +13,7 @@
 		if($_POST['ajax']=="pedidoDeExameConsulta") {
 		
 
-			$pedidoDeExame=$evolucao=$clinica=$profissional=$colaborador='';
+			$pedidoDeExame=$evolucao=$clinica=$profissional=$colaborador=$paciente='';
 			$_exames=array();
 			if(isset($_POST['id_evolucao_pedidodeexame']) and is_numeric($_POST['id_evolucao_pedidodeexame'])) {
 				$sql->consult($_p."pacientes_evolucoes_pedidosdeexames","*","where id=".$_POST['id_evolucao_pedidodeexame']." and lixo=0");
@@ -23,7 +24,7 @@
 					if($sql->rows) {
 						$evolucao=mysqli_fetch_object($sql->mysqry);
 
-						$sql->consult($_p."parametros_fornecedores","*","where id=$evolucao->id_clinica and lixo=0");
+						$sql->consult($_p."parametros_fornecedores","*","where id=$evolucao->id_clinica");
 						if($sql->rows) {
 							$clinica=mysqli_fetch_object($sql->mysqry);
 						}
@@ -54,33 +55,82 @@
 				if(is_object($evolucao)) {
 					if(is_object($evolucao)) {
 
-							$exames=[];
-							$sql->consult($_p."pacientes_evolucoes_pedidosdeexames","*","where id_evolucao=$evolucao->id and lixo=0");
-							while($x=mysqli_fetch_object($sql->mysqry)) {
-								if(isset($_exames[$x->id_exame])) {
-									$e=$_exames[$x->id_exame];
-								
-									$exames[]=array('id_evolucao_pedidodeexame'=>$x->id,
-														'titulo'=>trim(encodingToJson($e->titulo)),
-														'obs'=>trim(encodingToJson($e->obs)),
-														'status'=>$x->status,
-														'statusTitulo'=>isset($_selectSituacaoOptions[$x->status])?$_selectSituacaoOptions[$x->status]['titulo']:'-',
-														'opcao'=>encodingToJson($x->opcao)
-													);
+						$sql->consult($_p."pacientes","id,nome,data_nascimento,foto_cn,foto,codigo_bi,periodicidade","where id=$evolucao->id_paciente");
+						if($sql->rows) {
+							$paciente=mysqli_fetch_object($sql->mysqry);
+						}
+
+						$_colaboradores=array();
+						$sql->consult($_p."colaboradores","id,nome","");
+						while($x=mysqli_fetch_object($sql->mysqry)) $_colaboradores[$x->id]=$x;
+
+						$regs=$pedidosIds=[];
+						$sql->consult($_p."pacientes_evolucoes_pedidosdeexames","*","where id_evolucao=$evolucao->id and lixo=0");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							if(isset($_exames[$x->id_exame])) {
+								$pedidosIds[]=$x->id;
+								$regs[]=$x;
+							}
+						}
+
+						$pedidosAnexos=[];
+						if(count($pedidosIds)>0) {
+							$sql->consult($_p."pacientes_evolucoes_pedidosdeexames_anexos","*","where id_evolucao_pedidodeexame IN (".implode(",",$pedidosIds).") and lixo=0");
+							if($sql->rows) {
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+									$pedidosAnexos[$x->id_evolucao_pedidodeexame][]=array('id_anexo'=>$x->id,
+																							'data'=>date('d/m/Y H:i',strtotime($x->data)),
+																							'colaborador'=>isset($_colaboradores[$x->id_colaborador])?encodingToJson($_colaboradores[$x->id_colaborador]->nome):'-',
+																							'titulo'=>encodingToJson($x->titulo),
+																							'arq'=>$_wasabiURL.$_dirPedidosDeExameDir.$x->id.".".$x->arq);
 								}
 							}
+						}
 
 
-							$pedidodeexame=[];
-							$pedidodeexame['data']=date('d/m/Y',strtotime($evolucao->data_pedido));
-							$pedidodeexame['clinica']=encodingToJson($clinica->razao_social);
-							$pedidodeexame['profissional']=is_object($profissional)?encodingToJson($profissional->nome):'-';
-							$pedidodeexame['colaborador']=is_object($colaborador)?encodingToJson($colaborador->nome):'-';
-							$pedidodeexame['colaborador']=is_object($colaborador)?encodingToJson($colaborador->nome):'-';
-							$pedidodeexame['exames']=$exames;
+						$exames=[];
+						foreach($regs as $x) {			
+							$e=$_exames[$x->id_exame];						
+							$exames[]=array('id_evolucao_pedidodeexame'=>$x->id,
+												'titulo'=>trim(encodingToJson($e->titulo)),
+												'obs'=>trim(encodingToJson($e->obs)),
+												'status'=>$x->status,
+												'anexos'=>isset($pedidosAnexos[$x->id])?$pedidosAnexos[$x->id]:[],
+												'statusTitulo'=>isset($_selectSituacaoOptions[$x->status])?$_selectSituacaoOptions[$x->status]['titulo']:'-',
+												'opcao'=>encodingToJson($x->opcao)
+											);
+						}
 
 
-							$rtn=array('success'=>true,'pedidodeexame'=>$pedidodeexame);
+						if($paciente->data_nascimento!="0000-00-00") {
+							$dob = new DateTime($paciente->data_nascimento);
+							$now = new DateTime();
+							$idade = $now->diff($dob)->y;
+						} else $idade=0;
+
+						$ft='';
+						if(!empty($paciente->foto_cn)) {
+							$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+						} else if(!empty($paciente->foto)) {
+							$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+						}
+
+
+						$pedidodeexame=[];
+						$pedidodeexame['data']=date('d/m/Y',strtotime($evolucao->data_pedido));
+						$pedidodeexame['clinica']=is_object($clinica)?encodingToJson($clinica->nome_fantasia):'-';
+						$pedidodeexame['profissional']=is_object($profissional)?encodingToJson($profissional->nome):'-';
+						$pedidodeexame['paciente']=is_object($paciente)?encodingToJson($paciente->nome):'-';
+						$pedidodeexame['idade']=$idade;
+						$pedidodeexame['ft']=$ft;
+						$pedidodeexame['periodicidade']=isset($_pacientesPeriodicidade[$paciente->periodicidade])?$_pacientesPeriodicidade[$paciente->periodicidade]:$paciente->periodicidade;
+						$pedidodeexame['statusBI']=isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):"";
+						$pedidodeexame['id_paciente']=is_object($paciente)?encodingToJson($paciente->id):0;
+						$pedidodeexame['colaborador']=is_object($colaborador)?encodingToJson($colaborador->nome):'-';
+						$pedidodeexame['exames']=$exames;
+
+
+						$rtn=array('success'=>true,'pedidodeexame'=>$pedidodeexame);
 
 						
 					} else {
@@ -109,7 +159,7 @@
 
 				if(!empty($status)) {
 
-					$vSQL="status='".$status."'";
+					$vSQL="status='".$status."',data_atualizacao=now()";
 					$vWHERE="where id=$pedidoDeExame->id";
 
 					$sql->update($_p."pacientes_evolucoes_pedidosdeexames",$vSQL,$vWHERE);
@@ -125,124 +175,116 @@
 			}
 		}
 		else if($_POST['ajax']=="pedidosAtualiza") {
-			$_clinicas=array();
-			$sql->consult($_p."parametros_fornecedores","*","");
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$_clinicas[$x->id]=$x;
-			}
 
-
-			$_pedidosDeExames=array('concluido'=>[],'aguardando'=>[],'naoRealizado'=>[]);
-			$_pacientes=$_evolucoes=$_exames=array();
-
-
-			$evolucoesIds=$pacientesIds=$examesIds=[];
-			$sql->consult($_p."pacientes_evolucoes","*","where id_tipo=6 and lixo=0 order by data_pedido desc");
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$_evolucoes[$x->id]=$x;
-				$evolucoesIds[]=$x->id;
-				$pacientesIds[]=$x->id_paciente;
-			}
-
-			if(count($evolucoesIds)>0) {
-				$sql->consult($_p."pacientes_evolucoes_pedidosdeexames","*","where id_evolucao IN (".implode(",",$evolucoesIds).") and lixo=0 order by id desc");
-				if($sql->rows) { 
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$_pedidosDeExames[$x->status][$x->id_evolucao][]=$x;
-						$examesIds[]=$x->id_exame;
-					}
-				}
-
-				$sql->consult($_p."pacientes","id,nome","where id IN (".implode(",",$pacientesIds).") and lixo=0");
-				if($sql->rows) {
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$_pacientes[$x->id]=$x;
-					}
-				}
-
-				$sql->consult($_p."parametros_examedeimagem","*","where id IN (".implode(",",$examesIds).")");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_exames[$x->id]=$x;
-				}
-			}
-
-
-			// monta arrays
-				$pedidos=array('aguardando'=>[],'concluido'=>[],'naoRealizado'=>[]);
-		
-				if(isset($_pedidosDeExames['aguardando'])) {
-					foreach($_pedidosDeExames['aguardando'] as $id_evolucao=>$x) {
-						if(isset($_evolucoes[$id_evolucao])) {
-							$evolucao=$_evolucoes[$id_evolucao];
-
-
-							$dif = strtotime(date('Y-m-d'))-strtotime($evolucao->data_pedido);
-							$dif = floor($dif/(60 * 60 * 24));
-							$alertaMaisDe8Dias=($dif>=8)?1:0;
-
-							if(isset($_pacientes[$evolucao->id_paciente])) {
-								$paciente=$_pacientes[$evolucao->id_paciente];
-								$clinica = isset($_clinicas[$evolucao->id_clinica]) ? encodingToJson($_clinicas[$evolucao->id_clinica]->razao_social) : '';
-
-								$pedidos['aguardando'][]=array('id_evolucao'=>$evolucao->id,
-																'id_evolucao_pedidodeexame'=>$x[0]->id,
-																'data'=>date('d/m/Y',strtotime($evolucao->data_pedido)),
-																'paciente'=>encodingToJson($paciente->nome),
-																'alerta'=>$alertaMaisDe8Dias,
-																'exames'=>count($x),
-																'clinica'=>$clinica);
-							}
-						}
-					}
-				}	
-
-
-
-
-				if(isset($_pedidosDeExames['concluido'])) {
-					foreach($_pedidosDeExames['concluido'] as $id_evolucao=>$x) {
-						if(isset($_evolucoes[$id_evolucao])) {
-							$evolucao=$_evolucoes[$id_evolucao];
-							if(isset($_pacientes[$evolucao->id_paciente])) {
-								$paciente=$_pacientes[$evolucao->id_paciente];
-								$clinica = isset($_clinicas[$evolucao->id_clinica]) ? encodingToJson($_clinicas[$evolucao->id_clinica]->razao_social) : '';
-
-
-								$pedidos['concluido'][]=array('id_evolucao'=>$evolucao->id,
-																'id_evolucao_pedidodeexame'=>$x[0]->id,
-																'data'=>date('d/m/Y',strtotime($evolucao->data_pedido)),
-																'paciente'=>encodingToJson($paciente->nome),
-																'exames'=>count($x),
-																'clinica'=>$clinica);
-							}
-						}
-					}
-				}
-
-				if(isset($_pedidosDeExames['naoRealizado'])) {
-					foreach($_pedidosDeExames['naoRealizado'] as $id_evolucao=>$x) {
-						if(isset($_evolucoes[$id_evolucao])) {
-							$evolucao=$_evolucoes[$id_evolucao];
-							if(isset($_pacientes[$evolucao->id_paciente])) {
-								$paciente=$_pacientes[$evolucao->id_paciente];
-								$clinica = isset($_clinicas[$evolucao->id_clinica]) ? encodingToJson($_clinicas[$evolucao->id_clinica]->razao_social) : '';
-								$pedidos['naoRealizado'][]=array('id_evolucao'=>$evolucao->id,
-																'id_evolucao_pedidodeexame'=>$x[0]->id,
-																'data'=>date('d/m/Y',strtotime($evolucao->data_pedido)),
-																'paciente'=>encodingToJson($paciente->nome),
-																'exames'=>count($x),
-																'clinica'=>$clinica);
-							}
-						}
-					}
-				}
+			$attr=array('_cloudinaryURL'=>$_cloudinaryURL,
+				'prefixo'=>$_p,
+				'_wasabiURL'=>$_wasabiURL);
+			$inteligencia = new Inteligencia($attr);
+			
+			$inteligencia->controleDeExames();
+			$pedidos = $inteligencia->pedidos;
+			$_pedidosDeExames = $inteligencia->_pedidosDeExames;
 			
 
 
 			$rtn=array('success'=>true,
 						'pedidosAguardando'=>$pedidos['aguardando'],
 						'pedidosConcluido'=>$pedidos['concluido'],
-					 	'pedidosNaoRealizado'=>$pedidos['naoRealizado']);
+					 	'pedidosNaoRealizado'=>$pedidos['naoRealizado'],
+					 	'pedidosAguardandoQtd'=>count($_pedidosDeExames['aguardando']),
+					 	'pedidosConcluidoQtd'=>count($_pedidosDeExames['concluido']),
+					 	'pedidosNaoRealizadoQtd'=>count($_pedidosDeExames['naoRealizado']));
+		}
+		else if($_POST['ajax']=="examesAnexosPersistir") {
+
+			$pedidoDeExame='';
+			if(isset($_POST['id_evolucao_pedidodeexame']) and is_numeric($_POST['id_evolucao_pedidodeexame'])) {
+				$sql->consult($_p."pacientes_evolucoes_pedidosdeexames","*","where id=".$_POST['id_evolucao_pedidodeexame']);
+				if($sql->rows) {
+					$pedidoDeExame=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+
+			$erro = '';
+			if(!isset($_FILES['anexos']) or !is_array($_FILES['anexos']) or count($_FILES['anexos'])==0) $erro='Selecione pelo menos um arquivo para anexar!';
+			else if(empty($pedidoDeExame)) $erro='Pedido de exame não encontrado!';
+
+			if(empty($erro)) {
+
+				$cont=$arquivosUploads=0;
+				foreach($_FILES['anexos']['tmp_name'] as $file) {
+
+					$ext = explode(".",$_FILES['anexos']['name'][$cont]);
+					$ext = strtolower($ext[count($ext)-1]);
+
+					$vsql="data=now(),
+							id_evolucao='$pedidoDeExame->id_evolucao',
+							id_evolucao_pedidodeexame='$pedidoDeExame->id',
+							id_paciente='$pedidoDeExame->id_paciente',
+							id_colaborador='$usr->id',
+							titulo='".utf8_decode(addslashes($_FILES['anexos']['name'][$cont]))."',
+							arq='".$ext."'";
+
+					$sql->add($_p."pacientes_evolucoes_pedidosdeexames_anexos",$vsql);
+					$id_anexo=$sql->ulid;
+
+					// upload da foto 
+					$uploadFile=$file;
+					$uploadType=filesize($file);
+					$uploadPathFile=$_wasabiPathRoot.$_dirPedidosDeExameDir.$id_anexo.".".$ext;
+					$uploaded=$wasabiS3->putObject(S3::inputFile($uploadFile,true),$_wasabiBucket,$uploadPathFile,S3::ACL_PUBLIC_READ);
+
+					if($uploaded) {
+						$arquivosUploads++;
+					}
+					$cont++;
+				}
+
+				$rtn=array('success'=>true,'arquivos'=>$arquivosUploads,'total'=>$cont);
+
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
+
+		}
+		else if($_POST['ajax']=="examesAnexosRemover") {
+			
+			$pedidoDeExame='';
+			if(isset($_POST['id_evolucao_pedidodeexame']) and is_numeric($_POST['id_evolucao_pedidodeexame'])) {
+				$sql->consult($_p."pacientes_evolucoes_pedidosdeexames","*","where id=".$_POST['id_evolucao_pedidodeexame']);
+				if($sql->rows) $pedidoDeExame=mysqli_fetch_object($sql->mysqry);
+			}
+
+			$anexo='';
+			if(is_object($pedidoDeExame) and isset($_POST['id_anexo']) and is_numeric($_POST['id_anexo'])) {
+				$sql->consult($_p."pacientes_evolucoes_pedidosdeexames_anexos","*","where id=".$_POST['id_anexo']." and id_evolucao_pedidodeexame=$pedidoDeExame->id and lixo=0");
+				if($sql->rows) $anexo=mysqli_fetch_object($sql->mysqry);
+			}
+
+			$erro='';
+			if(empty($pedidoDeExame)) $erro='Pedido de exame não encontrado!';
+			else if(empty($anexo)) $erro='Anexo não encontrado!';
+
+			if(empty($erro)) {
+
+				$uploadPathFile=$_wasabiPathRoot.$_dirPedidosDeExameDir.$anexo->id.".".$anexo->arq;
+				$deleted = $wasabiS3->deleteObject($_wasabiBucket,$uploadPathFile);
+
+				if($deleted) {
+
+					$sql->update($_p."pacientes_evolucoes_pedidosdeexames_anexos","lixo=1,lixo_data=now(),lixo_id_colaborador=$usr->id","where id=$anexo->id");
+
+					$rtn=array('success'=>true);
+
+				} else {
+					$rtn=array('success'=>false,'error'=>'Algum erro ocorreu durante a exclusão do anexo!');
+				}
+
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
+
 		}
 
 		header("Content-type: application/json");
@@ -260,6 +302,7 @@
 	var id_usuario = '<?php echo $usr->id;?>';
 	var autor = '<?php echo utf8_encode($usr->nome);?>';
 	var pedidodeexame = {};
+	var formAnexo = new FormData();
 
 	// abre aside de Exames
 	const asideInteligenciaExames = () => {
@@ -267,8 +310,41 @@
 		$('.js-asideInteligenciaExames-exame').val(pedidodeexame.exame?pedidodeexame.exame:'-');
 		$('.js-asideInteligenciaExames-clinica').val(pedidodeexame.clinica?pedidodeexame.clinica:'-');
 		$('.js-asideInteligenciaExames-data').val(pedidodeexame.data?pedidodeexame.data:'-');
+		
 		$('.js-asideInteligenciaExames-colaborador').val(pedidodeexame.colaborador?pedidodeexame.colaborador:'-');
 		$('.js-asideInteligenciaExames-profissional').val(pedidodeexame.profissional?pedidodeexame.profissional:'-');
+
+		// dados do paciente
+			$('.aside-inteligencia-exames .js-nome').html(pedidodeexame.paciente?`${pedidodeexame.paciente} <a href="pg_pacientes_resumo.php?id_paciente=${pedidodeexame.id_paciente}" target="_blank"><i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i></a>`:'-');
+			if(pedidodeexame.ft && pedidodeexame.ft.length>0) {
+				$('.aside-inteligencia-exames .js-foto').attr('src',pedidodeexame.ft);
+			} else {
+				$('.aside-inteligencia-exames .js-foto').attr('src','img/ilustra-usuario.jpg');
+			}
+
+			if(pedidodeexame.idade && pedidodeexame.idade>0) {
+				$('.aside-inteligencia-exames .js-idade').html(pedidodeexame.idade+(pedidodeexame.idade>=2?' anos':' ano'));
+			} else {
+				$('.aside-inteligencia-exames .js-idade').html(``);
+			}
+
+			if(pedidodeexame.periodicidade && pedidodeexame.periodicidade.length>0) {
+				$('.aside-inteligencia-exames .js-periodicidade').html(`Periodicidade: ${pedidodeexame.periodicidade}`);
+			} else {
+				$('.aside-inteligencia-exames .js-periodicidade').html(`Periodicidade: -`);
+			}
+
+			if(pedidodeexame.statusBI && pedidodeexame.statusBI.length==0) {
+				$('.aside-inteligencia-exames .js-statusBI').html(``).hide();
+			} else {
+				$('.aside-inteligencia-exames .js-statusBI').html(`${pedidodeexame.statusBI}`).show();
+			}
+
+			if(pedidodeexame.musica && pedidodeexame.musica.length>0) {
+				$('.aside-inteligencia-exames .js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
+			} else {
+				$('.aside-inteligencia-exames .js-musica').html(``);
+			}
 
 
 		$('.js-asideInteligenciaExames-exames').html('');
@@ -281,11 +357,11 @@
 				else if(x.status=='concluido') cor='var(--verde)';
 				$('.js-asideInteligenciaExames-exames').append(`<tr class="js-tr-item" data-id_evolucao_pedidodeexame="${x.id_evolucao_pedidodeexame}">
 																	<td class="list1__border" style="color:${cor}"></td>
-																	<td class="js-titulo" style="width:66%">${x.titulo}</td>
+																	<td class="js-titulo" style="width:66%">${x.titulo}<p style="font-size:11px;"><i>${x.opcao}</i></p></td>
 																	<td>
 																		<?php echo $selectSituacaoOptions;?>
 																	</td>
-																	<td style="text-align:right;width:50px;"><a href="javascript:;" class="button js-tr-item-anexo"><span class="iconify" data-icon="fluent:attach-12-filled" data-inline="true"></span> 0</a></td>
+																	<td style="text-align:right;width:50px;"><a href="javascript:;" class="button js-tr-item-anexo" style="${x.anexos.length>0?"color:#333":""}"><span class="iconify" data-icon="fluent:attach-12-filled" data-inline="true"></span> ${x.anexos.length}</a></td>
 																</tr>`);
 				$('.js-asideInteligenciaExames-exames .js-select-status:last').val(x.status);
 			})
@@ -307,6 +383,7 @@
 				if(rtn.success) {
 					pedidodeexame=rtn.pedidodeexame;
 					asideInteligenciaExames();
+					$('.js-ag:eq(0)').click();
 				}
 			}
 		})
@@ -324,6 +401,11 @@
 					pedidosAguardando = (rtn.pedidosAguardando);
 					pedidosConcluido = (rtn.pedidosConcluido);
 					pedidosNaoRealizado = (rtn.pedidosNaoRealizado);
+
+
+					pedidosAguardandoQtd=rtn.pedidosAguardandoQtd;
+					pedidosConcluidoQtd=rtn.pedidosConcluidoQtd;
+					pedidosNaoRealizadoQtd=rtn.pedidosNaoRealizadoQtd;
 
 					pedidosListar();
 				}
@@ -357,20 +439,185 @@
 			pedidosDeExameAtualiza(id_evolucao_pedidodeexame);
 		});
 
-
 		// clica no botao de anexo do exame
 		$('.js-asideInteligenciaExames-exames').on('click','.js-tr-item-anexo',function(){
 			let index = $('.js-asideInteligenciaExames-exames .js-tr-item-anexo').index(this);
 			if(pedidodeexame.exames[index]) {
 				e=pedidodeexame.exames[index];
+				$('.aside-inteligencia-exames-anexos .js-anexo-id_evolucao_pedidodeexame').val(e.id_evolucao_pedidodeexame);
 				$('.aside-inteligencia-exames-anexos .js-exame').val(e.titulo);
 				$('.aside-inteligencia-exames-anexos .js-opcao').val(e.opcao.length==0?'-':e.opcao);
 				$('.aside-inteligencia-exames-anexos .js-obs').val(e.obs.length==0?'-':e.obs);
 				$('.aside-inteligencia-exames-anexos .js-status').val(e.statusTitulo);
+
+				$('.aside-inteligencia-exames-anexos .js-asideInteligenciaExames-exames-anexos').html('');
+
+				e.anexos.forEach(x=>{
+					$('.aside-inteligencia-exames-anexos .js-asideInteligenciaExames-exames-anexos').append(`<tr>
+																						<td>${x.data}</td>
+																						<td>${x.titulo}</td>
+																						<td>${x.colaborador}</td>
+																						<td style="width:90px;">
+																							<a href="${x.arq}" class="button"><i class="iconify" data-icon="ant-design:download-outlined"></i></a>
+																							<a href="javascript:;" class="button js-anexo-remover" data-id_anexo="${x.id_anexo}"  data-id_evolucao_pedidodeexame="${e.id_evolucao_pedidodeexame}" data-loading="0"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+																						</td>
+																					</tr>`);
+
+				});
+
 				$(".aside-inteligencia-exames-anexos").fadeIn(100,function() {
 					$(".aside-inteligencia-exames-anexos .aside__inner1").addClass("active");
 				});
 			}
+		});
+
+		$('.js-asideInteligenciaExames-exames-anexos').on('click','.js-anexo-remover',function(){
+			let id_anexo = $(this).attr('data-id_anexo');
+			let id_evolucao_pedidodeexame = $(this).attr('data-id_evolucao_pedidodeexame');
+			let obj = $(this);
+			let objHTMLAntigo = obj.html();
+
+			swal({   
+					title: "Atenção",   
+					text: "Tem certeza que deseja remover este anexo?",   
+					type: "warning",   
+					showCancelButton: true,   
+					confirmButtonColor: "#DD6B55",   
+					confirmButtonText: "Sim",   
+					cancelButtonText: "Não",   
+					closeOnConfirm: false,   
+					closeOnCancel: false 
+				}, function(isConfirm){   
+					if (isConfirm) {    
+
+						if(obj.attr('data-loading')==0) {
+
+							swal.close(); 
+							obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+
+							let data=`ajax=examesAnexosRemover&id_anexo=${id_anexo}&id_evolucao_pedidodeexame=${id_evolucao_pedidodeexame}`;
+							$.ajax({
+								type:"POST",
+								data:data,
+								url:'includes/api/apiAsideInteligenciaExames.php',
+								success:function(rtn) {
+									swal({title: "Sucesso!", text: `Anexo removido com sucesso!`, type:"success", confirmButtonColor: "#424242",html:true});
+									$('.aside-inteligencia-exames-anexos .aside-close').click();
+									pedidosDeExameAtualiza(id_evolucao_pedidodeexame);
+								},
+								error:function(){
+
+								}
+							}).done(function(){
+								obj.html(objHTMLAntigo);
+								obj.attr('data-loading',0);
+								
+							});
+						}
+					} else {   
+						swal.close();   
+					} 
+				});
+		
+		});
+
+
+		$('.aside-inteligencia-exames-anexos .js-file-anexo-button').click(function(){
+			$('.aside-inteligencia-exames-anexos .js-file-anexo').click();
+		});
+
+		$('.aside-inteligencia-exames-anexos .js-file-anexo').change(function(ev){
+
+			let newFormData = new FormData();
+			let max = 70;
+
+			for(var i = 0;i<ev.target.files.length;i++) {
+				file = ev.target.files[i];
+				newFormData.append('anexos[]',file);
+
+			}
+
+			let fileDescription = ev.target.files.length>1 ? ev.target.files.length+' Arquivos' : ev.target.files.length+' Arquivo';
+			$('.js-file-anexo-button').html('<span class="iconify" data-icon="ic:twotone-cloud-upload"></span> '+fileDescription);
+			$('.js-file-anexo-button').css({'background':'var(--cinza2)'})
+
+			formAnexo=newFormData;
+		});
+
+		// clica para cadastrar novo anexo
+		$('.aside-inteligencia-exames-anexos .js-btn-adicionarAnexo').click(function(){
+
+			let erro = '';
+
+			if($('.js-file-anexo').val()=="") erro='Selecione pelo menos um arquivo para anexar!';
+
+			if(erro.length==0) {
+
+
+				let obj = $(this);
+				let objHTMLAntigo = obj.html();
+
+				if(obj.attr('data-loading')==0) {
+
+					obj.attr('data-loading',1);
+					obj.html('<span class="iconify" data-icon="eos-icons:loading"></span> Enviando...');
+
+
+					let id_evolucao_pedidodeexame=$('.js-anexo-id_evolucao_pedidodeexame').val();
+					formAnexo.append('ajax','examesAnexosPersistir');
+					formAnexo.append('id_evolucao_pedidodeexame',id_evolucao_pedidodeexame);
+
+					$.ajax({
+						type:"POST",
+						data:formAnexo,
+				        cache: false,
+				        contentType: false,
+				        processData: false,
+						url:'includes/api/apiAsideInteligenciaExames.php',
+						success:function(rtn) {
+							if(rtn.success) {
+								swal({title: "Sucesso!", text: `Upload realizado com sucesso!<br /><br />Foram anexados ${rtn.arquivos} de ${rtn.total} arquivo(s)`, type:"success", confirmButtonColor: "#424242",html:true});
+								$('.aside-inteligencia-exames-anexos .aside-close').click();
+								pedidosDeExameAtualiza(id_evolucao_pedidodeexame);
+
+							} else if(rtn.error) {
+								swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+							} else {
+								swal({title: "Erro!", text: 'Algum erro ocorreu durante o upload dos anexos', type:"error", confirmButtonColor: "#424242"});
+							}
+						},
+						xhr: function() {
+				            var myXhr = $.ajaxSettings.xhr();
+				            if (myXhr.upload) { // Avalia se tem suporte a propriedade upload
+				                myXhr.upload.addEventListener('progress', function(event) {
+
+				                	loaded = event.loaded;
+				                	total = event.total;
+
+				                	percent = (loaded/total)*100;
+				                	percent = Math.floor(percent);
+				                	$('.js-progress').css('width',percent+'%');
+
+				                	if(percent==100) {
+										obj.html('<span class="iconify" data-icon="eos-icons:loading"></span> Salvando...');
+				                	}
+				                
+				                }, false);
+				            }
+				            return myXhr;
+				        }
+					}).done(function(){
+						obj.attr('data-loading',0);
+						obj.html(objHTMLAntigo);
+						$('.js-progress').css('width','0%');
+						$('.js-file-anexo-button').html('<span class="iconify" data-icon="ic:outline-cloud-upload"></span> Anexar Arquivos').css({'background':''});
+						$('.js-file-anexo').val('');
+					});
+				}
+			} else {
+				swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
+			}
+
 		});
 
 	});
@@ -384,21 +631,47 @@
 		</header>
 
 		<form method="post" class="aside-content form js-form-editar-procedimento">
-			<input type="hidden" class="js-asidePlanoEditar-index" value="" />
-			<section class="filter">
-				<div class="filter-group"></div>
-				<div class="filter-group">
-					<div class="filter-form form">
 
-						<a href="<?php echo $pdf;?>" target="_blank" class="button"><i class="iconify" data-icon="ant-design:file-pdf-outlined"></i></a>
-						<a href="javascript:;" class="button js-btn-whatsapp" data-id_evolucao="<?php echo $e->id;?>" data-loading="0"><i class="iconify" data-icon="fa:whatsapp"></i></a>
-						<a href="<?php echo $_page."?deleta=".$e->id."&pagina=".((isset($_GET['pagina']) and is_numeric($_GET['pagina']))?$_GET['pagina']:'')."&$url";?>" class="button js-confirmarDeletar"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-					</div>								
+			<section class="header-profile">
+				<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
+				<div class="header-profile__inner1">
+					<h1><a href="" target="_blank" class="js-nome"></a></h1>
+					<div>
+						<p class="js-statusBI"></p>
+						<p class="js-idade"></p>
+						<p class="js-periodicidade">Periodicidade: 6 meses</p>
+						<p class="js-musica"></p>
+					</div>
 				</div>
 			</section>
 
-			<fieldset>
-				<legend>Dados da Evolução</legend>
+			<script>
+				$(function() {
+					$('.js-tab a').click(function() {
+						$(".js-tab a").removeClass("active");
+						$(this).addClass("active");							
+					});
+				});
+			</script>
+			<section class="tab tab_alt js-tab">
+				<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-solicitados').show();" class="active">Exames Solicitados</a>
+				<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-dados').show();">Dados da Evolução</a>			
+			</section>
+
+
+
+			<div class="js-ag js-ag-solicitados">
+				<legend>Exames Solicitados</legend>
+
+				<div class="list1">
+
+					<table class="js-asideInteligenciaExames-exames">
+						
+					</table>
+				</div>
+			</div>
+
+			<div class="js-ag js-ag-dados" style="display: none;">
 
 				<div class="colunas4">
 
@@ -411,8 +684,7 @@
 						<dd><input type="text" class="js-asideInteligenciaExames-colaborador" disabled /></dd> 
 					</dl>
 				</div>
-
-				<dl>
+				<dl>	
 					<dt>Clínica</dt>
 					<dd><input type="text" class="js-asideInteligenciaExames-clinica" disabled /></dd>
 				</dl>
@@ -422,19 +694,7 @@
 					<dd><input type="text" class="js-asideInteligenciaExames-profissional" disabled /></dd>
 				</dl>	
 
-			</fieldset>
-
-
-			<fieldset>
-				<legend>Exames Solicitados</legend>
-
-				<div class="list1">
-
-					<table class="js-asideInteligenciaExames-exames">
-						
-					</table>
-				</div>
-			</fieldset>
+			</div>
 
 
 		</form>
@@ -451,7 +711,7 @@
 		</header>
 
 		<form method="post" class="aside-content form js-form-editar-procedimento">
-			<input type="hidden" class="js-asidePlanoEditar-index" value="" />
+			<input type="hidden" class="js-anexo-id_evolucao_pedidodeexame" />
 			<section class="filter">
 				<div class="filter-group"></div>
 				<div class="filter-group">
@@ -486,21 +746,20 @@
 			<fieldset>
 				<legend>Anexos</legend>
 
-				<div class="colunas4">
 
-					<dl class="dl2">
-						<dt>Descrição</dt>
-						<dd><input type="text" /></dd>
-					</dl>
-					<dl>
-						<dt>Anexo</dt>
-						<dd><input type="file" /></dd>
-					</dl>
-					<dl>
-						<dt>&nbsp;</dt>
-						<dd><a href="javascript:;" class="button"><span class="iconify" data-icon="akar-icons:plus"></span></a></dd>
-					</dl>
+
+				<dl>
+					<dd>
+						<button type="button" class="button js-file-anexo-button"><span class="iconify" data-icon="ic:outline-cloud-upload"></span> Anexar Arquivos</button>
+						<input type="file" class="js-file-anexo" multiple style="display: none;" />
+						<a href="javascript:;" class="button button_main js-btn-adicionarAnexo" data-loading="0"><span class="iconify" data-icon="akar-icons:plus"></span> Anexar</a>
+					</dd>
+				</dl>
+
+				<div style="width:100%;">
+					<div style="width: 0%;background:var(--cinza5);height:5px;border-radius: 5px;" class="js-progress"></div>
 				</div>
+
 
 
 				<div class="list1">

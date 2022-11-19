@@ -1,7 +1,6 @@
 <?php
 	include "includes/header.php";
 	include "includes/nav.php";
-
 	require_once("includes/header/headerPacientes.php");
 
 	// configuracao da pagina
@@ -182,6 +181,7 @@
 					$procedimentos=array();
 					foreach($procedimentosRegs as $x) {
 
+
 						/*$profissional=isset($_profissionais[$x->id_profissional])?$_profissionais[$x->id_profissional]:'';
 						$iniciaisCor='';
 						$iniciais='?';
@@ -196,6 +196,17 @@
 
 						$autor = isset($_usuarios[$x->id_usuario]) ? utf8_encode($_usuarios[$x->id_usuario]->nome) : 'Desconhecido';
 
+						$facesArray=[];
+						$aux=explode(",",$x->faces);
+						foreach($aux as $f) {
+							if(!empty($f) and is_numeric($f)) $facesArray[]=$f;
+						}
+
+						$valorCorrigido=$x->valor;
+
+						if($x->quantitativo==1) $valorCorrigido*=$x->quantidade;
+						else if($x->face==1)  $valorCorrigido*=count($facesArray);
+						else if($x->id_regiao==5) $valorCorrigido*=$x->hof;
 
 						$procedimentos[]=array('id'=>$x->id,
 												'autor'=>$autor,
@@ -210,14 +221,19 @@
 												'quantidade'=>(int)$x->quantidade,
 												'id_opcao'=>(int)$x->id_opcao,
 												'opcao'=>utf8_encode($x->opcao),
-												'valorCorrigido'=>(float)($x->quantitativo==1?$x->quantidade*$x->valor:$x->valor)-$x->desconto,
+												'valorCorrigido'=>(float)$valorCorrigido,
 												'valor'=>(float)$valor,
 												'desconto'=>(float)$x->desconto,
 												'obs'=>utf8_encode($x->obs),
-												'situacao'=>$x->situacao);
+												'situacao'=>$x->situacao,
+												'id_regiao'=>$x->id_regiao,
+												'face'=>$x->face,
+												'faces'=>$facesArray,
+												'hof'=>$x->hof);
 												/*'iniciais'=>$iniciais,
 												'iniciaisCor'=>$iniciaisCor);*/
 					}
+
 					if($cnt->status=="APROVADO") {
 						$values['procedimentos']=json_encode($procedimentos);
 					} else {
@@ -557,6 +573,9 @@
 
 																$qtd=1;
 																if($x->quantitativo==1) $qtd=$x->quantidade;
+																else if($x->face==1) $qtd=count($x->faces);
+																else if($x->id_regiao==5) $qtd=$x->hof;
+
 																$valorProcedimento+=number_format($x->valor*$qtd,2,".","");
 																$valorProcedimento-=$x->desconto;
 
@@ -927,7 +946,8 @@
 
 												$procedimentosEvolucao=array();
 												foreach($procedimetosJSON as $x) {
-													
+
+													if(!isset($x->quantidade)) $x->quantidade=1;
 
 													$vSQLProcedimento="lixo=0,
 																		id_paciente=$paciente->id,
@@ -946,9 +966,15 @@
 																		quantidade='".addslashes($x->quantidade)."',
 																		id_opcao='".addslashes($x->id_opcao)."',
 																		obs='".addslashes(utf8_decode($x->obs))."',
-																		opcao='".addslashes(utf8_decode($x->opcao))."',";
+																		opcao='".addslashes(utf8_decode($x->opcao))."',
+																		id_regiao='".addslashes($x->id_regiao)."',
+																		face='".addslashes(utf8_decode($x->face))."',
+																		faces='".(implode(",",$x->faces))."',
+																		hof='".addslashes($x->hof)."',";
+
+																		//var_dump($x->faces);die();
 																		//id_profissional='".addslashes($x->id_profissional)."',
-													//echo $vSQLProcedimento."<BR>";die();
+												
 													$procedimento='';
 													if(isset($x->id) and is_numeric($x->id)) {
 														$sql->consult($_table."_procedimentos","*","where id_tratamento=$id_tratamento and id=$x->id");

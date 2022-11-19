@@ -182,10 +182,10 @@
 
 			<div class="header__inner1">
 				<section class="header-title">
-					<h1>Tarefas Inteligentes</h1>
+					<h1>Analytics</h1>
 				</section>
 				<?php
-				require_once("includes/menus/menuInteligencia.php");
+				require_once("includes/menus/menuAnalytics.php");
 				?>
 
 

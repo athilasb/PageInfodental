@@ -2,16 +2,16 @@
 
 	include "print-header.php";
 
-	$evolucao = $paciente = $clinica = $solicitante = "";
+	$evolucao = $paciente = $clinica = $profissional = "";
 	$exames = $_exames = array();
 	if(isset($_GET['id'])) {
 		$sql->consult($_p."pacientes_evolucoes","*","where md5(id)='".addslashes($_GET['id'])."' and id_tipo=6");
 		if($sql->rows) {
 			$evolucao=mysqli_fetch_object($sql->mysqry);
 
-			$sql->consult($_p."colaboradores","id,nome","where id=$evolucao->id_usuario");
+			$sql->consult($_p."colaboradores","id,nome,cro,uf_cro","where id=$evolucao->id_profissional");
 			if($sql->rows) {
-				$solicitante=mysqli_fetch_object($sql->mysqry);
+				$profissional=mysqli_fetch_object($sql->mysqry);
 			}
 
 			$sql->consult($_p."parametros_fornecedores","*","where id=$evolucao->id_clinica and lixo=0");
@@ -59,8 +59,8 @@
 		$jsc->alert("Nenhum exame foi solicitado!","document.location.href='../dashboard.php'");
 		die();
 	}
-	if(empty($solicitante)) {
-		$jsc->alert("Solicitante não encontrado","document.location.href='../dashboard.php'");
+	if(empty($profissional)) {
+		$jsc->alert("Profissional não encontrado","document.location.href='../dashboard.php'");
 		die();
 	}
 
@@ -111,14 +111,26 @@
 				<h1>Nome</h1>
 				<p><?php echo utf8_encode($clinica->nome_fantasia);?></p>
 			</td>
+			
 			<td>
 				<h1>Telefone</h1>
 				<p><?php echo maskTelefone($clinica->telefone1);?></p>
 			</td>
+		</tr>
+		<tr>
 			<td>
-				<h1>Solicitado por</h1>
-				<p><?php echo utf8_encode($solicitante->nome);?></p>
+				<h1>Profissional</h1>
+				<p><?php echo utf8_encode($profissional->nome);?></p>
 			</td>
+			<td>
+				<h1>CRO</h1>
+				<p><?php echo !empty($profissional->cro)?utf8_encode($profissional->cro):'-'?></p>
+			</td>
+			<td>
+				<h1>UF</h1>
+				<p><?php echo !empty($profissional->uf_cro)?utf8_encode($profissional->uf_cro):'-'?></p>
+			</td>
+			
 		</tr>
 		<?php
 		if(!empty($endereco)) {

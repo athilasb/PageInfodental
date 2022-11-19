@@ -16,18 +16,38 @@
 	}
 
 
+	$_historicoStatus=array();
+	$sql->consult($_p."pacientes_historico_status","*","");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_historicoStatus[$x->id]=$x;
+	}
+	$_profissionais=array();
+	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento","where lixo=0 order by nome asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
+
+
+	$_status=array();
+	$sql->consult($_p."agenda_status","*","where lixo=0 order by kanban_ordem asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_status[$x->id]=$x;
+	}
+
+	$_cadeiras=array();
+	$sql->consult($_p."parametros_cadeiras","id,titulo","where lixo=0 order by ordem asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
+
 	$_pacientes=array('novos'=>array(),
 						'novosIds'=>array(0),
 						'aguardandoAprovacao'=>array(),
 						'retorno'=>array());
-	$sql->consult($_p."pacientes","id,nome,telefone1","where codigo_bi=1 and lixo=0");
+	$sql->consult($_p."pacientes","id,nome,telefone1,foto,foto_cn","where codigo_bi=1 and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_pacientes['novos'][]=$x;
 		$_pacientes['novosIds'][]=$x->id;
 	}
 	$sql->consult($_p."agenda","*","where id_paciente in (".implode(",",$_pacientes['novosIds']).") and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
-		if($x->id_status==1 or $x->id_status==2) $pacientesNovosComAgendamento[$x->id_paciente]=1;
+		if($x->id_status==1 or $x->id_status==2) $pacientesNovosComAgendamento[$x->id_paciente]=$x;
 		if($x->id_status==5) $pacientesNovosAtendidos[$x->id_paciente]=1;
 	}
 
@@ -55,7 +75,7 @@
 
 
 
-	$sql->consult($_p."pacientes","id,nome,telefone1","where id IN (".implode(",",$pacientesComTratamentosIds).") and lixo=0");
+	$sql->consult($_p."pacientes","id,nome,telefone1,foto,foto_cn","where id IN (".implode(",",$pacientesComTratamentosIds).") and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_pacientes['aguardandoAprovacao'][]=$x;
 	}
@@ -78,7 +98,7 @@
 	}
 
 	if(count($pacientesAtendidosIds)) {
-		$sql->consult($_p."pacientes","id,nome,telefone1","where id IN (".implode(",",$pacientesAtendidosIds).") and lixo=0");
+		$sql->consult($_p."pacientes","id,nome,telefone1,foto,foto_cn","where id IN (".implode(",",$pacientesAtendidosIds).") and lixo=0");
 		//echo "where id IN (".implode(",",$pacientesAtendidosIds).") and lixo=0 $sql->rows;";die();
 		while($x=mysqli_fetch_object($sql->mysqry)) {
 			$_pacientes['retorno'][]=$x;
@@ -88,7 +108,13 @@
 
 	
 ?> 
-	
+	<script type="text/javascript">
+		const atualizaValorListasInteligentes = () => {
+
+			document.location.reload();
+
+		}
+	</script>
 	<header class="header">
 		<div class="header__content content">
 
@@ -113,10 +139,10 @@
 			
 
 			<section class="grid" style="flex:1;margin-top:40px;">
-				<div class="kanban" id="kanban">
+				<div class="kanban" id="kanban" style="grid-template-columns: repeat(4,minmax(0,4fr))">
 					
 					
-					<div class="kanban-item" style="background:">
+					<div class="kanban-item" style="background:var(--cinza5);">
 						<header>
 							<h1 class="kanban-item__titulo">Sem Agendamento</h1>
 						</header>
@@ -124,18 +150,32 @@
 							<?php
 							foreach($_pacientes['novos'] as $p) {
 								if(isset($pacientesNovosComAgendamento[$p->id])) continue;
-							?>
-								<a href="pg_pacientes_resumo.php?id_paciente=<?php echo $p->id;?>" target="_blank">
-									<h1><?php echo utf8_encode($p->nome);?> <?php echo $p->id;?></h1>
-									<p><?php echo maskTelefone($p->telefone1);?></p>
+
+								$ft='img/ilustra-usuario.jpg';
+								if(!empty($p->foto_cn)) {
+									$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$p->foto_cn;
+								} else if(!empty($p->foto)) {
+									$ft=$_wasabiURL."arqs/clientes/".$p->id.".jpg";
+								}
+							?>	
+								<a href="javascript:asideQueroAgendar(<?php echo $p->id;?>,0)" class="js-exame-item" style="padding:  0 0 0 0;display: flex;flex-direction: row;">
+									<img src="<?php echo $ft;?>" style="display: block;width: 70px;height: 70px;border-radius: 4px 0 0 4px;" />
+									<div style="padding-top:7px;">
+										<h1><?php echo utf8_encode($p->nome);?> - <?php echo $p->id;?></h1>
+										<p><?php echo maskTelefone($p->telefone1);?></p>
+									</div>
 								</a>
+								<?php /*<a href="pg_pacientes_resumo.php?id_paciente=<?php echo $p->id;?>" target="_blank">
+									<h1><?php echo utf8_encode($p->nome);?> - <?php echo $p->id;?></h1>
+									<p><?php echo maskTelefone($p->telefone1);?></p>
+								</a>*/?>
 							<?php	
 							}
 							?>
 						</article>
 					</div>
 
-					<div class="kanban-item" style="background:">
+					<div class="kanban-item" style="background:var(--cinza5);">
 						<header>
 							<h1 class="kanban-item__titulo">Com Agendamento</h1>
 						</header>
@@ -143,12 +183,29 @@
 							<?php
 							foreach($_pacientes['novos'] as $p) {
 								if(isset($pacientesNovosComAgendamento[$p->id])) {
+									$agendamento=$pacientesNovosComAgendamento[$p->id];
 									if(isset($pacientesNovosAtendidos[$p->id])) continue;
-							?>
+
+									$ft='img/ilustra-usuario.jpg';
+									if(!empty($p->foto_cn)) {
+										$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$p->foto_cn;
+									} else if(!empty($p->foto)) {
+										$ft=$_wasabiURL."arqs/clientes/".$p->id.".jpg";
+									}
+							?>	
+								<a href="javascript:asideQueroAgendar(<?php echo $p->id;?>,0)" class="js-exame-item" style="padding:  0 0 0 0;display: flex;flex-direction: row;">
+									<img src="<?php echo $ft;?>" style="display: block;width: 70px;height: 70px;border-radius: 4px 0 0 4px;" />
+									<div style="padding-top:7px;">
+										<h1><?php echo utf8_encode($p->nome);?> - <?php echo $p->id;?></h1>
+										<p><?php echo maskTelefone($p->telefone1);?></p>
+										<p style="color:var(--cinza5);"><span class="iconify" data-icon="akar-icons:calendar"></span> <?php echo date('d/m/Y - H:i',strtotime($agendamento->agenda_data));?></p>
+									</div>
+								</a>
+							<?php /*	
 								<a href="pg_pacientes_resumo.php?id_paciente=<?php echo $p->id;?>" target="_blank">
 									<h1><?php echo utf8_encode($p->nome);?> <?php echo $p->id;?></h1>
 									<p><?php echo maskTelefone($p->telefone1);?></p>
-								</a>
+								</a>*/?>
 
 							<?php	
 								}
@@ -157,25 +214,38 @@
 						</article>
 					</div>
 
-					<div class="kanban-item" style="background:">
+					<div class="kanban-item" style="background:var(--cinza5);">
 						<header>
 							<h1 class="kanban-item__titulo">Para Retorno</h1>
 						</header>
 						<article class="kanban-card" style="min-height: 100px;">
 							<?php
 							foreach($_pacientes['retorno'] as $p) {
-							?>
-								<a href="pg_pacientes_resumo.php?id_paciente=<?php echo $p->id;?>" target="_blank">
-									<h1><?php echo utf8_encode($p->nome);?> <?php echo $p->id;?></h1>
-									<p><?php echo maskTelefone($p->telefone1);?></p>
+								$ft='img/ilustra-usuario.jpg';
+								if(!empty($p->foto_cn)) {
+									$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$p->foto_cn;
+								} else if(!empty($p->foto)) {
+									$ft=$_wasabiURL."arqs/clientes/".$p->id.".jpg";
+								}
+							?>	
+								<a href="javascript:asideQueroAgendar(<?php echo $p->id;?>,0)" class="js-exame-item" style="padding:  0 0 0 0;display: flex;flex-direction: row;">
+									<img src="<?php echo $ft;?>" style="display: block;width: 70px;height: 70px;border-radius: 4px 0 0 4px;" />
+									<div style="padding-top:7px;">
+										<h1><?php echo utf8_encode($p->nome);?> - <?php echo $p->id;?></h1>
+										<p><?php echo maskTelefone($p->telefone1);?></p>
+									</div>
 								</a>
+								<?php /*<a href="pg_pacientes_resumo.php?id_paciente=<?php echo $p->id;?>" target="_blank">
+									<h1><?php echo utf8_encode($p->nome);?> - <?php echo $p->id;?></h1>
+									<p><?php echo maskTelefone($p->telefone1);?></p>
+								</a>*/?>
 							<?php	
 							}
 							?>
 						</article>
 					</div>
 
-					<div class="kanban-item" style="background:">
+					<div class="kanban-item" style="background:var(--cinza5);">
 						<header>
 							<h1 class="kanban-item__titulo">Aguardando Aprovação</h1>
 
@@ -185,13 +255,28 @@
 							<?php
 							foreach($_pacientes['aguardandoAprovacao'] as $p) {
 								$valor=isset($_tratamentosProcedimentos[$p->id])?$_tratamentosProcedimentos[$p->id]:0;
-							?>
-								<a href="pg_pacientes_resumo.php?id_paciente=<?php echo $p->id;?>" target="_blank">
-									<h1><?php echo utf8_encode($p->nome);?> <?php echo $p->id;?></h1>
+								$ft='img/ilustra-usuario.jpg';
+								if(!empty($p->foto_cn)) {
+									$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$p->foto_cn;
+								} else if(!empty($p->foto)) {
+									$ft=$_wasabiURL."arqs/clientes/".$p->id.".jpg";
+								}
+							?>	
+								<a href="javascript:asideQueroAgendar(<?php echo $p->id;?>,0)" class="js-exame-item" style="padding:  0 0 0 0;display: flex;flex-direction: row;">
+									<img src="<?php echo $ft;?>" style="display: block;width: 70px;height: 70px;border-radius: 4px 0 0 4px;" />
+									<div style="padding-top:7px;">
+										<h1><?php echo utf8_encode($p->nome);?> - <?php echo $p->id;?></h1>
+										<p><?php echo maskTelefone($p->telefone1);?></p>
+										<p>Tratamentos: <?php echo count($_pacientesTratamentos[$p->id]);?></p>
+										<p>Valor: <?php echo number_format($valor,2,",",".");?></p>
+									</div>
+								</a>
+								<?php /*<a href="pg_pacientes_resumo.php?id_paciente=<?php echo $p->id;?>" target="_blank">
+									<h1><?php echo utf8_encode($p->nome);?> - <?php echo $p->id;?></h1>
 									<p><?php echo maskTelefone($p->telefone1);?></p>
 									<p>Tratamentos: <?php echo count($_pacientesTratamentos[$p->id]);?></p>
 									<p>Valor: <?php echo number_format($valor,2,",",".");?></p>
-								</a>
+								</a>*/?>
 							<?php	
 							}
 							?>
@@ -208,8 +293,7 @@
 
 <?php 
 	
-	$apiConfig=array('paciente'=>1,
-						'proximaConsulta'=>1);
+	$apiConfig=array('queroAgendar'=>1);
 	require_once("includes/api/apiAside.php");
 
 

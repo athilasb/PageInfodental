@@ -1,0 +1,1 @@
+ALTER TABLE `ident_pacientes_evolucoes_pedidosdeexames` CHANGE `data_atulizacao` `data_atualizacao` DATETIME NOT NULL;

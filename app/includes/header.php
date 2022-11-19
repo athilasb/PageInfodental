@@ -82,6 +82,9 @@
 
 
       $_page=basename($_SERVER['PHP_SELF']);
+
+
+      
 ?>
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -151,5 +154,72 @@
 </head>
 
 <body>
+<?php
+      // verifica situação da conta infodental
+      if(basename($_SERVER['PHP_SELF'])!="index.php") {
 
+            $sql->consult("infodentalADM.infod_contas","*","where instancia='".$_ENV['NAME']."'");
+            if($sql->rows) {
+                  $conta=mysqli_fetch_object($sql->mysqry);
+                  
+                  if(empty($conta->iugu_subscription_id)) {
+                         ?>
+                       <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
+                              <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;A sua conta está sem plano. Favor regularizar &nbsp;<a href="pg_configuracoes_assinatura.php"><b><u>clicando aqui</u></b></a>
+                        </div>
+                       <?php 
+                  } else {
+                        if($conta->status=="bloqueada") {
+                              if(basename($_SERVER['PHP_SELF'])=="pg_configuracoes_assinatura.php") {
+
+                             ?>
+                             <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
+                                    <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;A sua conta está bloqueada. Para utilizar o Info Dental é preciso que você regularize a sua conta!
+                              </div>
+                             <?php 
+                              } else {
+                                    ?>
+                                    <script type="text/javascript">document.location.href='pg_configuracoes_assinatura.php';</script>
+                                    <?php
+                                    die();
+                              }
+                        } else if($conta->status=="inadimplente") {
+                             ?>
+                             <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
+                                    <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;A sua conta está inadimplente. Para evitar bloqueios&nbsp;<a href="pg_configuracoes_assinatura.php"><b><u>clique aqui</u></b></a>&nbsp;para se regularizar!
+                              </div>
+                             <?php 
+                        } else {
+                              if($conta->iugu_subscription_suspended==1) {
+                                    // verifica a quanto tempo esta suspensa
+                                    $dif = strtotime(date('Y-m-d H:i:s'))-strtotime($conta->iugu_subscription_suspended_data);
+                                    $dif /= (60 * 60 * 21);
+                                    $dif = floor($dif);
+
+                                    if($dif>=2) {
+                                          if(basename($_SERVER['PHP_SELF'])!="pg_configuracoes_assinatura.php") {
+                                           ?>
+                                          <script type="text/javascript">document.location.href='pg_configuracoes_assinatura.php';</script>
+                                          <?php
+                                          die();
+                                          }
+                                    } 
+                              ?>
+                             <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
+                                    <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;O seu plano está suspenso.  Favor regularizar &nbsp;<a href="pg_configuracoes_assinatura.php"><b><u>clicando aqui</u></b></a> 
+                              </div>
+                             <?php 
+
+                                    echo $dif;
+                              }
+                        }
+                  }
+
+            } else {
+                  echo "Sua conta não está ativa! Entre em contato com nosso time de suporte para se regularizar...";
+                  die();
+            }
+      }
+
+?>
 <section class="wrapper">

@@ -4,16 +4,301 @@
 
 		private $prefixo='',
 				$_cloudinaryURL='',
+				$_wasabiURL='',
 				$_pacientesPeriodicidade='',
 				$_codigoBI='';
 
 
 		function __construct($attr) {
+			if(isset($attr['_wasabiURL'])) $this->_wasabiURL=$attr['_wasabiURL'];
 			if(isset($attr['_cloudinaryURL'])) $this->_cloudinaryURL=$attr['_cloudinaryURL'];
 			if(isset($attr['prefixo'])) $this->prefixo=$attr['prefixo'];
 			if(isset($attr['_codigoBI'])) $this->_codigoBI=$attr['_codigoBI'];
 			if(isset($attr['_pacientesPeriodicidade'])) $this->_pacientesPeriodicidade=$attr['_pacientesPeriodicidade'];
 
+		}
+
+		// Inteligencia / Controle de Exames: retorna os pedidos aguardando, concluido e cancelados(naoRealizado)
+		function controleDeExames() {
+			$_p=$this->prefixo;
+			$sql = new Mysql();
+			$_wasabiURL=$this->_wasabiURL;
+			$_cloudinaryURL=$this->_cloudinaryURL;
+
+
+			$_pedidosDeExames=array('concluido'=>[],'aguardando'=>[],'naoRealizado'=>[]);
+			$_pacientes=$_evolucoes=$_exames=array();
+
+
+			$evolucoesIds=$pacientesIds=$examesIds=[];
+			$sql->consult($_p."pacientes_evolucoes","*","where id_tipo=6 and lixo=0 order by data_pedido desc");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_evolucoes[$x->id]=$x;
+				$evolucoesIds[]=$x->id;
+				$pacientesIds[]=$x->id_paciente;
+			}
+
+			if(count($evolucoesIds)>0) {
+				$sql->consult($_p."pacientes_evolucoes_pedidosdeexames","*","where id_evolucao IN (".implode(",",$evolucoesIds).") and lixo=0 order by id desc");
+				if($sql->rows) { 
+					$regs=array();
+					$pacientesConcluidosIds=array();
+					$pacientesConcluidosAgendamentos=array();
+					$evolucoesPedidosDeExamesIds=array();
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+
+						$evolucoesPedidosDeExamesIds[]=$x->id;
+
+						// cancelado so aparecera durante 30 apos o cancelamento
+						if($x->status=="naoRealizado") {
+
+							$diasDoCancelamento = strtotime(date('Y-m-d H:i:s')) - strtotime($x->data_atualizacao);
+							$diasDoCancelamento /= (60 * 60 * 24);
+							$diasDoCancelamento = floor($diasDoCancelamento);
+
+							if($diasDoCancelamento>=30) {
+								continue;
+							}
+
+						} else if($x->status=="concluido") {
+							$pacientesConcluidosIds[]=$x->id_paciente;
+							$pacientesConcluidosAgendamentos[$x->id_paciente][]=$x;
+						}
+
+						$regs[$x->id]=$x;
+					}
+
+					if(count($pacientesConcluidosIds)>0) {
+						$sql->consult($_p."agenda","*","where id_paciente IN (".implode(",",$pacientesConcluidosIds).")  and lixo=0 order by agenda_data desc");
+						if($sql->rows) {
+
+							$examesExcluir=array();
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+
+								// verifica se tem solicitacao de exame que foi concluido
+								if(isset($pacientesConcluidosAgendamentos[$x->id_paciente])) {
+									$examesConcluidos=$pacientesConcluidosAgendamentos[$x->id_paciente];
+
+									// verifica para cada exame concluido se teve atendimento
+									foreach($examesConcluidos as $e) {
+
+										// se a data do agendamento for maior que a data da realização do exame
+										if(strtotime($x->agenda_data)>strtotime($e->data_atualizacao)) {
+											
+											// se o status for concluido, remove da listagem
+											if($x->id_status==5) {
+												//echo "============================> ".$e->status." / ".$e->id." / ".$e->data_atualizacao." - ".$x->agenda_data." $x->id_status / $e->id_evolucao<BR>"; // 2022-10-29 07:55:49 - 2022-10-29 09:00:00
+												//unset($regs[$e->id]);
+												$examesExcluir[]=$e->id;
+												//echo "$e->id ex\n\n";
+											}
+											else if($x->id_status==1 or $x->id_status==2) {
+												//echo "$e->id add\n\n";
+												$regs[$e->id]->agendamentoFuturo=$x->agenda_data;
+											
+											} 
+										}
+									}
+
+
+								}
+							}
+						}
+					}
+
+					// consulta exames anexados
+					$_pedidosDeExamesAnexos=array();
+					if(count($evolucoesPedidosDeExamesIds)>0) {
+						$sql->consult($_p."pacientes_evolucoes_pedidosdeexames_anexos","*","where id_evolucao_pedidodeexame IN (".implode(",",$evolucoesPedidosDeExamesIds).") and lixo=0");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							if(!isset($_pedidosDeExamesAnexos[$x->id_evolucao_pedidodeexame])) $_pedidosDeExamesAnexos[$x->id_evolucao_pedidodeexame]=0;
+							$_pedidosDeExamesAnexos[$x->id_evolucao_pedidodeexame]++;
+						}
+					}
+
+
+					foreach($regs as $x) {
+						$_pedidosDeExames[$x->status][$x->id_evolucao][]=$x;
+						$examesIds[]=$x->id_exame;
+					}
+
+				}
+
+				$sql->consult($_p."pacientes","id,nome,foto,foto_cn","where id IN (".implode(",",$pacientesIds).") and lixo=0");
+				if($sql->rows) {
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$_pacientes[$x->id]=$x;
+					}
+				}
+
+				$sql->consult($_p."parametros_examedeimagem","*","where id IN (".implode(",",$examesIds).")");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_exames[$x->id]=$x;
+				}
+			}
+
+
+			// monta arrays
+			$pedidos=array('aguardando'=>[],'concluido'=>[],'naoRealizado'=>[]);
+			
+			if(isset($_pedidosDeExames['aguardando'])) {
+				foreach($_pedidosDeExames['aguardando'] as $id_evolucao=>$x) {
+					if(isset($_evolucoes[$id_evolucao])) {
+						$evolucao=$_evolucoes[$id_evolucao];
+
+						$dif = strtotime(date('Y-m-d'))-strtotime($evolucao->data_pedido);
+						$dif = floor($dif/(60 * 60 * 24));
+						$alertaMaisDe8Dias=($dif>=8)?1:0;
+
+						if(isset($_pacientes[$evolucao->id_paciente])) {
+							$paciente=$_pacientes[$evolucao->id_paciente];
+
+							$ft='';
+							if(!empty($paciente->foto_cn)) {
+								$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+							} else if(!empty($paciente->foto)) {
+								$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+							}
+
+
+							$anexos=0;
+							foreach($x as $y) {
+								// verifica agendamento futuro
+								if(isset($y->agendamentoFuturo)) {
+									$agendamentoFuturo=date('d/m/Y - H:i',strtotime($y->agendamentoFuturo));
+								}
+
+								// verifica se possui anexos
+								if(isset($_pedidosDeExamesAnexos[$y->id])) {
+									$anexos+=$_pedidosDeExamesAnexos[$y->id];
+								}
+							}
+
+
+							$clinica = isset($_clinicas[$evolucao->id_clinica]) ? encodingToJson($_clinicas[$evolucao->id_clinica]->nome_fantasia) : '';
+
+							$pedidos['aguardando'][]=array('id_evolucao'=>$evolucao->id,
+															'id_evolucao_pedidodeexame'=>$x[0]->id,
+															'data'=>date('d/m/Y',strtotime($evolucao->data_pedido)),
+															'paciente'=>encodingToJson($paciente->nome),
+															'ft'=>$ft,
+															'exames'=>count($x),
+															'anexos'=>$anexos,
+															'alerta'=>$alertaMaisDe8Dias,
+															'clinica'=>$clinica);
+						}
+					}
+				}
+			}	
+			if(isset($_pedidosDeExames['concluido'])) {
+
+				// para ordenar em ordem de agendamento
+				$preLista=[];
+
+				foreach($_pedidosDeExames['concluido'] as $id_evolucao=>$x) {
+					
+					if(isset($_evolucoes[$id_evolucao])) {
+						$evolucao=$_evolucoes[$id_evolucao];
+						if(isset($_pacientes[$evolucao->id_paciente])) {
+							//echo $evolucao->id."ww\n";
+							$paciente=$_pacientes[$evolucao->id_paciente];
+							$clinica = isset($_clinicas[$evolucao->id_clinica]) ? encodingToJson($_clinicas[$evolucao->id_clinica]->nome_fantasia) : '';
+
+							$ft='';
+							if(!empty($paciente->foto_cn)) {
+								$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+							} else if(!empty($paciente->foto)) {
+								$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+							}
+
+							$agendamentoFuturo='';
+							$anexos=0;
+							foreach($x as $y) {
+
+
+								$index=0;
+								// verifica agendamento futuro
+								if(isset($y->agendamentoFuturo)) {
+									$agendamentoFuturo=date('d/m/Y - H:i',strtotime($y->agendamentoFuturo));
+									$index=strtotime($y->agendamentoFuturo);
+								}
+
+								// verifica se possui anexos
+								if(isset($_pedidosDeExamesAnexos[$y->id])) {
+									$anexos+=$_pedidosDeExamesAnexos[$y->id];
+								}
+							}
+
+
+							do {
+								$index++;
+							} while(isset($preLista[$index]));
+
+							$preLista[$index]=array('index'=>$index,'id_evolucao'=>$evolucao->id,
+															'id_evolucao_pedidodeexame'=>$x[0]->id,
+															'data'=>date('d/m/Y',strtotime($evolucao->data_pedido)),
+															'paciente'=>encodingToJson($paciente->nome),
+															'ft'=>$ft,
+															'exames'=>count($x),
+															'clinica'=>$clinica,
+															'anexos'=>$anexos,
+															'agendamentoFuturo'=>$agendamentoFuturo);
+						} 
+					} 
+				}
+
+				// ordena lista 
+				krsort($preLista);
+				foreach($preLista as $x) {
+					$pedidos['concluido'][]=$x;
+				}
+			}
+
+			if(isset($_pedidosDeExames['naoRealizado'])) {
+				foreach($_pedidosDeExames['naoRealizado'] as $id_evolucao=>$x) {
+					if(isset($_evolucoes[$id_evolucao])) {
+						$evolucao=$_evolucoes[$id_evolucao];
+						if(isset($_pacientes[$evolucao->id_paciente])) {
+							$paciente=$_pacientes[$evolucao->id_paciente];
+							$clinica = isset($_clinicas[$evolucao->id_clinica]) ? encodingToJson($_clinicas[$evolucao->id_clinica]->nome_fantasia) : '';
+
+							$ft='';
+							if(!empty($paciente->foto_cn)) {
+								$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+							} else if(!empty($paciente->foto)) {
+								$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+							}
+
+
+							$anexos=0;
+							foreach($x as $y) {
+								// verifica agendamento futuro
+								if(isset($y->agendamentoFuturo)) {
+									$agendamentoFuturo=date('d/m/Y - H:i',strtotime($y->agendamentoFuturo));
+								}
+
+								// verifica se possui anexos
+								if(isset($_pedidosDeExamesAnexos[$y->id])) {
+									$anexos+=$_pedidosDeExamesAnexos[$y->id];
+								}
+							}
+
+							$pedidos['naoRealizado'][]=array('id_evolucao'=>$evolucao->id,
+															'id_evolucao_pedidodeexame'=>$x[0]->id,
+															'data'=>date('d/m/Y',strtotime($evolucao->data_pedido)),
+															'paciente'=>encodingToJson($paciente->nome),
+															'ft'=>$ft,
+															'exames'=>count($x),
+															'anexos'=>$anexos,
+															'clinica'=>$clinica);
+						}
+					}
+				}
+			}
+
+			$this->_pedidosDeExames=$_pedidosDeExames;
+			$this->pedidos=$pedidos;
+			return true;
 		}
 
 
@@ -360,7 +645,7 @@
 				$pacientesDesmarcados=array();
 
 				// busca pacientes desmarcados/faltou nos ultimos 90 dias 
-					$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL 90 DAY and id_status IN (4,3) and lixo=0 order by agenda_data desc");
+					$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE agenda_data > NOW() - INTERVAL 90 DAY and id_status IN (4,3) and lixo=0 order by agenda_data desc");
 					if($sql->rows) {
 						while($x=mysqli_fetch_object($sql->mysqry)) {
 							$pacientesDesmarcadosIds[$x->id_paciente]=$x->id_paciente;
@@ -393,7 +678,7 @@
 					$pacientesDesmarcadosIds=$pacientesAtendidosIds;
 
 					// remove pacientes que desmarcaram e que foram agendados novamente
-						$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL 360 DAY and id_paciente IN (".implode(",",$pacientesDesmarcadosIds).") and id_status IN (1,2,6,7,5) and lixo=0 order by agenda_data desc");
+						$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE agenda_data > NOW() - INTERVAL 360 DAY and id_paciente IN (".implode(",",$pacientesDesmarcadosIds).") and id_status IN (1,2,6,7,5) and lixo=0 order by agenda_data desc");
 						while($x=mysqli_fetch_object($sql->mysqry)) {
 
 							if(isset($pacientesDesmarcados[$x->id_paciente])) {
@@ -496,7 +781,6 @@
 				}
 
 
-
 			# Pacientes em contencao (precisa retornar) sem horario
 
 				$pacientesContencaoIds=array();
@@ -504,7 +788,7 @@
 
 
 				// busca os agendamentos dos ultimos 720 dias com status atendido
-					$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE data > NOW() - INTERVAL 720 DAY and id_status=5 and lixo=0 order by agenda_data desc");
+					$sql->consult($_p."agenda","id,id_paciente,agenda_data","WHERE agenda_data > NOW() - INTERVAL 720 DAY and id_status=5 and lixo=0 order by agenda_data desc");
 					$pacientesAtendidosQtdVezes=array(); // contabiliza quantas vezes o paciente foi atendido (id_status=5)
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 

@@ -74,6 +74,9 @@ WORKDIR /var/app
 # Install new CLI
 RUN npm install -g prisma 
 
+# Update Php Settings
+COPY updates.ini /usr/local/etc/php/conf.d/docker-php-updates.ini
+
 # Invoke via npx
 RUN npx prisma --help
 RUN npm install

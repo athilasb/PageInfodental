@@ -271,7 +271,7 @@
 
 
 	$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIds).") and status_evolucao NOT IN ('cancelado','finalizado') and lixo=0");
-
+	//echo $sql->rows;die();
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		if(isset($_procedimentosDeTratamentosAprovados[$x->id_tratamento_procedimento])) {
 			$procAprovado=$_procedimentosDeTratamentosAprovados[$x->id_tratamento_procedimento];
@@ -453,6 +453,8 @@
 
 
 		if(isset($_POST['procedimentos']) and !empty($_POST['procedimentos'])) {
+
+			var_dump($_POST['historicoGeral']);die();
 			$procedimentosJSON = json_decode($_POST['procedimentos']);
 			$historicoGeral = json_decode($_POST['historicoGeral']);
 

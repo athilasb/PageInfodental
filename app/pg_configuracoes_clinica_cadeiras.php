@@ -131,7 +131,7 @@
 			if(is_object($cadeira)) {
 
 				$_colaboradores=array();
-				$sql->consult($_p."colaboradores","id,nome","where lixo=0");
+				$sql->consult($_p."colaboradores","id,nome","where lixo=0 and contratacaoAtiva=1");
 				while ($x=mysqli_fetch_object($sql->mysqry)) {
 					$_colaboradores[$x->id]=$x;
 				}

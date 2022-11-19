@@ -1740,11 +1740,7 @@
 						$idade = $now->diff($dob)->y;
 					} else $idade=0;
 
-					$ft='';
-					if(!empty($paciente->foto_cn)) {
-						$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
-					}
-
+				
 
 					$agendamentosFuturos=array();
 
@@ -1785,6 +1781,12 @@
 					}
 				
 
+					$ft='img/ilustra-usuario.jpg';
+					if(!empty($paciente->foto_cn)) {
+						$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+					} else if(!empty($paciente->foto)) {
+						$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+					}
 
 					$rtn=array('success'=>true,
 								'data'=>array('id_paciente'=>$paciente->id,
@@ -3364,10 +3366,9 @@
 																$('#js-aside-pacienteRelacionamento select[name=id_cadeira]').val('');
 																$('#js-aside-pacienteRelacionamento select.js-profissionais').val('');
 																$('#js-aside-pacienteRelacionamento select[name=agenda_hora]').val('');
-
+																$('#js-aside-pacienteRelacionamento aside-close').click();
 																atualizaValorListasInteligentes();
 																swal({title: "Sucesso!", text: 'Agendamento realizado com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-																	$('.aside-close').click();
 																});
 
 															} else if(rtn.error) {

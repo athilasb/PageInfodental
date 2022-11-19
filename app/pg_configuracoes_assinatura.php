@@ -1,4 +1,68 @@
 <?php
+	if(isset($_POST['ajax'])) {
+
+
+		require_once("lib/conf.php");
+		require_once("usuarios/checa.php");
+
+
+		header("Content-type: application/json");
+		$rtn=array();
+
+		$sql = new Mysql();
+
+		if($_POST['ajax']=="cartoesAdicionar") {
+
+			$ultimosDigitos = (isset($_POST['ultimosDigitos']) and !empty($_POST['ultimosDigitos'])) ? $_POST['ultimosDigitos'] : '';
+			$bandeira = (isset($_POST['bandeira']) and !empty($_POST['bandeira'])) ? $_POST['bandeira'] : '';
+			$cc_token = (isset($_POST['cc_token']) and !empty($_POST['cc_token'])) ? $_POST['cc_token'] : '';
+
+			$erro='';
+			if(empty($ultimosDigitos)) $erro='Os últimos dígitos do cartão não foram enviados!';
+			else if(empty($bandeira)) $erro='Não foi possível capturar a bandeira do cartão!';
+			else if(empty($cc_token)) $erro='Algum erro ocorreu durante a geração do token do cartão!';
+
+			if(empty($erro)) {
+
+				$vsqlCartao="data=now(),
+								instancia='".addslashes($_ENV['NAME'])."',
+								bandeira='".addslashes(strtoupperWLIB($bandeira))."',
+								ultimosDigitos='".addslashes($ultimosDigitos)."',
+								cc_token='".addslashes($cc_token)."'";
+
+				$sql->add("infodentalADM.infod_contas_cartoes",$vsqlCartao);
+
+				$rtn=array('success'=>true);
+
+			} else {
+				$rtn=array('success'=>false,
+							'error'=>$erro);
+			}
+		} else if($_POST['ajax']=="cartoesTitular") {
+
+			$cartao = '';
+			if(isset($_POST['id_cartao']) and is_numeric($_POST['id_cartao'])) {
+				$sql->consult("infodentalADM.infod_contas_cartoes","*","where id=".$_POST['id_cartao']." and instancia='".$_ENV['NAME']."'");
+				if($sql->rows) {
+					$cartao=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+			if(is_object($cartao)) {
+
+				$sql->update("infodentalADM.infod_contas","cc_token='$cartao->cc_token'","where instancia='".$_ENV['NAME']."'");
+
+				$rtn=array('success'=>true);
+
+			} else {
+				$rtn=array('success'=>false,'error'=>'Cartão não encontrado!');
+			}
+		}
+
+		echo json_encode($rtn);
+		die();
+	}
+
 	include "includes/header.php";
 	include "includes/nav.php";
 
@@ -32,6 +96,15 @@
 		if($iugu->assinaturaConsultar($cnt->iugu_subscription_id)) {
 			if(isset($iugu->response->id)) {
 				$subscription=$iugu->response;
+
+				
+				$assinatura = new Assinatura();
+
+				$attr=array('instancia'=>$_ENV['NAME'],
+							'subscription'=>$subscription);
+				$assinatura->validarAssinatura($attr);
+
+				
 			}
 		}
 	}
@@ -42,6 +115,20 @@
 			if($iugu->assinaturaSuspender($cnt->iugu_subscription_id)) {
 				$sql->update("infodentalADM.infod_contas","iugu_subscription_id=''","where instancia='$cnt->instancia'");
 				$jsc->jAlert("Assinatura foi suspensa com sucesso!","sucesso","document.location.href='$_page'");
+				die();
+			} else {
+				$jsc->jAlert("Algum erro ocorreu durante a suspensão desta assinatura!","erro","");
+			}
+
+		} else {
+			$jsc->jAlert("Sua conta não possui nenhuma assinatura!","erro","");
+		}
+	} else if(isset($_GET['reativar'])) {
+		if(is_object($subscription)) {
+
+			if($iugu->assinaturaAtivar($cnt->iugu_subscription_id)) {
+				//$sql->update("infodentalADM.infod_contas","iugu_subscription_id='$subscription_id'","where instancia='$cnt->instancia'");
+				$jsc->jAlert("Assinatura foi ativada com sucesso!","sucesso","document.location.href='$_page'");
 				die();
 			} else {
 				$jsc->jAlert("Algum erro ocorreu durante a suspensão desta assinatura!","erro","");
@@ -140,7 +227,8 @@
 					} else {
 
 						$attr = array('plan_identifier'=>$plan_identifier,
-										'customer_id'=>$customer_id);
+										'customer_id'=>$customer_id,
+										'expires_at'=>date('Y-m-d H:i:s',strtotime(" + 7 days")));
 						if($iugu->assinaturaCriar($attr)) {
 
 							$subscription_id=$iugu->response->id;
@@ -199,7 +287,7 @@
 				<div class="box box-col">
 
 					<?php
-					require_once("includes/submenus/subConfiguracoesClinica.php");
+					require_once("includes/submenus/subConfiguracoesAssinatura.php");
 					?>
 
 					<div class="box-col__inner1">
@@ -309,8 +397,16 @@
 								</div>
 								<br />
 								<center>
-										<a href="<?php echo $_page."?cancelar=1";?>" class="button js-confirmarDeletar" data-msg="Tem certeza que deseja cancelar a assinatura?" style="color:red;border-color:red"><span class="iconify" data-icon="ep:close-bold"></span> 
-									Cancelar Assinatura</a>
+									<?php
+									if($subscription->suspended===true) {
+									?>
+										<a href="<?php echo $_page."?reativar=1";?>" class="button" style="color:var(--verde)"><span class="iconify" data-icon="fluent:checkmark-12-filled"></span> 
+									Reativar Assinatura</a>
+									<?php
+									}
+									?>
+										<a href="<?php echo $_page."?cancelar=1";?>" class="button js-confirmarDeletar" data-msg="Tem certeza que deseja cancelar a assinatura?"><span class="iconify" data-icon="ep:close-bold"></span> 
+									Suspender Assinatura</a>
 								</center>
 								<?php
 								} else {
@@ -369,24 +465,24 @@
 												<dd><input type="email" name="email" value="<?php echo $values['email'];?>" class="obg" /></dd>
 											</dl>
 										</div>
-										<div class="colunas4">
+										<?php /*<div class="colunas4">
 											<dl>
 												<dt>CEP</dt>
-												<dd><input type="text" name="cep" value="<?php echo $values['cep'];?>" class="" /></dd>
+												<dd><input type="text" name="cep" value="<?php echo $values['cep'];?" class="" /></dd>
 											</dl>
 											<dl>
 												<dt>Logradouro</dt>
 												<dd>
-													<input type="text" name="logradouro" class="obg" value="<?php echo $values['logradouro'];?>" />
+													<input type="text" name="logradouro" class="obg" value="<?php echo $values['logradouro'];?" />
 												</dd>
 											</dl>
 											<dl>
 												<dt>Número</dt>
-												<dd><input type="text" name="numero" value="<?php echo $values['numero'];?>" class="obg" /></dd>
+												<dd><input type="text" name="numero" value="<?php echo $values['numero'];>" class="obg" /></dd>
 											</dl>
 											<dl>
 												<dt>Complemento</dt>
-												<dd><input type="text" name="complemento" value="<?php echo $values['complemento'];?>" class="" /></dd>
+												<dd><input type="text" name="complemento" value="<?php echo $values['complemento'];?" class="" /></dd>
 											</dl>
 										</div>
 
@@ -395,45 +491,94 @@
 											<dl>
 												<dt>Bairro</dt>
 												<dd>
-													<input type="text" name="bairro" class="obg" value="<?php echo $values['bairro'];?>" />
+													<input type="text" name="bairro" class="obg" value="<?php echo $values['bairro'];?" />
 												</dd>
 											</dl>
 											<dl>
 												<dt>Estado</dt>
 												<dd>
-													<input type="text" name="estado" class="obg" value="<?php echo $values['estado'];?>" />
+													<input type="text" name="estado" class="obg" value="<?php echo $values['estado'];?" />
 												</dd>
 											</dl>
 											<dl>
 												<dt>Cidade</dt>
 												<dd>
-													<input type="text" name="cidade" class="obg" value="<?php echo $values['cidade'];?>" />
+													<input type="text" name="cidade" class="obg" value="<?php echo $values['cidade'];?" />
 												</dd>
 											</dl>
-										</div>
+										</div>*/?>
 										
 									</div>
 							</fieldset>
 
-							
+							<script type="text/javascript">
+								$(function(){
+									$('.js-cartao-titular').click(function(){
+
+										let obj = $(this);
+										let id_cartao = $(this).attr('data-id_cartao');
+
+										let data = `ajax=cartoesTitular&id_cartao=${id_cartao}`
+
+													$('.js-cartao-titular').prop('checked',false);
+										$.ajax({
+											type:"POST",
+											data:data,
+											success:function(rtn) {
+												if(rtn.success) {
+													$('.js-cartao-titular').prop('checked',false);
+													$('.js-cartao-titular').parent().parent().parent().find('.list1__border').css("color","");
+													obj.prop('checked',true);
+													obj.parent().parent().parent().find('.list1__border').css("color","green");
+												} else if(rtn.error) {
+													swal({title: "Erro", text: rtn.error, html:true, type:"error", confirmButtonColor: "#424242"});
+												} else {	
+													swal({title: "Erro", text: 'Algum erro ocorreu durante a alteração de titularidade', html:true, type:"error", confirmButtonColor: "#424242"});
+												}
+											}
+										})
+
+									});
+								});
+							</script>
 							<fieldset>
 								
 								<legend>Cartão de Crédito</legend>
 
 								<a href="javascript:;" class="button button_main js-btn-novoCartao" data-loading="0" style="float:right"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Novo Cartão</span></a>
 
+								<?php
+								$conta='';
+								$sql->consult("infodentalADM.infod_contas","*","where instancia='".$_ENV['NAME']."'");
+								if($sql->rows) {
+									$conta=mysqli_fetch_object($sql->mysqry);
+								}
+
+								$sql->consult("infodentalADM.infod_contas_cartoes","*","where instancia='".$_ENV['NAME']."' and lixo=0 order by data desc");
+								if($sql->rows==0) {
+									echo '<p style="text-align:center">Nenhum cartão cadastrado!</p>';
+								} else {
+								?>
 								<div class="list1">
 									<table>
+									<?php
+									while($x=mysqli_fetch_object($sql->mysqry)) {
+										$titular=0;
+										if($x->cc_token==$conta->cc_token) $titular=1;
+									?>
 										<tr class="js-item">
-											<td class="list1__border" style="color:green"></td>
-											<td>MASTERCARD **** 1440</td>
+											<td class="list1__border" style="color:<?php echo $titular==1?"green":"";?>"></td>
+											<td><?php echo $x->bandeira." **** ".$x->ultimosDigitos;?></td>
+											<td style="width:50px;"><label><input type="checkbox" data-id_cartao="<?php echo $x->id;?>" class="input-switch js-cartao-titular"<?php echo $titular==1?" checked":"";?> /> </label></td>
 										</tr>
-										<tr class="js-item">
-											<td class="list1__border" style="color:"></td>
-											<td>VISA **** 1145</td>
-										</tr>
+									<?php
+									}
+									?>
 									</table>
 								</div>
+								<?php
+								}
+								?>
 							</fieldset>
 
 							<fieldset>
@@ -512,6 +657,7 @@
 			$('.js-btn-novoCartao').click(function(){
 				$(".aside-cartao").fadeIn(100,function() {
 					$(".aside-cartao .aside__inner1").addClass("active");
+					$('.aside-cartao input[name=expiration]').inputmask("99/99");
 				});
 			});
 
@@ -541,20 +687,21 @@
 
 
 
-						let number = numero($('input[name=number]').val());
+						let number = ($('input[name=number]').val());
 						let expiration = $('input[name=expiration]').val().split('/');
 						let expiration_mes = expiration[0] ? expiration[0] : '';
 						let expiration_ano = expiration[1] ? expiration[1] : '';
 						let verification_value = $('input[name=verification_value]').val();
 						let full_name = $('input[name=full_name]').val().split(' ');
 						let first_name = full_name[0];
-						let apelido = $('input[name=apelido]').val();
-						let email = $('input[name=email]').val();
 
 						let last_name = '';
 						for(var i = 0;i<full_name.length; i++) {
 							if(i>0) last_name+=full_name[i]+' ';
 						}
+
+
+						bandeira = Iugu.utils.getBrandByCreditCardNumber(number);;
 
 						if(Iugu.utils.validateCreditCardNumber(number)===false) {
 							erro='Número de cartão inválido!';
@@ -568,7 +715,6 @@
 							swal({title: "Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 						} else {
 
-							alert('chegou aqui');return;
 							cc = Iugu.CreditCard(number,expiration_mes,expiration_ano,first_name,last_name,verification_value);
 
 							if(cc.valid()===false) {
@@ -589,21 +735,20 @@
 								    } else {
 
 								    	cc_token = response.id;
+								    	ultimosDigitos = number.substr(-4,4);
 
-								    	let data = `act=pagamentosAdicionarCartao&id_cliente=${id_cliente}&email=${email}&cc_token=${cc_token}&token=${vfapiToken}&apelido=${apelido}`;
-								    
-
+								    	let data = `ajax=cartoesAdicionar&ultimosDigitos=${ultimosDigitos}&bandeira=${bandeira}&cc_token=${cc_token}`;
+								   
 										obj.html(`<span class="iconify" data-icon="eos-icons:three-dots-loading"></span> Criando forma de pagamento...`);
 								        $.ajax({
 								        	type:"POST",
 								        	data:data,
-											url:vfapiURL,
 								        	success:function(rtn){
 								        		if(rtn.success===true) {
 													/*swal({title: "Sucesso", text: "Cartão cadastrado com sucesso!<br /><br />Agora valide o cartão para poder utilizá-lo!", html:true, type:"success", confirmButtonColor: "#424242"},function(){
 														document.location.href='pagamentos/';
 													});*/
-													document.location.href='pagamentos/';
+													document.location.href='pg_configuracoes_assinatura.php';
 								        		} else if(rtn.error) {
 													swal({title: "Erro", text: rtn.error, html:true, type:"error", confirmButtonColor: "#424242"});
 								        		} else {
@@ -630,24 +775,7 @@
 				$(this).removeClass('erro')
 			})
 
-			$('input[name=number]').keyup(function(){
-				let number = numero($(this).val());
-				if(number.length>=4) {
-					bandeira = Iugu.utils.getBrandByCreditCardNumber(number);
-					/*if(bandeira=="visa") {
-						$('.js-dd-bandeira').html(`<span class="iconify" data-icon="logos:visa"></span>`);
-					} else if(bandeira=="mastercard") {
-						$('.js-dd-bandeira').html(`<span class="iconify" data-icon="logos:mastercard"></span>`);
-
-					} else if(bandeira=="amex") {
-						$('.js-dd-bandeira').html(`<span class="iconify" data-icon="logos:amex"></span>`);
-					} else {*/
-						$('.js-dd-bandeira').html(bandeira);
-					//}
-				} else {
-					$('.js-dd-bandeira').html(``);
-				}
-			})
+			
 		})
 	</script>
 
@@ -678,21 +806,21 @@
 					<div class="colunas4">
 						<dl class="dl2">
 							<dt>Número do Cartão</dt>
-							<dd><input type="text" name="numero" class="obg" data-msg="Digite o número do cartão" /></dd>	
+							<dd><input type="text" name="number" class="obg" data-msg="Digite o número do cartão" /></dd>	
 						</dl>
 						<dl class="dl2">
 							<dt>Nome impresso no Cartão</dt>
-							<dd><input type="text" name="nome" placeholder="Joao A Silva" class="obg" data-msg="Digite o nome impresso no cartão" /></dd>	
+							<dd><input type="text" name="full_name" placeholder="Joao A Silva" class="obg" data-msg="Digite o nome impresso no cartão" style="text-transform:uppercase;" /></dd>	
 						</dl>
 					</div>
 					<div class="colunas4">
 						<dl class="">
 							<dt>Validade</dt>
-							<dd><input type="text" name="validade" placeholder="mm/aa" class="obg" data-msg="Digite a Data de Validade do cartão" /></dd>	
+							<dd><input type="text" name="expiration" placeholder="mm/aa" class="obg" data-msg="Digite a Data de Validade do cartão" /></dd>	
 						</dl>
 						<dl>
 							<dt>CVV</dt>
-							<dd><input type="text" name="cvv" placeholder="123" class="obg" data-msg="Digite o código CVV do cartão" maxlength="3" /></dd>	
+							<dd><input type="number" name="verification_value" placeholder="123" class="obg" data-msg="Digite o código CVV do cartão" maxlength="3" /></dd>	
 						</dl>
 					</div>
 				</fieldset>

@@ -227,6 +227,36 @@
 			$_atestadosFins[$x->id]=$x;
 		}
 
+	// procedimentos
+		$_procedimentosEvoluidos=$_procedimentosEvoluidosProcedimentos=array();
+		if(isset($evolucoesIds[2])) {
+			$procedimentosIds=array();
+			$sql->consult($_p."pacientes_evolucoes_procedimentos","*","where id_evolucao IN (".implode(",",$evolucoesIds[2]).")");
+			if($sql->rows) {
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_procedimentosEvoluidos[$x->id_evolucao][]=$x;
+					$procedimentosIds[]=$x->id_procedimento;
+				}
+			}
+
+
+			/// 2022-11-07 -> vincular id_evolucao no historico de obs e retornar no prontuario somente o historico da evolucao
+			/*$procedimentosIds=array();
+			$sql->consult($_p."pacientes_evolucoes_procedimentos_historico","*","where id_evolucao IN (".implode(",",$evolucoesIds[2]).")");
+			if($sql->rows) {
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_procedimentosEvoluidos[$x->id_evolucao][]=$x;
+					$procedimentosIds[]=$x->id_procedimento;
+				}
+			}*/
+
+			if(count($procedimentosIds)>0) {
+				$sql->consult($_p."parametros_procedimentos","id,titulo","where id IN (".implode(",",$procedimentosIds).")");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_procedimentosEvoluidosProcedimentos[$x->id]=$x;
+				}
+			}
+		}
 
 ?>
 
@@ -386,6 +416,7 @@
 												<?php
 												}
 											}
+
 											// atestado
 											else if($eTipo->id==4) {
 												if(isset($_atestados[$e->id])) {
@@ -517,6 +548,51 @@
 												</div>			
 												<?php
 												}
+											}
+
+											// procedimentos
+											else if($eTipo->id==2) {
+												?>
+												<div class="list-toggle-topics">
+												<?php
+												foreach($_procedimentosEvoluidos[$e->id] as $pe) {
+													if($pe->id_procedimento==0) {
+														?>
+														<p>
+															<strong>Evolução Geral:</strong>
+															<span style="colocar:var(--cinza4);">
+																<?php echo utf8_encode($pe->obs);?>
+															</span>
+														</p>
+														<?php
+													} else {
+														if(isset($_procedimentosEvoluidosProcedimentos[$pe->id_procedimento])) {
+
+															$status='';
+															if($pe->status=="iniciar") $status="Não iniciado";
+															else if($pe->status=="iniciado") $status="Em Tratamento";
+															else if($pe->status=="finalizado") $status="Finalizado";
+															else if($pe->status=="cancelado") $status="Cancelado";
+
+															$procedimento=$_procedimentosEvoluidosProcedimentos[$pe->id_procedimento];
+															?>
+															<div style="display: flex;justify-content: space-between;">
+																<p>
+																	<strong><?php echo trim(utf8_encode($procedimento->titulo));?>:</strong>
+																	<?php echo utf8_encode($pe->opcao);?>
+																	<?php echo utf8_encode($pe->obs);?>
+																</p>
+																<span style="background:var(--cinza5);color:#FFF;padding:2px;border-radius:5px;font-size: 12px;"><?php echo $status;?></span>
+															</div>
+															<?php
+															
+														}
+													}
+												}
+												
+												?>
+												</div>
+												<?php
 											}
 
 
@@ -749,7 +825,8 @@
 						'pedidoExame'=>1,
 						'receituario'=>1,
 						'proximaConsulta'=>1,
-						'documentos'=>1);
+						'documentos'=>1,
+						'procedimentos'=>1);
 	
 	require_once("includes/api/apiAsidePaciente.php");
 

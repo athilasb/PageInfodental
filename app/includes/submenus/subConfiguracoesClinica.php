@@ -11,8 +11,9 @@
 		<i class="iconify" data-icon="ic:round-airline-seat-recline-extra"></i>
 		<p>Cadeira</p>
 	</a>
+	<?php /*
 	<a href="pg_configuracoes_pagamentos.php" class="list5-item<?php echo basename($_SERVER['PHP_SELF'])=="pg_configuracoes_pagamentos.php"?" active":"";?>">
 		<i class="iconify" data-icon="ic:baseline-attach-money"></i>
 		<p>Pagamentos</p>
-	</a>
+	</a>*/ ?>
 </div>

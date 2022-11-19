@@ -411,16 +411,45 @@
 
 								echo "<center>$msg</center>";
 							} else {
+
+								$registros=$procedimentosIds=array();
+								while($x=mysqli_fetch_object($sql->mysqry)) {
+									$registros[]=$x;
+									$procedimentosIds[]=$x->id;
+								}
+
+								if(count($procedimentosIds)>0) {
+									$sql->consult($_table."_planos","*","where id_procedimento IN (".implode(",",$procedimentosIds).") and lixo=0");
+									if($sql->rows) {
+										while($x=mysqli_fetch_object($sql->mysqry)) {
+											if(!isset($_planos[$x->id_procedimento])) {
+												$_planos[$x->id_procedimento]=$x;
+											}
+										}
+									}
+								}
+
+
 							?>	
 								<div class="list1">
 									<table>
 										<?php
-										while($x=mysqli_fetch_object($sql->mysqry)) {
+										foreach($registros as $x) {
+
+											$plano='';
+											$obs='-';
+											if(isset($_planos[$x->id])) {
+												$plano=$_planos[$x->id];
+												$valor=$plano->valor;
+												$obs=utf8_encode($plano->obs);
+											}
 										?>
 										<tr class="js-item" data-id="<?php echo $x->id;?>">
 											<td><h1><strong><?php echo utf8_encode($x->titulo);?></strong></h1></td>
 											<td><?php echo isset($_regioes[$x->id_regiao])?utf8_encode($_regioes[$x->id_regiao]->titulo):"-";?></td>
 											<td><?php echo isset($_especialidades[$x->id_regiao])?utf8_encode($_especialidades[$x->id_regiao]->titulo):"-";?></td>
+											<td><?php echo number_format($valor,2,",",".");?></td>
+											<td><?php echo $obs;?></td>
 										<?php
 										}
 										?>

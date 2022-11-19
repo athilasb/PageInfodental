@@ -1,5 +1,5 @@
 <?php
-if(isset($_POST['auth_cpf']) and isset($_POST['auth_senha'])) {
+	if(isset($_POST['auth_cpf']) and isset($_POST['auth_senha'])) { 
 		
 		require_once("../lib/conf.php");
 		require_once("../lib/classes.php");
@@ -23,6 +23,7 @@ if(isset($_POST['auth_cpf']) and isset($_POST['auth_senha'])) {
 			$sql->add($_p."logins","erro=0,data=now(),ip='".$_SERVER['REMOTE_ADDR']."',id_usuario='".$usr->id."',cpf='".addslashes($_POST['auth_cpf'])."',senha='".addslashes($_POST['auth_senha'])."',ip_lan='".$localIP."'");
 			$url=(isset($_POST['url']) and !empty($_POST['url']))?$_POST['url']:"../dashboard.php";
 			header("Location: ".$url);
+
 			
 			
 		} else {

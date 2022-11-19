@@ -212,7 +212,7 @@
 	
 	$_selectSituacaoOptions=array('aguardando'=>array('titulo'=>'AGUARDANDO EXAME','cor'=>'blue'),
 											'concluido'=>array('titulo'=>'CONCLUÍDO','cor'=>'green'),
-											'naoRealizado'=>array('titulo'=>'NÃO REALIZADO','cor'=>'red')
+											'naoRealizado'=>array('titulo'=>'CANCELADO','cor'=>'red')
 											//'cancelado'=>array('titulo'=>'CANCELADO');
 										);
 
