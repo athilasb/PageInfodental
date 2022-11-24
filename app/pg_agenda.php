@@ -3194,7 +3194,7 @@
 												data:data
 											})
 										}
-
+										alert(abrirProximaConsulta);
 										if(abrirProximaConsulta>0) asideProximaConsulta(abrirProximaConsulta);
 
 

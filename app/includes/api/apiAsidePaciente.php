@@ -1337,6 +1337,7 @@
 								$tratamentoProcedimentos[]=array('id'=>$v->id,
 																		'id_procedimento'=>$v->id_procedimento,
 																		'numero'=>$v->numero,
+																		'numeroTotal'=>$v->numeroTotal,
 																		'opcao'=>strip_tags(utf8_encode($procedimentoAprovado->opcao)),
 																		'plano'=>utf8_encode($procedimentoAprovado->plano),
 																		'profissionalCor'=>$profissionalCor,
@@ -4132,6 +4133,8 @@
 				const asideProcedimentos = () => {
 
 
+					$('.aside-prontuario-procedimentos .js-asideProcedimentos-data').val(`<?php echo date('d/m/Y');?>`);
+
 					let data = `ajax=asProcedimentosAprovados&id_paciente=${id_paciente}`;
 
 					$.ajax({
@@ -4482,7 +4485,11 @@
 										url:baseURLApiAsidePaciente,
 										success:function(rtn) {
 											if(rtn.success) {
-												document.location.reload();
+												if(id_agenda>0) {
+													asideProximaConsultaLembrete();
+												} else {	
+													document.location.reload();
+												}	
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 												obj.html(objHTMLAntigo);
@@ -4626,7 +4633,7 @@
 								<dl>
 									<dt>Data da Evolução</dt>
 									<dd>
-										<input type="tel" name="" class="datahora js-asideProcedimentos-data js-asideProcedimentos-inputs" value="<?php echo date('d/m/Y H:i');?>" /></dd>
+										<input type="tel" name="" class="datahora js-asideProcedimentos-data js-asideProcedimentos-inputs" value="" /></dd>
 									</dd>
 								</dl>
 								<dl class="dl2">

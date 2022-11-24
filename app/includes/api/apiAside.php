@@ -4256,11 +4256,11 @@
 
 			}
 			
-			const asideProximaConsulta = (id_agenda) => {
+			const asideProximaConsulta = (idAgenda) => {
 
 
 				$('#js-aside-proximaConsulta .js-tab').show();
-				let data = `ajax=proximaConsulta&id_agenda=${id_agenda}`;
+				let data = `ajax=proximaConsulta&id_agenda=${idAgenda}`;
 				$.ajax({
 					type:'POST',
 					data:data,
@@ -4268,8 +4268,7 @@
 					success:function(rtn) {
 						if(rtn.success) {
 
-
-							id_agenda=rtn.id_agenda;
+							id_agenda=idAgenda;
 							id_paciente=rtn.data.id_paciente
 							headerPaciente($('#js-aside-proximaConsulta'),rtn);
 							headerPaciente($('.aside-prontuario-procedimentos'),rtn);
@@ -4310,6 +4309,11 @@
 
 			const asideProximaConsultaLembrete = () => {
 
+				$('.aside-prontuario-procedimentos .aside-close-procedimentos').click();
+				$('#js-aside-proximaConsulta').fadeIn(100,function() {
+					$('#js-aside-proximaConsulta .aside__inner1').addClass("active");
+					
+				});
 				$('#js-aside-proximaConsulta .aside-header h1').html('Próxima Consulta');
 				$("#js-aside-proximaConsulta .js-tab a:eq(0)").click();
 				setTimeout(function(){
@@ -4334,7 +4338,7 @@
 																		scrollInput:false,
 																	});*/
 
-				alert('a');
+				
 				$('.aside-prontuario-procedimentos').fadeIn(100,function() {
 					$(this).children(".aside__inner1").addClass("active");
 					

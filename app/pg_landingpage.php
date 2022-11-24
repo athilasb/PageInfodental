@@ -1,32 +1,6 @@
 <?php
-	if(isset($_POST['ajax'])) {
-		require_once("lib/conf.php");
-		require_once("usuarios/checa.php");
-
-		$rtn = array();
-
-		if($_POST['ajax']=="consultaCPF") {
-
-			$cpf = '';
-
-			if(isset($_POST['cpf']) and !empty($_POST['cpf'])) {
-				$cpf = cpf($_POST['cpf']);
-			}
-
-			$sql->consult($_p."pacientes","id,nome","where cpf = '$cpf' and lixo=0");
-		
-
-			$rtn = array('success'=>true,'pacientes'=>$sql->rows);
-
-		}
-
-		header("Content-type: application/json");
-		echo json_encode($rtn);
-		die();
-	}
-
 	require_once("lib/conf.php");
-	$_table=$_p."pacientes";
+	$_table=$_p."landingpage_temas";
 
 	include "includes/header.php";
 	include "includes/nav.php";
@@ -62,14 +36,16 @@
 		<div class="header__content content">
 			<div class="header__inner1">
 				<section class="header-title">
-					<h1>Pacientes</h1>
+					<h1>Landing Pages</h1>
 				</section>
 				<?php
-				require_once("includes/menus/menuPacientes.php");
+				require_once("includes/menus/menuLandingPage.php");
 				?>
 			</div>
 		</div>
 	</header>
+	
+
 	<script type="text/javascript">
 		
 		$(function(){
@@ -81,7 +57,7 @@
 			$('.list1').on('click','.js-item',function(){
 				$('#js-aside form.formulario-validacao').trigger('reset');
 				let id = $(this).attr('data-id');
-				document.location.href=`pg_pacientes_resumo.php?id_paciente=${id}`;
+				document.location.href=`pg_landingpage_configuracao.php?id_landingpage=${id}`;
 			})
 		})
 	</script>
@@ -738,18 +714,12 @@
 		}
 
 	?>		
-			<script type="text/javascript">
-				
-				$(function(){
-
-				});
-			</script>
  			<section class="filter">
 				
 				<div class="filter-group">
 					<div class="filter-form form">
 						<dl>
-							<dd><a href="pg_pacientes.php?form=1" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Novo Paciente</span></a></dd>
+							<dd><a href="pg_landingpage.php?form=1" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Nova Landing Page</span></a></dd>
 						</dl>
 					</div>
 				</div>
@@ -757,30 +727,6 @@
 				<form method="get" class="js-filtro">
 					<div class="filter-group">
 						<div class="filter-form form">
-							<dl>
-								<dd>
-									<select name="bi_multiple[]" multiple class="chosen" style="width:200px;" data-placeholder="Status...">
-										<option value=""></option>
-										<?php
-										foreach($_codigoBI as $id=>$titulo) {
-											echo '<option value="'.$id.'"'.((isset($_GET['bi_multiple']) and is_array($_GET['bi_multiple']) and in_array($id,$_GET['bi_multiple']))?' selected':'').'>'.$titulo.'</option>';
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
-							<dl>
-								<dd>
-									<select name="profissional_multiple[]" multiple class="chosen" style="width:200px;" data-placeholder="Profisionais...">
-										<option value=""></option>
-										<?php
-										foreach($_profissionais as $x) {
-											echo '<option value="'.$x->id.'"'.((isset($_GET['profissional_multiple']) and is_array($_GET['profissional_multiple']) and in_array($x->id,$_GET['profissional_multiple']))?' selected':'').'>'.utf8_encode($x->nome).'</option>';
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
 							<script type="text/javascript">
 								$(function(){
 									$('input[name=busca]').keydown(function(e){
@@ -799,268 +745,8 @@
 
 			</section>
 
-			<section class="grid" style="grid-template-columns:40% auto">
+			<section class="grid" style="grid-template-columns:100% auto">
 
-				<div class="box">
-
-					<div class="filter">
-						<div class="filter-group">
-							<div class="filter-title">
-								<h1>Indicadores</h1>
-							</div>
-						</div>
-						<div class="filter-group">
-							<div class="filter-title">
-								<h1><?php echo number_format($pacientes,0,"",".");?> pacientes</h1>
-							</div>
-						</div>
-					</div>
-
-					<div class="list4">
-						
-						<a href="javascript:;" class="list4-item active js-grafico" data-grafico="2">
-							<div>
-								<h1><i class="iconify" data-icon="fluent:food-cake-20-regular"></i></h1>
-							</div>
-							<div>
-								<p>Distribuição <strong>por Idade</strong></p>
-							</div>
-						</a>
-						<a href="javascript:;" class="list4-item js-grafico" data-grafico="3">
-							<div>
-								<h1><i class="iconify" data-icon="ph:gender-intersex"></i></h1>
-							</div>
-							<div>
-								<p>Distribuição <strong>por Gênero</strong></p>
-							</div>
-						</a>
-						<a href="javascript:;" class="list4-item js-grafico" data-grafico="4">
-							<div>
-								<h1><i class="iconify" data-icon="fluent:location-20-regular"></i></h1>
-							</div>
-							<div>
-								<p>Distribuição <strong>Localização</strong></p>
-							</div>
-						</a>
-						<a href="javascript:;" class="list4-item js-grafico" data-grafico="1">
-							<div>
-								<h1><i class="iconify" data-icon="fluent:person-add-20-regular"></i></h1>
-							</div>
-							<div>
-								<p>Novos pacientes <strong><?php echo $novoPacienteMedia;?> por mês</strong></p>
-							</div>
-						</a>
-
-					</div>
-
-
-
-					<script>
-						$(function() {
-							$('.js-grafico').click(function(){
-								let grafico = $(this).attr('data-grafico');
-
-								$(`.box-grafico`).hide();
-								$(`#grafico${grafico}`).show();
-								$(`.js-grafico`).removeClass('active');
-								$(this).addClass('active');
-							});
-
-							$('.js-grafico:eq(0)').trigger('click')
-
-							var ctx = document.getElementById('grafico1').getContext('2d');
-							var gradientStroke = ctx.createLinearGradient(0,230,0,50);
-							gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
-							gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
-							gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
-							var grafico1 = new Chart(ctx, {    
-							    type: 'line',
-							    data: {
-							        labels: <?php echo json_encode($grafico1Labels);?>,
-							        datasets: [{
-							            fill:true,
-							            borderDashOffset: 0.0,
-							            label: 'Pacientes',
-							            data: <?php echo json_encode($grafico1Data);?>,
-							            backgroundColor: gradientStroke,
-							            borderColor:'rgba(254,71,2,0.3)',
-							            borderWidth: 1,
-							            borderDash: [],
-							            borderDashOffset: 0.0
-							        }]
-							    },
-							    options: {
-							        scales: {
-							            yAxes: [{
-							                ticks: {
-							                    beginAtZero: true
-							                },
-							                gridLines: {
-							                	drawBorder: false,
-							                	color: 'transparent'
-							                }
-							            }],
-							            xAxes: [{
-								            gridLines: {
-								            	drawBorder: false,
-								                color: '#ebebeb',
-								                zeroLineColor: "#ebebeb"
-								            }	              
-								        }]
-							        }
-							    }
-							});
-
-							var ctx = document.getElementById('grafico2').getContext('2d');
-							var gradientStroke = ctx.createLinearGradient(0,230,0,50);
-							gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
-							gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
-							gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
-							var grafico2 = new Chart(ctx, {    
-							    type: 'bar',
-							    data: {
-							        labels: <?php echo json_encode($grafico2Labels);?>,
-							        datasets: [{
-							            fill:true,
-							            borderDashOffset: 0.0,
-							            label: 'Pacientes',
-							            data: <?php echo json_encode($grafico2Data);?>,
-							            backgroundColor: gradientStroke,
-							            borderColor:'rgba(254,71,2,0.3)',
-							            borderWidth: 1,
-							            borderDash: [],
-							            borderDashOffset: 0.0
-							        }]
-							    },
-							    options: {
-							        scales: {
-							            yAxes: [{
-							                ticks: {
-							                    beginAtZero: true
-							                },
-							                gridLines: {
-							                	drawBorder: false,
-							                	color: 'transparent'
-							                }
-							            }],
-							            xAxes: [{
-								            gridLines: {
-								            	drawBorder: false,
-								                color: '#ebebeb',
-								                zeroLineColor: "#ebebeb"
-								            }	              
-								        }]
-							        }
-							    }
-							});
-
-
-
-							const DATA_COUNT = 5;
-							const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
-							var ctx = document.getElementById('grafico3').getContext('2d');
-							var gradientStroke = ctx.createLinearGradient(0,230,0,50);
-							gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
-							gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
-							gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
-							var grafico3 = new Chart(ctx, {    
-							    type: 'doughnut',
-							    data: {
-									  labels: ['Masculino', 'Feminino'],
-									  datasets: [
-									    {
-									      label: 'Dataset 1',
-									      data: <?php echo json_encode($grafico3Data);?>,
-									      backgroundColor: ['darkslateblue','lightpink'],
-									    }
-									  ]
-							    },
-							    options: {
-							        scales: {
-							            
-							        }
-							    }
-							});
-
-							var ctx = document.getElementById('grafico5').getContext('2d');
-							var gradientStroke = ctx.createLinearGradient(0,230,0,50);
-							gradientStroke.addColorStop(1, 'rgba(254,71,2,0.2)');
-							gradientStroke.addColorStop(0.8, 'rgba(254,71,2,0.1)');
-							gradientStroke.addColorStop(0, 'rgba(254,71,2,0)');
-							var grafico5 = new Chart(ctx, {    
-							    type: 'line',
-							    data: {
-							        labels: ["1","2","3","4","5","6","7"],
-							        datasets: [{
-							            fill:true,
-							            borderDashOffset: 0.0,
-							            label: '# visitas',
-							            data: [1200,1100,1300,1300,500,1200,1345],
-							            backgroundColor: gradientStroke,
-							            borderColor:'rgba(254,71,2,0.3)',
-							            borderWidth: 1,
-							            borderDash: [],
-							            borderDashOffset: 0.0
-							        }]
-							    },
-							    options: {
-							        scales: {
-							            yAxes: [{
-							                ticks: {
-							                    beginAtZero: true
-							                },
-							                gridLines: {
-							                	drawBorder: false,
-							                	color: 'transparent'
-							                }
-							            }],
-							            xAxes: [{
-								            gridLines: {
-								            	drawBorder: false,
-								                color: '#ebebeb',
-								                zeroLineColor: "#ebebeb"
-								            }	              
-								        }]
-							        }
-							    }
-							});
-						});
-					</script>
-
-					<div class="grafico">
-						<canvas id="grafico1" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
-						<canvas id="grafico2" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
-						<canvas id="grafico3" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
-						<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo $_googleMapsKey;?>&libraries=geometry,drawing,places&callback=initMap" defer></script>
-						<script>
-							function initMap() {
-							  const myLatlng = { lat: -16.6958288, lng: -49.4443537 };
-							  const map = new google.maps.Map(document.getElementById("grafico4"), {
-							    zoom: 10,
-							    center: myLatlng,
-							  });
-							  var locations = <?php echo json_encode($locations);?>;
-							  var infowindow =  new google.maps.InfoWindow({});
-							  var marker, count;for (count = 0; count < locations.length; count++) {
-								    marker = new google.maps.Marker({
-								      position: new google.maps.LatLng(locations[count][1], locations[count][2]),
-								      map: map,
-								      title: locations[count][0]
-								    });google.maps.event.addListener(marker, 'click', (function (marker, count) {
-								      return function () {
-								        infowindow.setContent(locations[count][0]);
-								        infowindow.open(map, marker);
-								      }
-									})(marker, count));
-								}
-							}
-						</script>
-						<section id="grafico4" class="box-grafico" style="width: 600px;height:500px;margin-bottom: 10px;display:none;"></section>
-						<canvas id="grafico5" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
-					</div>
-					<?php /*<section style="width:100%; height:300px; background:var(--cinza2); margin-bottom:var(--margin1);" class="grafico">						
-					</section>*/?>
-				</div>
 
 				<div class="box">
 
@@ -1080,29 +766,18 @@
 							$wh.="nome REGEXP '$v' and ";
 						}
 						$wh=substr($wh,0,strlen($wh)-5);
-						$where="where (($wh) or nome like '%".$_GET['busca']."%' or telefone1 like '%".$_GET['busca']."%' or cpf like '%".$_GET['busca']."%') and lixo=0";
+						$where="where (($wh) or titulo like '%".$_GET['busca']."%') and lixo=0";
 						
 						
 					}
 
-					if(isset($values['profissional_multiple']) and is_array($values['profissional_multiple']) and count($values['profissional_multiple'])>0) {
-						$where.=" and profissional_maisAtende IN (".implode(",",$values['profissional_multiple']).")";
-					}
-
-
-					if(isset($values['bi_multiple']) and is_array($values['bi_multiple']) and count($values['bi_multiple'])>0) {
-						$where.=" and codigo_bi IN (".implode(",",$values['bi_multiple']).")";
-					}
-
-
-					if(!empty($primeiraLetra)) $where.=" ORDER BY CASE WHEN nome >= '$primeiraLetra' THEN 1 ELSE 0 END DESC, nome ASC";
-					else $where.=" order by nome asc";
+					$where.=" order by data desc";
 
 					//echo $where;
 					$sql->consultPagMto2($_table,"*",10,$where,"",15,"pagina",$_page."?".$url."&pagina=");
 					if($sql->rows==0) {
 						if(isset($values['busca'])) $msg="Nenhum Resultado encontrado";
-						else $msg="Nenhum colaborador cadastrado";
+						else $msg="Nenhum lading page cadastrada";
 
 						echo "<center>$msg</center>";
 					} else {
@@ -1112,23 +787,11 @@
 								<?php
 								while($x=mysqli_fetch_object($sql->mysqry)) {
 									$cor="var(--cinza3)";
-									if(isset($_codigoBICores[$x->codigo_bi])) $cor=$_codigoBICores[$x->codigo_bi];
-								/*?>
-								<tr class="js-item" data-id="<?php echo $x->id;?>">
-									<td style="width:20px;"><i class="iconify" data-icon="fluent:chevron-up-down-24-regular"></i></td>
-									<td><h1><strong><?php echo utf8_encode($x->titulo);?></strong></h1></td>
-								</tr>*/
 								?>
 								<tr class="js-item" data-id="<?php echo $x->id;?>">
-									<td class="list1__border" style="color:<?php echo $cor;?>"></td>
-									<td>
-										<h1><?php echo utf8_encode($x->nome);?></h1>
-										<p>#<?php echo utf8_encode($x->id);?></p>
-									</td>
-									<td><?php echo isset($_codigoBI[$x->codigo_bi])?$_codigoBI[$x->codigo_bi]:"";?></td>
-									<td><?php echo $x->data_nascimento!="0000-00-00"?idade($x->data_nascimento)." anos":"";?></td>
-									<td><?php echo !empty($x->telefone1)?mask($x->telefone1):"-";?></td>
+									<td><h1><?php echo utf8_encode($x->titulo);?></h1></td>
 								</tr>
+								
 								<?php
 								}
 								?>
