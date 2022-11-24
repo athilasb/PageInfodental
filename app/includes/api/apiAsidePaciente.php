@@ -953,6 +953,14 @@
 					}
 				}
 
+				$evolucao='';
+				if(isset($_POST['id_evolucao']) and is_numeric($_POST['id_evolucao'])) {
+					$sql->consult($_p."pacientes_evolucoes","*","where id=".$_POST['id_evolucao']);
+					if($sql->rows) {
+						$evolucao=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
 
 				$obs = (isset($_POST['obs']) and !empty($_POST['obs'])) ? $_POST['obs'] : '';
 
@@ -965,6 +973,8 @@
 								obs='".addslashes(utf8_decode($obs))."',
 								id_tratamento_procedimento=$procedimentoAEvoluir->id_tratamento_procedimento,
 								id_procedimento_aevoluir=$procedimentoAEvoluir->id";
+
+						if(is_object($evolucao)) $vSQL.=",id_evolucao='$evolucao->id'";
 
 						$sql->add($_p."pacientes_tratamentos_procedimentos_evolucao_historico",$vSQL);
 
@@ -1072,6 +1082,7 @@
 									}
 								}
 
+
 								if(count($procedimentosEvoluidos)>0) {
 									
 									// Procedimentos Evoluidos
@@ -1082,7 +1093,12 @@
 										$procedimentoEvolucao=$obj->procedimentoEvolucao; // procedimentoEvolucao
 										$id_procedimento_evolucao=isset($obj->id_procedimento_evolucao)?$obj->id_procedimento_evolucao:0;
 
+										// atualiza observacoes vinculado a evolucao
+										$where="where id_tratamento_procedimento=$procedimentoAprovado->id and 
+														id_procedimento_aevoluir=$procedimentoAEvoluir->id and 
+														data>='".date('Y-m-d')." 00:00:00' and id_evolucao=0";
 									
+										$sql->update($_p."pacientes_tratamentos_procedimentos_evolucao_historico","id_evolucao=$id_evolucao",$where);
 
 										$evProc=''; // pacientes_evolucao_procedimentos
 										if($id_procedimento_evolucao>0) {
@@ -1162,6 +1178,7 @@
 												$sql->add($_p."pacientes_tratamentos_procedimentos_evolucao_historico",$vSQLHistorico);
 											}
 										}
+										
 									}	
 
 									$bi = new BI(array('prefixo'=>$_p));
@@ -1178,8 +1195,186 @@
 					}
 
 				}
+			}
+			else if($_POST['ajax']=="asProcedimentosStatusAlterar") {
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","id,nome","where id=".$_POST['id_paciente']);
+					if($sql->rows) $paciente=mysqli_fetch_object($sql->mysqry);
+				}
+
+				$procedimentoAEvoluir = '';
+				if(is_object($paciente) and isset($_POST['id_procedimento_aevoluir']) and is_numeric($_POST['id_procedimento_aevoluir'])) {
+					$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id='".$_POST['id_procedimento_aevoluir']."' and id_paciente=$paciente->id");
+					if($sql->rows) {
+						$procedimentoAEvoluir=mysqli_fetch_object($sql->mysqry);
+					}
+				}	
+
+				$evolucao = '';
+				if(is_object($paciente) and isset($_POST['id_evolucao']) and is_numeric($_POST['id_evolucao'])) {
+					$sql->consult($_p."pacientes_evolucoes","id,data","where id=".$_POST['id_evolucao']." and id_paciente=$paciente->id and lixo=0");
+					if($sql->rows) {
+						$evolucao=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				if(isset($_POST['status'])) {
+
+					$status=$_POST['status'];
+					$novoStatus='';
+					if($status=="iniciar") $novoStatus=utf8_decode("Não iniciado");
+					else if($status=="iniciado") $novoStatus="Em Tratamento";
+					else if($status=="finalizado") $novoStatus="Finalizado";
+					else if($status=="cancelado") $novoStatus="Cancelado";
+
+					if(empty($novoStatus)) $status='';
+
+				}
+
+
+				$erro='';
+
+				if(empty($paciente)) $erro='Paciente não encontrado!';
+				else if(empty($procedimentoAEvoluir)) $erro='Procedimento evoluído não encontrado!';
+				else if(empty($status)) $erro='Status não definido!';
+
+				if(empty($erro)) {	
+
+
+					$vSQLHistorico="data=now(),
+									id_usuario='".addslashes($usr->id_usuario)."',
+									usuario='".addslashes(($usr->nome))."',
+									obs='Alterou status para <b>$novoStatus</b>',
+									id_procedimento_aevoluir=$procedimentoAEvoluir->id,
+									id_evolucao='".addslashes($evolucao->id)."'";
+
+					$sql->add($_p."pacientes_tratamentos_procedimentos_evolucao_historico",$vSQLHistorico);
+
+
+					$sql->update($_p."pacientes_tratamentos_procedimentos_evolucao","status_evolucao='".addslashes($status)."'","where id=$procedimentoAEvoluir->id");
+					$rtn=array('success'=>true);
+
+				} else {
+					$rtn=array('success'=>false,
+								'error'=>$erro);
+				}
+			}
+			else if($_POST['ajax']=="asProcedimentosAprovados") {
+				
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","id,nome","where id=".$_POST['id_paciente']);
+					if($sql->rows) $paciente=mysqli_fetch_object($sql->mysqry);
+				}
+
+				$_procedimentos=array();
+				$sql->consult($_p."parametros_procedimentos","id,titulo","where  lixo=0");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_procedimentos[$x->id]=$x;
+				}
+
+				$tratamentosIds=$_tratamentos=array();
+				if(isset($paciente) and is_object($paciente)) {
+					$sql->consult($_p."pacientes_tratamentos","*","where id_paciente=$paciente->id and  status='APROVADO' and lixo=0");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$tratamentosIds[]=$x->id;
+						$_tratamentos[$x->id]=$x;
+					}
+				}
+				$procedimentosIds=$_procedimentosAprovadosASerEvoluido=$tratamentosProcedimentosIds=array();
+
+				if(count($tratamentosIds)>0) {
+					$where="where lixo=0 and situacao='aprovado' and id_tratamento IN (".implode(",",$tratamentosIds).")";
+					$_procedimentosDeTratamentosAprovados=array();
+					$sql->consult($_p."pacientes_tratamentos_procedimentos","*",$where);
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$procedimentosIds[]=$x->id_procedimento;
+						$tratamentosProcedimentosIds[]=$x->id;
+						$_procedimentosDeTratamentosAprovados[$x->id]=$x;
+					}
+
+					if(count($tratamentosProcedimentosIds)>0) {
+						$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIds).") and status_evolucao NOT IN ('cancelado','finalizado') and lixo=0");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							if(isset($_procedimentosDeTratamentosAprovados[$x->id_tratamento_procedimento])) {
+								$procAprovado=$_procedimentosDeTratamentosAprovados[$x->id_tratamento_procedimento];
+
+								$_procedimentosAprovadosASerEvoluido[$procAprovado->id_tratamento][$x->id]=$x;
+							}
+						}
+					}
+				}
+
+
+				$procedimentos=array();
+				foreach($_procedimentosAprovadosASerEvoluido as $id_tratamento=>$regs) {
+					//echo '<optgroup label="'.utf8_encode($_tratamentos[$id_tratamento]->titulo).'">';
+
+					$tratamentoProcedimentos=array();
+					foreach($regs as $v) {
+						$disabled='';
+						if(isset($procedimentosAEvoluirIds) and in_array($v->id,$procedimentosAEvoluirIds)) $disabled=" disabled";;
+						if(isset($_procedimentos[$v->id_procedimento])) {
+							$procedimento=$_procedimentos[$v->id_procedimento];
+							$profissionalIniciais='';
+							$profissionalCor='#ccc';
+							if(isset($_profissionais[$v->id_profissional])) {
+								$p=$_profissionais[$v->id_profissional];
+								$profissionalIniciais=$p->calendario_iniciais;
+								$profissionalCor=$p->calendario_cor;
+
+							}
+							$complemento='';
+							if($v->numeroTotal>1) $complemento.=' - '.utf8_encode($v->numero."/".$v->numeroTotal);
+
+							//	id_tratamento_procedimento => Procedimento de tratamento aprovado
+							if(isset($_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento])) {
+								$procedimentoAprovado=$_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento];
+								if(!empty($procedimentoAprovado->opcao)) $complemento.=" - ".utf8_encode($procedimentoAprovado->opcao)
+									;
+
+								$tratamentoProcedimentos[]=array('id'=>$v->id,
+																		'id_procedimento'=>$v->id_procedimento,
+																		'numero'=>$v->numero,
+																		'opcao'=>strip_tags(utf8_encode($procedimentoAprovado->opcao)),
+																		'plano'=>utf8_encode($procedimentoAprovado->plano),
+																		'profissionalCor'=>$profissionalCor,
+																		'id_profissional'=>$v->id_profissional,
+																		'profissionalIniciais'=>$profissionalIniciais,
+																		'statusEvolucao'=>$v->status_evolucao,
+																		'titulo'=>utf8_encode($procedimento->titulo)." ".$complemento,
+																		'id_tratamento_procedimento'=>$procedimentoAprovado->id,
+																	 	'disabled'=>$disabled);
+								/*echo '<option value="'.$v->id.'" 
+												data-id_procedimento="'.$v->id_procedimento.'" 
+												data-numero="'.$v->numero.'" 
+												data-numeroTotal="'.$v->numeroTotal.'" 
+												data-opcao="'.strip_tags(utf8_encode($procedimentoAprovado->opcao)).'" 
+												data-plano="'.utf8_encode($procedimentoAprovado->plano).'" 
+												data-profissionalCor="'.$profissionalCor.'" 
+												data-id_profissional="'.$v->id_profissional.'" 
+												data-profissionalIniciais="'.$profissionalIniciais.'"  
+												data-statusEvolucao="'.$v->status_evolucao.'" 
+												data-titulo="'.utf8_encode($procedimento->titulo).'" 
+												data-id_tratamento_procedimento="'.$procedimentoAprovado->id.'"'.$disabled.'>'.utf8_encode($procedimento->titulo)." ".$complemento.'</option>';*/
+							}
+					
+						}
+					}
+
+					$procedimentos[]=array('titulo'=>utf8_encode($_tratamentos[$id_tratamento]->titulo),
+										'procedimentos'=>$tratamentoProcedimentos); 
+				}
+
+
+
+				$rtn=array('success'=>true,
+							'procedimentos'=>$procedimentos);
+
 
 			}
+
 
 		header("Content-type: application/json");
 		echo json_encode($rtn);
@@ -3924,41 +4119,7 @@
 	# PROCEDIMENTOS
 		if(isset($apiConfig['procedimentos'])) {	
 
-			$_procedimentos=array();
-			$sql->consult($_p."parametros_procedimentos","id,titulo","where  lixo=0");
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$_procedimentos[$x->id]=$x;
-			}
-
-			$tratamentosIds=$_tratamentos=array();
-			$sql->consult($_p."pacientes_tratamentos","*","where id_paciente=$paciente->id and  status='APROVADO' and lixo=0");
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$tratamentosIds[]=$x->id;
-				$_tratamentos[$x->id]=$x;
-			}
-			$procedimentosIds=$_procedimentosAprovadosASerEvoluido=$tratamentosProcedimentosIds=array();
-
-			if(count($tratamentosIds)>0) {
-				$where="where lixo=0 and situacao='aprovado' and id_tratamento IN (".implode(",",$tratamentosIds).")";
-				$_procedimentosDeTratamentosAprovados=array();
-				$sql->consult($_p."pacientes_tratamentos_procedimentos","*",$where);
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$procedimentosIds[]=$x->id_procedimento;
-					$tratamentosProcedimentosIds[]=$x->id;
-					$_procedimentosDeTratamentosAprovados[$x->id]=$x;
-				}
-
-				if(count($tratamentosProcedimentosIds)>0) {
-					$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIds).") and status_evolucao NOT IN ('cancelado','finalizado') and lixo=0");
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						if(isset($_procedimentosDeTratamentosAprovados[$x->id_tratamento_procedimento])) {
-							$procAprovado=$_procedimentosDeTratamentosAprovados[$x->id_tratamento_procedimento];
-
-							$_procedimentosAprovadosASerEvoluido[$procAprovado->id_tratamento][$x->id]=$x;
-						}
-					}
-				}
-			}
+			
 
 				
 			?>
@@ -3969,9 +4130,54 @@
 
 				// quando abre o asie de Procedimentos
 				const asideProcedimentos = () => {
-					setTimeout(function(){
+
+
+					let data = `ajax=asProcedimentosAprovados&id_paciente=${id_paciente}`;
+
+					$.ajax({
+						type:"POST",
+						data:data,
+						url:baseURLApiAsidePaciente,
+						success:function(rtn) {
+							
+							if(rtn.success) {
+								rtn.procedimentos.forEach(t=>{
+									if(t.procedimentos.length>0) {
+										let optgroup = `<optgroup label="${t.titulo}">`;
+
+										t.procedimentos.forEach(p=>{
+											optgroup += `<option value="${p.id}" 
+																		data-id_procedimento="${p.id_procedimento}" 
+																		data-numero="${p.numero}" 
+																		data-numeroTotal="${p.numeroTotal}" 
+																		data-opcao="${p.opcao}" 
+																		data-plano="${p.plano}" 
+																		data-profissionalCor="${p.profissionalCor}" 
+																		data-id_profissional="${p.id_profissional}" 
+																		data-profissionalIniciais="${p.profissionalIniciais}"  
+																		data-statusEvolucao="${p.statusEvolucao}" 
+																		data-titulo="${p.titulo}" 
+																		data-id_tratamento_procedimento="${p.id_tratamento_procedimento}"${p.disabled}>${p.titulo}</option>`;
+										});
+
+										optgroup += '</optgroup>';
+										$(`.aside-prontuario-procedimentos`).find('select.js-asideProcedimentos-id_procedimento').append(optgroup);
+									}
+								})
+							}
+
+						}
+					}).done(function(){
+						setTimeout(function(){
 									$(`.aside-prontuario-procedimentos`).find('select.js-asideProcedimentos-id_procedimento').chosen({hide_results_on_select:false,allow_single_deselect:true});
-								},100);
+								},50);
+					})
+
+					/*setTimeout(function(){
+									$(`.aside-prontuario-procedimentos`).find('select.js-asideProcedimentos-id_procedimento').chosen({hide_results_on_select:false,allow_single_deselect:true});
+								},100);*/
+
+
 				}
 
 				const procedimentosListar = () => { 
@@ -3990,8 +4196,8 @@
 																				</td>
 																				<td>
 																					<select class="js-statusEvolucao">
-																						<option value="iniciar"${x.statusEvolucao=="iniciar"?" selected":""}>Não iniciado</option>
-																						<option value="iniciado"${x.statusEvolucao=="iniciado"?" selected":""}>Em tratamento</option>
+																						<option value="iniciar">Não iniciado</option>
+																						<option value="iniciado"${(x.statusEvolucao=="iniciado" || x.statusEvolucao=="iniciar")?" selected":""}>Em tratamento</option>
 																						<option value="finalizado"${x.statusEvolucao=="finalizado"?" selected":""}>Finalizado</option>
 																						<option value="cancelado"${x.statusEvolucao=="cancelado"?" selected":""}>Cancelado</option>
 																					</select>
@@ -4210,7 +4416,6 @@
 						
 					});
 
-
 					$('.aside-prontuario-procedimentos .aside-close-procedimentos').click(function(){
 						let obj = $(this);
 						if($('.aside-prontuario-procedimentos input[name=alteracao]').val()=="1") {
@@ -4241,7 +4446,6 @@
 							$(obj).parent().parent().parent().fadeOut();
 						}
 					});
-
 
 					// persiste a evolucao do procedimento
 					$('.aside-prontuario-procedimentos .js-salvarEvolucaoProcedimento').click(function(){
@@ -4303,6 +4507,73 @@
 
 
 					});
+					
+					// adiciona novo historico em um procedimento que foi evoluido (clica na listagem das evolucoes)
+					$('.aside-prontuario-procedimentos-historico-visualizacao .js-hist-asideProcedimentosHistoricos-adicionar').click(function(){
+
+						let obs = $('.aside-prontuario-procedimentos-historico-visualizacao .js-asideProcedimentosHistoricos-obs').val();
+						let id_evolucao = $('.aside-prontuario-procedimentos-historico-visualizacao .js-hist-id_evolucao').val();
+
+
+						if(obs.length==0) {
+							swal({title: "Erro!", text: 'Digite a observação que deseja adicionar ao histórico!', html:true, type:"error", confirmButtonColor: "#424242"});
+						} else {
+
+							let obj = $(this);
+							let objHTMLAntigo = obj.html();
+
+							if(obj.attr('data-loading')==0) {
+
+								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+								obj.attr('data-loading',1);
+								let data = `ajax=asProcedimentosHistoricoAdicionar&id_procedimento_aevoluir=${id_procedimento_aevoluir}&obs=${obs}&id_evolucao=${id_evolucao}`;
+
+								$.ajax({
+									type:"POST",
+									url:baseURLApiAsidePaciente,
+									data:data,
+									success:function(rtn) {
+										if(rtn.success===true) {
+											document.location.href=`pg_pacientes_prontuario.php?id_paciente=${id_paciente}&pagina=${pagina}&id_evolucao=${id_evolucao}`;
+										} else if(rtn.error) {
+											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+										} else {
+											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										}
+									}
+								}).done(function(){
+									obj.attr('data-loading',0);
+									obj.html(objHTMLAntigo);
+								});
+							}
+
+
+						}
+						
+					});
+
+					// quando altera o status do procedimento evoluido
+					$('.aside-prontuario-procedimentos-historico-visualizacao .js-hist-status').change(function(){
+						
+
+						let id_evolucao = $('.aside-prontuario-procedimentos-historico-visualizacao .js-hist-id_evolucao').val();
+						let data = `ajax=asProcedimentosStatusAlterar&id_procedimento_aevoluir=${id_procedimento_aevoluir}&id_paciente=${id_paciente}&id_evolucao=${id_evolucao}&status=${$(this).val()}`;
+
+						$.ajax({
+							type:"POST",
+							data:data,
+							url:baseURLApiAsidePaciente,
+							success:function(rtn) {
+								if(rtn.success===true) {
+									document.location.href=`pg_pacientes_prontuario.php?id_paciente=${id_paciente}&pagina=${pagina}&id_evolucao=${id_evolucao}`;
+								} else if(rtn.error) {
+									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+								} else {
+									swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+								}
+							}
+						})
+					});
 
 				});
 			</script>
@@ -4316,6 +4587,24 @@
 					</header>
 
 					<form method="post" class="aside-content form js-form-procedimentos">
+						
+						<section class="header-profile" style="display:none">
+							<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
+							<div class="header-profile__inner1">
+								<h1><a href="" target="_blank" class="js-nome"></a></h1>
+								<div>
+									<p class="js-statusBI"></p>
+									<p class="js-idade"></p>
+									<p class="js-periodicidade">Periodicidade: 6 meses</p>
+									<p class="js-musica"></p>
+								</div>
+							</div>
+						</section>
+
+						<section class="tab tab_alt js-tab" style="display:none">
+							<a href="javascript:;" class="active">Prontuário</a>	
+						</section>
+
 						<section class="filter">
 							<div class="filter-group"></div>
 							<div class="filter-group">
@@ -4332,8 +4621,7 @@
 
 						<input type="hidden" name="alteracao" value="0" />
 
-						<fieldset>
-							<legend>Informações</legend>
+						
 							<div class="colunas3">
 								<dl>
 									<dt>Data da Evolução</dt>
@@ -4349,25 +4637,22 @@
 											<?php
 											foreach($_profissionais as $x) {
 												if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
-												echo '<option value="'.$x->id.'">'.utf8_encode($x->nome).'</option>';
+												echo '<option value="'.$x->id.'"'.($usr->id==$x->id?' selected':'').'>'.utf8_encode($x->nome).'</option>';
 											}
 											?>
 										</select>
 									</dd>
 								</dl>
 							</div>
-						</fieldset>
 
-						<fieldset>
-							<legend>Evolução Geral</legend>
 							<dl>
+								<dt>Evolução Geral</dt>
 								<dd>
 									<textarea class="js-asideProcedimentos-obs js-asideProcedimentos-inputs" style="height:180px;width:100%;"></textarea>
 								</dd>
 							</dl>
-						</fieldset>
 
-						<fieldset>
+						<fieldset style="margin-top:20px;">
 							<legend>Procedimentos Aprovados</legend>
 
 							<dl class="dl2">
@@ -4376,7 +4661,7 @@
 									<select class="js-asideProcedimentos-id_procedimento js-asideProcedimentos-inputs" multiple>
 										<option value=""></option>
 										<?php
-										foreach($_procedimentosAprovadosASerEvoluido as $id_tratamento=>$regs) {
+										/*foreach($_procedimentosAprovadosASerEvoluido as $id_tratamento=>$regs) {
 											echo '<optgroup label="'.utf8_encode($_tratamentos[$id_tratamento]->titulo).'">';
 											foreach($regs as $v) {
 												$disabled='';
@@ -4410,12 +4695,12 @@
 																		data-profissionalIniciais="'.$profissionalIniciais.'"  
 																		data-statusEvolucao="'.$v->status_evolucao.'" 
 																		data-titulo="'.utf8_encode($procedimento->titulo).'" 
-																		data-id_tratamento_procedimento="'.$procedimentoAprovado->id.'"'.$disabled.'>'.utf8_encode($procedimento->titulo).$complemento.'</option>';
+																		data-id_tratamento_procedimento="'.$procedimentoAprovado->id.'"'.$disabled.'>'.utf8_encode($procedimento->titulo)." ".$complemento.'</option>';
 													}
 												}
 											}
 											echo '</optgroup>';
-										}
+										}*/
 										?>
 									</select>
 
@@ -4541,6 +4826,64 @@
 									</div>
 								</article>
 							</div>
+
+							
+						</div>
+
+					</form>
+				</div>
+			</section>
+
+			<section class="aside aside-prontuario-procedimentos-historico-visualizacao" style="display: none;">
+				<div class="aside__inner1" style="width:700px">
+					
+					<header class="aside-header">
+						<h1>Obs e Histórico</h1>
+						<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+					</header>
+
+					<form method="post" class="aside-content form">
+						<input type="hidden" class="js-hist-id_procedimento_aevoluir" />
+						<input type="hidden" class="js-hist-id_evolucao" />
+						<section class="filter">
+							<div class="filter-group"></div>					
+						</section>
+						<fieldset>
+							<legend>Procedimento Evoluído</legend>
+
+							<?php /*<dl>
+								<dt>Data da Evolução</dt>
+								<dd><input type="text" class="js-hist-dataEvolucao" disabled /></dd>
+							</dl>*/?>
+							<dl>
+								<dt>Procedimento</dt>
+								<dd><input type="text" class="js-hist-procedimento" disabled /></dd>
+							</dl>
+
+							<dl>
+								<dt>Status do Procedimento</dt>
+								<dd>
+									<select class="js-hist-status">
+										<option value="iniciar">Não iniciado</option>
+										<option value="iniciado">Em tratamento</option>
+										<option value="finalizado">Finalizado</option>
+										<option value="cancelado">Cancelado</option>
+									</select>
+								</dd>
+							</dl>
+
+							<dl>
+								<dt>Observação</dt>
+								<dd><textarea class="js-asideProcedimentosHistoricos-obs" rows="4"></textarea></dd>
+							</dl>
+							<dl>
+								<dd><button type="button" class="button button_main js-hist-asideProcedimentosHistoricos-adicionar" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar Observação</span></button>
+							</dl>
+						</fieldset>
+
+						
+						<div class="history js-procedimentos-historico">
+						
 
 							
 						</div>

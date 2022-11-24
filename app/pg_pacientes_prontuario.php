@@ -3,6 +3,7 @@
 		require_once("lib/conf.php");	
 		require_once("usuarios/checa.php");
 
+
 		$paciente = '';
 		if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
 			$sql->consult($_p."pacientes","id,nome","where id=".$_POST['id_paciente']);
@@ -13,7 +14,7 @@
 
 		$evolucao = '';
 		if(is_object($paciente) and isset($_POST['id_evolucao']) and is_numeric($_POST['id_evolucao'])) {
-			$sql->consult($_p."pacientes_evolucoes","id","where id=".$_POST['id_evolucao']." and id_paciente=$paciente->id and lixo=0");
+			$sql->consult($_p."pacientes_evolucoes","id,data","where id=".$_POST['id_evolucao']." and id_paciente=$paciente->id and lixo=0");
 			if($sql->rows) {
 				$evolucao=mysqli_fetch_object($sql->mysqry);
 			}
@@ -72,6 +73,47 @@
 			}
 
 			$rtn=array('success'=>true,'erratas'=>$erratas,'id_evolucao'=>is_object($evolucao)?$evolucao->id:0);
+		}
+
+		else if($_POST['ajax']=="evolucaoProcedimentosHistorico") {
+
+
+			$procedimentoAEvoluir = $procedimento = '';
+			if(isset($_POST['id_procedimento_aevoluir']) and is_numeric($_POST['id_procedimento_aevoluir'])) {
+				$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao","*","where id=".$_POST['id_procedimento_aevoluir']);
+				if($sql->rows) {
+					$procedimentoEvoluir=mysqli_fetch_object($sql->mysqry);
+
+					$sql->consult($_p."parametros_procedimentos","*","where id=$procedimentoEvoluir->id_procedimento");
+					if($sql->rows) $procedimento=mysqli_fetch_object($sql->mysqry);
+					
+				}
+			}
+
+			$erro='';
+			if(empty($evolucao)) $erro='Evolução não encontrada!';
+			else if(empty($procedimentoEvoluir)) $erro='Procedimento evoluído não encontrada!';
+
+			if(empty($erro)) {
+
+				$historico=array();
+				$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao_historico","*","where id_evolucao=$evolucao->id and id_procedimento_aevoluir=$procedimentoEvoluir->id");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$historico[]=array('id'=>$x->id,
+										'data'=>date('d/m/Y H:i',strtotime($x->data)),
+										'usuario'=>encodingToJson($x->usuario),
+										'obs'=>encodingToJson($x->obs));
+				}
+
+				$rtn=array('success'=>true,
+							'dataEvolucao'=>date('d/m/Y H:i',strtotime($evolucao->data)),
+							'status'=>$procedimentoEvoluir->status_evolucao,
+							'procedimento'=>encodingToJson($procedimento->titulo),
+							'historico'=>$historico);
+
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
 		}
 
 		header("Content-type: application/json");
@@ -240,15 +282,14 @@
 			}
 
 
-			/// 2022-11-07 -> vincular id_evolucao no historico de obs e retornar no prontuario somente o historico da evolucao
-			/*$procedimentosIds=array();
-			$sql->consult($_p."pacientes_evolucoes_procedimentos_historico","*","where id_evolucao IN (".implode(",",$evolucoesIds[2]).")");
+			// historicos escritos ao criar evolucao
+			$_procedimentosHistorico=array();
+			$sql->consult($_p."pacientes_tratamentos_procedimentos_evolucao_historico","*","where id_evolucao IN (".implode(",",$evolucoesIds[2]).") and tipo_alterouStatus=0 and lixo=0");
 			if($sql->rows) {
 				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_procedimentosEvoluidos[$x->id_evolucao][]=$x;
-					$procedimentosIds[]=$x->id_procedimento;
+					$_procedimentosHistorico[$x->id_evolucao][$x->id_procedimento_aevoluir][]=$x;
 				}
-			}*/
+			}
 
 			if(count($procedimentosIds)>0) {
 				$sql->consult($_p."parametros_procedimentos","id,titulo","where id IN (".implode(",",$procedimentosIds).")");
@@ -262,7 +303,8 @@
 
 
 	<script type="text/javascript">
-		var id_paciente = <?php echo $paciente->id;?>; 
+		id_paciente = <?php echo $paciente->id;?>; 
+		var pagina = <?php echo (isset($_GET['pagina']) and is_numeric($_GET['pagina']))?$_GET['pagina']:0;?>; 
 	</script>
 
 
@@ -368,10 +410,10 @@
 											<a href="<?php echo $pdf;?>" target="_blank" class="button"><i class="iconify" data-icon="ant-design:file-pdf-outlined"></i></a>
 											<a href="javascript:;" class="button js-btn-whatsapp" data-id_evolucao="<?php echo $e->id;?>" data-loading="0"><i class="iconify" data-icon="fa:whatsapp"></i></a>
 											<a href="<?php echo $_page."?deleta=".$e->id."&pagina=".((isset($_GET['pagina']) and is_numeric($_GET['pagina']))?$_GET['pagina']:'')."&$url";?>" class="button js-confirmarDeletar"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-											<a href="javascript:;" class="button button_main js-expande"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i></a>
+											<a href="javascript:;" class="button button_main js-expande js-expande-<?php echo $e->id;?>"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i></a>
 										</div>							
 									</header>
-									<article>
+									<article<?php echo (isset($_GET['id_evolucao']) and $_GET['id_evolucao']==$e->id)?' class="active"':'';?>>
 										<?php
 											$correcoes='';
 
@@ -552,10 +594,12 @@
 
 											// procedimentos
 											else if($eTipo->id==2) {
+												$correcoes=1;
 												?>
 												<div class="list-toggle-topics">
 												<?php
 												foreach($_procedimentosEvoluidos[$e->id] as $pe) {
+
 													if($pe->id_procedimento==0) {
 														?>
 														<p>
@@ -575,14 +619,29 @@
 															else if($pe->status=="cancelado") $status="Cancelado";
 
 															$procedimento=$_procedimentosEvoluidosProcedimentos[$pe->id_procedimento];
+
 															?>
-															<div style="display: flex;justify-content: space-between;">
+															<div>
 																<p>
 																	<strong><?php echo trim(utf8_encode($procedimento->titulo));?>:</strong>
 																	<?php echo utf8_encode($pe->opcao);?>
 																	<?php echo utf8_encode($pe->obs);?>
+																	<?php
+
+																	if($pe->numeroTotal>1) echo ' '.utf8_encode($pe->numero."/".$pe->numeroTotal);
+																	?>
+																	<a href="javascript:;" class="button js-btn-visualizarHistorico" data-id_evolucao="<?php echo $e->id;?>" data-id_procedimento_aevoluir="<?php echo $pe->id_procedimento_aevoluir;?>" style="float:right;"><span class="iconify" data-icon="material-symbols:search"></span></a>
+																	<br /><span style="background:var(--cinza5);color:#FFF;padding:2px;border-radius:5px;font-size: 12px;"><?php echo $status;?></span>
+																	<?php
+																	if(isset($_procedimentosHistorico[$pe->id_evolucao][$pe->id_procedimento_aevoluir])) {
+																		foreach($_procedimentosHistorico[$pe->id_evolucao][$pe->id_procedimento_aevoluir] as $obs) {
+																	?>
+																	<br /><span style="color:#999"><span class="iconify" data-icon="material-symbols:chat-outline-rounded"></span> <?php echo utf8_encode($obs->obs);?></span>
+																	<?php
+																		}
+																	}
+																	?>
 																</p>
-																<span style="background:var(--cinza5);color:#FFF;padding:2px;border-radius:5px;font-size: 12px;"><?php echo $status;?></span>
 															</div>
 															<?php
 															
@@ -701,6 +760,8 @@
 				}
 				$(function(){
 
+					
+
 					$('.js-expande').click(function() {
 						$(this).parent().parent().next('article').toggleClass('active');
 						$(this).toggleClass('button-reverse');
@@ -798,6 +859,53 @@
 						}
 
 					})
+
+					$('.js-btn-visualizarHistorico').click(function(){
+
+						let id_evolucao = $(this).attr('data-id_evolucao');
+						id_procedimento_aevoluir = $(this).attr('data-id_procedimento_aevoluir');
+
+
+						let data = {'ajax':'evolucaoProcedimentosHistorico',
+											'id_evolucao':id_evolucao,
+											'id_paciente':id_paciente,
+											'id_procedimento_aevoluir':id_procedimento_aevoluir};
+
+						$.ajax({
+							type:"POST",
+							data:data,
+							success:function(rtn) {
+								if(rtn.success) {
+
+									// limpa os historicos do aside
+									$('.aside-prontuario-procedimentos-historico-visualizacao .js-procedimentos-historico').html('');
+
+									let cont = 0;
+									rtn.historico.forEach(x=>{
+
+										$('.aside-prontuario-procedimentos-historico-visualizacao .js-procedimentos-historico').append(`<div class="history-item">
+																																<h1>${x.usuario} em ${x.data}</h1>		
+																																${x.obs}
+																															</div>`);
+
+									
+										cont++;
+										if(cont==rtn.historico.length) {
+											$(".aside-prontuario-procedimentos-historico-visualizacao").fadeIn(100,function() {
+												$(".aside-prontuario-procedimentos-historico-visualizacao .aside__inner1").addClass("active");
+												$(".aside-prontuario-procedimentos-historico-visualizacao .js-hist-id_procedimento_aevoluir").val(id_procedimento_aevoluir);
+												$(".aside-prontuario-procedimentos-historico-visualizacao .js-hist-id_evolucao").val(id_evolucao);
+												$(".aside-prontuario-procedimentos-historico-visualizacao .js-hist-procedimento").val(rtn.procedimento);
+												$(".aside-prontuario-procedimentos-historico-visualizacao .js-hist-status").val(rtn.status);
+												//$(".aside-prontuario-procedimentos-historico-visualizacao .js-hist-dataEvolucao").val(rtn.dataEvolucao);
+											});
+										}
+
+									});
+								}
+							}
+						})
+					});
 				})
 			</script>
 

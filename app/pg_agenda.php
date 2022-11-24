@@ -3043,7 +3043,7 @@
 								}
 								?>
 							</select>*/?>
-							<input type="number" name="agenda_duracao" value="<?php echo $values['agenda_duracao'];?>" />
+							<input type="number" name="agenda_duracao" value="<?php echo isset($values['agenda_duracao'])?$values['agenda_duracao']:'';?>" />
 							<span>min</span>
 						</dd>
 					</dl>
@@ -3418,6 +3418,9 @@
 	
 	$apiConfig=array('paciente'=>1,'proximaConsulta'=>1);
 	require_once("includes/api/apiAside.php");
+
+	$apiConfig=array('procedimentos'=>1);
+	require_once("includes/api/apiAsidePaciente.php");
 
 
 	include "includes/footer.php";

@@ -149,6 +149,8 @@
 <script type="text/javascript" src="js/jquery.daterangepicker.js"></script>
 
 <script type="text/javascript">
+      var id_paciente = 0;
+      var id_agenda = 0;
 </script>
 
 </head>

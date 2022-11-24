@@ -93,7 +93,7 @@
 
 <script type="text/javascript">
 	var id_baixa = '<?php echo $baixa->id;?>';
-	var id_paciente = '<?php echo $pagamento->id_paciente;?>';
+	id_paciente = '<?php echo $pagamento->id_paciente;?>';
 	$(function(){
 		$('.js-pagar-dataPagamento').inputmask('99/99/9999').datetimepicker({
 																		timepicker:false,

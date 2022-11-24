@@ -4184,6 +4184,77 @@
 	if(isset($apiConfig['proximaConsulta'])) {
 		?>
 		<script type="text/javascript">
+
+			const headerPaciente = (aside,rtn) => {
+
+				aside.find('.js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
+
+				if(rtn.data.ft && rtn.data.ft.length>0) {
+					aside.find('.js-foto').attr('src',rtn.data.ft);
+				} else {
+					aside.find('.js-foto').attr('src','img/ilustra-usuario.jpg');
+				}
+
+				if(rtn.data.idade && rtn.data.idade>0) {
+					aside.find('.js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
+				} else {
+					aside.find(' .js-idade').html(``);
+				}
+
+				if(rtn.data.periodicidade && rtn.data.periodicidade.length>0) {
+					aside.find('.js-periodicidade').html(`Periodicidade: ${rtn.data.periodicidade}`);
+				} else {
+					aside.find('.js-periodicidade').html(`Periodicidade: -`);
+				}
+
+				if(rtn.data.musica && rtn.data.musica.length>0) {
+					aside.find('.js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
+				} else {
+					aside.find('.js-musica').html(``);
+				}
+
+				if(rtn.data.statusBI && rtn.data.statusBI.length==0) {
+					aside.find('.js-statusBI').html(``).hide();
+				} else {
+					aside.find('.js-statusBI').html(`${rtn.data.statusBI}`).show();
+				}
+
+				aside.find('.js-ag-agendamentoFuturos table tr').remove();
+				if(rtn.data.agendamentosFuturos && rtn.data.agendamentosFuturos.length>0) {
+					rtn.data.agendamentosFuturos.forEach(x=>{
+
+
+						let profissionalIniciais=``;
+
+						x.profissionais.forEach(p=>{
+							profissionalIniciais+=`<div class="badge-prof" title="${p.iniciais}" style="background:${p.cor}">${p.iniciais}</div>`;
+						})
+						aside.find('.js-ag-agendamentoFuturos table').append(`<tr>
+																<td>
+																	<h1>${x.data}</h1>	
+																</td>
+																<td>${x.obs}</td>
+																<td>${x.cadeira}</td>
+																<td>
+																	${profissionalIniciais}
+																</td>
+															</tr>`);
+					});
+
+				} else {
+					aside.find('.js-ag-agendamentoFuturos table').append(`<tr><td><center>Nenhum agendamento futuro</center></td></tr>`);
+				}
+
+
+				aside.find('input,select,textarea').removeClass('erro').val('');
+				aside.find('.js-id_paciente').val(rtn.data.id_paciente);
+				aside.find('.js-periodicidade_select').val(rtn.data.periodicidade_select);
+				aside.find('.js-proximaConsulta-id_agenda').val(rtn.id_agenda);
+
+				if(rtn.data.id_profissional.length>0) aside.find('.js-prontuario-profissional').val(rtn.data.id_profissional);
+				else  aside.find('.js-prontuario-profissional').val('');
+
+			}
 			
 			const asideProximaConsulta = (id_agenda) => {
 
@@ -4198,85 +4269,29 @@
 						if(rtn.success) {
 
 
-							$('#js-aside-proximaConsulta .js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
-
-						
-							if(rtn.data.ft && rtn.data.ft.length>0) {
-								$('#js-aside-proximaConsulta .js-foto').attr('src',rtn.data.ft);
-							} else {
-								$('#js-aside-proximaConsulta .js-foto').attr('src','img/ilustra-usuario.jpg');
-							}
-
-							if(rtn.data.idade && rtn.data.idade>0) {
-								$('#js-aside-proximaConsulta .js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
-							} else {
-								$('#js-aside-proximaConsulta .js-idade').html(``);
-							}
-
-							if(rtn.data.periodicidade && rtn.data.periodicidade.length>0) {
-								$('#js-aside-proximaConsulta .js-periodicidade').html(`Periodicidade: ${rtn.data.periodicidade}`);
-							} else {
-								$('#js-aside-proximaConsulta .js-periodicidade').html(`Periodicidade: -`);
-							}
-
-							if(rtn.data.musica && rtn.data.musica.length>0) {
-								$('#js-aside-proximaConsulta .js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
-							} else {
-								$('#js-aside-proximaConsulta .js-musica').html(``);
-							}
-
-							if(rtn.data.statusBI && rtn.data.statusBI.length==0) {
-								$('#js-aside-proximaConsulta .js-statusBI').html(``).hide();
-							} else {
-								$('#js-aside-proximaConsulta .js-statusBI').html(`${rtn.data.statusBI}`).show();
-							}
-
-							$('#js-aside-proximaConsulta .js-ag-agendamentoFuturos table tr').remove();
-							if(rtn.data.agendamentosFuturos && rtn.data.agendamentosFuturos.length>0) {
-								rtn.data.agendamentosFuturos.forEach(x=>{
+							id_agenda=rtn.id_agenda;
+							id_paciente=rtn.data.id_paciente
+							headerPaciente($('#js-aside-proximaConsulta'),rtn);
+							headerPaciente($('.aside-prontuario-procedimentos'),rtn);
+							asideProcedimentos();
 
 
-									let profissionalIniciais=``;
-
-									x.profissionais.forEach(p=>{
-										profissionalIniciais+=`<div class="badge-prof" title="${p.iniciais}" style="background:${p.cor}">${p.iniciais}</div>`;
-									})
-									$('#js-aside-proximaConsulta .js-ag-agendamentoFuturos table').append(`<tr>
-																			<td>
-																				<h1>${x.data}</h1>	
-																			</td>
-																			<td>${x.obs}</td>
-																			<td>${x.cadeira}</td>
-																			<td>
-																				${profissionalIniciais}
-																			</td>
-																		</tr>`);
-								});
-
-							} else {
-								$('#js-aside-proximaConsulta .js-ag-agendamentoFuturos table').append(`<tr><td><center>Nenhum agendamento futuro</center></td></tr>`);
-							}
-
-
-							$('#js-aside-proximaConsulta').find('input,select,textarea').removeClass('erro').val('');
-							$('#js-aside-proximaConsulta .js-id_paciente').val(rtn.data.id_paciente);
-							$("#js-aside-proximaConsulta").fadeIn(100,function() {
+							/*$("#js-aside-proximaConsulta").fadeIn(100,function() {
 								$("#js-aside-proximaConsulta .aside__inner1").addClass("active");
 								//
 
 								asideProximaConsultaProntuario();
+							});*/
+
+							$('.aside-prontuario-procedimentos').fadeIn(100,function() {
+								$('.aside-prontuario-procedimentos .aside__inner1').addClass("active");
+								$('.aside-prontuario-procedimentos').find('.tab,.header-profile').show();
+								
 							});
 
-							$('#js-aside-proximaConsulta .js-periodicidade_select').val(rtn.data.periodicidade_select)
-
+							
 							$('#js-aside-proximaConsulta .js-btn-acao-lembrete').click();
 
-							$('#js-aside-proximaConsulta .js-proximaConsulta-id_agenda').val(id_agenda);
-
-
-							if(rtn.data.id_profissional.length>0) $('#js-aside-proximaConsulta .js-prontuario-profissional').val(rtn.data.id_profissional);
-							else  $('#js-aside-proximaConsulta .js-prontuario-profissional').val('');
-							
 
 						} else if(rtn.error) {
 							//swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -4305,7 +4320,7 @@
 
 			const asideProximaConsultaProntuario = () => {
 				
-				$('#js-aside-proximaConsulta .aside-header h1').html('Evolução Geral');
+				/*$('#js-aside-proximaConsulta .aside-header h1').html('Evolução Geral');
 				$('#js-aside-proximaConsulta .js-prontuario-data').val('<?php echo date('d/m/Y H:i');?>');
 				$('#js-aside-proximaConsulta .js-tab').hide();
 				$('#js-aside-proximaConsulta .js-ag-agendamento').hide();
@@ -4317,7 +4332,13 @@
 																		scrollMonth:false,
 																		scrollTime:false,
 																		scrollInput:false,
-																	});
+																	});*/
+
+				alert('a');
+				$('.aside-prontuario-procedimentos').fadeIn(100,function() {
+					$(this).children(".aside__inner1").addClass("active");
+					
+				});
 			}
 
 			const asideProximaConsultaFinalizado = () => {
