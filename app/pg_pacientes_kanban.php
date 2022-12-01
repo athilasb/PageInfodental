@@ -169,10 +169,11 @@
 			</section>
 
 			<section class="grid" style="flex:1;">
-				<div class="kanban" style="grid-template-columns:repeat(4,minmax(0,1fr));">
+				<div class="kanban" style="grid-template-columns:repeat(7,minmax(0,1fr));">
 					<?php
+
 					foreach($_codigoBI as $codigoBI=>$biTitulo) {
-						if($codigoBI==3 or $codigoBI==4 or $codigoBI==5) continue;
+					//	if($codigoBI==3 or $codigoBI==4 or $codigoBI==5) continue;
 
 					?>
 					<div class="kanban-item" style="background:<?php echo $_codigoBICores[$codigoBI];?>;color:var(--cor1);">

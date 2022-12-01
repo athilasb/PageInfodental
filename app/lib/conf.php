@@ -11,7 +11,7 @@
 				$_ENV['NAME']=$_ENV['MYSQL_DB']='';
 
 			} else {
-				$_ENV['NAME']=$_ENV['MYSQL_DB']='studiodental';
+				$_ENV['NAME']=$_ENV['MYSQL_DB']='keiko';
 			}
 
 
@@ -49,6 +49,7 @@
 										));
 
 	$_pacientesPeriodicidade = array(1=>'1 mês',
+										3=>'3 meses',
 										4=>'4 meses',
 										6=>'6 meses',
 										12=>'12 meses');
@@ -173,9 +174,9 @@
 
 	$_codigoBI=array(1=>'Novo',
 					2=>'Paciente Ativo',//Antigo',
-					//	3=>'Alto Potencial',
-					//	4=>'Em Tratamento',
-					//	5=>'Em Acompanhamento',
+						3=>'Alto Potencial',
+						4=>'Em Tratamento',
+						5=>'Em Acompanhamento',
 						6=>'Baixo Potencial',
 						7=>'Desativado');
 
@@ -209,7 +210,7 @@
 	$_medicamentosTipos=array('ampola'=>'Ampola(s)',
 							 'caixa'=>'Caixa(s)',
 							 'comprimido'=>'Comprimido(s)',
-							 'fraco'=>'Fraco(s)',
+							 'frasco'=>'Frasco(s)',
 							 'pacote'=>'Pacote(s)',
 							 'tubo'=>'Tubo(s)',
 							 'capsula'=>'Capsula(s)');

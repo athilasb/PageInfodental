@@ -106,7 +106,7 @@
 	$_medicamentosTipos=array('ampola'=>'Ampola(s)',
 							 'caixa'=>'Caixa(s)',
 							 'comprimido'=>'Comprimido(s)',
-							 'fraco'=>'Fraco(s)',
+							 'frasco'=>'Frasco(s)',
 							 'pacote'=>'Pacote(s)',
 							 'tubo'=>'Tubo(s)',
 							 'capsula'=>'Capsula(s)');

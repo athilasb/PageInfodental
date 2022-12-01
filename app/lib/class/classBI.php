@@ -7,8 +7,9 @@
 			if(isset($attr['prefixo'])) $this->prefixo=$attr['prefixo'];
 		}
 
-		/// Codigo BI completo (até o sistema ficar pronto): 2022-05-19
-		function classificaTodosOFF() {
+		// Codigo BI completo (até o sistema ficar pronto): 2022-05-19
+		// Codigo BI completo reativado: 2022-12-01
+		function classificaTodos() {
 			$sql = new Mysql();
 			$_p=$this->prefixo;
 
@@ -255,8 +256,8 @@
 
 		}
 
-		// Codigo BI versao simples
-		function classificaTodos() {
+		// Codigo BI versao simples (rodou temporariamente ate o sistema ficar pronto, e foi desativado): 2022-12-01
+		function classificaTodosOFF() {
 			$sql = new Mysql();
 			$_p=$this->prefixo;
 

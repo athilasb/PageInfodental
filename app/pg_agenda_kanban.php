@@ -719,6 +719,10 @@
 						'proximaConsulta'=>1);
 	require_once("includes/api/apiAside.php");
 
+	
+	$apiConfig=array('procedimentos'=>1);
+	require_once("includes/api/apiAsidePaciente.php");
+
 
 	include "includes/footer.php";
 ?>	
