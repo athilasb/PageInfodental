@@ -33,8 +33,6 @@ class Mysql {
 		$ms_login=$_ENV['MYSQL_USER'];
 		$ms_senha=$_ENV['MYSQL_PASS'];
 		$ms_db=$_ENV['MYSQL_DB'];
-	
-
 		
 		$this->connecting=mysqli_connect($ms_server, $ms_login, $ms_senha);
 		if(isset($mb4) and $mb4===true) { 

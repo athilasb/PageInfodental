@@ -263,6 +263,24 @@
 			} else {
 				$rtn=array('success'=>false,'error'=>'Horário não encontrado!');
 			}
+		} 
+
+		else if($_POST['ajax']=="persistirOrdem") {
+			if(isset($_POST['ordem']) and !empty($_POST['ordem'])) {
+				$ordem=explode(",",$_POST['ordem']);
+				if(is_array($ordem) and count($ordem)>0) {
+					$aux=1;
+					foreach($ordem as $idItem) {
+						if(is_numeric($idItem)) {
+							$sql->update($_table,"ordem=$aux","where id=$idItem");
+							$aux++;
+						}
+					}
+					$rtn=array('success'=>true);
+				}
+			} else {
+				$rtn=array('error'=>'Ordem não definida!');
+			}
 		}
 
 		header("Content-type: application/json");
@@ -479,6 +497,9 @@
 						?>	
 							<div class="list1">
 								<table class="js-cadeiras-table">
+									<thead>
+									</thead>
+									<tbody>
 									<?php
 									while($x=mysqli_fetch_object($sql->mysqry)) {
 									?>
@@ -489,6 +510,7 @@
 									<?php
 									}
 									?>
+									</tbody>
 								</table>
 							</div>
 							<?php
@@ -506,11 +528,30 @@
 					</div>	
 
 						<script type="text/javascript">
+							const persistirOrdem = () => {
+								let ordem = [];
+								$(`.js-cadeiras-table tbody tr`).each(function(index,elem){
+									
+									ordem.push($(elem).attr('data-id'));
+								});
+
+								let data = `ajax=persistirOrdem&ordem=${ordem}`;
+								$.ajax({
+									type:"POST",
+									data:data,
+									success:function(rtn) {
+										console.log(rtn);
+									},
+									error:function() {
+
+									}
+								})
+							}
 							$(function(){
-								$(".js-cadeiras-table").sortable({
+								$(".js-cadeiras-table tbody").sortable({
 									stop:function(event,ui) {
 										 let id = $(ui.item).attr('data-id');
-										 alert(id);
+										 persistirOrdem(id);
 									}
 								});
 							})

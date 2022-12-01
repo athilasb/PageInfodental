@@ -1,35 +1,14 @@
 <?php
-	require_once("lib/conf.php");
-	$_table=$_p."landingpage_temas";
-
 	include "includes/header.php";
 	include "includes/nav.php";
 
-	$values=$adm->get($_GET);
-	$campos=explode(",","nome,situacao,sexo,foto_cn,rg,rg_orgaoemissor,rg_uf,cpf,data_nascimento,profissao,estado_civil,telefone1,telefone1_whatsapp,telefone1_whatsapp_permissao,telefone2,email,instagram,instagram_naopossui,musica,indicacao_tipo,indicacao,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,responsavel_possui,responsavel_nome,responsavel_sexo,responsavel_rg,responsavel_rg_orgaoemissor,responsavel_rg_estado,responsavel_datanascimento,responsavel_estadocivil,responsavel_cpf,responsavel_profissao,responsavel_grauparentesco,preferencia_contato,estrangeiro,estrangeiro_passaporte,lat,lng,responsavel_estado_civil");
+	$_table=$_p."landingpage_temas";
+	$cnt="";
 
-	$_profissoes=array();
-	$sql->consult($_p."parametros_profissoes","*","where lixo=0 order by titulo asc");
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_profissoes[$x->id]=$x;
-	}
-
-	$_profissionais=array();
-	$sql->consult($_p."colaboradores","*","where check_agendamento=1 and lixo=0 order by nome asc");
-	while($x=mysqli_fetch_object($sql->mysqry)) {
-		$_profissionais[$x->id]=$x;
-	}
-
-	$values=array();
-	foreach($campos as $v) {
-		$values[$v]='';
-	}
-
-	if(isset($_GET['cmd'])) {
-		$adm->biCategorizacao();
-		die();
-	}
-
+	$campos=explode(",","titulo,code,cor_primaria,cor_secundaria,codigo_head,codigo_body");
+	
+	foreach($campos as $v) $values[$v]='';
+	$values['code']= '';
 ?>
 
 	<header class="header">
@@ -38,14 +17,11 @@
 				<section class="header-title">
 					<h1>Landing Pages</h1>
 				</section>
-				<?php
-				require_once("includes/menus/menuLandingPage.php");
-				?>
 			</div>
 		</div>
 	</header>
 	
-
+	<script src="js/jquery.colorpicker.js"></script>
 	<script type="text/javascript">
 		
 		$(function(){
@@ -59,42 +35,76 @@
 				let id = $(this).attr('data-id');
 				document.location.href=`pg_landingpage_configuracao.php?id_landingpage=${id}`;
 			})
+
+			$('input[name=cor_primaria]').ColorPicker({
+				color: '<?php echo $values['cor_primaria'];?>',
+				onShow: function (colpkr) {$(colpkr).fadeIn(500);return false;},
+				onHide: function (colpkr) {$(colpkr).fadeOut(500);return false;},
+				onChange: function (hsb, hex, rgb) {console.log(hex);$('input[name=cor_primaria]').css('backgroundColor', '#' + hex).val('#'+hex);}
+			});
+			$('input[name=cor_secundaria]').ColorPicker({
+				color: '<?php echo $values['cor_secundaria'];?>',
+				onShow: function (colpkr) {$(colpkr).fadeIn(500);return false;},
+				onHide: function (colpkr) {$(colpkr).fadeOut(500);return false;},
+				onChange: function (hsb, hex, rgb) {console.log(hex);$('input[name=cor_secundaria]').css('backgroundColor', '#' + hex).val('#'+hex);}
+			});
+			$('input[name=cor_primaria]').css('backgroundColor','<?php echo $values['cor_primaria'];?>');
+			$('input[name=cor_secundaria]').css('backgroundColor','<?php echo $values['cor_secundaria'];?>');
+			var input = $('input[name=code]');
+
+			input.bind('keypress', function(e)
+			{
+			    if (((e.which < 65 || e.which > 122) && (e.which < 48 || e.which > 57)) && e.which != 45)
+			    {
+			        e.preventDefault();
+			    } 
+			});
+			<?php
+			if(empty($cnt)) {
+			?>
+			$('input[name=titulo]').keyup(function(){
+				let code = retira_acentos($(this).val().toLowerCase().split(' ').join('-'));
+				$('input[name=code]').val(code);
+			});
+			$('input[name=cor_primaria]').keyup(function(){
+				let cor = $(this).val();
+				$('input[name=cor_secundaria]').val(cor);
+			});
+			<?php
+			}
+			?>
 		})
 	</script>
 
 	<main class="main">
 		<div class="main__content content">
 
-			
  	<?php
  	if(isset($_GET['form'])) {
 
  		if(isset($_POST['acao'])) {
 
+ 			$vSQL=$adm->vSQL($campos,$_POST);
+ 			$processa=true;
+ 			if($processa===true) {	
 
- 			$_POST['rg_orgaoemissor']=strtoupperWLIB($_POST['rg_orgaoemissor']);
-			$vSQL=$adm->vSQL($campos,$_POST);
-			$values=$adm->values;
+				if(is_object($cnt)) {
+					$vSQL=substr($vSQL,0,strlen($vSQL)-1);
+					$vWHERE="where id='".$cnt->id."'";
+					$sql->update($_table,$vSQL,$vWHERE);
+					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
+					$id_reg=$cnt->id;
+				} else {
+					$sql->add($_table,$vSQL."data=now(),id_usuario='".$usr->id."'");
+					$id_reg=$sql->ulid;
+					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_table."',id_reg='".$sql->ulid."'");
+				}
 
-			$vSQL=substr($vSQL,0,strlen($vSQL)-1);
-			$vSQL.=",periodicidade=6,data=now()";
-			$sql->add($_table,$vSQL);
-			$id_reg=$sql->ulid;
-			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',vwhere='',tabela='$_table',id_reg='$id_reg'");
-			
-			$attr=array('prefixo'=>$_p,'usr'=>$usr);
-			$wts = new Whatsapp($attr);
-
-			if($wts->atualizaFoto($id_reg)) {
-				//echo "ok";
-				
+				$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='pg_landingpage_configuracao.php?id_landingpage=".$id_reg."&".$url."'");
+				die();
 			}
-			//else echo $wts->erro;
-			$adm->biCategorizacao();
-			$jsc->go("pg_pacientes_dadospessoais.php?id_paciente=$id_reg");
-			die();
+
 		}
- 		$cnt='';
 		?>	
 			<section class="filter">
 				
@@ -104,10 +114,10 @@
 				<div class="filter-group">
 					<div class="filter-form form">
 						<dl>
-							<dd><a href="pg_pacientes.php" class="button"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></a></dd>
+							<dd><a href="pg_landingpage.php" class="button"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></a></dd>
 						</dl>
 						<dl>
-							<dd><a href="javascript:;" class="button button_main js-submit-paciente"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>
+							<dd><a href="javascript:;" class="button button_main js-submit"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>
 						</dl>
 					</div>
 				</div>
@@ -118,600 +128,52 @@
 				<form method="post" class="form formulario-validacao">
 					<input type="hidden"  name="acao" value="wlib" />
 
-					<script type="text/javascript">
-						var initIndicacao = '<?php echo $values['indicacao'];?>';
-						var initIndicacao_tipo = '<?php echo $values['indicacao_tipo'];?>';
-
-						$(function(){
-
-							$('.js-submit-paciente').click(function(){
-								if($('.js-cpf-erro').is(':visible')===true) {
-									swal({title: "Atenção!", html:true, text: `Já existe paciente cadastrado com este CPF!`, type:"warning", confirmButtonColor: "#424242"});
-								} else {
-									$('form.formulario-validacao').submit();
-								}
-							})
-
-							
-
-							$('select[name=indicacao_tipo]').change(function(){
-								//let id_indicacao = $(this).find('option:selected').attr('data-id');
-								let indicacao_tipo = $(this).val();
-
-								if(indicacao_tipo.length>0) {
-									let data = `ajax=indicacoesLista&indicacao_tipo=${indicacao_tipo}`;
-									$.ajax({
-										type:"POST",
-										data:data,
-										success:function(rtn) {
-											$('select[name=indicacao] option').remove();
-											$('select[name=indicacao]').append(`<option value=""></option>`);
-											console.log(rtn.indicacoes);
-											if(rtn.indicacoes) {
-												rtn.indicacoes.forEach(x => {
-													if(initIndicacao_tipo==indicacao_tipo && initIndicacao==x.id) sel = ' selected';
-													else sel='';
-													let option = `<option value="${x.id}"${sel}>${x.titulo}</option>`
-													$('select[name=indicacao]').append(`${option}`);
-												});
-											}
-											$('select[name=indicacao]').trigger('chosen:updated')
-										}
-									})
-								}
-							}).trigger('change');
-
-							$('input[name=telefone1],input[name=telefone2]').blur(function(){
-								let obj = $(this);
-								let id_paciente = 0;
-								let campo = $(this).attr('name');
-								let val = $(this).val();
-								let data = `ajax=verificarTelefone&campo=${campo}&valor=${val}&id_paciente=${id_paciente}`;
-
-								$.ajax({
-									type:'POST',
-									data:data,
-									success:function(rtn) {
-										if(rtn.success) {
-											if(rtn.cadastros) {
-												if(rtn.cadastros.length>0) {
-
-													let cadastros = ``;
-													rtn.cadastros.forEach(x=>{
-														cadastros+=`<a href="pg_contatos_pacientes_dadospessoais.php?id_paciente=${x.id}" target="_blank"><u><span class="iconify" data-icon="bx:bx-user"></span> ${x.nome}</a></u><br />`;
-													});
-
-
-													swal({title: "Atenção!", html:true, text: `O(s) seguinte(s) paciente(s)<br />possui o mesmo telefone <b>${val}</b>:<br /><br />${cadastros}`, type:"warning", confirmButtonColor: "#424242"});
-
-												}
-											}
-										}
-									}
-								})
-							})
-
-							$('input[name=estrangeiro]').click(function(){
-
-								if($(this).prop('checked')==true) {
-									$('input[name=estrangeiro_passaporte]').parent().parent().show();
-								} else {
-									$('input[name=estrangeiro_passaporte]').parent().parent().hide();
-
-								}
-							});	
-
-							if($('input[name=estrangeiro').prop('checked')===false) {
-								$('input[name=estrangeiro_passaporte]').parent().parent().hide();
-							} else {
-								$('input[name=estrangeiro_passaporte]').parent().parent().show();
-							}
-
-							$('input[name=telefone1]').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
-								let countryOut = country || '  ';
-								$(this).parent().parent().find('.js-country').html(countryOut);
-							}).trigger('keyup');
-
-							$('input[name=telefone2]').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
-								let countryOut = country || '  ';
-								$(this).parent().parent().find('.js-country').html(countryOut);
-							}).trigger('keyup');
-						})
-					</script>
 					<fieldset>
-						<legend>Cadastro</legend>
+						<legend>Informações</legend>
 
-						<div class="grid">
-							
+						<div class="grid grid_2">
+
 							<div style="grid-column:span 2">
-								<div class="colunas3">
-									<dl class="dl2">
-										<dt>Nome</dt>
-										<dd><input type="text" class="obg" name="nome" value="<?php echo $values['nome'];?>" /></dd>
+								<div class="colunas">
+									<dl>
+										<dt>Tema</dt>
+										<dd><input type="text" name="titulo" value="<?php echo $values['titulo'];?>" class="obg" /></dd>
 									</dl>
 									<dl>
-										<dt>Sexo</dt>
-										<dd>
-											<select name="sexo" class="">
-												<option value="">-</option>
-												<option value="M"<?php echo $values['sexo']=="M"?" selected":"";?>>Masculino</option>
-												<option value="F"<?php echo $values['sexo']=="F"?" selected":"";?>>Feminino</option>
-											</select>
-										</dd>
+										<dt>URL do Tema</dt>
+										<dd><input type="text" name="code" value="<?php echo $values['code'];?>" class="obg" /></dd>
 									</dl>
 								</div>
-								<div class="colunas3">
+								<div class="colunas">
 									<dl>
-										<dt>Doc. Identidade</dt>
-										<dd><input type="text" name="rg" value="<?php echo $values['rg'];?>"  class="" /></dd>
+										<dt>Cor Primária</dt>
+										<dd><input type="text" name="cor_primaria" value="<?php echo $values['cor_primaria'];?>" class="obg" /></dd>
 									</dl>
 									<dl>
-										<dt>Org. Emissor</dt>
-										<dd><input type="text" name="rg_orgaoemissor" value="<?php echo $values['rg_orgaoemissor'];?>"  class="" style="text-transform: uppercase;" /></dd>
-									</dl>
-									<dl>
-										<dt>UF</dt>
-										<dd>
-											<?php $inEstado=strtoupperWLIB($values['rg_uf']);?><select name="rg_uf" class="chosen"><option value="">-</option><option value="AC"<?php echo $inEstado=="AC"?" selected":"";?>>ACRE</option><option value="AL"<?php echo $inEstado=="AL"?" selected":"";?>>ALAGOAS</option><option value="AM"<?php echo $inEstado=="AM"?" selected":"";?>>AMAZONAS</option><option value="AP"<?php echo $inEstado=="AP"?" selected":"";?>>AMAPÁ</option><option value="BA"<?php echo $inEstado=="BA"?" selected":"";?>>BAHIA</option><option value="CE"<?php echo $inEstado=="CE"?" selected":"";?>>CEARÁ</option><option value="DF"<?php echo $inEstado=="DF"?" selected":"";?>>DISTRITO FEDERAL</option><option value="ES"<?php echo $inEstado=="ES"?" selected":"";?>>ESPÍRITO SANTO</option><option value="GO"<?php echo $inEstado=="GO"?" selected":"";?>>GOIÁS</option><option value="MA"<?php echo $inEstado=="MA"?" selected":"";?>>MARANHÃO</option><option value="MT"<?php echo $inEstado=="MT"?" selected":"";?>>MATO GROSSO</option><option value="MS"<?php echo $inEstado=="MS"?" selected":"";?>>MATO GROSSO DO SUL</option><option value="MG"<?php echo $inEstado=="MG"?" selected":"";?>>MINAS GERAIS</option><option value="PA"<?php echo $inEstado=="PA"?" selected":"";?>>PARÁ</option><option value="PB"<?php echo $inEstado=="PB"?" selected":"";?>>PARAÍBA</option><option value="PR"<?php echo $inEstado=="PR"?" selected":"";?>>PARANÁ</option><option value="PE"<?php echo $inEstado=="PE"?" selected":"";?>>PERNANBUMCO</option><option value="PI"<?php echo $inEstado=="PI"?" selected":"";?>>PIAUÍ</option><option value="RJ"<?php echo $inEstado=="RJ"?" selected":"";?>>RIO DE JANEIRO</option><option value="RN"<?php echo $inEstado=="RN"?" selected":"";?>>RIO GRANDE DO NORTE</option><option value="RO"<?php echo $inEstado=="RO"?" selected":"";?>>RONDÔNIA</option><option value="RS"<?php echo $inEstado=="RS"?" selected":"";?>>RIO GRANDE DO SUL</option><option value="RR"<?php echo $inEstado=="RR"?" selected":"";?>>RORAIMA</option><option value="SC"<?php echo $inEstado=="SC"?" selected":"";?>>SANTA CATARINA</option><option value="SE"<?php echo $inEstado=="SE"?" selected":"";?>>SERGIPE</option><option value="SP"<?php echo $inEstado=="SP"?" selected":"";?>>SÃO PAULO</option><option value="TO"<?php echo $inEstado=="TO"?" selected":"";?>>TOCANTINS</option></select>
-										</dd>
+										<dt>Cor Secundária</dt>
+										<dd><input type="text" name="cor_secundaria" value="<?php echo $values['cor_secundaria'];?>" class="obg" /></dd>
 									</dl>
 								</div>
-								<div class="colunas3">
-									<dl>
-										<dt>CPF</dt>
-										<dd><input type="text" name="cpf" value="<?php echo $values['cpf'];?>" class="cpf js-cpf" /></dd>
-										<div class="js-cpf-dd form-alert"></div>
-										<script type="text/javascript">
-											$(function(){
-
-												$('input[name=cpf]').change(function(){
-													let cpf = $(this).val();
-													$('.js-cpf-dd').hide();
-
-													if(cpf.length==14) {
-														if(validarCPF(cpf)) {
-
-															$('.js-cpf-dd').hide();
-														} else {
-															$('.js-cpf-dd').html(`<i class="iconify" data-icon="fluent:info-16-regular"></i> CPF inválido!`).show();
-														}
-													
-
-														let data = `ajax=consultaCPF&cpf=${cpf}`
-														$.ajax({
-															type:"POST",
-															url:"pg_pacientes.php",
-															data:data,
-															success:function(rtn) {
-																if(rtn.success) {
-																	if(rtn.pacientes && rtn.pacientes>0) {
-																		$('.js-cpf-dd').html(`<i class="iconify" data-icon="fluent:info-16-regular"></i> Já existe cadastro com este CPF!`).show();;
-																	} else {
-																	}
-																} else if(rtn.error) {
-
-																} else {
-
-																}
-															},
-															error:function(){
-
-															}
-														})
-													}
-
-												})
-											})
-										</script>
-									</dl>
-									<dl>
-										<dt>Data de Nascimento</dt>
-										<dd><input type="text" name="data_nascimento" value="<?php echo $values['data_nascimento'];?>" class="data" /></dd>
-									</dl>
-									<dl>
-										<dt>Estado Civil</dt>
-										<dd>
-											<select name="estado_civil" class="chosen">
-												<option value="">-</option>
-												<?php
-												foreach($_pacienteEstadoCivil as $k=>$v) {
-													echo '<option value="'.$k.'"'.(($values['estado_civil']==$k)?' selected':'').'>'.$v.'</option>';
-												}
-												?>
-											</select>
-										</dd>
-									</dl>
-								</div>
-								<div class="colunas3">
-									<dl class="dl2">
-										<dt>Profissão</dt>
-										<dd>
-											<select name="profissao" class="chosen ajax-id_profissao" data-placeholder="PROFISSÃO">
-												<option value=""></option>
-												<?php
-												foreach($_profissoes as $v) {
-													echo '<option value="'.$v->id.'"'.(($values['profissao']==$v->id)?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
-												}
-												?>
-											</select>
-											<a href="javascript:;" class="js-btn-aside button" data-aside="profissao" data-aside-sub><i class="iconify" data-icon="fluent:add-24-regular"></i></a>
-										</dd>
-									</dl>
-									<dl>
-										<dt>Preferência Musical</dt>
-										<dd><input type="text" name="musica" value="<?php echo $values['musica'];?>" /></dd>
-									</dl>
-								</div>
-								<dl>									
+								<dl>
+									<dt>Código de Rastreamento Body</dt>
 									<dd>
-										<label><input type="checkbox" class="input-switch" name="estrangeiro" value="1"<?php echo (isset($values['estrangeiro']) and $values['estrangeiro']==1)?" checked":"";?> /> Estrangeiro</label>
+										<textarea name="codigo_body" style="height: 200px;" class="noupper"><?php echo $values['codigo_body'];?></textarea>
 									</dd>
 								</dl>
-
 								<dl>
-									<dt>Passaporte</dt>
+									<dt>Código de Rastreamento Head</dt>
 									<dd>
-										<input type="text" name="estrangeiro_passaporte" value="<?php echo $values['estrangeiro_passaporte'];?>" />
+										<textarea name="codigo_head" style="height: 200px;" class="noupper"><?php echo $values['codigo_head'];?></textarea>
 									</dd>
 								</dl>
 							</div>
-
-
 						</div>
 					</fieldset>
-
-					<fieldset>
-						<legend>Contato</legend>
-						<div class="colunas4">
-							<dl>
-								<dt>Telefone 1</dt>
-								<dd class="form-comp"><span class="js-country">BR</span><input type="text" name="telefone1" style="width:85%;float:right;" class="obg" attern="\d*" x-autocompletetype="tel" value="<?php echo $values['telefone1'];?>" /></dd>
-							</dl>
-							<dl>
-								<dt>Telefone 2</dt>
-								<dd class="form-comp"><span class="js-country">BR</span><input type="text" name="telefone2" style="width:85%;float:right;" attern="\d*" x-autocompletetype="tel" value="<?php echo $values['telefone2'];?>"  /></dd>
-							</dl>
-							<dl>
-								<dt>E-mail</dt>
-								<dd><input type="text" name="email" class="noupper" value="<?php echo $values['email'];?>" /></dd>
-							</dl>
-							<dl>
-								<dt>Instagram</dt>
-								<dd class="form-comp"><span>@</span><input type="text" name="instagram" class="noupper" placeholder="" value="<?php echo $values['instagram'];?>" /></dd>
-							</dl>
-						</div>
-						<script>
-							var marker = '';
-							var map = '';
-							var position = '';
-							var positionEndereco = '';
-							var el = document.getElementById("geolocation");
-							var location_timeout = '';
-							var geocoder = '';
-							var enderecoObj = {};
-							var enderecos = [];	
-							var lat = `-16.688304`;
-							var lng = `-49.267055`;
-
-							function initMap() {
-								let options = {componentRestrictions: {country: "bra"}}
-								var input = document.getElementById('search');
-
-								var autocomplete = new google.maps.places.Autocomplete(input,options);
-								geocoder = new google.maps.Geocoder();
-
-								autocomplete.addListener('place_changed', function() {
-
-									var result = autocomplete.getPlace();
-									lat = result.geometry.location.lat();
-									lng = result.geometry.location.lng();
-									$('input[name=lat]').val(lat);
-									$('input[name=lng]').val(lng);
-
-									let logradouro = '';
-									let numero = '';
-									let bairro = '';
-									let cep = '';
-									let cidade = '';
-									let estado = '';
-									let pais = '';
-									let descricao = '';
-
-									enderecoObj = { logradouro, numero, bairro, cep, cidade, estado, pais, descricao, lat, lng }
-
-									$('input[name=lat]').val(enderecoObj.lat);
-									$('input[name=lng]').val(enderecoObj.lng);
-								});
-
-							}	
-						</script>
-						<script async src="https://maps.googleapis.com/maps/api/js?key=<?php echo $_googleMapsKey;?>&libraries=places&callback=initMap">
-						</script>
-
-						<div class="colunas">
-							<dl class="">
-								<dt>Endereço</dt>
-								<dd><input type="text" name="endereco" value="<?php echo $values['endereco'];?>" id="search" /></dd>
-							</dl>
-							<dl>
-								<dt>Complemento</dt>
-								<dd><input type="text" name="complemento" value="<?php echo $values['complemento'];?>" /></dd>
-							</dl>
-						</div>
-						<input type="hidden" name="lng" id="lng" value="<?php echo $values['lng'];?>" />
-						<input type="hidden" name="lat" id="lat" value="<?php echo $values['lat'];?>"/>
-					</fieldset>
-
-					<fieldset>
-						<legend>BI</legend>
-							<div class="colunas3">
-							<dl>
-								<dt>Tipo de indicação</dt>
-								<dd>
-									<select name="indicacao_tipo" class="chosen">
-										<option value=""></option>
-										<?php
-										foreach($optTipoIndicacao as $k=>$v) echo '<option value="'.$k.'"'.($values['indicacao_tipo']==$k?' selected':'').'>'.$v.'</option>';
-										?>
-									</select>
-								</dd>
-							</dl>
-							<dl>
-								<dt>Indicação</dt>
-								<dd>
-									<select name="indicacao" class="chosen">
-										<option value=""></option>
-									</select>
-								</dd>
-							</dl>
-						
-							
-							<dl>
-								<dt>Situação</dt>
-								<dd>
-									<select name="situacao">
-										<option value="">-</option>
-										<?php
-										foreach($_pacienteSituacao as $k=>$v) echo '<option value="'.$k.'"'.($values['situacao']==$k?' selected':'').'>'.($v).'</option>';
-										?>
-									</select>
-								</dd>
-							</dl>
-						</div>
-					</fieldset>
-
-					<script type="text/javascript">
-						$(function(){
-							$('input[name=responsavel_possui]').click(function(){
-								if($(this).val()==1) {
-									$('.js-box-possuiResponsavel').fadeIn();
-								} else {
-									$('.js-box-possuiResponsavel').fadeOut();
-								}
-							});
-							$('input[name=responsavel_possui]:checked').trigger('click');
-						})
-					</script>
-					<fieldset>
-						<legend>Responsável</legend>
-
-						<dl>
-							<dt>Possui responsável legal?</dt>
-							<dd>
-								<label><input type="radio" name="responsavel_possui" value="1"<?php echo $values['responsavel_possui']==1?" checked":"";?> /> Sim</label>
-								<label><input type="radio" name="responsavel_possui" value="0"<?php echo $values['responsavel_possui']==0?" checked":"";?> /> Não</label>
-							</dd>
-						</dl>
-
-						<div class="colunas5 js-box-possuiResponsavel">
-							<dl class="dl2">
-								<dt>Nome</dt>
-								<dd>
-									<input type="text" name="responsavel_nome" value="<?php echo $values['responsavel_nome'];?>" class="" />
-								</dd>
-							</dl>
-							<dl>
-								<dt>Sexo</dt>
-								<dd>
-									<select name="responsavel_sexo" class="">
-										<option value="">-</option>
-										<option value="M"<?php echo $values['responsavel_sexo']=="M"?" selected":"";?>>Masculino</option>
-										<option value="F"<?php echo $values['responsavel_sexo']=="F"?" selected":"";?>>Feminino</option>
-									</select>
-								</dd>
-							</dl>
-
-							<dl class="">
-								<dt>Estado Civil</dt>
-								<dd>
-									<select name="responsavel_estado_civil" class="chosen">
-										<option value=""></option>
-										<?php
-										foreach($_pacienteEstadoCivil as $k=>$v) {
-											echo '<option value="'.$k.'"'.(($values['responsavel_estado_civil']==$k)?' selected':'').'>'.$v.'</option>';
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
-							<dl class="">
-								<dt>Profissão</dt>
-								<dd>
-									<select name="responsavel_profissao" class="chosen">
-										<option value=""></option>
-										<?php
-										foreach($_profissoes as $v) {
-											echo '<option value="'.$v->id.'"'.(($values['responsavel_profissao']==$v->id)?' selected':'').'>'.utf8_encode($v->titulo).'</option>';
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
-
-							<dl class="">
-								<dt>Doc. Identidade</dt>
-								<dd>
-									<input type="text" name="responsavel_rg" value="<?php echo $values['responsavel_rg'];?>"  class="" />
-								</dd>
-							</dl>
-							<dl>
-								<dt>Org. Emissor</dt>
-								<dd>
-									<input type="text" name="responsavel_rg_orgaoemissor" value="<?php echo $values['responsavel_rg_orgaoemissor'];?>"  class="" />
-								</dd>
-							</dl>
-							<dl>
-								<dt>UF</dt>
-								<dd>
-									<?php $inEstado=strtoupperWLIB($values['responsavel_rg_estado']);?><select name="responsavel_rg_estado" class="chosen"><option value=""></option><option value="AC"<?php echo $inEstado=="AC"?" selected":"";?>>ACRE</option><option value="AL"<?php echo $inEstado=="AL"?" selected":"";?>>ALAGOAS</option><option value="AM"<?php echo $inEstado=="AM"?" selected":"";?>>AMAZONAS</option><option value="AP"<?php echo $inEstado=="AP"?" selected":"";?>>AMAPÁ</option><option value="BA"<?php echo $inEstado=="BA"?" selected":"";?>>BAHIA</option><option value="CE"<?php echo $inEstado=="CE"?" selected":"";?>>CEARÁ</option><option value="DF"<?php echo $inEstado=="DF"?" selected":"";?>>DISTRITO FEDERAL</option><option value="ES"<?php echo $inEstado=="ES"?" selected":"";?>>ESPÍRITO SANTO</option><option value="GO"<?php echo $inEstado=="GO"?" selected":"";?>>GOIÁS</option><option value="MA"<?php echo $inEstado=="MA"?" selected":"";?>>MARANHÃO</option><option value="MT"<?php echo $inEstado=="MT"?" selected":"";?>>MATO GROSSO</option><option value="MS"<?php echo $inEstado=="MS"?" selected":"";?>>MATO GROSSO DO SUL</option><option value="MG"<?php echo $inEstado=="MG"?" selected":"";?>>MINAS GERAIS</option><option value="PA"<?php echo $inEstado=="PA"?" selected":"";?>>PARÁ</option><option value="PB"<?php echo $inEstado=="PB"?" selected":"";?>>PARAÍBA</option><option value="PR"<?php echo $inEstado=="PR"?" selected":"";?>>PARANÁ</option><option value="PE"<?php echo $inEstado=="PE"?" selected":"";?>>PERNANBUMCO</option><option value="PI"<?php echo $inEstado=="PI"?" selected":"";?>>PIAUÍ</option><option value="RJ"<?php echo $inEstado=="RJ"?" selected":"";?>>RIO DE JANEIRO</option><option value="RN"<?php echo $inEstado=="RN"?" selected":"";?>>RIO GRANDE DO NORTE</option><option value="RO"<?php echo $inEstado=="RO"?" selected":"";?>>RONDÔNIA</option><option value="RS"<?php echo $inEstado=="RS"?" selected":"";?>>RIO GRANDE DO SUL</option><option value="RR"<?php echo $inEstado=="RR"?" selected":"";?>>RORAIMA</option><option value="SC"<?php echo $inEstado=="SC"?" selected":"";?>>SANTA CATARINA</option><option value="SE"<?php echo $inEstado=="SE"?" selected":"";?>>SERGIPE</option><option value="SP"<?php echo $inEstado=="SP"?" selected":"";?>>SÃO PAULO</option><option value="TO"<?php echo $inEstado=="TO"?" selected":"";?>>TOCANTINS</option></select>
-								</dd>
-							</dl>
-							<dl class="">
-								<dt>CPF</dt>
-								<dd>
-									<input type="text" name="responsavel_cpf" value="<?php echo $values['responsavel_cpf'];?>" class="cpf" />
-								</dd>
-							</dl>
-							<dl class="">
-								<dt>Data de Nascimento</dt>
-								<dd>
-									<input type="text" name="responsavel_datanascimento" value="<?php echo $values['responsavel_datanascimento'];?>" class="data" />
-								</dd>
-							</dl>
-						</div> 	
-
-					</fieldset>
-
-
-
-
-
-				</form>
+		</form>
 
 			</section>
 		<?php
  	} else {
-		$values=$adm->get($_GET);
-
-
-		$where="where lixo=0";
-		if(isset($values['profissional_multiple']) and is_array($values['profissional_multiple']) and count($values['profissional_multiple'])>0) {
-			$where.=" and profissional_maisAtende IN (".implode(",",$values['profissional_multiple']).")";
-		}
-
-
-		if(isset($values['bi_multiple']) and is_array($values['bi_multiple']) and count($values['bi_multiple'])>0) {
-			$where.=" and codigo_bi IN (".implode(",",$values['bi_multiple']).")";
-		}
-
-
-
-		$pacientes=0;
-		$sql->consult($_p."pacientes","count(*) as total",$where);
-		$x=mysqli_fetch_object($sql->mysqry);
-		$pacientes=$x->total;
-
-		$sql->consult($_p."pacientes","*",$where);//data>='".date('Y-m-d H:i:s',strtotime(date('Y-m-d H:i:s')." - 1 year"))."' and lixo=0");
-		$total=$sql->rows;
-
-		// Grafico 2: Idade
-			$grafico2Labels=array();
-			for($i=0;$i<=70;$i+=10) {
-				if($i==70) {
-					$grafico2Labels[]="+71";
-				} else {
-					$grafico2Labels[]=($i==0?$i:$i+1)."-".($i+10);
-				}
-			}
-
-			$pacientesQuantidade=array();
-			$pacientesIdade=array();
-			$locations=array();
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$locations[] = array(utf8_encode($x->nome), $x->lat , $x->lng);
-				$mes=date('m',strtotime($x->data));
-				$ano=date('y',strtotime($x->data));
-
-				if(!isset($pacientesQuantidade[substr(mes($mes),0,3)."/".$ano])) $pacientesQuantidade[substr(mes($mes),0,3)."/".$ano]=0;
-				$pacientesQuantidade[substr(mes($mes),0,3)."/".$ano]++;
-				
-				$idade=idade($x->data_nascimento);
-
-				if($idade<=10) {
-					if(!isset($pacientesIdade[0])) $pacientesIdade[0]=0;
-					$pacientesIdade[0]++;
-				} else if($idade<=20) {
-					if(!isset($pacientesIdade[1])) $pacientesIdade[1]=0;
-					$pacientesIdade[1]++;
-				} else if($idade<=30) {
-					if(!isset($pacientesIdade[2])) $pacientesIdade[2]=0;
-					$pacientesIdade[2]++;
-				} else if($idade<=40) {
-					if(!isset($pacientesIdade[3])) $pacientesIdade[3]=0;
-					$pacientesIdade[3]++;
-				} else if($idade<=50) {
-					if(!isset($pacientesIdade[4])) $pacientesIdade[4]=0;
-					$pacientesIdade[4]++;
-				} else if($idade<=60) {
-					if(!isset($pacientesIdade[5])) $pacientesIdade[5]=0;
-					$pacientesIdade[5]++;
-				} else if($idade<=70) {
-					if(!isset($pacientesIdade[6])) $pacientesIdade[6]=0;
-					$pacientesIdade[6]++;
-				} 
-				if(!isset($grafico2[$idade])) $grafico2[$idade]=0;
-				$grafico2[$idade]++;
-			}
-
-
-
-
-		// Grafico 2: Idade
-		$grafico2Data=array();
-		foreach($grafico2Labels as $key=>$v) {
-			$grafico2Data[$key]=isset($pacientesIdade[$key])?$pacientesIdade[$key]:0;
-		}
-		//echo json_encode($grafico2Data);
-
-		// Grafico 1: Quantidade
-		$grafico1Labels=array();
-		$mes=date('m');
-		$ano=date('y');
-		for($i=1;$i<=12;$i++) {
-			$grafico1Labels[]=substr(mes($mes),0,3)."/".$ano;
-			$mes--;
-			if($mes==0) {
-				$ano--;
-				$mes=12;
-			}
-		}
-
-		$grafico1Labels=array_reverse($grafico1Labels);
-		$totalPacientesNovos=0;
-		foreach($grafico1Labels as $key) { 
-			if(!isset($pacientesQuantidade[$key])) $grafico1Data[]=0;
-			else { //echo $key."->".$grafico1DataAux[$key]."<BR>";
-				$grafico1Data[]=$pacientesQuantidade[$key];
-				$totalPacientesNovos+=$pacientesQuantidade[$key];
-			}
-		}
-
-
-		// Media de novos pacientes
-			$novoPacienteMedia=($totalPacientesNovos)==0?0:round($totalPacientesNovos/12);
-		
-
-		$grafico3Data = array();
-		$sql->consult($_p."pacientes","count(*) as total",$where." and sexo='M'");//"WHERE lixo=0 and sexo='M'");
-		if($sql->rows) {
-			$x=mysqli_fetch_object($sql->mysqry);
-			$grafico3Data[]= $x->total;
-		}
-		$sql->consult($_p."pacientes","count(*) as total",$where." and sexo='F'");//"WHERE lixo=0 and sexo='F'");
-		if($sql->rows) {
-			$x=mysqli_fetch_object($sql->mysqry);
-			$grafico3Data[]= $x->total;
-		}
 
 	?>		
  			<section class="filter">
@@ -767,8 +229,6 @@
 						}
 						$wh=substr($wh,0,strlen($wh)-5);
 						$where="where (($wh) or titulo like '%".$_GET['busca']."%') and lixo=0";
-						
-						
 					}
 
 					$where.=" order by data desc";

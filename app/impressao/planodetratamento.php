@@ -257,6 +257,7 @@
 				<h1>Valor</h1>
 				<p>
 				<?php
+				$proc->valor = $proc->quantidade>1?$proc->valor*$proc->quantidade:$proc->valor;
 				if($proc->desconto>0) {
 					echo "<strike>".number_format($proc->valor,2,",",".")."</strike>";
 				} else {

@@ -66,22 +66,22 @@
 
 
 				valorProcedimento=x.valor;
+				hof=x.hof>0?x.hof:1;
 
 				if(x.quantitativo==1) valorProcedimento*=x.quantidade;
 				if(x.face==1) valorProcedimento*=x.faces.length;
-				if(x.id_regiao==5) valorProcedimento*=x.hof;
+				if(x.id_regiao==5) valorProcedimento*=hof;
 
 
 				if(x.desconto>0) {
-					valorProcedimento=eval(number_format((valorProcedimento-x.desconto),2,".",""));
+					valorProcedimento=eval(valorProcedimento-x.desconto);
 				}
 				else {
-					valorProcedimento=eval(number_format((valorProcedimento),2,".",""));
+					valorProcedimento=eval(valorProcedimento);
 				}
 
 
 				valorTotal+=valorProcedimento;
-
 			}
 
 			if(cont==procedimentos.length) {
@@ -312,9 +312,9 @@
 
 		if(procedimentos.length>0) {
 			procedimentos.forEach(x=>{
-
 				let valor = '';
 
+				//alert(x.id+" qtd = "+x.quantidade);
 
 				/*procedimentoValor=x.valor;
 				procedimentoValorCorrigido=x.valorCorrigido;
@@ -333,7 +333,7 @@
 				procedimentoValor=x.valor;
 				if(x.quantitativo==1) procedimentoValor*=x.quantidade;
 				if(x.face==1) procedimentoValor*=x.faces.length;
-				if(x.id_regiao==5) procedimentoValor*=eval(x.hof);
+				if(x.id_regiao==5) procedimentoValor*=eval(x.hof>0?x.hof:1);
 
 				if(x.desconto>0) {
 					procedimentoValorComDesconto=procedimentoValor-x.desconto;
@@ -361,7 +361,11 @@
 					opcao=`<i class="iconify" data-icon="mdi:tooth-outline"></i> ${x.opcao}<br />${opcaoAux}`;
 				}
 				else if(x.id_regiao==5) {
-					opcao=`${x.hof} unidade(s)`;
+					if(x.hof>0) {
+						opcao=`${x.hof} unidade(s)`;
+					} else if(x.quantidade>0) {
+						opcao=`${x.quantidade} unidade(s)`;
+					}
 				}
 				else {
 					if(x.quantitativo==1) opcao=`Qtd. ${x.quantidade}`;

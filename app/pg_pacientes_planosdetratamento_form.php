@@ -970,7 +970,7 @@
 																		id_regiao='".addslashes($x->id_regiao)."',
 																		face='".addslashes(utf8_decode($x->face))."',
 																		faces='".(implode(",",$x->faces))."',
-																		hof='".addslashes($x->hof)."',";
+																		hof='".(isset($x->hof)?addslashes($x->hof):"")."',";
 
 																		//var_dump($x->faces);die();
 																		//id_profissional='".addslashes($x->id_profissional)."',
