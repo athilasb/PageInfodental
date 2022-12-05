@@ -45,7 +45,7 @@
 		$sql->update($_table,$vSQL,$vWHERE);
 		$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
 
-		$jsc->go($_page);
+		$jsc->go($_page."?id_landingpage=".$landingpage->id);
 		die();
 	}
 ?>

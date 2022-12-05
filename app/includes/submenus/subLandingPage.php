@@ -25,7 +25,7 @@
 		<i class="iconify" data-icon="mdi:credit-card-multiple-outline"></i>
 		<p>Conversão</p>
 	</a>	
-	<a href="pg_landingpage_antesedepois.php?id_landingpage=<?php echo $id_landingpage;?>" class="list5-item<?php echo basename($_SERVER['PHP_SELF'])=="pg_configuracoes_financeiro_cartoes.php"?" active":"";?>">
+	<a href="pg_landingpage_antesedepois.php?id_landingpage=<?php echo $id_landingpage;?>" class="list5-item<?php echo basename($_SERVER['PHP_SELF'])=="pg_landingpage_antesedepois.php"?" active":"";?>">
 		<i class="iconify" data-icon="mdi:credit-card-multiple-outline"></i>
 		<p>Antes e Depois</p>
 	</a>

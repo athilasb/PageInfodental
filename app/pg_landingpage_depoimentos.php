@@ -29,7 +29,7 @@
 		$cnt=mysqli_fetch_object($sql->mysqry);
 	}
 
-	$campos=explode(",","autor,depoimento,video,id_tema");
+	$campos=explode(",","autor1,autor2,autor3,depoimento1,depoimento2,depoimento3,id_tema");
 	foreach($campos as $v) $values[$v]='';
 
 	if(is_object($cnt)) {
@@ -45,7 +45,7 @@
 		$sql->update($_table,$vSQL,$vWHERE);
 		$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."',id_reg='".$cnt->id."'");
 
-		$jsc->go($_page);
+		$jsc->go($_page."?id_landingpage=".$landingpage->id);
 		die();
 	}
 ?>
@@ -103,14 +103,38 @@
 							<fieldset>
 								<legend>Informações</legend>
 
-								<dl>
-									<dt>Depoimento</dt>
-									<dd><input type="text" name="depoimento" class="depoimento obg" value="<?php echo $values['depoimento'];?>" /></dd>
-								</dl>
-								<dl>
-									<dt>Autor</dt>
-									<dd><input type="text" name="autor" class="obg noupper" value="<?php echo $values['autor'];?>" /></dd>
-								</dl>
+								<div class="colunas3">
+									<dl class="dl2">
+										<dt>1° Depoimento</dt>
+										<dd><input type="text" name="depoimento1" class="depoimento obg" value="<?php echo $values['depoimento1'];?>" /></dd>
+									</dl>
+									<dl>
+										<dt>Autor</dt>
+										<dd><input type="text" name="autor1" class="obg noupper" value="<?php echo $values['autor1'];?>" /></dd>
+									</dl>
+								</div>
+
+								<div class="colunas3">
+									<dl class="dl2">
+										<dt>2° Depoimento</dt>
+										<dd><input type="text" name="depoimento2" class="depoimento" value="<?php echo $values['depoimento2'];?>" /></dd>
+									</dl>
+									<dl>
+										<dt>Autor</dt>
+										<dd><input type="text" name="autor2" class="noupper" value="<?php echo $values['autor2'];?>" /></dd>
+									</dl>
+								</div>
+
+								<div class="colunas3">
+									<dl class="dl2">
+										<dt>3° Depoimento</dt>
+										<dd><input type="text" name="depoimento3" class="depoimento" value="<?php echo $values['depoimento3'];?>" /></dd>
+									</dl>
+									<dl>
+										<dt>Autor</dt>
+										<dd><input type="text" name="autor3" class="noupper" value="<?php echo $values['autor3'];?>" /></dd>
+									</dl>
+								</div>
 
 							</fieldset>
 
