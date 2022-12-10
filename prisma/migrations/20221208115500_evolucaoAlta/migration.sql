@@ -1,0 +1,1 @@
+INSERT INTO `ident_pacientes_evolucoes_tipos` (`id`, `tipo`, `titulo`, `tituloSingular`, `icone`, `pagina`) VALUES (11, 'alta', 'Altas de Periodicidade', 'Alta de Periodicidade', 'eos-icons:system-ok-outlined', '');

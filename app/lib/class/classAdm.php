@@ -6,7 +6,7 @@
 			$pre,
 			$_p="wtalk_",
 			$emp,
-			$dinheiro=array('price','valor','instrumentacao','teleconsulta_valor','teleconsulta_desconto','consultapresencial_valor','consultapresencial_desconto','salario'),
+			$dinheiro=array('price','valor','instrumentacao','teleconsulta_valor','teleconsulta_desconto','consultapresencial_valor','consultapresencial_desconto','salario','de','ate'),
 			$bool=array('instrumentacao_pago','credito','efetivado'),
 			$datahora=array('data','data_cirurgia'),
 			$checkbox=array('pub','destaque','face','quantitativo','dia_inteiro','responsavel_possui','atendimentopersonalizado','permitir_acesso','estrangeiro','custo_recorrente','custo_fuxo','check_agendamento','contratacaoAtiva','embalagemComMais','whatsapp_notificacoes'),

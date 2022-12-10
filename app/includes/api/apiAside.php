@@ -1660,6 +1660,7 @@
 					}
 				}
 				$periodicidade=(isset($_POST['periodicidade']) and is_numeric($_POST['periodicidade']))?$_POST['periodicidade']:0;
+				$alta=(isset($_POST['alta']) and !empty($_POST['alta']))?$_POST['alta']:'';
 
 				$id_agenda_origem=(isset($_POST['id_agenda_origem']) and is_numeric($_POST['id_agenda_origem']))?$_POST['id_agenda_origem']:0;
 
@@ -1673,6 +1674,26 @@
 						$sql->update($_p."pacientes",$vsql,$vwhere);
 						$id_reg=$sql->ulid;
 						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vsql)."',vwhere='".addslashes($vsql)."',tabela='".$_p."pacientes',id_reg='$id_reg'");
+
+
+						// cria evolucao
+						$sql->add($_p."pacientes_evolucoes","data=now(),
+																	id_tipo=11,
+																	id_paciente=$paciente->id,
+																	id_usuario=$usr->id,
+																	id_profissional='".$usr->id."'");
+						$id_evolucao=$sql->ulid;
+
+
+
+						$vSQL="id_evolucao=$id_evolucao,
+									data=now(),
+									id_profissional='".$usr->id."',
+									texto='".addslashes(utf8_decode($alta))."',
+									id_usuario=$usr->id";
+
+						$sql->add($_p."pacientes_evolucoes_alta",$vSQL);
+						
 
 						$rtn=array('success'=>true);
 
@@ -4573,7 +4594,9 @@
 						}
 					} else if(tipo=="altaPeriodicidade") {
 						let periodicidade = $('#js-aside-proximaConsulta .js-periodicidade_select').val();
+						let alta = $('#js-aside-proximaConsulta .js-periodicidade_alta').val();
 						let periodicidadeDescricao = $('#js-aside-proximaConsulta .js-periodicidade_select option:selected').attr('data-descricao');
+
 
 						let erro= '';
 						if(periodicidade.length==0) erro='Selecione a Periodicidade do paciente';
@@ -4588,7 +4611,7 @@
 								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 								obj.attr('data-loading',1);
 
-								let data = `ajax=proximaConsultaAltaPeriodicidade&periodicidade=${periodicidade}&id_paciente=${id_paciente}&id_agenda_origem=${id_agenda_origem}`;
+								let data = `ajax=proximaConsultaAltaPeriodicidade&periodicidade=${periodicidade}&id_paciente=${id_paciente}&id_agenda_origem=${id_agenda_origem}&alta=${alta}`;
 								
 								$.ajax({
 									type:'POST',
@@ -4611,7 +4634,7 @@
 										
 									},
 									error:function() {
-										swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente...", type:"error", confirmButtonColor: "#424242"});
 									}
 								}).done(function(){
 									obj.html(objHTMLAntigo);
@@ -4802,10 +4825,7 @@
 									</table>
 								</div>
 							</div>
-
 						</div>
-
-
 
 						<div class="js-ag-agendamento-queroAgendar">
 							<div class="colunas3">
@@ -4878,7 +4898,6 @@
 							</dl>
 						</div>
 
-
 						<div class="js-ag-agendamento-altaPeriodicidade">
 							<div class="colunas4">
 								<dl>
@@ -4894,8 +4913,15 @@
 										</select>
 									</dd>
 								</dl>
-
 							</div>
+
+							<dl>
+								<dt>Alta por Periodicidade</dt>
+								<dd>
+									<textarea style="height:200px;" class="js-periodicidade_alta"></textarea>
+								</dd>
+							</dl>
+
 							
 						</div>
 
@@ -5044,7 +5070,7 @@
 								$('#js-aside-queroAgendar .js-profissionais').trigger('chosen:updated');
 							});
 
-							$('#js-aside-queroAgendar .js-periodicidade_select').val(rtn.data.periodicidade_select)
+							$('#js-aside-queroAgendar .js-periodicidade_select').val(rtn.data.periodicidade_select);
 
 							$('#js-aside-queroAgendar .js-btn-acao-lembrete').click();
 						} else if(rtn.error) {

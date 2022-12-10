@@ -201,6 +201,17 @@
 			}
 		}
 
+	// alta
+		$_alta=array();
+		if(isset($evolucoesIds[11])) {
+			$sql->consult($_p."pacientes_evolucoes_alta","*","where id_evolucao IN (".implode(",",$evolucoesIds[11]).")");
+			if($sql->rows) {
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_alta[$x->id_evolucao]=$x;
+				}
+			}
+		}
+
 	// anamnese
 		$_anamnesePerguntas=array();
 		if(isset($evolucoesIds[1])) {
@@ -388,6 +399,8 @@
 													// se geral (prontuario), usa a data definida no cadastro
 													if($eTipo->id==9 and isset($_geral[$e->id])) {
 														echo date('d/m/Y H:i',strtotime($_geral[$e->id]->data));
+													} else if($eTipo->id==11 and isset($_alta[$e->id])) {
+														echo date('d/m/Y H:i',strtotime($_alta[$e->id]->data));
 													} else {
 														echo date('d/m/Y H:i',strtotime($e->data));
 													}
@@ -557,6 +570,24 @@
 												$correcoes=1;
 												if(isset($_geral[$e->id])) {
 													$g=$_geral[$e->id];
+												?>
+												<div class="list-toggle-topics">
+													<div class="list-toggle-topic">
+													
+														<p><?php echo utf8_encode($g->texto);?></p>
+													
+													</div>
+													
+												</div>			
+												<?php
+												}
+											}
+
+											// alta
+											else if($eTipo->id==11) {
+												$correcoes=1;
+												if(isset($_alta[$e->id])) {
+													$g=$_alta[$e->id];
 												?>
 												<div class="list-toggle-topics">
 													<div class="list-toggle-topic">
