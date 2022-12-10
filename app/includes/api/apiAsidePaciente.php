@@ -1914,50 +1914,43 @@
 							<div class="filter-group">
 								<div class="filter-form form">
 									<dl>
-										<dd><a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
-									</dl>
-									<dl>
 										<dd><button type="button" class="button button_main js-salvarAnamnese" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
 									</dl>
 								</div>								
 							</div>
 						</section>
 
-						<fieldset>
-							<legend>Identificação</legend>
+						<dl>
+							<dt>Profissional</dt>
+							<dd>
+								<select class="js-asideAnamnese-id_profissional">
+									<option value="">-</option>
+									<?php
+									foreach($_profissionais as $x) {
+										if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
+										echo '<option value="'.$x->id.'">'.utf8_encode($x->nome).'</option>';
+									}
+									?>
+								</select>
+							</dd>
+						</dl>
 
-							<dl>
-								<dt>Profissional</dt>
-								<dd>
-									<select class="js-asideAnamnese-id_profissional">
-										<option value="">-</option>
-										<?php
-										foreach($_profissionais as $x) {
-											if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
-											echo '<option value="'.$x->id.'">'.utf8_encode($x->nome).'</option>';
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
+						<dl>
+							<dt>Tipo de Anamnese</dt>
+							<dd>
+								<select class="js-asideAnamnese-anamnese">
+									<option value="">-</option>
+									<?php
+									foreach($_anamnese as $x) {
+										echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
+									}
+									?>
+								</select>
+							</dd>
+						</dl>
 
-							<dl>
-								<dt>Tipo de Anamnese</dt>
-								<dd>
-									<select class="js-asideAnamnese-anamnese">
-										<option value="">-</option>
-										<?php
-										foreach($_anamnese as $x) {
-											echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
-						</fieldset>
-
-						<fieldset class="js-fieldset-formularioAnamnese">
-							<legend>Anamnese</legend>
+						<?php /* <fieldset class="js-fieldset-formularioAnamnese">
+							<legend>Anamnese</legend> */ ?>
 
 
 							<div class="js-loading-anamnese">
@@ -1998,7 +1991,7 @@
 									<label><input type="radio" name="resposta_161" value="10"> 10</label>
 								</dd>
 							</dl>*/?>
-						</fieldset>
+						<?php /* </fieldset> */ ?>
 					</form>
 				</div>
 			</section>
@@ -2203,17 +2196,14 @@
 							<div class="filter-group">
 								<div class="filter-form form">
 									<dl>
-										<dd><a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
-									</dl>
-									<dl>
 										<dd><button type="button" class="button button_main js-salvarAtestado" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
 									</dl>
 								</div>								
 							</div>
 						</section>
 
-						<fieldset>
-							<legend>Cabeçalho</legend>
+						<?php /* <fieldset>
+							<legend>Cabeçalho</legend> */ ?>
 							<div class="colunas3">
 								<dl>
 									<dt>Data e Hora</dt>
@@ -2276,15 +2266,15 @@
 									</dd>
 								</dl>
 							</div>
-						</fieldset>
-						<fieldset class="js-fieldset-textoAtestado" style="display:none;">
-							<legend>Atestado</legend>
+						<?php /* </fieldset> * ?>
+						<?php /* <fieldset class="js-fieldset-textoAtestado" style="display:none;">
+							<legend>Atestado</legend> */ ?>
 							<dl>
 								<dd>
 									<textarea class="js-asideAtestado-texto" id="asideAtestado-texto" style="height:120px;width:100%;"></textarea>
 								</dd>
 							</dl>
-						</fieldset>
+						<?php /* </fieldset> */ ?>
 					</form>
 				</div>
 			</section>
@@ -2569,8 +2559,8 @@
 							</div>
 						</section>
 
-						<fieldset>
-							<legend>Cabeçalho</legend>
+						<?php /* <fieldset>
+							<legend>Cabeçalho</legend> */ ?>
 							<div class="colunas3">
 								<dl>
 									<dt>Data do Pedido</dt>
@@ -2606,10 +2596,10 @@
 									</dd>
 								</dl>
 							</div>					
-						</fieldset>
+						<?php /* </fieldset> */ ?>
 
-						<fieldset>
-							<legend>Adicionar Exame</legend>
+						<?php /* <fieldset>
+							<legend>Adicionar Exame</legend> */ ?>
 							<input type="hidden" class="js-asidePedidoExame-index" value="-1" />
 							<div class="colunas3">
 								<dl class="dl2">
@@ -2696,11 +2686,11 @@
 									<a href="javascript:;" class="button js-asidePedidoExame-removerExame" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 								</dd>
 							</dl>
-						</fieldset>
+						<?php /* </fieldset> */ ?>
 
-						<fieldset>
+						<?php /* <fieldset> */ ?>
 							<textarea class="js-asidePedidoExame-exames" style="display:none;"></textarea>
-							<legend>Exames Adicionados</legend>
+							<?php /* <legend>Exames Adicionados</legend> */ ?>
 							<div class="list1">
 								<table class="js-asidePedidoExame-tabela">
 									<tbody>
@@ -2708,7 +2698,7 @@
 									</tbody>						
 								</table>
 							</div>
-						</fieldset>
+						<?php /* </fieldset> */ ?>
 						
 					
 					</form>
@@ -2943,8 +2933,8 @@
 							</div>
 						</section>
 
-						<fieldset>
-							<legend>Cabeçalho</legend>
+						<?php /* <fieldset>
+							<legend>Cabeçalho</legend> */ ?>
 							<div class="colunas3">
 								<dl>
 									<dt>Data do Receituário</dt>
@@ -2980,10 +2970,10 @@
 									</dd>
 								</dl>
 							</div>					
-						</fieldset>
+						<?php /* </fieldset> */ ?>
 
-						<fieldset>
-							<legend>Adicionar Medicamento</legend>
+						<?php /* <fieldset>
+							<legend>Adicionar Medicamento</legend> */ ?>
 							<input type="hidden" class="js-asideReceituario-index js-asideReceituario-inputs" />
 							<div class="colunas3">
 								<dl>
@@ -3032,12 +3022,12 @@
 									<button type="button" class="button js-asideReceituario-medicamento-remover" style="display: none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></button>
 								</dd>
 							</dl>
-						</fieldset>
+						<?php /* </fieldset> */ ?>
 
 
-						<fieldset>
+						<?php /* <fieldset> /* ?>
 							<textarea class="js-asideReceituario-receitas js-asideReceituario-inputs" style="display:none;"></textarea>
-							<legend>Medicamentos Adicionados</legend>
+							<?php /* <legend>Medicamentos Adicionados</legend> */ ?>
 							<div class="list1">
 								<table class="js-asideReceituario-tabela">
 									<tbody>
@@ -3054,7 +3044,7 @@
 									</tbody>						
 								</table>
 							</div>
-						</fieldset>
+						<?php /* </fieldset> */ ?>
 						
 					
 					</form>
@@ -4062,8 +4052,8 @@
 						</section>
 
 						<input type="hidden" name="alteracao" value="0" />
-						<fieldset>
-							<legend>Informações</legend>
+						<?php /* <fieldset>
+							<legend>Informações</legend> */ ?>
 							<div class="colunas3">
 								<dl>
 									<dt>Data</dt>
@@ -4100,15 +4090,15 @@
 									</select>
 								</dd>
 							</dl>
-						</fieldset>
-						<fieldset>
-							<legend>Documento</legend>
+						<?php /* </fieldset> */ ?>
+						<?php /* <fieldset>
+							<legend>Documento</legend> */ ?>
 							<dl>
 								<dd>
 									<textarea class="js-asideDocumentos-texto js-asideDocumentos-inputs" id="asideDocumentos-documento" style="height:320px;width:100%;"></textarea>
 								</dd>
 							</dl>
-						</fieldset>
+						<?php /* </fieldset> */ ?>
 					</form>
 				</div>
 			</section>
@@ -4659,9 +4649,6 @@
 								</dd>
 							</dl>
 
-						<fieldset style="margin-top:20px;">
-							<legend>Procedimentos Aprovados</legend>
-
 							<dl class="dl2">
 								<dt>Procedimento</dt>
 								<dd>
@@ -4724,9 +4711,6 @@
 									</tbody>						
 								</table>
 							</div>
-
-							
-						</fieldset>
 						
 					</form>
 				</div>

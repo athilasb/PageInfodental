@@ -46,7 +46,7 @@
 				if(empty($x->quantidade)) $x->quantidade=1;
 
 				// verifica se possui face
-				if($x->face==1) {
+				if(isset($x->face) and $x->face==1) {
 					$x->quantidade=count($x->faces);
 				}
 
@@ -197,7 +197,7 @@
 
 			// verifica se possui faces
 			$facesTexto='';
-			if($proc->face==1) {
+			if(isset($proc->face) and $proc->face==1) {
 				$facesTexto='<p>Faces: ';
 
 				$faces='';
