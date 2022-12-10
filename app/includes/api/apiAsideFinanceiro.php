@@ -56,6 +56,11 @@
 			}
 		}
 
+	// banco e contas
+		$_bancos=array();
+		$sql->consult($_p."financeiro_bancosecontas","*","order by titulo asc");
+		while($x=mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id]=$x;
+
 
 ?>
 
@@ -306,6 +311,7 @@
 				<a href="javascript:;" onclick="$('.js-fin').hide(); $('.js-fin-agrupamento').show();" class="js-tab-agrupamento">Agrupamento</a>
 			</section>
 
+			<input type="hidden" class="js-index" />
 
 			<!-- Resumo do pagamento -->
 			<?php /*<div class="js-fin js-fin-resumo">
@@ -579,6 +585,91 @@
 					</div>				
 				</fieldset>
 			</div>
+		</form>
+	</div>
+</section><!-- .aside -->
+
+<section class="aside" id="js-aside-asFinanceiro-receber">
+	<div class="aside__inner1" style="width:600px;">
+
+		<header class="aside-header">
+			<h1 class="js-titulo"></h1>
+			<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+		</header>
+
+		<form method="post" class="aside-content form">
+			<input type="hidden" class="js-id_pagamento" value="0" />
+
+
+
+			<!-- Programacao de pagamento -->
+			<div class="js-fin js-fin-programacao" style="display: ;">
+				<section class="filter">
+					<div class="filter-group"></div>
+					<div class="filter-group">
+						<div class="filter-form form">
+							<?php /*<dl>
+								<dd><a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
+							</dl>*/?>
+							<dl>
+								<dd><button type="button" class="button button_main js-btn-receber" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Receber</span></button></dd>
+							</dl>
+						</div>								
+					</div>
+				</section>
+				
+
+				<input type="hidden" class="js-index" />
+				<fieldset>
+					<legend>Confirmação do Pagamento</legend>
+					<div class="colunas3">
+						<dl>
+							<dt>Data do Pagamento</dt>
+							<dd><input type="text" class="js-dataPagamento datecalendar" value="" /></dd>
+						</dl>
+					</div>
+					<div class="colunas3">
+
+						<dl>
+							<dt>Vencimento da Parcela</dt>
+							<dd><input type="text" class="js-vencimentoParcela" readonly /></dd>
+						</dl>
+						<dl>
+							<dt>Valor da Parcela</dt>
+							<dd><input type="text" class="js-valorParcela" readonly /></dd>
+						</dl>
+						<dl>
+							<dt>Forma de Pagamento</dt>
+							<dd><input type="text" class="js-formaPagamento" readonly /></dd>
+						</dl>
+
+					</div>
+				</fieldset>
+
+				<fieldset class="js-fieldset-conta">
+					<legend>Conta</legend>
+					
+
+					<dl>
+						<dd>
+							<select class="js-id_banco">
+								<option value="">-</option>
+								<?php
+								foreach($_bancos as $x) {
+									if($x->tipo=="dinheiro") {
+										echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
+									}
+								}
+								?>
+							</select>
+						</dd>
+					</dl>
+
+					
+				</fieldset>
+
+			</div>
+
 		</form>
 	</div>
 </section><!-- .aside -->

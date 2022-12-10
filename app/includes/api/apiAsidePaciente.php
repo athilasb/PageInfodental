@@ -4525,6 +4525,8 @@
 											obj.attr('data-loading',0);
 										} 
 								}).done(function(){
+									obj.html(objHTMLAntigo);
+									obj.attr('data-loading',0);
 								});
 							} 
 

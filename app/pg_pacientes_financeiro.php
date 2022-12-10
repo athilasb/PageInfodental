@@ -316,6 +316,40 @@
 			}
 		}
 
+		else if($_POST['ajax']=="receber") {
+
+			$baixa='';
+			if(isset($_POST['id_baixa']) and is_numeric($_POST['id_baixa'])) {
+				$sql->consult($_p."pacientes_tratamentos_pagamentos_baixas","*","where id='".$_POST['id_baixa']."'");
+				if($sql->rows) {
+					$baixa=mysqli_fetch_object($sql->mysqry);
+
+				}
+			}
+
+			$dataPagamento='';
+			if(isset($_POST['dataPagamento']) and !empty($_POST['dataPagamento'])) {
+				list($dia,$mes,$ano) = explode("/",$_POST['dataPagamento']);
+				if(checkdate($mes, $dia, $ano)) {
+					$dataPagamento=$ano."-".$mes."-".$dia;
+				}
+			}
+
+
+
+			if(is_object($baixa))  {
+				if(!empty($dataPagamento)) {
+					$sql->update($_p."pacientes_tratamentos_pagamentos_baixas","pago=1,pago_data='".$dataPagamento."',pago_id_usuario=$usr->id","where id=$baixa->id");
+
+					$rtn=array('success'=>true);
+				} else {
+					$rtn=array('success'=>false,'error'=>'Defina uma data de pagamento válida!');
+				}
+			} else {
+				$rtn=array('success'=>false,'error'=>'Baixa não encontrada!');
+			}
+		}
+
 
 		header("Content-type: application/json");
 		echo json_encode($rtn);
@@ -522,6 +556,7 @@
 
 
 						if(rtn.baixas.length>0) {
+							let contador = 0;
 							rtn.baixas.forEach(x=> {
 
 								let pagamento = '';
@@ -554,13 +589,13 @@
 								if(x.pago==1) {
 									icon = `<span class="iconify" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
 
-									btns=`<a href="javascript:;" class="js-estornoPagamento button button__sec tooltip" data-id_baixa="${x.id_baixa}" style="color:#FFF;background:red" title="Estornar Pagamento"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
+									btns=`<a href="javascript:;" class="js-estornoPagamento button button__sec tooltip" data-id_baixa="${x.id_baixa}" data-index="${contador}" style="color:#FFF;background:red" title="Estornar Pagamento"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
 
 								} else {
 									btns=`<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
 
 									if(x.tipoBaixa=="PAGAMENTO") {
-										btns+=` <a href="javascript:;" class="js-pagar button button__sec" data-id_baixa="${x.id_baixa}" title="Pagar"><span class="iconify" data-icon="ic:round-attach-money" data-inline="false"></span></a>`;
+										btns+=` <a href="javascript:;" class="js-receber button button__sec" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar"><span class="iconify" data-icon="ic:round-attach-money" data-inline="false"></span></a>`;
 									}
 									if(x.vencido) {
 										icon = `<span class="iconify" data-icon="icons8:cancel" data-inline="true" style="color:red"></span>`;
@@ -569,6 +604,7 @@
 									}
 								}
 
+								contador++;
 								
 							
 						
@@ -638,6 +674,7 @@
 
 	<script type="text/javascript">
 		var pagamentos = [];
+		var dataHoje = '<?php echo date('d/m/Y');?>';
 
 		$(function(){
 
@@ -704,6 +741,7 @@
 
 
 				// Resumo
+					$('#js-aside-asFinanceiro .js-index').val(index);
 					$('#js-aside-asFinanceiro .js-id_pagamento').val(pagamentos[index].id_parcela);
 					$('#js-aside-asFinanceiro .js-titulo').html(pagamentos[index].titulo);
 					$('#js-aside-asFinanceiro .js-vencimento').html(`Vencto: ${pagamentos[index].vencimento}`);
@@ -741,7 +779,7 @@
 					total = 0;
 					let desconto = 0;
 					let despesas = 0;
-
+					let contador = 0;
 					if(pagamentos[index].baixas && pagamentos[index].baixas.length>0) {
 						pagamentos[index].baixas.forEach(x=> {
 
@@ -775,13 +813,13 @@
 							if(x.pago==1) {
 								icon = `<span class="iconify" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
 
-								btns=`<a href="javascript:;" class="js-estornoPagamento button button__sec tooltip" data-id_baixa="${x.id_baixa}" style="color:#FFF;background:red" title="Estornar Pagamento"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
+								btns=`<a href="javascript:;" class="js-estornoPagamento button button__sec tooltip" data-id_baixa="${x.id_baixa}" data-index="${contador}" style="color:#FFF;background:red" title="Estornar Pagamento"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
 
 							} else {
 								btns=`<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
 
 								if(x.tipoBaixa=="PAGAMENTO") {
-									btns+=` <a href="javascript:;" class="js-pagar button button__sec" data-id_baixa="${x.id_baixa}" title="Pagar"><span class="iconify" data-icon="ic:round-attach-money" data-inline="false"></span></a>`;
+									btns+=` <a href="javascript:;" class="js-receber button button__sec" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar"><span class="iconify" data-icon="ic:round-attach-money" data-inline="false"></span></a>`;
 								}
 								if(x.vencido) {
 									icon = `<span class="iconify" data-icon="icons8:cancel" data-inline="true" style="color:red"></span>`;
@@ -792,7 +830,7 @@
 
 							
 						
-					
+							contador++;
 
 							html = `<tr class="js-tr">
 										<td>${icon}</td>
@@ -809,60 +847,7 @@
 							$('.js-tr .js-recibo, .js-tr .js-estorno').tooltipster({theme:"borderless"});
 							$('#js-aside-asFinanceiro .js-baixas').append(html);
 						});
-						/*pagamentos[index].baixas.forEach(x=>{
-
-							let pagamento = '';
-
-							if(x.tipoBaixa=="PAGAMENTO") {
-								if(x.formaDePagamento.length>0) {
-									if(x.id_formadepagamento==2) {
-										pagamento=`${x.formaDePagamento}<font color=#999><br />Parcela ${x.parcela} de ${x.parcelas}</font>`;
-									} else {
-										pagamento=x.formaDePagamento; 
-									}
-								}
-							} else {
-								pagamento=`<span class="iconify" data-icon="il:dialog" data-inline="true" data-height="18"></span> ${x.obs}`;
-							}
-
-							if(x.tipoBaixa=="DESCONTO") {
-								desconto+=x.valor;
-							}
-
-							else if(x.tipoBaixa=="DESPESA") {
-								despesas+=x.valor;
-							} else {
-
-								total+=x.valor;
-							}
-
-							let btns = ``;
-
-							if(x.pago==1) {
-								icon = `<span class="iconify" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
-
-								btns=`<a href="javascript:;" class="js-estornoPagamento button button__sec tooltip" data-id_baixa="${x.id_baixa}" style="color:#FFF;background:red" title="Estornar Pagamento"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
-
-							} else {
-								btns=`<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" style="color:#FFF;" title="Estorno"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
-
-								if(x.tipoBaixa=="PAGAMENTO") {
-									btns+=` <a href="javascript:;" class="js-pagar button button__sec" data-id_baixa="${x.id_baixa}" title="Pagar" style="color:#FFF;"><span class="iconify" data-icon="ic:round-attach-money" data-inline="false"></span></a>`;
-								}
-								if(x.vencido) {
-									icon = `<span class="iconify" data-icon="icons8:cancel" data-inline="true" style="color:red"></span>`;
-								} else {
-									icon = `<span class="iconify" data-icon="bx:bx-hourglass" data-inline="true" style="color:orange"></span>`;
-								}
-							}
-
-							$('#js-aside-asFinanceiro .js-baixas').append(`<tr>
-																					<td>${x.data}</td>
-																					<td>${x.tipoBaixa}</td>
-																					<td>${pagamento}</td>
-																					<td>${number_format(x.valor,2,",",".")}</td>
-																				</tr>`);
-						});*/
+						
 
 					} else {
 						$('#js-aside-asFinanceiro .js-baixas').append('<tr class="js-tr"><td colspan="4"><center>Nenhuma baixa cadastrada</center></td></tr>');
@@ -933,6 +918,154 @@
 
 				
 			});
+
+			$('#js-aside-asFinanceiro .js-baixas').on('click','.js-estornoPagamento',function(){
+				let pagamentoIndex = $('#js-aside-asFinanceiro .js-index').val();
+				let baixaIndex = $(this).attr('data-index');
+
+				if(pagamentos[pagamentoIndex]) {
+
+					let pagamento = pagamentos[pagamentoIndex];
+
+					if(pagamento.baixas[baixaIndex]) {
+
+						let baixa = pagamento.baixas[baixaIndex];
+
+						if(baixa.pago=="0") {
+							swal({title: "Erro!", text: "Esta baixa não foi recebida ainda!",  html:true,type:"error", confirmButtonColor: "#424242"});
+
+						} else {
+
+						 	let id_baixa = pagamento.baixas[baixaIndex].id_baixa;
+						 	let id_parcela = pagamento.id_parcela;
+
+							let data = `ajax=baixaEstornarPagamento&id_baixa=${id_baixa}&id_pagamento=${id_parcela}`;
+						
+							swal({
+								title:"Atenção", 
+								text: "Você tem certeza que deseja estornar este pagamento?",
+								type: "warning",
+								showCancelButton: true, 
+								confirmButtonColor: "#DD6B55",
+								confirmButtonText: "Sim!",
+								cancelButtonText: "Não",
+								closeOnConfirm: true,
+								closeOnCancel: true }
+								,function(isConfirm){   
+									if (isConfirm) {
+										$.ajax({
+											type:"POST",
+											data:data,
+											success:function(rtn) {
+												if(rtn.success) {
+													pagamentos[pagamentoIndex].baixas[baixaIndex].pago="0";
+													$('#js-aside-asFinanceiro-receber .aside-close').click();
+													$('#js-aside-asFinanceiro .aside-close').click();
+													$('.js-pagamento-item-'+id_parcela).click();
+												} else if(rtn.error) {
+													swal({title: "Erro!", text: rtn.error,  html:true,type:"error", confirmButtonColor: "#424242"});
+												} else {
+													swal({title: "Erro!", text: "Algum erro ocorreu durante o estorno desta baixa!",  html:true,type:"error", confirmButtonColor: "#424242"});
+												}
+											},
+											error:function() {
+												swal({title: "Erro!", text: "Algum erro ocorreu durante o estorno desta baixa!",  html:true,type:"error", confirmButtonColor: "#424242"});
+											}
+										});
+									}
+								}
+							);
+						}
+
+					}
+				}
+			});
+
+
+			$('#js-aside-asFinanceiro .js-baixas').on('click','.js-receber',function(){
+				let pagamentoIndex = $('#js-aside-asFinanceiro .js-index').val();
+				let baixaIndex = $(this).attr('data-index');
+
+				if(pagamentos[pagamentoIndex]) {
+
+					let pagamento = pagamentos[pagamentoIndex];
+
+					if(pagamento.baixas[baixaIndex]) {
+
+						let baixa = pagamento.baixas[baixaIndex];
+
+						$('#js-aside-asFinanceiro-receber .js-index').val(baixaIndex);
+
+						$('#js-aside-asFinanceiro-receber .js-dataPagamento').val(dataHoje);
+						$('#js-aside-asFinanceiro-receber .js-vencimentoParcela').val(baixa.data);
+						$('#js-aside-asFinanceiro-receber .js-valorParcela').val(number_format(baixa.valor,2,",","."));
+						$('#js-aside-asFinanceiro-receber .js-formaPagamento').val(baixa.formaDePagamento);
+
+						if(baixa.formaDePagamentoTipo=="dinheiro") {
+							$('#js-aside-asFinanceiro-receber .js-fieldset-conta').show();
+						} else {
+
+							$('#js-aside-asFinanceiro-receber .js-fieldset-conta').hide();
+						}
+
+						$("#js-aside-asFinanceiro-receber").fadeIn(100,function() {
+							$("#js-aside-asFinanceiro-receber .aside__inner1").addClass("active");
+						});
+					}
+				}
+			});
+
+			$('#js-aside-asFinanceiro-receber .js-btn-receber').click(function(){
+				let pagamentoIndex = $('#js-aside-asFinanceiro .js-index').val();
+				let baixaIndex = $('#js-aside-asFinanceiro-receber .js-index').val();
+				let dataPagamento = $('#js-aside-asFinanceiro-receber .js-dataPagamento').val();
+
+				let erro='';
+				if(!pagamentos[pagamentoIndex].baixas[baixaIndex]) erro='Pagamento não encontrado!';
+				else if(dataPagamento.length==0) erro='Defina a Data de Pagamento!';
+
+
+				if(erro.length>0) {
+					swal({title: "Erro!", text: erro,  html:true,type:"error", confirmButtonColor: "#424242"});
+				} else {
+
+					if(pagamentos[pagamentoIndex].baixas[baixaIndex]) {
+						let id_baixa = pagamentos[pagamentoIndex].baixas[baixaIndex].id_baixa;
+						let id_parcela = pagamentos[pagamentoIndex].id_parcela;
+
+						let obj = $(this);
+						let objHTMLAntigo = $(this).html();
+
+						if(obj.attr('data-loading')==0) {
+							obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>');
+							obj.attr('data-loading',1);
+
+							let data = `ajax=receber&id_baixa=${id_baixa}&dataPagamento=${dataPagamento}`;
+
+							$.ajax({
+								type:"POST",
+								data:data,
+								success:function(rtn) {
+									if(rtn.success) {
+										pagamentos[pagamentoIndex].baixas[baixaIndex].pago="1";
+										$('#js-aside-asFinanceiro-receber .aside-close').click();
+										$('#js-aside-asFinanceiro .aside-close').click();
+										$('.js-pagamento-item-'+id_parcela).click();
+									} else if(rtn.error) {
+										swal({title: "Erro!", text: rtn.error,  html:true,type:"error", confirmButtonColor: "#424242"});
+									} else {
+										swal({title: "Erro!", text: 'Algum erro ocorreu. Tente novamente!',  html:true,type:"error", confirmButtonColor: "#424242"});
+									}
+								}
+							}).done(function(){
+								obj.attr('data-loading',0);
+								obj.html(objHTMLAntigo);
+							})
+
+						}
+					}
+				}
+			})
 
 			$('.js-tr-fusao').click(function(){
 				let idPagamento = $(this).parent().attr('data-id_pagamento');
@@ -1173,6 +1306,7 @@
 																	  	"tipoBaixa"=>isset($_tipoBaixa[$b->tipoBaixa])?$_tipoBaixa[$b->tipoBaixa]:$b->tipoBaixa,
 																	  	"id_formadepagamento"=>(int)$b->id_formadepagamento,
 																	   	"formaDePagamento"=>isset($_formasDePagamento[$b->id_formadepagamento])?utf8_encode($_formasDePagamento[$b->id_formadepagamento]->titulo):'',
+																	   	"formaDePagamentoTipo"=>isset($_formasDePagamento[$b->id_formadepagamento])?$_formasDePagamento[$b->id_formadepagamento]->tipo:'',
 																	   	"pago"=>$b->pago,
 																	   	"recibo"=>$b->recibo,
 																	   	"parcelas"=>$b->parcelas,
@@ -1306,7 +1440,7 @@
 
 
 										?>
-										<tr class="js-pagamento-item" data-id="<?php echo $x->id;?>">
+										<tr class="js-pagamento-item js-pagamento-item-<?php echo $x->id;?>" data-id="<?php echo $x->id;?>">
 											<?php
 											if(isset($_GET['unirPagamentos'])) {
 											?>

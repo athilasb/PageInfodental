@@ -761,7 +761,7 @@
 			let cont = 0;
 			procedimentos.forEach(x=>{
 				procedimentos[cont].desconto=0;
-				//procedimentos[cont].valorCorrigido=procedimentos[cont].valor;
+				procedimentos[cont].valorCorrigido=procedimentos[cont].valor;
 				cont++;
 			});
 			descontoListarProcedimentos(0);
@@ -818,7 +818,7 @@
 								let desc = 0;
 
 								if(x.desconto>0) {
-									valorProc=procedimentos[contProcedimento].valor;
+									valorProc=procedimentos[contProcedimento].valorCorrigido;
 								} else {
 									valorProc=procedimentos[contProcedimento].valor;
 								}
