@@ -1268,6 +1268,20 @@
 					if($sql->rows) $paciente=mysqli_fetch_object($sql->mysqry);
 				}
 
+				$agenda = '';
+				$id_profissional=0;
+				if(is_object($paciente) and isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
+					$sql->consult($_p."agenda","profissionais","where id=".$_POST['id_agenda']);
+					if($sql->rows) {
+						$agenda=mysqli_fetch_object($sql->mysqry);
+
+						$aux = explode(",",$agenda->profissionais);
+						foreach($aux as $x) {
+							if(!empty($x) and is_numeric($x)) $id_profissional=$x;
+						}
+					}
+				}
+
 				$_procedimentos=array();
 				$sql->consult($_p."parametros_procedimentos","id,titulo","where  lixo=0");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
@@ -1365,13 +1379,14 @@
 					}
 
 					$procedimentos[]=array('titulo'=>utf8_encode($_tratamentos[$id_tratamento]->titulo),
-										'procedimentos'=>$tratamentoProcedimentos); 
+												'procedimentos'=>$tratamentoProcedimentos); 
 				}
 
 
 
 				$rtn=array('success'=>true,
-							'procedimentos'=>$procedimentos);
+							'procedimentos'=>$procedimentos,
+							'id_profissional'=>$id_profissional);
 
 
 			}
@@ -4125,7 +4140,7 @@
 
 					$('.aside-prontuario-procedimentos .js-asideProcedimentos-data').val(`<?php echo date('d/m/Y');?>`);
 
-					let data = `ajax=asProcedimentosAprovados&id_paciente=${id_paciente}`;
+					let data = `ajax=asProcedimentosAprovados&id_paciente=${id_paciente}&id_agenda=${id_agenda}`;
 
 					$.ajax({
 						type:"POST",
@@ -4156,7 +4171,8 @@
 										optgroup += '</optgroup>';
 										$(`.aside-prontuario-procedimentos`).find('select.js-asideProcedimentos-id_procedimento').append(optgroup);
 									}
-								})
+								});
+								$('.js-asideProcedimentos-id_profissional').val(rtn.id_profissional);
 							}
 
 						}
@@ -4477,6 +4493,8 @@
 											if(rtn.success) {
 												if(id_agenda>0) {
 													asideProximaConsultaLembrete();
+													obj.html(objHTMLAntigo);
+													obj.attr('data-loading',0);
 												} else {	
 													document.location.reload();
 												}	

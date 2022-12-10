@@ -1,0 +1,1 @@
+ALTER TABLE `ident_pacientes_evolucoes_receitas` ADD `pdf` VARCHAR(10) NOT NULL AFTER `id_medicamento`, ADD `pdf_assinado` VARCHAR(10) NOT NULL AFTER `pdf`, ADD `pdf_assinado_data` DATETIME NOT NULL AFTER `pdf_assinado`;
