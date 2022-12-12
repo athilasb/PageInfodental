@@ -1878,6 +1878,8 @@
 		.fc-scrollgrid-sync-inner { height:90px; }
 		.fc-scrollgrid  { border:none !important; }
 		.fc-scrollgrid-liquid{ border:none !important; }
+		.fc-timegrid-now-indicator-line { border-color: var(--cinza5) !important;  }
+		.fc-timegrid-now-indicator-arrow { }
 	</style>
 
 	<header class="header">
@@ -2325,6 +2327,7 @@
 						      center:'',
 						      right:''
 						    },
+						    nowIndicator:true,
 						 	slotDuration:'00:30:00',
 							allDaySlot:false,
 							slotMinTime:'07:00:00',
