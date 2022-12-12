@@ -19,3 +19,20 @@ ALTER TABLE `ident_parametros_politicapagamento`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 COMMIT;
 
+CREATE TABLE `ident_pacientes_evolucoes_alta` (
+  `id` int NOT NULL,
+  `lixo` tinyint(1) NOT NULL,
+  `data` datetime NOT NULL,
+  `id_evolucao` int NOT NULL,
+  `id_profissional` int NOT NULL,
+  `texto` text NOT NULL,
+  `id_usuario` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+ALTER TABLE `ident_pacientes_evolucoes_alta`
+  ADD PRIMARY KEY (`id`);
+
+
+ALTER TABLE `ident_pacientes_evolucoes_alta`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+COMMIT;

@@ -407,8 +407,14 @@
       ? this.$target.find(placeholderTarget)
       : this.$target;
 
-    var targetTop = $target.offset().top - this.$current.offset().top;
-    var targetLeft = $target.offset().left - this.$current.offset().left;
+    let toop = 0;
+    if($target && $target.offset()) toop=$target.offset().top;
+
+    let leeft = 0;
+    if($target && $target.offset()) leeft=$target.offset().left;
+
+    var targetTop = toop - this.$current.offset().top;
+    var targetLeft = leeft - this.$current.offset().left;
     var targetHeight = $target.outerHeight();
     var targetWidth = $target.outerWidth();
 

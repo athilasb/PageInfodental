@@ -45,58 +45,108 @@
 			if(is_object($agenda)) {
 				if(is_object($status)) {
 
-					$vSQL="id_status=$status->id,data_atualizacao=now()";
-					$vWHERE="where id=$agenda->id";
+					$erro='';
 
-					$sql->update($_p."agenda",$vSQL,$vWHERE);
 
-					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vwhere='".addslashes($vWHERE)."',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$agenda->id."'");
+					if($agenda->id_status != $status->id) {
 
-					$wts=0;
 
-					// Se alterou para confirmado
-					if($status->id==2 and $status->id!=$agenda->id_status) {
-						// se virou para confirmado, envia wts para dentista
-						$sql->consult($_p."agenda","*","where id=$agenda->id and id_status=2");
-						if($sql->rows) {
-							$agendaNew=mysqli_fetch_object($sql->mysqry); // registro de agenda atualizado
+						// se confirmado
+						if($agenda->id_status == 2) {
 
-							if(!empty($agendaNew->profissionais)) {
+							// alterar para a confirmar 
+ 							if($status->id==1) $erro='Não é possível alterar status de <b>CONFIRMADO</b> para <b>À CONFIRMAR</b>';
 
-								$profissionaisIds=array();
-								$auxProfissionais = explode(",",$agenda->profissionais);
-								foreach($auxProfissionais as $idProfissional) {
-									if(!empty($idProfissional) and is_numeric($idProfissional)) {
-										$profissionaisIds[]=$idProfissional;
+ 							// alterar para reserva de horario
+ 							else if($status->id==8) $erro='Não é possível alterar status de <b>CONFIRMADO</b> para <b>RESERVA DE HORÁRIO</b>';
+
+						}
+
+						// se desmarcado
+						else if($agenda->id_status == 4) {
+							$erro='Agendamento com status <b>DESMARCADO</b> não podem ter seus status alterado';
+						}
+
+						else if(strtotime(date('Y-m-d',strtotime($agenda->agenda_data)))>strtotime(date('Y-m-d'))) {
+
+							// se à confirmar
+							if($agenda->id_status==1) {
+								if($status->id==2 and $status->id==8 and $status->id!=4) $erro='Agendamento com status <b>À CONFIRMAR</b> e com data futura, o status só pode ser alterado para <b>RESERVA DE HORÁRIO</b>, <b>CONFIRMADO</b> ou <b>DESMARCADO</b>';
+							} 
+
+							// se reserva de horario
+							else if($agenda->id_status==8) {
+								if($status->id==2 and $status->id==1 and $status->id!=4) $erro='Agendamento com status <b>RESERVA DE HORÁRIO</b> e com data futura, o status só pode ser alterado para <b>À CONFIRMAR</b>, <b>CONFIRMADO</b> ou <b>DESMARCADO</b>';
+							}
+
+							// se confirmado
+							else if($agenda->id_status==2) {
+								if($status->id!=4) $erro='Agendamento com status <b>CONFIRMADO</b> e com data futura, o status só pode ser alterado para <b>DESMARCADO</b>';
+							}
+
+
+							$erro='Não é permitido ';
+						}
+					}
+
+					if(empty($erro)) {
+
+						$vSQL="id_status=$status->id,data_atualizacao=now()";
+						$vWHERE="where id=$agenda->id";
+
+						$sql->update($_p."agenda",$vSQL,$vWHERE);
+
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vwhere='".addslashes($vWHERE)."',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$agenda->id."'");
+
+						$wts=0;
+
+						// Se alterou para confirmado
+						if($status->id==2 and $status->id!=$agenda->id_status) {
+							// se virou para confirmado, envia wts para dentista
+							$sql->consult($_p."agenda","*","where id=$agenda->id and id_status=2");
+							if($sql->rows) {
+								$agendaNew=mysqli_fetch_object($sql->mysqry); // registro de agenda atualizado
+
+								if(!empty($agendaNew->profissionais)) {
+
+									$profissionaisIds=array();
+									$auxProfissionais = explode(",",$agenda->profissionais);
+									foreach($auxProfissionais as $idProfissional) {
+										if(!empty($idProfissional) and is_numeric($idProfissional)) {
+											$profissionaisIds[]=$idProfissional;
+										}
 									}
-								}
 
-								$attr=array('prefixo'=>$_p,'usr'=>$usr);
-								$infozap = new Whatsapp($attr);
+									$attr=array('prefixo'=>$_p,'usr'=>$usr);
+									$infozap = new Whatsapp($attr);
 
-								if(count($profissionaisIds)>0) {
-									$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisIds).") and whatsapp_notificacoes=1 and lixo=0");
-									while($x=mysqli_fetch_object($sql->mysqry)) {
-										if(!empty($x->telefone1)) {
-											$attr=array('id_tipo'=>6,
-														'id_paciente'=>$agendaNew->id_paciente,
-														'id_profissional'=>$x->id,
-														'id_agenda'=>$agendaNew->id);
-								
-											if($infozap->adicionaNaFila($attr)) {
-												$wts=1;
+									if(count($profissionaisIds)>0) {
+										$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisIds).") and whatsapp_notificacoes=1 and lixo=0");
+										while($x=mysqli_fetch_object($sql->mysqry)) {
+											if(!empty($x->telefone1)) {
+												$attr=array('id_tipo'=>6,
+															'id_paciente'=>$agendaNew->id_paciente,
+															'id_profissional'=>$x->id,
+															'id_agenda'=>$agendaNew->id);
+									
+												if($infozap->adicionaNaFila($attr)) {
+													$wts=1;
+												}
 											}
 										}
 									}
+
 								}
-
 							}
+							
 						}
-						
-					}
 
-					$rtn=array('success'=>true,
-								'wts'=>$wts);
+						$rtn=array('success'=>true,
+									'wts'=>$wts);
+					} else {
+						$rtn=array('success'=>false,
+									'error'=>$erro);
+					}
 
 				} else {
 					$rtn=array('success'=>false,'error'=>'Status não encontrado');
@@ -358,14 +408,16 @@
 							}
 							
 						}
-						
-						// A CONFIRMAR
-						if(eval(x.id_status)==1) {
+						// A CONFIRMAR ou RESERVA DE HORARIO
+						if(eval(x.id_status)==1 || eval(x.id_status)==8) {
+
+
 
 							if(x.wts==4 || x.wts==5 || x.wts==6 || x.mais24==0) {
 								wtsIcon=`<div class="kanban-item-wp" style="color:var(--vermelho);"><i class="iconify" data-icon="bxs:phone"></i> <span>Confirmar</span></div>`;
 							}
-							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
+							if(x.id_status==8) {
+								html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}" style="opacity:0.5">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										<p>${x.telefone1}</p>
@@ -373,6 +425,19 @@
 										${wtsIcon}
 										${wtsLembrete}
 									</a>`;
+
+								x.id_status=1;
+							} else {
+								html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
+										<p>${x.data} • ${x.hora}</p>
+										<h1>${x.paciente}</h1>
+										<p>${x.telefone1}</p>
+										<p>${x.profissionais}</p>
+										${wtsIcon}
+										${wtsLembrete}
+									</a>`;
+
+							}
 						} 
 						// CONFIRMADO
 						else if(eval(x.id_status)==2) {
@@ -588,7 +653,6 @@
 							data:dataAjax,
 							success:function(rtn) {
 								if(rtn.success) {
-									agendaAtualizar();
 									if(rtn.wts && rtn.wts==1) {
 										let data = `ajax=whatsappDisparar`;
 										$.ajax({
@@ -601,8 +665,14 @@
 									if(id_status==5) {
 										asideProximaConsulta(id_agenda);
 									}
+								} else if(rtn.error) {
+									swal({title: "Erro!", text: rtn.error, html:true, type:"error", confirmButtonColor: "#424242"});
+								} else {
+									swal({title: "Erro!", text: 'Algum erro ocorreu durante a alteração de status!', type:"error", confirmButtonColor: "#424242"});
 								}
 							}
+						}).done(function(){
+							agendaAtualizar();
 						})
 			        });
 
@@ -632,6 +702,8 @@
 					
 					<?php
 					foreach($_status as $s) {
+
+						if($s->id==8) continue;
 					?>
 					<div class="kanban-item" style="background:<?php echo $s->cor;?>;">
 						<header>

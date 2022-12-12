@@ -2114,7 +2114,7 @@
 											$('#js-aside-edit input[name=id_status_antigo]').val(rtn.data.id_status);
 											// se confirmado
 											if(rtn.data.id_status=="2") {
-												$('#js-aside-edit select[name=id_status]').find('option[value=1]').prop('disabled',true);
+												$('#js-aside-edit select[name=id_status]').find('option[value=1],option[value=8]').prop('disabled',true);
 
 												$('#js-aside-edit input[name=agenda_data]').prop('readonly',true).datetimepicker('destroy').css('background','var(--cinza3)');
 
@@ -2501,7 +2501,13 @@
 													</section>
 												</section>`;
 							    	} else {
-							    		eventHTML=`<section class="cal-item" style="height:100%;border-left:6px solid ${statusColor};" >
+
+							    		agendaOpacity = '';
+
+							    		// se status for reserva de horario
+							    		if(id_status==8) agendaOpacity='opacity:0.5;';
+
+							    		eventHTML=`<section class="cal-item" style="height:100%;border-left:6px solid ${statusColor};${agendaOpacity}">
 													<section class="cal-item__inner1" style="height:100%"  onclick="popView(${id_agenda});">
 														<div class="cal-item-dados">
 															<h2 style="margin-top:0">${nome}</h2>
