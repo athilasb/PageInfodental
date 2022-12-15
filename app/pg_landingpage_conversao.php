@@ -40,6 +40,11 @@
 		$vSQL=$adm->vSQL($campos,$_POST);
 		$values=$adm->values;
 
+		$teleconsulta_beneficios=utf8_decode($_POST['teleconsulta_beneficios']);
+		$vSQL.="teleconsulta_beneficios='".$teleconsulta_beneficios."',";
+		$consultapresencial_beneficios=utf8_decode($_POST['consultapresencial_beneficios']);
+		$vSQL.="consultapresencial_beneficios='".$consultapresencial_beneficios."',";
+
 		$vSQL.="id_alteracao=$usr->id,alteracao_data=now()";
 		$vWHERE="where id='".$cnt->id."'";
 		$sql->update($_table,$vSQL,$vWHERE);

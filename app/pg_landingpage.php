@@ -1,4 +1,25 @@
 <?php
+	if(isset($_POST['ajax'])) {
+
+		require_once("lib/conf.php");
+		require_once("usuarios/checa.php");
+
+		$rtn = array();
+		if($_POST['ajax']=="verificaCode") {
+
+			$sql->consult($_p."landingpage_temas","*","WHERE code='".addslashes($_POST['code'])."' and lixo=0");
+			if($sql->rows==0) {
+				$rtn=array('success'=>true);
+			} else {
+				$rtn=array('success'=>false,'error'=>'Já existe tema com o endereço '.addslashes($_POST['code']).'');
+			}
+		} 
+
+		header("Content-type: application/json");
+		echo json_encode($rtn);
+
+		die();
+	}
 	include "includes/header.php";
 	include "includes/nav.php";
 
@@ -66,13 +87,56 @@
 				let code = retira_acentos($(this).val().toLowerCase().split(' ').join('-'));
 				$('input[name=code]').val(code);
 			});
-			$('input[name=cor_primaria]').keyup(function(){
-				let cor = $(this).val();
-				$('input[name=cor_secundaria]').val(cor);
-			});
 			<?php
 			}
 			?>
+
+			$('.js-salvar').click(function(){
+				let alerta = false;
+				let titulo = $('input[name=titulo]').val();
+				let code = $('input[name=code]').val();
+				let cor_primaria = $('input[name=cor_primaria]').val();
+				let cor_secundaria = $('input[name=cor_secundaria]').val();
+
+				if(!titulo) {
+					alerta=true;
+					$('input[name=titulo]').addClass('erro');
+				}
+
+				if(!code) {
+					alerta=true;
+					$('input[name=code]').addClass('erro');
+				}
+
+				if(!cor_primaria) {
+					alerta=true;
+					$('input[name=cor_primaria]').addClass('erro');
+				}
+
+				if(!cor_secundaria) {
+					alerta=true;
+					$('input[name=cor_secundaria]').addClass('erro');
+				}
+
+				if(alerta) {
+					swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
+				} else {
+					$.ajax({
+						type:'POST',
+						data:`ajax=verificaCode&code=${code}`,
+						success:function(rtn) {
+							if(rtn.success===false) {
+								swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+							} else {
+								$('.js-form').submit();
+							}
+						},
+						error:function() {
+							
+						}
+					});
+				}
+			});
 		})
 	</script>
 
@@ -86,6 +150,7 @@
 
  			$vSQL=$adm->vSQL($campos,$_POST);
  			$processa=true;
+		
  			if($processa===true) {	
 
 				if(is_object($cnt)) {
@@ -117,7 +182,7 @@
 							<dd><a href="pg_landingpage.php" class="button"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></a></dd>
 						</dl>
 						<dl>
-							<dd><a href="javascript:;" class="button button_main js-submit"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>
+							<dd><a href="javascript:;" class="button button_main js-salvar"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>
 						</dl>
 					</div>
 				</div>
@@ -125,7 +190,7 @@
 			</section>
 			<section class="grid">
 
-				<form method="post" class="form formulario-validacao">
+				<form method="post" class="form formulario-validacao js-form">
 					<input type="hidden"  name="acao" value="wlib" />
 
 					<fieldset>

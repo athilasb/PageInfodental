@@ -34,6 +34,28 @@ function unMoney(valor) {
     return eval(valor);
 }
 
+function retira_acentos(str) {
+
+    com_acento = "Ã€ÃÃ‚ÃƒÃ„Ã…Ã†Ã‡ÃˆÃ‰ÃŠÃ‹ÃŒÃÃŽÃÃÃ‘Ã’Ã“Ã”Ã•Ã–Ã˜Ã™ÃšÃ›ÃœÃÅ”ÃžÃŸÃ Ã¡Ã¢Ã£Ã¤Ã¥Ã¦Ã§Ã¨Ã©ÃªÃ«Ã¬Ã­Ã®Ã¯Ã°Ã±Ã²Ã³Ã´ÃµÃ¶Ã¸Ã¹ÃºÃ»Ã¼Ã½Ã¾Ã¿Å•";
+	sem_acento = "AAAAAAACEEEEIIIIDNOOOOOOUUUUYRsBaaaaaaaceeeeiiiionoooooouuuuybyr";
+
+    novastr="";
+    for(i=0; i<str.length; i++) {
+        troca=false;
+        for (a=0; a<com_acento.length; a++) {
+            if (str.substr(i,1)==com_acento.substr(a,1)) {
+                novastr+=sem_acento.substr(a,1);
+                troca=true;
+                break;
+            }
+        }
+        if (troca==false) {
+            novastr+=str.substr(i,1);
+        }
+    }
+    return novastr;
+} 
+
 function validaHoraMinuto(val) {
 	var regexp = (/[^0-9\:]|^\.+(?!$)|^0+(?=[0-9]+)|\.(?=\.|.+\.)/g);
 
