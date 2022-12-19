@@ -2793,8 +2793,10 @@
 
 						if(nome.length==0) {
 							swal({title: "Erro!", text: "Digite o Nome do Paciente", type:"error", confirmButtonColor: "#424242"});
+							$('.js-asPaciente-nome').addClass('erro');
 						} else if(telefone1.length==0) {
 							swal({title: "Erro!", text: "Digite o Whatsapp do Paciente", type:"error", confirmButtonColor: "#424242"});
+							$('.js-asPaciente-telefone1').addClass('erro');
 						}  else {
 
 							obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
@@ -2866,7 +2868,18 @@
 				</header>
 
 				<form method="post" class="aside-content form js-asPaciente-form">
-					
+
+					<section class="filter" style="margin-bottom:0;">
+						<div class="filter-group"></div>
+						<div class="filter-group">
+							<div class="filter-form form">
+								<dl>
+									<dd><button type="button" class="button button_main js-asPaciente-submit" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+								</dl>
+							</div>								
+						</div>
+					</section>
+
 					<dl>
 						<dt>Nome</dt>
 						<dd>
@@ -2942,9 +2955,9 @@
 								<select class="js-asPaciente-indicacao_tipo">
 									<option value="">-</option>
 									<?php
-									foreach($_pacienteIndicacoes as $v) {
-										echo '<option value="'.$v->id.'"'.($values['indicacao_tipo']==$v->id?' selected':'').' data-id="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
-									}
+									//foreach($_pacienteIndicacoes as $v) echo '<option value="'.$v->id.'"'.($values['indicacao_tipo']==$v->id?' selected':'').' data-id="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
+									
+										foreach($optTipoIndicacao as $k=>$v) echo '<option value="'.$k.'"'.($values['indicacao_tipo']==$k?' selected':'').'>'.$v.'</option>';
 									?>
 								</select>
 							</dd>
@@ -2953,7 +2966,6 @@
 							<dt>Indicação</dt>
 							<dd>
 								<input type="text" class="js-asPaciente-indicacao" />
-								<button type="button" class="js-asPaciente-submit button button_main" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
 
 							</dd>
 						</dl>

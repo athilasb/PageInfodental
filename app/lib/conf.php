@@ -63,7 +63,7 @@
 
 	$_dias=explode(",","Domingo,Segunda-Feira,Terça-Feira,Quarta-Feira,Quinta-Feira,Sexta-Feira,Sábado");
 	
-	$_pacienteSituacao=array('BI'=>'BI','EXCLUIDO'=>'DESATIVADO');
+	$_pacienteSituacao=array('BI'=>'INTELIGÊNCIA ARTIFICIAL','EXCLUIDO'=>'DESATIVADO');
 
 	$_pacienteEstadoCivil=array('SOLTEIRO'=>'SOLTEIRO','CASADO'=>'CASADO','DIVORCIADO'=>'DIVORCIADO','CASADO'=>'CASADO','VIÚVO'=>'VIÚVO','UNIÃO ESTÁVEL'=>'UNIÃO ESTÁVEL');
 
@@ -75,7 +75,7 @@
 	$_formasDePagamentos=array('Dinheiro','Crédito','Débito','Desconto');
 
 	$optTipoIndicacao=array('PACIENTE'=>'PACIENTE',
-							'PROFISSIONAL'=>'CIRURGIÃO DENTISTA',
+							'PROFISSIONAL'=>'COLABORADOR',
 							'INDICACAO'=>'LISTA DE PERSONALIZADA');
 
 	$_tipoBaixa=array('pagamento'=>'PAGAMENTO',

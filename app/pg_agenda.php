@@ -5,8 +5,14 @@
 	$_table = $_p."agenda";
 
 	$_profissionais=array();
-	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento,contratacaoAtiva","where lixo=0 order by nome asc");
-	while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
+	$_profissionaisTodos=array();
+	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,lixo,foto,calendario_cor,check_agendamento,contratacaoAtiva"," order by nome asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		if($x->lixo==0) $_profissionais[$x->id]=$x;
+		$_profissionaisTodos[$x->id]=$x;
+	}
+
+
 
 	$_cadeiras=array();
 	$sql->consult($_p."parametros_cadeiras","*","where lixo=0  order by titulo asc");
@@ -133,7 +139,7 @@
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 
 						if($x->evento=="agendaHorario") {
-								$_historico[]=array('usr'=>utf8_encode($_profissionais[$x->id_usuario]->nome),
+								$_historico[]=array('usr'=>isset($_profissionaisTodos[$x->id_usuario])?utf8_encode($_profissionaisTodos[$x->id_usuario]->nome):'Desconhecido',
 																	'dt'=>date('d/m H:i',strtotime($x->data)),
 																	'ev'=>'horario',
 																	'nvDt'=>date('d/m H:i',strtotime($x->agenda_data_novo)),
@@ -142,7 +148,7 @@
 
 						} else {
 							if(isset($_status[$x->id_status_novo])) { 
-								$_historico[]=array('usr'=>isset($_profissionais[$x->id_usuario])?utf8_encode($_profissionais[$x->id_usuario]->nome):'',
+								$_historico[]=array('usr'=>isset($_profissionaisTodos[$x->id_usuario])?utf8_encode($_profissionaisTodos[$x->id_usuario]->nome):'Desconhecido',
 																	'dt'=>date('d/m H:i',strtotime($x->data)),
 																	'ev'=>'status',
 																	'desc'=>utf8_encode($x->descricao),
@@ -171,7 +177,7 @@
 
 
 					$data = array('id'=>$cnt->id,
-									'agendou_profissional'=>isset($_profissionais[$cnt->id_usuario])?utf8_encode($_profissionais[$cnt->id_usuario]->nome):"-",
+									'agendou_profissional'=>isset($_usuarios[$cnt->id_usuario])?utf8_encode($_usuarios[$cnt->id_usuario]->nome):"-",
 									'agendou_dias'=>(int)$dias,
 									'agendaPessoal'=>0,
 									'ft'=>$ft,
@@ -1061,6 +1067,8 @@
 					}
 				}*/
 
+				$_agendaHorarios=[];
+
 				// Agendamentos não desmarcados
 				foreach($registros as $x) {
 				
@@ -1142,6 +1150,12 @@
 												'id'=>$x->id,
 												'wts'=>(int)isset($_agendamentosConfirmacaoWts[$x->id])?1:0
 											);
+
+
+
+						$diaSemana = date('w',strtotime($dtStart));
+						$_agendaHorarios[$x->id_cadeira][$diaSemana][]=array('inicio'=>$dtStart,'fim'=>$dtEnd);
+
 					} else if($x->agendaPessoal==1) {
 
 						$cadeira=isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'-';
@@ -1326,6 +1340,8 @@
 						} else {
 							$naoAtende=true;
 						}
+
+						// Horários que não atende
 						if($naoAtende===true) {
 
 							$agendamentos[]=array('agendaPessoal'=>2,
@@ -1338,6 +1354,77 @@
 									);
 						}
 
+						// Horários que atendem
+						else {	
+
+							
+							$horarioOscioso=true;
+							$iN = (date('H:i',strtotime($dt)));
+							$iF = (date('H:i',strtotime($dt." + 30 minutes")));
+
+							//echo $iN." ".$iF."\n";
+							if(isset($_agendaHorarios[$c->id][$diaSemana])) {
+								foreach($_agendaHorarios[$c->id][$diaSemana] as $arr) {
+
+									$xi = ($arr['inicio']);
+									$xf = ($arr['fim']);
+
+									//echo $xi." ".$xf;die();
+									/*
+									echo "$xi - $xf -> if(strtotime($xi) >= strtotime($iN) && strtotime($xi) < strtotime($iF) && 
+										strtotime($xf) > strtotime($iN)\n\n";
+
+									echo "$xi - $xf -> if(strtotime($xi) >= strtotime($iN) && strtotime($xi) < strtotime($iF) && 
+										strtotime($xf) < strtotime($iN) && 
+										strtotime($xf) > strtotime($iF))<BR>\n\n";
+
+									echo "$xi - $xf -> if(strtotime($xi) <= strtotime($iN) && strtotime($xi) < strtotime($iF) && 
+										strtotime($xf) > strtotime($iN) && 
+										strtotime($xf) > strtotime($iF))<BR>\n\n";
+									*/
+
+									if(strtotime($xi) >= strtotime($iN) && 
+										strtotime($xi) < strtotime($iF) && 
+										strtotime($xf) > strtotime($iN) ) { 
+										//echo "ATENDE\n";
+										$horarioOscioso=false;
+										break;
+									} else if(strtotime($xi) >= strtotime($iN) && 
+										strtotime($xi) < strtotime($iF) && 
+										strtotime($xf) < strtotime($iN)  && 
+										strtotime($xf) > strtotime($iF) ) { 
+										//echo "ATENDEe\n";
+										$horarioOscioso=false;
+										break;
+									} else if(strtotime($xi) <= strtotime($iN) && 
+										strtotime($xi) < strtotime($iF) && 
+										strtotime($xf) > strtotime($iN)  && 
+										strtotime($xf) >= strtotime($iF) ) { 
+										//echo "ATENDEe\n";
+										$horarioOscioso=false;
+										break;
+									}
+								}
+
+								if($horarioOscioso===true) {
+									/*$agendamentos[]=array('agendaPessoal'=>2,
+											'resourceId'=>$idCadeira,
+											'start'=>str_replace(" ","T",$dt),
+											'end'=>str_replace(" ","T",date('Y-m-d H:i',strtotime($dt." + 30 minutes"))),
+											'cadeira'=>utf8_encode($c->titulo),
+											'color'=>'red',
+											'display'=>'background'
+										);*/
+								}
+							}
+
+
+
+
+						}
+
+
+
 						//echo $idCadeira." ".date('Y-m-d H:i',strtotime($dt))." -> $diaSemana ".($naoAtende?"n":"atende")."\n--------->\n\n\n";
 
 						$dt = date('Y-m-d H:i',strtotime($dt."+ 30 minutes"));
@@ -1347,6 +1434,7 @@
 			}
 
 			//die();
+
 
 			$rtn=array('success'=>true,
 						'agendamentos'=>$agendamentos,

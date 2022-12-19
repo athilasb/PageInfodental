@@ -50,6 +50,7 @@
 	foreach($campos as $v) {
 		$values[$v]='';
 	}
+	$values['situacao']='BI';
 
 	if(isset($_GET['cmd'])) {
 		$adm->biCategorizacao();
@@ -166,6 +167,7 @@
 									let data = `ajax=indicacoesLista&indicacao_tipo=${indicacao_tipo}`;
 									$.ajax({
 										type:"POST",
+										url:"pg_pacientes_dadospessoais.php",
 										data:data,
 										success:function(rtn) {
 											$('select[name=indicacao] option').remove();
@@ -467,7 +469,7 @@
 					</fieldset>
 
 					<fieldset>
-						<legend>BI</legend>
+						<legend>Inteligência Artificial</legend>
 							<div class="colunas3">
 							<dl>
 								<dt>Tipo de indicação</dt>

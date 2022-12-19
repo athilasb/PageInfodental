@@ -566,7 +566,7 @@
 					</fieldset>
 
 					<fieldset>
-						<legend>BI</legend>
+						<legend>Inteligência Artificial</legend>
 							<div class="colunas3">
 							<dl>
 								<dt>Tipo de indicação</dt>
