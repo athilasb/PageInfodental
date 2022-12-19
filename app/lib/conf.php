@@ -47,7 +47,7 @@
 														'upload-queue-title'=>'Enviando'
 														)
 										));
-
+ 
 	$_pacientesPeriodicidade = array(1=>'1 mês',
 										3=>'3 meses',
 										4=>'4 meses',
@@ -76,7 +76,7 @@
 
 	$optTipoIndicacao=array('PACIENTE'=>'PACIENTE',
 							'PROFISSIONAL'=>'COLABORADOR',
-							'INDICACAO'=>'LISTA DE PERSONALIZADA');
+							'INDICACAO'=>'LISTA PERSONALIZADA');
 
 	$_tipoBaixa=array('pagamento'=>'PAGAMENTO',
 						'despesa'=>'DESPESA',

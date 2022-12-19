@@ -2877,7 +2877,7 @@
 							<dt>Paciente</dt>
 							<dd>
 								<select name="id_paciente" class="select2 obg-0 ajax-id_paciente">
-									<option value="">...</option>
+									<option value="">Buscar paciente...</option>
 								</select>
 								<a  href="javascript:;" class="js-btn-aside button" data-aside="paciente" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a> 
 

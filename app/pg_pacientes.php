@@ -162,6 +162,10 @@
 							$('select[name=indicacao_tipo]').change(function(){
 								//let id_indicacao = $(this).find('option:selected').attr('data-id');
 								let indicacao_tipo = $(this).val();
+								initIndicacao = $(this).val();
+
+								console.log('alterado para '+initIndicacao);
+								return true;
 
 								if(indicacao_tipo.length>0) {
 									let data = `ajax=indicacoesLista&indicacao_tipo=${indicacao_tipo}`;
@@ -172,7 +176,7 @@
 										success:function(rtn) {
 											$('select[name=indicacao] option').remove();
 											$('select[name=indicacao]').append(`<option value=""></option>`);
-											console.log(rtn.indicacoes);
+											//console.log(rtn.indicacoes);
 											if(rtn.indicacoes) {
 												rtn.indicacoes.forEach(x => {
 													if(initIndicacao_tipo==indicacao_tipo && initIndicacao==x.id) sel = ' selected';
@@ -485,9 +489,11 @@
 							<dl>
 								<dt>Indicação</dt>
 								<dd>
-									<select name="indicacao" class="chosen">
+									<select name="indicacao" class="">
 										<option value=""></option>
 									</select>
+
+									<a href="javascript:;" class="js-btn-aside button js-parametrizacao-indicacao" data-aside="indicacao" data-aside-sub><i class="iconify" data-icon="fluent:add-24-regular"></i></a>
 								</dd>
 							</dl>
 						
@@ -1161,7 +1167,8 @@
 	</main>
 
 <?php
-	$apiConfig=array('profissao'=>1);
+	$apiConfig=array('profissao'=>1,
+						'indicacaoListaPersonalizada'=>1);
 	require_once("includes/api/apiAside.php");
 	include "includes/footer.php";
 ?>	
