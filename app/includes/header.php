@@ -82,8 +82,7 @@
 
 
       $_page=basename($_SERVER['PHP_SELF']);
-
-
+      $link_landingpage="http://163.172.187.183:5000/";
       
 ?>
 <!doctype html>

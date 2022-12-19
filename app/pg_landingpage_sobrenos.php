@@ -29,7 +29,7 @@
 		$cnt=mysqli_fetch_object($sql->mysqry);
 	}
 
-	$campos=explode(",","id_tema,nome,whatsapp,instagram,facebook,texto,endereco");
+	$campos=explode(",","id_tema,nome,telefone,whatsapp,instagram,facebook,texto,endereco");
 	foreach($campos as $v) $values[$v]='';
 
 	if(is_object($cnt)) {
@@ -123,18 +123,24 @@
 
 								<div class="colunas4">
 									<dl class="dl2">
+										<dt>Telefone</dt>
+										<dd>
+											<input type="text" name="telefone" value="<?php echo $values['telefone'];?>"  class="obg telefone" />
+										</dd>
+									</dl>
+									<dl class="dl2">
 										<dt>Whatsapp</dt>
 										<dd>
 											<input type="text" name="whatsapp" value="<?php echo $values['whatsapp'];?>"  class="obg noupper celular" />
 										</dd>
 									</dl>
-									<dl class="dl2">
-										<dt>Endereço</dt>
-										<dd>
-											<input type="text" name="endereco" value="<?php echo $values['endereco'];?>" maxlength="140"  class="noupper" />
-										</dd>
-									</dl>
 								</div>
+								<dl class="dl2">
+									<dt>Endereço</dt>
+									<dd>
+										<input type="text" name="endereco" value="<?php echo $values['endereco'];?>" maxlength="140"  class="noupper" />
+									</dd>
+								</dl>
 
 								<div class="colunas4">
 									<dl class="dl2">

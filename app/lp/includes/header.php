@@ -1,3 +1,24 @@
+<?php
+require_once "../lib/conf.php";
+require_once "../lib/classes.php";
+$sql = new Mysql();
+$jsc = new Js();
+
+$landingpage=$sobrenos=$title="";
+if(isset($_GET['code']) and !empty($_GET['code'])) {
+	$sql->consult($_p."landingpage_temas","*","WHERE code='".addslashes($_GET['code'])."' and lixo=0");
+	if($sql->rows) {
+		$landingpage = mysqli_fetch_object($sql->mysqry);
+	}
+}
+
+if(is_object($landingpage)) {
+   $sql->consult($_p."landingpage_sobreaclinica","*","WHERE id_tema='".$landingpage->id."' and lixo=0"); 
+   if($sql->rows) {
+	$sobrenos=mysqli_fetch_object($sql->mysqry);
+   }
+}
+?>
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:og="http://ogp.me/ns#"
@@ -51,5 +72,18 @@
 	--cor2:#6F615A;
 }
 </style>
+
+<?php 
+    if(is_object($landingpage) and !empty($landingpage->cor_primaria) and !empty($landingpage->cor_secundaria)) {
+?>
+<style type="text/css">
+	:root {
+		--cor1:<?php echo $landingpage->cor_primaria;?>;
+		--cor2:<?php echo $landingpage->cor_secundaria;?>;
+	}
+</style>
+<?php
+    }
+?>
 
 <section class="wrapper">
