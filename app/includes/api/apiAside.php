@@ -2067,7 +2067,7 @@
 					$wh=substr($wh,0,strlen($wh)-5);
 					$where="where (($wh) or titulo like '%".$_GET['search']."%') and lixo=0";
 				}
-				if(!empty($primeiraLetra)) $where.=" ORDER BY CASE WHEN titulo >= '$primeiraLetra' THEN 1 ELSE 0 END DESC, nome ASC";
+				if(!empty($primeiraLetra)) $where.=" ORDER BY CASE WHEN titulo >= '$primeiraLetra' THEN 1 ELSE 0 END DESC, titulo ASC";
 				else $where.=" order by titulo asc";
 
 				$table=$_p."parametros_indicacoes";
@@ -2103,7 +2103,7 @@
 			}
 
 			$sql->consult($table,$fields,$where);
-			//echo $where;
+			//echo $table." ".$fields." ".$where;
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 
 				$rtn['items'][]=array('id'=>$x->id,
