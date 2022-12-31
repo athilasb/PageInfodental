@@ -4,6 +4,7 @@
 	$pagesFornecedor=explode(",","pg_configuracoes_fornecedores.php,pg_configuracoes_fornecedores_produtos.php");
 	$pagesFinanceiro=explode(",","pg_configuracoes_financeiro_bancosecontas.php,pg_configuracoes_financeiro_cartoes.php,pg_configuracoes_financeiro_politicadepagamento.php");
 	$pagesAssinatura=explode(",","pg_configuracoes_assinatura.php");
+	$pagesAvaliacao=explode(",","pg_configuracoes_avaliacao.php");
 ?>
 
 <section class="tab">
@@ -12,4 +13,5 @@
 	<a href="pg_configuracoes_fornecedores.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesFornecedor)?' class="active"':'';?>>Fornecedores</a>
 	<a href="pg_configuracoes_financeiro_bancosecontas.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesFinanceiro)?' class="active"':'';?>>Financeiro</a>
 	<a href="pg_configuracoes_assinatura.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesAssinatura)?' class="active"':'';?>>Assinatura</a>
+	<a href="pg_configuracoes_avaliacao.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesAvaliacao)?' class="active"':'';?>>Avaliação</a>
 </section>
