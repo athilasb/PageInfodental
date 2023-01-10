@@ -1515,6 +1515,13 @@
 		}
 	}
 ?> 
+
+	<div class="cal-date-floater">
+		<h1 class="js-cal-titulo-diames"></h1>
+		<h1 class="js-cal-titulo-mes" style="font-weight:bold"></h1>
+	<h2 class="js-cal-titulo-dia"></h2>
+	</div>
+
 	<script>
 		var calendar = '';
 		var calendarView = 'resourceTimeGridOneDay';
@@ -1967,7 +1974,7 @@
 		.fc-scrollgrid  { border:none !important; }
 		.fc-scrollgrid-liquid{ border:none !important; }
 		.fc-timegrid-now-indicator-line { border-color: var(--cinza5) !important;  }
-		.fc-timegrid-now-indicator-arrow { }
+		.fc-timegrid-now-indicator-arrow {border:0 !important; width:12px; height:12px; background:#344848; border-radius:100%;}
 	</style>
 
 	<header class="header">
@@ -2415,6 +2422,7 @@
 						      center:'',
 						      right:''
 						    },
+						    stickyHeaderDates:true,
 						    nowIndicator:true,
 						 	slotDuration:'00:30:00',
 							allDaySlot:false,
@@ -2574,7 +2582,7 @@
 													
 													<section onclick="popView(${id_agenda});">
 														 <h1 class="cal-item__titulo">${nome}</h1>
-														 <p>${hora}</p>
+														 <p>${hora}</p>														 
 													</section>
 													${wtsIcon}
 												</section>`
@@ -2584,7 +2592,7 @@
 													<section class="cal-item__inner1" style="height:100%"  onclick="popView(${id_agenda});">
 														<div class="cal-item-dados">
 															<h2 style="margin-top:0">${nome}</h2>
-															<h1>${hora} - ${cadeira}</h1>
+															<h1>${hora} - ${cadeira}</h1>															
 														</div>
 													</section>
 												</section>`;
@@ -2600,6 +2608,10 @@
 														<div class="cal-item-dados">
 															<h2 style="margin-top:0">${nome}</h2>
 															<h1>${hora} - ${cadeira}</h1>
+															<div class="cal-item-tags">
+																<p style="color:purple"><span>tag 1</span></p>
+																<p style="color:orange"><span>tag 2</span></p>
+															</div>
 														</div>
 														${wtsIcon}
 														${profissionaisHTML}
@@ -2923,9 +2935,46 @@
 					<dt>Informações</dt>
 					<dd><textarea name="obs" style="height:100px;"></textarea></dd>
 				</dl>
-			</div>
 
-		</form>
+				<fieldset style="margin-top:2rem;">
+					<legend>Itens do checklist</legend>
+					
+					<div class="colunas3">
+						<dl>	
+							<dd><label><input type="checkbox" name="" class="input-switch" />Laboratório</label></dd>
+						</dl>
+						<dl class="dl2">
+							<dd><input type="text" name="" placeholder="descrição" /></dd>
+						</dl>
+					</div>
+					<div class="colunas3">
+						<dl>	
+							<dd><label><input type="checkbox" name="" class="input-switch" />Imagem</label></dd>
+						</dl>
+						<dl class="dl2">
+							<dd><input type="text" name="" placeholder="descrição" /></dd>
+						</dl>
+					</div>
+					<div class="colunas3">
+						<dl>	
+							<dd><label><input type="checkbox" name="" class="input-switch" />Insumos</label></dd>
+						</dl>
+						<dl class="dl2">
+							<dd><input type="text" name="" placeholder="descrição" /></dd>
+						</dl>
+					</div>
+					<div class="colunas3">
+						<dl>	
+							<dd><label><input type="checkbox" name="" class="input-switch" />Equipamentos</label></dd>
+						</dl>
+						<dl class="dl2">
+							<dd><input type="text" name="" placeholder="descrição" /></dd>
+						</dl>
+					</div>
+				</fieldset>
+			</form>
+		</div>
+	
 	</section><!-- .aside -->
 
 	<section class="aside aside-edit-agendaPessoal" id="js-aside-edit-agendaPessoal">
@@ -3388,8 +3437,10 @@
 				</script>
 				<section class="tab tab_alt js-tab">
 					<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agenda').show();" class="active">Agenda</a>
+					<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-checklist').show();">Checklist</a>					
 					<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-futuro').show();">Agendamentos Futuros</a>
 					<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>					
+					
 				</section>
 			
 				<div class="js-ag js-ag-agenda">
@@ -3488,6 +3539,59 @@
 						<dt>Informações</dt>
 						<dd><textarea name="obs" style="height:100px;"></textarea></dd>
 					</dl>
+				</div>
+
+				<div class="js-ag js-ag-checklist">
+					<section class="filter">
+						<div class="filter-group">
+						</div>
+						<div class="filter-group">
+							<div class="filter-form form">
+								<?php /*
+								<dl>									
+									<dd><button class="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Adicionar</span></button></dd>
+								</dl>
+								*/ ?>
+								<dl>									
+									<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-24-filled"></i> <span>Salvar</span></button></dd>
+								</dl>
+							</div>								
+						</div>
+					</section>
+
+					<div class="list1">
+						<table>
+							<tr>								
+								<td>
+									<h1>Laboratório</h1>
+								</td>
+								<td>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Corrupti, veritatis?</td>
+								<td><input type="checkbox" name="" class="input-switch" /></td>
+							</tr>
+							<tr>								
+								<td>
+									<h1>Imagem</h1>
+								</td>
+								<td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Voluptatibus eveniet, dolore tempore dicta blanditiis. Eaque atque ipsam eveniet sunt possimus!</td>
+								<td><input type="checkbox" name="" class="input-switch" /></td>
+							</tr>
+							<tr>								
+								<td>
+									<h1>Insumos</h1>
+								</td>
+								<td></td>
+								<td><button class="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Adicionar</span></button></td>
+							</tr>
+							<tr>								
+								<td>
+									<h1>Equipamentos</h1>
+								</td>
+								<td></td>
+								<td><button class="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Adicionar</span></button></td>
+							</tr>
+						</table>
+					</div>
+					
 				</div>
 
 				<div class="js-ag js-ag-futuro" style="display:none;">

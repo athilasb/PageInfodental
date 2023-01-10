@@ -375,9 +375,9 @@
 							}
 						}
 
-						let iconsInfo = '<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular" style="color:var(--vermelho);" data-height="20"></i>';
+						let iconsInfo = '<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular" style="color:var(--vermelho);"></i>';
 						if((x.pProx && x.pProx==1) || (x.pHist && x.pHist==1) || (x.pPer && x.pPer==1)) {
-							iconsInfo=' <i class="iconify" data-icon="fluent:lightbulb-filament-20-regular" style="color:var(--verde);" data-height="20"></i>';
+							iconsInfo=' <i class="iconify" data-icon="fluent:lightbulb-filament-20-regular" style="color:var(--verde);"></i>';
 						}
 
 						let iconsInfoProntuario = '<span class="iconify" data-icon="fluent:clipboard-note-20-filled" style="color:var(--vermelho);"></span>';
@@ -388,7 +388,7 @@
 
 						let wtsLembrete = ``;
 						if(x.lembrete && x.lembrete==1) {
-							wtsLembrete=`<span class="iconify" data-icon="mdi:clock-alert-outline" style="color:var(--verde)"></span>`;
+							wtsLembrete=`<i class="iconify" data-icon="mdi:clock-alert-outline" style="color:var(--verde)"></i>`;
 						}
 						//wtsIcon+=` ${x.wts}`
 
@@ -402,19 +402,17 @@
 						// A CONFIRMAR, DESMARCADO E FALTOU
 						if(x.id_status!=1 && x.id_status!=4 && x.id_status!=3) {
 							if(x.fichaCompleta==0) {
-								fichaIncompleta='<p style="color:var(--vermelho)"><i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" data-height="20"></i></p>';
+								fichaIncompleta='<i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--vermelho)"></i>';
 							} else {
-								fichaIncompleta='<p style="color:var(--verde)"><i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" data-height="20"></i></p>';
+								fichaIncompleta='<i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--verde);"></i>';
 							}
 							
 						}
 						// A CONFIRMAR ou RESERVA DE HORARIO
 						if(eval(x.id_status)==1 || eval(x.id_status)==8) {
 
-
-
 							if(x.wts==4 || x.wts==5 || x.wts==6 || x.mais24==0) {
-								wtsIcon=`<div class="kanban-item-wp" style="color:var(--vermelho);"><i class="iconify" data-icon="bxs:phone"></i> <span>Confirmar</span></div>`;
+								wtsIcon=`<div class="kanban-item-wp" style="color:var(--vermelho); display:inline;"><i class="iconify" data-icon="bxs:phone"></i> <span>Confirmar</span></div>`;
 							}
 							if(x.id_status==8) {
 								html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}" style="opacity:0.5">
@@ -422,8 +420,10 @@
 										<h1>${x.paciente}</h1>
 										<p>${x.telefone1}</p>
 										<p>${x.profissionais}</p>
-										${wtsIcon}
-										${wtsLembrete}
+										<div class="kanban-item-icons">
+											${wtsIcon}
+											${wtsLembrete}
+										</div>
 									</a>`;
 
 								x.id_status=1;
@@ -433,8 +433,10 @@
 										<h1>${x.paciente}</h1>
 										<p>${x.telefone1}</p>
 										<p>${x.profissionais}</p>
-										${wtsIcon}
-										${wtsLembrete}
+										<div class="kanban-item-icons">
+											${wtsIcon}
+											${wtsLembrete}
+										</div>
 									</a>`;
 
 							}
@@ -443,29 +445,33 @@
 						else if(eval(x.id_status)==2) {
 
 							if(x.wts!=2) {
-								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde)"><i class="iconify" data-icon="bxs:phone"></i></div>`;
+								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde); display:inline;"><i class="iconify" data-icon="bxs:phone"></i></div>`;
 							}
 
 							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										<p>${x.profissionais}</p>
-										${fichaIncompleta}
-										${wtsIcon}${wtsLembrete}
+										<div class="kanban-item-icons">
+											${fichaIncompleta}
+											${wtsIcon}${wtsLembrete}
+										</div>
 									</a>`;
 						}
 						// FALTOU
 						else if(eval(x.id_status)==3) {
 
 							if(x.wts!=2) {
-								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde)"><i class="iconify" data-icon="bxs:phone"></i></div>`;
+								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde); display:inline;"><i class="iconify" data-icon="bxs:phone"></i></div>`;
 							}
 							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										<p>${x.profissionais}</p>
-										${fichaIncompleta}
-										${temAgendamentoFuturo}
+										<div class="kanban-item-icons">
+											${fichaIncompleta}
+											${temAgendamentoFuturo}
+										</div>
 									</a>`;
 
 						}
@@ -476,8 +482,10 @@
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										<p>${x.profissionais}</p>
-										${fichaIncompleta}
-										${temAgendamentoFuturo}
+										<div class="kanban-item-icons">
+											${fichaIncompleta}
+											${temAgendamentoFuturo}
+										</div>
 									</a>`;
 
 						}
@@ -485,15 +493,17 @@
 						else if(eval(x.id_status)==5) {
 
 							if(x.wts!=2) {
-								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde)"><i class="iconify" data-icon="bxs:phone"></i></div>`;
+								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde); display:inline;"><i class="iconify" data-icon="bxs:phone"></i></div>`;
 							}
 							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
 										<p>${x.id_agenda} - ${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										<p>${x.profissionais}</p>
-										${fichaIncompleta}
-										${iconsInfo}
-										${iconsInfoProntuario}
+										<div class="kanban-item-icons">
+											${fichaIncompleta}
+											${iconsInfo}
+											${iconsInfoProntuario}
+										</div>
 									</a>`;
 
 						}
@@ -502,14 +512,16 @@
 						else if(eval(x.id_status)==6) {
 
 							if(x.wts!=2) {
-								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde)"><i class="iconify" data-icon="bxs:phone"></i></div>`;
+								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde); display:inline;"><i class="iconify" data-icon="bxs:phone"></i></div>`;
 							}
 							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										<p>${x.profissionais}</p>
-										${fichaIncompleta}
-										${wtsIcon}${wtsLembrete}
+										<div class="kanban-item-icons"><p>
+											${fichaIncompleta}
+											${wtsIcon}${wtsLembrete}
+										</div>
 									</a>`;
 
 						}
@@ -518,14 +530,16 @@
 						else if(eval(x.id_status)==7) {
 
 							if(x.wts!=2) {
-								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde)"><i class="iconify" data-icon="bxs:phone"></i></div>`;
+								wtsIcon=`<div class="kanban-item-wp" style="color:var(--verde);"><i class="iconify" data-icon="bxs:phone"></i></div>`;
 							}
 							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										<p>${x.profissionais}</p>
-										${fichaIncompleta}
-										${wtsIcon}${wtsLembrete}
+										<div class="kanban-item-icons">
+											${fichaIncompleta}
+											${wtsIcon}${wtsLembrete}											
+										</div>
 									</a>`;
 
 						}
@@ -534,8 +548,10 @@
 							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
-										${fichaIncompleta}
-										${wtsIcon}${wtsLembrete}
+										<div class="kanban-item-icons">
+											${fichaIncompleta}
+											${wtsIcon}${wtsLembrete}
+										</div>
 									</a>`;
 
 						
