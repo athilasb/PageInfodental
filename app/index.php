@@ -79,7 +79,7 @@
 			$jsc->jAlert("Seu acesso se encontrado DESATIVADO!","erro","");
 		}  else if($_GET['erro']==7) {
 			$jsc=new Js();
-			$jsc->jAlert("A sua conta não foi habilitada.<br /><br />Favor entrar em contato com o nosso suporte!<br /><br /><a href=https://api.whatsapp.com/send/?phone=556299181775 target=_blank class=button><span class=iconify data-icon=logos:whatsapp-icon></span> Falar no Whatsapp</a>","erro","");
+			$jsc->jAlert("A sua conta não foi habilitada.<br /><br />Favor entrar em contato com o nosso suporte!<br /><br /><a href=https://api.whatsapp.com/send/?phone=55$_whatsappSuporte target=_blank class=button><span class=iconify data-icon=logos:whatsapp-icon></span> Falar no Whatsapp</a>","erro","");
 		} else if($_GET['erro']==1000) {
 			$jsc=new Js();
 			$jsc->jAlert(($_GET['msg']),"erro","");

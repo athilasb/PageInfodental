@@ -73,7 +73,7 @@
 			}
 		}
 
-		function assinaturaSuspender($id_assinatura) {
+		function assinaturaCancelar($id_assinatura) {
 			$attr=array('method'=>'subscriptions/'.$id_assinatura.'/suspend/',
 						'type'=>'POST');
 

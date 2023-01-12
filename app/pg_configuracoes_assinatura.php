@@ -11,6 +11,11 @@
 
 		$sql = new Mysql();
 
+
+		$infoConta='';
+		$sql->consult("infodentalADM.infod_contas","*","where instancia='".addslashes($_ENV['NAME'])."'");
+		if($sql->rows) $infoConta=mysqli_fetch_object($sql->mysqry);
+
 		if($_POST['ajax']=="cartoesAdicionar") {
 
 			$ultimosDigitos = (isset($_POST['ultimosDigitos']) and !empty($_POST['ultimosDigitos'])) ? $_POST['ultimosDigitos'] : '';
@@ -18,19 +23,33 @@
 			$cc_token = (isset($_POST['cc_token']) and !empty($_POST['cc_token'])) ? $_POST['cc_token'] : '';
 
 			$erro='';
-			if(empty($ultimosDigitos)) $erro='Os últimos dígitos do cartão não foram enviados!';
+			if(empty($infoConta)) $erro='Conta não encontrada!';
+			else if(empty($ultimosDigitos)) $erro='Os últimos dígitos do cartão não foram enviados!';
 			else if(empty($bandeira)) $erro='Não foi possível capturar a bandeira do cartão!';
 			else if(empty($cc_token)) $erro='Algum erro ocorreu durante a geração do token do cartão!';
 
 			if(empty($erro)) {
 
+
+
 				$vsqlCartao="data=now(),
-								instancia='".addslashes($_ENV['NAME'])."',
+								instancia='".$infoConta->instancia."',
 								bandeira='".addslashes(strtoupperWLIB($bandeira))."',
 								ultimosDigitos='".addslashes($ultimosDigitos)."',
 								cc_token='".addslashes($cc_token)."'";
 
+				// verifica se é o unico cartao
+				$sql->consult("infodentalADM.infod_contas_cartoes","*","where instancia='".$infoConta->instancia."' and lixo=0");
+			
+				if($sql->rows==0) {
+
+					// define como principal cartao
+					$sql->update("infodentalADM.infod_contas","cc_token='$cc_token'","where instancia='".$infoConta->instancia."'");
+				}
+
 				$sql->add("infodentalADM.infod_contas_cartoes",$vsqlCartao);
+
+
 
 				$rtn=array('success'=>true);
 
@@ -68,11 +87,14 @@
 
 	$iugu = new Iugu();
 
-
-	/*$_iuguPlanos=array();
-	if($iugu->planosListar()) {
-		$_iuguPlanos=$iugu->response;
+	$_iuguPlanos=array();
+	$sql->consult("infodentalADM.infod_planos","*","where lixo=0");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_iuguPlanos[$x->iugu_identifier]=$x;
 	}
+
+	$planoUnico=$_iuguPlanos['unico'];
+	/*
 
 
 	// verifica se possui assinatura
@@ -237,11 +259,151 @@
 		die();
 	}*/
 
-	
+
+	// Se possuir assinatura
+	$iuguSubstription='';
+	if(!empty($infoConta->iugu_subscription_id)) {
+		// consulta assinatura
+		if($iugu->assinaturaConsultar($infoConta->iugu_subscription_id)) {
+			if(isset($iugu->response->id)) {
+				$iuguSubstription=$iugu->response;
+			}
+		}
+	}
+
+	// Se não possuir assinatura
+	if(empty($iuguSubstription)) {
+		$sql->update("infodentalADM.infod_contas","iugu_subscription_id=''","where instancia='".$infoConta->instancia."'");
+		$infoConta->iugu_subscription_id='';
+	} else {
+		if(isset($_GET['cancelar'])) {
+
+			if($iugu->assinaturaCancelar($infoConta->iugu_subscription_id)) {
+				$sql->update("infodentalADM.infod_contas","iugu_subscription_id=''","where instancia='$infoConta->instancia'");
+				$jsc->jAlert("Assinatura cancelada com sucesso!","sucesso","document.location.href='$_page'");
+				die();
+			} else {
+				$jsc->jAlert("Algum erro ocorreu durante a suspensão desta assinatura!","erro","");
+			}
+
+			
+		}
+	}
+
+
+	if(isset($_POST['acao'])) {
+
+
+		// Realiza assinatura
+		if($_POST['acao']=="assinatura") {
+
+			# Persistir dados no infod_contas
+
+				$vSQL="tipo='".($_POST['tipo']=="PJ"?"PJ":"PF")."',
+						responsavel='".addslashes(utf8_decode($_POST['responsavel']))."',
+						cpf='".addslashes(cpf($_POST['cpf']))."',
+						razao_social='".addslashes(utf8_decode($_POST['razao_social']))."',
+						cnpj='".addslashes(cnpj($_POST['cnpj']))."',
+						celular='".addslashes(utf8_decode($_POST['celular']))."',
+						email='".addslashes(utf8_decode($_POST['email']))."'";
+
+				$sql->update("infodentalADM.infod_contas",$vSQL,"where instancia='".$infoConta->instancia."'");
+
+				// atualiza objeto infoConta
+				$sql->consult("infodentalADM.infod_contas","*","where instancia='".$infoConta->instancia."'");
+				$infoConta=mysqli_fetch_object($sql->mysqry);
+			
+			# Persistencia do Cliente
+
+				$attr=array('email'=>$infoConta->email,
+							'name'=>$infoConta->tipo=="PF"?utf8_encode($infoConta->responsavel):utf8_encode($infoConta->razao_social),
+							'cpf_cnpj'=>$infoConta->tipo=="PF"?utf8_encode($infoConta->cpf):utf8_encode($infoConta->cnpj),
+							'zip_code'=>$infoConta->cep,
+							'number'=>$infoConta->numero,
+							'street'=>utf8_encode($infoConta->logradouro),
+							'state'=>utf8_encode($infoConta->estado),
+							'city'=>utf8_encode($infoConta->cidade),
+							'district'=>utf8_encode($infoConta->bairro),
+							'complement'=>utf8_encode($infoConta->complemento)
+							);
+
+				// se não possui cadastro na iugu
+				if(empty($infoConta->iugu_customer_id)) {
+					if($iugu->clientesCriar($attr)) {
+						$customer_id=$iugu->response->id;
+						$sql->update("infodentalADM.infod_contas","iugu_customer_id='".addslashes($customer_id)."'","where instancia='$infoConta->instancia'");
+						$infoConta->iugu_customer_id=$customer_id;
+					} else {
+						$jsc->jAlert($iugu->erro,"erro","");
+
+					}
+					
+				} 
+				// se possuir altera dados
+				else {
+					if($iugu->clientesAlterar($infoConta->iugu_customer_id,$attr)) {
+						
+					} else {
+						$jsc->jAlert($iugu->erro,"erro","");
+
+					}
+				}
+			
+			# Assinatura do Plano
+
+				// se nao possui assinatura
+				if(empty($infoConta->iugu_subscription_id)) {
+
+					if(isset($_POST['iugu_plano']) and isset($_iuguPlanos[$_POST['iugu_plano']])) {
+						$plan_identifier=addslashes($_POST['iugu_plano']);
+
+
+						// verifica se cliente possui assinatura na iugu antes de criar uma nova
+						$subscriptionIugu='';
+						if($iugu->assinaturaListar($infoConta->iugu_customer_id)) {
+							if(isset($iugu->response->items)) {
+								foreach($iugu->response->items as $it) {
+									if($it->suspended===false) {
+										$subscriptionIugu=$it;
+									}
+								}
+							}
+						}
+
+						if(is_object($subscriptionIugu)) {
+							$sql->update("infodentalADM.infod_contas","iugu_subscription_id='$subscriptionIugu->id'","where instancia='$infoConta->instancia'");
+							$jsc->jAlert("Sua conta já possui assinatura ativa!","erro","document.location.href='$_page'");
+							die();
+						} else {
+
+							$attr = array('plan_identifier'=>$plan_identifier,
+											'customer_id'=>$infoConta->iugu_customer_id,
+											'expires_at'=>date('Y-m-d H:i:s',strtotime(" + 7 days")));
+
+							if($iugu->assinaturaCriar($attr)) {
+
+								$subscription_id=$iugu->response->id;
+
+								$sql->update("infodentalADM.infod_contas","iugu_subscription_id='$subscription_id'","where instancia='$infoConta->instancia'");
+							
+								$jsc->jAlert("Assinatura realizada com sucesso!","sucesso","document.location.href='$_page'");
+								die();
+							} else {
+								$jsc->jAlert($iugu->erro,"erro","");
+							}
+						}
+
+					} else {
+						$jsc->jAlert("Plano selecionado não encontrado!<br /><br />Favor entrar em contato com o nosso Suporte!<br /><br /><a href=https://api.whatsapp.com/send/?phone=55$_whatsappSuporte target=_blank class=button><span class=iconify data-icon=logos:whatsapp-icon></span> Falar no Whatsapp</a>","erro","");
+					}
+
+				}
+
+		}
+	}
+
 
 ?>
-
-
 	<header class="header">
 		<div class="header__content content">
 
@@ -256,14 +418,41 @@
 		</div>
 	</header>
 
+	<script type="text/javascript">
+		const tipoPessoa = () => {
+			if($('input[name=tipo]:checked').val()=="PF") {
+				$('.js-cpf').show().find('input').addClass('obg');
+				$('.js-cnpj').hide().find('input').removeClass('obg');
+			} else {
+				$('.js-cpf').hide().find('input').removeClass('obg');
+				$('.js-cnpj').show().find('input').addClass('obg');
+			}
+		}
+
+		$(function(){
+			tipoPessoa();
+			$('input[name=tipo]').click(tipoPessoa);
+
+			$('input[name=whatsapp]').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
+				let countryOut = country || '  ';
+				$(this).parent().parent().find('.js-country').html(countryOut);
+			}).trigger('keyup');
+
+			$('input[name=telefone]').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
+				let countryOut = country || '  ';
+				$(this).parent().parent().find('.js-country').html(countryOut);
+			}).trigger('keyup');
+
+		})
+	</script>
+
 	<main class="main">
 		<div class="main__content content">
 
 			<section class="filter">
-				
 				<div class="filter-group">
 					<div class="filter-title">
-						<h1>Pagamentos</h1>
+						<h1>Assinatura</h1>
 					</div>
 				</div>
 			</section>
@@ -278,89 +467,145 @@
 					?>
 
 					<div class="box-col__inner1">
-				
-						<section class="filter">
-							<div class="filter-group"></div>
-							<div class="filter-group">
-								<div class="filter-form form">
-									<dl>
-										<dd><a href="javascript:;" class="button button_main js-submit2" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></a></dd>
-									</dl>
-								</div>
-							</div>							
-						</section>
 
-						<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script> 
+					<?php
+
+					// Nao possui assinatura
+					if(empty($infoConta->iugu_subscription_id)) {
+					?>
 						<script type="text/javascript">
-							const tipoPessoa = () => {
-								if($('input[name=tipo]:checked').val()=="PF") {
-									$('.js-cpf').show().find('input').addClass('obg');
-									$('.js-cnpj').hide().find('input').removeClass('obg');
-								} else {
-									$('.js-cpf').hide().find('input').removeClass('obg');
-									$('.js-cnpj').show().find('input').addClass('obg');
-								}
-							}
-							var logo = cloudinary.createUploadWidget({
-								cloudName: '<?php echo $_cloudinaryCloudName;?>',
-								language: 'pt',
-								text: <?php echo json_encode($_cloudinaryText);?>,
-								multiple: false,
-								sources: ["local"],
-								folder: '<?php echo $_dirLogo;?>',
-								uploadPreset: '<?php echo $_cloudinaryUploadPresent;?>'}, 
-								(error, result) => {
-									if (!error && result) {
-										if(result.event === "success") {
-											 $('input[name=cn_logo]').val(result.info.path);
-										}
-									}
-								}
-							);
 							$(function(){
-								tipoPessoa();
-								$('input[name=tipo]').click(tipoPessoa);
 
-								$('input[name=whatsapp]').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
-									let countryOut = country || '  ';
-									$(this).parent().parent().find('.js-country').html(countryOut);
-								}).trigger('keyup');
+								$('.js-btn-assinar').click(function(){
+									let erro='';
 
-								$('input[name=telefone]').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
-									let countryOut = country || '  ';
-									$(this).parent().parent().find('.js-country').html(countryOut);
-								}).trigger('keyup');
+									if($('input[name=tipo]:checked').val()=="PF") {
+										if($('input[name=responsavel]').val().length==0) erro='Complete o campo <b>Responsável</b>';
+										else if($('input[name=cpf]').val().length==0) erro='Complete o campo <b>CPF</b>';
+										else if(validarCPF($('input[name=cpf]').val())===false) erro='CPF inválido!';
+									} else {
+										if($('input[name=razao_social]').val().length==0) erro='Complete o campo <b>Razão Social</b>';
+										else if($('input[name=cnpj]').val().length==0) erro='Complete o campo <b>CNPJ</b>';
+										else if(validarCNPJ($('input[name=cnpj]').val())===false) erro='CPF inválido!';
+									}
 
-								$('.js-submit2').click(function(){
+									if(erro.length==0) {
+										if($('input[name=celular]').val().length==0) erro='Complete o campo <b>Celular</b>';
+										else if($('input[name=email]').val().length==0) erro='Complete o campo <b>E-mail</b>';
+										else if($('input[name=termos]').prop('checked')==false) erro='Para realizar assinatura é preciso aceitar o Termo de Uso';
+									}
+									
+									if(erro.length>0){
+										swal({title: "Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+									} else {
 
-									let obj = $(this);
+										let obj = $(this);
 
-									if(obj.attr('data-loading')==0) {
-										obj.attr('data-loading',1).html(`<i class="iconify" data-icon="eos-icons:loading"></i> <span>Salvando...</span>`);
-										$('form.formulario-validacao').submit();
-									} 
+										if(obj.attr('data-loading')==0) {
+											obj.attr('data-loading',1).html(`<i class="iconify" data-icon="eos-icons:loading"></i> <span>Assinando...</span>`);
+											$('form.js-form-assinatura').submit();
+											
+										} 
+									}
 
 								});
 							})
 						</script>
-						<?php
-						//var_dump($_iuguPlanos);
-						?>
+
+						<form method="post" class="form js-form-assinatura" action="<?php echo $_page;?>">
+							<input type="hidden" name="acao" value="assinatura" />
+							<input type="hidden" name="iugu_plano" value="<?php echo $planoUnico->iugu_identifier;?>" />
+
+							<fieldset>
+								<legend>Assinatura</legend>
+
+								<div class="colunas2">
+									<dl>
+										<dt>Plano</dt>
+										<dd><?php echo utf8_encode($planoUnico->titulo);?></dd>
+									</dl>
+									<dl>
+										<dt>Valor</dt>
+										<dd>R$ <?php echo number_format($planoUnico->valor,2,",",".");?>/mês</dd>
+									</dl>
+								</div>
+							</fieldset>
+
+							<fieldset>
+								<legend>Dados Cadastrais</legend>
+
+									<div>
+										<dl>
+											<dd>
+												<label><input type="radio" name="tipo" value="PF"<?php echo $infoConta->tipo=="PF"?" checked":"";?> />Pessoa Física</label>
+												<label><input type="radio" name="tipo" value="PJ"<?php echo $infoConta->tipo=="PJ"?" checked":"";?> />Pessoa Jurídica</label>
+											</dd>
+										</dl>
+
+										<div class="colunas4 js-cpf">
+											<dl class="dl2">
+												<dt>Responsável</dt>
+												<dd><input type="text" name="responsavel" value="<?php echo utf8_encode($infoConta->responsavel);?>" class="obg" /></dd>
+											</dl>
+											<dl>
+												<dt>CPF</dt>
+												<dd><input type="text" name="cpf" value="<?php echo ($infoConta->cpf);?>" class="obg cpf" /></dd>
+											</dl>
+										</div>
+
+										<div class="colunas4 js-cnpj">
+											<dl class="dl2">
+												<dt>Razão Social</dt>
+												<dd><input type="text" name="razao_social" value="<?php echo utf8_encode($infoConta->razao_social);?>" class="obg" /></dd>
+											</dl>
+											<dl>
+												<dt>CNPJ</dt>
+												<dd><input type="text" name="cnpj" value="<?php echo ($infoConta->cnpj);?>" class="obg cnpj" /></dd>
+											</dl>
+										</div>
+										<div class="colunas4">
+											<dl>
+												<dt>Celular</dt>
+												<dd><input type="text" name="celular" value="<?php echo ($infoConta->celular);?>" class="obg celular" /></dd>
+											</dl>
+											<dl class="dl2">
+												<dt>E-mail</dt>
+												<dd><input type="email" name="email" value="<?php echo utf8_encode($infoConta->email);?>" class="obg" /></dd>
+											</dl>
+										</div>
+
+										<dl>
+											<dd>
+												<label><input type="checkbox" name="termos" class="input-switch" /> Aceito os Termos de Uso e Privacidade Info Dental</label>
+											</dd>
+											<dd>
+												<a href="javascript:;" class="button"><span class="iconify" data-icon="ic:sharp-manage-search" data-height="20"></span> Visualizar Termos de Uso </a>
+											</dd>
+										</dl>
+										
+									</div>
+							</fieldset>
+
+							<center>
+								<a href="javascript:;" class="button button_main js-btn-assinar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Assinar</span></a>
+							</center>
+						</form>
+					<?php
+					} 
+					else {
+					?>
 						<form method="post" class="form formulario-validacao" action="<?php echo $_page;?>">
 							<input type="hidden" name="acao" value="wlib" />
 							<fieldset>
 								<legend>Assinatura</legend>
 
-								<?php
-								if(is_object($subscription)) {
-
-								?>
+								
 								<div class="colunas3">
 									<dl>
 										<dt>Plano</dt>
 										<dd>
 											<?php
-											echo $subscription->plan_name;
+											echo $iuguSubstription->plan_name;
 											?>
 										</dd>
 									</dl>
@@ -369,7 +614,7 @@
 										<dt>Valor</dt>
 										<dd>
 											<?php
-											echo number_format($subscription->price_cents/100,2,",",".");
+											echo number_format($iuguSubstription->price_cents/100,2,",",".");
 											?>
 										</dd>
 									</dl>
@@ -377,7 +622,7 @@
 										<dt>Status</dt>
 										<dd>
 											<?php
-											echo $subscription->suspended==false?"<font color=green>ATIVO</font>":"<font color=red>SUSPENSO</font>";
+											echo $iuguSubstription->suspended==false?"<font color=green>ATIVO</font>":"<font color=red>SUSPENSO</font>";
 											?>
 										</dd>
 									</dl>
@@ -385,117 +630,20 @@
 								<br />
 								<center>
 									<?php
-									if($subscription->suspended===true) {
+									if($iuguSubstription->suspended===true) {
 									?>
 										<a href="<?php echo $_page."?reativar=1";?>" class="button" style="color:var(--verde)"><span class="iconify" data-icon="fluent:checkmark-12-filled"></span> 
 									Reativar Assinatura</a>
 									<?php
-									}
+									} else {
 									?>
 										<a href="<?php echo $_page."?cancelar=1";?>" class="button js-confirmarDeletar" data-msg="Tem certeza que deseja cancelar a assinatura?"><span class="iconify" data-icon="ep:close-bold"></span> 
-									Suspender Assinatura</a>
+									Cancelar Assinatura</a>
+									<?php
+									}
+									?>
 								</center>
-								<?php
-								} else {
-								?>
-								<dl>
-									<dd>
-										<select name="iugu_plano" class="obg">
-											<option value="">- Selecione um Plano -</option>
-											<?php
-											foreach($_iuguPlanos->items as $v) {
-												echo '<option value="'.$v->identifier.'"'.($v->id==$values['iugu_customer_id']?' selected':'').'>'.$v->name.' ('.number_format($v->prices[0]->value_cents/100,2,",",".").')</option>';
-											}
-											?>
-										</select>
-									</dd>
-								</dl>
-								<?php
-								}
-								?>
-							</fieldset>
-							<fieldset>
-								<legend>Dados Cadastrais</legend>
-
-									<div>
-										<dl>
-											<dd>
-												<label><input type="radio" name="tipo" value="PF"<?php echo $values['tipo']=="PF"?" checked":"";?> />Pessoa Física</label>
-												<label><input type="radio" name="tipo" value="PJ"<?php echo $values['tipo']=="PJ"?" checked":"";?> />Pessoa Jurídica</label>
-											</dd>
-										</dl>
-
-										<div class="colunas4 js-cpf">
-											<dl class="dl2">
-												<dt>Responsável</dt>
-												<dd><input type="text" name="responsavel" value="<?php echo $values['responsavel'];?>" class="obg" /></dd>
-											</dl>
-											<dl>
-												<dt>CPF</dt>
-												<dd><input type="text" name="cpf" value="<?php echo $values['cpf'];?>" class="obg cpf" /></dd>
-											</dl>
-										</div>
-
-										<div class="colunas4 js-cnpj">
-											<dl class="dl2">
-												<dt>Razão Social</dt>
-												<dd><input type="text" name="razao_social" value="<?php echo $values['razao_social'];?>" class="obg" /></dd>
-											</dl>
-											<dl>
-												<dt>CNPJ</dt>
-												<dd><input type="text" name="cnpj" value="<?php echo $values['cnpj'];?>" class="obg cnpj" /></dd>
-											</dl>
-										</div>
-										<div class="colunas4">
-											<dl class="dl2">
-												<dt>E-mail</dt>
-												<dd><input type="email" name="email" value="<?php echo $values['email'];?>" class="obg" /></dd>
-											</dl>
-										</div>
-										<?php /*<div class="colunas4">
-											<dl>
-												<dt>CEP</dt>
-												<dd><input type="text" name="cep" value="<?php echo $values['cep'];?" class="" /></dd>
-											</dl>
-											<dl>
-												<dt>Logradouro</dt>
-												<dd>
-													<input type="text" name="logradouro" class="obg" value="<?php echo $values['logradouro'];?" />
-												</dd>
-											</dl>
-											<dl>
-												<dt>Número</dt>
-												<dd><input type="text" name="numero" value="<?php echo $values['numero'];>" class="obg" /></dd>
-											</dl>
-											<dl>
-												<dt>Complemento</dt>
-												<dd><input type="text" name="complemento" value="<?php echo $values['complemento'];?" class="" /></dd>
-											</dl>
-										</div>
-
-										<div class="colunas4">
-											
-											<dl>
-												<dt>Bairro</dt>
-												<dd>
-													<input type="text" name="bairro" class="obg" value="<?php echo $values['bairro'];?" />
-												</dd>
-											</dl>
-											<dl>
-												<dt>Estado</dt>
-												<dd>
-													<input type="text" name="estado" class="obg" value="<?php echo $values['estado'];?" />
-												</dd>
-											</dl>
-											<dl>
-												<dt>Cidade</dt>
-												<dd>
-													<input type="text" name="cidade" class="obg" value="<?php echo $values['cidade'];?" />
-												</dd>
-											</dl>
-										</div>*/?>
-										
-									</div>
+								
 							</fieldset>
 
 							<script type="text/javascript">
@@ -571,28 +719,25 @@
 							<fieldset>
 								<legend>Faturas Recentes</legend>
 								<?php
-								if(empty($subscription)) {
+								if(empty($iuguSubstription)) {
 								?>
 								<center>
 									Nenhuma assinatura ativa!
 								</center>
 								<?php
 								} else {
-									
-
-
 								?>
 								<div class="list1">
 									<table>
 										<?php
-										foreach($subscription->recent_invoices as $f) {
+										foreach($iuguSubstription->recent_invoices as $f) {
 											$cor="var(--cinza3)";
 											$status=$f->status;
 											if($f->status=="paid") {
 												$status="Pago";
 												$cor="var(--verde)";
 											} else if($f->status=="pending") {
-												$status="Aguardando Pagamento";
+												$status="À Vencer";
 												$cor="#ffcc00";
 											} else if($f->status="expired") {
 												$status="Expirada";
@@ -600,11 +745,11 @@
 											}
 											
 										?>
-										<tr class="js-item" onclick="window.open('<?php echo $f->secure_url;?>')">
+										<tr class="js-item">
 											<td class="list1__border" style="color:<?php echo $cor;?>"></td>
 											<td><h1><?php echo $status;?></h1></td>
-											<td><?php echo date('d/m/Y',strtotime($f->due_date));?></td>
-											<td><?php echo $f->total;?></td>
+											<td>Vencimento: <b><?php echo date('d/m/Y',strtotime($f->due_date));?></b></td>
+											<td>Valor: <b><?php echo $f->total;?></b></td>
 										</tr>
 										<?php
 										}
@@ -620,6 +765,9 @@
 							</fieldset>
 
 						</form>
+					<?php
+					}
+					?>
 
 					</div>
 					
@@ -705,7 +853,7 @@
 							cc = Iugu.CreditCard(number,expiration_mes,expiration_ano,first_name,last_name,verification_value);
 
 							if(cc.valid()===false) {
-								alert('Dados do cartão de crédito inválido!');
+								swal({title: "Erro", text: 'Dados do cartão de crédito inválido!', html:true, type:"error", confirmButtonColor: "#424242"});
 							} else {
 
 								obj.html(`<span class="iconify" data-icon="eos-icons:three-dots-loading"></span> Cadastrando...`);
@@ -715,7 +863,7 @@
 								    if (response.errors) {
 
 								    	console.log(response.errors);
-								        alert("Algum erro ocorreu durante o registro de seu cartão. Tente novamente!");
+										swal({title: "Erro", text: "Algum erro ocorreu durante o registro de seu cartão. Tente novamente!", html:true, type:"error", confirmButtonColor: "#424242"});
 
 										obj.html(objAntigo);
 										obj.attr('data-loading',0);

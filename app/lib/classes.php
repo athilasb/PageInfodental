@@ -379,6 +379,11 @@
 		$tel=str_replace("_","",str_replace("-","",str_replace(".","",str_replace(" ","",$tel))));
 		return $tel;
 	}
+
+	function cnpj($tel) {
+		$tel=str_replace("_","",str_replace("-","",str_replace(".","",str_replace(" ","",str_replace("/","",$tel)))));
+		return $tel;
+	}
 	
 	
 	function diaDaSemana($dia) {

@@ -23,6 +23,10 @@
 	}
 	require_once("classes.php"); 
 
+
+	// Whatsapp Suporte
+	$_whatsappSuporte="6299181775";
+
 	// S3 Wasabi
 	$_wasabiBucket="storage.infodental.dental"; 
 	$_wasabiPathRoot= $_ENV['NAME'] . "/";
