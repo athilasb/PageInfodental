@@ -66,29 +66,14 @@
 	include "includes/header.php";
 	include "includes/nav.php";
 
-	$_table = "infodentalADM.infod_contas";
-
 	$iugu = new Iugu();
 
-	$_dirLogo=$_cloudinaryPath."arqs/clinica/logo/";
 
-	$campos = explode(",","tipo,razao_social,cnpj,responsavel,cpf,cep,logradouro,numero,complemento,bairro,cidade,estado,email");
-
-	$values=array();
-	foreach($campos as $v) $values[$v]='';
-	$values['tipo']='PJ';
-
-	$cnt='';
-	$sql->consult($_table,"*","where instancia='".addslashes($_ENV['NAME'])."'");
-	if($sql->rows) {
-		$cnt=mysqli_fetch_object($sql->mysqry);
-		$values=$adm->values($campos,$cnt);
-	}
-
-	$_iuguPlanos=array();
+	/*$_iuguPlanos=array();
 	if($iugu->planosListar()) {
 		$_iuguPlanos=$iugu->response;
 	}
+
 
 	// verifica se possui assinatura
 	$subscription='';
@@ -153,6 +138,8 @@
 
 		$vSQL=substr($vSQL,0,strlen($vSQL)-1);
 		$vWHERE="where instancia='".$cnt->instancia."'";
+
+
 		$sql->update($_table,$vSQL,$vWHERE);
 		$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."'");
 
@@ -248,7 +235,7 @@
 	
 		$jsc->go($_page);
 		die();
-	}
+	}*/
 
 	
 

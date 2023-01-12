@@ -115,8 +115,11 @@
 	}
 	function maskTelefone($tel) {
 		$tel=preg_replace("/[^a-zA-Z0-9]+/", "", $tel);
+		
+		if(strlen($tel)==10) return "(".substr($tel,0,2).") ".substr($tel,2,4)."-".substr($tel,6,6);
+		else return "(".substr($tel,0,2).") ".substr($tel,2,5)."-".substr($tel,7,6);
 
-		return "(".substr($tel,0,2).") ".substr($tel,2,4)."-".substr($tel,6,6);
+		
 	}
 	function invDate($data) {
 		if(!empty($data)) {

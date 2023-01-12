@@ -7,10 +7,19 @@
 	$unidade=mysqli_fetch_object($sql->mysqry);
 
 
-	$endereco = '';
+	$endereco = $imagem = '';
 
 	$endereco = utf8_encode($unidade->endereco);
-?>
+
+	$sql->consult($_p."clinica","*","");
+	if($sql->rows) {
+		$clinica=mysqli_fetch_object($sql->mysqry);
+		if(!empty($clinica->cn_logo)) {
+			$imagem=$_cloudinaryURL.'c_thumb,w_600/'.$clinica->cn_logo;
+		}
+	}
+	?>
+
 
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -28,7 +37,17 @@
 <body>
 
 <div class="print-header" style="padding-top: 20px;">
-	<img src="../img/logo-cliente.png" width="484" height="68" class="print-header__logo" />
+	<?php
+	if(!empty($imagem)) {
+	?>
+	<img src="<?php echo $imagem;?>" height="50" class="print-header__logo" />
+	<?php
+	} else {
+	?>
+	<img src="../img/logo-cliente.png" height="68" class="print-header__logo" />
+	<?php
+	}
+	?>
 </div>
 
 <div class="print-footer">

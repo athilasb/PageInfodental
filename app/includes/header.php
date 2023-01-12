@@ -1,88 +1,107 @@
 <?php
-     if(isset($_POST['ajaxHeader'])) {
-            require_once("lib/conf.php");
-            require_once("usuarios/checa.php");
+    # API Geral
+        if(isset($_POST['ajaxHeader'])) {
+              require_once("lib/conf.php");
+              require_once("usuarios/checa.php");
 
+              $rtn = [] ;
+              if($_POST['ajaxHeader']=='pacientePeriodicidade') {
+                    $paciente = '';
+                    if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+                          $sql->consult($_p."pacientes","*","where id=".$_POST['id_paciente']);
+                          if($sql->rows) {
+                                $paciente=mysqli_fetch_object($sql->mysqry);
+                          }
+                    }
+                    
+                    if(is_object($paciente)) {
 
-            $rtn = [] ;
+                          if(isset($_POST['periodicidade'])) {
 
-            if($_POST['ajaxHeader']=='pacientePeriodicidade') {
-                  $paciente = '';
-                  if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
-                        $sql->consult($_p."pacientes","*","where id=".$_POST['id_paciente']);
+                                $vSQL="periodicidade='".$_POST['periodicidade']."'";
+                                $vWHERE="where id=$paciente->id";
+
+                                $sql->update($_p."pacientes",$vSQL,$vWHERE);
+                                $sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."pacientes',id_reg='".$paciente->id."'");
+
+                                $rtn=array('success'=>true,
+                                            'periodicidade'=>$_POST['periodicidade'],
+                                            'periodicidadeHTML'=>isset($_pacientesPeriodicidade[$_POST['periodicidade']])?$_pacientesPeriodicidade[$_POST['periodicidade']]:'-');
+                     
+
+                          } else {
+                                $rtn=array('success'=>false,'error'=>'Periodicidade inválida!');
+                          }
+
+                    } else {
+                          $rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
+                    }
+              }
+
+              header("Content-type: application/json");
+              echo json_encode($rtn);
+              die();
+        }
+
+    # Autenticação automática quando acessa a página inicial (index)
+        if(basename($_SERVER['PHP_SELF'])=="index.php") {
+
+              require_once("lib/conf.php");
+              require_once("lib/classes.php");
+              $str = new StringW();         
+              $sql = new Mysql();
+
+              if(!isset($_GET['erro'])) {
+
+                  if(isset($_COOKIE[$_p.'adm_cpf']) and isset($_COOKIE[$_p.'adm_senha']) and isset($_COOKIE[$_p.'adm_id'])) {
+                        $sql->consult($_p."colaboradores","*","where id='".addslashes($_COOKIE[$_p.'adm_id'])."' and 
+                                                                        cpf='".addslashes($_COOKIE[$_p.'adm_cpf'])."' and 
+                                                                        senha='".addslashes($_COOKIE[$_p.'adm_senha'])."' and 
+                                                                        permitir_acesso='1'");
                         if($sql->rows) {
-                              $paciente=mysqli_fetch_object($sql->mysqry);
+                              header("Location: dashboard.php");
+                              echo "<html><head><title>Redirecionando...</title></head><body><font size=4>Redirecionando...</font></body></html>";
+                              die();
                         }
                   }
-                  
-                  if(is_object($paciente)) {
+              }
 
-                        if(isset($_POST['periodicidade'])) {
+        } 
 
-                              $vSQL="periodicidade='".$_POST['periodicidade']."'";
-                              $vWHERE="where id=$paciente->id";
-
-                              $sql->update($_p."pacientes",$vSQL,$vWHERE);
-                              $sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."pacientes',id_reg='".$paciente->id."'");
-
-                              $rtn=array('success'=>true,
-                                          'periodicidade'=>$_POST['periodicidade'],
-                                          'periodicidadeHTML'=>isset($_pacientesPeriodicidade[$_POST['periodicidade']])?$_pacientesPeriodicidade[$_POST['periodicidade']]:'-');
-                   
-
-                        } else {
-                              $rtn=array('success'=>false,'error'=>'Periodicidade inválida!');
-                        }
-
-                  } else {
-                        $rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
-                  }
-            }
-
-
-            header("Content-type: application/json");
-            echo json_encode($rtn);
-            die();
-
-     }
-
-      if(basename($_SERVER['PHP_SELF'])=="index.php") {
-            require_once("lib/conf.php");
-            require_once("lib/classes.php");
-            $str = new StringW();         
-            $sql = new Mysql();
-            if(isset($_COOKIE[$_p.'adm_cpf']) and isset($_COOKIE[$_p.'adm_senha']) and isset($_COOKIE[$_p.'adm_id'])) {
-                  $sql->consult($_p."colaboradores","*","where id='".addslashes($_COOKIE[$_p.'adm_id'])."' and 
-                                                                                                      cpf='".addslashes($_COOKIE[$_p.'adm_cpf'])."' and 
-                                                                                                      senha='".addslashes($_COOKIE[$_p.'adm_senha'])."' and 
-                                                                                                      permitir_acesso='1'");
-                  if($sql->rows) {
-                        header("Location: dashboard.php");
-                        echo "<html><head><title>Redirecionando...</title></head><body><font size=4>Redirecionando...</font></body></html>";
-                        die();
-                  }
-            }
-
-            $sql->consult($_p."colaboradores","id","where cpf<>'00000000000'and lixo=0");
-            if($sql->rows==0) {
-                  header("Location: primeiro-acesso.php");
-            }
-      } else {
-            
+    # Header das demais páginas
+        else {
+              
             require_once("lib/conf.php");
             require_once("usuarios/checa.php");
-            
+
             $sql=new Mysql();
             $str=new StringW();
             $jsc=new Js();
 
             $adm = new Adm($_p);
             $url=$adm->url($_GET);
-      }
 
 
-      $_page=basename($_SERVER['PHP_SELF']);
-      $link_landingpage="http://163.172.187.183:5000/";
+            // Verifica se possui conta
+            $sql->consult("infodentalADM.infod_contas","*","where instancia='".$_ENV['NAME']."'");
+            if($sql->rows) {
+                $infoConta=mysqli_fetch_object($sql->mysqry);
+
+                if(basename($_SERVER['PHP_SELF'])!="pg_configuracoes_assinatura.php") {
+                    // Verifica se possui assinatura
+                    if(empty($infoConta->iugu_subscription_id)) {
+                        header("Location: pg_configuracoes_assinatura.php");
+                    }
+                }
+
+
+            } else {
+                header("Location: index.php?erro=7");
+            }
+        }
+
+    $_page=basename($_SERVER['PHP_SELF']);
+    $link_landingpage="http://163.172.187.183:5000/";
       
 ?>
 <!doctype html>
@@ -93,7 +112,7 @@
 <head>
 <meta charset="utf-8">
 
-<title><?php echo isset($title)?$title." | Infodental":"Infodental"; ?></title>
+<title><?php echo isset($title)?$title." | Info Dental":"Info Dental"; ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="description" content="<?php echo ($description)?$description:"Infodental"; ?>">
 <meta name="author" content="WLIB Soluções Web - www.wlib.com.br">
@@ -156,71 +175,54 @@
 
 <body>
 <?php
-      // verifica situação da conta infodental
-      if(basename($_SERVER['PHP_SELF'])!="index.php") {
-
-            $sql->consult("infodentalADM.infod_contas","*","where instancia='".$_ENV['NAME']."'");
-            if($sql->rows) {
-                  $conta=mysqli_fetch_object($sql->mysqry);
+    // verifica situação da conta infodental
+    if(basename($_SERVER['PHP_SELF'])!="index.php" and basename($_SERVER['PHP_SELF'])!="pg_configuracoes_assinatura.php") {
                   
-                  if(empty($conta->iugu_subscription_id)) {
-                         ?>
-                       <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
-                              <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;A sua conta está sem plano. Favor regularizar &nbsp;<a href="pg_configuracoes_assinatura.php"><b><u>clicando aqui</u></b></a>
-                        </div>
-                       <?php 
-                  } else {
-                        if($conta->status=="bloqueada") {
-                              if(basename($_SERVER['PHP_SELF'])=="pg_configuracoes_assinatura.php") {
+        if($infoConta->status=="bloqueada") {
+              if(basename($_SERVER['PHP_SELF'])=="pg_configuracoes_assinatura.php") {
 
-                             ?>
-                             <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
-                                    <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;A sua conta está bloqueada. Para utilizar o Info Dental é preciso que você regularize a sua conta!
-                              </div>
-                             <?php 
-                              } else {
-                                    ?>
-                                    <script type="text/javascript">document.location.href='pg_configuracoes_assinatura.php';</script>
-                                    <?php
-                                    die();
-                              }
-                        } else if($conta->status=="inadimplente") {
-                             ?>
-                             <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
-                                    <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;A sua conta está inadimplente. Para evitar bloqueios&nbsp;<a href="pg_configuracoes_assinatura.php"><b><u>clique aqui</u></b></a>&nbsp;para se regularizar!
-                              </div>
-                             <?php 
-                        } else {
-                              if($conta->iugu_subscription_suspended==1) {
-                                    // verifica a quanto tempo esta suspensa
-                                    $dif = strtotime(date('Y-m-d H:i:s'))-strtotime($conta->iugu_subscription_suspended_data);
-                                    $dif /= (60 * 60 * 21);
-                                    $dif = floor($dif);
+             ?>
+             <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
+                    <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;A sua conta está bloqueada. Para utilizar o Info Dental é preciso que você regularize a sua conta!
+              </div>
+             <?php 
+              } else {
+                    ?>
+                    <script type="text/javascript">document.location.href='pg_configuracoes_assinatura.php';</script>
+                    <?php
+                    die();
+              }
+        } else if($infoConta->status=="inadimplente") {
+             ?>
+             <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
+                    <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;A sua conta está inadimplente. Para evitar bloqueios&nbsp;<a href="pg_configuracoes_assinatura.php"><b><u>clique aqui</u></b></a>&nbsp;para se regularizar!
+              </div>
+             <?php 
+        } else {
+              if($infoConta->iugu_subscription_suspended==1) {
+                    // verifica a quanto tempo esta suspensa
+                    $dif = strtotime(date('Y-m-d H:i:s'))-strtotime($conta->iugu_subscription_suspended_data);
+                    $dif /= (60 * 60 * 21);
+                    $dif = floor($dif);
 
-                                    if($dif>=2) {
-                                          if(basename($_SERVER['PHP_SELF'])!="pg_configuracoes_assinatura.php") {
-                                           ?>
-                                          <script type="text/javascript">document.location.href='pg_configuracoes_assinatura.php';</script>
-                                          <?php
-                                          die();
-                                          }
-                                    } 
-                              ?>
-                             <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
-                                    <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;O seu plano está suspenso.  Favor regularizar &nbsp;<a href="pg_configuracoes_assinatura.php"><b><u>clicando aqui</u></b></a> 
-                              </div>
-                             <?php 
+                    if($dif>=2) {
+                          if(basename($_SERVER['PHP_SELF'])!="pg_configuracoes_assinatura.php") {
+                           ?>
+                          <script type="text/javascript">document.location.href='pg_configuracoes_assinatura.php';</script>
+                          <?php
+                          die();
+                          }
+                    } 
+              ?>
+             <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
+                    <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;O seu plano está suspenso.  Favor regularizar &nbsp;<a href="pg_configuracoes_assinatura.php"><b><u>clicando aqui</u></b></a> 
+              </div>
+             <?php 
 
-                                    echo $dif;
-                              }
-                        }
-                  }
-
-            } else {
-                  echo "Sua conta não está ativa! Entre em contato com nosso time de suporte para se regularizar...";
-                  die();
-            }
-      }
-
+                    echo $dif;
+              }
+        }
+        
+    }
 ?>
 <section class="wrapper">
