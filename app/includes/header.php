@@ -176,7 +176,7 @@
 <body>
 <?php
     // verifica situação da conta infodental
-    if(basename($_SERVER['PHP_SELF'])!="index.php" and basename($_SERVER['PHP_SELF'])!="pg_configuracoes_assinatura.php") {
+    if(basename($_SERVER['PHP_SELF'])!="index.php" and basename($_SERVER['PHP_SELF'])!="pg_configuracoes_assinatura2.php") {
                   
         if($infoConta->status=="bloqueada") {
               if(basename($_SERVER['PHP_SELF'])=="pg_configuracoes_assinatura.php") {
@@ -192,7 +192,7 @@
                     <?php
                     die();
               }
-        } else if($infoConta->status=="inadimplente") {
+        } else if($infoConta->status=="ativo") {
              ?>
              <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
                     <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;A sua conta está inadimplente. Para evitar bloqueios&nbsp;<a href="pg_configuracoes_assinatura.php"><b><u>clique aqui</u></b></a>&nbsp;para se regularizar!
@@ -201,10 +201,10 @@
         } else {
               if($infoConta->iugu_subscription_suspended==1) {
                     // verifica a quanto tempo esta suspensa
-                    $dif = strtotime(date('Y-m-d H:i:s'))-strtotime($conta->iugu_subscription_suspended_data);
+                    $dif = strtotime(date('Y-m-d H:i:s'))-strtotime($infoConta->iugu_subscription_suspended_data);
                     $dif /= (60 * 60 * 21);
                     $dif = floor($dif);
-
+                    //echo $dif;die();
                     if($dif>=2) {
                           if(basename($_SERVER['PHP_SELF'])!="pg_configuracoes_assinatura.php") {
                            ?>

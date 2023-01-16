@@ -416,15 +416,15 @@
 							}
 							if(x.id_status==8) {
 								html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}" style="opacity:0.5">
-										<p>${x.data} • ${x.hora}</p>
-										<h1>${x.paciente}</h1>
-										<p>${x.telefone1}</p>
-										<p>${x.profissionais}</p>
-										<div class="kanban-item-icons">
-											${wtsIcon}
-											${wtsLembrete}
-										</div>
-									</a>`;
+											<p>${x.data} • ${x.hora}</p>
+											<h1>${x.paciente}</h1>
+											<p>${x.telefone1}</p>
+											<p>${x.profissionais}</p>
+											<div class="kanban-item-icons">
+												${wtsIcon}
+												${wtsLembrete}
+											</div>
+										</a>`;
 
 								x.id_status=1;
 							} else {
@@ -478,7 +478,7 @@
 						// DESMARCOU
 						else if(eval(x.id_status)==4) {
 
-							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}">
+							html = `<a href="javascript:;" draggable="true" data-id="${x.id_agenda}" class="tooltip" title="${x.profissionais}" onclick="popView(${x.id_agenda});">
 										<p>${x.data} • ${x.hora}</p>
 										<h1>${x.paciente}</h1>
 										<p>${x.profissionais}</p>
@@ -564,7 +564,6 @@
 
 				}	
 
-
 				const dataProcess = (dtObj) => {
 						
 
@@ -614,7 +613,6 @@
 
 				}
 
-
 				$(function(){
 
 					let aux = data.split('-');
@@ -638,7 +636,6 @@
 						agendaAtualizar();
 					});
 
-
 					$('.js-calendario').datetimepicker({
 						timepicker:false,
 						format:'d F Y',
@@ -653,7 +650,6 @@
 					agendaListar();
 
 					$('.js-calendario-title').val(dataFormatada);
-
 					
 					var droppable = $(".js-kanban-status").dad({
 						placeholderTarget: ".js-kanban-item"
@@ -691,7 +687,6 @@
 							agendaAtualizar();
 						})
 			        });
-
 
 					$('a.js-right').click(function(){
 						let aux = data.split('-');
