@@ -558,6 +558,7 @@
 						}	
 
 						$(`#kanban .js-kanban-status-${x.id_status}`).append(html);
+						$(`#kanban .js-kanban-status-${x.id_status} a:last`).attr('data-id_agenda',x.id_agenda)
 
 						//$(`#kanban .js-kanban-status-${x.id_status} .tooltip:last`).tooltipster({theme:"borderless"});
 					})
@@ -618,6 +619,11 @@
 					let aux = data.split('-');
 					let dtObj = new Date(`${aux[1]}/${aux[2]}/${aux[0]}`);
 					dataProcess(dtObj);
+
+					$('#kanban .js-kanban-status').on('click','a',function(){
+						let id_agenda = $(this).attr('data-id_agenda');
+						popView(id_agenda);
+					})
 
 					$('.js-aba-calendario').click(function(){
 						let aux = data.split('-');
@@ -728,67 +734,6 @@
 					
 					<?php
 					}
-					
-					/*
-					<div class="kanban-item" style="background-color:#545559;">
-						<header>
-							<h1>À CONFIRMAR</h1>
-						</header>
-						<article>
-							<a href="javascript:;" draggable="true">
-								<p>08:00 a 10:00</p>
-								<h1>Arnaldo Rubio Júnior</h1>
-								<p>(62) 99830-0574</p>
-							</a>
-							<a href="javascript:;" draggable="true">
-								<p>08:00 a 10:00</p>
-								<h1>Pedro Saddi</h1>
-								<p>(62) 99830-0574</p>
-							</a>
-							<a href="javascript:;" draggable="true">
-								<p>08:00 a 10:00</p>
-								<h1>Pedro Henrique Saddi de Azevedo</h1>
-								<p>(62) 99830-0574</p>
-							</a>
-						</article>
-					</div>
-					<div class="kanban-item" style="background-color:#1182EA;">
-						<header>
-							<h1>CONFIRMADO</h1>
-						</header>
-					</div>
-					<div class="kanban-item" style="background-color:#FC8107;">
-						<header>
-							<h1>SALA DE ESPERA</h1>
-						</header>
-					</div>
-					<div class="kanban-item" style="background-color:#25E4C2;">
-						<header>
-							<h1>EM ATENDIMENTO</h1>
-						</header>
-					</div>
-					<div class="kanban-item" style="background-color:#53D328;">
-						<header>
-							<h1>ATENDIDO</h1>
-						</header>
-						<article>
-							<a href="javascript:;" draggable="true">
-								<h1>Pedro Henrique Saddi de Azevedo</h1>
-								<span class="button button_sm"><strong>ficha do paciente</strong></span>
-							</a>
-						</article>
-					</div>
-					<div class="kanban-item" style="background-color:#FADE26;">
-						<header>
-							<h1>DESMARCADO</h1>
-						</header>
-					</div>
-					<div class="kanban-item" style="background-color:#FE4B3F;">
-						<header>
-							<h1>FALTOU</h1>
-						</header>
-					</div>
-					*/
 					?>
 				</div>
 			</section>
@@ -799,6 +744,7 @@
 <?php 
 	
 	$apiConfig=array('paciente'=>1,
+						'agenda'=>1,
 						'proximaConsulta'=>1);
 	require_once("includes/api/apiAside.php");
 

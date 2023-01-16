@@ -1,5 +1,6 @@
 <?php
 
+				
 	if(isset($_POST['ajax'])) {
 
 		$dir="../../";
@@ -19,8 +20,609 @@
 		$_tableProfissoes=$_p."parametros_profissoes";
 		$_tableListaPersonalizada=$_p."parametros_indicacoes";
 
+		# Agenda
+			if($_POST['ajax']=="agendamentosProfissionais") {
+				
+				$_profissionais=array();
+				$_profissionaisTodos=array();
+				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,lixo,foto,calendario_cor,check_agendamento,contratacaoAtiva"," order by nome asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					if($x->lixo==0) $_profissionais[$x->id]=$x;
+					$_profissionaisTodos[$x->id]=$x;
+				}
+				
+				$data = (isset($_POST['data']) and isset($_POST['data']))?invDate($_POST['data']):'';
+				$hora = (isset($_POST['hora']) and isset($_POST['hora']))?$_POST['hora'].":00":'';
+				$id_cadeira = (isset($_POST['id_cadeira']) and isset($_POST['id_cadeira']))?$_POST['id_cadeira']:0;
+				die();
+				if(!empty($data) and !empty($hora)) {
+					$diaSemana = date('w',strtotime($data));
+					
+
+					$profissionaisDestaque=array();
+					$where="where dia='$diaSemana' and 
+									inicio<='$hora' and 
+									fim>'$hora' and 
+	 								lixo=0";
+	 				if($id_cadeira>0) $where.=" and id_cadeira=$id_cadeira";
+					$sql->consult($_p."profissionais_horarios","distinct id_profissional",$where);
+					//	echo $where."->".$sql->rows."\n";
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						//echo $x->id_profissional."\n";
+						$profissionaisDestaque[$x->id_profissional]=1;
+					}
+
+					$listaProfissionais=$listaProfissionaisDestaque=array();
+					foreach($_profissionais as $x) {
+						if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
+						if(isset($profissionaisDestaque[$x->id])) {
+							$listaProfissionaisDestaque[]=(object)array('id'=>$x->id,'nome'=>utf8_encode($x->nome),'destaque'=>1);
+						}
+					}
+
+
+					foreach($_profissionais as $x) {
+						if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
+						if(!isset($profissionaisDestaque[$x->id])) {
+							$listaProfissionais[]=(object)array('id'=>$x->id,'nome'=>utf8_encode($x->nome),'destaque'=>0);
+						}
+					}
+
+					$rtn=array('success'=>true,
+								'listaProfissionaisDestaque'=>$listaProfissionaisDestaque,
+								'listaProfissionais'=>$listaProfissionais);
+
+
+				}
+			}
+
+			else if($_POST['ajax']=="editar") {
+
+				$cnt = '';
+				$paciente='';
+				$carga = '';
+				if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+					$sql->consult($_p."agenda","*","where id=".$_POST['id']);
+					if($sql->rows) {
+						$cnt=mysqli_fetch_object($sql->mysqry);
+
+						$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,foto,codigo_bi,musica,periodicidade,foto_cn","where id=$cnt->id_paciente");
+						if($sql->rows) {
+							$paciente=mysqli_fetch_object($sql->mysqry);
+						}
+					}
+				}
+
+
+				if(empty($cnt)) {
+					$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
+				} else if(empty($cnt)) {
+					$rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
+				} else {
+					$profissionais='';
+					if(!empty($cnt->profissionais)) {
+						$profissioaisObj=explode(",",$cnt->profissionais);
+						$profissionaisID=array(-1);
+						foreach($profissioaisObj as $v) {
+							if(!empty($v) and is_numeric($v)) $profissionaisID[]=$v;
+						}
+					}
+
+					if($cnt->agendaPessoal==1) {
+
+						$data = array('id'=>$cnt->id,
+										'agendaPessoal'=>2,
+										'agenda_data'=>date('d/m/Y',strtotime($cnt->agenda_data)),
+										'agenda_hora'=>date('H:i',strtotime($cnt->agenda_data)),
+										'agenda_duracao'=>$cnt->agenda_duracao,
+										'id_status'=>$cnt->id_status,
+										'id_cadeira'=>$cnt->id_cadeira,
+										'profissionais'=>$profissionaisID,
+										'obs'=>addslashes(utf8_encode($cnt->obs)));
+
+					} else {
+
+						$agendamentosFuturos=array();
+
+						if($paciente->data_nascimento!="0000-00-00") {
+							$dob = new DateTime($paciente->data_nascimento);
+							$now = new DateTime();
+							$idade = $now->diff($dob)->y;
+						} else $idade=0;
+					
+
+						$_pacientesAgendamentos=array();
+						$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and agenda_data>'".date('Y-m-d')."' and id_status IN (1,2) and lixo=0 order by agenda_data");
+
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+
+							// se for o mesmo agendamento que esta sendo editado
+							if($x->id==$cnt->id) continue;
+
+							$cor='';
+							$iniciais='';
+
+
+							$aux = explode(",",$x->profissionais);
+							$profissionais=array();
+							foreach($aux as $id_profissional) {
+								if(!empty($id_profissional) and is_numeric($id_profissional)) {
+
+									if(isset($_profissionais[$id_profissional])) {
+										$cor=$_profissionais[$id_profissional]->calendario_cor;
+										$iniciais=$_profissionais[$id_profissional]->calendario_iniciais;
+
+										$profissionais[]=array('iniciais'=>$iniciais,'cor'=>$cor);
+									}
+								}
+
+							}
+
+							$_pacientesAgendamentos[$x->id_paciente][]=array('id_agenda'=>$x->id,
+																				'obs'=>str_replace("'","`",utf8_encode($x->obs)),
+																				'data'=>date('d/m/Y H:i',strtotime($x->agenda_data)),
+																				'initDate'=>date('d/m/Y',strtotime($x->agenda_data)),
+																				'cadeira'=>isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'',
+																				'profissionais'=>$profissionais);
+						}
+
+					
+						if(isset($_pacientesAgendamentos[$paciente->id])) {
+							$agendamentosFuturos=$_pacientesAgendamentos[$paciente->id];
+						}
+					
+						$_historico=array();
+						$sql->consult($_p."pacientes_historico","*","where id_agenda=$cnt->id and lixo=0 order by data desc");
+
+						
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+
+							if($x->evento=="agendaHorario") {
+									$_historico[]=array('usr'=>isset($_profissionaisTodos[$x->id_usuario])?utf8_encode($_profissionaisTodos[$x->id_usuario]->nome):'Desconhecido',
+																		'dt'=>date('d/m H:i',strtotime($x->data)),
+																		'ev'=>'horario',
+																		'nvDt'=>date('d/m H:i',strtotime($x->agenda_data_novo)),
+																		'antDt'=>date('d/m H:i',strtotime($x->agenda_data_antigo))
+																	);
+
+							} else {
+								if(isset($_status[$x->id_status_novo])) { 
+									$_historico[]=array('usr'=>isset($_profissionaisTodos[$x->id_usuario])?utf8_encode($_profissionaisTodos[$x->id_usuario]->nome):'Desconhecido',
+																		'dt'=>date('d/m H:i',strtotime($x->data)),
+																		'ev'=>'status',
+																		'desc'=>utf8_encode($x->descricao),
+																		'sts'=>utf8_encode($_status[$x->id_status_novo]->titulo),
+																		'novo'=>$x->evento=="agendaNovo",
+																		'cor'=>$_status[$x->id_status_novo]->cor
+																	);
+								}
+							}
+							
+						}
+
+
+
+						$dias=strtotime(date('Y-m-d H:i:s'))-strtotime($cnt->data);
+						$dias/=60*60*24;
+						$dias=round($dias);
+
+						$ft='';
+						if(!empty($paciente->foto_cn)) {
+							$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+						} else if(!empty($paciente->foto)) {
+							$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+						}
+
+
+
+						$data = array('id'=>$cnt->id,
+										'agendou_profissional'=>isset($_usuarios[$cnt->id_usuario])?utf8_encode($_usuarios[$cnt->id_usuario]->nome):"-",
+										'agendou_dias'=>(int)$dias,
+										'agendaPessoal'=>0,
+										'ft'=>$ft,
+										'agenda_data'=>date('d/m/Y',strtotime($cnt->agenda_data)),
+										'agenda_hora'=>date('H:i',strtotime($cnt->agenda_data)),
+										'agenda_duracao'=>$cnt->agenda_duracao,
+										'id_paciente'=>$cnt->id_paciente,
+										'id_status'=>$cnt->id_status,
+										'nome'=>addslashes(utf8_encode($paciente->nome)),
+										'idade'=>(int)$idade,
+										'id_cadeira'=>$cnt->id_cadeira,
+										'telefone1'=>$paciente->telefone1,
+										'musica'=>utf8_encode($paciente->musica),
+										'periodicidade'=>isset($_pacientesPeriodicidade[$paciente->periodicidade])?$_pacientesPeriodicidade[$paciente->periodicidade]:$paciente->periodicidade,
+										'profissionais'=>$profissionaisID,
+										'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):"",
+										'obs'=>addslashes(utf8_encode($cnt->obs)),
+										'agendamentosFuturos'=>$agendamentosFuturos,
+										'historico'=>$_historico);
+					}
+		
+					$rtn=array('success'=>true,'data'=>$data);
+
+				}
+			} 
+
+			else if($_POST['ajax']=="novoAgendamento") {
+				$profissionais=array();
+				if(isset($_POST['profissionais']) and !empty($_POST['profissionais'])) {
+					$pAux=explode(",",$_POST['profissionais']);
+					foreach($pAux as $id_profissional) {
+						if(is_numeric($id_profissional)) $profissionais[]=$id_profissional;
+					}
+				}
+
+				$cadeira='';
+				if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
+					$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."' and lixo=0");
+					if($sql->rows) {
+						$cadeira=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+				$status='';
+				if(isset($_POST['id_status']) and is_numeric($_POST['id_status'])) {
+					$sql->consult($_p."agenda_status","*","where id='".$_POST['id_status']."' and lixo=0");
+					if($sql->rows) {
+						$status=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+				$agendaData='';
+				if(isset($_POST['agenda_data']) and !empty($_POST['agenda_data'])) {
+					list($_dia,$_mes,$_ano)=explode("/",$_POST['agenda_data']);
+					if(checkdate($_mes, $_dia, $_ano)) {
+						$agendaData=$_ano."-".$_mes."-".$_dia;
+					}
+				}
+
+				$agendaHora='';
+				if(isset($_POST['agenda_hora']) and !empty($_POST['agenda_hora'])) {
+					list($_h,$_m)=explode(":",$_POST['agenda_hora']);
+					if(is_numeric($_h) and is_numeric($_m)) {
+						$agendaHora=$_h.":".$_m;
+					}
+				}
+
+				$paciente='';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","id,nome","where id='".$_POST['id_paciente']."' and lixo=0");
+					if($sql->rows) {
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+
+				if($_POST['agendaPessoal']==1) {
+					 if(count($profissionais)==0) {
+						$rtn=array('success'=>false,'error'=>'Profissional não encontrado!');
+					} 
+					else if(empty($cadeira)) {
+						$rtn=array('success'=>false,'error'=>'Selecione o consultório!');
+					} 
+					else {
+						$agendaData.=" ".$agendaHora;
+
+						$duracao = (isset($_POST['agenda_duracao']) and is_numeric($_POST['agenda_duracao']))?$_POST['agenda_duracao']:30;
+
+						$vSQL="profissionais=',".implode(",",$profissionais).",',
+								id_cadeira=$cadeira->id,
+								id_unidade=1,
+								agenda_data='".$agendaData."',
+								agenda_data_original='".$agendaData."',
+								agenda_data_final='".date('Y-m-d H:i:s',strtotime($agendaData." + $duracao minutes"))."',
+								agenda_duracao='".$duracao."',
+								agendaPessoal=1
+								";
+						
+						$vSQL.=",data=now(),id_usuario=$usr->id";
+
+						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
+
+						$sql->add($_p."agenda",$vSQL);
+						$id_agenda=$sql->ulid;
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$id_agenda."'");
+						$rtn=array('success'=>true);
+
+
+					}
+				} else {
+
+					if(empty($paciente)) {
+						$rtn=array('success'=>false,'error'=>'Selecione o paciente!');
+					} 
+					else if(count($profissionais)==0) {
+						$rtn=array('success'=>false,'error'=>'Profissional não encontrado!');
+					} 
+					else if(!is_object($cadeira)) {
+						$rtn=array('success'=>false,'error'=>'Selecione o consultório!');
+					} 
+					else if(empty($status)) {
+						$rtn=array('success'=>false,'error'=>'Selecione o status!');
+					} 
+					else if(empty($agendaData)) {
+						$rtn=array('success'=>false,'error'=>'Data inválida!');
+					} else if(empty($agendaHora)) {
+						$rtn=array('success'=>false,'error'=>'Hora inválida!');
+					} else {
+						$idStatusNovo=((isset($_POST['id_status']) and is_numeric($_POST['id_status']))?$_POST['id_status']:'');
+
+						$agendaData.=" ".$agendaHora;
+
+						$duracao = (isset($_POST['agenda_duracao']) and is_numeric($_POST['agenda_duracao']))?$_POST['agenda_duracao']:30;
+
+						$vSQL="id_paciente=$paciente->id,
+								profissionais=',".implode(",",$profissionais).",',
+								id_cadeira='$cadeira->id',
+								id_unidade=1,
+								id_status=$status->id,
+								agenda_data='".$agendaData."',
+								agenda_data_original='".$agendaData."',
+								agenda_data_final='".date('Y-m-d H:i:s',strtotime($agendaData." + $duracao minutes"))."',
+								agenda_duracao='".$duracao."'
+								";
+
+
+
+						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
+
+
+						$vSQL.=",data=now(),id_usuario=$usr->id";
+						$sql->add($_p."agenda",$vSQL);
+						$id_agenda=$sql->ulid;
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$id_agenda."'");
+
+						$idPaciente=((isset($_POST['id_paciente']) && is_numeric($_POST['id_paciente']))?$_POST['id_paciente']:'');
+						$vSQLHistorico="data=now(),
+							id_usuario=$usr->id,
+							evento='agendaNovo',
+							id_paciente=".$idPaciente.",
+							id_agenda=$id_agenda,
+							id_status_antigo=0,
+							id_status_novo=".$idStatusNovo.",
+							descricao=''";
+						$sql->add($_p."pacientes_historico",$vSQLHistorico);
+						$rtn=array('success'=>true,'id_paciente'=>$paciente->id);
+
+					}
+				}
+			}
+
+			else if($_POST['ajax']=="agendamentoPersistir") {
+			
+				$profissional='';
+				if(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional'])) {
+					$sql->consult($_p."colaboradores","*","where id='".$_POST['id_profissional']."' and lixo=0");
+					if($sql->rows) {
+						$profissional=mysqli_fetch_object($sql->mysqry);
+
+						$profissionalUnidades=explode(",",$profissional->unidades);
+					}
+				}
+
+				$profissionais=array();
+				if(isset($_POST['profissionais']) and !empty($_POST['profissionais'])) {
+					$pAux=explode(",",$_POST['profissionais']);
+					foreach($pAux as $id_profissional) {
+						if(is_numeric($id_profissional)) $profissionais[]=$id_profissional;
+					}
+				}
+
+				$cadeira='';
+				if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
+					$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."' and lixo=0");
+					if($sql->rows) {
+						$cadeira=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+				$status='';
+				if(isset($_POST['id_status']) and is_numeric($_POST['id_status'])) {
+					$sql->consult($_p."agenda_status","*","where id='".$_POST['id_status']."' and lixo=0");
+					if($sql->rows) {
+						$status=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+				$agendaData='';
+				if(isset($_POST['agenda_data']) and !empty($_POST['agenda_data'])) {
+					list($_dia,$_mes,$_ano)=explode("/",$_POST['agenda_data']);
+					if(checkdate($_mes, $_dia, $_ano)) {
+						$agendaData=$_ano."-".$_mes."-".$_dia;
+					}
+				}
+
+				$agendaHora='';
+				if(isset($_POST['agenda_hora']) and !empty($_POST['agenda_hora'])) {
+					list($_h,$_m)=explode(":",$_POST['agenda_hora']);
+					if(is_numeric($_h) and is_numeric($_m)) {
+						$agendaHora=$_h.":".$_m;
+					}
+				}
+
+				$agenda='';
+				if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+					$sql->consult($_p."agenda","*","where id='".$_POST['id']."'");
+					if($sql->rows) {
+						$agenda=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				if(empty($agenda)) {
+					$rtn=array('success'=>false,'error'=>'Agendamento não encontrado!');
+				} 
+				else if(count($profissionais)==0) {
+					$rtn=array('success'=>false,'error'=>'Profissional não encontrado!');
+				} 
+				else if(empty($cadeira)) {
+					$rtn=array('success'=>false,'error'=>'Selecione a cadeira!');
+				} 
+				else if(empty($status)) {
+					$rtn=array('success'=>false,'error'=>'Selecione o status!');
+				} 
+				if(empty($agendaData)) {
+					$rtn=array('success'=>false,'error'=>'Data inválida!');
+				} else if(empty($agendaHora)) {
+					$rtn=array('success'=>false,'error'=>'Hora inválida!');
+				} else {
+					$novoPaciente=false;
+					$paciente=$pacienteUnidades='';
+					$erro='';
+
+					$sql->consult($_p."pacientes","*","where id=$agenda->id_paciente and lixo=0");
+					if($sql->rows) {
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+					
+					if(!empty($erro)) {
+						$rtn=array('success'=>false,'error'=>$erro);
+					}
+					else if(empty($paciente)) {
+						$rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
+					} else {
+
+						$agendaData.=" ".$agendaHora;
+
+
+						$duracao = (isset($_POST['agenda_duracao']) and is_numeric($_POST['agenda_duracao']))?$_POST['agenda_duracao']:30;
+
+						$vSQL="id_paciente=$paciente->id,
+								profissionais=',".implode(",",$profissionais).",',
+								id_cadeira=$cadeira->id,
+								id_status=$status->id,
+								agenda_data='".$agendaData."',
+								agenda_duracao='".addslashes($_POST['agenda_duracao'])."',
+							agenda_data_final='".date('Y-m-d H:i:s',strtotime($agendaData." + $duracao minutes"))."'
+								";
+
+
+
+						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
+
+
+
+						$idStatusNovo=((isset($_POST['id_status']) and is_numeric($_POST['id_status']))?$_POST['id_status']:'');
+						
+						$vWHERE="where id=$agenda->id";
+
+						$sql->update($_p."agenda",$vSQL,$vWHERE);
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."agenda',id_reg='".$agenda->id."'");
+
+						if($agenda->id_status!=$_POST['id_status']) {
+							$vSQLHistorico="data=now(),
+									id_usuario=$usr->id,
+									evento='agendaStatus',
+									id_paciente=$agenda->id_paciente,
+									id_agenda=$agenda->id,
+									id_status_antigo=$agenda->id_status,
+									id_status_novo=".$idStatusNovo.",
+									descricao=''";
+							$sql->add($_p."pacientes_historico",$vSQLHistorico);
+
+						}
+
+
+						$agendaAlterado=invDate($_POST['agenda_data'])." ".$_POST['agenda_hora'].":00";
+
+						if(strtotime($agenda->agenda_data)!=strtotime($agendaAlterado)) {
+							$vSQLHistorico="data=now(),
+								id_usuario=$usr->id,
+								evento='agendaHorario',
+								id_paciente=$agenda->id_paciente,
+								id_agenda=$agenda->id,
+								agenda_data_antigo='$agenda->agenda_data',
+								agenda_data_novo='$agendaAlterado',
+								id_status_novo=".$idStatusNovo.",
+								descricao=''";
+							$sql->add($_p."pacientes_historico",$vSQLHistorico);
+
+
+							// altera campo agenda_alteracao_data para enviar a notificacao de alteração de horário
+							$sql->update($_p."agenda","agenda_alteracao_data=now(),agenda_alteracao_id_whatsapp=0","where id=$agenda->id");
+						}
+
+						// veririca se desmarcou
+						$wts=0;
+						//if($agenda->id_status!=$idStatusNovo) {
+							
+							// Se Desmarcou
+							if($idStatusNovo==4) {
+
+								$attr=array('id_tipo'=>3,
+											'id_paciente'=>$agenda->id_paciente,
+											'id_agenda'=>$agenda->id);
+								//var_dump($attr);
+								if($infozap->adicionaNaFila($attr)) $wts=1;
+
+							} 
+							// Se Confirmou
+							else if($idStatusNovo==2) {
+
+								// se virou para confirmado, envia wts para dentista
+								$sql->consult($_p."agenda","*","where id=$agenda->id and id_status=2");
+								if($sql->rows) {
+									$agendaNew=mysqli_fetch_object($sql->mysqry); // registro de agenda atualizado
+
+									if(!empty($agendaNew->profissionais)) {
+
+										$profissionaisIds=array();
+										$auxProfissionais = explode(",",$agenda->profissionais);
+									foreach($auxProfissionais as $idProfissional) {
+										if(!empty($idProfissional) and is_numeric($idProfissional)) {
+											$profissionaisIds[]=$idProfissional;
+										}
+									}
+
+									if(count($profissionaisIds)>0) {
+										$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisIds).") and whatsapp_notificacoes=1 and lixo=0");
+										while($x=mysqli_fetch_object($sql->mysqry)) {
+											if(!empty($x->telefone1)) {
+												$attr=array('id_tipo'=>6,
+															'id_paciente'=>$agendaNew->id_paciente,
+															'id_profissional'=>$x->id,
+															'id_agenda'=>$agendaNew->id);
+									
+												if($infozap->adicionaNaFila($attr)) {
+													$wts=1;
+
+												}
+											}
+										}
+									}
+
+								}
+							}
+						}
+					}
+
+
+					$rtn=array('success'=>true,'wts'=>$wts);
+				}
+			}
+
+			else if($_POST['ajax']=="agendamentoRemover") {
+				if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+					$sql->consult($_p."agenda","*","where id='".$_POST['id']."'");
+					if($sql->rows) {
+						$agenda=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+
+				if(isset($agenda) and is_object($agenda)) {
+					$vSQL="lixo=1";
+					$vWHERE="where id=$agenda->id";
+
+					$sql->update($_p."agenda",$vSQL,$vWHERE);
+
+					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vwhere='".addslashes($vWHERE)."',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$agenda->id."'");
+
+					$rtn=array('success'=>true);
+
+				} else {
+					$rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
+				}
+			} 
+		 
+
 		# Especialidades
-			if($_POST['ajax']=="asEspecialidadesListar") {
+			else if($_POST['ajax']=="asEspecialidadesListar") {
 
 				$regs=array();
 				$sql->consult($_tableEspecialidades,"*","where lixo=0 order by titulo asc") ;
@@ -288,235 +890,6 @@
 			}
 
 		# Pacientes
-			else if($_POST['ajax']=="agendamentosProfissionais") {
-				
-				$_profissionais=array();
-				$_profissionaisTodos=array();
-				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,lixo,foto,calendario_cor,check_agendamento,contratacaoAtiva"," order by nome asc");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					if($x->lixo==0) $_profissionais[$x->id]=$x;
-					$_profissionaisTodos[$x->id]=$x;
-				}
-				
-				$data = (isset($_POST['data']) and isset($_POST['data']))?invDate($_POST['data']):'';
-				$hora = (isset($_POST['hora']) and isset($_POST['hora']))?$_POST['hora'].":00":'';
-				$id_cadeira = (isset($_POST['id_cadeira']) and isset($_POST['id_cadeira']))?$_POST['id_cadeira']:0;
-				die();
-				if(!empty($data) and !empty($hora)) {
-					$diaSemana = date('w',strtotime($data));
-					
-
-					$profissionaisDestaque=array();
-					$where="where dia='$diaSemana' and 
-									inicio<='$hora' and 
-									fim>'$hora' and 
-	 								lixo=0";
-	 				if($id_cadeira>0) $where.=" and id_cadeira=$id_cadeira";
-					$sql->consult($_p."profissionais_horarios","distinct id_profissional",$where);
-				//	echo $where."->".$sql->rows."\n";
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						//echo $x->id_profissional."\n";
-						$profissionaisDestaque[$x->id_profissional]=1;
-					}
-
-					$listaProfissionais=$listaProfissionaisDestaque=array();
-					foreach($_profissionais as $x) {
-						if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
-						if(isset($profissionaisDestaque[$x->id])) {
-							$listaProfissionaisDestaque[]=(object)array('id'=>$x->id,'nome'=>utf8_encode($x->nome),'destaque'=>1);
-						}
-					}
-
-
-					foreach($_profissionais as $x) {
-						if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
-						if(!isset($profissionaisDestaque[$x->id])) {
-							$listaProfissionais[]=(object)array('id'=>$x->id,'nome'=>utf8_encode($x->nome),'destaque'=>0);
-						}
-					}
-
-					$rtn=array('success'=>true,
-								'listaProfissionaisDestaque'=>$listaProfissionaisDestaque,
-								'listaProfissionais'=>$listaProfissionais);
-
-
-				}
-			}
-			else if($_POST['ajax']=="editar") {
-
-				$cnt = '';
-				$paciente='';
-				$carga = '';
-				if(isset($_POST['id']) and is_numeric($_POST['id'])) {
-					$sql->consult($_p."agenda","*","where id=".$_POST['id']);
-					if($sql->rows) {
-						$cnt=mysqli_fetch_object($sql->mysqry);
-
-						$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,foto,codigo_bi,musica,periodicidade,foto_cn","where id=$cnt->id_paciente");
-						if($sql->rows) {
-							$paciente=mysqli_fetch_object($sql->mysqry);
-
-						
-						}
-
-					
-					}
-				}
-
-
-				if(empty($cnt)) {
-					$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
-				} else if(empty($cnt)) {
-					$rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
-				} else {
-					$profissionais='';
-					if(!empty($cnt->profissionais)) {
-						$profissioaisObj=explode(",",$cnt->profissionais);
-						$profissionaisID=array(-1);
-						foreach($profissioaisObj as $v) {
-							if(!empty($v) and is_numeric($v)) $profissionaisID[]=$v;
-						}
-					}
-
-					if($cnt->agendaPessoal==1) {
-
-						$data = array('id'=>$cnt->id,
-										'agendaPessoal'=>2,
-										'agenda_data'=>date('d/m/Y',strtotime($cnt->agenda_data)),
-										'agenda_hora'=>date('H:i',strtotime($cnt->agenda_data)),
-										'agenda_duracao'=>$cnt->agenda_duracao,
-										'id_status'=>$cnt->id_status,
-										'id_cadeira'=>$cnt->id_cadeira,
-										'profissionais'=>$profissionaisID,
-										'obs'=>addslashes(utf8_encode($cnt->obs)));
-
-					} else {
-
-						$agendamentosFuturos=array();
-
-						if($paciente->data_nascimento!="0000-00-00") {
-							$dob = new DateTime($paciente->data_nascimento);
-							$now = new DateTime();
-							$idade = $now->diff($dob)->y;
-						} else $idade=0;
-					
-
-						$_pacientesAgendamentos=array();
-						$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and agenda_data>'".date('Y-m-d')."' and id_status IN (1,2) and lixo=0 order by agenda_data");
-
-						while($x=mysqli_fetch_object($sql->mysqry)) {
-
-							// se for o mesmo agendamento que esta sendo editado
-							if($x->id==$cnt->id) continue;
-
-							$cor='';
-							$iniciais='';
-
-
-							$aux = explode(",",$x->profissionais);
-							$profissionais=array();
-							foreach($aux as $id_profissional) {
-								if(!empty($id_profissional) and is_numeric($id_profissional)) {
-
-									if(isset($_profissionais[$id_profissional])) {
-										$cor=$_profissionais[$id_profissional]->calendario_cor;
-										$iniciais=$_profissionais[$id_profissional]->calendario_iniciais;
-
-										$profissionais[]=array('iniciais'=>$iniciais,'cor'=>$cor);
-									}
-								}
-
-							}
-
-							$_pacientesAgendamentos[$x->id_paciente][]=array('id_agenda'=>$x->id,
-																				'obs'=>str_replace("'","`",utf8_encode($x->obs)),
-																				'data'=>date('d/m/Y H:i',strtotime($x->agenda_data)),
-																				'initDate'=>date('d/m/Y',strtotime($x->agenda_data)),
-																				'cadeira'=>isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'',
-																				'profissionais'=>$profissionais);
-						}
-
-					
-
-						if(isset($_pacientesAgendamentos[$paciente->id])) {
-							$agendamentosFuturos=$_pacientesAgendamentos[$paciente->id];
-						}
-					
-
-
-						$_historico=array();
-						$sql->consult($_p."pacientes_historico","*","where id_agenda=$cnt->id and lixo=0 order by data desc");
-
-						
-						while($x=mysqli_fetch_object($sql->mysqry)) {
-
-							if($x->evento=="agendaHorario") {
-									$_historico[]=array('usr'=>isset($_profissionaisTodos[$x->id_usuario])?utf8_encode($_profissionaisTodos[$x->id_usuario]->nome):'Desconhecido',
-																		'dt'=>date('d/m H:i',strtotime($x->data)),
-																		'ev'=>'horario',
-																		'nvDt'=>date('d/m H:i',strtotime($x->agenda_data_novo)),
-																		'antDt'=>date('d/m H:i',strtotime($x->agenda_data_antigo))
-																	);
-
-							} else {
-								if(isset($_status[$x->id_status_novo])) { 
-									$_historico[]=array('usr'=>isset($_profissionaisTodos[$x->id_usuario])?utf8_encode($_profissionaisTodos[$x->id_usuario]->nome):'Desconhecido',
-																		'dt'=>date('d/m H:i',strtotime($x->data)),
-																		'ev'=>'status',
-																		'desc'=>utf8_encode($x->descricao),
-																		'sts'=>utf8_encode($_status[$x->id_status_novo]->titulo),
-																		'novo'=>$x->evento=="agendaNovo",
-																		'cor'=>$_status[$x->id_status_novo]->cor
-																	);
-								}
-							}
-							
-						}
-
-
-
-						$dias=strtotime(date('Y-m-d H:i:s'))-strtotime($cnt->data);
-						$dias/=60*60*24;
-						$dias=round($dias);
-
-						$ft='';
-						if(!empty($paciente->foto_cn)) {
-							$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
-						} else if(!empty($paciente->foto)) {
-							$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
-						}
-
-
-
-						$data = array('id'=>$cnt->id,
-										'agendou_profissional'=>isset($_usuarios[$cnt->id_usuario])?utf8_encode($_usuarios[$cnt->id_usuario]->nome):"-",
-										'agendou_dias'=>(int)$dias,
-										'agendaPessoal'=>0,
-										'ft'=>$ft,
-										'agenda_data'=>date('d/m/Y',strtotime($cnt->agenda_data)),
-										'agenda_hora'=>date('H:i',strtotime($cnt->agenda_data)),
-										'agenda_duracao'=>$cnt->agenda_duracao,
-										'id_paciente'=>$cnt->id_paciente,
-										'id_status'=>$cnt->id_status,
-										'nome'=>addslashes(utf8_encode($paciente->nome)),
-										'idade'=>(int)$idade,
-										'id_cadeira'=>$cnt->id_cadeira,
-										'telefone1'=>$paciente->telefone1,
-										'musica'=>utf8_encode($paciente->musica),
-										'periodicidade'=>isset($_pacientesPeriodicidade[$paciente->periodicidade])?$_pacientesPeriodicidade[$paciente->periodicidade]:$paciente->periodicidade,
-										'profissionais'=>$profissionaisID,
-										'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):"",
-										'obs'=>addslashes(utf8_encode($cnt->obs)),
-										'agendamentosFuturos'=>$agendamentosFuturos,
-										'historico'=>$_historico);
-					}
-		
-		
-
-					$rtn=array('success'=>true,'data'=>$data);
-
-				}
-			} 
 			else if($_POST['ajax']=="asPacientePersistir") {
 
 
@@ -2265,6 +2638,8 @@
 				}
 			}
 
+
+
 		header("Content-type: application/json");
 		echo json_encode($rtn);
 		die();
@@ -2347,6 +2722,8 @@
 		die();
 	}
 
+	var_dump($apiConfig);
+
 	# JS All Asides
 ?>
 	<script type="text/javascript" src="js/aside.funcoes.js"></script>
@@ -2407,6 +2784,1264 @@
 <?php
 
 	# Asides
+
+		// Agenda
+			if(isset($apiConfig['agenda'])) {
+
+				?>
+				<!-- Aside Novo Agendamento -->
+				<section class="aside aside-add" id="js-aside-add">
+					<script type="text/javascript">
+						const popView = (id_agenda) => {
+							$('#js-aside-edit .js-foto').attr('src','img/ilustra-usuario.jpg');
+							
+							let data = `ajax=editar&id=${id_agenda}`;
+							$.ajax({
+									type:"POST",
+									url:baseURLApiAside,
+									data:data,
+									success:function(rtn){ 
+										if(rtn.success) {
+											$.ajax({
+												type:"POST",
+												data:`ajax=atualizaFoto&id_paciente=${rtn.data.id_paciente}`
+											});
+											//$('html, body').animate({scrollTop: 0},'fast');
+											if(rtn.data.agendaPessoal>0) {
+												//alert($('#js-aside-edit select[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length);
+												$('#js-aside-edit-agendaPessoal input[name=id]').val(rtn.data.id);
+												$('#js-aside-edit-agendaPessoal input[name=agenda_data]').val(rtn.data.agenda_data);
+												$('#js-aside-edit-agendaPessoal input[name=agenda_hora]').val(rtn.data.agenda_hora);
+												
+												$('#js-aside-edit-agendaPessoal input[name=agenda_duracao] option.js-duracaoAdicional').remove();
+												if($('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length==0) {
+													$('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').append(`<option class="js-duracaoAdicional" value="${rtn.data.agenda_duracao}">${rtn.data.agenda_duracao}</option>`);
+												}
+												$('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').val(rtn.data.agenda_duracao);
+
+												$('#js-aside-edit-agendaPessoal textarea[name=obs]').val(rtn.data.obs);
+												$('#js-aside-edit-agendaPessoal select[name=id_cadeira]').val(rtn.data.id_cadeira);
+												$('#js-aside-edit select[name=id_profissional]').find(':selected').prop('selected',false);
+												if(rtn.data.profissionais) {
+													rtn.data.profissionais.forEach(idProfissional=> {
+														//console.log(idProfissional);
+														$('#js-aside-edit-agendaPessoal select[name=id_profissional]').find(`[value=${idProfissional}]`).prop('selected',true);
+													})
+												}
+
+
+												$("#js-aside-edit-agendaPessoal").fadeIn(100,function() {
+													$('#js-aside-edit-agendaPessoal select[name=id_profissional]').chosen();
+													$("#js-aside-edit-agendaPessoal .aside__inner1").addClass("active");
+													$("#js-aside-edit-agendaPessoal .js-tab a:eq(0)").click();
+												});
+												$('#js-aside-edit-agendaPessoal select[name=id_profissional]').chosen();
+												$('#js-aside-edit-agendaPessoal select[name=id_profissional]').trigger('chosen:updated'); 
+											} else {
+												$('#js-aside-edit input[name=id]').val(rtn.data.id);
+
+												$('#js-aside-edit .js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
+
+												if(rtn.data.ft && rtn.data.ft.length>0) {
+													$('#js-aside-edit .js-foto').attr('src',rtn.data.ft);
+												} else {
+													$('#js-aside-edit .js-foto').attr('src','img/ilustra-usuario.jpg');
+												}
+
+												if(rtn.data.idade && rtn.data.idade>0) {
+													$('#js-aside-edit .js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
+												} else {
+													$('#js-aside-edit .js-idade').html(``);
+												}
+
+												if(rtn.data.periodicidade && rtn.data.periodicidade.length>0) {
+													
+													$('#js-aside-edit .js-periodicidade').html(`Periodicidade: ${rtn.data.periodicidade}`);
+												} else {
+													$('#js-aside-edit .js-periodicidade').html(`Periodicidade: -`);
+												}
+
+												if(rtn.data.musica && rtn.data.musica.length>0) {
+													$('#js-aside-edit .js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
+												} else {
+													$('#js-aside-edit .js-musica').html(``);
+												}
+												$('#js-aside-edit input[name=agenda_data]').val(rtn.data.agenda_data);
+												$('#js-aside-edit input[name=agenda_hora]').val(rtn.data.agenda_hora);
+
+												$('#js-aside-edit input[name=agenda_duracao] option.js-duracaoAdicional').remove();
+												if($('#js-aside-edit input[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length==0) {
+													$('#js-aside-edit input[name=agenda_duracao]').append(`<option class="js-duracaoAdicional" value="${rtn.data.agenda_duracao}">${rtn.data.agenda_duracao}</option>`);
+												}
+												$('#js-aside-edit input[name=agenda_duracao]').val(rtn.data.agenda_duracao);
+
+												$('#js-aside-edit select[name=id_cadeira]').val(rtn.data.id_cadeira);
+												$('#js-aside-edit input[name=telefone1]').val(rtn.data.telefone1);
+												$('#js-aside-edit textarea[name=obs]').val(rtn.data.obs);
+												$('#js-aside-edit select[name=id_status]').val(rtn.data.id_status)
+												$('#js-aside-edit .js-profissionais').trigger('chosen:updated'); 
+												if(rtn.data.agendou_dias>1) $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou há ${rtn.data.agendou_dias} dia(s)`);
+												else $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou hoje`);
+
+												$('.js-fieldset-horarios,.js-btn-remover').show();
+												
+
+												if(rtn.data.statusBI && rtn.data.statusBI.length==0) {
+													$('#js-aside-edit .js-statusBI').html(``).hide();
+												} else {
+													$('#js-aside-edit .js-statusBI').html(`${rtn.data.statusBI}`).show();
+												}
+
+												$('#js-aside-edit .js-profissionais').find(':selected').prop('selected',false);
+
+												if(rtn.data.profissionais) {
+													rtn.data.profissionais.forEach(idProfissional=> {
+														$('#js-aside-edit .js-profissionais').find(`[value=${idProfissional}]`).prop('selected',true);
+													})
+												}
+
+												$('.js-ag-futuro table tr').remove();
+												if(rtn.data.agendamentosFuturos && rtn.data.agendamentosFuturos.length>0) {
+													rtn.data.agendamentosFuturos.forEach(x=>{
+
+
+														let profissionalIniciais=``;
+
+														x.profissionais.forEach(p=>{
+															profissionalIniciais+=`<div class="badge-prof" title="${p.iniciais}" style="background:${p.cor}">${p.iniciais}</div>`;
+														})
+														$('.js-ag-futuro table').append(`<tr>
+																								<td>
+																									<h1>${x.data}</h1>									
+																								</td>
+																								<td>${x.obs}</td>
+																								<td>${x.cadeira}</td>
+																								<td>
+																									${profissionalIniciais}
+																								</td>
+																							</tr>`);
+													});
+
+												} else {
+													$('.js-ag-futuro table').append(`<tr><td><center>Nenhum agendamento futuro</center></td></tr>`);
+												}
+
+												$('.js-ag-historico .history div').remove();
+
+												if(rtn.data.historico) {
+													rtn.data.historico.forEach(x=>{
+														if(x.ev=="horario") {
+
+															$('.js-ag-historico .history').append(`<div class="history-item">
+																								<h1>${x.usr} em ${x.dt}</h1>
+																								<h2>horário alterado de <strong style="background:var(--cor1);">${x.antDt}</strong> para <strong style="background:var(--cor1);">${x.nvDt}</strong></h2>
+																							</div>`);
+
+														} else {
+
+															$('.js-ag-historico .history').append(`<div class="history-item">
+																								<h1>${x.usr} em ${x.dt}</h1>
+																								<p>${x.desc}</p>
+																								<h2>${x.novo==1?'agendamento criado com status':'status alterado para'} <em style="background:${x.cor};">${x.sts}</em></h2>
+																							</div>`);
+
+														}
+
+													})
+												} else {
+
+												}
+
+
+												$("#js-aside-edit").fadeIn(100,function() {
+													$('#js-aside-edit .js-profissionais').chosen('destroy');
+													setTimeout(function(){$('#js-aside-edit .js-profissionais').chosen();},100);
+													$("#js-aside-edit .aside__inner1").addClass("active");
+													$("#js-aside-edit .js-tab a:eq(0)").click();
+												});
+
+												
+												$('#js-aside-edit input[name=agenda_data]').trigger('change');
+
+												$('#js-aside-edit .js-profissionais').trigger('chosen:updated');
+
+
+												$('#js-aside-edit .js-salvar').show();
+
+												$('#js-aside-edit input, #js-aside-edit textarea').prop('readonly',false).css('background','');
+
+												$('#js-aside-edit select').prop('disabled',false).css('background','').trigger('chosen:updated');
+												$('#js-aside-edit input[name=id_status_antigo]').val(rtn.data.id_status);
+												// se confirmado
+												if(rtn.data.id_status=="2") {
+													$('#js-aside-edit select[name=id_status]').find('option[value=1],option[value=8]').prop('disabled',true);
+
+													$('#js-aside-edit input[name=agenda_data]').prop('readonly',true).datetimepicker('destroy').css('background','var(--cinza3)');
+
+													$('#js-aside-edit input[name=agenda_hora]').prop('readonly',true).datetimepicker('destroy').css('background','var(--cinza3)');
+
+												}  
+												// se desmarcado
+												else if(rtn.data.id_status=="4") {
+
+													$('#js-aside-edit .js-salvar').hide();
+
+													$('#js-aside-edit select[name=id_status]').prop('disabled',true);
+
+													$('#js-aside-edit input[name=agenda_data],#js-aside-edit input[name=agenda_hora]').datetimepicker('destroy')
+
+													$('#js-aside-edit input, #js-aside-edit textarea').prop('readonly',true).css('background','var(--cinza3)');
+
+													$('#js-aside-edit select').prop('disabled',true).css('background','var(--cinza3)').trigger('chosen:updated');
+
+
+												} else {
+
+
+													$('#js-aside-edit select[name=id_status]').find('option[value=1]').prop('disabled',false)
+
+													$('#js-aside-edit input[name=agenda_data]').datetimepicker({
+														timepicker:false,
+														format:'d/m/Y',
+														scrollMonth:false,
+														scrollTime:false,
+														scrollInput:false,
+													}).css('background','');
+
+													$('#js-aside-edit input[name=agenda_hora]').datetimepicker({
+														  datepicker:false,
+													      format:'H:i',
+													      pickDate:false
+													}).css('background','');
+												}
+											}
+
+											$('#js-aside-edit input[name=alteracao]').val(0);
+											$('#js-aside-edit-agendaPessoal input[name=alteracao]').val(0);
+											agendamentosProfissionais(`edit`);
+
+
+
+										} else if(rtn.error) {
+											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+										} else {
+											swal({title: "Erro!", text: 'Algum erro ocorreu durante a abertura deste agendamento.', type:"error", confirmButtonColor: "#424242"});
+										}
+									},
+									error:function(){
+										swal({title: "Erro!", text: 'Algum erro ocorreu durante a abertura deste agendamento', type:"error", confirmButtonColor: "#424242"});
+									}
+							});
+
+							
+						}
+
+						const agendamentosProfissionais = (tipo) => {
+
+							if(tipo=="add" || tipo=="edit") {
+
+								let aside = $(`#js-aside-${tipo}`);
+
+								let profissionaisSelecionados = aside.find('.js-profissionais option:selected').length>0 ? aside.find('.js-profissionais').val() : [];
+								let aData = aside.find('input[name=agenda_data]').val();
+								let aHora = aside.find('input[name=agenda_hora]').val();
+								let id_cadeira = $(`#js-aside-${tipo} select[name=id_cadeira] option:selected`).val();
+
+								let data = `ajax=agendamentosProfissionais&data=${aData}&hora=${aHora}&id_cadeira=${id_cadeira}`;
+								
+								$.ajax({
+									type:"POST",
+									url:baseURLApiAside,
+									data:data,
+									success:function(rtn) {
+										if(rtn.success) {
+											if(rtn.listaProfissionais || rtn.listaProfissionaisDestaque) {
+												aside.find('.js-profissionais option').remove();
+												//aside.find('.js-profissionais').append(`<option value=""></option>`);
+
+												if(rtn.listaProfissionaisDestaque && rtn.listaProfissionaisDestaque.length>0) {
+
+													itens = 0;
+													options = ``;
+													rtn.listaProfissionaisDestaque.forEach(x=>{
+														let nome = x.nome;
+
+														sel = $.inArray(x.id,profissionaisSelecionados)>=0?' selected':'';
+														
+														options+=`<option value="${x.id}"${sel}>${nome}</option>`;
+														
+														itens++;
+
+														if(itens == rtn.listaProfissionaisDestaque.length) {
+															aside.find('.js-profissionais').append(`<optgroup label="Atende nesse horário">${options}</optgroup>`);
+														}
+													})
+
+												}
+
+												if(rtn.listaProfissionais && rtn.listaProfissionais.length>0) {
+													
+													itens = 0;
+													options = ``;
+													rtn.listaProfissionais.forEach(x=>{
+														let nome = x.nome;
+
+														sel = $.inArray(x.id,profissionaisSelecionados)>=0?' selected':'';
+														
+														options+=`<option value="${x.id}"${sel}>${nome}</option>`;
+														
+														itens++;
+														if(itens == rtn.listaProfissionais.length) {
+															aside.find('.js-profissionais').append(`<optgroup label="Não atende nesse horário">${options}</optgroup>`);
+														}
+													});
+												
+
+												}
+
+												aside.find('.js-profissionais').trigger('chosen:updated');
+											}
+										}
+									}
+								})
+							}
+
+						}
+
+						$(function(){
+							$('#js-aside-add .js-salvar').click(function(){
+								let obj = $(this);
+
+								let agendaPessoal = $('#js-aside-add input[name=agendaPessoal]').val();
+
+
+								if(obj.attr('data-loading')==0) {
+									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+									obj.attr('data-loading',1);
+
+									let erro=false;
+									$(`#js-aside-add form .obg-${agendaPessoal}`).each(function(index,elem){
+									//	console.log($(this).attr('name'));
+										if($(this).attr('name')!==undefined && $(this).val()  && $(this).val().length==0) {
+											$(elem).addClass('erro');
+											erro=true;
+										}
+									});
+
+									if(erro===true) {
+										swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
+										obj.html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
+										obj.attr('data-loading',0);
+									} else {
+										
+										
+										let campos = $('#js-aside-add form').serialize();
+										let profissionais = $('#js-aside-add .js-profissionais').val();
+
+										let data = `ajax=novoAgendamento&profissionais=${profissionais}&${campos}`;
+
+										
+
+										$.ajax({
+											type:'POST',
+											url:baseURLApiAside,
+											data:data,
+											success:function(rtn) {
+												if(rtn.success) {
+
+													if(rtn.id_paciente) {
+														$.ajax({
+															type:"POST",
+															data:`ajax=atualizaFoto&id_paciente=${rtn.id_paciente}`
+														});
+													}
+
+													$('#js-aside-add select[name=id_paciente]').val('').trigger('change.select2');
+
+													$('#js-aside-add select.js-profissionais').val('').trigger('chosen:updated');
+													$('#js-aside-add input,#js-aside-add textarea').val('');
+													$('#js-aside-add input[name=agenda_duracao]').val('');
+
+													$.fancybox.close();
+													calendar.refetchEvents();
+													$('#js-aside-add input[name=alteracao]').val(0);
+													$('#js-aside-add .aside-close-novoAgendamento').click();
+
+
+													//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
+												} else if(rtn.error) {
+													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+
+												} else {
+													swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+												}
+											},
+											error:function(){
+												swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+											}
+										}).done(function(){
+											obj.html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span>`);
+											obj.attr('data-loading',0);
+										})
+
+									}
+								}
+								return false;
+							});
+
+							$('#js-aside-add').find('input,select,textarea').change(function(x){
+								$('#js-aside-add input[name=alteracao]').val(1);
+							});
+
+							$('#js-aside-add .aside-close-novoAgendamento').click(function(){
+								let obj = $(this);
+								if($('#js-aside-add input[name=alteracao]').val()=="1") {
+									swal({   
+											title: "Atenção",   
+											text: "Tem certeza que deseja fechar sem salvar as informações?",
+											type: "warning",   
+											showCancelButton: true,   
+											confirmButtonColor: "#DD6B55",   
+											confirmButtonText: "Sim!",   
+											cancelButtonText: "Não",   
+											closeOnConfirm: false,   
+											closeOnCancel: false 
+										}, function(isConfirm){   
+											if (isConfirm) {   
+												$(obj).parent().parent().removeClass("active");
+												$(obj).parent().parent().parent().fadeOut(); 
+												swal.close();
+									  		 } else {   
+									  		 	swal.close();   
+									  		 } 
+									  	});
+					
+								} else {
+									$(obj).parent().parent().removeClass("active");
+									$(obj).parent().parent().parent().fadeOut();
+								}
+							});
+
+							$('#js-aside-add').find('input[name=agenda_data],input[name=agenda_hora]').change(function(){
+								agendamentosProfissionais(`add`);
+							});
+						})
+					</script>
+					<div class="aside__inner1">
+
+						<header class="aside-header">
+							<h1>Novo Agendamento</h1>
+							<a href="javascript:;" class="aside-header__fechar aside-close-novoAgendamento"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+						</header>
+						<form method="post" class="aside-content form" onsubmit="return false">
+							<input type="hidden" name="agendaPessoal" value="0" />
+							<input type="hidden" name="alteracao" value="0" />
+
+							<script>
+								
+								$(function() {
+									$('.js-tab a').click(function() {
+										$(".js-tab a").removeClass("active");
+										$(this).addClass("active");							
+									});
+									
+								});
+							</script>
+							<section class="tab tab_alt js-tab">
+								<a href="javascript:;" onclick="$('.js-paciente').show();$('#js-aside-add input[name=agendaPessoal]').val(0);" class="active">Paciente</a>
+								<a href="javascript:;" onclick="$('.js-paciente').hide();$('#js-aside-add input[name=agendaPessoal]').val(1);">Compromisso Pessoal</a>				
+							</section>
+						
+							<section class="filter">
+								<div class="filter-group">
+								</div>
+								<div class="filter-group">
+									<div class="filter-form form">
+										<dl>
+											<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+										</dl>
+									</div>								
+								</div>
+							</section>
+
+							<div class="colunas3">
+								<dl>
+									<dt>Data</dt>
+									<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data obg-0" /></dd>
+								</dl>
+								<dl>
+									<dt>Hora</dt>
+									<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="tel" name="agenda_hora" class="hora obg-0" /></dd>
+								</dl>
+								<dl>
+									<dt>Duração</dt>
+									<dd class="form-comp form-comp_pos">
+										<?php /*<select name="agenda_duracao" class="obg-0">
+											<option value="">-</option>
+											<?php
+											foreach($optAgendaDuracao as $v) {
+												if($values['agenda_duracao']==$v) $possuiDuracao=true;
+												echo '<option value="'.$v.'">'.$v.'</option>';
+											}
+											?>
+										</select>*/?>
+										<input type="number" name="agenda_duracao" class="obg-0" value="30" />
+
+										<span>min</span>
+									</dd>
+								</dl>
+							</div>
+							<div class="js-paciente">
+								<dl>
+									<dt>Status do Agendamento</dt>
+									<dd>
+										<select name="id_status" class="obg-0">
+											<option value="">-</option>
+											<?php
+											foreach($_status as $p) {
+												echo '<option value="'.$p->id.'">'.utf8_encode($p->titulo).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+								<div class="colunas">
+									<dl>
+										<dt>Paciente</dt>
+										<dd>
+											<select name="id_paciente" class="select2 obg-0 ajax-id_paciente">
+												<option value="">Buscar paciente...</option>
+											</select>
+											<a  href="javascript:;" class="js-btn-aside button" data-aside="paciente" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a> 
+
+											<?php /*<a href="javascript:;" class="js-btn-aside button" data-aside="profissao" data-aside-sub><i class="iconify" data-icon="fluent:add-24-regular"></i></a>*/?>
+										</dd>
+									</dl>
+									<dl>
+										<dt>Whatsapp</dt>
+										<dd class="form-comp"><span class="js-country">BR</span><input type="tel" name="telefone1" class="" attern="\d*" x-autocompletetype="tel" /></dd>
+									</dl>
+								</div>
+							</div>
+							<div class="colunas">
+								<dl>
+									<dt>Profissionais</dt>
+									<dd>
+										<select class="js-profissionais" multiple>
+											<option value=""></option>
+											<?php
+											foreach($_profissionais as $p) {
+												if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
+												echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+								<dl>
+									<dt>Consultório</dt>
+									<dd>
+										<select name="id_cadeira" class="obg-0">
+											<option value="">-</option>
+											<?php
+											foreach($_cadeiras as $p) {
+												echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+							</div>
+							<dl>
+								<dt>Informações</dt>
+								<dd><textarea name="obs" style="height:100px;"></textarea></dd>
+							</dl>
+
+							<fieldset style="margin-top:2rem;">
+								<legend>Itens do checklist</legend>
+								
+								<div class="colunas3">
+									<dl>	
+										<dd><label><input type="checkbox" name="" class="input-switch" />Laboratório</label></dd>
+									</dl>
+									<dl class="dl2">
+										<dd><input type="text" name="" placeholder="descrição" /></dd>
+									</dl>
+								</div>
+								<div class="colunas3">
+									<dl>	
+										<dd><label><input type="checkbox" name="" class="input-switch" />Imagem</label></dd>
+									</dl>
+									<dl class="dl2">
+										<dd><input type="text" name="" placeholder="descrição" /></dd>
+									</dl>
+								</div>
+								<div class="colunas3">
+									<dl>	
+										<dd><label><input type="checkbox" name="" class="input-switch" />Insumos</label></dd>
+									</dl>
+									<dl class="dl2">
+										<dd><input type="text" name="" placeholder="descrição" /></dd>
+									</dl>
+								</div>
+								<div class="colunas3">
+									<dl>	
+										<dd><label><input type="checkbox" name="" class="input-switch" />Equipamentos</label></dd>
+									</dl>
+									<dl class="dl2">
+										<dd><input type="text" name="" placeholder="descrição" /></dd>
+									</dl>
+								</div>
+							</fieldset>
+						</form>
+					</div>
+				</section><!-- .aside -->
+
+
+				<!-- Aside Edição Agenda Pessoal -->
+				<section class="aside aside-edit-agendaPessoal" id="js-aside-edit-agendaPessoal">
+					<script type="text/javascript">
+						$(function(){
+
+							$('#js-aside-edit-agendaPessoal .js-excluir').click(function(){
+
+								let obj = $(this);
+
+								swal({   
+									title: "Atenção",   
+									text: "Tem certeza que deseja remover este agendamento pessoal?",
+									type: "warning",   
+									showCancelButton: true,   
+									confirmButtonColor: "#DD6B55",   
+									confirmButtonText: "Sim!",   
+									cancelButtonText: "Não",   
+									closeOnConfirm: false,   
+									closeOnCancel: false }, 
+									function(isConfirm){   
+										if (isConfirm) {    
+											if(obj.attr('data-loading')==0) {
+												obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+												obj.attr('data-loading',1);
+												let id = $('#js-aside-edit-agendaPessoal input[name=id]').val();
+
+												let data = `ajax=agendamentoRemover&id=${id}`;   
+												$.ajax({
+													type:"POST",
+													data:data,
+													url:baseURLApiAside,
+													success:function(rtn){
+														swal.close();  
+														if(rtn.success) {
+															$.fancybox.close();
+															calendar.refetchEvents();
+															$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click();
+															//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
+														} else if(rtn.error) {
+															swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+														} else {
+															swal({title: "Erro!", text: "Agendamento não removido. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+														}
+													},
+													error:function(){
+														swal.close();  
+														swal({title: "Erro!", text: "Agendamento não removido. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+													}
+												}).done(function(){
+													obj.html(`<i class="iconify" data-icon="fluent:delete-24-regular"></i>`);
+													obj.attr('data-loading',0);
+												});
+											} 
+										} 
+										else {   
+											swal.close();   
+										} 
+									});
+							})
+
+							$('#js-aside-edit-agendaPessoal .js-salvar').click(function(){
+								let obj = $(this);
+
+								if(obj.attr('data-loading')==0) {
+									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+									obj.attr('data-loading',1);
+
+									let erro=false;
+									$('#js-aside-edit-agendaPessoal form .obg').each(function(index,elem){
+										//console.log($(this).attr('name'));
+										if($(this).attr('name')!==undefined && $(this).val().length==0) {
+											$(elem).addClass('erro');
+											erro=true;
+										}
+									});
+
+									if(erro===true) {
+										swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
+										obj.html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
+										obj.attr('data-loading',0);
+									} else {
+										
+										let campos = $('#js-aside-edit-agendaPessoal form').serialize();
+
+										let data = `ajax=agendamentoPessoalPersistir&${campos}`;
+										
+
+										$.ajax({
+											type:'POST',
+											data:data,
+											success:function(rtn) {
+												if(rtn.success) {
+													$.fancybox.close();
+													calendar.refetchEvents();
+													//$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click();
+
+													$('.aside-close-edicaoAgendamentoPessoal').parent().parent().removeClass("active");
+													$('.aside-close-edicaoAgendamentoPessoal').parent().parent().parent().fadeOut();
+
+
+													//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
+												} else if(rtn.error) {
+													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+
+												} else {
+													swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+												}
+											},
+											error:function(){
+												swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+											}
+										}).done(function(){
+											obj.html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span>`);
+											obj.attr('data-loading',0);
+										})
+
+									}
+								}
+								return false;
+							});
+
+							$('#js-aside-edit-agendaPessoal').find('input,select,textarea').change(function(x){
+								$('#js-aside-edit-agendaPessoal input[name=alteracao]').val(1);
+							});
+
+							$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click(function(){
+								let obj = $(this);
+								if($('#js-aside-edit-agendaPessoal input[name=alteracao]').val()=="1") {
+									swal({   
+											title: "Atenção",   
+											text: "Tem certeza que deseja fechar sem salvar as informações?",
+											type: "warning",   
+											showCancelButton: true,   
+											confirmButtonColor: "#DD6B55",   
+											confirmButtonText: "Sim!",   
+											cancelButtonText: "Não",   
+											closeOnConfirm: false,   
+											closeOnCancel: false 
+										}, function(isConfirm){   
+											if (isConfirm) {   
+												$(obj).parent().parent().removeClass("active");
+												$(obj).parent().parent().parent().fadeOut(); 
+												swal.close();
+									  		 } else {   
+									  		 	swal.close();   
+									  		 } 
+									  	});
+					
+								} else {
+									$(obj).parent().parent().removeClass("active");
+									$(obj).parent().parent().parent().fadeOut();
+								}
+
+							});
+
+
+						})
+					</script>
+					<div class="aside__inner1">
+
+						<header class="aside-header">
+							<h1>Agenda Pessoal</h1>
+							<a href="javascript:;" class="aside-header__fechar aside-close-edicaoAgendamentoPessoal"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+						</header>
+
+						<form method="post" class="aside-content form" onsubmit="return false">
+							<input type="hidden" name="id" />
+							<input type="hidden" name="alteracao" value="0" />
+
+							<script>
+								$(function() {
+									$('.js-tab a').click(function() {
+										$(".js-tab a").removeClass("active");
+										$(this).addClass("active");							
+									});
+								});
+							</script>
+							
+						
+							<section class="filter">
+								<div class="filter-group">
+								</div>
+								<div class="filter-group">
+									<div class="filter-form form">
+										<dl>
+											<dd><a href="javascript:;" class="button js-excluir" data-loading="0"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
+										</dl>
+										<dl>
+											<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+										</dl>
+									</div>								
+								</div>
+							</section>
+
+							<div class="colunas3">
+								<dl>
+									<dt>Data</dt>
+									<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data" /></dd>
+								</dl>
+								<dl>
+									<dt>Hora</dt>
+									<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="tel" name="agenda_hora" class="hora" /></dd>
+								</dl>
+								<dl>
+									<dt>Duração</dt>
+									<dd class="form-comp form-comp_pos">
+										<?php /*<select name="agenda_duracao">
+											<?php
+											foreach($optAgendaDuracao as $v) {
+												if($values['agenda_duracao']==$v) $possuiDuracao=true;
+												echo '<option value="'.$v.'"'.($values['agenda_duracao']==$v?' selected':'').'>'.$v.'</option>';
+											}
+											?>
+										</select>*/?>
+										<input type="number" name="agenda_duracao" value="<?php echo isset($values['agenda_duracao'])?$values['agenda_duracao']:'';?>" />
+										<span>min</span>
+									</dd>
+								</dl>
+							</div>
+							<div class="colunas">
+								<dl>
+									<dt>Profissionais</dt>
+									<dd>
+										<select name="id_profissional"  class="">
+											<option value=""></option>
+											<?php
+											foreach($_profissionais as $p) {
+												if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
+												echo '<option value="'.$p->id.'"'.(in_array($p->id, $values['profissionais'])?' selected':'').'>'.utf8_encode($p->nome).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+								<dl>
+									<dt>Consultório</dt>
+									<dd>
+										<select name="id_cadeira">
+											<option value=""></option>
+											<?php
+											foreach($_cadeiras as $p) {
+												echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+							</div>
+							<dl>
+								<dt>Informações</dt>
+								<dd><textarea name="obs" style="height:100px;"></textarea></dd>
+							</dl>
+						</div>
+
+					</form>
+				</section><!-- .aside -->
+
+
+				<!-- Aside Edição Agendamento -->
+				<section class="aside aside-edit" id="js-aside-edit">
+					<script type="text/javascript">
+						$(function(){
+
+							$('#js-aside-edit .js-excluir').click(function(){
+
+								let obj = $(this);
+
+								swal({   
+									title: "Atenção",   
+									text: "Tem certeza que deseja remover este agendamento?",
+									type: "warning",   
+									showCancelButton: true,   
+									confirmButtonColor: "#DD6B55",   
+									confirmButtonText: "Sim!",   
+									cancelButtonText: "Não",   
+									closeOnConfirm: false,   
+									closeOnCancel: false }, 
+									function(isConfirm){   
+										if (isConfirm) {    
+											if(obj.attr('data-loading')==0) {
+												obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+												obj.attr('data-loading',1);
+												let id = $('#js-aside-edit input[name=id]').val();
+
+												let data = `ajax=agendamentoRemover&id=${id}`;   
+												$.ajax({
+													type:"POST",
+													data:data,
+													url:baseURLApiAside,
+													success:function(rtn){
+														swal.close();  
+														if(rtn.success) {
+															$.fancybox.close();
+															calendar.refetchEvents();
+															$('#js-aside-edit .aside-close-edicaoAgendamento').click();
+															//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
+														} else if(rtn.error) {
+															swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+														} else {
+															swal({title: "Erro!", text: "Agendamento não removido. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+														}
+													},
+													error:function(){
+														swal.close();  
+														swal({title: "Erro!", text: "Agendamento não removido. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+													}
+												}).done(function(){
+													obj.html(`<i class="iconify" data-icon="fluent:delete-24-regular"></i>`);
+													obj.attr('data-loading',0);
+												});
+											} 
+										} 
+										else {   
+											swal.close();   
+										} 
+									});
+							});
+
+							$('#js-aside-edit .js-salvar').click(function(){
+								let obj = $(this);
+
+								if(obj.attr('data-loading')==0) {
+									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+									obj.attr('data-loading',1);
+
+									let erro=false;
+									$('#js-aside-edit form .obg').each(function(index,elem){
+										//console.log($(this).attr('name'));
+										if($(this).attr('name')!==undefined && $(this).val().length==0) {
+											$(elem).addClass('erro');
+											erro=true;
+										}
+									});
+
+									if(erro===true) {
+										swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
+										obj.html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
+										obj.attr('data-loading',0);
+									} else {
+										
+										let campos = $('#js-aside-edit form').serialize();
+										let profissionais = $('#js-aside-edit .js-profissionais').val();
+
+										let data = `ajax=agendamentoPersistir&profissionais=${profissionais}&${campos}`;
+										
+										let abrirProximaConsulta = 0;
+										if($('#js-aside-edit input[name=id_status_antigo]').val()!=$('#js-aside-edit select[name=id_status]').val() && $('#js-aside-edit select[name=id_status]').val()==5) {
+											abrirProximaConsulta=$('#js-aside-edit input[name=id]').val();
+										}
+
+										$.ajax({
+											type:'POST',
+											data:data,
+											url:baseURLApiAside,
+											success:function(rtn) {
+												if(rtn.success) {
+													$.fancybox.close();
+													calendar.refetchEvents();
+													$('#js-aside-edit input[name=alteracao]').val(0);
+													$('#js-aside-edit .aside-close-edicaoAgendamento').click();
+
+													if(rtn.wts && rtn.wts==1) {
+														let data = `ajax=whatsappDisparar`;
+														$.ajax({
+															type:"POST",
+															data:data
+														})
+													}
+													//alert(abrirProximaConsulta);
+													if(abrirProximaConsulta>0) asideProximaConsulta(abrirProximaConsulta);
+
+
+													//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
+												} else if(rtn.error) {
+													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+
+												} else {
+													swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+												}
+											},
+											error:function(){
+												swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+											}
+										}).done(function(){
+											obj.html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span>`);
+											obj.attr('data-loading',0);
+										})
+
+									}
+								}
+								return false;
+							});
+
+							$('#js-aside-edit').find('input,select,textarea').change(function(x){
+								$('#js-aside-edit input[name=alteracao]').val(1);
+							});
+
+							$('#js-aside-edit .aside-close-edicaoAgendamento').click(function(){
+								let obj = $(this);
+								if($('#js-aside-edit input[name=alteracao]').val()=="1") {
+									swal({   
+											title: "Atenção",   
+											text: "Tem certeza que deseja fechar sem salvar as informações?",
+											type: "warning",   
+											showCancelButton: true,   
+											confirmButtonColor: "#DD6B55",   
+											confirmButtonText: "Sim!",   
+											cancelButtonText: "Não",   
+											closeOnConfirm: false,   
+											closeOnCancel: false 
+										}, function(isConfirm){   
+											if (isConfirm) {   
+												$(obj).parent().parent().removeClass("active");
+												$(obj).parent().parent().parent().fadeOut(); 
+												swal.close();
+									  		 } else {   
+									  		 	swal.close();   
+									  		 } 
+									  	});
+					
+								} else {
+									$(obj).parent().parent().removeClass("active");
+									$(obj).parent().parent().parent().fadeOut();
+								}
+							});
+
+							$('#js-aside-edit').find('input[name=agenda_data],input[name=agenda_hora]').change(function(){
+								agendamentosProfissionais(`edit`);
+							});
+						})
+					</script>
+					<div class="aside__inner1">
+
+						<header class="aside-header">
+							<h1>Detalhes do Agendamento</h1>
+							<a href="javascript:;" class="aside-header__fechar aside-close-edicaoAgendamento"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+						</header>
+
+						<form method="post" class="aside-content form" onsubmit="return false">
+							<input type="hidden" name="id_status_antigo" />
+							<input type="hidden" name="id" />
+							<input type="hidden" name="alteracao" value="0" />
+							<section class="header-profile">
+								<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
+								<div class="header-profile__inner1">
+									<h1><a href="" target="_blank" class="js-nome"></a></h1>
+									<div>
+										<p class="js-statusBI"></p>
+										<p class="js-idade"></p>
+										<p class="js-periodicidade">Periodicidade: 6 meses</p>
+										<p class="js-musica"></p>
+									</div>
+								</div>
+							</section>
+
+							<script>
+								$(function() {
+									$('.js-tab a').click(function() {
+										$(".js-tab a").removeClass("active");
+										$(this).addClass("active");							
+									});
+								});
+							</script>
+							<section class="tab tab_alt js-tab">
+								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agenda').show();" class="active">Agenda</a>
+								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-checklist').show();">Checklist</a>					
+								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-futuro').show();">Agendamentos Futuros</a>
+								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>					
+								
+							</section>
+						
+							<div class="js-ag js-ag-agenda">
+								<section class="filter">
+									<div class="filter-group">
+										<div class="filter-title">
+											<p class="js-agendou">Simone agendou há 29 dias</p>
+										</div>
+									</div>
+									<div class="filter-group">
+										<div class="filter-form form">
+											<dl>
+												<dd><a href="javascript:;" class="button js-excluir" data-loading="0"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
+											</dl>
+											<dl>
+												<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+											</dl>
+										</div>								
+									</div>
+								</section>
+
+								<div class="colunas3">
+									<dl>
+										<dt>Data</dt>
+										<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data" /></dd>
+									</dl>
+									<dl>
+										<dt>Hora</dt>
+										<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="tel" name="agenda_hora" class="hora" /></dd>
+									</dl>
+									<dl>
+										<dt>Duração</dt>
+										<dd class="form-comp form-comp_pos">
+											<?php /*<input type="tel" name="agenda_duracao" class="" />
+											<select name="agenda_duracao">
+												<?php
+												foreach($optAgendaDuracao as $v) {
+													echo '<option value="'.$v.'"'.($values['agenda_duracao']==$v?' selected':'').'>'.$v.'</option>';
+												}
+												?>
+											</select>*/?>
+											<input type="text" name="agenda_duracao" value="" />
+											<span>min</span>
+										</dd>
+									</dl>
+								</div>
+								<dl>
+									<dt>Status do Agendamento</dt>
+									<dd>
+										<select name="id_status" class="obg">
+											<option value="">-</option>
+											<?php
+											foreach($_status as $p) {
+												echo '<option value="'.$p->id.'">'.utf8_encode($p->titulo).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+								<div class="colunas">
+									<dl>
+										<dt>Telefone</dt>
+										<dd class="form-comp"><span class="js-country">BR</span><input type="tel" name="telefone1" class="" /></dd>
+									</dl>
+									<dl>
+										<dt>Consultório</dt>
+										<dd>
+											<select name="id_cadeira">
+												<option value=""></option>
+												<?php
+												foreach($_cadeiras as $p) {
+													echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+								</div>
+								<div class="colunas">
+									<dl class="dl2">
+										<dt>Profissionais</dt>
+										<dd>
+											<select class="js-profissionais" multiple>
+												<option value=""></option>
+												<?php
+												foreach($_profissionais as $p) {
+													if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
+													echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+								</div>
+								<dl>
+									<dt>Informações</dt>
+									<dd><textarea name="obs" style="height:100px;"></textarea></dd>
+								</dl>
+							</div>
+
+							<div class="js-ag js-ag-checklist">
+								<section class="filter">
+									<div class="filter-group">
+									</div>
+									<div class="filter-group">
+										<div class="filter-form form">
+											<?php /*
+											<dl>									
+												<dd><button class="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Adicionar</span></button></dd>
+											</dl>
+											*/ ?>
+											<dl>									
+												<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-24-filled"></i> <span>Salvar</span></button></dd>
+											</dl>
+										</div>								
+									</div>
+								</section>
+
+								<div class="list1">
+									<table>
+										<tr>								
+											<td>
+												<h1>Laboratório</h1>
+											</td>
+											<td>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Corrupti, veritatis?</td>
+											<td><input type="checkbox" name="" class="input-switch" /></td>
+										</tr>
+										<tr>								
+											<td>
+												<h1>Imagem</h1>
+											</td>
+											<td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Voluptatibus eveniet, dolore tempore dicta blanditiis. Eaque atque ipsam eveniet sunt possimus!</td>
+											<td><input type="checkbox" name="" class="input-switch" /></td>
+										</tr>
+										<tr>								
+											<td>
+												<h1>Insumos</h1>
+											</td>
+											<td></td>
+											<td><button class="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Adicionar</span></button></td>
+										</tr>
+										<tr>								
+											<td>
+												<h1>Equipamentos</h1>
+											</td>
+											<td></td>
+											<td><button class="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Adicionar</span></button></td>
+										</tr>
+									</table>
+								</div>
+								
+							</div>
+
+							<div class="js-ag js-ag-futuro" style="display:none;">
+								<div class="list1">
+									<table>
+									</table>
+								</div>
+							</div>
+
+							<div class="js-ag js-ag-historico" style="display:none;">
+								<div class="history">
+									<div class="history-item">
+										<h1>Simone agendou para 10/02/2022 17:30</h1>
+										<h2>Status alterado para <em style="background:red;">CANCELADO</em></h2>
+									</div>
+								</div>
+							</div>
+
+						</form>
+
+					</div>
+				</section><!-- .aside -->	
+				<?php
+			}
 
 		// Especialidades
 			if(isset($apiConfig['especialidade'])) {
@@ -3180,321 +4815,7 @@
 			if(isset($apiConfig['paciente'])) {
 				?>
 				<script type="text/javascript">
-					
-					const popView = (id_agenda) => {
-					
-						let data = `ajax=editar&id=${id_agenda}`;
-						$.ajax({
-								type:"POST",
-								url:baseURLApiAside,
-								data:data,
-								success:function(rtn){ 
-									if(rtn.success) {
-										$.ajax({
-											type:"POST",
-											data:`ajax=atualizaFoto&id_paciente=${rtn.data.id_paciente}`
-										});
-										//$('html, body').animate({scrollTop: 0},'fast');
-										if(rtn.data.agendaPessoal>0) {
-											//alert($('#js-aside-edit select[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length);
-											$('#js-aside-edit-agendaPessoal input[name=id]').val(rtn.data.id);
-											$('#js-aside-edit-agendaPessoal input[name=agenda_data]').val(rtn.data.agenda_data);
-											$('#js-aside-edit-agendaPessoal input[name=agenda_hora]').val(rtn.data.agenda_hora);
-											
-											$('#js-aside-edit-agendaPessoal input[name=agenda_duracao] option.js-duracaoAdicional').remove();
-											if($('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length==0) {
-												$('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').append(`<option class="js-duracaoAdicional" value="${rtn.data.agenda_duracao}">${rtn.data.agenda_duracao}</option>`);
-											}
-											$('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').val(rtn.data.agenda_duracao);
 
-											$('#js-aside-edit-agendaPessoal textarea[name=obs]').val(rtn.data.obs);
-											$('#js-aside-edit-agendaPessoal select[name=id_cadeira]').val(rtn.data.id_cadeira);
-											$('#js-aside-edit select[name=id_profissional]').find(':selected').prop('selected',false);
-											if(rtn.data.profissionais) {
-												rtn.data.profissionais.forEach(idProfissional=> {
-													//console.log(idProfissional);
-													$('#js-aside-edit-agendaPessoal select[name=id_profissional]').find(`[value=${idProfissional}]`).prop('selected',true);
-												})
-											}
-
-
-											$("#js-aside-edit-agendaPessoal").fadeIn(100,function() {
-												$('#js-aside-edit-agendaPessoal select[name=id_profissional]').chosen();
-												$("#js-aside-edit-agendaPessoal .aside__inner1").addClass("active");
-												$("#js-aside-edit-agendaPessoal .js-tab a:eq(0)").click();
-											});
-											$('#js-aside-edit-agendaPessoal select[name=id_profissional]').chosen();
-											$('#js-aside-edit-agendaPessoal select[name=id_profissional]').trigger('chosen:updated'); 
-										} else {
-											$('#js-aside-edit input[name=id]').val(rtn.data.id);
-
-											$('#js-aside-edit .js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
-
-											if(rtn.data.ft && rtn.data.ft.length>0) {
-												$('#js-aside-edit .js-foto').attr('src',rtn.data.ft);
-											} else {
-												$('#js-aside-edit .js-foto').attr('src','img/ilustra-usuario.jpg');
-											}
-
-											if(rtn.data.idade && rtn.data.idade>0) {
-												$('#js-aside-edit .js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
-											} else {
-												$('#js-aside-edit .js-idade').html(``);
-											}
-
-											if(rtn.data.periodicidade && rtn.data.periodicidade.length>0) {
-												
-												$('#js-aside-edit .js-periodicidade').html(`Periodicidade: ${rtn.data.periodicidade}`);
-											} else {
-												$('#js-aside-edit .js-periodicidade').html(`Periodicidade: -`);
-											}
-
-											if(rtn.data.musica && rtn.data.musica.length>0) {
-												$('#js-aside-edit .js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
-											} else {
-												$('#js-aside-edit .js-musica').html(``);
-											}
-											$('#js-aside-edit input[name=agenda_data]').val(rtn.data.agenda_data);
-											$('#js-aside-edit input[name=agenda_hora]').val(rtn.data.agenda_hora);
-
-											$('#js-aside-edit input[name=agenda_duracao] option.js-duracaoAdicional').remove();
-											if($('#js-aside-edit input[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length==0) {
-												$('#js-aside-edit input[name=agenda_duracao]').append(`<option class="js-duracaoAdicional" value="${rtn.data.agenda_duracao}">${rtn.data.agenda_duracao}</option>`);
-											}
-											$('#js-aside-edit input[name=agenda_duracao]').val(rtn.data.agenda_duracao);
-
-											$('#js-aside-edit select[name=id_cadeira]').val(rtn.data.id_cadeira);
-											$('#js-aside-edit input[name=telefone1]').val(rtn.data.telefone1);
-											$('#js-aside-edit textarea[name=obs]').val(rtn.data.obs);
-											$('#js-aside-edit select[name=id_status]').val(rtn.data.id_status)
-											$('#js-aside-edit .js-profissionais').trigger('chosen:updated'); 
-											if(rtn.data.agendou_dias>1) $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou há ${rtn.data.agendou_dias} dia(s)`);
-											else $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou hoje`);
-
-											$('.js-fieldset-horarios,.js-btn-remover').show();
-											
-
-											if(rtn.data.statusBI && rtn.data.statusBI.length==0) {
-												$('#js-aside-edit .js-statusBI').html(``).hide();
-											} else {
-												$('#js-aside-edit .js-statusBI').html(`${rtn.data.statusBI}`).show();
-											}
-
-											$('#js-aside-edit .js-profissionais').find(':selected').prop('selected',false);
-
-											if(rtn.data.profissionais) {
-												rtn.data.profissionais.forEach(idProfissional=> {
-													$('#js-aside-edit .js-profissionais').find(`[value=${idProfissional}]`).prop('selected',true);
-												})
-											}
-
-											$('.js-ag-futuro table tr').remove();
-											if(rtn.data.agendamentosFuturos && rtn.data.agendamentosFuturos.length>0) {
-												rtn.data.agendamentosFuturos.forEach(x=>{
-
-
-													let profissionalIniciais=``;
-
-													x.profissionais.forEach(p=>{
-														profissionalIniciais+=`<div class="badge-prof" title="${p.iniciais}" style="background:${p.cor}">${p.iniciais}</div>`;
-													})
-													$('.js-ag-futuro table').append(`<tr>
-																							<td>
-																								<h1>${x.data}</h1>									
-																							</td>
-																							<td>${x.obs}</td>
-																							<td>${x.cadeira}</td>
-																							<td>
-																								${profissionalIniciais}
-																							</td>
-																						</tr>`);
-												});
-
-											} else {
-												$('.js-ag-futuro table').append(`<tr><td><center>Nenhum agendamento futuro</center></td></tr>`);
-											}
-
-											$('.js-ag-historico .history div').remove();
-
-											if(rtn.data.historico) {
-												rtn.data.historico.forEach(x=>{
-													if(x.ev=="horario") {
-
-														$('.js-ag-historico .history').append(`<div class="history-item">
-																							<h1>${x.usr} em ${x.dt}</h1>
-																							<h2>horário alterado de <strong style="background:var(--cor1);">${x.antDt}</strong> para <strong style="background:var(--cor1);">${x.nvDt}</strong></h2>
-																						</div>`);
-
-													} else {
-
-														$('.js-ag-historico .history').append(`<div class="history-item">
-																							<h1>${x.usr} em ${x.dt}</h1>
-																							<p>${x.desc}</p>
-																							<h2>${x.novo==1?'agendamento criado com status':'status alterado para'} <em style="background:${x.cor};">${x.sts}</em></h2>
-																						</div>`);
-
-													}
-
-												})
-											} else {
-
-											}
-
-
-											$("#js-aside-edit").fadeIn(100,function() {
-												$('#js-aside-edit .js-profissionais').chosen('destroy');
-												setTimeout(function(){$('#js-aside-edit .js-profissionais').chosen();},100);
-												$("#js-aside-edit .aside__inner1").addClass("active");
-												$("#js-aside-edit .js-tab a:eq(0)").click();
-											});
-
-											
-											$('#js-aside-edit input[name=agenda_data]').trigger('change');
-
-											$('#js-aside-edit .js-profissionais').trigger('chosen:updated');
-
-
-											$('#js-aside-edit .js-salvar').show();
-
-											$('#js-aside-edit input, #js-aside-edit textarea').prop('readonly',false).css('background','');
-
-											$('#js-aside-edit select').prop('disabled',false).css('background','').trigger('chosen:updated');
-											$('#js-aside-edit input[name=id_status_antigo]').val(rtn.data.id_status);
-											// se confirmado
-											if(rtn.data.id_status=="2") {
-												$('#js-aside-edit select[name=id_status]').find('option[value=1],option[value=8]').prop('disabled',true);
-
-												$('#js-aside-edit input[name=agenda_data]').prop('readonly',true).datetimepicker('destroy').css('background','var(--cinza3)');
-
-												$('#js-aside-edit input[name=agenda_hora]').prop('readonly',true).datetimepicker('destroy').css('background','var(--cinza3)');
-
-											}  
-											// se desmarcado
-											else if(rtn.data.id_status=="4") {
-
-												$('#js-aside-edit .js-salvar').hide();
-
-												$('#js-aside-edit select[name=id_status]').prop('disabled',true);
-
-												$('#js-aside-edit input[name=agenda_data],#js-aside-edit input[name=agenda_hora]').datetimepicker('destroy')
-
-												$('#js-aside-edit input, #js-aside-edit textarea').prop('readonly',true).css('background','var(--cinza3)');
-
-												$('#js-aside-edit select').prop('disabled',true).css('background','var(--cinza3)').trigger('chosen:updated');
-
-
-											} else {
-
-
-												$('#js-aside-edit select[name=id_status]').find('option[value=1]').prop('disabled',false)
-
-												$('#js-aside-edit input[name=agenda_data]').datetimepicker({
-													timepicker:false,
-													format:'d/m/Y',
-													scrollMonth:false,
-													scrollTime:false,
-													scrollInput:false,
-												}).css('background','');
-
-												$('#js-aside-edit input[name=agenda_hora]').datetimepicker({
-													  datepicker:false,
-												      format:'H:i',
-												      pickDate:false
-												}).css('background','');
-											}
-										}
-
-										$('#js-aside-edit input[name=alteracao]').val(0);
-										$('#js-aside-edit-agendaPessoal input[name=alteracao]').val(0);
-										agendamentosProfissionais(`edit`);
-
-
-
-									} else if(rtn.error) {
-										swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-									} else {
-										swal({title: "Erro!", text: 'Algum erro ocorreu durante a abertura deste agendamento.', type:"error", confirmButtonColor: "#424242"});
-									}
-								},
-								error:function(){
-									swal({title: "Erro!", text: 'Algum erro ocorreu durante a abertura deste agendamento', type:"error", confirmButtonColor: "#424242"});
-								}
-						});
-
-						
-					}
-
-					const agendamentosProfissionais = (tipo) => {
-
-						if(tipo=="add" || tipo=="edit") {
-
-							let aside = $(`#js-aside-${tipo}`);
-
-							let profissionaisSelecionados = aside.find('.js-profissionais option:selected').length>0 ? aside.find('.js-profissionais').val() : [];
-							let aData = aside.find('input[name=agenda_data]').val();
-							let aHora = aside.find('input[name=agenda_hora]').val();
-							let id_cadeira = $(`#js-aside-${tipo} select[name=id_cadeira] option:selected`).val();
-
-							let data = `ajax=agendamentosProfissionais&data=${aData}&hora=${aHora}&id_cadeira=${id_cadeira}`;
-							
-							$.ajax({
-								type:"POST",
-								url:baseURLApiAside,
-								data:data,
-								success:function(rtn) {
-									if(rtn.success) {
-										if(rtn.listaProfissionais || rtn.listaProfissionaisDestaque) {
-											aside.find('.js-profissionais option').remove();
-											//aside.find('.js-profissionais').append(`<option value=""></option>`);
-
-											if(rtn.listaProfissionaisDestaque && rtn.listaProfissionaisDestaque.length>0) {
-
-												itens = 0;
-												options = ``;
-												rtn.listaProfissionaisDestaque.forEach(x=>{
-													let nome = x.nome;
-
-													sel = $.inArray(x.id,profissionaisSelecionados)>=0?' selected':'';
-													
-													options+=`<option value="${x.id}"${sel}>${nome}</option>`;
-													
-													itens++;
-
-													if(itens == rtn.listaProfissionaisDestaque.length) {
-														aside.find('.js-profissionais').append(`<optgroup label="Atende nesse horário">${options}</optgroup>`);
-													}
-												})
-
-											}
-
-											if(rtn.listaProfissionais && rtn.listaProfissionais.length>0) {
-												
-												itens = 0;
-												options = ``;
-												rtn.listaProfissionais.forEach(x=>{
-													let nome = x.nome;
-
-													sel = $.inArray(x.id,profissionaisSelecionados)>=0?' selected':'';
-													
-													options+=`<option value="${x.id}"${sel}>${nome}</option>`;
-													
-													itens++;
-													if(itens == rtn.listaProfissionais.length) {
-														aside.find('.js-profissionais').append(`<optgroup label="Não atende nesse horário">${options}</optgroup>`);
-													}
-												});
-											
-
-											}
-
-											aside.find('.js-profissionais').trigger('chosen:updated');
-										}
-									}
-								}
-							})
-						}
-
-					}
 					$(function(){
 
 
@@ -3577,6 +4898,7 @@
 					});
 				</script>
 
+				<!-- Aside Paciente -->
 				<section class="aside aside-paciente">
 					<div class="aside__inner1">
 
