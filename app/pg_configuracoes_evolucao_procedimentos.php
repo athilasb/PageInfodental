@@ -440,8 +440,8 @@
 											$obs='-';
 											if(isset($_planos[$x->id])) {
 												$plano=$_planos[$x->id];
-												$valor=$plano->valor;
-												$obs=utf8_encode($plano->obs);
+												$valor=$plano->valor??0;
+												$obs=utf8_encode($plano->obs??"");
 											}
 										?>
 										<tr class="js-item" data-id="<?php echo $x->id;?>">

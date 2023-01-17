@@ -103,6 +103,7 @@
 
 		$sql->update($_table,$vSQL,$vWHERE);
 		$id_reg=$paciente->id;
+
 		$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='$_table',id_reg='$id_reg'");
 		
 		$jsc->go($_page."?id_paciente=$paciente->id");
@@ -260,8 +261,6 @@
 			if(isset($_agendas[$regs['ultimaAgenda']->id_agenda])) {
 				$agendamento=($_agendas[$regs['ultimaAgenda']->id_agenda]);
 				$id=strtotime($agendamento->agenda_data);//.$x->id;
-
-
 				$registrosComAgendamento[$id]=$regs;
 			}
 		}
@@ -279,9 +278,7 @@
 
 		krsort($registrosPorOrdem);
 
-
-
-	?>
+?>
 	
 	<main class="main">
 		<div class="main__content content">
@@ -390,12 +387,12 @@
 
 					<?php
 
-						$grProfissionais = array();
+						$grProfissionais = $labelDentistasCor  = array();
 						$labelDentistas = array();
 						foreach($_grAgendasProfissionais as $id_profissional=>$qtd) {
 							if(isset($_profissionaisArr[$id_profissional])) {
+								/*
 								$profissional=$_profissionaisArr[$id_profissional];
-
 								$labelDentistas[]=utf8_encode($profissional->nome);
 
 								//echo $qtd."->".(($qtd/$_grAgendasProfissionaisTotal)*100)." = $_grAgendasProfissionaisTotal<BR>";
@@ -408,8 +405,45 @@
 																			'nome'=>utf8_encode($profissional->nome),
 																			'qtd'=>$qtd,
 																			'perc'=>$perc);
+																			*/
 							}
 						}
+						$qtdTotal = count($_agendas);
+						foreach($_agendas as $id=>$agenda){
+							$profissional = false;
+							$perc = $qtd = 0;
+							$aux=explode(",",$agenda->profissionais);
+							foreach($aux as $key=>$value){
+								if(strlen($value)>0){
+									$profissional = $_colaboradores[$value];
+									if($profissional){
+
+										if(!in_array($profissional->nome,$labelDentistas)){
+											$labelDentistas[]=utf8_encode($profissional->nome);
+										}
+
+										$qtd = (isset($grProfissionais[$profissional->id]['qtd']))?$grProfissionais[$profissional->id]['qtd']+1:1;
+
+										$perc=number_format((($qtd/$qtdTotal)*100),1,".","");
+										
+
+										if(!in_array($profissional->calendario_cor,$labelDentistasCor)){
+											$labelDentistasCor[]=$profissional->calendario_cor;
+										}
+										$grProfissionais[$profissional->id]=array(
+											'id'=>$profissional->id,
+											'nome'=>utf8_encode($profissional->nome),
+											'qtd'=>$qtd,
+											'perc'=>$perc);
+									}
+								}
+							}
+						}
+						foreach($grProfissionais as $id=>$prof){
+							$labelDentistasQtd[]=$prof['perc'];
+
+						}
+
 					?>
 
 					<div class="grid grid_2 box" style="margin:0;">
@@ -456,8 +490,8 @@
 									<?php
 									foreach($grProfissionais as $infos) {
 										$id_profissional=$infos['id'];
-										if(isset($_profissionaisArr[$id_profissional])) {
-											$profissional=$_profissionaisArr[$id_profissional];
+										if(isset($_colaboradores[$id_profissional])) {
+											$profissional=$_colaboradores[$id_profissional];
 									?>
 									<tr class="js-item">
 										<td class="list1__border" style="color:<?php echo $profissional->calendario_cor;?>"></td>
