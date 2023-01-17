@@ -40,33 +40,43 @@
 					$cnt=mysqli_fetch_object($sql->mysqry);
 				}
 			}
+
 			if(empty($cnt)) {
 				$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
 			} else {
+
 				
 				$vWHERE="where id=$cnt->id";
 				$vSQL="lixo=1";
 				$sql->update($_table,$vSQL,$vWHERE);
 				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='delete',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='$_table',id_reg='".$cnt->id."'");
+
 				$rtn=array('success'=>true);
+
 			}
 		} 
+
 		else if($_POST['ajax']=="persistirPaciente") {
+
 			$nome=(isset($_POST['nome']) and !empty($_POST['nome']))?$_POST['nome']:'';
 			$cpf=(isset($_POST['cpf']) and !empty($_POST['cpf']))?$_POST['cpf']:'';
 			$telefone1=(isset($_POST['telefone1']) and !empty($_POST['telefone1']))?$_POST['telefone1']:'';
 			$indicacao_tipo=(isset($_POST['indicacao_tipo']) and !empty($_POST['indicacao_tipo']))?$_POST['indicacao_tipo']:'';
 			$indicacao=(isset($_POST['indicacao']) and !empty($_POST['indicacao']))?$_POST['indicacao']:'';
+
 			if(empty($nome) or empty($telefone1)) {
 				$rtn=array('success'=>false,'error'=>'Nome/Telefone não definidos');
 			} else {
+
 				$cpfDuplicado=false;
+
 				if(!empty($cpf)) {
 					$sql->consult($_p."pacientes","*","where cpf='".addslashes(cpf($cpf))."' and lixo=0");
 					if($sql->rows) {
 						$cpfDuplicado=true;
 					}
 				}
+
 				if($cpfDuplicado===true) {
 					$rtn=array('success'=>false,'error'=>'Já existe paciente cadastrado com este CPF');
 				} else {
@@ -76,9 +86,11 @@
 							telefone1='".addslashes(telefone($telefone1))."',
 							indicacao_tipo='".addslashes($indicacao_tipo)."',
 							indicacao='".addslashes($indicacao)."'";
+
 					$sql->add($_p."pacientes",$vSQL);
 					$id_paciente=$sql->ulid;
 					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."pacientes',id_reg='".$id_paciente."'");
+
 					$rtn=array('success'=>true,
 								'id_paciente'=>$id_paciente,
 								'telefone1'=>$telefone1,
@@ -86,7 +98,9 @@
 				}
 			}
 		} 
+
 		else if($_POST['ajax']=="persistirPacienteTelefone") {
+
 			$paciente='';
 			if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
 				$sql->consult($_p."pacientes","*","where id='".addslashes($_POST['id_paciente'])."'");
@@ -94,24 +108,30 @@
 					$paciente=mysqli_fetch_object($sql->mysqry);
 				}
 			}
+
 			$telefone1=(isset($_POST['telefone1']) and !empty($_POST['telefone1']))?$_POST['telefone1']:'';
+
 			if(empty($paciente)) {
 				$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
 			} else if(empty($telefone1)) {
 				$rtn=array('success'=>false,'error'=>'Telefone não definido');
 			} else {
+
 				
 				$vSQL="telefone1='".addslashes(telefone($telefone1))."'";
+
 				$vWHERE="WHERE id=$paciente->id";
 				$sql->update($_p."pacientes",$vSQL,$vWHERE);
 				$id_paciente=$sql->ulid;
 				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."pacientes',id_reg='".$id_paciente."'");
+
 				$rtn=array('success'=>true,
 							'id_paciente'=>$id_paciente,
 							'telefone1'=>$telefone1);
 				
 			}
 		} 
+
 		else */if($_POST['ajax']=="indicacoesLista") {
 
 			$indicacao='';
@@ -686,9 +706,11 @@
 								/*
 								echo "$xi - $xf -> if(strtotime($xi) >= strtotime($iN) && strtotime($xi) < strtotime($iF) && 
 									strtotime($xf) > strtotime($iN)\n\n";
+
 								echo "$xi - $xf -> if(strtotime($xi) >= strtotime($iN) && strtotime($xi) < strtotime($iF) && 
 									strtotime($xf) < strtotime($iN) && 
 									strtotime($xf) > strtotime($iF))<BR>\n\n";
+
 								echo "$xi - $xf -> if(strtotime($xi) <= strtotime($iN) && strtotime($xi) < strtotime($iF) && 
 									strtotime($xf) > strtotime($iN) && 
 									strtotime($xf) > strtotime($iF))<BR>\n\n";
@@ -753,9 +775,11 @@
 									/*
 									echo "$xi - $xf -> if(strtotime($xi) >= strtotime($iN) && strtotime($xi) < strtotime($iF) && 
 										strtotime($xf) > strtotime($iN)\n\n";
+
 									echo "$xi - $xf -> if(strtotime($xi) >= strtotime($iN) && strtotime($xi) < strtotime($iF) && 
 										strtotime($xf) < strtotime($iN) && 
 										strtotime($xf) > strtotime($iF))<BR>\n\n";
+
 									echo "$xi - $xf -> if(strtotime($xi) <= strtotime($iN) && strtotime($xi) < strtotime($iF) && 
 										strtotime($xf) > strtotime($iN) && 
 										strtotime($xf) > strtotime($iF))<BR>\n\n";

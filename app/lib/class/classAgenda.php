@@ -35,7 +35,7 @@
 				if($id_profissional>0) $where.=" and profissionais like '%,$id_profissional,%'";
 				if($id_cadeira>0) $where.=" and id_cadeira = '$id_cadeira'";
 				$registros=array();
-				$sql->consult($_p."agenda","id,id_paciente,data,agenda_data,id_status,agenda_data_final",$where." order by data asc");
+				$sql->consult($_p."agenda","id,id_paciente,data,agenda_data,id_status,agenda_data_final,profissionais",$where." order by data asc");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$registros[]=$x;
 					$pacientesIds[]=$x->id_paciente;
@@ -101,7 +101,7 @@
 						}
 					}*/
 
-					$sql->consult($_p."pacientes_evolucoes","id_paciente","where data>='".$data." 00:00:00' and data<='".$data." 23:59:59' and id_paciente IN (".implode(",",$pacientesIds).") and id_tipo=9 and lixo=0");
+					$sql->consult($_p."pacientes_evolucoes","id_paciente","where data>='".$data." 00:00:00' and data<='".$data." 23:59:59' and id_paciente IN (".implode(",",$pacientesIds).") and id_tipo IN (2,9) and lixo=0");
 					if($sql->rows) {
 						while($x=mysqli_fetch_object($sql->mysqry)) {
 							$_pacientesProntuario[$x->id_paciente]=$x;

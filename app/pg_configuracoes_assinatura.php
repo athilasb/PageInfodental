@@ -318,13 +318,13 @@
 				$attr=array('email'=>$infoConta->email,
 							'name'=>$infoConta->tipo=="PF"?utf8_encode($infoConta->responsavel):utf8_encode($infoConta->razao_social),
 							'cpf_cnpj'=>$infoConta->tipo=="PF"?utf8_encode($infoConta->cpf):utf8_encode($infoConta->cnpj),
-							'zip_code'=>$infoConta->cep,
+							/*'zip_code'=>$infoConta->cep,
 							'number'=>$infoConta->numero,
 							'street'=>utf8_encode($infoConta->logradouro),
 							'state'=>utf8_encode($infoConta->estado),
 							'city'=>utf8_encode($infoConta->cidade),
 							'district'=>utf8_encode($infoConta->bairro),
-							'complement'=>utf8_encode($infoConta->complemento)
+							'complement'=>utf8_encode($infoConta->complemento)*/
 							);
 
 				// se não possui cadastro na iugu
@@ -350,7 +350,6 @@
 				}
 			
 			# Assinatura do Plano
-
 				// se nao possui assinatura
 				if(empty($infoConta->iugu_subscription_id)) {
 
