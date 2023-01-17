@@ -13,5 +13,5 @@
 	<a href="pg_configuracoes_fornecedores.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesFornecedor)?' class="active"':'';?>>Fornecedores</a>
 	<a href="pg_configuracoes_financeiro_bancosecontas.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesFinanceiro)?' class="active"':'';?>>Financeiro</a>
 	<a href="pg_configuracoes_assinatura.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesAssinatura)?' class="active"':'';?>>Assinatura</a>
-	<a href="pg_configuracoes_avaliacao.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesAvaliacao)?' class="active"':'';?>>Avaliação</a>
+	<!--<a href="pg_configuracoes_avaliacao.php"<?#php echo in_array(basename($_SERVER['PHP_SELF']),$pagesAvaliacao)?' class="active"':'';?>>Avaliação</a> -->
 </section>

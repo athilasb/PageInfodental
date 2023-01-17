@@ -2722,8 +2722,6 @@
 		die();
 	}
 
-	var_dump($apiConfig);
-
 	# JS All Asides
 ?>
 	<script type="text/javascript" src="js/aside.funcoes.js"></script>

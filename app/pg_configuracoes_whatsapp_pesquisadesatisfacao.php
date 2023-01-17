@@ -5,7 +5,7 @@
 	$_table=$_p."avaliacoes_habilitadas";
 
 	$_avaliacoes = array();
-	$sql->consult("infodentalADM.infod_avaliacoes_tipos","*","where lixo=0") ;
+	$sql->consult("infodentalADM.infod_pesquisadesatisfacao_tipos","*","where lixo=0") ;
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_avaliacoes[$x->id]=$x;
 	}
@@ -48,9 +48,9 @@
 	$campos=explode(",","id_tipo,pub");
 
 	foreach($_avaliacoes as $x) {
-		$sql->consult($_p."avaliacoes_habilitadas","*","WHERE id_tipo='".$x->id."'");
+		$sql->consult($_p."pesquisadesatisfacao_habilitadas","*","WHERE id_tipo='".$x->id."'");
 		if($sql->rows==0) {
-			$sql->add($_p."avaliacoes_habilitadas","id_tipo='".$x->id."',pub=1");
+			$sql->add($_p."pesquisadesatisfacao_habilitadas","id_tipo='".$x->id."',pub=1");
 		}
 	}
 
@@ -63,7 +63,7 @@
 					<h1>Configuração</h1>
 				</section>
 				<?php
-				require_once("includes/menus/menuConfiguracoes.php");
+				require_once("includes/menus/menuWhatsapp.php");
 				?>
 			</div>
 		</div>
@@ -85,7 +85,7 @@
 				<div class="box box-col">
 
 					<?php
-					require_once("includes/submenus/subConfiguracoesAvaliacao.php");
+					require_once("includes/submenus/subConfiguracoesWhatsapp.php");
 					?>
 					<script type="text/javascript">
 						
@@ -123,7 +123,7 @@
 						<div class="list1">
 							<table>
 								<?php 
-									$sql->consult($_p."avaliacoes_habilitadas","*","");
+									$sql->consult($_p."pesquisadesatisfacao_habilitadas","*","");
 									while($x=mysqli_fetch_object($sql->mysqry)) {
 								?>
 								<tr>

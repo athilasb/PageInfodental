@@ -31,11 +31,11 @@
 												'title'=>'Landing Page',
 												'icon'=>'<i class="iconify" data-icon="dashicons:admin-site-alt3"></i>'),
 						'configuracoes'=>array('page'=>'pg_configuracoes_clinica_colaboradores.php',
-												'pages'=>explode(",","pg,pg_configuracoes_clinica.php,pg_configuracoes_clinica_colaboradores.php,pg_configuracoes_clinica_cadeiras.php,pg_configuracoes_evolucao_anamnese.php,pg_configuracoes_evolucao_procedimentos.php,pg_configuracoes_evolucao_servicosdelaboratorio.php,pg_configuracoes_evolucao_examecomplementar.php,pg_configuracoes_fornecedores.php,pg_configuracoes_fornecedores_produtos.php,pg_configuracoes_financeiro_bancosecontas.php,pg_configuracoes_financeiro_cartoes.php,pg_configuracoes_pagamentos.php,pg_configuracoes_evolucao_documentos.php"),
+												'pages'=>explode(",","pg_configuracoes_clinica.php,pg_configuracoes_clinica_colaboradores.php,pg_configuracoes_clinica_cadeiras.php,pg_configuracoes_evolucao_anamnese.php,pg_configuracoes_evolucao_procedimentos.php,pg_configuracoes_evolucao_servicosdelaboratorio.php,pg_configuracoes_evolucao_examecomplementar.php,pg_configuracoes_fornecedores.php,pg_configuracoes_fornecedores_produtos.php,pg_configuracoes_financeiro_bancosecontas.php,pg_configuracoes_financeiro_cartoes.php,pg_configuracoes_pagamentos.php,pg_configuracoes_evolucao_documentos.php"),
 												'title'=>'Configurações',
 												'icon'=>'<i class="iconify" data-icon="fluent:settings-20-regular"></i>'),
 						'whatsapp'=>array('page'=>'pg_configuracoes_whatsapp.php',
-												'pages'=>explode(",","pg_configuracoes_whatsapp.php"),
+												'pages'=>explode(",","pg_configuracoes_whatsapp.php,pg_configuracoes_whatsapp_pesquisadesatisfacao.php"),
 												'title'=>'Whatsapp',
 												'icon'=>'<i class="iconify" data-icon="la:whatsapp"></i>')
 						
