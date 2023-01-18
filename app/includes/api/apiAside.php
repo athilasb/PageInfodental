@@ -9,7 +9,7 @@
 
 
 		$attr=array('prefixo'=>$_p,'usr'=>$usr);
-		$wts = new Whatsapp($attr);
+		$infozap = new Whatsapp($attr);
 
 		$rtn = array();
 
@@ -19,6 +19,7 @@
 		$_tablePacientes=$_p."pacientes";
 		$_tableProfissoes=$_p."parametros_profissoes";
 		$_tableListaPersonalizada=$_p."parametros_indicacoes";
+		$_tableTags=$_p."parametros_tags";
 
 		# Agenda
 			if($_POST['ajax']=="agendamentosProfissionais") {
@@ -29,6 +30,12 @@
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					if($x->lixo==0) $_profissionais[$x->id]=$x;
 					$_profissionaisTodos[$x->id]=$x;
+				}
+
+				$_tags=array();
+				$sql->consult($_p."parametros_tags","*","WHERE lixo=0 order by titulo asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_tags[$x->id]=$x;
 				}
 				
 				$data = (isset($_POST['data']) and isset($_POST['data']))?invDate($_POST['data']):'';
@@ -70,7 +77,8 @@
 
 					$rtn=array('success'=>true,
 								'listaProfissionaisDestaque'=>$listaProfissionaisDestaque,
-								'listaProfissionais'=>$listaProfissionais);
+								'listaProfissionais'=>$listaProfissionais,
+								'tags' => $_tags);
 
 
 				}
@@ -100,11 +108,20 @@
 					$rtn=array('success'=>false,'error'=>'Paciente não encontrado!');
 				} else {
 					$profissionais='';
+					$profissionaisID=array(-1);
 					if(!empty($cnt->profissionais)) {
 						$profissioaisObj=explode(",",$cnt->profissionais);
-						$profissionaisID=array(-1);
 						foreach($profissioaisObj as $v) {
 							if(!empty($v) and is_numeric($v)) $profissionaisID[]=$v;
+						}
+					}
+
+					$tags='';
+					$tagsID=array(-1);
+					if(!empty($cnt->tags)) {
+						$tagsObj=explode(",",$cnt->tags);
+						foreach($tagsObj as $v) {
+							if(!empty($v) and is_numeric($v)) $tagsID[]=$v;
 						}
 					}
 
@@ -118,6 +135,7 @@
 										'id_status'=>$cnt->id_status,
 										'id_cadeira'=>$cnt->id_cadeira,
 										'profissionais'=>$profissionaisID,
+										'tags'=>$tagsID,
 										'obs'=>addslashes(utf8_encode($cnt->obs)));
 
 					} else {
@@ -155,7 +173,20 @@
 										$profissionais[]=array('iniciais'=>$iniciais,'cor'=>$cor);
 									}
 								}
+							}
 
+							$aux = explode(",",$x->tags);
+							$tags=array();
+							foreach($aux as $id_tag) {
+								if(!empty($id_tag) and is_numeric($id_tag)) {
+
+									if(isset($_tags[$id_tag])) {
+										$cor=$_tags[$id_tag]->cor;
+										$titulo=utf8_encode($_profissionais[$id_tag]->titulo);
+
+										$tags[]=array('titulo'=>$titulo,'cor'=>$cor);
+									}
+								}
 							}
 
 							$_pacientesAgendamentos[$x->id_paciente][]=array('id_agenda'=>$x->id,
@@ -163,7 +194,8 @@
 																				'data'=>date('d/m/Y H:i',strtotime($x->agenda_data)),
 																				'initDate'=>date('d/m/Y',strtotime($x->agenda_data)),
 																				'cadeira'=>isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'',
-																				'profissionais'=>$profissionais);
+																				'profissionais'=>$profissionais,
+																				'tags'=>$tags);
 						}
 
 					
@@ -232,6 +264,7 @@
 										'musica'=>utf8_encode($paciente->musica),
 										'periodicidade'=>isset($_pacientesPeriodicidade[$paciente->periodicidade])?$_pacientesPeriodicidade[$paciente->periodicidade]:$paciente->periodicidade,
 										'profissionais'=>$profissionaisID,
+										'tags'=>$tagsID,
 										'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):"",
 										'obs'=>addslashes(utf8_encode($cnt->obs)),
 										'agendamentosFuturos'=>$agendamentosFuturos,
@@ -406,6 +439,14 @@
 					}
 				}
 
+				$tags=array();
+				if(isset($_POST['tags']) and !empty($_POST['tags'])) {
+					$pAux=explode(",",$_POST['tags']);
+					foreach($pAux as $id_tag) {
+						if(is_numeric($id_tag)) $tags[]=$id_tag;
+					}
+				}
+
 				$cadeira='';
 				if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
 					$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."' and lixo=0");
@@ -494,7 +535,7 @@
 							agenda_data_final='".date('Y-m-d H:i:s',strtotime($agendaData." + $duracao minutes"))."'
 								";
 
-
+						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags).",'";
 
 						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
 
@@ -1787,13 +1828,13 @@
 
 					$attr=array('id_tipo'=>4,
 								'id_paciente'=>$paciente->id);
-					if($wts->adicionaNaFila($attr)) {
+					if($infozap->adicionaNaFila($attr)) {
 
 						
 
 						$rtn=array('success'=>true);
 					} else {
-						$rtn=array('success'=>false,'error'=>$wts->erro);
+						$rtn=array('success'=>false,'error'=>$infozap->erro);
 					}
 
 				}
@@ -1803,11 +1844,11 @@
 				}
 			}
 			else if($_POST['ajax']=="asRelacionamentoPacienteDisparaWhatsapp") {
-				if($wts->dispara()) {
+				if($infozap->dispara()) {
 
 					$rtn=array('success'=>true);
 				} else {
-					$rtn=array('success'=>false,'error'=>$wts->erro); 
+					$rtn=array('success'=>false,'error'=>$infozap->erro); 
 				}
 			}
 			else if($_POST['ajax']=="asRelacionamentoPacienteExcluir") {
@@ -2631,7 +2672,26 @@
 				}
 			}
 
+		# Tags
+			else if($_POST['ajax']=="asTagPersistir") {
 
+				$titulo=isset($_POST['titulo'])?addslashes(utf8_decode($_POST['titulo'])):'';
+				$cor=isset($_POST['cor'])?addslashes($_POST['cor']):'';
+
+				if(empty($titulo)) $rtn=array('success'=>false,'error'=>'Preencha o título da Tag!');
+				else {
+
+					$vSQL="titulo='$titulo',cor='$cor'";
+					$sql->add($_tableTags,$vSQL);
+					$id_tag=$sql->ulid;
+					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='',tabela='".$_tableTags."',id_reg='$id_tag'");
+				
+					$rtn=array('success'=>true,
+								'id_tag'=>$id_tag,
+								'titulo'=>utf8_encode($titulo));
+				}
+
+			}
 
 		header("Content-type: application/json");
 		echo json_encode($rtn);
@@ -2871,6 +2931,7 @@
 												$('#js-aside-edit textarea[name=obs]').val(rtn.data.obs);
 												$('#js-aside-edit select[name=id_status]').val(rtn.data.id_status)
 												$('#js-aside-edit .js-profissionais').trigger('chosen:updated'); 
+												$('#js-aside-edit .js-tags').trigger('chosen:updated'); 
 												if(rtn.data.agendou_dias>1) $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou há ${rtn.data.agendou_dias} dia(s)`);
 												else $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou hoje`);
 
@@ -2884,10 +2945,17 @@
 												}
 
 												$('#js-aside-edit .js-profissionais').find(':selected').prop('selected',false);
+												$('#js-aside-edit .js-tags').find(':selected').prop('selected',false);
 
 												if(rtn.data.profissionais) {
 													rtn.data.profissionais.forEach(idProfissional=> {
 														$('#js-aside-edit .js-profissionais').find(`[value=${idProfissional}]`).prop('selected',true);
+													})
+												}
+
+												if(rtn.data.tags) {
+													rtn.data.tags.forEach(idTag=> {
+														$('#js-aside-edit .js-tags').find(`[value=${idTag}]`).prop('selected',true);
 													})
 												}
 
@@ -2947,6 +3015,10 @@
 												$("#js-aside-edit").fadeIn(100,function() {
 													$('#js-aside-edit .js-profissionais').chosen('destroy');
 													setTimeout(function(){$('#js-aside-edit .js-profissionais').chosen();},100);
+
+													$('#js-aside-edit .js-tags').chosen('destroy');
+													setTimeout(function(){$('#js-aside-edit .js-tags').chosen();},100);
+
 													$("#js-aside-edit .aside__inner1").addClass("active");
 													$("#js-aside-edit .js-tab a:eq(0)").click();
 												});
@@ -2955,7 +3027,7 @@
 												$('#js-aside-edit input[name=agenda_data]').trigger('change');
 
 												$('#js-aside-edit .js-profissionais').trigger('chosen:updated');
-
+												$('#js-aside-edit .js-tags').trigger('chosen:updated');
 
 												$('#js-aside-edit .js-salvar').show();
 
@@ -3089,6 +3161,22 @@
 
 												aside.find('.js-profissionais').trigger('chosen:updated');
 											}
+
+											if(rtn.tags && rtn.tags.length>0) {
+												aside.find('.js-tags option').remove();
+
+												options = ``;
+												rtn.tags.forEach(x=>{
+													let titulo = x.titulo;
+
+													sel = $.inArray(x.id,tags)>=0?' selected':'';
+													
+													options+=`<option value="${x.id}"${sel}>${titulo}</option>`;
+													aside.find('.js-tags').append(`<optgroup label="">${options}</optgroup>`);
+													
+												})
+												aside.find('.js-tags').trigger('chosen:updated');
+											}
 										}
 									}
 								})
@@ -3147,6 +3235,7 @@
 													$('#js-aside-add select[name=id_paciente]').val('').trigger('change.select2');
 
 													$('#js-aside-add select.js-profissionais').val('').trigger('chosen:updated');
+													$('#js-aside-add select.js-tags').val('').trigger('chosen:updated');
 													$('#js-aside-add input,#js-aside-add textarea').val('');
 													$('#js-aside-add input[name=agenda_duracao]').val('');
 
@@ -3338,6 +3427,21 @@
 									</dd>
 								</dl>
 							</div>
+							<dl>
+								<dt>Tags</dt>
+								<dd>
+									<select class="js-tags" multiple>
+										<option value=""></option>
+										<?php
+											foreach($_tags as $p) {
+												echo '<option value="'.$p->id.'">'.utf8_encode($p->titulo).'</option>';
+											}
+											?>
+									</select>
+
+									<a  href="javascript:;" class="js-btn-aside button" data-aside="tag" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a> 
+								</dd>
+							</dl>
 							<dl>
 								<dt>Informações</dt>
 								<dd><textarea name="obs" style="height:100px;"></textarea></dd>
@@ -3726,8 +3830,9 @@
 										
 										let campos = $('#js-aside-edit form').serialize();
 										let profissionais = $('#js-aside-edit .js-profissionais').val();
+										let tags = $('#js-aside-edit .js-tags').val();
 
-										let data = `ajax=agendamentoPersistir&profissionais=${profissionais}&${campos}`;
+										let data = `ajax=agendamentoPersistir&profissionais=${profissionais}&tags=${tags}&${campos}`;
 										
 										let abrirProximaConsulta = 0;
 										if($('#js-aside-edit input[name=id_status_antigo]').val()!=$('#js-aside-edit select[name=id_status]').val() && $('#js-aside-edit select[name=id_status]').val()==5) {
@@ -3947,6 +4052,23 @@
 												}
 												?>
 											</select>
+										</dd>
+									</dl>
+								</div>
+								<div>
+									<dl>
+										<dt>Tags</dt>
+										<dd>
+											<select class="js-tags" multiple>
+												<option value=""></option>
+												<?php
+													foreach($_tags as $p) {
+														echo '<option value="'.$p->id.'">'.utf8_encode($p->titulo).'</option>';
+													}
+													?>
+											</select>
+
+											<a  href="javascript:;" class="js-btn-aside button" data-aside="tag" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
 										</dd>
 									</dl>
 								</div>
@@ -4882,8 +5004,52 @@
 							}
 						})
 
+						$('.js-asTag-submit').click(function(){
+							let obj = $(this);
+							if(obj.attr('data-loading')==0) {
 
+								let titulo = $(`.js-asTag-titulo`).val();
+								let cor = $(`.js-asTag-cor`).val();
 
+								if(titulo.length==0) {
+									swal({title: "Erro!", text: "Digite o Título da Tag", type:"error", confirmButtonColor: "#424242"});
+									$('.js-asTag-titulo').addClass('erro');
+								} else {
+									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+									obj.attr('data-loading',1);
+
+									let data = `ajax=asTagPersistir&titulo=${titulo}&cor=${cor}`;
+
+									$.ajax({
+										type:'POST',
+										data:data,
+										url:baseURLApiAside,
+										success:function(rtn) {
+											if(rtn.success) {
+
+												$(`.js-asTag-titulo`).val(``);
+
+												$('.js-tags').append(`<option value="${rtn.id_tag}" selected>${rtn.titulo}</option>`);
+												$('.js-tags').trigger('chosen:updated');
+												$('.aside-tag .aside-close').click();
+
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+											}
+											
+										},
+										error:function() {
+											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										} 
+									}).done(function(){
+										obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+										obj.attr('data-loading',0);
+									});
+								}
+							}
+						});
 					});
 				</script>
 
@@ -4999,6 +5165,45 @@
 									</dd>
 								</dl>
 							</div>
+						</form>
+					</div>
+				</section>
+
+				<!-- Aside Tag -->
+				<section class="aside aside-tag">
+					<div class="aside__inner1">
+
+						<header class="aside-header">
+							<h1>Nova Tag</h1>
+							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+						</header>
+
+						<form method="post" class="aside-content form js-asTag-form">
+
+							<section class="filter" style="margin-bottom:0;">
+								<div class="filter-group"></div>
+								<div class="filter-group">
+									<div class="filter-form form">
+										<dl>
+											<dd><button type="button" class="button button_main js-asTag-submit" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+										</dl>
+									</div>								
+								</div>
+							</section>
+
+							<div class="colunas4">
+								<dl class="dl3">
+									<dt>Título</dt>
+									<dd>
+										<input type="text" class="js-asTag-titulo" />
+									</dd>
+								</dl>
+								<dl>
+									<dt>Cor</dt>
+									<dd><input type="color" class="js-asTag-cor" value="#c18c6a" /></dd>
+								</dl>
+							</div>
+
 						</form>
 					</div>
 				</section>
@@ -5726,7 +5931,7 @@
 									<dl>
 										<dt>Mensagem</dt>
 										<dd>
-											<textarea style="height: 250px;" disabled><?php echo $wts->texto;?></textarea>
+											<textarea style="height: 250px;" disabled><?php echo $infozap->texto;?></textarea>
 										</dd>
 									</dl>
 
