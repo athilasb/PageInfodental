@@ -4067,14 +4067,18 @@
 								<div>
 									<dl>
 										<dt>Tags</dt>
-										<select class="js-tags" multiple>
-											<option value=""></option>
-											<?php
-												foreach($_tags as $p) {
-													echo '<option value="'.$p->id.'">'.utf8_encode($p->titulo).'</option>';
-												}
-												?>
-										</select>
+										<dd>
+											<select class="js-tags" multiple>
+												<option value=""></option>
+												<?php
+													foreach($_tags as $p) {
+														echo '<option value="'.$p->id.'">'.utf8_encode($p->titulo).'</option>';
+													}
+													?>
+											</select>
+
+											<a  href="javascript:;" class="js-btn-aside button" data-aside="tag" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
+										</dd>
 									</dl>
 								</div>
 								<dl>
