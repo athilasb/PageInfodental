@@ -337,7 +337,7 @@
 													})
 												</script>
 												<dl>
-													<dt>Inscrição Estadual</dt>
+													<dt>Inscrição Municipal</dt>
 													<dd><input type="text" name="inscricao_estadual" value="<?php echo $values['inscricao_estadual'];?>" class="" /></dd>
 												</dl>
 											</div>

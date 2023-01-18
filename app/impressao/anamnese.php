@@ -48,8 +48,11 @@
 		die();
 	}
 
-
-	$idade=idade($paciente->data_nascimento);
+	if($paciente->data_nascimento !="0000-00-00"){
+		$idade=idade($paciente->data_nascimento);	
+	}else{
+		$idade = "";
+	}
 
 
 
@@ -66,8 +69,8 @@
 			<td colspan="3"><strong><?php echo utf8_encode($paciente->nome);?></strong></td>
 		</tr>
 		<tr>
-			<td><?php echo $idade>1?"$idade anos":"$idade ano";?></td>
-			<td><?php echo $paciente->sexo=="M"?"Masculino":"Feminino";?></td>
+			<td><?php echo $idade>1?"$idade anos":"$idade";?></td>
+			<td><?php echo $paciente->sexo=="M"?"Masculino":$paciente->sexo=="F"?"Feminino":'';?></td>
 			<td style="text-align:right;"><span class="iconify" data-icon="bxs:phone" data-inline="true"></span> <?php echo maskTelefone($paciente->telefone1);?></td>
 		</tr>
 	</table>
