@@ -427,7 +427,9 @@
 							$aux = explode(" ",$_GET['busca']);
 
 							foreach($aux as $v) {
-								$wh.="(nome REGEXP '$v' or razao_social REGEXP '$v' ) and ";
+								if(strlen($v)>0){
+									$wh.="(nome REGEXP '$v' or razao_social REGEXP '$v' ) and ";
+								}
 							}
 							$wh=substr($wh,0,strlen($wh)-5);
 							$where="where ($wh) and lixo=0";

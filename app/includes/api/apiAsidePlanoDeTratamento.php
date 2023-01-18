@@ -704,7 +704,6 @@
 		pagamentosListar();
 
 		$('.js-pagamentos').on('change','.js-vencimento:eq(0)',function(){
-			//console.log(pagamentos);
 			//atualizaValor(true);
 
 			let pagamento = $('input[name=pagamento]:checked').val();
@@ -771,85 +770,105 @@
 
 		// clica no botao de aplicar desconto na janela de desconto
 		$('.aside-plano-desconto .js-btn-aplicarDesconto').click(function(){
+			console.log(procedimentos)
+			console.log("-------------------------------")
 			let tipoDesconto = $('.aside-plano-desconto .js-select-tipoDesconto').val();
 			let quantidadeDesconto = $('.aside-plano-desconto .js-desconto-procedimento:checked').length;
 			let desconto = unMoney($(`.aside-plano-desconto .js-input-desconto`).val());
+			let valorOriginal = unMoney($(`.js-total-procedimentos`).val())
 
 			if(quantidadeDesconto==0) {
 				swal({title: "Erro", text: 'Selecione pelo menos um procedimento para aplicar desconto!', html:true, type:"error", confirmButtonColor: "#424242"});
-			} else if(desconto==0 || desconto===undefined || desconto==='' || !desconto) {
+			} 
+			else if(desconto==0 || desconto===undefined || desconto==='' || !desconto) {
 				swal({title: "Erro", text: 'Defina o desconto que deverá ser aplicado!', html:true, type:"error", confirmButtonColor: "#424242"});
-			} else {
+			} 
+			else {
 				let valorTotal = 0;
 				let cont = 0;
 				let qtdItensDesconto = 0;
-
+				let valorItens =[]
+				let percItens =[]
+				if(tipoDesconto!="dinheiro") {
+					desconto = $(`.aside-plano-desconto .js-input-desconto`).val();
+					desconto = ((parseFloat(desconto.replace('%',"")))/100)*valorOriginal;
+				}
 				procedimentos.forEach(x=>{
-					if(x.situacao!="naoAprovado" && x.situacao!="observado") {
+					if(x.situacao=="aprovado") {
 						if($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked')===true) {
 							valorTotal+=eval(x.valorCorrigido);
 							//console.log(cont+' '+x.situacao+'->'+x.valorCorrigido);
 							qtdItensDesconto++;
+							valorItens[cont] = x.valor;
+							percItens[cont] = x.valor/valorOriginal
+
+							if(x.quantitativo>0){
+								valorItens[cont] = (x.quantidade*x.valor);
+								percItens[cont] = (x.quantidade*x.valor)/valorOriginal
+							}
+							else if(x.face==1){
+								valorItens[cont] = (x.faces.length*x.valor);
+								percItens[cont] = (x.faces.length*x.valor)/valorOriginal
+							}
+							else if(x.id_regiao==5){
+								valorItens[cont] = (x.hof*x.valor);
+								percItens[cont] = (x.hof*x.valor)/valorOriginal;
+							}
 						}
 						cont++;
 					}
 				});
-
-				if(tipoDesconto!="dinheiro") {
-					desconto = unMoney($(`.aside-plano-desconto .js-input-desconto`).val().replace('.',','));
-					//console.log(`(${valorTotal}*(${desconto}/100))`);
-					desconto = (valorTotal*(desconto/100)).toFixed(2);
-				}
+				
 
 				// calcula percentual do desconto em cima do valor total
-				let descontoParcentual = ((desconto/valorTotal)*100).toFixed(4);
+				//let descontoParcentual = ((desconto/valorTotal)*100).toFixed(4);
 				
 				if(desconto==0 || desconto===undefined || desconto==='' || !desconto) {
 					swal({title: "Erro", text: 'Defina o desconto que deverá ser aplicado!', html:true, type:"error", confirmButtonColor: "#424242"});
 					$(`.aside-plano-desconto .js-input-desconto`).addClass('erro');
-				} else {
+				} 
+				else {
 					let cont = 0;
 					let contProcedimento = 0;
+				
 					procedimentos.forEach(x=>{
-
 						if(x.situacao=="aprovado") {
-
 							if($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked')===true) {
+								let descontoAplicar = desconto*percItens[cont]
 								let desc = 0;
-
 								if(x.desconto>0) {
+									//valorProc=procedimentos[contProcedimento].valorCorrigido;
+									descontoAplicar = descontoAplicar+procedimentos[contProcedimento].desconto
+								} else {
+									descontoAplicar=descontoAplicar
+								}
+								/*
+									if(procedimentos[contProcedimento].face==1) {
+										valorProc*= procedimentos[contProcedimento].faces.length;
+									} else if(procedimentos[contProcedimento].quantitativo==1) {
+										valorProc*=procedimentos[contProcedimento].quantidade;
+									} else if(procedimentos[contProcedimento].id_regiao==5) {
+										valorProc*=procedimentos[contProcedimento].hof;
+									}
+
+									//equivalente = (valorProc/valorTotal).toFixed(8);
+									//equivalente = 12
+									//descontoAplicar = desconto*equivalente;
+										if(procedimentos[contProcedimento].desconto && $.isNumeric(procedimentos[contProcedimento].desconto)) {
+											desc=procedimentos[contProcedimento].desconto+descontoAplicar;
+										} else {
+											desc=descontoAplicar;
+										}
 									valorProc=procedimentos[contProcedimento].valorCorrigido;
-								} else {
-									valorProc=procedimentos[contProcedimento].valor;
-								}
-
-								if(procedimentos[contProcedimento].face==1) {
-									valorProc*=procedimentos[contProcedimento].faces.length;
-
-								} else if(procedimentos[contProcedimento].quantitativo==1) {
-									valorProc*=procedimentos[contProcedimento].quantidade;
-								} else if(procedimentos[contProcedimento].id_regiao==5) {
-									valorProc*=procedimentos[contProcedimento].hof;
-								}
-
-								equivalente = (valorProc/valorTotal).toFixed(8);
-								descontoAplicar = desconto*equivalente;
-
-								if(procedimentos[contProcedimento].desconto && $.isNumeric(procedimentos[contProcedimento].desconto)) {
-									desc=procedimentos[contProcedimento].desconto+descontoAplicar;
-								} else {
-									desc=descontoAplicar;
-								}
-
-								valorProc=procedimentos[contProcedimento].valorCorrigido;
-								if(eval(x.quantitativo)==1) {
-									//procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
-									procedimentos[contProcedimento].desconto=desc;///eval(x.quantidade);
-								} else {
-
-									//procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
-									procedimentos[contProcedimento].desconto=desc
-								}
+									if(eval(x.quantitativo)==1) {
+										//procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
+										procedimentos[contProcedimento].desconto=desc;///eval(x.quantidade);
+									} else {
+										//procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
+										procedimentos[contProcedimento].desconto=desc
+									}
+								*/
+								procedimentos[contProcedimento].desconto=descontoAplicar
 							}
 							cont++;
 						}
@@ -1358,15 +1377,16 @@
 
 		// quando seleciona a regiao 5 (hof)
 		$('.aside-plano-procedimento-adicionar select.js-regiao-5-select').change(function(){
-	
+			$('.aside-plano-procedimento-adicionar .js-fieldset-hof').html("")
 			$('.aside-plano-procedimento-adicionar .js-fieldset-hof').show();
-
 			let cont = 0;
 			let selectRegiao5 = $(this);
+			let regioesAtivas=[]
 			selectRegiao5.find('option:selected').each(function(index,el) {
 				let id_regiao = $(el).val();
 				let regiao = $(el).text();
-
+				regioesAtivas[id_regiao] = regiao;
+				/*
 				if($('.aside-plano-procedimento-adicionar .js-fieldset-hof .js-hof-'+id_regiao).length>0) {
 					$('.aside-plano-procedimento-adicionar .js-fieldset-hof .js-hof-'+id_regiao).show();
 				} else {
@@ -1377,7 +1397,20 @@
 																							</dd>
 																						</dl>`);
 				}
+				*/
 			})
+			if(regioesAtivas.length>0){
+				for(let i in regioesAtivas){
+					$('.aside-plano-procedimento-adicionar .js-fieldset-hof').append(`<dl class="js-hofs js-hof-${i}">
+																							<dt>${regioesAtivas[i]}</dt>
+																							<dd>
+																								<input type="text" class="js-input-hofs js-hof-${i}-input" style="width:80px;" maxlength="2" /> unidade(s)
+																							</dd>
+																						</dl>`);
+				}
+			}else{
+				$('.aside-plano-procedimento-adicionar .js-fieldset-hof').hide();
+			}
 		});
 
 		$('.aside-plano-procedimento-adicionar').on('keyup','.js-input-hofs',function(){

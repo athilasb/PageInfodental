@@ -30,8 +30,6 @@
 	if(isset($_POST['ajax'])) {
 
 		$rtn=array();
-		
-
 		/*if($_POST['ajax']=="remover") {
 			$cnt = '';
 			if(isset($_POST['id']) and is_numeric($_POST['id'])) {
@@ -55,7 +53,6 @@
 
 			}
 		} 
-
 		else if($_POST['ajax']=="persistirPaciente") {
 
 			$nome=(isset($_POST['nome']) and !empty($_POST['nome']))?$_POST['nome']:'';
@@ -98,7 +95,6 @@
 				}
 			}
 		} 
-
 		else if($_POST['ajax']=="persistirPacienteTelefone") {
 
 			$paciente='';
@@ -131,8 +127,8 @@
 				
 			}
 		} 
-
-		else */if($_POST['ajax']=="indicacoesLista") {
+		else */
+		if($_POST['ajax']=="indicacoesLista") {
 
 			$indicacao='';
 			if(isset($_POST['indicacao_tipo']) and is_numeric($_POST['indicacao_tipo'])) {
@@ -212,7 +208,6 @@
 				$rtn=array('success'=>true);
 			}
 		} 
-
 		else if($_POST['ajax']=="persistirNovoHorario") {
 			$agenda='';
 			if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
@@ -263,11 +258,6 @@
 				$rtn=array('success'=>true);
 			}
 		}
-
-		
-
-		
-
 		else if($_POST['ajax']=="agendamentoPessoalPersistir") {
 			
 			$profissional='';
@@ -363,13 +353,11 @@
 				
 			}
 		}
-
 		else if($_POST['ajax']=="whatsappDisparar") {
 
 			$infozap->dispara();
 			$rtn=array('success'=>true);
 		}
-
 		else if($_POST['ajax']=="atualizaFoto") {
 
 
@@ -1304,6 +1292,7 @@
 		});
 	</script>
 
+ 	<!-- STYLE  -->
 	<style>
 		body {background:#fff;}
 		/*the container must be positioned relative:*/
@@ -1410,14 +1399,14 @@
 		<div class="main__content content">
 			
 			<?php
-			require_once("includes/filter/filterAgenda.php");
+				require_once("includes/filter/filterAgenda.php");
 
-			$filtro='';
+				$filtro='';
 
-			if(isset($values['id_status']) and isset($_status[$values['id_status']])) $filtro.="&id_status=".$values['id_status'];
-			//if(isset($values['id_profissional']) and isset($_profissionais[$values['id_profissional']])) $filtro.="&id_profissional=".$values['id_profissional'];
-			//if(isset($values['id_cadeira']) and isset($_cadeiras[$values['id_cadeira']])) $filtro.="&id_cadeira=".$values['id_cadeira'];
-			if(isset($values['busca']) and !empty($values['busca'])) $filtro.="&busca=".$values['busca'];
+				if(isset($values['id_status']) and isset($_status[$values['id_status']])) $filtro.="&id_status=".$values['id_status'];
+				//if(isset($values['id_profissional']) and isset($_profissionais[$values['id_profissional']])) $filtro.="&id_profissional=".$values['id_profissional'];
+				//if(isset($values['id_cadeira']) and isset($_cadeiras[$values['id_cadeira']])) $filtro.="&id_cadeira=".$values['id_cadeira'];
+				if(isset($values['busca']) and !empty($values['busca'])) $filtro.="&busca=".$values['busca'];
 			?>
 
 			<section class="grid">

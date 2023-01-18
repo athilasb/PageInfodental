@@ -1,6 +1,5 @@
 <?php
 	if(isset($_POST['ajax'])) {
-
 		$dir="../../";
 		require_once("../../lib/conf.php");
 		require_once("../../usuarios/checa.php");
@@ -1387,8 +1386,606 @@
 				$rtn=array('success'=>true,
 							'procedimentos'=>$procedimentos,
 							'id_profissional'=>$id_profissional);
+			}
+		# Próxima Consulta
+			else if($_POST['ajax']=="asRelacionamentoPacienteQueroAgendar") {
+				$erro='';
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","*","where id='".$_POST['id_paciente']."'");
+					if($sql->rows) { 
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$id_agenda_origem = (isset($_POST['id_agenda_origem']) and is_numeric($_POST['id_agenda_origem']))?$_POST['id_agenda_origem']:0;
+				
+				$agendaData='';
+				if(isset($_POST['agenda_data']) and !empty($_POST['agenda_data'])) {
+					list($dia,$mes,$ano)=explode("/",$_POST['agenda_data']);
+					if(checkdate($mes, $dia, $ano)) {
+						$agendaData=$ano."-".$mes."-".$dia;
+
+						if(isset($_POST['agenda_hora']) and !empty($_POST['agenda_hora']) and strlen($_POST['agenda_hora'])==5) {
+							$agendaData.=" ".$_POST['agenda_hora'];
+						}
+					}
+				}
+
+				$profissional='';
+				if(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional'])) {
+					$sql->consult($_p."colaboradores","id,nome","where id='".$_POST['id_profissional']."'");
+					if($sql->rows) {
+						$profissional=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$cadeira='';
+				if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
+					$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."' and lixo=0");
+					if($sql->rows) {
+						$cadeira=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$agenda_duracao='';
+				if(isset($_POST['agenda_duracao']) and is_numeric($_POST['agenda_duracao'])) {
+					$agenda_duracao=$_POST['agenda_duracao'];
+				}
+
+				$obs = (isset($_POST['obs']) and !empty($_POST['obs']))?addslashes(utf8_decode($_POST['obs'])):'';
+
+				if(empty($paciente)) $erro='Paciente não encontrado';
+				else if(empty($agendaData)) $erro='Data/horário não definidos';
+				else if(empty($profissional)) $erro='Profissional não encontrado';
+				else if(empty($cadeira)) $erro='Cadeira não encontrada!';
+				else if(empty($agenda_duracao)) $erro='Duração não definido!';
+
+				if(empty($erro)) {
+
+					$agendaFinal=date('Y-m-d H:i:s',strtotime($agendaData." + $agenda_duracao minutes"));
+					$idStatusNovo=1; // a confirmar
+
+					$vSQL="id_status=$idStatusNovo,
+							id_paciente=$paciente->id,
+							agenda_data='".$agendaData."',
+							agenda_data_original='".$agendaData."',
+							agenda_duracao='".$agenda_duracao."',
+							agenda_data_final='".$agendaFinal."',
+							id_cadeira='".$cadeira->id."',
+							obs='".$obs."',
+							data_atualizacao=now(),
+							data=now(),
+							id_usuario=$usr->id,
+							profissionais=',$profissional->id,'";
+
+					
+					$sql->consult($_p."agenda","id","where id_paciente=$paciente->id and 
+															agenda_data='".$agendaData."' and 
+															agenda_duracao='".$agenda_duracao."' and
+															id_cadeira='".$cadeira->id."' and 
+															lixo=0");
+					if($sql->rows==0) {
+						$sql->add($_p."agenda",$vSQL);
+						$id_agenda=$sql->ulid;
+
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$id_agenda."'");
+
+						$vSQLHistorico="data=now(),
+											id_usuario=$usr->id,
+											evento='agendaNovo',
+											id_paciente=".$paciente->id.",
+											id_agenda=$id_agenda,
+											id_agenda_origem=$id_agenda_origem,
+											id_status_antigo=0,
+											id_status_novo=".$idStatusNovo;
+						$sql->add($_p."pacientes_historico",$vSQLHistorico);
+						
+					}
+
+					$rtn=array('success'=>true);
+				} else {
+					$rtn=array('success'=>false,'error'=>$erro);
+				}
+			}
+			else if($_POST['ajax']=="asRelacionamentoPacienteHorarios") {
+			
+				$agenda = '';
+				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
+					$sql->consult($_p."agenda","*","where id='".$_POST['id_agenda']."'");
+					if($sql->rows) { 
+						$agenda=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$data = '';
+				if(isset($_POST['agenda_data']) and !empty($_POST['agenda_data'])) {
+					list($dia,$mes,$ano)=explode("/",$_POST['agenda_data']);
+					if(checkdate($mes, $dia, $ano)) { 
+						$data="$ano-$mes-$dia";
+						$dia=date('w',strtotime($data));
+					}
+	 			}
+
+	 			$profissional = '';
+	 			if(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional'])) {
+	 				$sql->consult($_p."colaboradores","*","where id='".$_POST['id_profissional']."'");
+	 				if($sql->rows) {
+	 					$profissional=mysqli_fetch_object($sql->mysqry);
+	 				}
+	 			}
+
+	 			$cadeira = '';
+	 			if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
+	 				$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."' and lixo=0");
+	 				if($sql->rows) {
+	 					$cadeira=mysqli_fetch_object($sql->mysqry);
+	 				}
+	 			}
+
+				$agenda_duracao = (isset($_POST['agenda_duracao']) and is_numeric($_POST['agenda_duracao']))?$_POST['agenda_duracao']:0;
+
+				if(is_object($agenda) or empty($agenda)) {
+					if(!empty($data)) {
+						if(is_object($profissional)) {
+							if(is_object($cadeira)) {
+
+								// verifica se o profissional atende nesta cadeira
+								$sql->consult($_p."profissionais_horarios","*","where id_profissional=$profissional->id and lixo=0");
+								if($sql->rows) {
+									while($x=mysqli_fetch_object($sql->mysqry)) {
+										$cadeiraHorarios[$x->id_cadeira][$x->dia][]=$x;
+									}
+								}
+
+								if(isset($cadeiraHorarios[$cadeira->id])) {
+
+									if(isset($cadeiraHorarios[$cadeira->id][$dia])) {
+
+										$dataInicio=$data." 07:00:00";	
+										$dataFim=$data." 23:59:59";
+
+										$dataInicio=$dataFim="";
 
 
+										// retorna o horario mais cedo e mais tarde que a cadeira tem disponibilidade
+										foreach($cadeiraHorarios[$cadeira->id][$dia] as $x) {
+											$dtI=$data." ".$x->inicio;
+											$dtF=$data." ".$x->fim;
+
+
+											if(empty($dataInicio) and empty($dataFim)) {
+												$dataInicio=$dtI;
+												$dataFim=$dtF;
+											} else {
+												if(strtotime($dataInicio)>strtotime($dtI)) {
+													$dataInicio=$dtI;
+												}
+
+
+												if(strtotime($dataFim)<strtotime($dtF)) {
+													$dataFim=$dtF;
+												}
+											}
+										}
+
+
+
+										//echo $dataInicio." - $dataFim -> $tempo\n\n";
+										$horariosDisponiveis=array();
+										$di=$dataInicio;
+
+
+
+										// fiz isso para checar de 1 em 1 minuto, mas na hora de rodar coloquei de 30 em 30 minutos
+										/*do {
+											$df=date('Y-m-d H:i:s',strtotime($di." + $agenda_duracao minutes"));
+
+											echo date('H:i',strtotime($di))." - ".date('H:i',strtotime($df))."\n";
+
+
+											$di=date('Y-m-d H:i:s',strtotime($di." + 1 minutes"));
+										} while(strtotime($df)<strtotime($dataFim));
+										die();*/
+
+
+
+										do {
+											
+											$df=date('Y-m-d H:i:s',strtotime($di." + $agenda_duracao minutes"));
+
+											
+											// nova condicao de intersessao captada na internet
+											$where="WHERE (agenda_data>='$data 00:00:00' and agenda_data<='$data 23:59:59') and 
+															(DATE_ADD(agenda_data, INTERVAL agenda_duracao MINUTE)>'$di' and agenda_data<'$df')";
+											//$where="WHERE (agenda_data>='$data 00:00:00' and agenda_data<='$data 23:59:59')";
+											$where.=" and profissionais like '%,$profissional->id,%' and id_status NOT IN (3,4) and lixo=0";
+											$sql->consult($_p."agenda","agenda_data,DATE_ADD(agenda_data, INTERVAL $agenda_duracao MINUTE) as agenda_data_fim,agenda_duracao",$where);
+											//echo $where."->".$sql->rows."\n";
+											//$x=mysqli_fetch_object($sql->mysqry);
+											//echo $x->agenda_data." - ".$x->agenda_data_fim." -> ".$x->agenda_duracao;die();
+											if($sql->rows==0) {
+												/*$where="WHERE (agenda_data>='$data 00:00:00' and agenda_data<='$data 23:59:59') and 
+															(
+																('$di'<=agenda_data && '$df'>=DATE_ADD(agenda_data, INTERVAL agenda_duracao MINUTE)) or 
+																('$di'>=agenda_data && '$df'<=DATE_ADD(agenda_data, INTERVAL agenda_duracao MINUTE)) or 
+																('$di'<=agenda_data && '$df'>agenda_data && '$df'<=DATE_ADD(agenda_data, INTERVAL agenda_duracao MINUTE))
+															)";
+
+												$where.=" and id_cadeira=$cadeira->id and id_status NOT IN (3,4) and lixo=0";
+												$sql->consult($_p."agenda","agenda_data,DATE_ADD(agenda_data, INTERVAL $agenda_duracao MINUTE) as agenda_data_fim,agenda_duracao",$where);
+												//echo $where."->".$sql->rows."\n";
+												if($sql->rows==0) {*/
+													$horariosDisponiveis[]=date('H:i',strtotime($di));
+												//}
+											}
+
+
+											$di=date('Y-m-d H:i:s',strtotime($di." + 30 minutes")); // de 30 em 30 minutos mas pode mexer 
+										} while(strtotime($df)<strtotime($dataFim));//while(strtotime($dataInicio)<strtotime($dataFim));
+
+										//var_dump($horariosDisponiveis);die();
+
+										$horarios = new Horarios(array('prefixo'=>$_p));
+
+										$horariosDisponiveisNew=array();
+
+										// remove horarios que a cadeira nao tem disponibilidade
+										foreach($horariosDisponiveis as $v) {
+
+											$strData = date('Y-m-d')." $v:00";
+											$dtAux = date('Y-m-d H:i',strtotime($strData));
+
+											$attr=array('id_colaborador'=>$profissional->id,
+														'id_cadeira'=>$cadeira->id,
+														'id_horario'=>0,
+														'diaSemana'=>$dia,
+														'inputHoraInicio'=>$v,
+														'inputHoraFim'=>date('H:i',strtotime($dtAux." + $agenda_duracao minutes")));
+
+											
+											if(!$horarios->cadeiraHorariosIntercecao($attr)===true) {
+												$horariosDisponiveisNew[]=$v; 
+											} 
+										}
+
+										
+										
+										$rtn=array('success'=>true,'horariosDisponiveis'=>$horariosDisponiveisNew);
+									} else {
+										$rtn=array('success'=>false,'error'=>'Sem atendimento para este dia');
+									}
+								} else {
+									$rtn=array('success'=>false,'error'=>'Sem atendimento para este consultório');
+								}
+
+
+							} else {
+								$rtn=array('success'=>false,'error'=>'Cadeira/Consultório não encontrado!');
+							}
+						} else {
+							$rtn=array('success'=>false,'error'=>'Profissional não encontrado!');
+						}
+					} else {
+						$rtn=array('success'=>false,'error'=>'Data não válida');
+					}
+				} else {
+					$rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
+				}
+			} 
+			else if($_POST['ajax']=="proximaConsulta") {
+				$_profissionais=array();
+				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento","where lixo=0 order by nome asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
+
+				$_cadeiras=array();
+				$sql->consult($_p."parametros_cadeiras","*","where lixo=0  order by titulo asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
+
+				$agenda = $paciente = '';
+				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
+					$sql->consult($_p."agenda","*","where id=".$_POST['id_agenda']." and lixo=0");
+					if($sql->rows) {
+						$agenda=mysqli_fetch_object($sql->mysqry);
+
+						$sql->consult($_p."pacientes","*","where id=$agenda->id_paciente and lixo=0");
+						if($sql->rows) {
+							$paciente=mysqli_fetch_object($sql->mysqry);
+						}
+					}
+				}
+
+				if(is_object($agenda)) {
+					if(is_object($paciente)) {
+
+						if($paciente->data_nascimento!="0000-00-00") {
+							$dob = new DateTime($paciente->data_nascimento);
+							$now = new DateTime();
+							$idade = $now->diff($dob)->y;
+						} else $idade=0;
+
+						/*$ft='';
+						if(!empty($paciente->foto_cn)) {
+							$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+						}*/
+
+						$ft='';
+						if(!empty($paciente->foto_cn)) {
+							$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+						} else if(!empty($paciente->foto)) {
+							$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+						}
+
+
+						$agendamentosFuturos=array();
+
+					
+
+						$_pacientesAgendamentos=array();
+						$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and agenda_data>'".date('Y-m-d')."' and id_status IN (1,2) and lixo=0 order by agenda_data");
+
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+
+							// se for o mesmo agendamento que esta sendo editado
+							if($x->id==$agenda->id) continue;
+
+							$cor='';
+							$iniciais='';
+
+
+							$aux = explode(",",$x->profissionais);
+							$profissionais=array();
+							foreach($aux as $id_profissional) {
+								if(!empty($id_profissional) and is_numeric($id_profissional)) {
+
+									if(isset($_profissionais[$id_profissional])) {
+										$cor=$_profissionais[$id_profissional]->calendario_cor;
+										$iniciais=$_profissionais[$id_profissional]->calendario_iniciais;
+
+										$profissionais[]=array('iniciais'=>$iniciais,'cor'=>$cor);
+									}
+								}
+
+							}
+
+							$_pacientesAgendamentos[$x->id_paciente][]=array('id_agenda'=>$x->id,
+																				'obs'=>str_replace("'","`",utf8_encode($x->obs)),
+																				'data'=>date('d/m/Y H:i',strtotime($x->agenda_data)),
+																				'initDate'=>date('d/m/Y',strtotime($x->agenda_data)),
+																				'cadeira'=>isset($_cadeiras[$x->id_cadeira])?utf8_encode($_cadeiras[$x->id_cadeira]->titulo):'',
+																				'profissionais'=>$profissionais);
+						}
+
+					
+
+						if(isset($_pacientesAgendamentos[$paciente->id])) {
+							$agendamentosFuturos=$_pacientesAgendamentos[$paciente->id];
+						}
+						
+
+						$idProfissional=0;
+						if(!empty($agenda->profissionais)) {
+
+							$aux = explode(",",$agenda->profissionais);
+
+							foreach($aux as $x) {
+								if(!empty($x) and is_numeric($x)) {
+									$idProfissional=$x;
+									break;
+								}
+							}
+						}
+
+
+						$rtn=array('success'=>true,
+									'data'=>array('id_paciente'=>$paciente->id,
+													'periodicidade_select'=>$paciente->periodicidade,
+													'nome'=>utf8_encode($paciente->nome),
+													'idade'=>$idade,
+													'telefone1'=>$paciente->telefone1,
+													'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):"",			
+													'musica'=>utf8_encode($paciente->musica),
+													'ft'=>$ft,
+													'periodicidade'=>isset($_pacientesPeriodicidade[$paciente->periodicidade])?$_pacientesPeriodicidade[$paciente->periodicidade]:$paciente->periodicidade,
+													'agendamentosFuturos'=>$agendamentosFuturos,
+													'id_profissional'=>$idProfissional
+
+													)
+									);
+
+					} else {
+						$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
+					} 
+				} else {
+					$rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
+				}
+			}
+			else if($_POST['ajax']=="proximaConsultaPersistir") {
+				
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","id","where id=".$_POST['id_paciente']);
+					if($sql->rows) {
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				if(is_object($paciente)) {
+
+					$duracao=isset($_POST['duracao'])?addslashes($_POST['duracao']):'';
+					$laboratorio=isset($_POST['laboratorio'])?addslashes($_POST['laboratorio']):'';
+					$imagem=isset($_POST['imagem'])?addslashes($_POST['imagem']):'';
+					$retorno=isset($_POST['retorno'])?addslashes($_POST['retorno']):'';
+					$obs=isset($_POST['obs'])?utf8_decode(addslashes($_POST['obs'])):'';
+					$profissionais=isset($_POST['profissionais'])?$_POST['profissionais']:'';
+					$id_agenda_origem=(isset($_POST['id_agenda_origem']) and is_numeric($_POST['id_agenda_origem']))?$_POST['id_agenda_origem']:0;
+
+					$vSQL="data=now(),
+							id_colaborador=$usr->id,
+							id_paciente=$paciente->id,
+							duracao='$duracao',
+							laboratorio='$laboratorio',
+							imagem='$imagem',
+							retorno='$retorno',
+							obs='$obs',
+							id_agenda_origem='$id_agenda_origem',
+							profissionais='$profissionais'";
+
+
+					$sql->add($_p."pacientes_proximasconsultas",$vSQL);
+
+					$rtn=array('success'=>true);
+
+				} else {
+					$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
+				}
+			}
+			else if($_POST['ajax']=="prontuarioPersistir") {
+			
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","id","where id=".$_POST['id_paciente']);
+					if($sql->rows) {
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+
+				if(is_object($paciente)) {
+
+					$id_profissional=isset($_POST['id_profissional'])?addslashes($_POST['id_profissional']):0;
+					$prontuario=isset($_POST['prontuario'])?addslashes($_POST['prontuario']):'';
+					$dataProntuario='';
+					if(isset($_POST['dataProntuario']) and !empty($_POST['dataProntuario'])) {
+
+						$aux1 = @explode(" ",$_POST['dataProntuario']);
+						$aux2 = @explode("/",$aux1[0]);
+
+ 
+						if(checkdate($aux2[1], $aux2[0], $aux2[2])) {
+							$dataProntuario=$aux2[2]."-".$aux2[1]."-".$aux2[0]." ".$aux1[1];
+						}
+
+					}
+
+					if(empty($dataProntuario)) {
+						$erro='Preencha uma data válida!';
+					}
+					else if($id_profissional==0) {
+						$erro='Selecione o Profissional';
+					} else if(empty($prontuario)) {
+						$erro='Digite o prontuário';
+					} 
+
+					if(empty($erro)) {
+
+						/*$vsql="data='".$dataProntuario."',id_usuario='".$id_profissional."',
+								texto='".addslashes(utf8_decode($prontuario))."',
+								id_paciente=$paciente->id";
+						//echo $vsql;die();
+						$sql->add($_p."pacientes_prontuarios",$vsql);
+						$id_reg=$sql->ulid;
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vsql)."',vwhere='',tabela='".$_p."pacientes_prontuarios',id_reg='$id_reg'");*/
+
+						// id_tipo = 9 -> geral
+						$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
+																								id_paciente=$paciente->id and
+																								id_tipo=9 and  
+																								id_usuario=$usr->id");	
+						if($sql->rows) {
+							$e=mysqli_fetch_object($sql->mysqry);
+							$sql->update($_p."pacientes_evolucoes","id_profissional='$id_profissional'","where id=$e->id");
+							$id_evolucao=$e->id;
+						} else {
+							$sql->add($_p."pacientes_evolucoes","data=now(),
+																	id_tipo=9,
+																	id_paciente=$paciente->id,
+																	id_usuario=$usr->id,
+																	id_profissional='".$id_profissional."'");
+							$id_evolucao=$sql->ulid;
+						}
+
+
+						$geral='';
+						$sql->consult($_p."pacientes_evolucoes_geral","*","where id_evolucao=$id_evolucao and lixo=0");
+						if($sql->rows) {
+							$geral=mysqli_fetch_object($sql->mysqry);
+						}
+
+						$vSQLGeral="id_evolucao=$id_evolucao,
+									data='".$dataProntuario."',
+									id_profissional='".$id_profissional."',
+									texto='".addslashes(utf8_decode($prontuario))."',
+									id_usuario=$usr->id";
+
+						if(is_object($geral)) {
+							$sql->update($_p."pacientes_evolucoes_geral",$vSQLGeral,"where id=$geral->id");
+						} else {
+							$sql->add($_p."pacientes_evolucoes_geral",$vSQLGeral);
+						}
+
+						$rtn=array('success'=>true);
+
+					} else {
+						$rtn=array('success'=>false,'error'=>$erro);
+					}
+
+				}  else {
+					$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
+				}
+			}
+			else if($_POST['ajax']=="proximaConsultaAltaPeriodicidade") {
+				$paciente = '';
+				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+					$sql->consult($_p."pacientes","id","where id=".$_POST['id_paciente']);
+					if($sql->rows) {
+						$paciente=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+				$periodicidade=(isset($_POST['periodicidade']) and is_numeric($_POST['periodicidade']))?$_POST['periodicidade']:0;
+				$alta=(isset($_POST['alta']) and !empty($_POST['alta']))?$_POST['alta']:'';
+
+				$id_agenda_origem=(isset($_POST['id_agenda_origem']) and is_numeric($_POST['id_agenda_origem']))?$_POST['id_agenda_origem']:0;
+
+				if(is_object($paciente)) {
+
+					if($periodicidade>0) {
+
+						$vsql="periodicidade='$periodicidade',id_agenda_origem='$id_agenda_origem'";
+						$vwhere="where id=$paciente->id";
+
+						$sql->update($_p."pacientes",$vsql,$vwhere);
+						$id_reg=$sql->ulid;
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vsql)."',vwhere='".addslashes($vsql)."',tabela='".$_p."pacientes',id_reg='$id_reg'");
+
+
+						// cria evolucao
+						$sql->add($_p."pacientes_evolucoes","data=now(),
+																	id_tipo=11,
+																	id_paciente=$paciente->id,
+																	id_usuario=$usr->id,
+																	id_profissional='".$usr->id."'");
+						$id_evolucao=$sql->ulid;
+
+
+
+						$vSQL="id_evolucao=$id_evolucao,
+									data=now(),
+									id_profissional='".$usr->id."',
+									texto='".addslashes(utf8_decode($alta))."',
+									id_usuario=$usr->id";
+
+						$sql->add($_p."pacientes_evolucoes_alta",$vSQL);
+						
+
+						$rtn=array('success'=>true);
+
+					} else {
+						$rtn=array('success'=>false,'error'=>'Periodicidade não definida');
+					}
+				} else {
+					$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
+				}
 			}
 
 
@@ -2154,7 +2751,6 @@
 												$('.aside-prontuario-atestado .js-asideAtestado-inputs').val('');
 												CKEDITOR.instances['asideAtestado-texto'].setData('');
 												$('.aside-close').click();
-
 												document.location.reload();
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -3375,194 +3971,220 @@
 			$_cadeiras=array();
 			$sql->consult($_p."parametros_cadeiras","*","where lixo=0  order by titulo asc");
 			while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
-
 			?>
 
 			<script type="text/javascript" src="js/aside.funcoes.js"></script>
 			<script type="text/javascript">
-
-				
 				/*var medicamentos = [];
-
-				const receituarioMedicamentosListar = () => {
-
+					const receituarioMedicamentosListar = () => {
 					$('.js-asideReceituario-tabela tbody').html('');
-
 					medicamentos.forEach(x=>{
 						$('.js-asideReceituario-tabela tbody').append(`<tr class="js-receituarioMedicacao-item"><td><h1>${x.medicamento} - ${x.quantidade} ${x.tipo}</h1><p>${x.posologia}</p></td></tr>`);
 					});
-
 					$('.js-asideReceituario-receitas').val(JSON.stringify(medicamentos));
-
 				}*/
-
 				const asideEvolucaoProximaConsulta = () => {
-
 					$('.aside-prontuario-proximaConsulta .aside-header h1').html('Próxima Consulta');
 					$(".aside-prontuario-proximaConsulta .js-btn-acao:eq(0)").click();
 					setTimeout(function(){
-									$('.aside-prontuario-proximaConsulta .js-profissionais').chosen();
-									$('.aside-prontuario-proximaConsulta .js-profissionais').trigger('chosen:updated');
-								},100);
+								$('.aside-prontuario-proximaConsulta .js-profissionais').chosen();
+								$('.aside-prontuario-proximaConsulta .js-profissionais').trigger('chosen:updated');
+							})
 				}
 
 				$(function(){
 
-					$('.aside-prontuario-proximaConsulta').on('change','select[name=agenda_duracao], select[name=id_cadeira],  select.js-profissionais, input[name=agenda_data]',function(){
-						horarioDisponivel(0,$('.aside-prontuario-proximaConsulta'));
+					$('#js-aside-proximaConsulta-paciente  .js-btn-acao').click(function(){
+						$('#js-aside-proximaConsulta-paciente .js-btn-acao').removeClass('active');
+						$(this).addClass('active');
+
+						if($(this).attr('data-tipo')=="queroAgendar") {
+							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-lembrete').hide();
+							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-altaPeriodicidade').hide();
+							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-queroAgendar').show();
+
+							$('#js-aside-proximaConsulta-paciente  .js-profissionais-qa').chosen();
+							$('#js-aside-proximaConsulta-paciente  input[name=tipo]').val('queroAgendar');
+						} else if($(this).attr('data-tipo')=="altaPeriodicidade") {
+							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-lembrete').hide();
+							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-queroAgendar').hide();
+							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-altaPeriodicidade').show();
+
+							$('#js-aside-proximaConsulta-paciente  .js-profissionais-qa').chosen();
+							$('#js-aside-proximaConsulta-paciente  input[name=tipo]').val('altaPeriodicidade');
+						} else {
+							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-altaPeriodicidade').hide();
+							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-queroAgendar').hide();
+							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-lembrete').show();
+							$('#js-aside-proximaConsulta-paciente  input[name=tipo]').val('lembrete');
+						}
 					});
+					
+					$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento .js-salvar').click(function(){
+						let tipo = $('#js-aside-proximaConsulta-paciente input[name=tipo]').val();
+						//let id_paciente = $('#js-aside-proximaConsulta-paciente .js-id_paciente').val();
+						let id_agenda_origem = $('#js-aside-proximaConsulta-paciente .js-proximaConsulta-id_agenda').val();
 
-					$('.aside-prontuario-proximaConsulta .js-salvarProximaConsulta').click(function(){
-						let agenda_data = $('.aside-prontuario-Proximaconsulta input[name=agenda_data]').val();
-						let agenda_duracao = $('.aside-prontuario-Proximaconsulta select[name=agenda_duracao]').val();
-						let id_cadeira = $('.aside-prontuario-Proximaconsulta select[name=id_cadeira]').val();
-						let id_profissional = $('.aside-prontuario-Proximaconsulta select.js-profissionais').val();
-						let agenda_hora = $('.aside-prontuario-Proximaconsulta select[name=agenda_hora]').val();
-						let obs = $('.aside-prontuario-Proximaconsulta textarea[name=obs]').val();
-						let erro = '';
+						if(tipo=="queroAgendar") {
+							let agenda_data = $('#js-aside-proximaConsulta-paciente input[name=agenda_data]').val();
+							let agenda_duracao = $('#js-aside-proximaConsulta-paciente select[name=agenda_duracao]').val();
+							let id_cadeira = $('#js-aside-proximaConsulta-paciente select[name=id_cadeira]').val();
+							let id_profissional = $('#js-aside-proximaConsulta-paciente select.js-profissionais-qa').val();
+							let agenda_hora = $('#js-aside-proximaConsulta-paciente select[name=agenda_hora]').val();
+							let obs = $('#js-aside-proximaConsulta-paciente textarea.js-obs-qa').val();
+							let erro = '';
 
-						if(agenda_data.length==0) erro='Defina a <b>Data do Agendamento</b>';
-						else if(agenda_duracao.length==0) erro='Defina a <b>Duração de Agendamento</b>';
-						else if(id_cadeira.length==0) erro='Defina o <b>Consultório do Agendamento</b>';
-						else if(id_profissional.length==0) erro='Defina o <b>Profissional do Agendamento</b>';
-						else if(agenda_hora.length==0) erro='Defina a <b>Hora do Agendamento</b>';
+							if(agenda_data.length==0) erro='Defina a <b>Data do Agendamento</b>';
+							else if(agenda_duracao.length==0) erro='Defina a <b>Duração de Agendamento</b>';
+							else if(id_cadeira.length==0) erro='Defina o <b>Consultório do Agendamento</b>';
+							else if(id_profissional.length==0) erro='Defina o <b>Profissional do Agendamento</b>';
+							else if(agenda_hora.length==0) erro='Defina a <b>Hora do Agendamento</b>';
 
-						if(erro.length==0) {
+							if(erro.length==0) {
 
-							let obj = $(this);
-							let obHTMLAntigo = $(this).html();
 
-							if(obj.attr('data-loading')==0) {
-								
-								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-								obj.attr('data-loading',1);
+								let obj = $(this);
+								let objHTMLAntigo = $(this).html();
 
-								let data = `ajax=asRelacionamentoPacienteQueroAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}`;
+								if(obj.attr('data-loading')==0) {
+									
+									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+									obj.attr('data-loading',1);
 
-								data = {
-									'ajax':'asRelacionamentoPacienteQueroAgendar',
-									'id_paciente':id_paciente,
-									'agenda_data':agenda_data,
-									'agenda_duracao':agenda_duracao,
-									'id_cadeira':id_cadeira,
-									'id_profissional':id_profissional,
-									'agenda_hora':agenda_hora,
-									'obs':obs,
+									let data = `ajax=asRelacionamentoPacienteQueroAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}&id_agenda_origem=${id_agenda_origem}`;
+
+									data = {
+										'ajax':'asRelacionamentoPacienteQueroAgendar',
+										'id_paciente':id_paciente,
+										'agenda_data':agenda_data,
+										'agenda_duracao':agenda_duracao,
+										'id_cadeira':id_cadeira,
+										'id_profissional':id_profissional,
+										'agenda_hora':agenda_hora,
+										'obs':obs,
+										'id_agenda_origem':id_agenda_origem
+
+									}
+
+
+
+									$.ajax({
+											type:'POST',
+											data:data,
+											url:baseURLApiAsidePaciente,
+											success:function(rtn) {
+												if(rtn.success) {
+
+												swal({title: "Sucesso!", text: "Salvo com Sucesso!", type:"sucess", confirmButtonColor: "#424242"});
+												document.location.reload();
+
+												} else if(rtn.error) {
+													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+												} else {
+													swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+												}
+												
+											},
+											error:function() {
+												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+											} 
+									}).done(function(){
+										obj.html(objHTMLAntigo);
+										obj.attr('data-loading',0);
+									});
+
+
 								}
 
-								console.log(data);return;
-								$.ajax({
-										type:'POST',
-										data:data,
-										url:baseURLApiAside,
-										success:function(rtn) {
-											if(rtn.success) {
-												$('.aside-prontuario-Proximaconsulta input[name=agenda_data]').val('');
-												$('.aside-prontuario-Proximaconsulta select[name=agenda_duracao]').val('');
-												$('.aside-prontuario-Proximaconsulta select[name=id_cadeira]').val('');
-												$('.aside-prontuario-Proximaconsulta select.js-profissionais').val('');
-												$('.aside-prontuario-Proximaconsulta select[name=agenda_hora]').val('');
-
-												atualizaValorListasInteligentes();
-												swal({title: "Sucesso!", text: 'Agendamento realizado com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-													$('.aside-close').click();
-												});
-
-											} else if(rtn.error) {
-												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-											} else {
-												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-											}
-											
-										},
-										error:function() {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										} 
-								}).done(function(){
-									obj.html(obHTMLAntigo);
-									obj.attr('data-loading',0);
-								});
-
-
+							} else {
+								swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 							}
-
-						} else {
-							swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 						}
-					})
+						else if(tipo=="lembrete") {
+							let retorno = $(`#js-aside-proximaConsulta-paciente .js-retorno`).val();
+							let duracao = $(`#js-aside-proximaConsulta-paciente .js-agenda_duracao`).val();
+							let laboratorio = $(`#js-aside-proximaConsulta-paciente .js-laboratorio`).prop('checked')===true?1:0;
+							let imagem = $(`#js-aside-proximaConsulta-paciente .js-imagem`).prop('checked')===true?1:0;
+							let profissionais = $(`#js-aside-proximaConsulta-paciente .js-profissionais-lembrete`).val();
+							let obs = $(`#js-aside-proximaConsulta-paciente .js-obs`).val();
+							let erro = '';
+							
 
-					/*$('.js-asideReceituario-tabela').on('click','.js-receituarioMedicacao-item',function(){
+							if(retorno.length==0) erro='Preencha o campo <b>Retorno em</b>';
+							else if(duracao.length==0) erro='Preencha a <b>Duração</b>';
+							else if(profissionais.length==0) erro='Selecione pelo menos um profissional';
+							else if(obs.length==0) erro='Preencha o campo <b>Observações</b>';
+							
+							if(erro.length==0) {
 
-						
-						let index = $(this).index('.js-asideReceituario-tabela .js-receituarioMedicacao-item');
-						if(medicamentos[index]) {
+								let obj = $(this);
+								let objHTMLAntigo = $(this).html();
 
-							$('.js-asideReceituario-id_medicamento').val(medicamentos[index].id_medicamento).trigger('change');
-							$('.js-asideReceituario-medicamento').val(medicamentos[index].medicamento);
-							$('.js-asideReceituario-quantidade').val(medicamentos[index].quantidade);
-							$('.js-asideReceituario-tipo').val(medicamentos[index].tipo);
-							$('.js-asideReceituario-posologia').val(medicamentos[index].posologia);
-							$('.js-asideReceituario-index').val(index);
-							$('.js-asideReceituario-controleEspecial').prop('checked',medicamentos[index].controleespecial==1?true:false);
-							$('.js-asideReceituario-medicamento-remover').show();
+								if(obj.attr('data-loading')==0) {
+									
+									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+									obj.attr('data-loading',1);
 
-						}
+									let data = `ajax=proximaConsultaPersistir&retorno=${retorno}&duracao=${duracao}&laboratorio=${laboratorio}&imagem=${imagem}&profissionais=${profissionais}&obs=${obs}&id_paciente=${id_paciente}&id_agenda_origem=${id_agenda_origem}`;
 
-					});
-					$('.aside-prontuario-receituario .js-asideReceituario-data').datetimepicker({
-						timepicker:false,
-						format:'d/m/Y',
-						scrollMonth:false,
-						scrollTime:false,
-						scrollInput:false,
-					});
-
-					$('.aside-prontuario-receituario .js-salvarReceituario').click(function(){
-						
-						let erro = '';
-						
-						let dataReceita = $('.aside-prontuario-receituario .js-asideReceituario-data').val();
-						let tipo_receita = $('.aside-prontuario-receituario .js-asideReceituario-tipo_receita').val();
-						let id_profissional = $('.aside-prontuario-receituario .js-asideReceituario-id_profissional').val();
-
-						
-
-						if(dataReceita.length==0) erro='Preencha o campo de Data do Receituário';
-						else if(tipo_receita.length==0) erro='Preencha o campo de Tipo do Receituário';
-						else if(id_profissional.length==0) erro='Preencha o campo de Profissional';
-
-						
-						if(erro.length>0) {
-							swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
-						} else {
-							let obj = $(this);
-							let obHTMLAntigo = $(this).html();
-
-							if(obj.attr('data-loading')==0) {
-								
-								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-								obj.attr('data-loading',1);
-
-								let data = {'ajax':'asReceituarioPersistir',
-											'id_paciente':id_paciente,
-											'data':dataReceita,
-											'tipo_receita':tipo_receita,
-											'id_profissional':id_profissional,
-											'medicamentos':medicamentos};
-
-								$.ajax({
+									$.ajax({
 										type:'POST',
 										data:data,
 										url:baseURLApiAsidePaciente,
 										success:function(rtn) {
 											if(rtn.success) {
-												$('.js-asideReceituario-inputs2').val('');
-												$('.js-asideReceituario-inputs').val('').trigger('change');
-												$('.js-asideReceituario-controleEspecial').prop('checked',false);
-												$('.js-asideReceituario-medicamento-remover').hide();
-												medicamentos=[];
-												receituarioMedicamentosListar();
-												$('.aside-close').click();
+												swal({title: "Sucesso!", text: "Salvo com Sucesso!", type:"sucess", confirmButtonColor: "#424242"});
+												document.location.reload();
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												console.log(rtn)
+												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+											}
+											
+										},
+										error:function(rtn) {
+											console.log(rtn)
+											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										}
+									}).done(function(){
+										obj.html(objHTMLAntigo);
+										obj.attr('data-loading',0);
+									});
+								}
+
+							} else {
+								swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+							}
+						}
+						else if(tipo=="altaPeriodicidade") {
+							let periodicidade = $('#js-aside-proximaConsulta-paciente .js-periodicidade_select').val();
+							let alta = $('#js-aside-proximaConsulta-paciente .js-periodicidade_alta').val();
+							let periodicidadeDescricao = $('#js-aside-proximaConsulta-paciente .js-periodicidade_select option:selected').attr('data-descricao');
+
+
+							let erro= '';
+							if(periodicidade.length==0) erro='Selecione a Periodicidade do paciente';
+
+							if(erro.length==0) {
+
+								let obj = $(this);
+								let objHTMLAntigo = $(this).html();
+
+								if(obj.attr('data-loading')==0) {
+									
+									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+									obj.attr('data-loading',1);
+
+									let data = `ajax=proximaConsultaAltaPeriodicidade&periodicidade=${periodicidade}&id_paciente=${id_paciente}&id_agenda_origem=${id_agenda_origem}&alta=${alta}`;
+									
+									$.ajax({
+										type:'POST',
+										data:data,
+										url:baseURLApiAsidePaciente,
+										success:function(rtn) {
+											if(rtn.success) {
+												swal({title: "Sucesso!", text: "Salvo com Sucesso!", type:"sucess", confirmButtonColor: "#424242"});
 												document.location.reload();
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -3572,127 +4194,83 @@
 											
 										},
 										error:function() {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										} 
-								}).done(function(){
-									obj.html(obHTMLAntigo);
-									obj.attr('data-loading',0);
-								});
+											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente...", type:"error", confirmButtonColor: "#424242"});
+										}
+									}).done(function(){
+										obj.html(objHTMLAntigo);
+										obj.attr('data-loading',0);
+									});
+								}
 
+							} else {
+								swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 							}
-
-
-
 						}
 					});
 
-					$('.aside-prontuario-receituario select.js-asideReceituario-id_medicamento').select2({
-						ajax: {
-							url: 'includes/api/apiAsidePaciente.php?ajax=medicamentos',
-							data: function (params) {
-									var query = {
-										search: params.term,
-										type: 'public'
+					$('#js-aside-proximaConsulta-paciente  .js-ag-prontuario .js-salvarProntuario').click(function(){
+
+
+						let obj = $(this);
+						let objTextoAntigo = $(this).html();
+						let id_profissional = $('#js-aside-proximaConsulta-paciente .js-prontuario-profissional').val();
+						let prontuario = $('#js-aside-proximaConsulta-paciente .js-prontuario').val();
+						let dataProntuario = $('#js-aside-proximaConsulta-paciente .js-prontuario-data').val();
+
+						let erro='';
+
+						if(id_profissional.length==0) erro='Selecione o Profissional';
+						else if(prontuario.length==0) erro='Digite o prontuário para salvar'
+
+						if(erro.length==0) {
+							if(obj.attr('data-loading')==0) {
+
+								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+								obj.attr('data-loading',1);
+
+								let data = `ajax=prontuarioPersistir&id_profissional=${id_profissional}&prontuario=${prontuario}&id_paciente=${id_paciente}&dataProntuario=${dataProntuario}`;
+
+								data = {'ajax':'prontuarioPersistir',
+											'id_profissional':id_profissional,
+											'prontuario':prontuario,
+											'id_paciente':id_paciente,
+											'dataProntuario':dataProntuario}
+
+								$.ajax({
+									type:"POST",
+									url:baseURLApiAsidePaciente,
+									data:data,
+									success:function(rtn) {
+										if(rtn.success) {
+											
+										} else if(rtn.error) {
+											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+										} else {
+											swal({title: "Erro!", text: 'Algum erro ocorreu ao salvar o prontuário. Tente novamente!', type:"error", confirmButtonColor: "#424242"});
+										}
 									}
-								// ?search=[term]&type=public
-								return query;
-							},
-							processResults: function (data) {
-								// Transforms the top-level key of the response object from 'items' to 'results'
-								return {
-									results: data.items
-								};
+								}).done(function(){
+									obj.attr('data-loading',0);
+									obj.html(objTextoAntigo);
+								})
 							}
-
-						},
-						templateResult:formatTemplate,
-						//	templateSelection:formatTemplateSelection,
-						//dropdownParent: $(".modal")
-					});
-
-					$('.aside-prontuario-receituario select.js-asideReceituario-id_medicamento').on('select2:select',function(e){
-						//console.log(e.params.data)
-
-						if(e.params.data.medicamento) $('.js-asideReceituario-medicamento').val(e.params.data.medicamento);
-						if(e.params.data.quantidade) $('.js-asideReceituario-quantidade').val(e.params.data.quantidade);
-						if(e.params.data.tipo) $('.js-asideReceituario-tipo').val(e.params.data.tipo);
-						if(e.params.data.posologia) $('.js-asideReceituario-posologia').val(e.params.data.posologia);
-						
-						if(e.params.data.controleEspecial==1) $('.js-asideReceituario-controleEspecial').prop('checked',true);
-						else $('.js-asideReceituario-controleEspecial').prop('checked',false);
-					});
-
-					$('.aside-prontuario-receituario .js-asideReceituario-medicamento-add').click(function(){
-
-						let index = $('.js-asideReceituario-index').val();
-						let id_medicamento = $('.js-asideReceituario-id_medicamento').val();
-						let medicamento = $('.js-asideReceituario-medicamento').val();
-						let quantidade = $('.js-asideReceituario-quantidade').val();
-						let tipo = $('.js-asideReceituario-tipo').val();
-						let tipoExibe = $('.js-asideReceituario-tipo option:selected').text();
-						let posologia = $('.js-asideReceituario-posologia').val();
-						let controleespecial = $('.js-asideReceituario-controleEspecial').prop('checked')===true?1:0;
-
-						let novoMedicamento = { medicamento, id_medicamento, quantidade, tipo, tipoExibe, posologia, controleespecial }
-
-
-						if(index.length>0 && $.isNumeric(eval(index))) medicamentos[index]=novoMedicamento;
-						else medicamentos.push(novoMedicamento);
-
-						receituarioMedicamentosListar();
-
-						$('.js-asideReceituario-inputs').val('').trigger('change');
-						$('.js-asideReceituario-controleEspecial').prop('checked',false);
-						$('.js-asideReceituario-medicamento-remover').hide();
-
-					});
-
-					$('.aside-prontuario-receituario .js-asideReceituario-medicamento-remover').click(function(){
-						let index = $('.js-asideReceituario-index').val();
-						if(index.length>0 && $.isNumeric(eval(index))) {
-							medicamentos.splice(index,1);
-						}
-						receituarioMedicamentosListar();
-						$('.js-asideReceituario-inputs').val('').trigger('change');
-
-					});*/
-					
-
-					
-
-					$('.aside-prontuario-proximaConsulta .js-btn-acao').click(function(){
-						$('.aside-prontuario-proximaConsulta .js-btn-acao').removeClass('active');
-						$(this).addClass('active');
-
-						if($(this).attr('data-tipo')=="queroAgendar") {
-							$('.aside-prontuario-proximaConsulta .js-ag-agendamento-lembrete').hide();
-							$('.aside-prontuario-proximaConsulta .js-ag-agendamento-altaPeriodicidade').hide();
-							$('.aside-prontuario-proximaConsulta .js-ag-agendamento-queroAgendar').show();
-
-							$('.aside-prontuario-proximaConsulta .js-profissionais-qa').chosen();
-							$('.aside-prontuario-proximaConsulta input[name=tipo]').val('queroAgendar');
 						} else {
-							$('.aside-prontuario-proximaConsulta .js-ag-agendamento-altaPeriodicidade').hide();
-							$('.aside-prontuario-proximaConsulta .js-ag-agendamento-queroAgendar').hide();
-							$('.aside-prontuario-proximaConsulta .js-ag-agendamento-lembrete').show();
-							$('.aside-prontuario-proximaConsulta input[name=tipo]').val('lembrete');
+							swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
 						}
-					});
 
+					});
 				});
 
 			</script>
-
-			<section class="aside aside-prontuario-proximaConsulta" style="display: none;">
+			<!-- SECAO ANTIGA <section class="aside aside-prontuario-proximaConsulta" style="display: none;">
 				<div class="aside__inner1">
 					<header class="aside-header">
 						<h1>Próxima Consulta</h1>
 						<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 					</header>
 
-					<form method="post" class="aside-content form">
+					<form class="aside-content form">
 						<div class="js-ag js-ag-agendamento">
-
 							<section class="filter">
 								<div class="button-group">
 									<a href="javascript:;" class="js-btn-acao js-btn-acao-lembrete button active" data-tipo="lembrete"><span>Criar Lembrete</span></a>
@@ -3704,18 +4282,16 @@
 											<dd></dd>
 										</dl>
 										<dl>
-											<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+											<dd><button class="button button_main js-salvarProximaConsulta" data-loading="0" type="button"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
 										</dl>
 									</div>								
 								</div>
 							</section>
-
 							<div class="js-ag-agendamento-lembrete">
 								<input type="hidden" class="js-asProfissoes-id" />
 								<div class="colunas4">
 									<dl>
 										<dt>Retorno em</dt>
-										
 										<dd class="form-comp form-comp_pos">
 											<input type="number" class="js-retorno" maxlength="3" />
 											<span>dias</span>
@@ -3723,7 +4299,6 @@
 									</dl>
 									<dl>
 										<dt>Duração</dt>
-										
 										<dd class="form-comp form-comp_pos">
 											<select class="js-agenda_duracao">
 												<option value="">-</option>
@@ -3779,8 +4354,6 @@
 									</div>
 								</div>
 							</div>
-
-
 							<div class="js-ag-agendamento-queroAgendar">
 								<div class="colunas3">
 									<dl>
@@ -3851,13 +4424,277 @@
 									</dd>
 								</dl>
 							</div>
-
 						</div>
-					
+					</form>
+				</div>
+			</section> 
+			-->
+
+			
+			<section class="aside aside-prontuario-proximaConsulta" style="display: none;" id="js-aside-proximaConsulta-paciente">
+				<div class="aside__inner1">
+					<header class="aside-header">
+						<h1>Próxima Consulta</h1>
+						<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+					</header>
+					<form method="post" class="aside-content form" onsubmit="return false;">
+						<input type="hidden" class="js-proximaConsulta-id_agenda" />
+						<input type="hidden" class="js-id_paciente" value="0" />
+						<input type="hidden" name="tipo" value="" />
+						<section class="header-profile">
+							<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
+							<div class="header-profile__inner1">
+								<h1><a href="" target="_blank" class="js-nome"></a></h1>
+								<div>
+									<p class="js-statusBI"></p>
+									<p class="js-idade"></p>
+									<p class="js-periodicidade">Periodicidade: 6 meses</p>
+									<p class="js-musica"></p>
+								</div>
+							</div>
+						</section>
+
+						<section class="tab tab_alt js-tab">
+							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamento').show();" class="active">Agendamento</a>	
+							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamentoFuturos').show();" class="">Agendamentos Futuros</a>
+						</section>
+
+						<div class="js-ag js-ag-agendamento">
+							<section class="filter">
+								<div class="button-group">
+									<a href="javascript:;" class="js-btn-acao js-btn-acao-lembrete button active" data-tipo="lembrete"><span>Criar Lembrete</span></a>
+									<a href="javascript:;" class="js-btn-acao js-btn-acao-queroAgendar button" data-tipo="queroAgendar"><span>Quero agendar</span></a>
+									<a href="javascript:;" class="js-btn-acao js-btn-acao-altaPeriodicidade button" data-tipo="altaPeriodicidade"><span>Alta por Periodicidade</span></a>
+								</div>
+								<div class="filter-group">
+									<div class="filter-form form">
+										<dl>
+											<dd></dd>
+										</dl>
+										<dl>
+											<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+										</dl>
+									</div>								
+								</div>
+							</section>
+
+							<div class="js-ag-agendamento-lembrete">
+								<input type="hidden" class="js-asProfissoes-id" />
+								<div class="colunas4">
+									<dl>
+										<dt>Retorno em</dt>
+										
+										<dd class="form-comp form-comp_pos">
+											<input type="number" class="js-retorno" maxlength="3" min=0 oninput="validity.valid||(value='');" />
+											<span>dias</span>
+										</dd>
+									</dl>
+									<dl>
+										<dt>Duração</dt>
+										
+										<dd class="form-comp form-comp_pos">
+											<select class="js-agenda_duracao">
+												<option value="">-</option>
+												<?php
+												foreach($optAgendaDuracao as $v) {
+													if($values['agenda_duracao']==$v) $possuiDuracao=true;
+													echo '<option value="'.$v.'"'.($values['agenda_duracao']==$v?' selected':'').'>'.$v.'</option>';
+												}
+												?>
+											</select>
+											<span>min</span>
+										</dd>
+									</dl>
+
+									<dl class="dl2">
+										<dt>&nbsp;</dt>
+										<dd>
+											<label>
+												<input type="checkbox" class="input-switch js-laboratorio" /> Laboratório
+											</label>
+											<label>
+												<input type="checkbox" class="input-switch js-imagem" /> Imagem
+											</label>
+										</dd>
+									</dl>
+
+								</div>
+								<dl>
+									<dt>Profissionais</dt>
+									<dd>
+										<select class="js-profissionais js-profissionais-lembrete" multiple>
+											<option value=""></option>
+											<?php
+											foreach($_profissionais as $p) {
+												if($p->check_agendamento==0) continue;
+												echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+								<dl>
+									<dt>Observações</dt>
+									<dd>
+										<textarea class="js-obs" style="height:80px;"></textarea>
+									</dd>
+								</dl>
+
+								<div class="js-ag-agendamentoFuturos" style="">
+									<div class="list1">
+										<table>
+										</table>
+									</div>
+								</div>
+							</div>
+
+							<div class="js-ag-agendamento-queroAgendar">
+								<div class="colunas3">
+									<dl>
+										<dt>Data</dt>
+										<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data datecalendar" /></dd>
+									</dl>
+								
+									<dl>
+										<dt>Duração</dt>
+										<dd class="form-comp form-comp_pos">
+											<?php /*<input type="tel" name="agenda_duracao" class="" />*/?>
+											<select name="agenda_duracao">
+												<option value="">-</option>
+												<?php
+												foreach($optAgendaDuracao as $v) {
+													echo '<option value="'.$v.'">'.$v.'</option>';
+												}
+												?>
+											</select>
+											<span>min</span>
+										</dd>
+									</dl>
+
+									<dl>
+										<dt>Consultório</dt>
+										<dd>
+											<select name="id_cadeira">
+												<option value=""></option>
+												<?php
+												foreach($_cadeiras as $p) {
+													echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+								</div>
+								<div class="colunas3">
+									<dl class="dl2">
+										<dt>Profissionais</dt>
+										<dd>
+											<select class="js-profissionais-qa js-select-profissionais">
+												<option value=""></option>
+												<?php
+												foreach($_profissionais as $p) {
+													if($p->check_agendamento==0) continue;
+													echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+									<dl>
+										<dt>Hora</dt>
+										<dd class="form-comp">
+											<span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span>
+											<select name="agenda_hora">
+												<option value="">Selecione o horário</option>
+											</select>
+										</dd>
+									</dl>
+								</div>
+
+								<dl>
+									<dt>Observações</dt>
+									<dd>
+										<textarea class="js-obs-qa" style="height:80px;"></textarea>
+									</dd>
+								</dl>
+							</div>
+
+							<div class="js-ag-agendamento-altaPeriodicidade">
+								<div class="colunas4">
+									<dl>
+										<dt>Confirme a Periodicidade</dt>
+										<dd>
+											<select class="js-periodicidade_select">
+												<option value="">-</option>
+												<?php
+												foreach($_pacientesPeriodicidade as $k=>$v) {
+													echo '<option value="'.$k.'" data-descricao="'.$v.'">'.$v.'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+								</div>
+
+								<dl>
+									<dt>Alta por Periodicidade</dt>
+									<dd>
+										<textarea style="height:200px;" class="js-periodicidade_alta"></textarea>
+									</dd>
+								</dl>
+
+								
+							</div>
+						</div>
+						<section class="tab tab_alt js-ag js-ag-prontuario">
+							<a href="javascript:;" class="active">Prontuário</a>
+						</section>
+
+						<div class="js-ag js-ag-prontuario" style="display:none">
+							<section class="filter">
+								<div class="button-group">
+								</div>
+								<div class="filter-group">
+									<div class="filter-form form">
+										<dl>
+											<dd><button class="button button_main js-salvarProximaConsulta" data-loading="0" type='button'><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+										</dl>
+									</div>								
+								</div>
+							</section>
+							<div class="colunas3">
+								<dl>
+									<dt>Data</dt>
+									<dd>
+										<input type="text" class="js-prontuario-data" class="datahora" />
+									</dd>
+								</dl>
+							</div>
+							<dl>
+								<dt>Profissional</dt>
+								<dd>
+									<select class="js-prontuario-profissional">
+										<option value="">-</option>
+										<?php
+										foreach($_profissionais as $p) {
+											if($p->check_agendamento==0) continue;
+											echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+										}
+										?>
+									</select>
+								</dd>
+							</dl>
+							<dl>
+								<dt>Prontuário</dt>
+								<dd>
+									<textarea class="js-prontuario" style="height:250px;"></textarea>
+								</dd>
+							</dl>
+						</div>
 					</form>
 				</div>
 			</section>
-
+			
 			<?php
 		}
 	
@@ -4906,5 +5743,5 @@
 
 			<?php
 		}
-
+	
 ?>

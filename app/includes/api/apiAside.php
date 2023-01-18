@@ -244,6 +244,7 @@
 			} 
 
 			else if($_POST['ajax']=="novoAgendamento") {
+
 				$profissionais=array();
 				if(isset($_POST['profissionais']) and !empty($_POST['profissionais'])) {
 					$pAux=explode(",",$_POST['profissionais']);
@@ -387,7 +388,6 @@
 			}
 
 			else if($_POST['ajax']=="agendamentoPersistir") {
-			
 				$profissional='';
 				if(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional'])) {
 					$sql->consult($_p."colaboradores","*","where id='".$_POST['id_profissional']."' and lixo=0");
@@ -456,11 +456,14 @@
 				else if(empty($status)) {
 					$rtn=array('success'=>false,'error'=>'Selecione o status!');
 				} 
+
 				if(empty($agendaData)) {
 					$rtn=array('success'=>false,'error'=>'Data inválida!');
-				} else if(empty($agendaHora)) {
+				} 
+				else if(empty($agendaHora)) {
 					$rtn=array('success'=>false,'error'=>'Hora inválida!');
-				} else {
+				} 
+				else {
 					$novoPaciente=false;
 					$paciente=$pacienteUnidades='';
 					$erro='';
@@ -494,8 +497,6 @@
 
 
 						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
-
-
 
 						$idStatusNovo=((isset($_POST['id_status']) and is_numeric($_POST['id_status']))?$_POST['id_status']:'');
 						
@@ -543,17 +544,15 @@
 							
 							// Se Desmarcou
 							if($idStatusNovo==4) {
-
 								$attr=array('id_tipo'=>3,
 											'id_paciente'=>$agenda->id_paciente,
 											'id_agenda'=>$agenda->id);
 								//var_dump($attr);
-								if($infozap->adicionaNaFila($attr)) $wts=1;
+								//if($infozap->adicionaNaFila($attr)) $wts=1;   // COMENTEI AQUI PARA CORRIGIR O ERRO DE MUDANÇA DE ESTATUS
 
 							} 
 							// Se Confirmou
 							else if($idStatusNovo==2) {
-
 								// se virou para confirmado, envia wts para dentista
 								$sql->consult($_p."agenda","*","where id=$agenda->id and id_status=2");
 								if($sql->rows) {
@@ -578,10 +577,9 @@
 															'id_profissional'=>$x->id,
 															'id_agenda'=>$agendaNew->id);
 									
-												if($infozap->adicionaNaFila($attr)) {
-													$wts=1;
-
-												}
+												//if($infozap->adicionaNaFila($attr)) {  // COMENTEI AQUI PARA CORRIGIR O ERRO DE MUDANÇA DE ESTATUS
+												//	$wts=1;
+												//}
 											}
 										}
 									}
@@ -2106,7 +2104,6 @@
 				}
 			}
 			else if($_POST['ajax']=="proximaConsultaPersistir") {
-
 				$paciente = '';
 				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
 					$sql->consult($_p."pacientes","id","where id=".$_POST['id_paciente']);
@@ -2159,8 +2156,8 @@
 					$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
 				}
 			}
-
 			else if($_POST['ajax']=="prontuarioPersistir") {
+			
 				$paciente = '';
 				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
 					$sql->consult($_p."pacientes","id","where id=".$_POST['id_paciente']);
@@ -2253,7 +2250,6 @@
 					$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
 				}
 			}
-
 			else if($_POST['ajax']=="proximaConsultaAltaPeriodicidade") {
 				$paciente = '';
 				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
@@ -2431,10 +2427,7 @@
 				} else {
 					$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
 				} 
-				
-			
 			}
-
 			else if($_POST['ajax']=="asideQueroAgendarAgendar") {
 				$erro='';
 				$paciente = '';
@@ -2547,7 +2540,7 @@
 					$rtn=array('success'=>false,'error'=>$erro);
 				}
 			}
-
+	
 		# Lista Personalizada
 			else if($_POST['ajax']=="asListaPersonalizadaAtualizar") {
 
@@ -3030,8 +3023,6 @@
 										swal({title: "Erro!", text: 'Algum erro ocorreu durante a abertura deste agendamento', type:"error", confirmButtonColor: "#424242"});
 									}
 							});
-
-							
 						}
 
 						const agendamentosProfissionais = (tipo) => {
@@ -3056,7 +3047,6 @@
 											if(rtn.listaProfissionais || rtn.listaProfissionaisDestaque) {
 												aside.find('.js-profissionais option').remove();
 												//aside.find('.js-profissionais').append(`<option value=""></option>`);
-
 												if(rtn.listaProfissionaisDestaque && rtn.listaProfissionaisDestaque.length>0) {
 
 													itens = 0;
@@ -3234,9 +3224,7 @@
 						<form method="post" class="aside-content form" onsubmit="return false">
 							<input type="hidden" name="agendaPessoal" value="0" />
 							<input type="hidden" name="alteracao" value="0" />
-
 							<script>
-								
 								$(function() {
 									$('.js-tab a').click(function() {
 										$(".js-tab a").removeClass("active");
@@ -3770,14 +3758,17 @@
 
 													//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
 												} else if(rtn.error) {
+													console.log(rtn)
 													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 
 												} else {
-													swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+													console.log(rtn)
+													swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente! Error:001", type:"error", confirmButtonColor: "#424242"});
 												}
 											},
-											error:function(){
-												swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
+											error:function(rtn){
+												console.log(rtn)
+												swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente! Error:002", type:"error", confirmButtonColor: "#424242"});
 											}
 										}).done(function(){
 											obj.html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span>`);
@@ -6330,10 +6321,10 @@
 
 					}
 					
-					const asideProximaConsulta = (idAgenda) => {
-
-
+					const asideProximaConsulta = (idAgenda=0) => {
+						console.log('CHAMOU AQUI')
 						$('#js-aside-proximaConsulta .js-tab').show();
+						console.log('CHEGOU AQUI')
 						let data = `ajax=proximaConsulta&id_agenda=${idAgenda}`;
 						$.ajax({
 							type:'POST',
@@ -6377,7 +6368,6 @@
 								//swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
 							}
 						}).done(function(){
-
 						});
 					}
 
@@ -6473,8 +6463,6 @@
 							horarioDisponivel(0,$('#js-aside-proximaConsulta'));
 						});
 
-
-
 						$('#js-aside-proximaConsulta .js-ag-agendamento .js-salvar').click(function(){
 							let tipo = $('#js-aside-proximaConsulta input[name=tipo]').val();
 							let id_paciente = $('#js-aside-proximaConsulta .js-id_paciente').val();
@@ -6555,7 +6543,8 @@
 								} else {
 									swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 								}
-							} else if(tipo=="lembrete") {
+							}
+							else if(tipo=="lembrete") {
 								let retorno = $(`#js-aside-proximaConsulta .js-retorno`).val();
 								let duracao = $(`#js-aside-proximaConsulta .js-agenda_duracao`).val();
 								let laboratorio = $(`#js-aside-proximaConsulta .js-laboratorio`).prop('checked')===true?1:0;
@@ -6645,7 +6634,8 @@
 								} else {
 									swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 								}
-							} else if(tipo=="altaPeriodicidade") {
+							}
+							else if(tipo=="altaPeriodicidade") {
 								let periodicidade = $('#js-aside-proximaConsulta .js-periodicidade_select').val();
 								let alta = $('#js-aside-proximaConsulta .js-periodicidade_alta').val();
 								let periodicidadeDescricao = $('#js-aside-proximaConsulta .js-periodicidade_select option:selected').attr('data-descricao');
@@ -6754,16 +6744,11 @@
 							}
 
 						});
-
-
-
 					});
 				</script>
 
 				<section class="aside aside-proximaConsulta" id="js-aside-proximaConsulta">
 					<div class="aside__inner1">
-
-
 						<header class="aside-header">
 							<h1>Próxima Consulta</h1>
 							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>

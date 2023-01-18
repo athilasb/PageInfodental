@@ -440,15 +440,15 @@
 											$obs='-';
 											if(isset($_planos[$x->id])) {
 												$plano=$_planos[$x->id];
-												$valor=$plano->valor??0;
-												$obs=utf8_encode($plano->obs??"");
+												$valor=$plano->valor;
+												$obs=utf8_encode($plano->obs);
 											}
 										?>
 										<tr class="js-item" data-id="<?php echo $x->id;?>">
 											<td><h1><strong><?php echo utf8_encode($x->titulo);?></strong></h1></td>
 											<td><?php echo isset($_regioes[$x->id_regiao])?utf8_encode($_regioes[$x->id_regiao]->titulo):"-";?></td>
-											<td><?php echo isset($_especialidades[$x->id_regiao])?utf8_encode($_especialidades[$x->id_regiao]->titulo):"-";?></td>
-											<td><?php echo number_format($valor,2,",",".");?></td>
+											<td><?php echo isset($_especialidades[$x->id_especialidade])?utf8_encode($_especialidades[$x->id_especialidade]->titulo):"-";?></td>
+											<td><?php echo (isset($valor))?number_format($valor,2,",","."):'sem plano';?></td>
 											<td><?php echo $obs;?></td>
 										<?php
 										}

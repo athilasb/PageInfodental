@@ -241,10 +241,7 @@
 		$_grAgendasProfissionaisTotal=0;
 		$sql->consult($_p."agenda","id,id_cadeira,profissionais,agenda_data,id_status,lixo","where id_paciente=$paciente->id and lixo=0");
 		while($x=mysqli_fetch_object($sql->mysqry)) {
-
-
 			$profAux=explode(",",$x->profissionais);
-
 			foreach($profAux as $idP) {
 				if(!empty($idP) and is_numeric($idP)) {
 					if(!isset($_grAgendasProfissionais[$idP])) $_grAgendasProfissionais[$idP]=0;
@@ -313,12 +310,14 @@
 
 				<section class="box" style="grid-column:span 2; grid-row:span 2">
 					<?php
-					$sql->consult($_p."agenda","id,id_status,agenda_duracao","where id_paciente=$paciente->id and lixo=0");
+					$sql->consult($_p."agenda","id,id_status,agenda_duracao,id_cadeira,profissionais,agenda_data,id_status,lixo","where id_paciente=$paciente->id and lixo=0");
 					$agendamentos=$sql->rows;
 					$agendamentosAtendidos=$agendamentosDesmarcados=$agendamentosFaltou=$agendamentosAtendidosDuracao=0;
+					$listaAtendimentosPaciente = [];
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						if($x->id_status==5) {
 							$agendamentosAtendidos++;
+							$listaAtendimentosPaciente[]=$x;
 							$agendamentosAtendidosDuracao+=$x->agenda_duracao;
 						} else if($x->id_status==4) $agendamentosDesmarcados++;
 						else if($x->id_status==3) $agendamentosFaltou++;
@@ -408,25 +407,19 @@
 																			*/
 							}
 						}
-						$qtdTotal = count($_agendas);
-						foreach($_agendas as $id=>$agenda){
+						foreach($listaAtendimentosPaciente as $e) {
+							$aux=explode(",",$e->profissionais);
 							$profissional = false;
 							$perc = $qtd = 0;
-							$aux=explode(",",$agenda->profissionais);
 							foreach($aux as $key=>$value){
 								if(strlen($value)>0){
 									$profissional = $_colaboradores[$value];
 									if($profissional){
-
 										if(!in_array($profissional->nome,$labelDentistas)){
 											$labelDentistas[]=utf8_encode($profissional->nome);
 										}
-
 										$qtd = (isset($grProfissionais[$profissional->id]['qtd']))?$grProfissionais[$profissional->id]['qtd']+1:1;
-
-										$perc=number_format((($qtd/$qtdTotal)*100),1,".","");
-										
-
+										$perc=number_format((($qtd/$agendamentosAtendidos)*100),1,".","");
 										if(!in_array($profissional->calendario_cor,$labelDentistasCor)){
 											$labelDentistasCor[]=$profissional->calendario_cor;
 										}
@@ -439,9 +432,9 @@
 								}
 							}
 						}
+
 						foreach($grProfissionais as $id=>$prof){
 							$labelDentistasQtd[]=$prof['perc'];
-
 						}
 
 					?>
@@ -633,7 +626,6 @@
 									}
 
 									if(empty($agenda) or empty($cadeira)) continue;
-									
 								} else if($x->evento=="observacao" || $x->evento=="relacionamento") {
 									$evento="relacionamento";
 									$icone='<span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>';

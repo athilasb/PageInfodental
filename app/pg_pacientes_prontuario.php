@@ -1,4 +1,4 @@
-<?php
+]<?php
 	if(isset($_POST['ajax'])) {
 		require_once("lib/conf.php");	
 		require_once("usuarios/checa.php");
@@ -49,7 +49,6 @@
 			}
 
 		}
-
 		else if($_POST['ajax']=="evolucaoErrataListar") {
 
 			$_profissionais=array();
@@ -119,7 +118,6 @@
 		header("Content-type: application/json");
 		echo json_encode($rtn);
 		die();
-
 	}
 	include "includes/header.php";
 	include "includes/nav.php";
@@ -348,7 +346,9 @@
 								<div class="filter-form form">
 									<dl>
 										<dd>
-											<a href="javascript:;" data-aside="prontuario-opcoes" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar Evolução</span></a>
+											<a href="javascript:;" data-aside="prontuario-opcoes" class="button button_main">
+												<i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar Evolução</span>
+											</a>
 										</dd>
 									</dl>
 								</div>
@@ -791,8 +791,6 @@
 				}
 				$(function(){
 
-					
-
 					$('.js-expande').click(function() {
 						$(this).parent().parent().next('article').toggleClass('active');
 						$(this).toggleClass('button-reverse');
@@ -956,7 +954,10 @@
 	</main>
 
 <?php 
-			
+
+	//$apiConfig=array('proximaConsulta'=>1);
+
+	//require_once("includes/api/apiAside.php");
 
 	$apiConfig=array('geral'=>1,
 						'anamnese'=>1,
