@@ -12,7 +12,11 @@
 		$_profissionaisTodos[$x->id]=$x;
 	}
 
-
+	$_tags=array();
+	$sql->consult($_p."parametros_tags","*","WHERE lixo=0 order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_tags[$x->id]=$x;
+	}
 
 	$_cadeiras=array();
 	$sql->consult($_p."parametros_cadeiras","*","where lixo=0  order by titulo asc");
@@ -505,6 +509,18 @@
 							}
 						}
 
+						$aux = explode(",",$x->tags);
+						$tags=array();
+						foreach($aux as $id_tag) {
+							if(!empty($id_tag) and is_numeric($id_tag)) {
+								if(isset($_tags[$id_tag])) {
+									$p=$_tags[$id_tag];
+									$tags[]=array('titulo'=>utf8_encode($p->titulo),
+												  'cor'=>$p->cor);
+								}
+							}
+						}
+
 						$aux=explode(" ",trim(utf8_encode($_pacientes[$x->id_paciente]->nome)));
 						//$pacienteNome=$aux[0];
 						$pacienteNome=tirarAcentos(utf8_encode($_pacientes[$x->id_paciente]->nome));
@@ -547,6 +563,7 @@
 												'situacao'=>utf8_encode($_pacientes[$x->id_paciente]->situacao),
 												'id_status'=>$x->id_status,
 												'profissionais'=>$profissionais,
+												'tags'=>$tags,
 												'color'=>'#FFF',
 												'statusColor'=>(isset($_status[$x->id_status])?$_status[$x->id_status]->cor:''),
 												'id'=>$x->id,
@@ -1070,6 +1087,10 @@
 			$('#js-aside-add .js-profissionais').chosen('destroy');
 			$('#js-aside-add .js-profissionais').chosen();
 			$('#js-aside-add .js-profissionais').trigger('chosen:updated');
+
+			$('#js-aside-add .js-tags').chosen('destroy');
+			$('#js-aside-add .js-tags').chosen();
+			$('#js-aside-add .js-tags').trigger('chosen:updated');
 			agendamentosProfissionais(`add`);
 		}
 		
@@ -1642,6 +1663,7 @@
 								let agendadoPor = arg.event.extendedProps.agendadoPor;
 								let statusColor = arg.event.extendedProps.statusColor;
 								let profissionais = arg.event.extendedProps.profissionais;
+								let tags = arg.event.extendedProps.tags;
 								let id_agenda = arg.event.id;
 								let wts = arg.event.extendedProps.wts;
 								let duracao = arg.event.extendedProps.duracao;
@@ -1663,6 +1685,15 @@
 										}
 										cont++;
 									})
+								}
+
+								tagsHTML = ``;
+								if(tags && tags.length>0) {
+									tagsHTML+=`<div class="cal-item-tags">`;
+									tags.forEach(p=> {
+										tagsHTML+=`<p style="color:${p.cor}"><span>${p.titulo}</span></p>`;
+									})
+									tagsHTML+=`</div>`;
 								}
 	   							
 								if(profissionaisHTML.length!=0) profissionaisHTML = `<div class="cal-item__fotos">${profissionaisHTML}</div>`; 
@@ -1698,10 +1729,7 @@
 														<div class="cal-item-dados">
 															<h2 style="margin-top:0">${nome}</h2>
 															<h1>${hora} - ${cadeira}</h1>
-															<div class="cal-item-tags">
-																<p style="color:purple"><span>tag 1</span></p>
-																<p style="color:orange"><span>tag 2</span></p>
-															</div>
+															${tagsHTML}
 														</div>
 														${wtsIcon}
 														${profissionaisHTML}
