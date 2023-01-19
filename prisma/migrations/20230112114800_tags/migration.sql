@@ -66,6 +66,8 @@ ALTER TABLE `ident_landingpage_conversao`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 
+DROP TABLE `ident_landingpage_depoimentos`;
+
 ALTER TABLE `ident_landingpages_depoimentos` RENAME `ident_landingpage_depoimentos`;
 
 CREATE TABLE `ident_avaliacoes_habilitadas` (`id` INT NOT NULL AUTO_INCREMENT , `id_tipo` INT NOT NULL , `pub` TINYINT(1) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
