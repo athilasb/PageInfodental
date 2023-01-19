@@ -3994,44 +3994,44 @@
 
 				$(function(){
 
-					$('#js-aside-proximaConsulta-paciente  .js-btn-acao').click(function(){
-						$('#js-aside-proximaConsulta-paciente .js-btn-acao').removeClass('active');
+					$('#js-aside-proximaConsulta  .js-btn-acao').click(function(){
+						$('#js-aside-proximaConsulta .js-btn-acao').removeClass('active');
 						$(this).addClass('active');
 
 						if($(this).attr('data-tipo')=="queroAgendar") {
-							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-lembrete').hide();
-							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-altaPeriodicidade').hide();
-							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-queroAgendar').show();
+							$('#js-aside-proximaConsulta  .js-ag-agendamento-lembrete').hide();
+							$('#js-aside-proximaConsulta  .js-ag-agendamento-altaPeriodicidade').hide();
+							$('#js-aside-proximaConsulta  .js-ag-agendamento-queroAgendar').show();
 
-							$('#js-aside-proximaConsulta-paciente  .js-profissionais-qa').chosen();
-							$('#js-aside-proximaConsulta-paciente  input[name=tipo]').val('queroAgendar');
+							$('#js-aside-proximaConsulta  .js-profissionais-qa').chosen();
+							$('#js-aside-proximaConsulta  input[name=tipo]').val('queroAgendar');
 						} else if($(this).attr('data-tipo')=="altaPeriodicidade") {
-							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-lembrete').hide();
-							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-queroAgendar').hide();
-							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-altaPeriodicidade').show();
+							$('#js-aside-proximaConsulta  .js-ag-agendamento-lembrete').hide();
+							$('#js-aside-proximaConsulta  .js-ag-agendamento-queroAgendar').hide();
+							$('#js-aside-proximaConsulta  .js-ag-agendamento-altaPeriodicidade').show();
 
-							$('#js-aside-proximaConsulta-paciente  .js-profissionais-qa').chosen();
-							$('#js-aside-proximaConsulta-paciente  input[name=tipo]').val('altaPeriodicidade');
+							$('#js-aside-proximaConsulta  .js-profissionais-qa').chosen();
+							$('#js-aside-proximaConsulta  input[name=tipo]').val('altaPeriodicidade');
 						} else {
-							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-altaPeriodicidade').hide();
-							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-queroAgendar').hide();
-							$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento-lembrete').show();
-							$('#js-aside-proximaConsulta-paciente  input[name=tipo]').val('lembrete');
+							$('#js-aside-proximaConsulta  .js-ag-agendamento-altaPeriodicidade').hide();
+							$('#js-aside-proximaConsulta  .js-ag-agendamento-queroAgendar').hide();
+							$('#js-aside-proximaConsulta  .js-ag-agendamento-lembrete').show();
+							$('#js-aside-proximaConsulta  input[name=tipo]').val('lembrete');
 						}
 					});
 					
-					$('#js-aside-proximaConsulta-paciente  .js-ag-agendamento .js-salvar').click(function(){
-						let tipo = $('#js-aside-proximaConsulta-paciente input[name=tipo]').val();
-						//let id_paciente = $('#js-aside-proximaConsulta-paciente .js-id_paciente').val();
-						let id_agenda_origem = $('#js-aside-proximaConsulta-paciente .js-proximaConsulta-id_agenda').val();
+					$('#js-aside-proximaConsulta  .js-ag-agendamento .js-salvar').click(function(){
+						let tipo = $('#js-aside-proximaConsulta input[name=tipo]').val();
+						//let id_paciente = $('#js-aside-proximaConsulta .js-id_paciente').val();
+						let id_agenda_origem = $('#js-aside-proximaConsulta .js-proximaConsulta-id_agenda').val();
 
 						if(tipo=="queroAgendar") {
-							let agenda_data = $('#js-aside-proximaConsulta-paciente input[name=agenda_data]').val();
-							let agenda_duracao = $('#js-aside-proximaConsulta-paciente select[name=agenda_duracao]').val();
-							let id_cadeira = $('#js-aside-proximaConsulta-paciente select[name=id_cadeira]').val();
-							let id_profissional = $('#js-aside-proximaConsulta-paciente select.js-profissionais-qa').val();
-							let agenda_hora = $('#js-aside-proximaConsulta-paciente select[name=agenda_hora]').val();
-							let obs = $('#js-aside-proximaConsulta-paciente textarea.js-obs-qa').val();
+							let agenda_data = $('#js-aside-proximaConsulta input[name=agenda_data]').val();
+							let agenda_duracao = $('#js-aside-proximaConsulta select[name=agenda_duracao]').val();
+							let id_cadeira = $('#js-aside-proximaConsulta select[name=id_cadeira]').val();
+							let id_profissional = $('#js-aside-proximaConsulta select.js-profissionais-qa').val();
+							let agenda_hora = $('#js-aside-proximaConsulta select[name=agenda_hora]').val();
+							let obs = $('#js-aside-proximaConsulta textarea.js-obs-qa').val();
 							let erro = '';
 
 							if(agenda_data.length==0) erro='Defina a <b>Data do Agendamento</b>';
@@ -4101,12 +4101,12 @@
 							}
 						}
 						else if(tipo=="lembrete") {
-							let retorno = $(`#js-aside-proximaConsulta-paciente .js-retorno`).val();
-							let duracao = $(`#js-aside-proximaConsulta-paciente .js-agenda_duracao`).val();
-							let laboratorio = $(`#js-aside-proximaConsulta-paciente .js-laboratorio`).prop('checked')===true?1:0;
-							let imagem = $(`#js-aside-proximaConsulta-paciente .js-imagem`).prop('checked')===true?1:0;
-							let profissionais = $(`#js-aside-proximaConsulta-paciente .js-profissionais-lembrete`).val();
-							let obs = $(`#js-aside-proximaConsulta-paciente .js-obs`).val();
+							let retorno = $(`#js-aside-proximaConsulta .js-retorno`).val();
+							let duracao = $(`#js-aside-proximaConsulta .js-agenda_duracao`).val();
+							let laboratorio = $(`#js-aside-proximaConsulta .js-laboratorio`).prop('checked')===true?1:0;
+							let imagem = $(`#js-aside-proximaConsulta .js-imagem`).prop('checked')===true?1:0;
+							let profissionais = $(`#js-aside-proximaConsulta .js-profissionais-lembrete`).val();
+							let obs = $(`#js-aside-proximaConsulta .js-obs`).val();
 							let erro = '';
 							
 
@@ -4158,9 +4158,9 @@
 							}
 						}
 						else if(tipo=="altaPeriodicidade") {
-							let periodicidade = $('#js-aside-proximaConsulta-paciente .js-periodicidade_select').val();
-							let alta = $('#js-aside-proximaConsulta-paciente .js-periodicidade_alta').val();
-							let periodicidadeDescricao = $('#js-aside-proximaConsulta-paciente .js-periodicidade_select option:selected').attr('data-descricao');
+							let periodicidade = $('#js-aside-proximaConsulta .js-periodicidade_select').val();
+							let alta = $('#js-aside-proximaConsulta .js-periodicidade_alta').val();
+							let periodicidadeDescricao = $('#js-aside-proximaConsulta .js-periodicidade_select option:selected').attr('data-descricao');
 
 
 							let erro= '';
@@ -4208,14 +4208,14 @@
 						}
 					});
 
-					$('#js-aside-proximaConsulta-paciente  .js-ag-prontuario .js-salvarProntuario').click(function(){
+					$('#js-aside-proximaConsulta  .js-ag-prontuario .js-salvarProntuario').click(function(){
 
 
 						let obj = $(this);
 						let objTextoAntigo = $(this).html();
-						let id_profissional = $('#js-aside-proximaConsulta-paciente .js-prontuario-profissional').val();
-						let prontuario = $('#js-aside-proximaConsulta-paciente .js-prontuario').val();
-						let dataProntuario = $('#js-aside-proximaConsulta-paciente .js-prontuario-data').val();
+						let id_profissional = $('#js-aside-proximaConsulta .js-prontuario-profissional').val();
+						let prontuario = $('#js-aside-proximaConsulta .js-prontuario').val();
+						let dataProntuario = $('#js-aside-proximaConsulta .js-prontuario-data').val();
 
 						let erro='';
 
@@ -4262,7 +4262,7 @@
 				});
 
 			</script>
-			<!-- SECAO ANTIGA <section class="aside aside-prontuario-proximaConsulta" style="display: none;">
+			<section class="aside aside-prontuario-proximaConsulta" style="display: none;">
 				<div class="aside__inner1">
 					<header class="aside-header">
 						<h1>Próxima Consulta</h1>
@@ -4282,7 +4282,7 @@
 											<dd></dd>
 										</dl>
 										<dl>
-											<dd><button class="button button_main js-salvarProximaConsulta" data-loading="0" type="button"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+											<dd><button class="button button_main js-salvarProximaConsulta" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
 										</dl>
 									</div>								
 								</div>
@@ -4428,273 +4428,9 @@
 					</form>
 				</div>
 			</section> 
-			-->
-
 			
-			<section class="aside aside-prontuario-proximaConsulta" style="display: none;" id="js-aside-proximaConsulta-paciente">
-				<div class="aside__inner1">
-					<header class="aside-header">
-						<h1>Próxima Consulta</h1>
-						<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-					</header>
-					<form method="post" class="aside-content form" onsubmit="return false;">
-						<input type="hidden" class="js-proximaConsulta-id_agenda" />
-						<input type="hidden" class="js-id_paciente" value="0" />
-						<input type="hidden" name="tipo" value="" />
-						<section class="header-profile">
-							<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
-							<div class="header-profile__inner1">
-								<h1><a href="" target="_blank" class="js-nome"></a></h1>
-								<div>
-									<p class="js-statusBI"></p>
-									<p class="js-idade"></p>
-									<p class="js-periodicidade">Periodicidade: 6 meses</p>
-									<p class="js-musica"></p>
-								</div>
-							</div>
-						</section>
 
-						<section class="tab tab_alt js-tab">
-							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamento').show();" class="active">Agendamento</a>	
-							<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamentoFuturos').show();" class="">Agendamentos Futuros</a>
-						</section>
 
-						<div class="js-ag js-ag-agendamento">
-							<section class="filter">
-								<div class="button-group">
-									<a href="javascript:;" class="js-btn-acao js-btn-acao-lembrete button active" data-tipo="lembrete"><span>Criar Lembrete</span></a>
-									<a href="javascript:;" class="js-btn-acao js-btn-acao-queroAgendar button" data-tipo="queroAgendar"><span>Quero agendar</span></a>
-									<a href="javascript:;" class="js-btn-acao js-btn-acao-altaPeriodicidade button" data-tipo="altaPeriodicidade"><span>Alta por Periodicidade</span></a>
-								</div>
-								<div class="filter-group">
-									<div class="filter-form form">
-										<dl>
-											<dd></dd>
-										</dl>
-										<dl>
-											<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
-										</dl>
-									</div>								
-								</div>
-							</section>
-
-							<div class="js-ag-agendamento-lembrete">
-								<input type="hidden" class="js-asProfissoes-id" />
-								<div class="colunas4">
-									<dl>
-										<dt>Retorno em</dt>
-										
-										<dd class="form-comp form-comp_pos">
-											<input type="number" class="js-retorno" maxlength="3" min=0 oninput="validity.valid||(value='');" />
-											<span>dias</span>
-										</dd>
-									</dl>
-									<dl>
-										<dt>Duração</dt>
-										
-										<dd class="form-comp form-comp_pos">
-											<select class="js-agenda_duracao">
-												<option value="">-</option>
-												<?php
-												foreach($optAgendaDuracao as $v) {
-													if($values['agenda_duracao']==$v) $possuiDuracao=true;
-													echo '<option value="'.$v.'"'.($values['agenda_duracao']==$v?' selected':'').'>'.$v.'</option>';
-												}
-												?>
-											</select>
-											<span>min</span>
-										</dd>
-									</dl>
-
-									<dl class="dl2">
-										<dt>&nbsp;</dt>
-										<dd>
-											<label>
-												<input type="checkbox" class="input-switch js-laboratorio" /> Laboratório
-											</label>
-											<label>
-												<input type="checkbox" class="input-switch js-imagem" /> Imagem
-											</label>
-										</dd>
-									</dl>
-
-								</div>
-								<dl>
-									<dt>Profissionais</dt>
-									<dd>
-										<select class="js-profissionais js-profissionais-lembrete" multiple>
-											<option value=""></option>
-											<?php
-											foreach($_profissionais as $p) {
-												if($p->check_agendamento==0) continue;
-												echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
-											}
-											?>
-										</select>
-									</dd>
-								</dl>
-								<dl>
-									<dt>Observações</dt>
-									<dd>
-										<textarea class="js-obs" style="height:80px;"></textarea>
-									</dd>
-								</dl>
-
-								<div class="js-ag-agendamentoFuturos" style="">
-									<div class="list1">
-										<table>
-										</table>
-									</div>
-								</div>
-							</div>
-
-							<div class="js-ag-agendamento-queroAgendar">
-								<div class="colunas3">
-									<dl>
-										<dt>Data</dt>
-										<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data datecalendar" /></dd>
-									</dl>
-								
-									<dl>
-										<dt>Duração</dt>
-										<dd class="form-comp form-comp_pos">
-											<?php /*<input type="tel" name="agenda_duracao" class="" />*/?>
-											<select name="agenda_duracao">
-												<option value="">-</option>
-												<?php
-												foreach($optAgendaDuracao as $v) {
-													echo '<option value="'.$v.'">'.$v.'</option>';
-												}
-												?>
-											</select>
-											<span>min</span>
-										</dd>
-									</dl>
-
-									<dl>
-										<dt>Consultório</dt>
-										<dd>
-											<select name="id_cadeira">
-												<option value=""></option>
-												<?php
-												foreach($_cadeiras as $p) {
-													echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
-												}
-												?>
-											</select>
-										</dd>
-									</dl>
-								</div>
-								<div class="colunas3">
-									<dl class="dl2">
-										<dt>Profissionais</dt>
-										<dd>
-											<select class="js-profissionais-qa js-select-profissionais">
-												<option value=""></option>
-												<?php
-												foreach($_profissionais as $p) {
-													if($p->check_agendamento==0) continue;
-													echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
-												}
-												?>
-											</select>
-										</dd>
-									</dl>
-									<dl>
-										<dt>Hora</dt>
-										<dd class="form-comp">
-											<span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span>
-											<select name="agenda_hora">
-												<option value="">Selecione o horário</option>
-											</select>
-										</dd>
-									</dl>
-								</div>
-
-								<dl>
-									<dt>Observações</dt>
-									<dd>
-										<textarea class="js-obs-qa" style="height:80px;"></textarea>
-									</dd>
-								</dl>
-							</div>
-
-							<div class="js-ag-agendamento-altaPeriodicidade">
-								<div class="colunas4">
-									<dl>
-										<dt>Confirme a Periodicidade</dt>
-										<dd>
-											<select class="js-periodicidade_select">
-												<option value="">-</option>
-												<?php
-												foreach($_pacientesPeriodicidade as $k=>$v) {
-													echo '<option value="'.$k.'" data-descricao="'.$v.'">'.$v.'</option>';
-												}
-												?>
-											</select>
-										</dd>
-									</dl>
-								</div>
-
-								<dl>
-									<dt>Alta por Periodicidade</dt>
-									<dd>
-										<textarea style="height:200px;" class="js-periodicidade_alta"></textarea>
-									</dd>
-								</dl>
-
-								
-							</div>
-						</div>
-						<section class="tab tab_alt js-ag js-ag-prontuario">
-							<a href="javascript:;" class="active">Prontuário</a>
-						</section>
-
-						<div class="js-ag js-ag-prontuario" style="display:none">
-							<section class="filter">
-								<div class="button-group">
-								</div>
-								<div class="filter-group">
-									<div class="filter-form form">
-										<dl>
-											<dd><button class="button button_main js-salvarProximaConsulta" data-loading="0" type='button'><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
-										</dl>
-									</div>								
-								</div>
-							</section>
-							<div class="colunas3">
-								<dl>
-									<dt>Data</dt>
-									<dd>
-										<input type="text" class="js-prontuario-data" class="datahora" />
-									</dd>
-								</dl>
-							</div>
-							<dl>
-								<dt>Profissional</dt>
-								<dd>
-									<select class="js-prontuario-profissional">
-										<option value="">-</option>
-										<?php
-										foreach($_profissionais as $p) {
-											if($p->check_agendamento==0) continue;
-											echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
-										}
-										?>
-									</select>
-								</dd>
-							</dl>
-							<dl>
-								<dt>Prontuário</dt>
-								<dd>
-									<textarea class="js-prontuario" style="height:250px;"></textarea>
-								</dd>
-							</dl>
-						</div>
-					</form>
-				</div>
-			</section>
-			
 			<?php
 		}
 	
