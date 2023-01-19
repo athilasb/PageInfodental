@@ -955,9 +955,6 @@
 
 <?php 
 
-	//$apiConfig=array('proximaConsulta'=>1);
-
-	//require_once("includes/api/apiAside.php");
 
 	$apiConfig=array('geral'=>1,
 						'anamnese'=>1,

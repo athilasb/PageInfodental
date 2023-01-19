@@ -551,7 +551,6 @@
 		let cont = 1;
 		$('#js-descontos-table-procedimentos').html('');
 		procedimentos.forEach(x => {
-
 			if(x.situacao=="aprovado") {
 				opcao='';
 				if(x.opcao.length>0) opcao=x.opcao+' - ';
@@ -770,8 +769,6 @@
 
 		// clica no botao de aplicar desconto na janela de desconto
 		$('.aside-plano-desconto .js-btn-aplicarDesconto').click(function(){
-			console.log(procedimentos)
-			console.log("-------------------------------")
 			let tipoDesconto = $('.aside-plano-desconto .js-select-tipoDesconto').val();
 			let quantidadeDesconto = $('.aside-plano-desconto .js-desconto-procedimento:checked').length;
 			let desconto = unMoney($(`.aside-plano-desconto .js-input-desconto`).val());
@@ -800,19 +797,19 @@
 							//console.log(cont+' '+x.situacao+'->'+x.valorCorrigido);
 							qtdItensDesconto++;
 							valorItens[cont] = x.valor;
-							percItens[cont] = x.valor/valorOriginal
+							percItens[cont] = (x.valor/valorOriginal).toFixed(5)
 
 							if(x.quantitativo>0){
 								valorItens[cont] = (x.quantidade*x.valor);
-								percItens[cont] = (x.quantidade*x.valor)/valorOriginal
+								percItens[cont] = ((x.quantidade*x.valor)/valorOriginal).toFixed(5)
 							}
 							else if(x.face==1){
 								valorItens[cont] = (x.faces.length*x.valor);
-								percItens[cont] = (x.faces.length*x.valor)/valorOriginal
+								percItens[cont] = ((x.faces.length*x.valor)/valorOriginal).toFixed(5)
 							}
 							else if(x.id_regiao==5){
 								valorItens[cont] = (x.hof*x.valor);
-								percItens[cont] = (x.hof*x.valor)/valorOriginal;
+								percItens[cont] = ((x.hof*x.valor)/valorOriginal).toFixed(5)
 							}
 						}
 						cont++;

@@ -23,7 +23,7 @@
 
 		# Agenda
 			if($_POST['ajax']=="agendamentosProfissionais") {
-				
+
 				$_profissionais=array();
 				$_profissionaisTodos=array();
 				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,lixo,foto,calendario_cor,check_agendamento,contratacaoAtiva"," order by nome asc");
@@ -41,7 +41,6 @@
 				$data = (isset($_POST['data']) and isset($_POST['data']))?invDate($_POST['data']):'';
 				$hora = (isset($_POST['hora']) and isset($_POST['hora']))?$_POST['hora'].":00":'';
 				$id_cadeira = (isset($_POST['id_cadeira']) and isset($_POST['id_cadeira']))?$_POST['id_cadeira']:0;
-				die();
 				if(!empty($data) and !empty($hora)) {
 					$diaSemana = date('w',strtotime($data));
 					
@@ -79,8 +78,6 @@
 								'listaProfissionaisDestaque'=>$listaProfissionaisDestaque,
 								'listaProfissionais'=>$listaProfissionais,
 								'tags' => $_tags);
-
-
 				}
 			}
 
@@ -3098,6 +3095,7 @@
 						}
 
 						const agendamentosProfissionais = (tipo) => {
+							
 
 							if(tipo=="add" || tipo=="edit") {
 
@@ -3110,11 +3108,20 @@
 
 								let data = `ajax=agendamentosProfissionais&data=${aData}&hora=${aHora}&id_cadeira=${id_cadeira}`;
 								
+								console.log('------ CHAMOU AQUI ----------')
+								console.log(tipo)
+								console.log(profissionaisSelecionados)
+								console.log(aData)
+								console.log(aHora)
+								console.log(id_cadeira)
+								console.log(data)
+								console.log("--------------------------")
 								$.ajax({
 									type:"POST",
 									url:baseURLApiAside,
 									data:data,
 									success:function(rtn) {
+										console.log(rtn)
 										if(rtn.success) {
 											if(rtn.listaProfissionais || rtn.listaProfissionaisDestaque) {
 												aside.find('.js-profissionais option').remove();
@@ -3402,7 +3409,7 @@
 								<dl>
 									<dt>Profissionais</dt>
 									<dd>
-										<select class="js-profissionais" multiple>
+										<select class="js-profissionais" multiple >
 											<option value=""></option>
 											<?php
 											foreach($_profissionais as $p) {
@@ -6527,9 +6534,7 @@
 					}
 					
 					const asideProximaConsulta = (idAgenda=0) => {
-						console.log('CHAMOU AQUI')
 						$('#js-aside-proximaConsulta .js-tab').show();
-						console.log('CHEGOU AQUI')
 						let data = `ajax=proximaConsulta&id_agenda=${idAgenda}`;
 						$.ajax({
 							type:'POST',
