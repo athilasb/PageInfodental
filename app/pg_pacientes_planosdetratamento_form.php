@@ -414,6 +414,7 @@
 			}
 			else{
 				$('#metodos-pagamento-politica').find('.colunas3 .dl2').show()
+				//atualizaValor(true)
 			}
 		}
 
@@ -1334,7 +1335,6 @@
 							</dl>
 						</div>
 					</fieldset>
-
 					<!-- Financeiro -->
 					<fieldset style="grid-row:span 2">
 						<legend>Financeiro</legend>
@@ -1351,7 +1351,7 @@
 								</dl>
 								<dl>
 									<dd>
-										<label><input id='ValidaPoliticaManualID' type="checkbox" name="pagamento" value="politica" class="input-switch" data-politica='0' onclick="ativarDesativarPolitica(this)" <?php echo (is_object($cnt) and $cnt->pagamento=="politica")?" checked":"";?>/><span id='PoliticaUsadaMomento'></span></label>
+										<label><input id='ValidaPoliticaManualID' type="checkbox" name="pagamento-politica" value="politica" class="input-switch" data-politica='0' onclick="ativarDesativarPolitica(this)" <?php echo (is_object($cnt) and $cnt->pagamento=="politica")?" checked":"";?>/><span id='PoliticaUsadaMomento'></span></label>
 									</dd>
 								</dl>
 								<dl id='botao-voltar-menu-parcelas' style='display: none;'>
@@ -1392,7 +1392,6 @@
 							</div>
 						</div>
 					</fieldset>
-
 					<!-- Procedimentos --> 
 					<fieldset>
 						<legend>Procedimentos</legend>
@@ -1415,13 +1414,8 @@
 							</table>
 						</div>
 					</fieldset>
-
-
 				</div>
-
-
 			</form>
-
 		</div>
 	</main>
 
