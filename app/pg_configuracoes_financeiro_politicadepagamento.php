@@ -8,11 +8,7 @@
 	if(isset($_POST['ajax'])) {
 
 		require_once("usuarios/checa.php");
-
 		$rtn=array();
-
-		
- 
 		if($_POST['ajax']=="editar") {
 
 			$cnt = '';
@@ -59,12 +55,32 @@
 				$vSQL="lixo=1";
 				$sql->update($_table,$vSQL,$vWHERE);
 				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='delete',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='$_table',id_reg='".$cnt->id."'");
-
 				$rtn=array('success'=>true);
 
 			}
 		}
 
+		else if($_POST['ajax']=="update") {
+			$cnt = '';
+			if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+				$sql->consult($_table,"*","where id=".$_POST['id']);
+				if($sql->rows) {
+					$cnt=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+			if(empty($cnt)) {
+				$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
+			} else {
+			$status = $_POST['status'];
+				
+			$vWHERE="where id=$cnt->id";
+			$vSQL="status=$status";
+			$sql->update($_table,$vSQL,$vWHERE);
+			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='delete',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='$_table',id_reg='".$cnt->id."'");
+			$rtn=array('success'=>true);
+			}
+		}
 		else if($_POST['ajax']=="persistir") {
 
 
@@ -221,13 +237,9 @@
 
 	include "includes/header.php";
 	include "includes/nav.php";
-
 	$values=$adm->get($_GET);
 	$campos=explode(",","de,ate,entrada,parcelas");
-
 	if(isset($_POST['acao'])) {
-
-
 		
 	}
 
@@ -306,7 +318,7 @@
 											<?=$x->parcelas;?>
 										</td>
 										<td>
-											<!--<label><input type="checkbox" class="input-switch" <?= ($x->lixo==0)?'checked':''?>/></label>-->
+											<label><input type="checkbox" class="input-switch" <?= ($x->status==0)?'checked':''?> onclick="UpdateStatus(<?=$x->id?>, <?=$x->status?>)"/></label>
 										</td>
 									</tr>
 									<?php
@@ -453,6 +465,32 @@
 			}
 		}
 
+		const UpdateStatus = (id, status) => {
+			(status==0)?status=1:status=0;
+
+			let data = `ajax=update&id=${id}&status=${status}`;
+			$.ajax({
+				type:"POST",
+				data:data,
+				success:function(rtn) {
+					console.log(rtn)
+					if(rtn.success) {
+						//swal({title: "Sucesso!", text: "Salvo com Sucesso", type:"sucess", confirmButtonColor: "#424242"});
+						document.location.reload();
+					} else if(rtn.error) {
+						swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+						
+					} else {
+						swal({title: "Erro!", text: 'Algum erro ocorreu! Tente novamente.', type:"error", confirmButtonColor: "#424242"});
+						
+					}
+				},
+				error:function() {
+					swal({title: "Erro!", text: 'Algum erro ocorreu! Tente novamente', type:"error", confirmButtonColor: "#424242"});
+				}
+			}).done(function(){
+			})
+		}
 		
 		$(function(){
 			// Botao salvar Politica
@@ -463,49 +501,49 @@
 				const checkboxesChecked = document.querySelectorAll('input[type="checkbox"]:checked');
 				let de = false;
 				let ate =false;
-				let entradaMinima = false;
+				let entradaMinima = 0;
 				let quantidadeParcelas = false;
-				let quantidadeParcelasSemJuros=false;
-				let jurosAnual=false;
+				let quantidadeParcelasSemJuros=0;
+				let jurosAnual=0;
+				let descontoAvista=0;
 				if(tipoPolitica=='intervalo'){
-					de = parseFloat(document.querySelector('[name="de"]').value.replace(".", "").replace(",", "."));
-					ate = parseFloat(document.querySelector('[name="ate"]').value.replace(".", "").replace(",", "."));
-
+					//de = unMoney(document.querySelector('[name="de"]').value.replace(".", "").replace(",", "."));
+					de = (document.querySelector('[name="de"]').value);
+					ate = (document.querySelector('[name="ate"]').value);
 					entradaMinima = document.querySelector('[name="entradaMinima"]').value;
 					quantidadeParcelas = document.querySelector('[name="quantidadeParcelas"]').value;
 					quantidadeParcelasSemJuros = document.querySelector('[name="quantidadeParcelasSemJuros"]').value;
 					jurosAnual = document.querySelector('[name="jurosAnual"]').value;
+					descontoAvista = document.querySelector('[name="jurosAnual"]').value;
 
 				}else if(tipoPolitica=='acima'){
-					de = parseFloat(document.querySelector('[name="de"]').value.replace(".", "").replace(",", "."));
+					de = (document.querySelector('[name="de"]').value);
 					ate = 0;
 					entradaMinima = document.querySelector('[name="entradaMinima"]').value;
 					quantidadeParcelas = document.querySelector('[name="quantidadeParcelas"]').value;
 					quantidadeParcelasSemJuros = document.querySelector('[name="quantidadeParcelasSemJuros"]').value;
 					jurosAnual = document.querySelector('[name="jurosAnual"]').value;
+					descontoAvista = document.querySelector('[name="jurosAnual"]').value;
 				}else{
 					erro = "Nenhuma Tipo de Politica selecionado"
 				}
-
 				if(!de){
-					erro = "Voce Precisa Adicionar uma Valor 'DE'";
+					de = 0
 				}else if(!ate){
 					erro = "Voce Precisa Adicionar uma Valor 'ATE'";
 				}else if(!quantidadeParcelas){
 					erro = "Voce Precisa Adicionar uma quantidade de Parcelas. Se for a Vista coloque '1'";
-				}else if((parseFloat(de) > parseFloat(ate)) || parseFloat(ate)==0){
-					console.log(parseFloat(de))
-					console.log((ate))
-					console.log(parseFloat(ate))
+				}else if((unMoney(de) > unMoney(ate)) || unMoney(ate)==0){
 					erro = "O campo 'DE' Não Pode ser Menor que o campo 'ATE'";
 				}else if(checkboxesChecked.length<=0){
 					erro = "Voce Precisa Selecionar pelo menos 1 metodo de pagamento";
 				}
+
 				if(erro){
 					swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
 				}else{
 					let objetoPolitica = {
-						tipoPolitica,de,ate,entradaMinima,quantidadeParcelas,quantidadeParcelasSemJuros,jurosAnual,metodos:[]
+						tipoPolitica,de,ate,entradaMinima,quantidadeParcelas,quantidadeParcelasSemJuros,jurosAnual,metodos:[],descontoAvista
 					}
 					for (var i = 0; i < checkboxesChecked.length; i++) {
 					    var checkbox = checkboxesChecked[i];
@@ -513,7 +551,7 @@
 					   		objetoPolitica.metodos.push(checkbox.getAttribute('data-tipo'))
 					    }
 					}
-					let data = `ajax=persistir&id=${idPolitica}&tipo=${tipoPolitica}&de=${de}&ate=${ate}&entradaMinima=${entradaMinima}&quantidadeParcelas=${quantidadeParcelas}&parcelasJSON=${JSON.stringify(objetoPolitica)}`;
+					let data = `ajax=persistir&id=${idPolitica}&tipo=${tipoPolitica}&de=${de}&ate=${ate}&entradaMinima=${entradaMinima}&descontoAvista=${descontoAvista}&quantidadeParcelas=${quantidadeParcelas}&parcelasJSON=${JSON.stringify(objetoPolitica)}`;
 					$.ajax({
 						type:"POST",
 						data:data,
@@ -619,7 +657,45 @@
 			});
 			// Botao de deletar
 			$('.js-fieldset-bandeiras,.js-btn-remover').click(function(){
-				
+				const idPolitica = document.querySelector('[name="id"]').value
+				swal({   
+					title: "Atenção",   
+					text: "Tem certeza que deseja Deletar essa politica ?",
+					type: "warning",   
+					showCancelButton: true,   
+					confirmButtonColor: "#DD6B55",   
+					confirmButtonText: "Sim!",   
+					cancelButtonText: "Não",   
+					closeOnConfirm: false,   
+					closeOnCancel: false 
+					}, function(isConfirm){   
+						if (isConfirm) {   
+							let data = `ajax=remover&id=${idPolitica}`;
+							$.ajax({
+								type:"POST",
+								data:data,
+								success:function(rtn) {
+									if(rtn.success) {
+										//swal({title: "Sucesso!", text: "Salvo com Sucesso", type:"sucess", confirmButtonColor: "#424242"});
+										document.location.reload();
+									} else if(rtn.error) {
+										swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+										
+									} else {
+										swal({title: "Erro!", text: 'Algum erro ocorreu! Tente novamente.', type:"error", confirmButtonColor: "#424242"});
+										
+									}
+								},
+								error:function() {
+									swal({title: "Erro!", text: 'Algum erro ocorreu! Tente novamente', type:"error", confirmButtonColor: "#424242"});
+								}
+							}).done(function(){
+							})
+								swal.close();
+					  		} else {   
+					  		 	swal.close();   
+			  		 } 
+			  	});
 			})
 
 
@@ -665,15 +741,15 @@
 					<div class="colunas4" id='info-politica'>
 						<dl>
 							<dt>De</dt>
-							<dd><input type="text" name="de" class="obg js-money" /></dd>
+							<dd class="form-comp"><span>R$</i></span><input type="text" name="de" class="obg js-money" /></dd>
 						</dl>
 						<dl>
 							<dt>Até</dt>
-							<dd><input type="text" name="ate" class="obg js-money" /></dd>
+							<dd class="form-comp"><span>R$</i></span><input type="text" name="ate" class="obg js-money" /></dd>
 						</dl>
 						<dl>
-							<dt>Entrada Mínima</dt>
-							<dd><input type="text" name="entradaMinima" class="" placeholder="0%" /></dd>
+							<dt>Entrada Mínima %</dt>
+							<dd class="form-comp"><span>%</i></span><input type="text" name="entradaMinima" class="" placeholder="0%" /></dd>
 						</dl>
 						<dl>
 							<dt>Quantidade Máxima de Parcela</dt>
@@ -687,7 +763,11 @@
 						</dl>
 						<dl>
 							<dt>Juros Anual %</dt>
-							<dd><input type="number" name="jurosAnual" class="" /></dd>
+							<dd class="form-comp"><span>%</i></span><input type="number" name="jurosAnual" class="" /></dd>
+						</dl>
+						<dl>
+							<dt>Desconto a Vista % </dt>
+							<dd class="form-comp"><span>%</i></span><input type="number" name="descontoAvista" class="" /></dd>
 						</dl>
 					</div>
 				</fieldset>
