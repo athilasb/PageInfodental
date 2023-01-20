@@ -316,15 +316,12 @@
 				$('#ValidaPoliticaManualID').attr('checked',false)
 				$('#ValidaPoliticaManualID').attr('data-politica',1)
 				$('#PoliticaUsadaMomento').text('Politica')
-				$('#id_politica').val(0)
+				$('[name="id_politica"]').val(0)
 				AtualizaPolitica(1)
 			}else if(dataPolitica==1){
 				$('#ValidaPoliticaManualID').attr('checked',true)
 				$('#ValidaPoliticaManualID').attr('data-politica',0)
 				$('#PoliticaUsadaMomento').text('Politica')
-				$('#id_politica').val(temPolitica.id)
-				console.log('MUDANDO O ID DA POLITICA')
-				console.log('')
 				AtualizaPolitica(0)
 			}
 		}
@@ -346,7 +343,8 @@
 
 			if(temPolitica && dataPolitica==0){
 				$('#metodos-pagamento-politica').find('.colunas3 .dl2').hide()
-				$('#id_politica').val(temPolitica.id)
+				console.log(temPolitica.id)
+				$('[name="id_politica"]').val(temPolitica.id)
 				let valorTotal = valorTotalProcedimentos
 				let totalPoliticas =0;
 				let metodosPagamentosAceito =""
