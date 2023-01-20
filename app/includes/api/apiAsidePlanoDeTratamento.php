@@ -85,7 +85,142 @@
 			}
 
 			if(cont==procedimentos.length) {
-				$('.js-valorTotal').html(number_format(valorTotal,2,",","."));
+				if($('#metodos-pagamento-com-politica .js-valorTotal')){
+					for(let x in _politicas){
+						let politica = _politicas[x]
+						if(valorTotal>= parseFloat(politica.de) && valorTotal<= parseFloat(politica.ate)){
+							temPolitica = true;
+							temPolitica = politica
+						}else{
+						}
+					}
+					if(temPolitica){
+						let totalPoliticas =0;
+						if(temPolitica.parcelasParametros){
+							temPolitica.parcelasParametros = JSON.parse(temPolitica.parcelasParametros)
+						}
+						let metodosPagamentosAceito =""
+						for(let m in temPolitica.parcelasParametros.metodos){
+							metodosPagamentosAceito+=`<option value='${temPolitica.parcelasParametros.metodos[m]}'>${temPolitica.parcelasParametros.metodos[m].toUpperCase()}</option>`
+						}
+						// A Vista
+							if(temPolitica.parcelas>=1){
+								totalPoliticas++
+								$('#metodos-pagamento-com-politica .js-pagamentos-com-politica').append(`
+									<div class="fpag-item">
+										<aside>${totalPoliticas}</aside>
+										<article>
+											<div class="colunas3">
+												<div>
+													<i class="iconify" data-icon="ic:baseline-pix" style="font-size: 60px"></i>
+												</div>
+												<div class="colunas2"	>
+													<span class="dl2">A Vista de ${number_format(valorTotal,2,",",".")}</span>
+													<span class="dl2"></span>
+													<span class="dl2">TOTAL : R$ ${number_format(valorTotal,2,",",".")}</span>
+												</div>
+												<dl>
+													<dd>
+														<select class="">
+														${metodosPagamentosAceito}
+														</select>
+													</dd>
+												</dl>
+											</div>
+										</article>
+									</div>
+									`)
+							}
+						// parcelado 
+							let parcelaAtual = 1
+							let taxaJurosAnual = (temPolitica.parcelasParametros.jurosAnual.length>0)?(parseFloat(temPolitica.parcelasParametros.jurosAnual))/100:0
+							let totalParcelas = parseInt(temPolitica.parcelas)
+							let totalParcelasSemJuros = parseInt(temPolitica.parcelasParametros.quantidadeParcelasSemJuros)
+							//sem juros
+							while(totalParcelasSemJuros > 1){
+								totalPoliticas++
+								totalParcelasSemJuros--;
+								totalParcelas--;
+								parcelaAtual++
+								let valorParcelaSemJuros = (valorTotal/parcelaAtual)
+								let textoCard = `${parcelaAtual} x sem juros de R$ ${number_format(valorParcelaSemJuros,2,",",".")}`
+								$('#metodos-pagamento-com-politica .js-pagamentos-com-politica').append(`
+									<div class="fpag-item">
+										<aside>${totalPoliticas}</aside>
+										<article>
+											<div class="colunas3">
+												<div>
+													<i class="iconify" data-icon="ic:round-credit-card" style="font-size: 60px"></i>
+												</div>
+												<div class="colunas2"	>
+													<span class="dl2"> ${textoCard}</span>
+													<span class="dl2"></span>
+													<span class="dl2">TOTAL : R$ ${number_format(valorTotal,2,",",".")}</span>
+												</div>
+												<dl>
+													<dd>
+														<select class="">
+														${metodosPagamentosAceito}
+														</select>
+													</dd>
+												</dl>
+											</div>
+										</article>
+									</div>
+									`)
+							}
+							// com juros
+							while(totalParcelas > 1){
+								totalPoliticas++
+								totalParcelas--;
+								parcelaAtual++
+								if(parcelaAtual>12){
+									taxaJurosAnual = taxaJurosAnual+taxaJurosAnual
+								}
+								let valorParcelaComJuros = (valorTotal/parcelaAtual)+ ((valorTotal/parcelaAtual)*taxaJurosAnual)
+								let valorFinalParcelado = (valorParcelaComJuros*parcelaAtual)
+								let textoCard = `${parcelaAtual} x de R$ ${number_format(valorParcelaComJuros,2,",",".")}`
+
+								$('#metodos-pagamento-com-politica .js-pagamentos-com-politica').append(`
+									<div class="fpag-item">
+										<aside>${totalPoliticas}</aside>
+										<article>
+											<div class="colunas3">
+												<div>
+													<i class="iconify" data-icon="ic:round-credit-card" style="font-size: 60px"></i>
+												</div>
+												<div class="colunas2"	>
+													<span class="dl2"> ${textoCard}</span>
+													<span class="dl2"></span>
+													<span class="dl2">TOTAL : R$ ${number_format(valorFinalParcelado,2,",",".")}</span>
+												</div>
+												<dl>
+													<dd>
+														<select class="">
+														${metodosPagamentosAceito}
+														</select>
+													</dd>
+												</dl>
+
+											</div>
+										</article>
+									</div>
+									`)
+							}
+
+						$('#metodos-pagamento-com-politica .js-valorTotal').html(number_format(valorTotal,2,",","."));
+						$('#metodos-pagamento-sem-politica').hide()
+						$('#metodos-pagamento-com-politica').show()
+						console.log(temPolitica)
+					}else{
+						console.log('NAO TEM UMA POLITICA QUE SE ENCAIXA')
+						$('#metodos-pagamento-sem-politica .js-valorTotal').html(number_format(valorTotal,2,",","."));
+						$('#metodos-pagamento-sem-politica').show()
+						$('#metodos-pagamento-com-politica').hide()
+					}
+				}else{
+						$('.js-valorTotal').html(number_format(valorTotal,2,",","."));
+				}
 			}
 			cont++;
 			

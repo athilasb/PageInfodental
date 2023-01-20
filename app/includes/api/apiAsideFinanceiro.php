@@ -313,44 +313,7 @@
 
 			<input type="hidden" class="js-index" />
 
-			<!-- Resumo do pagamento -->
-			<?php /*<div class="js-fin js-fin-resumo">
-				<section class="filter"></section>
-				<fieldset>
-					<legend>Informações da Parcela</legend>
-					<div class="colunas3">
-						<dl>
-							<dt><strong>Valor da Parcela</strong></dt>
-							<dd><input type="tel" class="js-parcela" disabled /></dd>
-						</dl>
-					</div>
-					<div class="colunas3">
-						<dl>
-							<dt>Desconto</dt>
-							<dd class="form-comp"><span>–</span><input type="tel" class="js-desconto" disabled /></dd>
-						</dl>
-						<dl>
-							<dt>Despesa</dt>
-							<dd class="form-comp"><span>+</span><input type="tel" class="js-despesa" disabled /></dd>
-						</dl>
-						<dl>
-							<dt>Valor Corrigido</dt>
-							<dd><input type="tel" class="js-corrigido" disabled /></dd>
-						</dl>
-					</div>
-					<div class="colunas3">
-						<dl>
-							<dt>Valor Pago</dt>
-							<dd><input type="tel" class="js-pago" disabled /></dd>
-						</dl>
-						<dl>
-							<dt>Saldo a Pagar</dt>
-							<dd><input type="tel" class="js-apagar" disabled /></dd>
-						</dl>
-					</div>
-				</fieldset>
-			</div>*/?>
-
+	
 			<!-- Programacao de pagamento -->
 			<div class="js-fin js-fin-programacao" style="display: ;">
 				<section class="filter">

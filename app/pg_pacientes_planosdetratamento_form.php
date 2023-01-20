@@ -24,6 +24,11 @@
 			$sql->consult($_p."parametros_procedimentos","*","where lixo=0");
 			while($x=mysqli_fetch_object($sql->mysqry)) $_procedimentos[$x->id]=$x;
 
+		// politica de Pagamento
+			$_politicas=array();
+			$sql->consult($_p."parametros_politicapagamento","*","where lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) $_politicas[$x->id]=$x;
+
 		// regioes
 			$_regioesOpcoes=array();
 			$sql->consult($_p."parametros_procedimentos_regioes_opcoes","*","order by titulo asc");
@@ -296,10 +301,11 @@
 		$tratamentoAprovado=(is_object($cnt) and $cnt->status=="APROVADO")?true:false;
 	
 
-	
 ?>
 	<script type="text/javascript">
 		var procedimentos = [];
+		var _politicas = <?=json_encode($_politicas);?>;
+		var temPolitica = false
 		var pagamentos = JSON.parse(`<?php echo ($values['pagamentos']);;?>`);
 		var usuario = '<?php echo utf8_encode($usr->nome);?>';
 		var id_usuario = <?php echo $usr->id;?>;
@@ -315,8 +321,6 @@
 
 
 		$(function(){
-
-			
 			$('.js-btn-salvar').click(function(){
 				let erro = ``;
 
@@ -425,8 +429,7 @@
 						}
 						?>
 					</div>
-				</div>
-				
+				</div>				
 			</section>
 
 			<?php
@@ -1128,8 +1131,11 @@
 					<!-- Financeiro -->
 					<fieldset style="grid-row:span 2">
 						<legend>Financeiro</legend>
+
 						<textarea name="pagamentos" id="js-textarea-pagamentos" style="display:none;"><?php echo $values['pagamentos'];?></textarea>
 						<?php
+
+							
 						if($tratamentoAprovado===false) {
 						?>
 						<dl>
@@ -1140,96 +1146,186 @@
 						<?php
 						}
 						?>
+						<div class="" id='metodos-pagamento-sem-politica'>
+							<div class="colunas3">
+								<dl>
+									<dt>Valor Total (R$)</dt>
+									<dd style="font-size:1.75em; font-weight:bold;" class="js-valorTotal">0,00</dd>
+								</dl>
+								<?php
+								if($tratamentoAprovado===false) {
+								?>
 
-						<div class="colunas3">
-							<dl>
-								<dt>Valor Total (R$)</dt>
-								<dd style="font-size:1.75em; font-weight:bold;" class="js-valorTotal">0,00</dd>
-							</dl>
-							<?php
-							if($tratamentoAprovado===false) {
-							?>
-							<dl class="dl2">
-								<dt>Forma de Pagamento</dt>
-								<dd>
-									<label><input type="radio" name="pagamento" value="avista"<?php echo (is_object($cnt) and $cnt->pagamento=="avista")?" checked":"";?> disabled />A Vista</label>
-									<label><input type="radio" name="pagamento" value="parcelado"<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?" checked":"";?> disabled />Parcelado em</label>
-									<label><input type="number" name="parcelas" class="js-pagamentos-quantidade" value="<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?$cnt->parcelas:"2";?>" style="width:50px;<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?"":"display:none;";?>" /></label>
-								</dd>
-							</dl>	
-							<?php
-							}
-							?>						
+								<dl class="dl2">
+									<dt>Forma de Pagamento</dt>
+									<dd>
+										<label><input type="radio" name="pagamento" value="avista"<?php echo (is_object($cnt) and $cnt->pagamento=="avista")?" checked":"";?> disabled />A Vista</label>
+										<label><input type="radio" name="pagamento" value="parcelado"<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?" checked":"";?> disabled />Parcelado em</label>
+										<label><input type="number" name="parcelas" class="js-pagamentos-quantidade" value="<?php #echo (is_object($cnt) and $cnt->pagamento=="parcelado")?$cnt->parcelas:"2";?>" style="width:50px;<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?"":"display:none;";?>" /></label>
+									</dd>
+								</dl>
+								<?php
+								}
+								?>						
+							</div>
+							<div class="fpag js-pagamentos" style="margin-top:2rem;">
+								<?php
+
+								/*
+								?>
+								<div class="fpag-item">
+									<aside>1</aside>
+									<article>
+										<div class="colunas3">
+											<dl>
+												<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
+											</dl>
+											<dl>
+												<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
+											</dl>
+											<dl>
+												<dd>
+													<select class="js-id_formadepagamento js-tipoPagamento">
+														<option value="9" data-tipo="boleto">BOLETO</option>
+													</select>
+												</dd>
+											</dl>
+										</div>
+										<div class="colunas3">
+											<dl>
+												<dt>Identificador</dt>
+												<dd><input type="text" name="" /></dd>
+											</dl>
+										</div>
+									</article>
+								</div>
+
+								<div class="fpag-item">
+									<aside>2</aside>
+									<article>
+										<div class="colunas3">
+											<dl>
+												<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
+											</dl>
+											<dl>
+												<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
+											</dl>
+											<dl>
+												<dd>
+													<select class="js-id_formadepagamento js-tipoPagamento">
+														<option value="9" data-tipo="boleto">CARTÃO DE CRÉDITO</option>
+													</select>
+												</dd>
+											</dl>
+										</div>
+										<div class="colunas3">
+											<dl>
+												<dt>Bandeira</dt>
+												<dd><select name=""><option value=""></option></select></dd>
+											</dl>
+											<dl>
+												<dt>Parcelas</dt>
+												<dd><select name=""><option value="">1x</option></select></dd>
+											</dl>
+											<dl>
+												<dt>Identificador</dt>
+												<dd><input type="text" name="" /></dd>
+											</dl>
+										</div>
+									</article>
+								</div>
+								*/?>
+							</div>
+						</div>
+						<div id='metodos-pagamento-com-politica'>
+							<div class="colunas2">
+								<dl>
+									<dt>Valor Total (R$)</dt>
+									<dd style="font-size:1.75em; font-weight:bold;" class="js-valorTotal">0,00</dd>
+								</dl>
+							</div>
+							<div class="fpag js-pagamentos-com-politica" style="margin-top:2rem;">
+							<!--	<div class="fpag-item">
+									<aside>1</aside>
+									<article>
+										<div class="colunas3">
+											<dl>
+												<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
+											</dl>
+											<dl>
+												<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
+											</dl>
+											<dl>
+												<dd>
+													<select class="js-id_formadepagamento js-tipoPagamento">
+														<option value="9" data-tipo="boleto">BOLETO</option>
+													</select>
+												</dd>
+											</dl>
+										</div>
+										<div class="colunas3">
+											<dl>
+												<dt>Identificador</dt>
+												<dd><input type="text" name="" /></dd>
+											</dl>
+										</div>
+									</article>
+								</div> -->
+								<!--<div class="fpag-item">
+									<aside>2</aside>
+									<article>
+										<div class="colunas2">
+											<div>
+												<i class="iconify" data-icon="ic:round-credit-card" style="font-size: 60px"></i>
+											</div>
+											<div class="colunas2"	>
+												<span class="dl2">Cartão de Crédito</span>
+												<span class="dl2">até 10x sem juros</span>
+												<span class="dl2">TOTAL : R$ 1.000</span>
+											</div>
+										</div>
+									</article>
+								</div>
+								-->
+								<!--
+								<div class="fpag-item">
+									<aside>2</aside>
+									<article>
+										<div class="colunas3">
+											<dl>
+												<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
+											</dl>
+											<dl>
+												<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
+											</dl>
+											<dl>
+												<dd>
+													<select class="js-id_formadepagamento js-tipoPagamento">
+														<option value="9" data-tipo="boleto">CARTÃO DE CRÉDITO</option>
+													</select>
+												</dd>
+											</dl>
+										</div>
+										<div class="colunas3">
+											<dl>
+												<dt>Bandeira</dt>
+												<dd><select name=""><option value=""></option></select></dd>
+											</dl>
+											<dl>
+												<dt>Parcelas</dt>
+												<dd><select name=""><option value="">1x</option></select></dd>
+											</dl>
+											<dl>
+												<dt>Identificador</dt>
+												<dd><input type="text" name="" /></dd>
+											</dl>
+										</div>
+									</article>
+								</div>-->
+							</div>
 						</div>
 
-						<div class="fpag js-pagamentos" style="margin-top:2rem;">
-							<?php
-
-							/*
-							?>
-							<div class="fpag-item">
-								<aside>1</aside>
-								<article>
-									<div class="colunas3">
-										<dl>
-											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
-										</dl>
-										<dl>
-											<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
-										</dl>
-										<dl>
-											<dd>
-												<select class="js-id_formadepagamento js-tipoPagamento">
-													<option value="9" data-tipo="boleto">BOLETO</option>
-												</select>
-											</dd>
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl>
-											<dt>Identificador</dt>
-											<dd><input type="text" name="" /></dd>
-										</dl>
-									</div>
-								</article>
-							</div>
-
-							<div class="fpag-item">
-								<aside>2</aside>
-								<article>
-									<div class="colunas3">
-										<dl>
-											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
-										</dl>
-										<dl>
-											<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
-										</dl>
-										<dl>
-											<dd>
-												<select class="js-id_formadepagamento js-tipoPagamento">
-													<option value="9" data-tipo="boleto">CARTÃO DE CRÉDITO</option>
-												</select>
-											</dd>
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl>
-											<dt>Bandeira</dt>
-											<dd><select name=""><option value=""></option></select></dd>
-										</dl>
-										<dl>
-											<dt>Parcelas</dt>
-											<dd><select name=""><option value="">1x</option></select></dd>
-										</dl>
-										<dl>
-											<dt>Identificador</dt>
-											<dd><input type="text" name="" /></dd>
-										</dl>
-									</div>
-								</article>
-							</div>
-							*/?>
-						</div>
+					
 					</fieldset>
 
 					<!-- Procedimentos --> 
@@ -1265,8 +1361,6 @@
 	</main>
 
 <?php 
-	
 	require_once("includes/api/apiAsidePlanoDeTratamento.php");
-
 	include "includes/footer.php";
 ?>	

@@ -69,25 +69,22 @@
 
 
 
-			$de = (isset($_POST['de']) and !empty($_POST['de'])) ? valor($_POST['de']) : '';
+			$tipo = (isset($_POST['tipo']) and !empty($_POST['tipo'])) ? valor($_POST['tipo']) : '';
+			$de = (isset($_POST['de']) and !empty($_POST['de'])) ? valor($_POST['de']) : 0;
 			$ate = (isset($_POST['ate']) and !empty($_POST['ate'])) ? valor($_POST['ate']) : '';
-			$entrada = (isset($_POST['entrada']) and !empty($_POST['entrada'])) ? ($_POST['entrada']) : '';
-			$parcelas = (isset($_POST['parcelas']) and !empty($_POST['parcelas'])) ? ($_POST['parcelas']) : '';
-			$parcelasJSON = (isset($_POST['parcelasJSON']) and !empty($_POST['parcelasJSON'])) ? ($_POST['parcelasJSON']) : '';
+			$entrada = (isset($_POST['entradaMinima']) and !empty($_POST['entradaMinima'])) ? valor($_POST['entradaMinima']) : '0';
+			$parcelas = (isset($_POST['quantidadeParcelas']) and !empty($_POST['quantidadeParcelas'])) ? valor($_POST['quantidadeParcelas']) : '1';
+			$parcelasJSON = (isset($_POST['parcelasJSON']) and !empty($_POST['parcelasJSON'])) ? json_decode($_POST['parcelasJSON']) : '';
 
 			//echo $de." ".$ate;die();
-
 			$erro='';
-			if(empty($de)) $erro='Preencha o campo De';
-			else if(empty($ate)) $erro='Preencha o campo Até';
+			//if(empty($de)) $erro='Preencha o campo De';
+			if(($tipo =='intervalo') && (empty($ate))) $erro='Preencha o campo Até';
 			else if($de>$ate) $erro='O campo De deve ser menor que o campo Até';
-			else if(empty($entrada)) $erro='Preencha o campo de Entrada mínima (%)';
-			else if(empty($parcelas)) $erro='Preencha o campo de Qtd. máxima de parcelas';
+			//else if(empty($entrada)) $erro='Preencha o campo de Entrada mínima (%)';
 
 			if(!empty($erro)) {
-
 				$rtn=array('success'=>false,'error'=>$erro);
-
 			} else {
 
 				// consulta todas politicas para verificar interceção do "de" e "até";
@@ -102,11 +99,10 @@
 						ate='".addslashes($ate)."',
 						entrada='".addslashes($entrada)."',
 						parcelas='".addslashes($parcelas)."',
-						parcelasParametros='".addslashes($parcelasJSON)."'";
-
+						parcelasParametros='".json_encode($parcelasJSON)."'";
 
 				$cnt = '';
-				if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+				if(isset($_POST['id']) and is_numeric($_POST['id']) and $_POST['id']>0) {
 					$sql->consult($_table,"*","where id=".$_POST['id']." and lixo=0");
 					if($sql->rows) {
 						$cnt=mysqli_fetch_object($sql->mysqry);
@@ -116,9 +112,7 @@
 				// se for edição, remove o registro que está removendo da verificação
 				if(is_object($cnt)) { 
 					if(isset($_politica[$cnt->id])) {
-
-						 unset($_politica[$cnt->id]);
-						 
+						 unset($_politica[$cnt->id]); 
 					}
 				}	
 
@@ -305,15 +299,14 @@
 									?>
 									<tr class="js-item" data-id="<?php echo $x->id;?>">
 										<td><?php echo "De <b>R$".number_format($x->de,2,",",".")."</b> até <b>R$".number_format($x->ate,2,",",".")."</b>";?></td>
-										<td>
-											<?php
-											echo 'Entrada mínima: '.$x->entrada.'%';
-											?>
+										<td>Entrada mínima: 
+											<?=$x->entrada?>%
+										</td>
+										<td>Máximo de parcelas: 
+											<?=$x->parcelas;?>
 										</td>
 										<td>
-											<?php
-											echo 'Máximo de parcelas: '.$x->parcelas;
-											?>
+											<!--<label><input type="checkbox" class="input-switch" <?= ($x->lixo==0)?'checked':''?>/></label>-->
 										</td>
 									</tr>
 									<?php
@@ -406,25 +399,27 @@
 					data:data,
 					success:function(rtn){ 
 						if(rtn.success) {
+							$('#js-aside input[name=id]').val(rtn.data.id);
 							$('#js-aside input[name=de]').val(rtn.data.de);
 							$('#js-aside input[name=ate]').val(rtn.data.ate);
-							$('#js-aside input[name=entrada]').val(rtn.data.entrada);
-							$('#js-aside input[name=id]').val(rtn.data.id);
-							$('#js-aside select[name=parcelas]').val(rtn.data.parcelas);
-
+							$('#js-aside input[name=entradaMinima]').val(rtn.data.entrada);
+							$('#js-aside input[name=quantidadeParcelas]').val(rtn.data.parcelas);
+							$('#js-aside input[name=quantidadeParcelasSemJuros]').val(rtn.data.parcelasJSON.quantidadeParcelasSemJuros);
+							$('#js-aside input[name=jurosAnual]').val(rtn.data.parcelasJSON.jurosAnual);
 							let parcelas = rtn.data.parcelas;
-
-							//console.log(rtn.data.parcelasJSON[1]);
 
 							asideParcelas();
 
-							if(rtn.data.parcelasJSON.length>0) {
-
-								for(var i=0;i<parcelas;i++) {
-									let index = i+1;
-									$(`.js-prazo-${index}`).val(rtn.data.parcelasJSON[i].prazo);
-									$(`.js-juros-${index}`).val(rtn.data.parcelasJSON[i].juros);
-
+							if(rtn.data.parcelasJSON && rtn.data.parcelasJSON.metodos && rtn.data.parcelasJSON.metodos.length>0) {
+								if(rtn.data.parcelasJSON.metodos.length>0) {
+									$('input[type="checkbox"]').each(function() {
+										var checkbox = $(this);
+										if(checkbox.attr('data-tipo')){
+											if((rtn.data.parcelasJSON.metodos.indexOf(checkbox.attr('data-tipo')) !== -1)){
+												checkbox.prop('checked', true);
+											}
+										}
+									});
 								}
 							}
 							$('.js-textarea-parcelas').val(JSON.stringify(rtn.data.parcelasJSON));
@@ -460,8 +455,90 @@
 
 		
 		$(function(){
+			// Botao salvar Politica
+			document.querySelector('#js-aside .js-salvarPolitica').addEventListener('click',function(e){
+				let erro= "";
+				const idPolitica = document.querySelector('[name="id"]').value
+				const tipoPolitica = document.querySelector('[name="tipo"]').value
+				const checkboxesChecked = document.querySelectorAll('input[type="checkbox"]:checked');
+				let de = false;
+				let ate =false;
+				let entradaMinima = false;
+				let quantidadeParcelas = false;
+				let quantidadeParcelasSemJuros=false;
+				let jurosAnual=false;
+				if(tipoPolitica=='intervalo'){
+					de = parseFloat(document.querySelector('[name="de"]').value.replace(".", "").replace(",", "."));
+					ate = parseFloat(document.querySelector('[name="ate"]').value.replace(".", "").replace(",", "."));
 
+					entradaMinima = document.querySelector('[name="entradaMinima"]').value;
+					quantidadeParcelas = document.querySelector('[name="quantidadeParcelas"]').value;
+					quantidadeParcelasSemJuros = document.querySelector('[name="quantidadeParcelasSemJuros"]').value;
+					jurosAnual = document.querySelector('[name="jurosAnual"]').value;
 
+				}else if(tipoPolitica=='acima'){
+					de = parseFloat(document.querySelector('[name="de"]').value.replace(".", "").replace(",", "."));
+					ate = 0;
+					entradaMinima = document.querySelector('[name="entradaMinima"]').value;
+					quantidadeParcelas = document.querySelector('[name="quantidadeParcelas"]').value;
+					quantidadeParcelasSemJuros = document.querySelector('[name="quantidadeParcelasSemJuros"]').value;
+					jurosAnual = document.querySelector('[name="jurosAnual"]').value;
+				}else{
+					erro = "Nenhuma Tipo de Politica selecionado"
+				}
+
+				if(!de){
+					erro = "Voce Precisa Adicionar uma Valor 'DE'";
+				}else if(!ate){
+					erro = "Voce Precisa Adicionar uma Valor 'ATE'";
+				}else if(!quantidadeParcelas){
+					erro = "Voce Precisa Adicionar uma quantidade de Parcelas. Se for a Vista coloque '1'";
+				}else if((parseFloat(de) > parseFloat(ate)) || parseFloat(ate)==0){
+					console.log(parseFloat(de))
+					console.log((ate))
+					console.log(parseFloat(ate))
+					erro = "O campo 'DE' Não Pode ser Menor que o campo 'ATE'";
+				}else if(checkboxesChecked.length<=0){
+					erro = "Voce Precisa Selecionar pelo menos 1 metodo de pagamento";
+				}
+				if(erro){
+					swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
+				}else{
+					let objetoPolitica = {
+						tipoPolitica,de,ate,entradaMinima,quantidadeParcelas,quantidadeParcelasSemJuros,jurosAnual,metodos:[]
+					}
+					for (var i = 0; i < checkboxesChecked.length; i++) {
+					    var checkbox = checkboxesChecked[i];
+					    if(checkbox.getAttribute('data-tipo')){
+					   		objetoPolitica.metodos.push(checkbox.getAttribute('data-tipo'))
+					    }
+					}
+					let data = `ajax=persistir&id=${idPolitica}&tipo=${tipoPolitica}&de=${de}&ate=${ate}&entradaMinima=${entradaMinima}&quantidadeParcelas=${quantidadeParcelas}&parcelasJSON=${JSON.stringify(objetoPolitica)}`;
+					$.ajax({
+						type:"POST",
+						data:data,
+						success:function(rtn) {
+							console.log(rtn)
+							if(rtn.success) {
+								//swal({title: "Sucesso!", text: "Salvo com Sucesso", type:"sucess", confirmButtonColor: "#424242"});
+								document.location.reload();
+							} else if(rtn.error) {
+								swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+								
+							} else {
+								swal({title: "Erro!", text: 'Algum erro ocorreu! Tente novamente.', type:"error", confirmButtonColor: "#424242"});
+								
+							}
+						},
+						error:function() {
+							swal({title: "Erro!", text: 'Algum erro ocorreu! Tente novamente', type:"error", confirmButtonColor: "#424242"});
+						}
+					}).done(function(){
+					})
+				}
+
+			})
+			
 			$('.js-table-parcelas').on('keyup','.js-prazo,.js-juros',function(){
 				$(this).removeClass('erro')
 			});
@@ -513,88 +590,7 @@
 				}
 			});
 
-			// Botao salvar Politica
-			$('#js-aside .js-salvarPolitica').click(function(){
-
-				let obj = $(this);
-				let objHTMLAntigo = obj.html();
-
-				if(obj.attr('data-loading')==0) {
-
-					let de = $('#js-aside input[name=de]').val();
-					let ate = $('#js-aside input[name=ate]').val();
-					let entrada = $('#js-aside input[name=entrada]').val();
-					let parcelas = $('#js-aside select[name=parcelas]').val();
-					let id = $('#js-aside input[name=id]').val();
-
-					let erro = '';
-					if(de.length==0) erro='Preencha o campo De';
-					else if(ate.length==0) erro='Preencha o campo Até';
-					else if(entrada.length==0) erro='Preencha o campo de Entrada mínima (%)';
-					else if(parcelas.length==0) erro='Preencha o campo de Qtd. máxima de parcelas';
-
-					if(erro.length>0) {
-						swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
-					} else {
-
-						erro='';
-						$(`.js-prazo`).each(function(index,el){
-							if($(el).val().length==0) {
-								$(el).addClass('erro');
-								erro='Preencha todos os campos';
-							}
-						});
-
-
-						$(`.js-juros`).each(function(index,el){
-							if($(el).val().length==0) {
-								$(el).addClass('erro');
-								erro='Preencha todos os campos';
-							}
-						});
-
-
-						if(erro.length>0) {
-							swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
-						} else {
-							obj.attr('data-loading',1);
-							obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>');
-
-							parcelasJSON=$('.js-textarea-parcelas').val();
-
-							let data = `ajax=persistir&de=${de}&ate=${ate}&entrada=${entrada}&parcelas=${parcelas}&id=${id}&parcelasJSON=${parcelasJSON}`;
-
-							$.ajax({
-								type:"POST",
-								data:data,
-								success:function(rtn) {
-									if(rtn.success) {
-										document.location.reload();
-									} else if(rtn.error) {
-										swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-										obj.html(objHTMLAntigo);
-										obj.attr('data-loading',0);
-									} else {
-										swal({title: "Erro!", text: 'Algum erro ocorreu! Tente novamente.', type:"error", confirmButtonColor: "#424242"});
-										obj.html(objHTMLAntigo);
-										obj.attr('data-loading',0);
-									}
-								},
-								error:function() {
-									swal({title: "Erro!", text: 'Algum erro ocorreu! Tente novamente', type:"error", confirmButtonColor: "#424242"});
-									obj.html(objHTMLAntigo);
-									obj.attr('data-loading',0);
-								}
-							}).done(function(){
-							})
-						}
-
-					}
-				}
-
-			});
-
-
+	
 			// nova operadora/maquininha
 			$('.js-openAside').click(function(){
 				$('#js-aside form.formulario-validacao').trigger('reset');
@@ -621,6 +617,10 @@
 			        this.value = this.value.replace(regexp, '');
 			    }
 			});
+			// Botao de deletar
+			$('.js-fieldset-bandeiras,.js-btn-remover').click(function(){
+				
+			})
 
 
 		})
@@ -655,9 +655,14 @@
 				</section>
 
 				<fieldset>
-					<legend>Informações</legend>
+					<legend>
+						<select name="tipo" onchange="acimaOrIntervalo(this)">
+							<option value="intervalo">INTERVALO</option>
+							<option value="acima">ACIMA DE</option>
+						</select>
+					</legend>
 					
-					<div class="colunas4">
+					<div class="colunas4" id='info-politica'>
 						<dl>
 							<dt>De</dt>
 							<dd><input type="text" name="de" class="obg js-money" /></dd>
@@ -667,58 +672,123 @@
 							<dd><input type="text" name="ate" class="obg js-money" /></dd>
 						</dl>
 						<dl>
-							<dt>Entrada mínima (%)</dt>
-							<dd><input type="text" name="entrada" class="obg js-maskFloat" maxlength="5" /></dd>
+							<dt>Entrada Mínima</dt>
+							<dd><input type="text" name="entradaMinima" class="" placeholder="0%" /></dd>
 						</dl>
 						<dl>
-							<dt>Qtd. máxima de parcelas</dt>
+							<dt>Quantidade Máxima de Parcela</dt>
+							<dd><input type="text" name="quantidadeParcelas" class="" /></dd>
+						</dl>
+					</div>
+					<div class="colunas4">
+						<dl>
+							<dt>Quantidade Vezes sem Juros</dt>
+							<dd><input type="number" name="quantidadeParcelasSemJuros" class="" /></dd>
+						</dl>
+						<dl>
+							<dt>Juros Anual %</dt>
+							<dd><input type="number" name="jurosAnual" class="" /></dd>
+						</dl>
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<legend>FORMA DE PAGAMENTO ACEITA</legend>
+					<div class="colunas4">
+						<dl class="dl1">
+							<dt>DINHEIRO</dt>
 							<dd>
-								<select name="parcelas">
-									<option value=""></option>
-									<?php
-									for($i=1;$i<=24;$i++) {
-										echo '<option value="'.$i.'">'.$i.'</option>';
-									}
-									?>
-								</select>
+								<label><input  id="status-dinheiro"  data-tipo='dinheiro' type="checkbox" class="input-switch"/></label>
+							</dd>
+						</dl>
+						<dl class="dl1">
+							<dt>PIX</dt>
+							<dd>
+								<label><input  id="status-pix"  data-tipo='pix' type="checkbox" class="input-switch"/></label>
+							</dd>
+						</dl>
+						<dl class="dl1">
+							<dt>DEBITO</dt>
+							<dd>
+								<label><input  id="status-debito"  data-tipo='debito' type="checkbox" class="input-switch"/></label>
+							</dd>
+						</dl>
+						<dl class="dl1">
+							<dt>CREDITO</dt>
+							<dd>
+								<label><input  id="status-credito"  data-tipo='credito' type="checkbox" class="input-switch"/></label>
+							</dd>
+						</dl>
+						<dl class="dl1">
+							<dt>BOLETO</dt>
+							<dd>
+								<label><input  id="status-boleto"  data-tipo='boleto' type="checkbox" class="input-switch"/></label>
+							</dd>
+						</dl>
+						<dl class="dl1">
+								<dt>CHEQUE</dt>
+							<dd>
+								<label><input  id="status-cheque"  data-tipo='cheque' type="checkbox" class="input-switch"/></label>
+							</dd>
+						</dl>
+						<dl class="dl1">
+								<dt>TRANSFERENCIA</dt>
+							<dd>
+								<label><input  id="status-transferencia"  data-tipo='transferencia' type="checkbox" class="input-switch"/></label>
+							</dd>
+						</dl>
+						<dl class="dl1">
+							<dt>PERMUTA</dt>
+							<dd>
+								<label><input  id="status-permuta"  data-tipo='permuta' type="checkbox" class="input-switch"/></label>
 							</dd>
 						</dl>
 					</div>
-				</fieldset>
-
-
-				<fieldset class="js-fieldset-parcelas">
-					
-					<textarea class="js-textarea-parcelas" style="display:none;"></textarea>
-					
-					<div style="display: flex;">
-						<table style="width:100%">
-							<thead>
-								<tr>
-									<th>Parcela</th>
-									<th>Prazo</th>
-									<th>Juros</th>
-								</tr>
-							</thead>
-							<tbody class="js-table-parcelas">
-								<tr>
-									<td style="text-align:center;">1x</td>
-									<td><input type="text" class="js-maskFloat" /></td>
-									<td><input type="text" /></td>
-								</tr>
-							</tbody>
-						</table>
-
-
-					</div>
-
-				</fieldset>
-
-
-
 			</form>
 
 		</div>
+		<script>
+			const acimaOrIntervalo = (e)=>{
+				const selected = e.options[e.selectedIndex].value;
+				if(selected=='acima'){
+					$('#info-politica').html("")
+					$('#info-politica').append(`
+							<dl>
+								<dt>De</dt>
+								<dd><input type="text" name="de" class="obg js-money" /></dd>
+							</dl>
+							<dl>
+								<dt>Entrada Mínima</dt>
+								<dd><input type="text" name="ate" class="" placeholder="0%" /></dd>
+							</dl>
+							<dl>
+								<dt>Quantidade Máxima de Parcela</dt>
+								<dd><input type="text" name="ate" class="" /></dd>
+							</dl>
+						`)
+				}else{
+					$('#info-politica').html("")
+						$('#info-politica').append(`
+							<dl>
+								<dt>De</dt>
+								<dd><input type="text" name="de" class="obg js-money" /></dd>
+							</dl>
+							<dl>
+							<dt>Até</dt>
+								<dd><input type="text" name="ate" class="obg js-money" /></dd>
+							</dl>
+							<dl>
+								<dt>Entrada Mínima</dt>
+								<dd><input type="text" name="ate" class="" placeholder="0%" /></dd>
+							</dl>
+							<dl>
+								<dt>Quantidade Máxima de Parcela</dt>
+								<dd><input type="text" name="ate" class="" /></dd>
+							</dl>
+						`)
+				}
+			}
+		</script>	
 	</section>
 
 	<!-- Aside Configurações de Taxas -->
