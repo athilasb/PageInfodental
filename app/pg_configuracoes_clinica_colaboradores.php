@@ -1183,8 +1183,7 @@
 								</fieldset>
 
 
-								<?php
-								/*<fieldset>
+								<fieldset>
 									<legend><span>Comissionamento</span></legend>
 
 									<script type="text/javascript">
@@ -1544,9 +1543,8 @@
 											</table>
 										</div>
 									</div><!-- .js-valorfixo -->
-
-								</fieldset>*/
-								?>
+								</fieldset>
+								
 							</div><!-- .js-dadosdacontratacao -->
 
 							

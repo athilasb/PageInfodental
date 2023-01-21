@@ -24,6 +24,11 @@
 			$sql->consult($_p."parametros_procedimentos","*","where lixo=0");
 			while($x=mysqli_fetch_object($sql->mysqry)) $_procedimentos[$x->id]=$x;
 
+		// politica de Pagamento
+			$_politicas=array();
+			$sql->consult($_p."parametros_politicapagamento","*","where lixo=0 and status=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) $_politicas[$x->id]=$x;
+
 		// regioes
 			$_regioesOpcoes=array();
 			$sql->consult($_p."parametros_procedimentos_regioes_opcoes","*","order by titulo asc");
@@ -148,7 +153,7 @@
 
 	// formulario
 		$cnt='';
-		$campos=explode(",","titulo,id_profissional,tempo_estimado");
+		$campos=explode(",","titulo,id_profissional,tempo_estimado,pagamento,id_politica");
 			
 		foreach($campos as $v) $values[$v]='';
 		$values['procedimentos']="[]";
@@ -159,7 +164,6 @@
 			if($sql->rows) {
 				$cnt=mysqli_fetch_object($sql->mysqry);
 				$values=$adm->values($campos,$cnt);
-
 				// Procedimentos
 					$procedimentosRegs=$usuariosIds=array();
 					$where="where id_tratamento=$cnt->id and id_paciente=$paciente->id and lixo=0";
@@ -180,8 +184,6 @@
 
 					$procedimentos=array();
 					foreach($procedimentosRegs as $x) {
-
-
 						/*$profissional=isset($_profissionais[$x->id_profissional])?$_profissionais[$x->id_profissional]:'';
 						$iniciaisCor='';
 						$iniciais='?';
@@ -239,13 +241,11 @@
 					} else {
 						$values['procedimentos']=empty($cnt->procedimentos)?"[]":utf8_encode($cnt->procedimentos);
 					}
-
 				// Pagamentos
 					$pagamentos=array();
 					$where="where id_tratamento=$cnt->id and id_paciente=$paciente->id and lixo=0";
 					$sql->consult($_table."_pagamentos","*",$where);
 					while($x=mysqli_fetch_object($sql->mysqry)) {
-						
 						$pagamentos[]=array('id'=>$x->id,
 												'vencimento'=>date('d/m/Y',strtotime($x->data_vencimento)),
 												'valor'=>(float)$x->valor);
@@ -258,14 +258,11 @@
 					}
 
 					$values['pagamentos']=empty($cnt->pagamentos)?"[]":utf8_encode($cnt->pagamentos);
-
-
 			}
 		}
 
 		if(is_object($cnt)) {
 			if(isset($_GET['deletaTratamento']) and $_GET['deletaTratamento']==$cnt->id) {
-
 				$vsql="lixo=1";
 				$vwhere="where id='".addslashes($_GET['deletaTratamento'])."'";
 				$sql->consult($_table,"*",$vwhere);
@@ -285,25 +282,25 @@
 						$jsc->jAlert("Tratamento excluído com sucesso!","sucesso","document.location.href='pg_pacientes_planosdetratamento.php?$url'");
 					}
 				}
-
 			}
 		} else {
 			$sql->consult($_table,"id","where id_paciente=$paciente->id");
 			$values['titulo']="Plano de tratamento ".($sql->rows+1);
 		}
-
-
 		$tratamentoAprovado=(is_object($cnt) and $cnt->status=="APROVADO")?true:false;
-	
-
-	
 ?>
 	<script type="text/javascript">
 		var procedimentos = [];
-		var pagamentos = JSON.parse(`<?php echo ($values['pagamentos']);;?>`);
+		let valorTotalProcedimentos = 0;
+		var _politicas = <?=json_encode($_politicas);?>;
+		var temPolitica = false;
+		var pagamentos = JSON.parse(`<?php echo ($values['pagamentos']);?>`);
 		var usuario = '<?php echo utf8_encode($usr->nome);?>';
 		var id_usuario = <?php echo $usr->id;?>;
 		var tratamentoAprovado = <?php echo ($tratamentoAprovado===true)?1:0;?>;
+		var contrato = <?=json_encode($values);?>;
+		contrato.pagamentos = pagamentos
+		contrato.procedimentos = JSON.parse(`<?php echo ($values['procedimentos']);?>`);
 
 		const desativarCampos = () => {
 			if(tratamentoAprovado===1) { 
@@ -313,10 +310,242 @@
 			}
 		}
 
+		const ativarDesativarPolitica = ()=>{
+			let dataPolitica = $('#ValidaPoliticaManualID').attr('data-politica')
+			if(dataPolitica==0){
+				$('#ValidaPoliticaManualID').attr('checked',false)
+				$('#ValidaPoliticaManualID').attr('data-politica',1)
+				$('#PoliticaUsadaMomento').text('Politica')
+				$('[name="id_politica"]').val(0)
+				AtualizaPolitica(1)
+			}else if(dataPolitica==1){
+				$('#ValidaPoliticaManualID').attr('checked',true)
+				$('#ValidaPoliticaManualID').attr('data-politica',0)
+				$('#PoliticaUsadaMomento').text('Politica')
+				AtualizaPolitica(0)
+			}
+		}
 
+		const ValidaPoliticaManual = ()=>{
+			if(!temPolitica){
+				$('#ValidaPoliticaManualID').attr('disabled',true)
+				$('#ValidaPoliticaManualID').attr('data-politica',1)
+			}
+			$('#ValidaPoliticaManualID').attr('checked',true)
+			$('#PoliticaUsadaMomento').text('Politica')
+			let dataPolitica = $('#ValidaPoliticaManualID').attr('data-politica')
+			AtualizaPolitica(dataPolitica)
+		}
+
+		const AtualizaPolitica = (dataPolitica)=>{
+			$('#metodos-pagamento-politica .js-pagamentos').html("")
+			$('#metodos-pagamento-politica .js-pagamentos').html("")
+
+			if(temPolitica && dataPolitica==0){
+				$('#metodos-pagamento-politica').find('.colunas3 .dl2').hide()
+				console.log(temPolitica.id)
+				$('[name="id_politica"]').val(temPolitica.id)
+				let valorTotal = valorTotalProcedimentos
+				let totalPoliticas =0;
+				let metodosPagamentosAceito =""
+				let qtdParcelas = 0
+				let taxaJuros = 0
+				let qtdParcelasTotal = parseInt(temPolitica.parcelas)
+				let qtdParcelasSemJuros = parseInt(temPolitica.parcelasParametros.quantidadeParcelasSemJuros)
+				let taxaJurosAnual = parseFloat(temPolitica.parcelasParametros.jurosAnual)
+				let valorEntrada = valorTotal/qtdParcelasTotal
+				let valorParcela = valorTotal/qtdParcelasTotal
+				let valorTotalParcelado = valorTotal
+
+				while(qtdParcelas<qtdParcelasTotal){
+					qtdParcelas ++
+					valorParcela = valorTotal/qtdParcelas
+					let valor = 0
+					let textoCard = `PARCELA ${qtdParcelas}`
+					
+					if(qtdParcelas==1){
+						valor = valorParcela
+						textoCard = `Á Vista ${qtdParcelas}x de ${number_format(valor,2,",",".")}`
+						if(parseFloat(temPolitica.parcelasParametros.descontoAvista)>0){
+							valor = valor-(valor*(parseFloat(temPolitica.parcelasParametros.descontoAvista)/100))
+							textoCard = `De: R$ ${number_format(valorTotal,2,",",".")} Por: ${number_format(valor,2,",",".")} a Vista`
+							valorTotalParcelado = valor
+						}
+					}else{
+						valor = valorParcela
+						valorTotalParcelado = valor*qtdParcelas
+						if(qtdParcelas<=qtdParcelasSemJuros){
+							textoCard = `${qtdParcelas}x de ${number_format(valor,2,",",".")} sem juros`
+						}else{
+							if(taxaJurosAnual>0){
+								let tempo = Math.ceil(qtdParcelasTotal/12)
+								valor = valor+(valor*(taxaJurosAnual/100))
+								valorTotalParcelado = valor*qtdParcelas
+								//valor = (valorTotal/qtdParcelas)+((valorTotal/qtdParcelas)*(taxaJurosAnual*tempo))
+							}
+							textoCard = `${qtdParcelas}x de ${number_format(valor,2,",",".")}`
+							if(temPolitica.parcelasParametros.entradaMinima.length>0){
+								valorEntrada = ((parseFloat(temPolitica.parcelasParametros.entradaMinima))/100)*(valorTotalParcelado)
+								valorParcela = ((valorTotalParcelado)-valorEntrada)/(qtdParcelas-1)
+								textoCard = `${qtdParcelas}x :<br><span> 1 de ${number_format((valorEntrada),2,",",".")} + ${qtdParcelas-1} de ${number_format((valorParcela),2,",",".")}</span>`
+
+							}
+						}
+					}
+					$('#metodos-pagamento-politica .js-pagamentos').append(`
+						<div class="fpag-item"  onclick='EscolheParcelas(${qtdParcelas},${valor})'>
+							<aside>${qtdParcelas}</aside>
+							<article>
+								<div class="colunas3">
+									<div class="colunas1">
+										<i class="iconify" data-icon="ic:round-credit-card" style="font-size: 60px"></i>
+									</div>
+									<div class="colunas2">
+										<span class="dl2"> ${textoCard}</span>
+										<span class="dl2"></span>
+										<span class="dl2">TOTAL : R$ ${number_format((valorTotalParcelado),2,",",".")}</span>
+									</div>
+									
+								</div>
+							</article>
+						</div>
+					`)
+				}
+			}
+			else{
+				$('#metodos-pagamento-politica').find('.colunas3 .dl2').show()
+				//atualizaValor(true)
+			}
+		}
+
+		const EscolheParcelas = (qtdParcelas,valor,primary=false)=>{
+			$('.js-valorTotal').html(number_format(qtdParcelas*valor,2,",","."));
+			$('#botao-voltar-menu-parcelas').show()
+			$('js-pagamentos-quantidade').val(qtdParcelas)
+			if(primary){
+				pagamentosListar(3);
+				return
+			}
+			let metodosPagamentosAceito =""
+			if(temPolitica && temPolitica.parcelasParametros){
+				for(let m in temPolitica.parcelasParametros.metodos){
+					if(temPolitica.parcelasParametros.metodos[m].length>0){
+						metodosPagamentosAceito+=`<option value='${temPolitica.parcelasParametros.metodos[m]}'>${temPolitica.parcelasParametros.metodos[m].toUpperCase()}</option>`
+					}
+				}
+			}
+			$('#metodos-pagamento-politica .js-pagamentos').html("")
+			let valorEntrada = valor
+			let valorParcela = valor
+
+			if(temPolitica.parcelasParametros.entradaMinima.length>0 && qtdParcelas>1){
+				valorEntrada = ((parseFloat(temPolitica.parcelasParametros.entradaMinima))/100)*(qtdParcelas*valor)
+				valorParcela = ((qtdParcelas*valor)-valorEntrada)/(qtdParcelas-1)
+			}
+			let parcelaAtual = 0
+
+			let startDate = new Date();
+			if($('.js-vencimento:eq(0)').val()!=undefined) {
+				aux = $('.js-vencimento:eq(0)').val().split('/');
+				startDate = new Date();//`${aux[2]}-${aux[1]}-${aux[0]}`);
+				startDate.setDate(aux[0]);
+				startDate.setMonth(eval(aux[1])-1);
+				startDate.setFullYear(aux[2]);
+			}
+
+			pagamentosTextarea = JSON.parse($('#js-textarea-pagamentos').val());
+			teste2 = [];
+			let parcelas = []
+			while(qtdParcelas>0){
+				qtdParcelas--
+				parcelaAtual ++
+				let item = {}
+				let valorParcelaFinal = valorParcela
+				if(parcelaAtual==1){
+					valorParcelaFinal = valorEntrada
+				}
+				if(pagamentosTextarea[qtdParcelas-1]) {
+					item = pagamentosTextarea[qtdParcelas-1];
+				}
+
+				let mes = startDate.getMonth()+1;
+				let dia = startDate.getDate();
+				mes = mes <= 9 ? `0${mes}`:mes;
+				dia = dia <= 9 ? `0${dia}`:dia;
+				item.valor = valorParcelaFinal.toFixed(5)
+				item.vencimento=`${dia}/${mes}/${startDate.getFullYear()}`;
+				parcelas.push(item)
+				newDate = startDate;
+				newDate.setMonth(newDate.getMonth()+1);
+				startDate=newDate;
+
+				/*
+				$('#metodos-pagamento-politica .js-pagamentos').append(`
+						<div class="fpag-item">
+							<aside>${parcelaAtual}</aside>
+							<article>
+								<div class="colunas3">
+									<dl>
+										<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular">
+											</i></span><input type="tel" name="" class="data js-vencimento" value="${item.vencimento}" />
+										</dd>
+									</dl>
+									<dl>
+										<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor js-valor" value="${number_format(valorParcelaFinal,2,",",".")}" /></dd>
+									</dl>
+									<dl>
+										<dd>
+											<select class="js-id_formadepagamento js-tipoPagamento">
+												${metodosPagamentosAceito}
+											</select>
+										</dd>
+									</dl>
+								</div>
+								<div class="colunas3">
+									<dl>
+										<dt>Identificador</dt>
+										<dd><input type="text" name="" /></dd>
+									</dl>
+								</div>
+							</article>
+						</div>
+					`)
+					*/
+			}
+			$('#js-textarea-pagamentos').val(JSON.stringify(parcelas))
+			pagamentos = parcelas;
+			pagamentosListar(3);
+
+		}
+
+		const voltarMenuParcelas = ()=>{
+			$('#ValidaPoliticaManualID').attr('data-politica',0)
+			$('#botao-voltar-menu-parcelas').hide()
+			atualizaValor()
+		}
+
+		const verificaSeExisteParcelasSalvas = ()=>{
+			if(contrato.id_politica > 0){
+				let qtdParcelas = contrato.pagamentos.length
+				let valor = contrato.pagamentos.reduce(function(acumulado, objeto) {
+							    return acumulado + objeto.valor;
+							}, 0);
+				EscolheParcelas(qtdParcelas,valor/qtdParcelas,true)
+			}else if(contrato.pagamento=='avista'){
+				$('#ValidaPoliticaManualID').attr('checked',false)
+				$('#ValidaPoliticaManualID').attr('data-politica',1)
+				pagamentosListar();
+			}else if(contrato.pagamento=='parcelado'){
+				$('#ValidaPoliticaManualID').attr('checked',false)
+				$('#ValidaPoliticaManualID').attr('data-politica',1)
+				pagamentosListar();
+			}
+		}
+		
 		$(function(){
+			// verificar a forma de Pagamento ja Pré salva 
+		
 
-			
 			$('.js-btn-salvar').click(function(){
 				let erro = ``;
 
@@ -338,13 +567,10 @@
 						}
 					})
 				}
-
 				if(erro.length>0) {
 					swal({title:"Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 				} else {
-
 					$('.js-form-plano').submit();
-
 				}
 			});
 
@@ -381,7 +607,6 @@
 
 	<main class="main">
 		<div class="main__content content">
-
 			<section class="filter">
 				
 				<div class="filter-group">				
@@ -425,15 +650,11 @@
 						}
 						?>
 					</div>
-				</div>
-				
+				</div>				
 			</section>
-
 			<?php
 			// submit
 			if(isset($_POST['acao'])) {
-
-
 				if($_POST['acao']=="wlib") {
 
 					$processa=true;
@@ -446,12 +667,7 @@
 							//die();
 						}
 					}
-
-
-					
 					if($processa===true) {	
-
-
 						// persiste as informacoes do tratamento
 						if($_POST['acao']=="wlib") {
 							$vSQL=$adm->vSQL($campos,$_POST);
@@ -495,7 +711,6 @@
 							$sql->update($_table."_procedimentos","id_profissional=$idProfissional","where id_tratamento=$id_tratamento");
 						}
 						if(isset($_POST['status']) and !empty($_POST['status'])) {
-
 							if(is_object($cnt)) {
 								$persistir=true;
 								$msgOk='';
@@ -733,7 +948,6 @@
 
 													// se for credito/debito
 													if(isset($x->id_formapagamento)) {
-
 														// se for credito
 														if($x->id_formapagamento==2 and isset($x->creditoBandeira) and isset($x->id_operadora) and isset($x->qtdParcelas)) {
 															/*$where="where id_bandeira='".$x->creditoBandeira."' and id_operadora='".$x->id_operadora."' and vezes='".$x->qtdParcelas."' and operacao='credito' and lixo=0";
@@ -1057,18 +1271,15 @@
 							die();
 						}
 					}
-
 				}
-
 			}
 			?>
 
 			<form method="post" class="form js-form-plano">
 				<input type="hidden" name="acao" value="wlib" />
 				<input type="hidden" name="status" />
-				
+				<input type="hidden" name="id_politica" value='<?=$values['id_politica']??0;?>'/>
 				<div class="grid grid_2">
-
 					<!-- Identificacao -->
 					<fieldset>
 						<legend>Identificação</legend>
@@ -1124,114 +1335,63 @@
 							</dl>
 						</div>
 					</fieldset>
-
 					<!-- Financeiro -->
 					<fieldset style="grid-row:span 2">
 						<legend>Financeiro</legend>
+
 						<textarea name="pagamentos" id="js-textarea-pagamentos" style="display:none;"><?php echo $values['pagamentos'];?></textarea>
 						<?php
-						if($tratamentoAprovado===false) {
-						?>
-						<dl>
-							<dd>
-								<a href="javascript:;" class="button button_main js-btn-desconto"><i class="iconify" data-icon="fluent:money-calculator-24-filled"></i><span>Descontos</span></a>
-							</dd>
-						</dl>
+
+						if($tratamentoAprovado===false) { ?>
+							<div class="colunas4">
+								<dl>
+									<dd>
+										<a href="javascript:;" class="button button_main js-btn-desconto"><i class="iconify" data-icon="fluent:money-calculator-24-filled"></i><span>Descontos</span></a>
+									</dd>
+								</dl>
+								<dl>
+									<dd>
+										<label><input id='ValidaPoliticaManualID' type="checkbox" name="pagamento-politica" value="politica" class="input-switch" data-politica='0' onclick="ativarDesativarPolitica(this)" <?php echo (is_object($cnt) and $cnt->pagamento=="politica")?" checked":"";?>/><span id='PoliticaUsadaMomento'></span></label>
+									</dd>
+								</dl>
+								<dl id='botao-voltar-menu-parcelas' style='display: none;'>
+									<dd>
+										<label onclick="voltarMenuParcelas()"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></label>
+									</dd>
+								</dl>
+							</div>
+
 						<?php
 						}
 						?>
+						<div class="" id='metodos-pagamento-politica'>
+							<div class="colunas3">
+								<dl>
+									<dt>Valor Total (R$)</dt>
+									<dd style="font-size:1.75em; font-weight:bold;" class="js-valorTotal">0,00</dd>
+								</dl>
+								<?php
+								if($tratamentoAprovado===false) {
+								?>
 
-						<div class="colunas3">
-							<dl>
-								<dt>Valor Total (R$)</dt>
-								<dd style="font-size:1.75em; font-weight:bold;" class="js-valorTotal">0,00</dd>
-							</dl>
-							<?php
-							if($tratamentoAprovado===false) {
-							?>
-							<dl class="dl2">
-								<dt>Forma de Pagamento</dt>
-								<dd>
-									<label><input type="radio" name="pagamento" value="avista"<?php echo (is_object($cnt) and $cnt->pagamento=="avista")?" checked":"";?> disabled />A Vista</label>
-									<label><input type="radio" name="pagamento" value="parcelado"<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?" checked":"";?> disabled />Parcelado em</label>
-									<label><input type="number" name="parcelas" class="js-pagamentos-quantidade" value="<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?$cnt->parcelas:"2";?>" style="width:50px;<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?"":"display:none;";?>" /></label>
-								</dd>
-							</dl>	
-							<?php
-							}
-							?>						
-						</div>
-
-						<div class="fpag js-pagamentos" style="margin-top:2rem;">
-							<?php
-
-							/*
-							?>
-							<div class="fpag-item">
-								<aside>1</aside>
-								<article>
-									<div class="colunas3">
-										<dl>
-											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
-										</dl>
-										<dl>
-											<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
-										</dl>
-										<dl>
-											<dd>
-												<select class="js-id_formadepagamento js-tipoPagamento">
-													<option value="9" data-tipo="boleto">BOLETO</option>
-												</select>
-											</dd>
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl>
-											<dt>Identificador</dt>
-											<dd><input type="text" name="" /></dd>
-										</dl>
-									</div>
-								</article>
+								<dl class="dl2">
+									<dt>Forma de Pagamento</dt>
+									<dd>
+										<label><input type="radio" name="pagamento" value="avista"<?php echo (is_object($cnt) and $cnt->pagamento=="avista")?" checked":"";?> disabled />A Vista</label>
+										<label><input type="radio" name="pagamento" value="parcelado"<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?" checked":"";?> disabled />Parcelado em</label>
+										<label><input type="number" name="parcelas" class="js-pagamentos-quantidade" value="<?php #echo (is_object($cnt) and $cnt->pagamento=="parcelado")?$cnt->parcelas:"2";?>" style="width:50px;<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?"":"display:none;";?>" /></label>
+									</dd>
+								</dl>
+								<?php
+								}
+								?>						
 							</div>
-
-							<div class="fpag-item">
-								<aside>2</aside>
-								<article>
-									<div class="colunas3">
-										<dl>
-											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
-										</dl>
-										<dl>
-											<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
-										</dl>
-										<dl>
-											<dd>
-												<select class="js-id_formadepagamento js-tipoPagamento">
-													<option value="9" data-tipo="boleto">CARTÃO DE CRÉDITO</option>
-												</select>
-											</dd>
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl>
-											<dt>Bandeira</dt>
-											<dd><select name=""><option value=""></option></select></dd>
-										</dl>
-										<dl>
-											<dt>Parcelas</dt>
-											<dd><select name=""><option value="">1x</option></select></dd>
-										</dl>
-										<dl>
-											<dt>Identificador</dt>
-											<dd><input type="text" name="" /></dd>
-										</dl>
-									</div>
-								</article>
+							<div class="fpag js-pagamentos" style="margin-top:2rem;">
 							</div>
-							*/?>
+							<div class="fpag js-pagamentos12" style="margin-top:2rem;">
+							</div>
 						</div>
 					</fieldset>
-
 					<!-- Procedimentos --> 
 					<fieldset>
 						<legend>Procedimentos</legend>
@@ -1254,19 +1414,12 @@
 							</table>
 						</div>
 					</fieldset>
-
-
 				</div>
-
-
 			</form>
-
 		</div>
 	</main>
 
 <?php 
-	
 	require_once("includes/api/apiAsidePlanoDeTratamento.php");
-
 	include "includes/footer.php";
 ?>	

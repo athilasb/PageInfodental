@@ -57,14 +57,10 @@
 	var autor = '<?php echo utf8_encode($usr->nome);?>';
 
 	const atualizaValor = (atualizarParcelas) => {
-
 		valorTotal=0;
-
 		let cont = 1;
 		procedimentos.forEach(x=> {
 			if(x.situacao!='naoAprovado') {
-
-
 				valorProcedimento=x.valor;
 				hof=x.hof>0?x.hof:1;
 
@@ -79,19 +75,27 @@
 				else {
 					valorProcedimento=eval(valorProcedimento);
 				}
-
-
 				valorTotal+=valorProcedimento;
 			}
-
 			if(cont==procedimentos.length) {
+				valorTotalProcedimentos = valorTotal
+				for(let x in _politicas){
+					let politica = _politicas[x]
+					if(valorTotal>= parseFloat(politica.de) && valorTotal<= parseFloat(politica.ate)){
+						temPolitica = true;
+						temPolitica = politica
+						if(temPolitica.parcelasParametros){
+							temPolitica.parcelasParametros = (typeof(temPolitica.parcelasParametros) !== "object")?JSON.parse(temPolitica.parcelasParametros):temPolitica.parcelasParametros
+						}
+					}else{
+					}
+				}
 				$('.js-valorTotal').html(number_format(valorTotal,2,",","."));
+				ValidaPoliticaManual();
 			}
 			cont++;
-			
 		});
  
-
 		let parcelas = [];
 
 		if(atualizarParcelas===true && $('input[name=pagamento]:checked').length>0) {
@@ -118,11 +122,12 @@
 				startDate=newDate;
 				
 				pagamentos=parcelas;
-			} else {
+			} 
+			else {
 				$('.js-pagamentos-quantidade').show();
 				let numeroParcelas = $('.js-pagamentos-quantidade').val();
 
-				if(numeroParcelas.length==0 || numeroParcelas<=0) numeroParcelas=2;
+				if(numeroParcelas.length==0 || numeroParcelas<=0) numeroParcelas=1;
 				
 				valorParcela=valorTotal/numeroParcelas;
 
@@ -138,23 +143,12 @@
 					startDate.setFullYear(aux[2]);
 				}
 
-				//console.log(pagamentos);
-
 				pagamentosTextarea = JSON.parse($('#js-textarea-pagamentos').val());
-				console.log(pagamentosTextarea);
 				teste2 = [];
 				for(var i=1;i<=numeroParcelas;i++) {
-					/*val = -1;
-					if($(`.js-pagamentos .js-valor:eq(${i})`).length) {
-						val = $(`.js-pagamentos .js-valor:eq(${(i-1)})`).val();
-					}
-					//console.log(`${$(`.js-pagamentos .js-valor:eq(${i})`).length} -> .js-pagamentos .js-valor:eq(${(i-1)}) => ${val}`);*/
-
 					let item = {};
 					if(pagamentosTextarea[i-1]) {
 						item = pagamentosTextarea[i-1];
-						console.log('inc '+i );
-						console.log(item);
 					}
 
 					let mes = startDate.getMonth()+1;
@@ -177,22 +171,27 @@
 						pagamentos=parcelas;
 					}
 				}
-
 			}
-
-			
 		}
-
 		pagamentosListar();
 	}
 
-	const pagamentosListar = () => {
+	const pagamentosListar = (passo=0) => {
+		if(($('#ValidaPoliticaManualID').attr('data-politica')==0) && passo<3){
+			return;
+		}
 		$('.js-pagamentos').html('');
-
-		//console.log(pagamentos);
 		if(pagamentos.length>0) {
-
 			let index=1;
+			let metodosPagamentosAceito ='<?php echo $optionFormasDePagamento;?>';
+			if(temPolitica.parcelasParametros.metodos.length>0 && (passo==3)){
+				metodosPagamentosAceito =""
+				for(let m in temPolitica.parcelasParametros.metodos){
+					if(temPolitica.parcelasParametros.metodos[m].length>0){
+						metodosPagamentosAceito+=`<option value='${temPolitica.parcelasParametros.metodos[m]}'>${temPolitica.parcelasParametros.metodos[m].toUpperCase()}</option>`
+					}
+				}
+			}
 			pagamentos.forEach(x=>{
 				$('.js-pagamentos').append(`<div class="fpag-item js-pagamento-item">
 												<aside>${index++}</aside>
@@ -202,13 +201,13 @@
 															<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data js-vencimento" value="${x.vencimento}" /></dd>
 														</dl>
 														<dl>
-															<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor js-valor" value="${number_format(x.valor,2,",",".")}" /></dd>
+															<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor js-valor" value="${number_format(x.valor,2,",",".")}"  disabled/></dd>
 														</dl>
 														<dl>
 															<dd>
 																<select class="js-id_formadepagamento js-tipoPagamento">
 																	<option value="">Forma de Pagamento...</option>
-																	<?php echo $optionFormasDePagamento;?>
+																	${metodosPagamentosAceito}
 																</select>
 															</dd>
 														</dl>
@@ -296,10 +295,8 @@
 					pagamentosAtualizaCampos($('.js-pagamento-item .js-id_formadepagamento:last'),false);
 				}
 			});
-
 			if(pagamentos.length==1) $('.js-pagamento-item .js-valor:last').prop('disabled',true);
 		}
-		//console.log(pagamentos);
 		$('#js-textarea-pagamentos').val(JSON.stringify(pagamentos))
 		//atualizaValor();
 		//desativarCampos();
@@ -543,9 +540,6 @@
 	}
 
 	// lista procedimentos no box desconto
-	/*
-		@checked: 1 para checar os checkbox e 0 para não checar os checkbox
-	*/
 	const descontoListarProcedimentos = (checked) => {
 		let totalDesconto = 0;
 		let cont = 1;
@@ -625,7 +619,6 @@
 		}
 	}
 
-
 	const pagamentosPersistirObjeto = () => {
 		console.log('salvando...');
 		parcelas = [];
@@ -700,11 +693,12 @@
 
 		procedimentos=JSON.parse($('textarea#js-textarea-procedimentos').val());
 		procedimentosListar();
-		pagamentosListar();
+		verificaSeExisteParcelasSalvas();
+		//pagamentosListar();
+
 
 		$('.js-pagamentos').on('change','.js-vencimento:eq(0)',function(){
-			//atualizaValor(true);
-
+			console.log('ATUALIZADO DATA')
 			let pagamento = $('input[name=pagamento]:checked').val();
 
 			if(pagamento!="avista") {
@@ -726,12 +720,8 @@
 					startDate.setMonth(eval(aux[1])-1);
 					startDate.setFullYear(aux[2]);
 				}
-
-				//console.log(pagamentos);
-
+				console.log()
 				for(var i=1;i<=numeroParcelas;i++) {
-					
-
 					let mes = startDate.getMonth()+1;
 					mes = mes <= 9 ? `0${mes}`:mes;
 					let dia = startDate.getDate();
@@ -908,7 +898,6 @@
 		}).trigger('change');
 
 		$('.js-pagamentos').on('change','.js-debitoBandeira,.js-creditoBandeira,.js-parcelas,.js-valor',function(){
-						
 			//	creditoDebitoValorParcela($(this));
 			let obj = $(this);
 			setTimeout(function(){$(obj).parent().parent().parent().parent().find('.js-valor').trigger('keyup');},200);	
@@ -989,7 +978,6 @@
 				}
 			}  
 
-
 			if(continua) {
 
 
@@ -1050,7 +1038,9 @@
 
 		// seleciona o tipo de pagamento
 		$('input[name=pagamento]').change(function(){
-			atualizaValor(true);
+			if($(this).val() == 'avista' || $(this).val() == 'parcelado'){
+				atualizaValor(true);	
+			}
 		})
 
 		// remove procedimento
