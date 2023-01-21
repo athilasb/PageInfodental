@@ -2840,6 +2840,13 @@
 				<!-- Aside Novo Agendamento -->
 				<section class="aside aside-add" id="js-aside-add">
 					<script type="text/javascript">
+
+						const agendaChecklistListar = () => {
+							$('.js-agenda-checklist tr').remove();
+
+							
+						}
+
 						const popView = (id_agenda) => {
 							$('#js-aside-edit .js-foto').attr('src','img/ilustra-usuario.jpg');
 							
@@ -4095,16 +4102,16 @@
 											<dl>									
 												<dd><button class="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Adicionar</span></button></dd>
 											</dl>
-											*/ ?>
+											
 											<dl>									
 												<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-24-filled"></i> <span>Salvar</span></button></dd>
-											</dl>
+											</dl>*/ ?>
 										</div>								
 									</div>
 								</section>
 
 								<div class="list1">
-									<table>
+									<table class="js-agenda-checklist">
 										<tr>								
 											<td>
 												<h1>Laboratório</h1>

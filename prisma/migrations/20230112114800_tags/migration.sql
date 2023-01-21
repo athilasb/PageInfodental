@@ -12,6 +12,8 @@ ALTER TABLE `ident_parametros_tags`
 ALTER TABLE `ident_parametros_tags`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
+DROP TABLE `ident_landingpage_antesedepois`;
+DROP TABLE `ident_landingpages_antesedepois`;
 
 CREATE TABLE `ident_landingpage_antesedepois` (
   `id` int NOT NULL,

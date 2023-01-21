@@ -2,15 +2,91 @@
 	class Iugu {
 		private 
 			$prefixo = "",
-			$iuguID="DDFADAF26C374DBEA50C6359289855A1",
+			$iuguID="26CC7D7DF11A49998FFD2EAFE7FECDB9",
 			//$token="8330F109B6BD34DAEC888D399CBA879138096816AF1A5CBEA4B605EB10500D0E", //-> teste
 			$token="8FAA6A3AC20EFE18BF22465BCD0531700D98129043A07BDA3940A6EA27189B91", // -> producao
 			$baseURL = "https://api.iugu.com/v1/";
 
 		public 
-			$ambienteChat=0; // se tiver no chatpro.com.br instancia MysqlAPI.php
+			$ambienteChat=0; // se tiver no chatpro.com.br instancia MysqlAPI.php	
 
+		function customersDetail($customer_id) {
 
+			$attr=array('method'=>'customers/'.$customer_id,
+						'type'=>'GET');
+			if($this->endpoint($attr)) {
+
+				return true;
+			} else {
+				$this->erro=$this->response->error;
+				return false;
+			}
+
+		}
+
+		function paymentMethodSetDefault($customer_id,$default_payment_method_id) {
+			$attr=array('method'=>'customers/'.$customer_id,
+						'type'=>'PUT',
+						'fields'=>array('default_payment_method_id'=>$default_payment_method_id),
+						'pagamento'=>true);
+			
+			if($this->endpoint($attr)) {
+
+				return true;
+			} else {
+				$this->erro=$this->response->error;
+				return false;
+			}
+		}
+
+		function formaDePagamentoListar($customer_id) {
+
+		
+			if(isset($customer_id) and !empty($customer_id)) {
+				$attr=array('method'=>'customers/'.$customer_id.'/payment_methods',
+							'type'=>'GET');
+				if($this->endpoint($attr)) {
+					return true;
+				} else {
+					$this->erro="Algum erro ocorreu durante o pagamento";
+					return false;
+				}
+			}  else {
+				$this->erro="Fatura não encontrada!";
+				return false;
+			}
+		}
+
+		function formaDePagamentoCriar($customer_id,$fields) {
+
+			if(empty($customer_id)) {
+				$this->erro="Usuário não encontrado para criação de Forma de Pagamento";
+				return false;
+			} else {
+
+				$attr=array('method'=>'customers/'.$customer_id.'/payment_methods',
+							'type'=>'POST',
+							'pagamento'=>true,
+							'fields'=>($fields));
+
+				//var_dump($attr);
+				if($this->endpoint($attr)) {
+
+					//echo json_encode($this->info);
+					if($this->info['http_code'] == 200) {
+
+						return true;
+					} else  {
+						$this->erro="Algum erro ocorreu. Por favor tente novamente.";
+						return false;
+					} 
+
+				} else {
+					$this->erro="Algum erro ocorreu durante o pagamento";
+					return false;
+				}
+			}
+		}
 
 		function planosListar() {
 			$attr=array('method'=>'plans',
@@ -457,7 +533,7 @@
 				} else { 
 					$header[] = 'Authorization: Basic '.base64_encode($access_token.':');
 			        $header[] = 'Accept-Charset: utf-8';
-			        $header[] = 'User-Agent: chatPRO';
+			        $header[] = 'User-Agent: Info Dental';
 			        $header[] = 'Accept-Language: pt-br;q=0.9,pt-BR';
 
 			       // var_dump($header);
