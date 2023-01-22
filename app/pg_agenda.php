@@ -18,6 +18,12 @@
 		$_tags[$x->id]=$x;
 	}
 
+	$_checklist=array();
+	$sql->consult("infodentalADM.infod_parametros_agenda_checklist","*","WHERE lixo=0");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_checklist[$x->id]=$x;
+	}
+
 	$_cadeiras=array();
 	$sql->consult($_p."parametros_cadeiras","*","where lixo=0  order by titulo asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
@@ -434,6 +440,17 @@
 				$_usuarios[$x->id]=$x;
 			}
 
+			$_tags=array();
+			$sql->consult($_p."parametros_tags","*","WHERE lixo=0 order by titulo asc");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_tags[$x->id]=$x;
+			}
+
+			$_checklist=array();
+			$sql->consult("infodentalADM.infod_parametros_agenda_checklist","*","WHERE lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$_checklist[$x->id]=$x;
+			}
 
 			$registros=$registrosDesmarcados=array();
 			$pacientesIds=$agendaIds=array();

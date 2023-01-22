@@ -411,6 +411,24 @@
 							id_status_novo=".$idStatusNovo.",
 							descricao=''";
 						$sql->add($_p."pacientes_historico",$vSQLHistorico);
+
+						// Salvando Checklist
+						$vSQLChecklist="";
+						$sql->consult("infodentalADM.infod_parametros_agenda_checklist","*","WHERE lixo=0");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							if(isset($_POST['checklist-'.$x->id])) {
+								$vSQLChecklist.="(".$id_agenda.",".$x->id;
+
+								if(isset($_POST['checklist_descricao-'.$x->id])) {
+									$vSQLChecklist.=",'".utf8_decode($_POST['checklist_descricao-'.$x->id])."')";
+								} 
+							}
+						}
+
+						if(!empty($vSQLChecklist)) {
+							$sql->insertMultiple($_p."agenda_checklist","id_agenda,id_checklist,descricao",$vSQLChecklist);
+						}
+
 						$rtn=array('success'=>true,'id_paciente'=>$paciente->id);
 
 					}
@@ -3230,8 +3248,6 @@
 
 										let data = `ajax=novoAgendamento&profissionais=${profissionais}&${campos}`;
 
-										
-
 										$.ajax({
 											type:'POST',
 											url:baseURLApiAside,
@@ -3464,38 +3480,21 @@
 							<fieldset style="margin-top:2rem;">
 								<legend>Itens do checklist</legend>
 								
+								<?php 
+									foreach($_checklist as $x) {
+								?>
 								<div class="colunas3">
 									<dl>	
-										<dd><label><input type="checkbox" name="" class="input-switch" />Laboratório</label></dd>
+										<dd><label><input type="checkbox" name="checklist-<?php echo $x->id;?>" class="input-switch" /><?php echo utf8_encode($x->titulo);?></label></dd>
 									</dl>
 									<dl class="dl2">
-										<dd><input type="text" name="" placeholder="descrição" /></dd>
+										<dd><input type="text" name="checklist_descricao-<?php echo $x->id;?>" placeholder="descrição" /></dd>
 									</dl>
 								</div>
-								<div class="colunas3">
-									<dl>	
-										<dd><label><input type="checkbox" name="" class="input-switch" />Imagem</label></dd>
-									</dl>
-									<dl class="dl2">
-										<dd><input type="text" name="" placeholder="descrição" /></dd>
-									</dl>
-								</div>
-								<div class="colunas3">
-									<dl>	
-										<dd><label><input type="checkbox" name="" class="input-switch" />Insumos</label></dd>
-									</dl>
-									<dl class="dl2">
-										<dd><input type="text" name="" placeholder="descrição" /></dd>
-									</dl>
-								</div>
-								<div class="colunas3">
-									<dl>	
-										<dd><label><input type="checkbox" name="" class="input-switch" />Equipamentos</label></dd>
-									</dl>
-									<dl class="dl2">
-										<dd><input type="text" name="" placeholder="descrição" /></dd>
-									</dl>
-								</div>
+								<?php 
+									}
+								?>
+								
 							</fieldset>
 						</form>
 					</div>
