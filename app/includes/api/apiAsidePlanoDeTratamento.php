@@ -57,7 +57,9 @@
 	var autor = '<?php echo utf8_encode($usr->nome);?>';
 
 	const atualizaValor = (atualizarParcelas) => {
+		console.log('ATUALIZANDO VALOR')
 		valorTotal=0;
+		valorOriginalProcedimentos = 0;
 		let cont = 1;
 		procedimentos.forEach(x=> {
 			if(x.situacao!='naoAprovado') {
@@ -68,7 +70,7 @@
 				if(x.face==1) valorProcedimento*=x.faces.length;
 				if(x.id_regiao==5) valorProcedimento*=hof;
 
-
+				valorOriginalProcedimentos +=valorProcedimento
 				if(x.desconto>0) {
 					valorProcedimento=eval(valorProcedimento-x.desconto);
 				}
@@ -78,7 +80,6 @@
 				valorTotal+=valorProcedimento;
 			}
 			if(cont==procedimentos.length) {
-				valorTotalProcedimentos = valorTotal
 				for(let x in _politicas){
 					let politica = _politicas[x]
 					if(valorTotal>= parseFloat(politica.de) && valorTotal<= parseFloat(politica.ate)){
@@ -90,29 +91,43 @@
 					}else{
 					}
 				}
-				$('.js-valorTotal').html(number_format(valorTotal,2,",","."));
-				ValidaPoliticaManual();
+			$('.js-valorTotal').text(number_format(valorTotal,2,",","."));
+			$('.js-valorTotalOriginal').text(number_format(valorOriginalProcedimentos,2,",","."));
+			valorTotalProcedimentos = valorTotal
+			ValidaPoliticaManual(0);
 			}
 			cont++;
 		});
  
 		let parcelas = [];
 
-		if(atualizarParcelas===true && $('input[name=pagamento]:checked').length>0) {
-			let pagamento = $('input[name=pagamento]:checked').val();
-
-			if(pagamento=="avista") {
-				$('.js-pagamentos-quantidade').hide();
-
-				let startDate = new Date();
+		if(atualizarParcelas===true) {
+			let numeroParcelas = $('.js-pagamentos-quantidade').val();
+			if(numeroParcelas.length==0 || numeroParcelas<=0) numeroParcelas=1;
+			valorParcela=(valorTotal/numeroParcelas);
+			valorParcela=valorParcela.toFixed(2);
+			let startDate = new Date();
+			if($('.js-vencimento:eq(0)').val()!=undefined) {
+				aux = $('.js-vencimento:eq(0)').val().split('/');
+				startDate = new Date();//`${aux[2]}-${aux[1]}-${aux[0]}`);
+				startDate.setDate(aux[0]);
+				startDate.setMonth(eval(aux[1])-1);
+				startDate.setFullYear(aux[2]);
+			}
+			pagamentosTextarea = JSON.parse($('#js-textarea-pagamentos').val());
+			for(var i=1;i<=numeroParcelas;i++) {
 				let item = {};
+				if(pagamentosTextarea[i-1]) {
+					item = pagamentosTextarea[i-1];
+				}
+
 				let mes = startDate.getMonth()+1;
 				mes = mes <= 9 ? `0${mes}`:mes;
 
 				let dia = startDate.getDate();
 				dia = dia <= 9 ? `0${dia}`:dia;
 				item.vencimento=`${dia}/${mes}/${startDate.getFullYear()}`;
-				item.valor=valorTotal;
+				item.valor=valorParcela;
 
 				parcelas.push(item);
 
@@ -120,56 +135,10 @@
 				newDate.setMonth(newDate.getMonth()+1);
 
 				startDate=newDate;
-				
-				pagamentos=parcelas;
-			} 
-			else {
-				$('.js-pagamentos-quantidade').show();
-				let numeroParcelas = $('.js-pagamentos-quantidade').val();
 
-				if(numeroParcelas.length==0 || numeroParcelas<=0) numeroParcelas=1;
-				
-				valorParcela=valorTotal/numeroParcelas;
-
-				valorParcela=valorParcela.toFixed(2);
-
-				let startDate = new Date();
-
-				if($('.js-vencimento:eq(0)').val()!=undefined) {
-					aux = $('.js-vencimento:eq(0)').val().split('/');
-					startDate = new Date();//`${aux[2]}-${aux[1]}-${aux[0]}`);
-					startDate.setDate(aux[0]);
-					startDate.setMonth(eval(aux[1])-1);
-					startDate.setFullYear(aux[2]);
-				}
-
-				pagamentosTextarea = JSON.parse($('#js-textarea-pagamentos').val());
-				teste2 = [];
-				for(var i=1;i<=numeroParcelas;i++) {
-					let item = {};
-					if(pagamentosTextarea[i-1]) {
-						item = pagamentosTextarea[i-1];
-					}
-
-					let mes = startDate.getMonth()+1;
-					mes = mes <= 9 ? `0${mes}`:mes;
-
-					let dia = startDate.getDate();
-					dia = dia <= 9 ? `0${dia}`:dia;
-					item.vencimento=`${dia}/${mes}/${startDate.getFullYear()}`;
-					item.valor=valorParcela;
-
-					parcelas.push(item);
-					teste2.push(item);
-
-					newDate = startDate;
-					newDate.setMonth(newDate.getMonth()+1);
-
-					startDate=newDate;
-
-					if(i==numeroParcelas) {
-						pagamentos=parcelas;
-					}
+				if(i==numeroParcelas) {
+					pagamentos=parcelas;
+					$('#js-textarea-pagamentos').text(JSON.stringify(pagamentos))
 				}
 			}
 		}
@@ -177,36 +146,36 @@
 	}
 
 	const pagamentosListar = (passo=0) => {
-		if(($('#ValidaPoliticaManualID').attr('data-politica')==0) && passo<3){
-			return;
-		}
-		$('.js-pagamentos').html('');
+		$('.js-listar-parcelas').html('');
+		$('.js-listar-parcelas').show();
 		if(pagamentos.length>0) {
 			let index=1;
 			let metodosPagamentosAceito ='<?php echo $optionFormasDePagamento;?>';
-			if(temPolitica.parcelasParametros.metodos.length>0 && (passo==3)){
+			let disabledValor = ''
+			if(temPolitica && temPolitica.parcelasParametros && temPolitica.parcelasParametros.metodos && temPolitica.parcelasParametros.metodos.length>0 && (passo==3)){
 				metodosPagamentosAceito =""
 				for(let m in temPolitica.parcelasParametros.metodos){
 					if(temPolitica.parcelasParametros.metodos[m].length>0){
 						metodosPagamentosAceito+=`<option value='${temPolitica.parcelasParametros.metodos[m]}'>${temPolitica.parcelasParametros.metodos[m].toUpperCase()}</option>`
+						disabledValor = 'disabled'
 					}
 				}
 			}
 			pagamentos.forEach(x=>{
-				$('.js-pagamentos').append(`<div class="fpag-item js-pagamento-item">
+				$('.js-listar-parcelas').append(`<div class="fpag-item js-pagamento-item">
 												<aside>${index++}</aside>
 												<article>
 													<div class="colunas3">
 														<dl>
-															<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data js-vencimento" value="${x.vencimento}" /></dd>
+															<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data js-vencimento" data-ordem="${index}" value="${x.vencimento}" /></dd>
 														</dl>
 														<dl>
-															<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor js-valor" value="${number_format(x.valor,2,",",".")}"  disabled/></dd>
+															<dd class="form-comp"><span>R$</i></span><input type="tel" name="" data-ordem="${index}" class="valor js-valor" value="${number_format(x.valor,2,",",".")}"  ${disabledValor}/></dd>
 														</dl>
 														<dl>
 															<dd>
 																<select class="js-id_formadepagamento js-tipoPagamento">
-																	<option value="">Forma de Pagamento...</option>
+																<option value="">Forma de Pagamento...</option>
 																	${metodosPagamentosAceito}
 																</select>
 															</dd>
@@ -214,11 +183,9 @@
 													</div>
 														
 													<div class="colunas3">
-
 														<dl style="display:none">
 															<dt>Bandeira</dt>
 															<dd>
-
 															<select class="js-debitoBandeira js-tipoPagamento">
 																<option value="">selecione</option>
 																<?php
@@ -232,8 +199,6 @@
 																?>
 															</select>
 														</dd></dl>
-
-
 														<dl style="display:none">
 															<dt>Bandeira</dt>
 															<dd>
@@ -277,7 +242,6 @@
 																		scrollTime:false,
 																		scrollInput:false});
 				$('.js-pagamento-item .js-valor:last').maskMoney({symbol:'', allowZero:true, showSymbol:true, thousands:'.', decimal:',', symbolStay: true});
-
 				if(x.id_formapagamento) { 
 					$('.js-pagamento-item .js-id_formadepagamento:last').val(x.id_formapagamento);
 					$('.js-pagamento-item .js-identificador:last').val(x.identificador);
@@ -285,10 +249,8 @@
 
 					if(tipo=="credito") {
 						parcelaProv=x.qtdParcelas;
-
 						$('.js-pagamento-item .js-creditoBandeira:last').find(`option[data-id_operadorabandeira=${x.id_operadora}${x.creditoBandeira}]`).prop('selected',true);
 						creditoBandeiraAtualizaParcelas($('.js-pagamento-item .js-creditoBandeira:last'),x.qtdParcelas);
-					
 					} else if(tipo=="debito") {
 						$('.js-pagamento-item .js-debitoBandeira:last').val(x.debitoBandeira);
 					}	
@@ -298,8 +260,6 @@
 			if(pagamentos.length==1) $('.js-pagamento-item .js-valor:last').prop('disabled',true);
 		}
 		$('#js-textarea-pagamentos').val(JSON.stringify(pagamentos))
-		//atualizaValor();
-		//desativarCampos();
 	}
 
 	const procedimentosListar = () => {
@@ -596,24 +556,21 @@
 		let id_formadepagamento  = formaDePagamento.val();
 		let obj = formaDePagamento.parent().parent().parent().parent();
 		let tipo = $(obj).find('select.js-id_formadepagamento option:checked').attr('data-tipo');
+		console.log(id_formadepagamento)
 
 		$(obj).find('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
 
-		if(tipo=="credito") {
+		if(id_formadepagamento=="credito") {
 			$(obj).find('.js-parcelas,.js-creditoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
-		} else if(tipo=="debito") {
+		} else if(id_formadepagamento=="debito") {
 			$(obj).find('.js-debitoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
 		} else {
 			$(obj).find('.js-identificador').parent().parent().show();
-
-			if(tipo=="permuta") {
+			if(id_formadepagamento=="permuta") {
 				//$(obj).find('.js-obs').parent().parent().show();
 			}
 		}
-
-
 		let index = $('.js-pagamentos .js-id_formadepagamento').index(this);
-
 		if(atualizaObjetoPagamento===true) {
 			pagamentosPersistirObjeto();	
 		}
@@ -693,8 +650,8 @@
 
 		procedimentos=JSON.parse($('textarea#js-textarea-procedimentos').val());
 		procedimentosListar();
+		// verificar a forma de Pagamento ja Pré salva 
 		verificaSeExisteParcelasSalvas();
-		//pagamentosListar();
 
 
 		$('.js-pagamentos').on('change','.js-vencimento:eq(0)',function(){
@@ -720,7 +677,6 @@
 					startDate.setMonth(eval(aux[1])-1);
 					startDate.setFullYear(aux[2]);
 				}
-				console.log()
 				for(var i=1;i<=numeroParcelas;i++) {
 					let mes = startDate.getMonth()+1;
 					mes = mes <= 9 ? `0${mes}`:mes;
@@ -923,7 +879,7 @@
 
 			setTimeout(function(){$(obj).find('.js-valor').trigger('keyup');},200);
 		});*/
-
+		
 		$('.js-pagamentos').on('keyup','.js-valor',function(){
 			let index = $(this).index('.js-pagamentos .js-valor');
 			let numeroParcelas = eval($('.js-pagamentos-quantidade').val());
@@ -1024,13 +980,10 @@
 
 		// altera quantidade de parcelas
 		$('.js-pagamentos-quantidade').change(function(){
-
 			let qtd = $(this).val();
-
 			if(!$.isNumeric(eval(qtd))) qtd=1;
 			else if(qtd<1) qtd=2;
 			else if(qtd>=36) qtd=36;
-
 			$('.js-pagamentos-quantidade').val(qtd);
 
 			atualizaValor(true);
@@ -1038,9 +991,7 @@
 
 		// seleciona o tipo de pagamento
 		$('input[name=pagamento]').change(function(){
-			if($(this).val() == 'avista' || $(this).val() == 'parcelado'){
-				atualizaValor(true);	
-			}
+			atualizaValor(true);	
 		})
 
 		// remove procedimento
