@@ -23,6 +23,18 @@
 			}
 
 		}
+		function paymentMethodRemove($customer_id,$default_payment_method_id) { 
+			$attr=array('method'=>'customers/'.$customer_id.'/payment_methods/'.$default_payment_method_id,
+						'type'=>'DELETE',
+						'pagamento'=>true);
+			if($this->endpoint($attr)) {
+				//var_dump($this->response);
+				return true;
+			} else {
+				$this->erro=$this->response->error;
+				return false;
+			}
+		}
 
 		function paymentMethodSetDefault($customer_id,$default_payment_method_id) {
 			$attr=array('method'=>'customers/'.$customer_id,

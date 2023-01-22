@@ -61,6 +61,29 @@
 				$rtn=array('success'=>false,
 							'error'=>$erro);
 			}
+		} else if($_POST['ajax']=="paymentMethodRemove") {
+			$payment_method_id=(isset($_POST['payment_method_id']) and !empty($_POST['payment_method_id']))?$_POST['payment_method_id']:'';
+
+			$erro='';
+			if(empty($infoConta->iugu_customer_id)) $erro='Você não possui assinatura!';
+			else if(empty($payment_method_id)) $erro='Algum erro ocorreu durante a alteração do cartão de cobrança!';
+
+
+			if(empty($erro)) {
+
+				if($iugu->paymentMethodRemove($infoConta->iugu_customer_id,$payment_method_id)) {
+
+				} else {
+					$erro=isset($iugu->erro)?$iugu->erro:'Algum erro ocorreu';
+				}
+			} 
+
+
+			if(empty($erro)) {
+				$rtn=array('success'=>true);
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
 		} else if($_POST['ajax']=="paymentMethodSetDefault") {
 
 
@@ -333,6 +356,9 @@
 		$sql->update("infodentalADM.infod_contas","iugu_subscription_id=''","where instancia='".$infoConta->instancia."'");
 		$infoConta->iugu_subscription_id='';
 	} else {
+
+	*/
+	if(!empty($infoConta->iugu_customer_id)) {
 		if(isset($_GET['cancelar'])) {
 
 			if($iugu->assinaturaCancelar($infoConta->iugu_subscription_id)) {
@@ -345,7 +371,7 @@
 
 			
 		}
-	}*/
+	}
 
 
 	if(isset($_POST['acao'])) {
@@ -725,6 +751,11 @@
 							}
 
 							const paymentMethodsList = () => {
+
+
+								$('.js-cartao-carregando').show();
+								$('.js-cartao-carregado').hide();
+
 								let data = `ajax=paymentMethodsList`;
 								$('.js-paymentsMethods tr').remove();
 								$.ajax({
@@ -767,22 +798,29 @@
 							$(function(){
 								paymentMethodsList();
 								subdescriptionDetail();
+
 								$('.js-paymentsMethods').on('click','.js-btn-paymentMethodRemove',function(){
 									let obj = $(this);
 									let objHTMLAntigo = obj.html();
-
 									let iugu_payment_method_id = $(this).attr('data-id_cartao');
 
-									
-										let data = `ajax=paymentMethodRemove&payment_method_id=${iugu_payment_method_id}`;
-										alert(data);
+									$('.js-cartao-carregando').show();
+									$('.js-cartao-carregado').hide();
+								
+									let data = `ajax=paymentMethodRemove&payment_method_id=${iugu_payment_method_id}`;
+									$.ajax({
+										type:"POST",
+										data:data,
+										success:function(rtn) {
+											if(rtn.success) {
 
-
-
-
-									
-
+											}
+										}
+									}).done(function(){
+										paymentMethodsList();
+									});
 								});
+
 								$('.js-paymentsMethods').on('click','.js-btn-paymentMethodSetDefault',function(){
 
 									let obj = $(this);
@@ -817,6 +855,7 @@
 								});
 							});
 						</script>
+
 						<form method="post" class="form formulario-validacao" action="<?php echo $_page;?>">
 							<input type="hidden" name="acao" value="wlib" />
 							<fieldset>
@@ -960,8 +999,6 @@
 						swal({title: "Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 					} else {
 
-
-
 						let number = ($('input[name=number]').val());
 						let expiration = $('input[name=expiration]').val().split('/');
 						let expiration_mes = expiration[0] ? expiration[0] : '';
@@ -974,7 +1011,6 @@
 						for(var i = 0;i<full_name.length; i++) {
 							if(i>0) last_name+=full_name[i]+' ';
 						}
-
 
 						bandeira = Iugu.utils.getBrandByCreditCardNumber(number);;
 
@@ -1019,6 +1055,7 @@
 								        	data:data,
 								        	success:function(rtn){
 								        		if(rtn.success===true) {
+								        			$('.aside-cartao .aside-close').click();
 													paymentMethodsList();
 								        		} else if(rtn.error) {
 													swal({title: "Erro", text: rtn.error, html:true, type:"error", confirmButtonColor: "#424242"});
