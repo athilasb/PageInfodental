@@ -385,6 +385,17 @@
 			}
 		}
 
+		else if($_POST['ajax']=="checklistItens") {
+			$regs=array();
+			$sql->consult("infodentalADM.infod_parametros_agenda_checklist","*","WHERE lixo=0");
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$regs[]=array('id' => $x->id,
+							  'titulo' => utf8_encode($x->titulo));
+			}
+
+			$rtn=array('success'=>true,'regs'=>$regs);
+		}
+
 		header("Content-type: application/json");
 		echo json_encode($rtn);
 		die();
@@ -1096,6 +1107,7 @@
 			$('#js-aside-add .js-tags').chosen('destroy');
 			$('#js-aside-add .js-tags').chosen();
 			$('#js-aside-add .js-tags').trigger('chosen:updated');
+			checklistItens();
 			agendamentosProfissionais(`add`);
 		}
 		
@@ -1119,7 +1131,28 @@
 			return $state;
 		}
 
-
+		const checklistItens = () => {
+			$('#js-aside-add .js-checklist-itens').html('');
+			let data = `ajax=checklistItens`;
+			$.ajax({
+				type:"POST",
+				data:data,
+				success:function(rtn){ 
+					if(rtn.success) {
+						rtn.regs.forEach(x=>{
+							$(`#js-aside-add .js-checklist-itens`).append(`<div class="colunas3">
+								<dl>	
+									<dd><label><input type="checkbox" name="checklist-${x.id}" class="input-switch" />${x.titulo}</label></dd>
+								</dl>
+								<dl class="dl2">
+									<dd><input type="text" name="checklist_descricao-${x.id}" placeholder="descrição" /></dd>
+								</dl>
+							</div>`);
+						});
+					}
+				}
+			});
+		}
 
 		$(function(){
 			$('#js-aside-add input[name=agenda_data]').datetimepicker({
@@ -1325,7 +1358,6 @@
 
 			$('.js-novoAgendamento').click(function(){
 				novoAgendamento(0,'');
-
 			})
 		});
 	</script>

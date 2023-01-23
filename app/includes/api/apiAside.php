@@ -282,6 +282,14 @@
 					}
 				}
 
+				$tags=array();
+				if(isset($_POST['tags']) and !empty($_POST['tags'])) {
+					$pAux=explode(",",$_POST['tags']);
+					foreach($pAux as $id_tag) {
+						if(is_numeric($id_tag)) $tags[]=$id_tag;
+					}
+				}
+
 				$cadeira='';
 				if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
 					$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."' and lixo=0");
@@ -346,6 +354,8 @@
 						$vSQL.=",data=now(),id_usuario=$usr->id";
 
 						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
+						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags)."'";
+						else $vSQL.=",tags=''";
 
 						$sql->add($_p."agenda",$vSQL);
 						$id_agenda=$sql->ulid;
@@ -359,7 +369,7 @@
 								$vSQLChecklist.="(".$id_agenda.",".$x->id;
 
 								if(isset($_POST['checklist_descricao-'.$x->id])) {
-									$vSQLChecklist.=",'".utf8_decode($_POST['checklist_descricao-'.$x->id])."')";
+									$vSQLChecklist.=",'".utf8_decode($_POST['checklist_descricao-'.$x->id])."'),";
 								} 
 							}
 						}
@@ -409,7 +419,8 @@
 
 
 						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
-
+						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags)."'";
+						else $vSQL.=",tags=''";
 
 						$vSQL.=",data=now(),id_usuario=$usr->id";
 						$sql->add($_p."agenda",$vSQL);
@@ -435,12 +446,13 @@
 								$vSQLChecklist.="(".$id_agenda.",".$x->id;
 
 								if(isset($_POST['checklist_descricao-'.$x->id])) {
-									$vSQLChecklist.=",'".utf8_decode($_POST['checklist_descricao-'.$x->id])."')";
+									$vSQLChecklist.=",'".utf8_decode($_POST['checklist_descricao-'.$x->id])."'),";
 								} 
 							}
 						}
 
 						if(!empty($vSQLChecklist)) {
+							$vSQLChecklist=substr($vSQLChecklist,0,strlen($vSQLChecklist)-1);
 							$sql->insertMultiple($_p."agenda_checklist","id_agenda,id_checklist,descricao",$vSQLChecklist);
 						}
 
@@ -565,9 +577,9 @@
 							agenda_data_final='".date('Y-m-d H:i:s',strtotime($agendaData." + $duracao minutes"))."'
 								";
 
-						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags).",'";
-
 						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
+						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags)."'";
+						else $vSQL.=",tags=''";
 
 						$idStatusNovo=((isset($_POST['id_status']) and is_numeric($_POST['id_status']))?$_POST['id_status']:'');
 						
@@ -709,7 +721,7 @@
 					}
 
 					$regs=array();
-					$sql->consult($_tableChecklist,"*","WHERE lixo=0");
+					$sql->consult($_tableChecklist,"*","WHERE lixo=0 and id_agenda='".$agenda->id."'");
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						if(isset($_checklist[$x->id_checklist])) {
 							$regs[]=array('id'=>$x->id,
@@ -3316,8 +3328,9 @@
 										
 										let campos = $('#js-aside-add form').serialize();
 										let profissionais = $('#js-aside-add .js-profissionais').val();
+										let tags = $('#js-aside-add .js-tags').val();
 
-										let data = `ajax=novoAgendamento&profissionais=${profissionais}&${campos}`;
+										let data = `ajax=novoAgendamento&profissionais=${profissionais}&tags=${tags}&${campos}`;
 
 										$.ajax({
 											type:'POST',
@@ -3551,20 +3564,9 @@
 							<fieldset style="margin-top:2rem;">
 								<legend>Itens do checklist</legend>
 								
-								<?php 
-									foreach($_checklist as $x) {
-								?>
-								<div class="colunas3">
-									<dl>	
-										<dd><label><input type="checkbox" name="checklist-<?php echo $x->id;?>" class="input-switch" /><?php echo utf8_encode($x->titulo);?></label></dd>
-									</dl>
-									<dl class="dl2">
-										<dd><input type="text" name="checklist_descricao-<?php echo $x->id;?>" placeholder="descrição" /></dd>
-									</dl>
+								<div class="js-checklist-itens">
+									
 								</div>
-								<?php 
-									}
-								?>
 								
 							</fieldset>
 						</form>
