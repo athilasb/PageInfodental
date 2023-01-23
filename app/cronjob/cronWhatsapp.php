@@ -26,7 +26,7 @@
 		// agendamentos nas proximas 23h-24h
 		$sql->consult($_p."agenda","*","where agenda_data >= '$dataInicio' and 
 												agenda_data <= '$dataFim' and id_status=1 and lixo=0 order by agenda_data asc");
-		echo $dataInicio."<br />".$dataFim."<BR>Resultado: $sql->rows<BR><BR>";
+		//echo $dataInicio."<br />".$dataFim."<BR>Resultado: $sql->rows<BR><BR>";die();
 		if($sql->rows) {
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 

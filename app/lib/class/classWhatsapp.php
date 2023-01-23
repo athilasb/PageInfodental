@@ -678,8 +678,8 @@
 					$url=$this->endpoint."/v2/message/text";
 
 					if(isset($attr['id_tipo']) and $attr['id_tipo']==1) {
-						 $postfields['buttons'][]=array('id'=>"nao",'text'=>'Não');
-						$postfields['buttons'][]=array('id'=>"sim",'text'=>'Sim');
+						//$postfields['buttons'][]=array('id'=>"nao",'text'=>'Não');
+						//$postfields['buttons'][]=array('id'=>"sim",'text'=>'Sim');
 					}
 				} else {
 					$url=$this->endpoint."/message/text";
@@ -687,7 +687,7 @@
 
 
 
-
+				echo json_encode($postfields);die();
 
 
 				if($offline===true) $postfields['offline']=true;

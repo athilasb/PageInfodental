@@ -1,0 +1,1 @@
+UPDATE `ident_whatsapp_mensagens_tipos` SET `texto` = 'Olá *[profissionais]*, aqui é o assistente virtual da *[clinica_nome]*! \r\n\r\nO agendamento do *[paciente]* está *DESMARCADO* ❌\r\n\r\n*[agenda_data]*, às *[agenda_hora]*, com duração de *[duracao]*.' WHERE `ident_whatsapp_mensagens_tipos`.`id` = 8
