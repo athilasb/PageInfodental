@@ -153,7 +153,7 @@
 
 	// formulario
 		$cnt='';
-		$campos=explode(",","titulo,id_profissional,tempo_estimado,pagamento,id_politica");
+		$campos=explode(",","titulo,id_profissional,tempo_estimado,pagamento,id_politica,tipo_financeiro,parcelas");
 			
 		foreach($campos as $v) $values[$v]='';
 		$values['procedimentos']="[]";
@@ -292,6 +292,7 @@
 	<script type="text/javascript">
 		var procedimentos = [];
 		let valorTotalProcedimentos = 0;
+		var valorOriginalProcedimentos = 0;
 		var _politicas = <?=json_encode($_politicas);?>;
 		var temPolitica = false;
 		var pagamentos = JSON.parse(`<?php echo ($values['pagamentos']);?>`);
@@ -310,22 +311,6 @@
 			}
 		}
 
-		const ativarDesativarPolitica = ()=>{
-			let dataPolitica = $('#ValidaPoliticaManualID').attr('data-politica')
-			if(dataPolitica==0){
-				$('#ValidaPoliticaManualID').attr('checked',false)
-				$('#ValidaPoliticaManualID').attr('data-politica',1)
-				$('#PoliticaUsadaMomento').text('Politica')
-				$('[name="id_politica"]').val(0)
-				AtualizaPolitica(1)
-			}else if(dataPolitica==1){
-				$('#ValidaPoliticaManualID').attr('checked',true)
-				$('#ValidaPoliticaManualID').attr('data-politica',0)
-				$('#PoliticaUsadaMomento').text('Politica')
-				AtualizaPolitica(0)
-			}
-		}
-
 		const ValidaPoliticaManual = ()=>{
 			if(!temPolitica){
 				$('#ValidaPoliticaManualID').attr('disabled',true)
@@ -338,12 +323,8 @@
 		}
 
 		const AtualizaPolitica = (dataPolitica)=>{
-			$('#metodos-pagamento-politica .js-pagamentos').html("")
-			$('#metodos-pagamento-politica .js-pagamentos').html("")
-
-			if(temPolitica && dataPolitica==0){
-				$('#metodos-pagamento-politica').find('.colunas3 .dl2').hide()
-				console.log(temPolitica.id)
+			$('.js-tipo-politica table').html("")
+			if(temPolitica){
 				$('[name="id_politica"]').val(temPolitica.id)
 				let valorTotal = valorTotalProcedimentos
 				let totalPoliticas =0;
@@ -362,58 +343,90 @@
 					valorParcela = valorTotal/qtdParcelas
 					let valor = 0
 					let textoCard = `PARCELA ${qtdParcelas}`
-					
+					let tr = `<h1> NAO APLICADO NADA </h1>`
 					if(qtdParcelas==1){
 						valor = valorParcela
-						textoCard = `Á Vista ${qtdParcelas}x de ${number_format(valor,2,",",".")}`
+						textoCard = `Á Vista ${qtdParcelas}x de `
+						tr =`<tr onclick='EscolheParcelas(${qtdParcelas},${valor})'>
+								<td class="list1__border" style="color:silver"></td>
+								<td>
+									<h1 style="font-size:1.375em;">A vista</h1>
+									<p><strong>R$ ${number_format(valor,2,",",".")}</strong></p>
+								</td>									
+							</tr>`
 						if(parseFloat(temPolitica.parcelasParametros.descontoAvista)>0){
 							valor = valor-(valor*(parseFloat(temPolitica.parcelasParametros.descontoAvista)/100))
 							textoCard = `De: R$ ${number_format(valorTotal,2,",",".")} Por: ${number_format(valor,2,",",".")} a Vista`
 							valorTotalParcelado = valor
+							tr = `<tr onclick='EscolheParcelas(${qtdParcelas},${valor})'>
+									<td class="list1__border" style="color:silver"></td>
+									<td>
+										<h1 style="font-size:1.375em;">A vista</h1>
+										<p>de <strike>R$ ${number_format(valorTotal,2,",",".")}</strike> por <strong>R$ ${number_format(valor,2,",",".")}</strong> <em style="background:var(--verde); color:#fff;">desconto de R$ ${number_format((valorTotal-valor),2,",",".")}</em></p>
+									</td>									
+								</tr>`
 						}
 					}else{
 						valor = valorParcela
 						valorTotalParcelado = valor*qtdParcelas
 						if(qtdParcelas<=qtdParcelasSemJuros){
-							textoCard = `${qtdParcelas}x de ${number_format(valor,2,",",".")} sem juros`
+							textoCard = `x de  sem juros`
+							tr = `<tr onclick='EscolheParcelas(${qtdParcelas},${valor})'>
+									<td class="list1__border" style="color:silver"></td>
+									<td>
+										<h1 style="font-size:1.375em;">${qtdParcelas}x sem juros</h1>
+										<p><strong>R$ 800,00</strong></p>
+									</td>
+									<td>${qtdParcelas} parcela de R$ ${number_format(valor,2,",",".")} + 1 de R$ 300,00</td>
+								</tr>`
+							if(temPolitica.parcelasParametros.entradaMinima.length>0){
+								valorEntrada = ((parseFloat(temPolitica.parcelasParametros.entradaMinima))/100)*(valorTotalParcelado)
+								valorParcela = ((valorTotalParcelado)-valorEntrada)/(qtdParcelas-1)
+								if(valorEntrada<valorParcela){
+									valorEntrada = ((valorTotalParcelado))/(qtdParcelas)
+									valorParcela = ((valorTotalParcelado))/(qtdParcelas)
+								}
+								tr = `<tr onclick='EscolheParcelas(${qtdParcelas},${valor})'>
+									<td class="list1__border" style="color:silver"></td>
+									<td>
+										<h1 style="font-size:1.375em;">${qtdParcelas}x sem juros</h1>
+										<p><strong>R$ ${number_format(valorTotalParcelado,2,",",".")} </strong></p>
+									</td>
+									<td>1 parcela de R$ ${number_format(valorEntrada,2,",",".")} + ${qtdParcelas-1} de R$ ${number_format(valorParcela,2,",",".")}</td>
+								</tr>`
+							}
+
 						}else{
 							if(taxaJurosAnual>0){
 								let tempo = Math.ceil(qtdParcelasTotal/12)
 								valor = valor+(valor*(taxaJurosAnual/100))
 								valorTotalParcelado = valor*qtdParcelas
 								//valor = (valorTotal/qtdParcelas)+((valorTotal/qtdParcelas)*(taxaJurosAnual*tempo))
-							}
-							textoCard = `${qtdParcelas}x de ${number_format(valor,2,",",".")}`
-							if(temPolitica.parcelasParametros.entradaMinima.length>0){
-								valorEntrada = ((parseFloat(temPolitica.parcelasParametros.entradaMinima))/100)*(valorTotalParcelado)
-								valorParcela = ((valorTotalParcelado)-valorEntrada)/(qtdParcelas-1)
-								textoCard = `${qtdParcelas}x :<br><span> 1 de ${number_format((valorEntrada),2,",",".")} + ${qtdParcelas-1} de ${number_format((valorParcela),2,",",".")}</span>`
+								textoCard = `${qtdParcelas}x de ${number_format(valor,2,",",".")}`
+								if(temPolitica.parcelasParametros.entradaMinima.length>0){
+									valorEntrada = ((parseFloat(temPolitica.parcelasParametros.entradaMinima))/100)*(valorTotalParcelado)
+									valorParcela = ((valorTotalParcelado)-valorEntrada)/(qtdParcelas-1)
+									if(valorEntrada<valorParcela){
+										valorEntrada = ((valorTotalParcelado))/(qtdParcelas)
+										valorParcela = ((valorTotalParcelado))/(qtdParcelas)
+									}
+									tr = `<tr onclick='EscolheParcelas(${qtdParcelas},${valor})'>
+											<td class="list1__border" style="color:silver"></td>
+											<td>
+												<h1 style="font-size:1.375em;">${qtdParcelas}x com juros</h1>
+												<p><strong>R$ ${number_format(valorTotalParcelado,2,",",".")} </strong></p>
+											</td>
+											<td>1 parcela de R$ ${number_format(valorEntrada,2,",",".")} + ${qtdParcelas-1} de R$ ${number_format(valorParcela,2,",",".")}</td>
+										</tr>`
 
+								}
 							}
+
 						}
 					}
-					$('#metodos-pagamento-politica .js-pagamentos').append(`
-						<div class="fpag-item"  onclick='EscolheParcelas(${qtdParcelas},${valor})'>
-							<aside>${qtdParcelas}</aside>
-							<article>
-								<div class="colunas3">
-									<div class="colunas1">
-										<i class="iconify" data-icon="ic:round-credit-card" style="font-size: 60px"></i>
-									</div>
-									<div class="colunas2">
-										<span class="dl2"> ${textoCard}</span>
-										<span class="dl2"></span>
-										<span class="dl2">TOTAL : R$ ${number_format((valorTotalParcelado),2,",",".")}</span>
-									</div>
-									
-								</div>
-							</article>
-						</div>
-					`)
+					$('.js-tipo-politica table').append(tr)
 				}
-			}
-			else{
-				$('#metodos-pagamento-politica').find('.colunas3 .dl2').show()
+			}else{
 				//atualizaValor(true)
 			}
 		}
@@ -422,6 +435,10 @@
 			$('.js-valorTotal').html(number_format(qtdParcelas*valor,2,",","."));
 			$('#botao-voltar-menu-parcelas').show()
 			$('js-pagamentos-quantidade').val(qtdParcelas)
+
+			$('.js-tipo-politica').hide()
+			$('.js-listar-parcelas').show()
+
 			if(primary){
 				pagamentosListar(3);
 				return
@@ -441,6 +458,10 @@
 			if(temPolitica.parcelasParametros.entradaMinima.length>0 && qtdParcelas>1){
 				valorEntrada = ((parseFloat(temPolitica.parcelasParametros.entradaMinima))/100)*(qtdParcelas*valor)
 				valorParcela = ((qtdParcelas*valor)-valorEntrada)/(qtdParcelas-1)
+				if(valorEntrada<valorParcela){
+					valorEntrada = ((qtdParcelas*valor))/(qtdParcelas)
+					valorParcela = ((qtdParcelas*valor))/(qtdParcelas)
+				}
 			}
 			let parcelaAtual = 0
 
@@ -519,33 +540,29 @@
 		}
 
 		const voltarMenuParcelas = ()=>{
-			$('#ValidaPoliticaManualID').attr('data-politica',0)
 			$('#botao-voltar-menu-parcelas').hide()
+			$('.js-tipo-politica').show()
+			$('.js-listar-parcelas').hide()
+			$('#js-textarea-pagamentos').text("")
 			atualizaValor()
 		}
 
 		const verificaSeExisteParcelasSalvas = ()=>{
-			if(contrato.id_politica > 0){
+			if(contrato.tipo_financeiro =='politica'){
+				$('.js-tipo-manual').hide()
+				$('.js-tipo-politica').show()
 				let qtdParcelas = contrato.pagamentos.length
-				let valor = contrato.pagamentos.reduce(function(acumulado, objeto) {
-							    return acumulado + objeto.valor;
-							}, 0);
-				EscolheParcelas(qtdParcelas,valor/qtdParcelas,true)
-			}else if(contrato.pagamento=='avista'){
-				$('#ValidaPoliticaManualID').attr('checked',false)
-				$('#ValidaPoliticaManualID').attr('data-politica',1)
-				pagamentosListar();
-			}else if(contrato.pagamento=='parcelado'){
-				$('#ValidaPoliticaManualID').attr('checked',false)
-				$('#ValidaPoliticaManualID').attr('data-politica',1)
+				if(qtdParcelas>0){
+					EscolheParcelas(qtdParcelas,(valorTotalProcedimentos/qtdParcelas),true)
+				}
+			}else if(contrato.tipo_financeiro =='manual'){
+				$('.js-tipo-manual').show()
+				$('.js-tipo-politica').hide()
 				pagamentosListar();
 			}
 		}
-		
-		$(function(){
-			// verificar a forma de Pagamento ja Pré salva 
-		
 
+		$(function(){
 			$('.js-btn-salvar').click(function(){
 				let erro = ``;
 
@@ -601,6 +618,77 @@
 				$('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento').chosen();
 				
 			})
+			// verifica se ha alteracao na primeira data de pagamento 
+			$('.js-listar-parcelas').on('change','.js-vencimento:eq(0)',function(){
+				let CamposDatas = $('.js-listar-parcelas').find('.js-vencimento');
+				if(CamposDatas.length>1) {
+					let numeroParcelas = CamposDatas.length
+					let aux = $('.js-vencimento:eq(0)').val().split("/")
+					var startDate = new Date();
+					startDate.setDate(aux[0]);
+					startDate.setMonth(eval(aux[1])-1);
+					startDate.setFullYear(aux[2]);
+					CamposDatas.each(function (index, input){
+							let newDAte = startDate
+							let mes = startDate.getMonth()+1;
+							let dia = startDate.getDate();
+							mes = mes <= 9 ? `0${mes}`:mes;
+							dia = dia <= 9 ? `0${dia}`:dia;
+							pagamentos[index].vencimento=`${dia}/${mes}/${startDate.getFullYear()}`;
+							newDate = startDate;
+							newDate.setMonth(newDate.getMonth()+1);
+							console.log(newDAte)
+							//$(this).val(newData)
+					})
+					pagamentosListar();
+					return
+				}
+			});
+			//verifica se ha alteracao no valor de cada parcela 
+			$('.js-listar-parcelas').on('keyup','.js-valor',function(){
+				let CamposValor = $('.js-listar-parcelas').find('.js-valor');
+				let valorDigitado = unMoney($(this).val());
+				let numeroParcelas = CamposValor.length;
+				let dataOrdem = ($(this).attr('data-ordem')-1)
+				let erro = "";
+				if(valorDigitado>valorTotalProcedimentos){
+					swal({title: "Erro!", text: 'Os valores das parcelas não podem superar o valor total', html:true, type:"error", confirmButtonColor: "#424242"});
+					$(this).val(number_format(valorTotalProcedimentos/numeroParcelas,2,",","."))
+					return;
+				}
+				let valor = 0
+				let valorAteInput = valorDigitado
+				let valorFinal =0
+				let valorRestante = (valorTotalProcedimentos-valorDigitado)
+				CamposValor.each(function (index, input){
+					valorFinal += valorRestante-unMoney($(input).val())
+					
+					if(index+1<dataOrdem){
+						valorRestante = valorRestante-unMoney($(input).val())
+					}
+					if(index+1>dataOrdem){
+						
+						$(input).val(number_format(valorRestante/((numeroParcelas-dataOrdem)),2,",","."))
+					}
+					if(index+1 == numeroParcelas){
+						if(valorDigitado>valorRestante){
+							swal({title: "Erro!", text: 'Os valores das parcelas não podem superar o valor total do procedimento', html:true, type:"error", confirmButtonColor: "#424242"});
+							$(this).val(number_format(valorRestante,2,",","."))
+							valorRestante = 0
+							return
+						}
+					}
+				});
+			});
+			// verifica a forma de Pagamento 
+			$('.js-listar-parcelas').on('change','.js-id_formadepagamento',function(){
+				//pagamentosAtualizaCampos($(this),true);
+			});
+			// quando seleciona a Bandeira de cartao de credito 
+			$('.js-listar-parcelas').on('change','.js-creditoBandeira',function(){
+				//creditoBandeiraAtualizaParcelas($(this),0);
+				//pagamentosPersistirObjeto();
+			});
 		});
 
 	</script>
@@ -656,7 +744,7 @@
 			// submit
 			if(isset($_POST['acao'])) {
 				if($_POST['acao']=="wlib") {
-
+				
 					$processa=true;
 					if(empty($cnt)) {
 						$sql->consult($_p."pacientes_tratamentos","*","where id_paciente=$paciente->id and titulo='".addslashes($_POST['titulo'])."' and lixo=0");
@@ -670,21 +758,22 @@
 					if($processa===true) {	
 						// persiste as informacoes do tratamento
 						if($_POST['acao']=="wlib") {
+							if(isset($_POST['tipo_financeiro']) && $_POST['tipo_financeiro']=='politica'){
+								$_POST['parcelas'] = count(json_decode($_POST['pagamentos']))??0;
+							}
 							$vSQL=$adm->vSQL($campos,$_POST);
 							$values=$adm->values;
-
+						
 							if($tratamentoAprovado===false) {
 								$vSQL.="procedimentos='".addslashes(utf8_decode($_POST['procedimentos']))."',";
 								$vSQL.="pagamentos='".addslashes(utf8_decode($_POST['pagamentos']))."',";
 							}
-
 							$idProfissional=(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional']))?$_POST['id_profissional']:0;
 
 							if(isset($_POST['parcelas']) and is_numeric($_POST['parcelas'])) $vSQL.="parcelas='".$_POST['parcelas']."',";
 							if(isset($_POST['pagamento'])) $vSQL.="pagamento='".$_POST['pagamento']."',";
 
 							if(is_object($cnt)) {
-
 								if(!empty($vSQL)) {
 									$vSQL=substr($vSQL,0,strlen($vSQL)-1);
 									$vWHERE="where id='".$cnt->id."'";
@@ -1336,61 +1425,114 @@
 						</div>
 					</fieldset>
 					<!-- Financeiro -->
-					<fieldset style="grid-row:span 2">
+					<fieldset>
 						<legend>Financeiro</legend>
-
 						<textarea name="pagamentos" id="js-textarea-pagamentos" style="display:none;"><?php echo $values['pagamentos'];?></textarea>
-						<?php
-
-						if($tratamentoAprovado===false) { ?>
-							<div class="colunas4">
-								<dl>
-									<dd>
-										<a href="javascript:;" class="button button_main js-btn-desconto"><i class="iconify" data-icon="fluent:money-calculator-24-filled"></i><span>Descontos</span></a>
-									</dd>
-								</dl>
-								<dl>
-									<dd>
-										<label><input id='ValidaPoliticaManualID' type="checkbox" name="pagamento-politica" value="politica" class="input-switch" data-politica='0' onclick="ativarDesativarPolitica(this)" <?php echo (is_object($cnt) and $cnt->pagamento=="politica")?" checked":"";?>/><span id='PoliticaUsadaMomento'></span></label>
-									</dd>
-								</dl>
+						<section class="filter">
+							<div class="filter-group">	
+								<div class="filter-title">									
+									<h1>Total: <strike  class="js-valorTotalOriginal">R$ 350,00</strike> <strong  class="js-valorTotal">R$ 340,00</strong></h1>
+								</div>								
+							</div>
+							<div class="filter-group">
+							<?php if($tratamentoAprovado===false):?>
+								<div>
+									<a href="javascript:;" class="button js-btn-desconto"><i class="iconify" data-icon="fluent:money-calculator-24-filled"></i><span>Descontos</span></a>
+								</div>
 								<dl id='botao-voltar-menu-parcelas' style='display: none;'>
 									<dd>
 										<label onclick="voltarMenuParcelas()"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></label>
 									</dd>
 								</dl>
+							<?php endif;?>
 							</div>
-
-						<?php
-						}
-						?>
-						<div class="" id='metodos-pagamento-politica'>
-							<div class="colunas3">
-								<dl>
-									<dt>Valor Total (R$)</dt>
-									<dd style="font-size:1.75em; font-weight:bold;" class="js-valorTotal">0,00</dd>
-								</dl>
-								<?php
-								if($tratamentoAprovado===false) {
-								?>
-
-								<dl class="dl2">
-									<dt>Forma de Pagamento</dt>
-									<dd>
-										<label><input type="radio" name="pagamento" value="avista"<?php echo (is_object($cnt) and $cnt->pagamento=="avista")?" checked":"";?> disabled />A Vista</label>
-										<label><input type="radio" name="pagamento" value="parcelado"<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?" checked":"";?> disabled />Parcelado em</label>
-										<label><input type="number" name="parcelas" class="js-pagamentos-quantidade" value="<?php #echo (is_object($cnt) and $cnt->pagamento=="parcelado")?$cnt->parcelas:"2";?>" style="width:50px;<?php echo (is_object($cnt) and $cnt->pagamento=="parcelado")?"":"display:none;";?>" /></label>
-									</dd>
-								</dl>
-								<?php
-								}
-								?>						
+						</section>
+						<?php if($tratamentoAprovado===false):?>
+						<dl style="margin-bottom:2rem">
+							<dd>
+								<label><input type="radio" name="tipo_financeiro" value="politica" onclick="$('.js-tipo').hide(); $('.js-tipo-politica').show();" <?= (is_object($cnt) and $cnt->tipo_financeiro=="politica")?" checked":"";?>/> Política de pagamento</label>
+								<label><input type="radio" name="tipo_financeiro" value="manual" onclick="$('.js-tipo').hide(); $('.js-tipo-manual').show();atualizaValor(true);" <?= (is_object($cnt) and $cnt->tipo_financeiro=="manual")?" checked":"";?> /> Financeiro manual</label>
+							</dd>
+						</dl>
+						<?php endif;?>
+						<section class="js-tipo js-tipo-manual">
+							<dl>
+								<dt>Parcelas</dt>
+								<dd>
+									<label><input class="js-pagamentos-quantidade" type="number" name="parcelas" value="<?=isset($values['parcelas'])?$values['parcelas']:'1';?>" style="width:80px;" /></label>
+								</dd>
+							</dl>							
+						</section>
+						<section class="js-tipo js-tipo-politica" style="display:none;">
+							<div class="list1">
+								<table >
+								</table>
 							</div>
-							<div class="fpag js-pagamentos" style="margin-top:2rem;">
+						</section>
+						<section class="js-tipo js-listar-parcelas" style="display:none;">
+							<div class="fpag" style="margin-top:1rem;">
+								<div class="fpag-item">
+									<aside>1</aside>
+									<article>
+										<div class="colunas3">
+											<dl>
+												<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
+											</dl>
+											<dl>
+												<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
+											</dl>
+											<dl>
+												<dd>
+													<select class="js-id_formadepagamento js-tipoPagamento">
+														<option value="9" data-tipo="boleto">BOLETO</option>
+													</select>
+												</dd>
+											</dl>
+										</div>
+										<div class="colunas3">
+											<dl>
+												<dt>Identificador</dt>
+												<dd><input type="text" name="" /></dd>
+											</dl>
+										</div>
+									</article>
+								</div>
+								<div class="fpag-item">
+									<aside>2</aside>
+									<article>
+										<div class="colunas3">
+											<dl>
+												<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
+											</dl>
+											<dl>
+												<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
+											</dl>
+											<dl>
+												<dd>
+													<select class="js-id_formadepagamento js-tipoPagamento">
+														<option value="9" data-tipo="boleto">CARTÃO DE CRÉDITO</option>
+													</select>
+												</dd>
+											</dl>
+										</div>
+										<div class="colunas3">
+											<dl>
+												<dt>Bandeira</dt>
+												<dd><select name=""><option value=""></option></select></dd>
+											</dl>
+											<dl>
+												<dt>Parcelas</dt>
+												<dd><select name=""><option value="">1x</option></select></dd>
+											</dl>
+											<dl>
+												<dt>Identificador</dt>
+												<dd><input type="text" name="" /></dd>
+											</dl>
+										</div>
+									</article>
+								</div>
 							</div>
-							<div class="fpag js-pagamentos12" style="margin-top:2rem;">
-							</div>
-						</div>
+						</section>
 					</fieldset>
 					<!-- Procedimentos --> 
 					<fieldset>

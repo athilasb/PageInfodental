@@ -1,1 +1,5 @@
 .DS_Store
+#pasta de configuração do vscode SFTP
+.vscode/sftp.json 
+# arquivo de configuração do Sublime
+sftp-config.json

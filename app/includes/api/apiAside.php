@@ -1,6 +1,4 @@
-<?php
-
-				
+<?php	
 	if(isset($_POST['ajax'])) {
 
 		$dir="../../";
@@ -20,6 +18,7 @@
 		$_tableProfissoes=$_p."parametros_profissoes";
 		$_tableListaPersonalizada=$_p."parametros_indicacoes";
 		$_tableTags=$_p."parametros_tags";
+		$_tableChecklist=$_p."agenda_checklist";
 
 		# Agenda
 			if($_POST['ajax']=="agendamentosProfissionais") {
@@ -283,6 +282,14 @@
 					}
 				}
 
+				$tags=array();
+				if(isset($_POST['tags']) and !empty($_POST['tags'])) {
+					$pAux=explode(",",$_POST['tags']);
+					foreach($pAux as $id_tag) {
+						if(is_numeric($id_tag)) $tags[]=$id_tag;
+					}
+				}
+
 				$cadeira='';
 				if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
 					$sql->consult($_p."parametros_cadeiras","*","where id='".$_POST['id_cadeira']."' and lixo=0");
@@ -347,13 +354,31 @@
 						$vSQL.=",data=now(),id_usuario=$usr->id";
 
 						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
+						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags)."'";
+						else $vSQL.=",tags=''";
 
 						$sql->add($_p."agenda",$vSQL);
 						$id_agenda=$sql->ulid;
 						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$id_agenda."'");
+
+						// Salvando Checklist
+						$vSQLChecklist="";
+						$sql->consult("infodentalADM.infod_parametros_agenda_checklist","*","WHERE lixo=0");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							if(isset($_POST['checklist-'.$x->id])) {
+								$vSQLChecklist.="(".$id_agenda.",".$x->id;
+
+								if(isset($_POST['checklist_descricao-'.$x->id])) {
+									$vSQLChecklist.=",'".utf8_decode($_POST['checklist_descricao-'.$x->id])."'),";
+								} 
+							}
+						}
+
+						if(!empty($vSQLChecklist)) {
+							$sql->insertMultiple($_p."agenda_checklist","id_agenda,id_checklist,descricao",$vSQLChecklist);
+						}
+
 						$rtn=array('success'=>true);
-
-
 					}
 				} else {
 
@@ -394,7 +419,8 @@
 
 
 						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
-
+						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags)."'";
+						else $vSQL.=",tags=''";
 
 						$vSQL.=",data=now(),id_usuario=$usr->id";
 						$sql->add($_p."agenda",$vSQL);
@@ -411,6 +437,25 @@
 							id_status_novo=".$idStatusNovo.",
 							descricao=''";
 						$sql->add($_p."pacientes_historico",$vSQLHistorico);
+
+						// Salvando Checklist
+						$vSQLChecklist="";
+						$sql->consult("infodentalADM.infod_parametros_agenda_checklist","*","WHERE lixo=0");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							if(isset($_POST['checklist-'.$x->id])) {
+								$vSQLChecklist.="(".$id_agenda.",".$x->id;
+
+								if(isset($_POST['checklist_descricao-'.$x->id])) {
+									$vSQLChecklist.=",'".utf8_decode($_POST['checklist_descricao-'.$x->id])."'),";
+								} 
+							}
+						}
+
+						if(!empty($vSQLChecklist)) {
+							$vSQLChecklist=substr($vSQLChecklist,0,strlen($vSQLChecklist)-1);
+							$sql->insertMultiple($_p."agenda_checklist","id_agenda,id_checklist,descricao",$vSQLChecklist);
+						}
+
 						$rtn=array('success'=>true,'id_paciente'=>$paciente->id);
 
 					}
@@ -532,9 +577,9 @@
 							agenda_data_final='".date('Y-m-d H:i:s',strtotime($agendaData." + $duracao minutes"))."'
 								";
 
-						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags).",'";
-
 						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
+						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags)."'";
+						else $vSQL.=",tags=''";
 
 						$idStatusNovo=((isset($_POST['id_status']) and is_numeric($_POST['id_status']))?$_POST['id_status']:'');
 						
@@ -655,6 +700,68 @@
 					$rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
 				}
 			} 
+
+			else if($_POST['ajax']=="checklistListar") {
+
+				$agenda='';
+				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
+					$sql->consult($_p."agenda","*","where id='".addslashes($_POST['id_agenda'])."'");
+					if($sql->rows) {
+						$agenda=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				if(empty($agenda)) $rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
+				else {
+
+					$_checklist=array();
+					$sql->consult("infodentalADM.infod_parametros_agenda_checklist","*","WHERE lixo=0");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$_checklist[$x->id]=$x;
+					}
+
+					$regs=array();
+					$sql->consult($_tableChecklist,"*","WHERE lixo=0 and id_agenda='".$agenda->id."'");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						if(isset($_checklist[$x->id_checklist])) {
+							$regs[]=array('id'=>$x->id,
+										  'id_agenda'=>$x->id_agenda,
+										  'titulo' => utf8_encode($_checklist[$x->id_checklist]->titulo),
+										  'checado'=>$x->checado,
+										  'descricao'=>utf8_encode($x->descricao));
+						}
+					}
+
+					$rtn=array('success'=>true,'regs'=>$regs);
+				}
+			}
+
+			else if($_POST['ajax']=="checklistChecado") {
+
+				$agenda='';
+				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
+					$sql->consult($_p."agenda","*","where id='".addslashes($_POST['id_agenda'])."'");
+					if($sql->rows) {
+						$agenda=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$agendaChecklist='';
+				if(isset($_POST['id_agenda_checklist']) and is_numeric($_POST['id_agenda_checklist'])) {
+					$sql->consult($_tableChecklist,"*","where id='".addslashes($_POST['id_agenda_checklist'])."'");
+					if($sql->rows) {
+						$agendaChecklist=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				if(empty($agenda)) $rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
+				if(empty($agendaChecklist)) $rtn=array('success'=>false,'error'=>'Agendamento Checklist não encontrado');
+				else {
+					$checado=(isset($_POST['checado']) and $_POST['checado']==1)?1:0;
+					$sql->update($_tableChecklist,"checado='".$checado."'","WHERE id='".$agendaChecklist->id."' and id_agenda='".$agenda->id."'");
+					$rtn=array('success'=>true);
+				}
+			}
 		 
 
 		# Especialidades
@@ -2841,12 +2948,6 @@
 				<section class="aside aside-add" id="js-aside-add">
 					<script type="text/javascript">
 
-						const agendaChecklistListar = () => {
-							$('.js-agenda-checklist tr').remove();
-
-							
-						}
-
 						const popView = (id_agenda) => {
 							$('#js-aside-edit .js-foto').attr('src','img/ilustra-usuario.jpg');
 							
@@ -3227,10 +3328,9 @@
 										
 										let campos = $('#js-aside-add form').serialize();
 										let profissionais = $('#js-aside-add .js-profissionais').val();
+										let tags = $('#js-aside-add .js-tags').val();
 
-										let data = `ajax=novoAgendamento&profissionais=${profissionais}&${campos}`;
-
-										
+										let data = `ajax=novoAgendamento&profissionais=${profissionais}&tags=${tags}&${campos}`;
 
 										$.ajax({
 											type:'POST',
@@ -3464,38 +3564,10 @@
 							<fieldset style="margin-top:2rem;">
 								<legend>Itens do checklist</legend>
 								
-								<div class="colunas3">
-									<dl>	
-										<dd><label><input type="checkbox" name="" class="input-switch" />Laboratório</label></dd>
-									</dl>
-									<dl class="dl2">
-										<dd><input type="text" name="" placeholder="descrição" /></dd>
-									</dl>
+								<div class="js-checklist-itens">
+									
 								</div>
-								<div class="colunas3">
-									<dl>	
-										<dd><label><input type="checkbox" name="" class="input-switch" />Imagem</label></dd>
-									</dl>
-									<dl class="dl2">
-										<dd><input type="text" name="" placeholder="descrição" /></dd>
-									</dl>
-								</div>
-								<div class="colunas3">
-									<dl>	
-										<dd><label><input type="checkbox" name="" class="input-switch" />Insumos</label></dd>
-									</dl>
-									<dl class="dl2">
-										<dd><input type="text" name="" placeholder="descrição" /></dd>
-									</dl>
-								</div>
-								<div class="colunas3">
-									<dl>	
-										<dd><label><input type="checkbox" name="" class="input-switch" />Equipamentos</label></dd>
-									</dl>
-									<dl class="dl2">
-										<dd><input type="text" name="" placeholder="descrição" /></dd>
-									</dl>
-								</div>
+								
 							</fieldset>
 						</form>
 					</div>
@@ -3765,6 +3837,40 @@
 					<script type="text/javascript">
 						$(function(){
 
+							const agendaChecklistListar = () => {
+
+								let id_agenda = $('#js-aside-edit input[name=id]').val();
+								$('.js-agenda-checklist-table tbody').html('');
+
+								let data = `ajax=checklistListar&id_agenda=${id_agenda}`;
+								$.ajax({
+									type:"POST",
+									url:baseURLApiAside,
+									data:data,
+									success:function(rtn){ 
+										if(rtn.success) {
+											checklist=rtn.regs;
+
+											if(checklist.length>0) {
+												checklist.forEach(x=>{
+											
+													$(`.js-agenda-checklist-table tbody`).append(`<tr>
+															<td>
+																<h1>${x.titulo}</h1>
+															</td>
+															<td>${x.descricao}</td>
+															<td><input type="checkbox" class="input-switch js-checklist" data-id_agendachecklist="${x.id}" ${x.checado==1?"checked":""} /></td>
+														</tr>`);
+												});
+											} else {
+												$('.js-agenda-checklist-table').append(`<tr><td><center>Nenhum checklist criado</center></td></tr>`);
+											}
+											
+										}
+									}
+								});
+							}
+
 							$('#js-aside-edit .js-excluir').click(function(){
 
 								let obj = $(this);
@@ -3934,6 +4040,26 @@
 
 							$('#js-aside-edit').find('input[name=agenda_data],input[name=agenda_hora]').change(function(){
 								agendamentosProfissionais(`edit`);
+								agendaChecklistListar();
+							});
+
+							$('#js-aside-edit .js-agenda-checklist-table').on('click','.js-checklist',function(){
+								let id_agenda = $('#js-aside-edit input[name=id]').val();
+								let id_agenda_checklist = $(this).attr('data-id_agendachecklist');
+								let checado = $(this).prop('checked')===true?1:0;
+
+								let data = `ajax=checklistChecado&id_agenda=${id_agenda}&id_agenda_checklist=${id_agenda_checklist}&checado=${checado}`;
+								$.ajax({
+									type:"POST",
+									url:baseURLApiAside,
+									data:data,
+									success:function(rtn){ 
+										if(rtn.success) {
+										}
+									}
+								});
+
+
 							});
 						})
 					</script>
@@ -4111,7 +4237,11 @@
 								</section>
 
 								<div class="list1">
-									<table class="js-agenda-checklist">
+									<table class="js-agenda-checklist-table">
+										<tbody>
+										</tbody>
+										<?php 
+											/*
 										<tr>								
 											<td>
 												<h1>Laboratório</h1>
@@ -4139,7 +4269,7 @@
 											</td>
 											<td></td>
 											<td><button class="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Adicionar</span></button></td>
-										</tr>
+										</tr> */ ?>
 									</table>
 								</div>
 								
