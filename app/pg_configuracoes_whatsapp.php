@@ -169,12 +169,14 @@
 	function substituiTags($texto) {
 
 		$texto = str_replace("*[nome]*", "<b>João</b>", $texto);
+		$texto = str_replace("*[paciente]*", "<b>João</b>", $texto);
 		$texto = str_replace("*[clinica_nome]*", "<b>Clínica Sorriso Feliz</b>", $texto);
 		$texto = str_replace("*[agenda_data]*", "<b>".date('d/m/Y')."</b>", $texto);
 		$texto = str_replace("*[agenda_hora]*", "<b>".date('H:i',strtotime(date('Y-m-d H:i')." + 2 hour"))."</b>", $texto);
 		$texto = str_replace("*[agenda_antiga_data]*", "<b>".date('d/m/Y',strtotime(date('Y-m-d')." + 2 day"))."</b>", $texto);
 		$texto = str_replace("*[agenda_antiga_hora]*", "<b>09:00</b>", $texto);
 		$texto = str_replace("*[duracao]*", "<b>60min</b>", $texto);
+		$texto = str_replace("*[profissionais]*", "<b>Dr. Luciano</b>", $texto);
 		$texto = str_replace("[clinica_endereco]", "<b>Rua das Esmeraldas, nº3444 Bairro Ouro Fino, Sala 01, São Paulo-SP</b>", $texto);
 		$texto = str_replace("*Confirmar*", "<b>Confirmar</b>", $texto);
 		$texto = str_replace("*Desmarcar*", "<b>Desmarcar</b>", $texto);

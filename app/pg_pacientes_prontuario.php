@@ -1,4 +1,4 @@
-]<?php
+<?php
 	if(isset($_POST['ajax'])) {
 		require_once("lib/conf.php");	
 		require_once("usuarios/checa.php");
