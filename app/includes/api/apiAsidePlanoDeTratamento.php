@@ -57,7 +57,6 @@
 	var autor = '<?php echo utf8_encode($usr->nome);?>';
 
 	const atualizaValor = (atualizarParcelas) => {
-		console.log('ATUALIZANDO VALOR')
 		valorTotal=0;
 		valorOriginalProcedimentos = 0;
 		let cont = 1;
@@ -152,14 +151,10 @@
 			let index=1;
 			let metodosPagamentosAceito ='<?php echo $optionFormasDePagamento;?>';
 			let disabledValor = ''
-			if(temPolitica && temPolitica.parcelasParametros && temPolitica.parcelasParametros.metodos && temPolitica.parcelasParametros.metodos.length>0 && (passo==3)){
-				metodosPagamentosAceito =""
-				for(let m in temPolitica.parcelasParametros.metodos){
-					if(temPolitica.parcelasParametros.metodos[m].length>0){
-						metodosPagamentosAceito+=`<option value='${temPolitica.parcelasParametros.metodos[m]}'>${temPolitica.parcelasParametros.metodos[m].toUpperCase()}</option>`
-						disabledValor = 'disabled'
-					}
-				}
+			let disabledForma = ''
+			if(contrato.tipo_financeiro=='politica'){
+				disabledValor = 'disabled'
+				disabledForma = 'disabled'
 			}
 			pagamentos.forEach(x=>{
 				$('.js-listar-parcelas').append(`<div class="fpag-item js-pagamento-item">
@@ -208,6 +203,7 @@
 																	foreach($creditoBandeiras as $id_operadora=>$x) {
 																		echo '<optgroup label="'.utf8_encode($x['titulo']).'">';
 																		foreach($x['bandeiras'] as $band) {
+
 																			echo '<option value="'.$band['id_bandeira'].'" data-parcelas="'.$band['parcelas'].'" data-parcelas-semjuros="'.$band['semJuros'].'" data-id_operadora="'.$id_operadora.'" data-id_operadorabandeira="'.($id_operadora.$band['id_bandeira']).'">'.utf8_encode($band['titulo']).'</option>';
 																		}
 																		echo '</optgroup>';
@@ -220,13 +216,13 @@
 														<dl style="display:none">
 															<dt>Qtd. Parcelas</dt>
 															<dd>
-																<select class="js-parcelas js-tipoPagamento">
-																	<option value="">selecione a bandeira</option>
+																<select class="js-parcelas js-tipoPagamento" ${disabledForma}>
+																	<option value="">selecione a as Parcelas</option>
 																</select>
 															</dd>
 														</dl>
 
-														<dl style="display:none">
+														<dl style="display:none" ${disabledForma}>
 															<dt>Identificador</dt>
 															<dd><input type="text" class="js-identificador js-tipoPagamento" /></dd>
 														</dl>
@@ -435,7 +431,6 @@
 
 	// atualiza valores dos campos do box desconto
 	const descontoAtualizar = () => {
-
 		let cont = 0;
 		let totalProcedimentos = 0;
 		let totalDescontoAplicado = 0;
@@ -619,15 +614,14 @@
 	}
 
 	const creditoBandeiraAtualizaParcelas = (selectCreditoBandeira,qtdParcelasSelecionar) => {
-		let obj = $(selectCreditoBandeira).parent().parent().parent();
-		$(obj).find('select.js-parcelas option').remove();
+		let obj = $(selectCreditoBandeira).parent().parent().parent().parent();
 		
 		if($(selectCreditoBandeira).val().length>0) {
 			let semJuros = eval($(selectCreditoBandeira).find('option:checked').attr('data-parcelas-semjuros'));
 			let parcelas = eval($(selectCreditoBandeira).find('option:checked').attr('data-parcelas'));
 		
 			if($.isNumeric(parcelas)) {
-				$(obj).find('select.js-parcelas').append(`<option value="">-</option>`);
+				$(obj).find('select.js-listar-parcelas').append(`<option value="">-</option>`);
 				for(var i=1;i<=parcelas;i++) {
 					semjuros='';
 					if($.isNumeric(semJuros) && semJuros>=i) semjuros=` - sem juros`;
@@ -639,10 +633,10 @@
 					$(obj).find('select.js-parcelas').append(`<option value="${i}"${sel}>${i}x${semjuros}</option>`);
 				}
 			} else {
-				$(obj).find('select.js-parcelas').append(`<option value="">erro</option>`);
+				$(obj).find('select.js-listar-parcelas').append(`<option value="">erro</option>`);
 			}
 		} else {
-			$(obj).find('select.js-parcelas').append(`<option value="">selecione a bandeira</option>`);
+			$(obj).find('select.js-listar-parcelas').append(`<option value="">selecione a bandeira</option>`);
 		}
 	}
 
@@ -652,7 +646,6 @@
 		procedimentosListar();
 		// verificar a forma de Pagamento ja Pré salva 
 		verificaSeExisteParcelasSalvas();
-
 
 		$('.js-pagamentos').on('change','.js-vencimento:eq(0)',function(){
 			console.log('ATUALIZADO DATA')
@@ -853,32 +846,20 @@
 			$('.aside-plano-desconto .js-input-desconto').trigger('keyup');
 		}).trigger('change');
 
-		$('.js-pagamentos').on('change','.js-debitoBandeira,.js-creditoBandeira,.js-parcelas,.js-valor',function(){
-			//	creditoDebitoValorParcela($(this));
-			let obj = $(this);
-			setTimeout(function(){$(obj).parent().parent().parent().parent().find('.js-valor').trigger('keyup');},200);	
-		});
 
-		$('.js-pagamentos').on('change','.js-vencimento',pagamentosPersistirObjeto);
+		$('.js-listar-parcelas').on('change','.js-vencimento',pagamentosPersistirObjeto);
 
-		$('.js-pagamentos').on('change','.js-creditoBandeira',function(){
+		$('.js-listar-parcelas').on('change','.js-creditoBandeira',function(){
 			creditoBandeiraAtualizaParcelas($(this),0);
 			pagamentosPersistirObjeto();
 		});
 
-		$('.js-pagamentos').on('keyup','.js-identificador',pagamentosPersistirObjeto);
-		$('.js-pagamentos').on('change','.js-debitoBandeira,.js-creditoBandeira,.js-parcelas',pagamentosPersistirObjeto);
+		$('.js-listar-parcelas').on('keyup','.js-identificador',pagamentosPersistirObjeto);
+		$('.js-listar-parcelas').on('change','.js-debitoBandeira,.js-creditoBandeira,.js-parcelas',pagamentosPersistirObjeto);
 
-		$('.js-pagamentos').on('blur','.js-valor',function(){
+		$('.js-listar-parcelas').on('blur','.js-valor',function(){
 			pagamentosListar();
 		});
-
-		/*$('.js-pagamentos').on('keyup','.js-identificador',function(){
-
-			let obj = $(this).parent().parent().parent().parent();
-
-			setTimeout(function(){$(obj).find('.js-valor').trigger('keyup');},200);
-		});*/
 		
 		$('.js-pagamentos').on('keyup','.js-valor',function(){
 			let index = $(this).index('.js-pagamentos .js-valor');
@@ -974,7 +955,7 @@
 			}
 		});
 
-		$('.js-pagamentos').on('change','.js-id_formadepagamento',function(){
+		$('.js-listar-parcelas').on('change','.js-id_formadepagamento',function(){
 			pagamentosAtualizaCampos($(this),true);
 		});
 

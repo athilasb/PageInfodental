@@ -23,7 +23,6 @@
 		require_once("usuarios/checa.php");
 		$rtn=array();
 		if($_POST['ajax']=="editar") {
-
 			$cnt = '';
 			if(isset($_POST['id']) and is_numeric($_POST['id'])) {
 				$sql->consult($_table,"*","where id=".$_POST['id']);
@@ -31,20 +30,15 @@
 					$cnt=mysqli_fetch_object($sql->mysqry);
 				}
 			}
-
 			if(empty($cnt)) {
 				$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
 			} else {	
-
-			
-
 				$data = array('id'=>$cnt->id,
 								'de'=>number_format($cnt->de,2,",","."),
 								'ate'=>number_format($cnt->ate,2,",","."),
 								'entrada'=>utf8_encode($cnt->entrada),
 								'parcelas'=>utf8_encode($cnt->parcelas),
 								'parcelasJSON'=>!empty($cnt->parcelasParametros)?json_decode($cnt->parcelasParametros):[]);
-
 				$rtn=array('success'=>true,'data'=>$data);
 
 			}
@@ -85,31 +79,27 @@
 			if(empty($cnt)) {
 				$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
 			} else {
-			$status = $_POST['status'];
-				
-			$vWHERE="where id=$cnt->id";
-			$vSQL="status=$status";
-			$sql->update($_table,$vSQL,$vWHERE);
-			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='delete',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='$_table',id_reg='".$cnt->id."'");
-			$rtn=array('success'=>true);
+				$status = $_POST['status'];
+					
+				$vWHERE="where id=$cnt->id";
+				$vSQL="status=$status";
+				$sql->update($_table,$vSQL,$vWHERE);
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='delete',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='$_table',id_reg='".$cnt->id."'");
+				$rtn=array('success'=>true);
 			}
 		}
 		else if($_POST['ajax']=="persistir") {
-
-
-			$tipo = (isset($_POST['tipo']) and !empty($_POST['tipo'])) ? valor($_POST['tipo']) : '';
-			$de = (isset($_POST['de']) and !empty($_POST['de'])) ? valor($_POST['de']) : 0;
-			$ate = (isset($_POST['ate']) and !empty($_POST['ate'])) ? valor($_POST['ate']) : '';
+			$tipo = (isset($_POST['tipo']) and !empty($_POST['tipo'])) ? ($_POST['tipo']) : '';
+			$de = (isset($_POST['de']) and !empty($_POST['de'])) ? ($_POST['de']) : 0;
+			$ate = (isset($_POST['ate']) and !empty($_POST['ate'])) ? ($_POST['ate']) : '10000000000';
 			$parcelasJSON = (isset($_POST['parcelasJSON']) and !empty($_POST['parcelasJSON'])) ? json_decode($_POST['parcelasJSON']) : '';
 			
 			$erro='';
 			if(($tipo =='intervalo') && (empty($ate))) $erro='Preencha o campo Até';
 			else if($de>$ate) $erro='O campo De deve ser menor que o campo Até';
-
 			if(!empty($erro)) {
 				$rtn=array('success'=>false,'error'=>$erro);
 			} else {
-
 				// consulta todas politicas para verificar interceção do "de" e "até";
 				$_politica=[];
 				$sql->consult($_table,"*","where lixo=0  AND status=0");
@@ -126,7 +116,7 @@
 
 				$cnt = '';
 				if(isset($_POST['id']) and is_numeric($_POST['id']) and $_POST['id']>0) {
-					$sql->consult($_table,"*","where id=".$_POST['id']." and lixo=0");
+					$sql->consult($_table,"*","where id=".$_POST['id']."");
 					if($sql->rows) {
 						$cnt=mysqli_fetch_object($sql->mysqry);
 					}
@@ -137,8 +127,7 @@
 					if(isset($_politica[$cnt->id])) {
 						 unset($_politica[$cnt->id]); 
 					}
-				}	
-
+				}
 				// verifica se tem interceção
 				$possuiIntercecao=false;
 				$possuiIntercecaoObj='';
@@ -147,18 +136,12 @@
 					$end_one = $ate;
 					$start_two = $x->de;
 					$end_two = $x->ate;
-
-					//echo "$start_one - $end_one > $start_two - $end_two = ";
-					
 					if($start_one <= $end_two && $end_one >= $start_two) { //If the dates overlap
-						//echo  1; //return how many days overlap
 						$possuiIntercecao=true;
 						$possuiIntercecaoObj="R$".number_format($x->de,2,",",".")." até R$".number_format($x->ate,2,",",".");
 						break;
 					} 
-
 				}
-
 				if($possuiIntercecao===true) {
 					$rtn=array('success'=>false,'error'=>"Já existe Política de Pagamento ".$possuiIntercecaoObj);
 				} else {
@@ -224,7 +207,6 @@
 						$jsc->jAlert("Informações salvas com sucesso!","sucesso","document.location.href='$_page'");
 						die();
 					}*/
-
 					$rtn=array('success'=>true,'id_reg'=>$id_politica);
 
 				}
@@ -243,7 +225,7 @@
 	include "includes/header.php";
 	include "includes/nav.php";
 	$values=$adm->get($_GET);
-	$campos=explode(",","de,ate,entrada,parcelas");
+	$campos=explode(",","de,ate,entrada,parcelas,parcelasParametros");
 	if(isset($_POST['acao'])) {
 		
 	}
@@ -387,25 +369,7 @@
 
 
 		}
-
-		const asideParcelas = () => {
-
-			$('#js-aside .js-fieldset-parcelas .js-table-parcelas').html('');
-
-			let parcelas = $('#js-aside select[name=parcelas]').val();
-
-			for(var i=1;i<=parcelas;i++) {
-				let div = `<tr>
-								<td style="text-align:center;">${i}x</td>
-								<td><input type="text" class="js-prazo js-prazo-${i}" maxlength="3" /></td>
-								<td><input type="text" class="js-juros js-juros-${i} js-money" maxlength="5" /></td>
-							</tr>`;
-
-				$('.js-table-parcelas').append(div);
-			}
-
-		}
-
+	
 		// abre aside para adição (id=0) ou edição (id>0) de operadora
 		const openAside = (id) => {
 			if($.isNumeric(id) && id>0) {
@@ -415,38 +379,29 @@
 					data:data,
 					success:function(rtn){ 
 						if(rtn.success) {
-							console.log(rtn.data.id)
+							rtn.data.parcelasJSON.metodos.forEach(x=>{
+								console.log(x)
+								var closestParent = $($(`#status-${x.tipo}`)).closest('div');
+								$(`#status-${x.tipo}`).prop('checked',true);
+								showOptionsPolitica($(`#status-${x.tipo}`))
+								$(closestParent).find('[name="quantidadeParcelas"]').attr('value',x.parcelas);
+								$(closestParent).find('[name="quantidadeParcelasSemJuros"]').val(x.parcelaSemJuros);
+								$(closestParent).find('[name="entradaMinima"]').val(x.entradaMinima);
+								$(closestParent).find('[name="jurosAnual"]').val(x.jurosAnual);
+								$(closestParent).find('[name="descontoAvista"]').val(x.descontoAvista);
+							});
+							
 							$('#js-aside input[name=id]').val(rtn.data.id);
 							$('#js-aside input[name=de]').val(rtn.data.de);
 							$('#js-aside input[name=ate]').val(rtn.data.ate);
-							$('#js-aside input[name=entradaMinima]').val(rtn.data.entrada);
-							$('#js-aside input[name=quantidadeParcelas]').val(rtn.data.parcelas);
-							$('#js-aside input[name=quantidadeParcelasSemJuros]').val(rtn.data.parcelasJSON.quantidadeParcelasSemJuros);
-							$('#js-aside input[name=jurosAnual]').val(rtn.data.parcelasJSON.jurosAnual);
 							let parcelas = rtn.data.parcelas;
 
-							asideParcelas();
-
-							if(rtn.data.parcelasJSON && rtn.data.parcelasJSON.metodos && rtn.data.parcelasJSON.metodos.length>0) {
-								if(rtn.data.parcelasJSON.metodos.length>0) {
-									$('input[type="checkbox"]').each(function() {
-										var checkbox = $(this);
-										if(checkbox.attr('data-tipo')){
-											if((rtn.data.parcelasJSON.metodos.indexOf(checkbox.attr('data-tipo')) !== -1)){
-												checkbox.prop('checked', true);
-											}
-										}
-									});
-								}
-							}
 							$('.js-textarea-parcelas').val(JSON.stringify(rtn.data.parcelasJSON));
-							$('.js-fieldset-bandeiras,.js-btn-remover').show();
 							
 							$("#js-aside").fadeIn(100,function() {
 								$("#js-aside .aside__inner1").addClass("active");
 								$('.js-money').maskMoney({decimal:',',thousands:'.',allowZero:true});
 							});
-
 
 						} else if(rtn.error) {
 							swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -521,26 +476,25 @@
 			document.querySelector('#js-aside .js-salvarPolitica').addEventListener('click',function(e){
 				let erro= "";
 				const idPolitica = $('[name="id"]').val()
-				const tipoPolitica = $('[name="tipo_politica"]').val()
+				const tipoPolitica = $('[name="tipo_politica"]:checked').val()
 				const checkboxesChecked =$('form input[type="checkbox"]:checked');
-				let de = false;
-				let ate =false;
+				let de = 0;
+				let ate =0;
 				let ObjetoPolitica={};
 			
 				if(tipoPolitica=='intervalo'){
-					//de = unMoney(document.querySelector('[name="de"]').value.replace(".", "").replace(",", "."));
 					de = unMoney($('[name="de"]').val());
 					ate = unMoney($('[name="ate"]').val());
 
 				}else if(tipoPolitica=='acima'){
 					de = unMoney($('[name="de"]').val());
-					ate = unMoney(0);
+					ate = unMoney("0");
 				}else{
 					erro = "Nenhuma Tipo de Politica selecionado"
 				}
 				if(de ==undefined || de ==null){
 					erro = "Voce Precisa Adicionar uma Valor 'DE'";
-				}else if(ate ==undefined || ate ==null){
+				}else if(ate == undefined || ate == null){
 					erro = "Voce Precisa Adicionar uma Valor 'ATE'";
 				}else if(tipoPolitica == 'intervalo' && (de > ate || ate == 0)){
 					erro = "O campo 'DE' Não Pode ser Menor que o campo 'ATE'";
@@ -549,7 +503,9 @@
 				}
 				if(erro){
 					swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
+					return;
 				}else{
+ 					erro= ""
 					ObjetoPolitica = {
 						de,ate,metodos:[]
 					}
@@ -559,21 +515,27 @@
 							let obj = {
 								metodoPagamentoId:parseInt($(Pai).attr('id')),
 								habilitado:0,
+								de,
+								ate,
 								tipo:checkbox.getAttribute('data-tipo'),
 								parcelas:parseInt($(Pai).find('[name="quantidadeParcelas"]').val()),
 								parcelaSemJuros:parseInt($(Pai).find('[name="quantidadeParcelasSemJuros"]').val()),
 								entradaMinima:parseFloat($(Pai).find('[name="entradaMinima"]').val()),
 								jurosAnual:parseFloat($(Pai).find('[name="jurosAnual"]').val()),
-								desconto:parseFloat($(Pai).find('[name="descontoAvista"]').val())
+								descontoAvista:parseFloat($(Pai).find('[name="descontoAvista"]').val())
 							}
 							if(isNaN(parseInt($(Pai).find('[name="quantidadeParcelas"]').val())) || isNaN(parseInt($(Pai).find('[name="quantidadeParcelasSemJuros"]').val())) || isNaN(parseFloat($(Pai).find('[name="entradaMinima"]').val())) || isNaN(parseFloat($(Pai).find('[name="jurosAnual"]').val())) || isNaN(parseFloat($(Pai).find('[name="descontoAvista"]').val()))){
-								swal({title: "Erro!", text: `O Metodo ${checkbox.getAttribute('data-tipo').toUpperCase()} esta Habilitado, Todos Os campos Precisam ser preenchidos!`, type:"error", confirmButtonColor: "#424242"});
-							return;
+								erro  = `O Metodo ${checkbox.getAttribute('data-tipo').toUpperCase()} esta Habilitado, Todos Os campos Precisam ser preenchidos!`
+								return;
 							}
 							ObjetoPolitica.metodos.push(obj)
 					    }
 					})
 
+					if(erro){
+						swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
+						return;
+					}
 					let data = `ajax=persistir&id=${idPolitica}&tipo=${tipoPolitica}&de=${de}&ate=${ate}&parcelasJSON=${JSON.stringify(ObjetoPolitica)}`;
 					$.ajax({
 						type:"POST",
@@ -624,6 +586,7 @@
 
 			// fechar aside de bandeiras
 			$('#js-aside .aside-close-parcelas').click(function(){
+				const checkboxesChecked =$('form input[type="checkbox"]');
 				let obj = $(this);
 				if($('#js-aside input[name=alteracao]').val()=="1") {
 					swal({   
@@ -639,7 +602,22 @@
 						}, function(isConfirm){   
 							if (isConfirm) {   
 								$(obj).parent().parent().removeClass("active");
-								$(obj).parent().parent().parent().fadeOut(); 
+								$(obj).parent().parent().parent().fadeOut();
+								checkboxesChecked.each(function(i,checkbox){
+									if(checkbox.getAttribute('data-tipo')){
+										let Pai = $(checkbox).closest('div');
+										$(Pai).find('[name="quantidadeParcelas"]').val(""),
+										$(Pai).find('[name="quantidadeParcelasSemJuros"]').val("")
+										$(Pai).find('[name="entradaMinima"]').val("")
+										$(Pai).find('[name="jurosAnual"]').val("")
+										$(Pai).find('[name="descontoAvista"]').val("")
+										$(Pai).find('dl:eq(1)').hide()
+										$(Pai).find('dl:eq(2)').hide()
+										$(Pai).find('dl:eq(3)').hide()
+										$(Pai).find('dl:eq(4)').hide()
+										$(Pai).find('dl:eq(5)').hide()
+									}
+								})
 								swal.close();
 					  		 } else {   
 					  		 	swal.close();   
@@ -648,6 +626,21 @@
 				} else {
 					$(obj).parent().parent().removeClass("active");
 					$(obj).parent().parent().parent().fadeOut();
+					checkboxesChecked.each(function(i,checkbox){
+						if(checkbox.getAttribute('data-tipo')){
+							let Pai = $(checkbox).closest('div');
+							$(Pai).find('[name="quantidadeParcelas"]').val(""),
+							$(Pai).find('[name="quantidadeParcelasSemJuros"]').val("")
+							$(Pai).find('[name="entradaMinima"]').val("")
+							$(Pai).find('[name="jurosAnual"]').val("")
+							$(Pai).find('[name="descontoAvista"]').val("")
+							$(Pai).find('dl:eq(1)').hide()
+							$(Pai).find('dl:eq(2)').hide()
+							$(Pai).find('dl:eq(3)').hide()
+							$(Pai).find('dl:eq(4)').hide()
+							$(Pai).find('dl:eq(5)').hide()
+						}
+					})
 				}
 			});
 
@@ -720,15 +713,12 @@
 			  		 } 
 			  	});
 			})
-
-
 		})
 	</script>
 
 	<!-- Aside Bandeiras -->
 	<section class="aside aside-form" id="js-aside">
 		<div class="aside__inner1">
-
 			<header class="aside-header">
 				<h1>Política de Pagamento</h1>
 				<a href="javascript:;" class="aside-header__fechar aside-close-parcelas"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
@@ -760,7 +750,7 @@
 					<div class="colunas4">
 						<dl style="margin-bottom:2rem">
 							<dd>
-								<label><input type="radio" name="tipo_politica" value="intervalo" onclick="$('#parametros_gerais dl:eq(1)').show();" checked /> intervalo</label>
+								<label><input type="radio" name="tipo_politica" value="intervalo" onclick="$('#parametros_gerais dl:eq(1)').show();"/> intervalo</label>
 								<label><input type="radio" name="tipo_politica" value="acima" onclick="$('#parametros_gerais dl:eq(1)').hide();" /> Acima De</label>
 							</dd>
 						</dl>

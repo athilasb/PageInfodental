@@ -327,111 +327,263 @@
 			if(temPolitica){
 				$('[name="id_politica"]').val(temPolitica.id)
 				let valorTotal = valorTotalProcedimentos
-				let totalPoliticas =0;
-				let metodosPagamentosAceito =""
-				let qtdParcelas = 0
-				let taxaJuros = 0
-				let qtdParcelasTotal = parseInt(temPolitica.parcelas)
-				let qtdParcelasSemJuros = parseInt(temPolitica.parcelasParametros.quantidadeParcelasSemJuros)
-				let taxaJurosAnual = parseFloat(temPolitica.parcelasParametros.jurosAnual)
-				let valorEntrada = valorTotal/qtdParcelasTotal
-				let valorParcela = valorTotal/qtdParcelasTotal
-				let valorTotalParcelado = valorTotal
-
-				while(qtdParcelas<qtdParcelasTotal){
-					qtdParcelas ++
-					valorParcela = valorTotal/qtdParcelas
-					let valor = 0
-					let textoCard = `PARCELA ${qtdParcelas}`
-					let tr = `<h1> NAO APLICADO NADA </h1>`
-					if(qtdParcelas==1){
-						valor = valorParcela
-						textoCard = `Á Vista ${qtdParcelas}x de `
-						tr =`<tr onclick='EscolheParcelas(${qtdParcelas},${valor})'>
-								<td class="list1__border" style="color:silver"></td>
+				let metodosHabilitados = temPolitica.parcelasParametros.metodos
+				metodosHabilitados.forEach(x=>{
+					let qtdParcelas = 0
+					let taxaJuros = 0
+					let qtdParcelasTotal = parseInt(x.parcelas)
+					let qtdParcelasSemJuros = parseInt(x.parcelaSemJuros)
+					let taxaJurosAnual = parseFloat(x.jurosAnual)
+					let valorEntrada = valorTotal/qtdParcelasTotal
+					let valorParcela = valorTotal/qtdParcelasTotal
+					let valorTotalParcelado = valorTotal
+					let metodo = x.tipo
+					let icone = '<i class="iconify" data-icon="ep:tickets">'
+					let textoAux = ""
+					switch(metodo){
+						case 'dinheiro':
+							icone = `ri:money-dollar-box-line`
+							textoAux = `No Dinheiro`
+						break;
+						case 'pix':
+							icone = `ic:baseline-pix`
+							textoAux = `No Pix`
+							break;
+						case 'debito':
+							icone = `ic:baseline-credit-card`
+							textoAux = `No Cartão de Débito`
+							break;
+						case 'credito':
+							icone = `ic:round-credit-card`
+							textoAux = `No Cartão de Crédito`
+							break;
+						case 'boleto':
+							icone = `ep:tickets`
+							textoAux = `No Boleto`
+							break;
+						case 'cheque':
+							icone = `mdi:cheque-book`
+							textoAux = `No Cheque`
+							break;
+						case 'deposito':
+							icone = `mdi:bank`
+							textoAux = `No Depósito Bancario`
+							break;
+						case 'transferencia':
+							icone = `fa6-solid:money-bill-transfer`
+							textoAux = `Por Transferencia Bancaria`
+							break;
+					}
+					let textCard = `a Vista`
+					let valor = valorTotal;
+					let desconto = "";
+					let acrescimo = "";
+					if(x.parcelas==1){
+						if(parseFloat(x.descontoAvista)>0){
+							valor = (valor-(valor*(parseFloat(x.descontoAvista)/100)))
+							desconto = `<em style="background:var(--verde); color:#fff;">desconto de R$ ${number_format(((valor*(parseFloat(x.descontoAvista)/100))),2,",",".")}</em>`
+						}
+						if(parseFloat(x.jurosAnual)>0){
+							let tempo = Math.ceil(qtdParcelasTotal/12)
+							valor = valor+(valor*(taxaJurosAnual/100))
+							valorTotalParcelado = valor*qtdParcelasTotal
+						}
+						
+						tr =`<tr onclick='politicaEscolhida("${metodo}")'>
+								<td class="list1__border" style="color:silver">
+								<i class="iconify" data-icon="${icone}" style="font-size:50px">
+								</td>
 								<td>
-									<h1 style="font-size:1.375em;">A vista</h1>
-									<p><strong>R$ ${number_format(valor,2,",",".")}</strong></p>
+									<h1 style="font-size:1.375em;">${textoAux}</h1>
+									<p><strong>${textCard}</strong>${desconto}</p>
+								</td>	
+								<td>
+									<p>TOTAL: <strong>R$ ${number_format(valor,2,",",".")}</strong></p>
 								</td>									
 							</tr>`
-						if(parseFloat(temPolitica.parcelasParametros.descontoAvista)>0){
-							valor = valor-(valor*(parseFloat(temPolitica.parcelasParametros.descontoAvista)/100))
-							textoCard = `De: R$ ${number_format(valorTotal,2,",",".")} Por: ${number_format(valor,2,",",".")} a Vista`
-							valorTotalParcelado = valor
-							tr = `<tr onclick='EscolheParcelas(${qtdParcelas},${valor})'>
-									<td class="list1__border" style="color:silver"></td>
+						$('.js-tipo-politica table').append(tr)
+					}else if(x.parcelas>1){
+						if(parseFloat(x.descontoAvista)>0){
+							valor = (valor-(valor*(parseFloat(x.descontoAvista)/100)))
+							desconto = `<em style="background:var(--verde); color:#fff;">desconto de R$ ${number_format(((valor*(parseFloat(x.descontoAvista)/100))),2,",",".")}</em>`
+						}
+						if(x.parcelaSemJuros>0){
+							textCard = `Em Até ${x.parcelaSemJuros}x sem Juros`
+							tr =`<tr onclick='politicaEscolhida("${metodo}")'>
+									<td class="list1__border" style="color:silver">
+									<i class="iconify" data-icon="${icone}" style="font-size:50px">
+									</td>
 									<td>
-										<h1 style="font-size:1.375em;">A vista</h1>
-										<p>de <strike>R$ ${number_format(valorTotal,2,",",".")}</strike> por <strong>R$ ${number_format(valor,2,",",".")}</strong> <em style="background:var(--verde); color:#fff;">desconto de R$ ${number_format((valorTotal-valor),2,",",".")}</em></p>
+										<h1 style="font-size:1.375em;">${textoAux}</h1>
+										<p><strong>${textCard}</strong>${desconto}</p>
+									</td>	
+									<td>
+										<p>TOTAL: <strong>R$ ${number_format(valor,2,",",".")}</strong></p>
 									</td>									
 								</tr>`
-						}
-					}else{
-						valor = valorParcela
-						valorTotalParcelado = valor*qtdParcelas
-						if(qtdParcelas<=qtdParcelasSemJuros){
-							textoCard = `x de  sem juros`
-							tr = `<tr onclick='EscolheParcelas(${qtdParcelas},${valor})'>
-									<td class="list1__border" style="color:silver"></td>
-									<td>
-										<h1 style="font-size:1.375em;">${qtdParcelas}x sem juros</h1>
-										<p><strong>R$ 800,00</strong></p>
-									</td>
-									<td>${qtdParcelas} parcela de R$ ${number_format(valor,2,",",".")} + 1 de R$ 300,00</td>
-								</tr>`
-							if(temPolitica.parcelasParametros.entradaMinima.length>0){
-								valorEntrada = ((parseFloat(temPolitica.parcelasParametros.entradaMinima))/100)*(valorTotalParcelado)
-								valorParcela = ((valorTotalParcelado)-valorEntrada)/(qtdParcelas-1)
-								if(valorEntrada<valorParcela){
-									valorEntrada = ((valorTotalParcelado))/(qtdParcelas)
-									valorParcela = ((valorTotalParcelado))/(qtdParcelas)
-								}
-								tr = `<tr onclick='EscolheParcelas(${qtdParcelas},${valor})'>
-									<td class="list1__border" style="color:silver"></td>
-									<td>
-										<h1 style="font-size:1.375em;">${qtdParcelas}x sem juros</h1>
-										<p><strong>R$ ${number_format(valorTotalParcelado,2,",",".")} </strong></p>
-									</td>
-									<td>1 parcela de R$ ${number_format(valorEntrada,2,",",".")} + ${qtdParcelas-1} de R$ ${number_format(valorParcela,2,",",".")}</td>
-								</tr>`
+							$('.js-tipo-politica table').append(tr)
+							if(parseFloat(x.jurosAnual)>0){
+								let tempo = Math.ceil(qtdParcelasTotal/12)
+								acrescimo = `<em style="background:var(--cinza3); color:#fff;">acréscimo de R$ ${number_format((valor*(taxaJurosAnual/100)),2,",",".")}</em>`
+								valor = valor+(valor*(taxaJurosAnual/100))
 							}
-
+							textCard = `Em Até ${x.parcelas}x com Juros`
+							tr =`<tr onclick='politicaEscolhida("${metodo}")'>
+									<td class="list1__border" style="color:silver">
+									<i class="iconify" data-icon="${icone}" style="font-size:50px">
+									</td>
+									<td>
+										<h1 style="font-size:1.375em;">${textoAux}</h1>
+										<p><strong>${textCard}</strong>${acrescimo}</p>
+									</td>	
+									<td>
+										<p>TOTAL: <strong>R$ ${number_format(valor,2,",",".")}</strong></p>
+									</td>									
+								</tr>`
+							$('.js-tipo-politica table').append(tr)
 						}else{
-							if(taxaJurosAnual>0){
+							valor = valorTotal;
+							desconto = "";
+							acrescimo = "";
+							if(parseFloat(x.jurosAnual)>0){
 								let tempo = Math.ceil(qtdParcelasTotal/12)
 								valor = valor+(valor*(taxaJurosAnual/100))
-								valorTotalParcelado = valor*qtdParcelas
-								//valor = (valorTotal/qtdParcelas)+((valorTotal/qtdParcelas)*(taxaJurosAnual*tempo))
-								textoCard = `${qtdParcelas}x de ${number_format(valor,2,",",".")}`
-								if(temPolitica.parcelasParametros.entradaMinima.length>0){
-									valorEntrada = ((parseFloat(temPolitica.parcelasParametros.entradaMinima))/100)*(valorTotalParcelado)
-									valorParcela = ((valorTotalParcelado)-valorEntrada)/(qtdParcelas-1)
-									if(valorEntrada<valorParcela){
-										valorEntrada = ((valorTotalParcelado))/(qtdParcelas)
-										valorParcela = ((valorTotalParcelado))/(qtdParcelas)
-									}
-									tr = `<tr onclick='EscolheParcelas(${qtdParcelas},${valor})'>
-											<td class="list1__border" style="color:silver"></td>
-											<td>
-												<h1 style="font-size:1.375em;">${qtdParcelas}x com juros</h1>
-												<p><strong>R$ ${number_format(valorTotalParcelado,2,",",".")} </strong></p>
-											</td>
-											<td>1 parcela de R$ ${number_format(valorEntrada,2,",",".")} + ${qtdParcelas-1} de R$ ${number_format(valorParcela,2,",",".")}</td>
-										</tr>`
-
-								}
 							}
-
+							textCard = `Em Até ${x.parcelas}x com Juros`
+							tr =`<tr onclick='politicaEscolhida("${metodo}")'>
+									<td class="list1__border" style="color:silver">
+									<i class="iconify" data-icon="${icone}" style="font-size:50px">
+									</td>
+									<td>
+										<h1 style="font-size:1.375em;">${textoAux}</h1>
+										<p><strong>${textCard}</strong></p>
+									</td>	
+									<td>
+										<p>TOTAL: <strong>R$ ${number_format(valor,2,",",".")}</strong></p>
+									</td>									
+								</tr>`
+							$('.js-tipo-politica table').append(tr)
 						}
 					}
-					$('.js-tipo-politica table').append(tr)
-				}
+				})
+				return
+				
 			}else{
 				//atualizaValor(true)
 			}
 		}
 
-		const EscolheParcelas = (qtdParcelas,valor,primary=false)=>{
+		const politicaEscolhida = (metodo)=>{
+			$('#botao-voltar-menu-parcelas').show()
+			$('.js-tipo-politica table').html("")
+			let x = temPolitica.parcelasParametros.metodos.find((item)=>{
+				return item.tipo==metodo
+			})
+			let valorTotal = valorTotalProcedimentos
+			let qtdParcelas = 0
+			let taxaJuros = 0
+			let qtdParcelasTotal = parseInt(x.parcelas)
+			let qtdParcelasSemJuros = parseInt(x.parcelaSemJuros)
+			let taxaJurosAnual = parseFloat(x.jurosAnual)
+			let valorEntrada = valorTotal/qtdParcelasTotal
+			let valorParcela = valorTotal/qtdParcelasTotal
+			let valorTotalParcelado = valorTotal
+			while(qtdParcelas<qtdParcelasTotal){
+				qtdParcelas ++
+				valorParcela = valorTotal/qtdParcelas
+				valorEntrada = valorParcela
+				let valor = 0
+				let textoCard = `PARCELA ${qtdParcelas}`
+				let texto1 = `texto 1`
+				let texto2 = `texto 2`
+				let texto3 = `texto 3`
+				let texto4 = `texto 4`
+				let tr = `<tr>
+								<td class="list1__border" style="color:silver"></td>
+								<td>
+									<h1 style="font-size:1.375em;">NÃO HABILITADO</h1>
+									<p><strong></strong></p>
+								</td>
+								<td></td>
+							</tr>`
+				if(qtdParcelas==1){
+					valor = valorParcela
+					texto1 = `A vista`
+					texto2 = `R$ ${number_format(valor,2,",",".")}`
+					texto3 = ``
+					texto4 = ``
+					if(parseFloat(x.descontoAvista)>0){
+						valor = valor-(valor*(parseFloat(x.descontoAvista)/100))
+						textoCard = `De: R$ ${number_format(valorTotal,2,",",".")} Por: ${number_format(valor,2,",",".")} a Vista`
+						valorTotalParcelado = valor
+						texto1 = `A vista`
+						texto2 = `R$ ${number_format(valorTotal,2,",",".")}`
+						texto3 = `<em style="background:var(--verde); color:#fff;">desconto de R$ ${number_format((valorTotal-valor),2,",",".")}</em>`
+						texto4 = ``
+					}
+				}else{
+					valor = valorParcela
+					valorTotalParcelado = valor*qtdParcelas
+					if(qtdParcelas<=qtdParcelasSemJuros){
+						if(x.entradaMinima.length>0){
+							valorEntrada = ((parseFloat(x.entradaMinima))/100)*(valorTotalParcelado)
+						 	valorParcela = ((valorTotalParcelado)-valorEntrada)/(qtdParcelas-1)
+						 	if(valorEntrada<valorParcela){
+						 		valorEntrada = ((valorTotalParcelado))/(qtdParcelas)
+						 		valorParcela = ((valorTotalParcelado))/(qtdParcelas)
+						 	}
+						}
+						if(valorEntrada==valorParcela){
+							texto1 = `${qtdParcelas}x sem juros`
+							texto2 = `R$ ${number_format(valorTotalParcelado,2,",",".")}`
+							texto3 = ``
+							texto4 = `${qtdParcelas} parcelas de R$ ${number_format(valorParcela,2,",",".")}`
+						}else{
+							texto1 = `${qtdParcelas}x sem juros`
+							texto2 = `R$ ${number_format(valorTotalParcelado,2,",",".")}`
+							texto3 = ``
+							texto4 = `1 parcela de R$ ${number_format(valorEntrada,2,",",".")} + ${qtdParcelas-1} de R$ ${number_format(valorParcela,2,",",".")}`
+						}
+
+					}else{
+						let tempo = Math.ceil(qtdParcelasTotal/12)
+						valor = valor+(valor*(taxaJurosAnual/100))
+						valorTotalParcelado = valor*qtdParcelas
+						valorEntrada = valorParcela = valor
+						if(x.entradaMinima.length>0){
+							valorEntrada = ((parseFloat(x.entradaMinima))/100)*(valorTotalParcelado)
+							valorParcela = ((valorTotalParcelado)-valorEntrada)/(qtdParcelas-1)
+							if(valorEntrada<valorParcela){
+								valorEntrada = ((valorTotalParcelado))/(qtdParcelas)
+								valorParcela = ((valorTotalParcelado))/(qtdParcelas)
+							}
+						}
+						if(valorEntrada==valorParcela){
+							texto1 = `${qtdParcelas}x com juros`
+							texto2 = `R$ ${number_format(valorTotalParcelado,2,",",".")}`
+							texto3 = `<em style="background:var(--cinza3); color:#fff;">acréscimo de R$ ${number_format((valorTotalParcelado-valorTotal),2,",",".")}</em>`
+							texto4 = `${qtdParcelas} parcelas de R$ ${number_format(valorParcela,2,",",".")}`
+						}else{
+							texto1 = `${qtdParcelas}x com juros`
+							texto2 = `R$ ${number_format(valorTotalParcelado,2,",",".")}`
+							texto3 = `<em style="background:var(--cinza3); color:#fff;">acréscimo de R$ ${number_format((valorTotalParcelado-valorTotal),2,",",".")}</em>`
+							texto4 = `1 parcela de R$ ${number_format(valorEntrada,2,",",".")} + ${qtdParcelas-1} de R$ ${number_format(valorParcela,2,",",".")}`
+						}
+					}
+				}
+				tr =`<tr onclick='EscolheParcelas("${metodo}",${qtdParcelas},${valor})'>
+						<td class="list1__border" style="color:silver"></td>
+						<td>
+							<h1 style="font-size:1.375em;">${texto1}</h1>
+							<p><strong>${texto2}</strong>${texto3}</p>
+						</td>
+						<td>${texto4}</td>
+					</tr>`
+				$('.js-tipo-politica table').append(tr)
+			}
+		}
+
+		const EscolheParcelas = (metodo,qtdParcelas,valor,primary=false)=>{
 			$('.js-valorTotal').html(number_format(qtdParcelas*valor,2,",","."));
 			$('#botao-voltar-menu-parcelas').show()
 			$('js-pagamentos-quantidade').val(qtdParcelas)
@@ -443,20 +595,16 @@
 				pagamentosListar(3);
 				return
 			}
-			let metodosPagamentosAceito =""
-			if(temPolitica && temPolitica.parcelasParametros){
-				for(let m in temPolitica.parcelasParametros.metodos){
-					if(temPolitica.parcelasParametros.metodos[m].length>0){
-						metodosPagamentosAceito+=`<option value='${temPolitica.parcelasParametros.metodos[m]}'>${temPolitica.parcelasParametros.metodos[m].toUpperCase()}</option>`
-					}
-				}
-			}
+			let politicaEscolhida = temPolitica.parcelasParametros.metodos.find((item)=>{
+				return item.tipo==metodo
+			})
+		
 			$('#metodos-pagamento-politica .js-pagamentos').html("")
 			let valorEntrada = valor
 			let valorParcela = valor
 
-			if(temPolitica.parcelasParametros.entradaMinima.length>0 && qtdParcelas>1){
-				valorEntrada = ((parseFloat(temPolitica.parcelasParametros.entradaMinima))/100)*(qtdParcelas*valor)
+			if(politicaEscolhida && politicaEscolhida.entradaMinima && politicaEscolhida.entradaMinima.length>0 && qtdParcelas>1){
+				valorEntrada = ((parseFloat(politicaEscolhida.entradaMinima))/100)*(qtdParcelas*valor)
 				valorParcela = ((qtdParcelas*valor)-valorEntrada)/(qtdParcelas-1)
 				if(valorEntrada<valorParcela){
 					valorEntrada = ((qtdParcelas*valor))/(qtdParcelas)
@@ -477,66 +625,64 @@
 			pagamentosTextarea = JSON.parse($('#js-textarea-pagamentos').val());
 			teste2 = [];
 			let parcelas = []
-			while(qtdParcelas>0){
-				qtdParcelas--
-				parcelaAtual ++
-				let item = {}
-				let valorParcelaFinal = valorParcela
-				if(parcelaAtual==1){
-					valorParcelaFinal = valorEntrada
-				}
-				if(pagamentosTextarea[qtdParcelas-1]) {
-					item = pagamentosTextarea[qtdParcelas-1];
-				}
+			let item = {}
+			let mes = startDate.getMonth()+1;
+			let dia = startDate.getDate();
+			mes = mes <= 9 ? `0${mes}`:mes;
+			dia = dia <= 9 ? `0${dia}`:dia;
+			item.valor = valor*qtdParcelas
+			item.vencimento=`${dia}/${mes}/${startDate.getFullYear()}`;
+			parcelas.push(item)
+			newDate = startDate;
+			newDate.setMonth(newDate.getMonth()+1);
+			startDate=newDate;
 
-				let mes = startDate.getMonth()+1;
-				let dia = startDate.getDate();
-				mes = mes <= 9 ? `0${mes}`:mes;
-				dia = dia <= 9 ? `0${dia}`:dia;
-				item.valor = valorParcelaFinal.toFixed(5)
-				item.vencimento=`${dia}/${mes}/${startDate.getFullYear()}`;
-				parcelas.push(item)
-				newDate = startDate;
-				newDate.setMonth(newDate.getMonth()+1);
-				startDate=newDate;
-
-				/*
-				$('#metodos-pagamento-politica .js-pagamentos').append(`
-						<div class="fpag-item">
-							<aside>${parcelaAtual}</aside>
-							<article>
-								<div class="colunas3">
-									<dl>
-										<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular">
-											</i></span><input type="tel" name="" class="data js-vencimento" value="${item.vencimento}" />
-										</dd>
-									</dl>
-									<dl>
-										<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor js-valor" value="${number_format(valorParcelaFinal,2,",",".")}" /></dd>
-									</dl>
-									<dl>
-										<dd>
-											<select class="js-id_formadepagamento js-tipoPagamento">
-												${metodosPagamentosAceito}
-											</select>
-										</dd>
-									</dl>
-								</div>
-								<div class="colunas3">
-									<dl>
-										<dt>Identificador</dt>
-										<dd><input type="text" name="" /></dd>
-									</dl>
-								</div>
-							</article>
-						</div>
-					`)
-					*/
-			}
 			$('#js-textarea-pagamentos').val(JSON.stringify(parcelas))
 			pagamentos = parcelas;
 			pagamentosListar(3);
-
+			const selects = $('.js-listar-parcelas').find('.js-id_formadepagamento')
+			selects.each(function (i,select){
+				$(select).find('option').each(function(key,option){
+					let dataTipo = $(option).attr('data-tipo')
+					if(dataTipo==metodo){
+						$(option).attr('selected',true)
+						$(select).attr('disabled',true)
+					}
+				})
+				$(select).closest('article').find('dl').each(function (ind,dls){
+					let classe = $(dls).find('select').attr('class')
+					if(typeof(classe)=='string'){
+						classe = classe.replace(' js-tipoPagamento',"")
+						if(metodo=='credito'){
+							if(classe == 'js-creditoBandeira'){
+								$(dls).show()
+								let bandeirasAceitas = []
+								$(dls).find('select optgroup option').each((key,option)=>{
+									if($(option).attr('data-parcelas')>=qtdParcelas){
+										bandeirasAceitas.push($(option))
+									}		
+								})
+								$(dls).find('select optgroup').html("")
+								bandeirasAceitas.forEach(x=>{
+									console.log(x)
+									$(dls).find('select optgroup').append(`<option value="${x.value}" data-parcelas="${x['data-parcelas']}" data-parcelas-semjuros="${x['data-parcelas-semjuros']}" data-id_operadora="${x['data-id_operadora']}" data-id_operadorabandeira="${x['data-id_operadorabandeira']}" >${x.text()}</option>`)
+								})
+							}
+							if(classe == 'js-parcelas'){
+								$(dls).show()
+								$(dls).find('select').append(`
+									<option value='${qtdParcelas}' selected>${qtdParcelas} x </option>
+								`)
+								$(dls).find('select').attr('disabled',true)
+							}
+						}else if(metodo=='debito'){
+							if(classe == 'js-debitoBandeira'){
+								$(dls).show()
+							}
+						}
+					}
+				})
+			})
 		}
 
 		const voltarMenuParcelas = ()=>{
@@ -545,6 +691,7 @@
 			$('.js-listar-parcelas').hide()
 			$('#js-textarea-pagamentos').text("")
 			atualizaValor()
+			$('.js-listar-parcelas').html("")
 		}
 
 		const verificaSeExisteParcelasSalvas = ()=>{
