@@ -3,10 +3,23 @@
 	require_once("usuarios/checa.php");
 
 	$_table=$_p."parametros_politicapagamento";
-
+	// formas de pagamento
+	$_formasDePagamento=array();
+	$optionFormasDePagamento='';
+	$sql->consult($_p."parametros_formasdepagamento","*","where lixo=0  AND politica_de_pagamento=0 order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_formasDePagamento[$x->id]=(object)array("id"=>$x->id,
+											"titulo"=>utf8_encode($x->titulo),
+											"tipo"=>$x->tipo);
+	}
+	// consulta todas politicas para verificar interceção do "de" e "até";
+	$_politica=[];
+	$sql->consult($_table,"*","where lixo=0");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_politica[$x->id]=$x;
+	}
 	
 	if(isset($_POST['ajax'])) {
-
 		require_once("usuarios/checa.php");
 		$rtn=array();
 		if($_POST['ajax']=="editar") {
@@ -84,20 +97,14 @@
 		else if($_POST['ajax']=="persistir") {
 
 
-
 			$tipo = (isset($_POST['tipo']) and !empty($_POST['tipo'])) ? valor($_POST['tipo']) : '';
 			$de = (isset($_POST['de']) and !empty($_POST['de'])) ? valor($_POST['de']) : 0;
 			$ate = (isset($_POST['ate']) and !empty($_POST['ate'])) ? valor($_POST['ate']) : '';
-			$entrada = (isset($_POST['entradaMinima']) and !empty($_POST['entradaMinima'])) ? valor($_POST['entradaMinima']) : '0';
-			$parcelas = (isset($_POST['quantidadeParcelas']) and !empty($_POST['quantidadeParcelas'])) ? valor($_POST['quantidadeParcelas']) : '1';
 			$parcelasJSON = (isset($_POST['parcelasJSON']) and !empty($_POST['parcelasJSON'])) ? json_decode($_POST['parcelasJSON']) : '';
-
-			//echo $de." ".$ate;die();
+			
 			$erro='';
-			//if(empty($de)) $erro='Preencha o campo De';
 			if(($tipo =='intervalo') && (empty($ate))) $erro='Preencha o campo Até';
 			else if($de>$ate) $erro='O campo De deve ser menor que o campo Até';
-			//else if(empty($entrada)) $erro='Preencha o campo de Entrada mínima (%)';
 
 			if(!empty($erro)) {
 				$rtn=array('success'=>false,'error'=>$erro);
@@ -105,7 +112,7 @@
 
 				// consulta todas politicas para verificar interceção do "de" e "até";
 				$_politica=[];
-				$sql->consult($_table,"*","where lixo=0");
+				$sql->consult($_table,"*","where lixo=0  AND status=0");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$_politica[$x->id]=$x;
 				}
@@ -113,8 +120,8 @@
 				
 				$vSQL="de='".addslashes($de)."',
 						ate='".addslashes($ate)."',
-						entrada='".addslashes($entrada)."',
-						parcelas='".addslashes($parcelas)."',
+						entrada='0',
+						parcelas='0',
 						parcelasParametros='".json_encode($parcelasJSON)."'";
 
 				$cnt = '';
@@ -136,10 +143,8 @@
 				$possuiIntercecao=false;
 				$possuiIntercecaoObj='';
 				foreach($_politica as $x) {
-
 					$start_one = $de;
 					$end_one = $ate;
-
 					$start_two = $x->de;
 					$end_two = $x->ate;
 
@@ -347,7 +352,7 @@
 	</main>
 
 	<script type="text/javascript">
-
+		const _politicas = <?=json_encode($_politica);?>;
 		const asideParcelasPersiste = () => {
 
 			let parcelas = $('#js-aside select[name=parcelas]').val();
@@ -383,7 +388,6 @@
 
 		}
 
-
 		const asideParcelas = () => {
 
 			$('#js-aside .js-fieldset-parcelas .js-table-parcelas').html('');
@@ -411,6 +415,7 @@
 					data:data,
 					success:function(rtn){ 
 						if(rtn.success) {
+							console.log(rtn.data.id)
 							$('#js-aside input[name=id]').val(rtn.data.id);
 							$('#js-aside input[name=de]').val(rtn.data.de);
 							$('#js-aside input[name=ate]').val(rtn.data.ate);
@@ -491,67 +496,85 @@
 			}).done(function(){
 			})
 		}
-		
+
+		const showOptionsPolitica = (e)=>{
+			let closestParent = $(e).closest('div');
+			let dataTipo = $(e).attr('data-tipo')
+			if($(e).prop('checked')===true) {
+				$(closestParent).find('dl').each(function(i,input){
+					if(i>0){
+				 		$(input).show()
+				 	}
+				})
+			}else{
+				$(closestParent).find('dl').each(function(i,input){
+				 	if(i>0){
+				 		$(input).hide()
+				 	}
+				})
+			}
+			
+		}
+
 		$(function(){
 			// Botao salvar Politica
 			document.querySelector('#js-aside .js-salvarPolitica').addEventListener('click',function(e){
 				let erro= "";
-				const idPolitica = document.querySelector('[name="id"]').value
-				const tipoPolitica = document.querySelector('[name="tipo"]').value
-				const checkboxesChecked = document.querySelectorAll('input[type="checkbox"]:checked');
+				const idPolitica = $('[name="id"]').val()
+				const tipoPolitica = $('[name="tipo_politica"]').val()
+				const checkboxesChecked =$('form input[type="checkbox"]:checked');
 				let de = false;
 				let ate =false;
-				let entradaMinima = 0;
-				let quantidadeParcelas = false;
-				let quantidadeParcelasSemJuros=0;
-				let jurosAnual=0;
-				let descontoAvista=0;
+				let ObjetoPolitica={};
+			
 				if(tipoPolitica=='intervalo'){
 					//de = unMoney(document.querySelector('[name="de"]').value.replace(".", "").replace(",", "."));
-					de = (document.querySelector('[name="de"]').value);
-					ate = (document.querySelector('[name="ate"]').value);
-					entradaMinima = document.querySelector('[name="entradaMinima"]').value;
-					quantidadeParcelas = document.querySelector('[name="quantidadeParcelas"]').value;
-					quantidadeParcelasSemJuros = document.querySelector('[name="quantidadeParcelasSemJuros"]').value;
-					jurosAnual = document.querySelector('[name="jurosAnual"]').value;
-					descontoAvista = document.querySelector('[name="jurosAnual"]').value;
+					de = unMoney($('[name="de"]').val());
+					ate = unMoney($('[name="ate"]').val());
 
 				}else if(tipoPolitica=='acima'){
-					de = (document.querySelector('[name="de"]').value);
-					ate = 0;
-					entradaMinima = document.querySelector('[name="entradaMinima"]').value;
-					quantidadeParcelas = document.querySelector('[name="quantidadeParcelas"]').value;
-					quantidadeParcelasSemJuros = document.querySelector('[name="quantidadeParcelasSemJuros"]').value;
-					jurosAnual = document.querySelector('[name="jurosAnual"]').value;
-					descontoAvista = document.querySelector('[name="jurosAnual"]').value;
+					de = unMoney($('[name="de"]').val());
+					ate = unMoney(0);
 				}else{
 					erro = "Nenhuma Tipo de Politica selecionado"
 				}
-				if(!de){
-					de = 0
-				}else if(!ate){
+				if(de ==undefined || de ==null){
+					erro = "Voce Precisa Adicionar uma Valor 'DE'";
+				}else if(ate ==undefined || ate ==null){
 					erro = "Voce Precisa Adicionar uma Valor 'ATE'";
-				}else if(!quantidadeParcelas){
-					erro = "Voce Precisa Adicionar uma quantidade de Parcelas. Se for a Vista coloque '1'";
-				}else if((unMoney(de) > unMoney(ate)) || unMoney(ate)==0){
+				}else if(tipoPolitica == 'intervalo' && (de > ate || ate == 0)){
 					erro = "O campo 'DE' Não Pode ser Menor que o campo 'ATE'";
 				}else if(checkboxesChecked.length<=0){
 					erro = "Voce Precisa Selecionar pelo menos 1 metodo de pagamento";
 				}
-
 				if(erro){
 					swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
 				}else{
-					let objetoPolitica = {
-						tipoPolitica,de,ate,entradaMinima,quantidadeParcelas,quantidadeParcelasSemJuros,jurosAnual,metodos:[],descontoAvista
+					ObjetoPolitica = {
+						de,ate,metodos:[]
 					}
-					for (var i = 0; i < checkboxesChecked.length; i++) {
-					    var checkbox = checkboxesChecked[i];
-					    if(checkbox.getAttribute('data-tipo')){
-					   		objetoPolitica.metodos.push(checkbox.getAttribute('data-tipo'))
+					checkboxesChecked.each(function(i,checkbox){
+						if(checkbox.getAttribute('data-tipo')){
+							let Pai = $(checkbox).closest('div');
+							let obj = {
+								metodoPagamentoId:parseInt($(Pai).attr('id')),
+								habilitado:0,
+								tipo:checkbox.getAttribute('data-tipo'),
+								parcelas:parseInt($(Pai).find('[name="quantidadeParcelas"]').val()),
+								parcelaSemJuros:parseInt($(Pai).find('[name="quantidadeParcelasSemJuros"]').val()),
+								entradaMinima:parseFloat($(Pai).find('[name="entradaMinima"]').val()),
+								jurosAnual:parseFloat($(Pai).find('[name="jurosAnual"]').val()),
+								desconto:parseFloat($(Pai).find('[name="descontoAvista"]').val())
+							}
+							if(isNaN(parseInt($(Pai).find('[name="quantidadeParcelas"]').val())) || isNaN(parseInt($(Pai).find('[name="quantidadeParcelasSemJuros"]').val())) || isNaN(parseFloat($(Pai).find('[name="entradaMinima"]').val())) || isNaN(parseFloat($(Pai).find('[name="jurosAnual"]').val())) || isNaN(parseFloat($(Pai).find('[name="descontoAvista"]').val()))){
+								swal({title: "Erro!", text: `O Metodo ${checkbox.getAttribute('data-tipo').toUpperCase()} esta Habilitado, Todos Os campos Precisam ser preenchidos!`, type:"error", confirmButtonColor: "#424242"});
+							return;
+							}
+							ObjetoPolitica.metodos.push(obj)
 					    }
-					}
-					let data = `ajax=persistir&id=${idPolitica}&tipo=${tipoPolitica}&de=${de}&ate=${ate}&entradaMinima=${entradaMinima}&descontoAvista=${descontoAvista}&quantidadeParcelas=${quantidadeParcelas}&parcelasJSON=${JSON.stringify(objetoPolitica)}`;
+					})
+
+					let data = `ajax=persistir&id=${idPolitica}&tipo=${tipoPolitica}&de=${de}&ate=${ate}&parcelasJSON=${JSON.stringify(ObjetoPolitica)}`;
 					$.ajax({
 						type:"POST",
 						data:data,
@@ -732,98 +755,59 @@
 
 				<fieldset>
 					<legend>
-						<select name="tipo" onchange="acimaOrIntervalo(this)">
-							<option value="intervalo">INTERVALO</option>
-							<option value="acima">ACIMA DE</option>
-						</select>
+						Politica
 					</legend>
-					
-					<div class="colunas4" id='info-politica'>
+					<div class="colunas4">
+						<dl style="margin-bottom:2rem">
+							<dd>
+								<label><input type="radio" name="tipo_politica" value="intervalo" onclick="$('#parametros_gerais dl:eq(1)').show();" checked /> intervalo</label>
+								<label><input type="radio" name="tipo_politica" value="acima" onclick="$('#parametros_gerais dl:eq(1)').hide();" /> Acima De</label>
+							</dd>
+						</dl>
+					</div>
+					<div class="colunas4" id='parametros_gerais'>
 						<dl>
 							<dt>De</dt>
-							<dd class="form-comp"><span>R$</i></span><input type="text" name="de" class="obg js-money" /></dd>
+							<dd class="form-comp"><span>R$</i></span><input type="text" name="de" class="obg js-money" placeholder="0,00" /></dd>
 						</dl>
 						<dl>
 							<dt>Até</dt>
-							<dd class="form-comp"><span>R$</i></span><input type="text" name="ate" class="obg js-money" /></dd>
-						</dl>
-						<dl>
-							<dt>Entrada Mínima %</dt>
-							<dd class="form-comp"><span>%</i></span><input type="text" name="entradaMinima" class="" placeholder="0%" /></dd>
-						</dl>
-						<dl>
-							<dt>Quantidade Máxima de Parcela</dt>
-							<dd><input type="text" name="quantidadeParcelas" class="" /></dd>
-						</dl>
-					</div>
-					<div class="colunas4">
-						<dl>
-							<dt>Quantidade Vezes sem Juros</dt>
-							<dd><input type="number" name="quantidadeParcelasSemJuros" class="" /></dd>
-						</dl>
-						<dl>
-							<dt>Juros Anual %</dt>
-							<dd class="form-comp"><span>%</i></span><input type="number" name="jurosAnual" class="" /></dd>
-						</dl>
-						<dl>
-							<dt>Desconto a Vista % </dt>
-							<dd class="form-comp"><span>%</i></span><input type="number" name="descontoAvista" class="" /></dd>
+							<dd class="form-comp"><span>R$</i></span><input type="text" name="ate" class="obg js-money" placeholder="0,00" /></dd>
 						</dl>
 					</div>
 				</fieldset>
-
+				<?php foreach($_formasDePagamento as $id=>$p):?>
 				<fieldset>
-					<legend>FORMA DE PAGAMENTO ACEITA</legend>
-					<div class="colunas4">
+					<legend><?=$p->titulo?></legend>
+					<div class="colunas4" id="<?=$p->id?>">
 						<dl class="dl1">
-							<dt>DINHEIRO</dt>
 							<dd>
-								<label><input  id="status-dinheiro"  data-tipo='dinheiro' type="checkbox" class="input-switch"/></label>
+								<label><input  id="status-<?=$p->tipo?>"  data-tipo='<?=$p->tipo?>' type="checkbox" class="input-switch" onchange="showOptionsPolitica(this)"/></label>
 							</dd>
 						</dl>
-						<dl class="dl1">
-							<dt>PIX</dt>
-							<dd>
-								<label><input  id="status-pix"  data-tipo='pix' type="checkbox" class="input-switch"/></label>
-							</dd>
+						<dl style="display:none">
+							<dt>Máximo de Parcela</dt>
+							<dd><input type="text" name="quantidadeParcelas" /></dd>
 						</dl>
-						<dl class="dl1">
-							<dt>DEBITO</dt>
-							<dd>
-								<label><input  id="status-debito"  data-tipo='debito' type="checkbox" class="input-switch"/></label>
-							</dd>
+						<dl style="display:none">
+							<dt>Parcelas Sem Juros</dt>
+							<dd><input type="number" name="quantidadeParcelasSemJuros"  /></dd>
 						</dl>
-						<dl class="dl1">
-							<dt>CREDITO</dt>
-							<dd>
-								<label><input  id="status-credito"  data-tipo='credito' type="checkbox" class="input-switch"/></label>
-							</dd>
+						<dl style="display:none">
+							<dt>Entrada Mínima %</dt>
+							<dd class="form-comp"><span>%</i></span><input type="text" name="entradaMinima" placeholder="0%" /></dd>
 						</dl>
-						<dl class="dl1">
-							<dt>BOLETO</dt>
-							<dd>
-								<label><input  id="status-boleto"  data-tipo='boleto' type="checkbox" class="input-switch"/></label>
-							</dd>
+						<dl style="display:none">
+							<dt>Juros Anual %</dt>
+							<dd class="form-comp"><span>%</i></span><input type="number" name="jurosAnual" placeholder="0%"/></dd>
 						</dl>
-						<dl class="dl1">
-								<dt>CHEQUE</dt>
-							<dd>
-								<label><input  id="status-cheque"  data-tipo='cheque' type="checkbox" class="input-switch"/></label>
-							</dd>
-						</dl>
-						<dl class="dl1">
-								<dt>TRANSFERENCIA</dt>
-							<dd>
-								<label><input  id="status-transferencia"  data-tipo='transferencia' type="checkbox" class="input-switch"/></label>
-							</dd>
-						</dl>
-						<dl class="dl1">
-							<dt>PERMUTA</dt>
-							<dd>
-								<label><input  id="status-permuta"  data-tipo='permuta' type="checkbox" class="input-switch"/></label>
-							</dd>
+						<dl style="display:none">
+							<dt>Desconto a Vista % </dt>
+							<dd class="form-comp"><span>%</i></span><input type="number" name="descontoAvista" placeholder="0%"/></dd>
 						</dl>
 					</div>
+				</fieldset>
+				<?php endforeach?>
 			</form>
 
 		</div>
