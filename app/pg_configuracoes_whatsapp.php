@@ -12,6 +12,68 @@
 						'connected'=>is_object($_wts)?1:0,
 						'connected_date'=>is_object($_wts)?date('d/m/Y H:i',strtotime($_wts->data)):'');
 
+		} else if ($_POST['ajax']=="pub") {
+
+			$tipo = '';
+			if(isset($_POST['id_tipo']) and is_numeric($_POST['id_tipo'])) {
+				$sql->consult($_p."whatsapp_mensagens_tipos","*","where id=".$_POST['id_tipo']);
+				if($sql->rows) {
+					$tipo=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+			$checked = (isset($_POST['checked']) and $_POST['checked']==1)?1:0;
+
+
+			if(empty($tipo)) $erro='Tipo de mensagem não identificada!';
+
+			if(empty($erro)) {
+				$vSQL="pub='".$checked."'";
+				$vWHERE="where id=$tipo->id";
+
+				$sql->update($_p."whatsapp_mensagens_tipos",$vSQL,$vWHERE);
+
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."whatsapp_mensagens_tipos',id_reg='".$tipo->id."'");
+
+			}
+
+
+			if(empty($erro)) {
+				$rtn=array('success'=>true);
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
+		} else if ($_POST['ajax']=="geolocalizacao") {
+
+			$tipo = '';
+			if(isset($_POST['id_tipo']) and is_numeric($_POST['id_tipo'])) {
+				$sql->consult($_p."whatsapp_mensagens_tipos","*","where id=".$_POST['id_tipo']);
+				if($sql->rows) {
+					$tipo=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+			$checked = (isset($_POST['checked']) and $_POST['checked']==1)?1:0;
+
+
+			if(empty($tipo)) $erro='Tipo de mensagem não identificada!';
+
+			if(empty($erro)) {
+				$vSQL="geolocalizacao='".$checked."'";
+				$vWHERE="where id=$tipo->id";
+
+				$sql->update($_p."whatsapp_mensagens_tipos",$vSQL,$vWHERE);
+
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."whatsapp_mensagens_tipos',id_reg='".$tipo->id."'");
+
+			}
+
+
+			if(empty($erro)) {
+				$rtn=array('success'=>true);
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
 		}
 
 		header("Content-type: application/json");
@@ -104,7 +166,24 @@
 		die();
 	}
 	
+	function substituiTags($texto) {
 
+		$texto = str_replace("*[nome]*", "<b>João</b>", $texto);
+		$texto = str_replace("*[clinica_nome]*", "<b>Clínica Sorriso Feliz</b>", $texto);
+		$texto = str_replace("*[agenda_data]*", "<b>".date('d/m/Y')."</b>", $texto);
+		$texto = str_replace("*[agenda_hora]*", "<b>".date('H:i',strtotime(date('Y-m-d H:i')." + 2 hour"))."</b>", $texto);
+		$texto = str_replace("*[agenda_antiga_data]*", "<b>".date('d/m/Y',strtotime(date('Y-m-d')." + 2 day"))."</b>", $texto);
+		$texto = str_replace("*[agenda_antiga_hora]*", "<b>09:00</b>", $texto);
+		$texto = str_replace("*[duracao]*", "<b>60min</b>", $texto);
+		$texto = str_replace("[clinica_endereco]", "<b>Rua das Esmeraldas, nº3444 Bairro Ouro Fino, Sala 01, São Paulo-SP</b>", $texto);
+		$texto = str_replace("*Confirmar*", "<b>Confirmar</b>", $texto);
+		$texto = str_replace("*Desmarcar*", "<b>Desmarcar</b>", $texto);
+		$texto = str_replace("*CONFIRMADO*", "<b>CONFIRMADO</b>", $texto);
+		$texto = str_replace("*DESMARCADO*", "<b>DESMARCADO</b>", $texto);
+
+		return nl2br($texto);
+
+	}
 
 ?>
 
@@ -131,18 +210,11 @@
 				success:function(rtn) {
 					if(rtn.success) {
 						if(rtn.connected==1) {
-
-							if($('.js-whatsappStatus').attr('data-connected')=="0") {
-								$('.js-whatsappStatus').html(`<span class="iconify" data-icon="fluent:plug-connected-checkmark-20-filled" data-height="50" style="color:var(--verde);"></span>
-									<br />Conectado às ${rtn.connected_date}`);
-								$('.js-whatsappStatus').attr('data-connected',"1");
-							}
+							$('.js-infozap-conectado').show();
+							$('.js-infozap-desconectado').hide();
 						} else {
-							if($('.js-whatsappStatus').attr('data-connected')=="1") {
-								$('.js-whatsappStatus').html(`<span class="iconify" data-icon="fluent:plug-connected-add-20-regular" data-height="50" style="color:var(--vermelho);"></span><br />Desconectado`);
-								$('.js-whatsappStatus').attr('data-connected',"0");
-							}
-
+							$('.js-infozap-conectado').hide();
+							$('.js-infozap-desconectado').show();
 						}
 
 					}
@@ -154,6 +226,32 @@
 
 		$(function(){
 			whatsappStatus();
+
+			$('.js-pub').click(function(){
+				let id_tipo = $(this).attr('data-id_tipo');
+				let data = `ajax=pub&id_tipo=${id_tipo}&checked=${($(this).prop('checked')?1:0)}`
+				//alert(data);
+				$.ajax({
+					type:"POST",
+					data:data,
+					success:function(rtn) {
+
+					}
+				})
+			});
+
+			$('.js-geolocalizacao').click(function(){
+				let id_tipo = $(this).attr('data-id_tipo');
+				let data = `ajax=geolocalizacao&id_tipo=${id_tipo}&checked=${($(this).prop('checked')?1:0)}`
+				//alert(data);
+				$.ajax({
+					type:"POST",
+					data:data,
+					success:function(rtn) {
+
+					}
+				})
+			})
 		})
 	</script>
 
@@ -180,38 +278,280 @@
 
 					<div class="box-col__inner1">
 				
-						<section class="filter">
-							<div class="filter-group"></div>
-							<div class="filter-group">
-								<div class="filter-form form">
-									<dl>
-										<dd><a href="javascript:;" class="button button_main js-submit"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></a></dd>
-									</dl>
+						<div class="infozap">
+							
+							<section class="infozap-status js-infozap-conectado" style="display:none">
+								<aside style="color:var(--verde);">
+									<i class="iconify" data-icon="fluent:plug-connected-24-regular"></i>
+									<h1>Conectado</h1>
+								</aside>
+								<article>
+									<h1>O Infozap está conectado.</h1>
+								</article>
+							</section>
+							
+							<section class="infozap-status js-infozap-desconectado">
+								<aside style="color:var(--vermelho);">
+									<i class="iconify" data-icon="fluent:plug-disconnected-24-regular"></i>
+									<h1>Desconectado</h1>
+								</aside>
+								<article>
+									<h1>O Infozap está desconectado no momento.</h1>
+									<p>1. Adicione a extensão <a href="https://chrome.google.com/webstore/detail/infozap/nakbcclpnadhimbcmepfjalgiihokpki?hl=pt-br" target="_blank">Infozap</a> ao seu Google Chrome</p>
+									<p>2. Conecte-se ao <a href="https://web.whatsapp.com" target="_blank">WhatsApp Web</a></p>
+									<p>3. Ative a extensão Infozap informando seus dados de acesso</p>
+								</article>
+							</section>
+							
+
+							<fieldset>
+								<legend>Confirmação de Agendamento</legend>
+
+								 <div class="grid grid_3" style="margin-bottom:0;">
+									<form method="post" class="form">
+										<dl>
+											<dd>
+												<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="1"<?php echo $_tipos[1]->pub?" checked":"";?> />Ativar</label></dd>
+											</dd>
+										</dl>
+										<dl>
+											<dd>Mensagem para confirmação dos agendamentos. A mesma pode ser realizada com 24 horas ou 48 horas de antecedência, a depender do tempo de criação do agendamento.</dd>
+										</dl>
+									</form>
+
+									<div class="infozap-chat">
+										<div class="infozap-chat-text infozap-chat-text--author">
+											<article>
+												<p class="infozap-chat-text__msg">
+													<?php echo substituiTags($_tipos[1]->texto);?>
+												</p>
+												<p class="infozap-chat-text__date">11:59</p>
+											</article>
+											<footer>
+												<a href="javascript:;">Confirmar</a>
+												<a href="javascript:;">Desmarcar</a>
+											</footer>
+										</div>
+										<div class="infozap-chat-text">
+											<article>
+												<p class="infozap-chat-text__msg">Confirmar</p>
+												<p class="infozap-chat-text__date">12:00</p>
+											</article>
+										</div>
+
+										<div class="infozap-chat-text infozap-chat-text--author">
+											<article>
+												<p class="infozap-chat-text__msg">
+													<?php echo substituiTags($wrc->msgSim);?>
+												</p>
+												<p class="infozap-chat-text__date">12:01</p>
+											</article>
+										</div>
+									</div>
+
+									<div class="infozap-chat">
+										<div class="infozap-chat-text infozap-chat-text--author">
+											<article>
+												<p class="infozap-chat-text__msg">
+													<?php echo substituiTags($_tipos[1]->texto);?>
+												</p>
+												<p class="infozap-chat-text__date">11:59</p>
+											</article>
+											<footer>
+												<a href="javascript:;">Confirmar</a>
+												<a href="javascript:;">Desmarcar</a>
+											</footer>
+										</div>
+										<div class="infozap-chat-text">
+											<article>
+												<p class="infozap-chat-text__msg">Desmarcar</p>
+												<p class="infozap-chat-text__date">12:00</p>
+											</article>
+										</div>
+
+										<div class="infozap-chat-text infozap-chat-text--author">
+											<article>
+												<p class="infozap-chat-text__msg">
+													<?php echo substituiTags($wrc->msgNao);?>
+												</p>
+												<p class="infozap-chat-text__date">12:01</p>
+											</article>
+										</div>
+									</div>
 								</div>
-							</div>							
-						</section>
+							</fieldset>
+
+							<fieldset>
+								<legend>LEMBRETE de Agendamento</legend>
+
+								 <div class="grid grid_3" style="margin-bottom:0;">
+									<form method="post" class="form">
+										<dl>
+											<dd>
+												<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="2"<?php echo $_tipos[2]->pub?" checked":"";?> />Ativar</label></dd>
+											</dd>
+											<dd>
+												<label><input type="checkbox" class="js-geolocalizacao input-switch" data-id_tipo="2"<?php echo $_tipos[2]->geolocalizacao?" checked":"";?> /> Enviar geolocalização em seguida</label>
+											</dd>
+										</dl>
+
+										<dl>
+											<dd>Mensagem enviada com 3 horas de antecedencia para agendamentos com status CONFIRMADO.</dd>
+										</dl>
+									</form>
+
+									<div class="infozap-chat">
+										<div class="infozap-chat-text infozap-chat-text--author">
+											<article>
+												<p class="infozap-chat-text__msg">
+													<?php echo substituiTags($_tipos[2]->texto);?>
+												</p>
+												<p class="infozap-chat-text__date">11:59</p>
+											</article>
+										
+										</div>
+									</div>
+								</div>
+							</fieldset>
+
+							<fieldset>
+								<legend>ALTERAÇÃO de Agendamento</legend>
+
+								 <div class="grid grid_3" style="margin-bottom:0;">
+									<form method="post" class="form">
+										<dl>
+											<dd>
+												<label><input type="checkbox"  class="js-pub input-switch" data-id_tipo="5"<?php echo $_tipos[5]->pub?" checked":"";?> />Ativar envio para paciente</label></dd>
+											</dd>
+										</dl>
+										<dl>
+											<dd>
+												<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="6"<?php echo $_tipos[6]->pub?" checked":"";?> />Ativar envio para profissional</label></dd>
+											</dd>
+										</dl>
+
+										<dl>
+											<dd>Mensagem enviada para paciente/dentista quando um agendamento é alterado.</dd>
+										</dl>
+									</form>
+									<div class="infozap-chat">
+										<div class="infozap-chat-text infozap-chat-text--author">
+											<article>
+												<p class="infozap-chat-text__msg">
+													<?php echo substituiTags($_tipos[5]->texto);?>
+												</p>
+												<p class="infozap-chat-text__date">11:59</p>
+											</article>
+										
+										</div>
+										
+									</div>
+
+									<div class="infozap-chat">
+										<div class="infozap-chat-text infozap-chat-text--author">
+											<article>
+												<p class="infozap-chat-text__msg">
+													<?php echo substituiTags($_tipos[6]->texto);?>
+												</p>
+												<p class="infozap-chat-text__date">11:59</p>
+											</article>
+										
+										</div>
+										
+									</div>
+									
+								</div>
+							</fieldset>
+
+							<fieldset>
+								<legend>CANCELAMENTO de Agendamento</legend>
+
+								 <div class="grid grid_3" style="margin-bottom:0;">
+									<form method="post" class="form">
+										<dl>
+											<dd>
+												<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="3"<?php echo $_tipos[3]->pub?" checked":"";?> />Ativar envio para paciente</label></dd>
+											</dd>
+										</dl>
+										<dl>
+											<dd>
+												<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="8"<?php echo $_tipos[8]->pub?" checked":"";?> />Ativar envio para profissional</label></dd>
+											</dd>
+										</dl>
+
+										<dl>
+											<dd>Mensagem enviada para paciente/dentista quando um agendamento é cancelado.</dd>
+										</dl>
+									</form>
+									<div class="infozap-chat">
+										<div class="infozap-chat-text infozap-chat-text--author">
+											<article>
+												<p class="infozap-chat-text__msg">
+													<?php echo substituiTags($_tipos[3]->texto);?>
+												</p>
+												<p class="infozap-chat-text__date">11:59</p>
+											</article>
+										</div>
+									</div>
+
+
+									<div class="infozap-chat">
+										<div class="infozap-chat-text infozap-chat-text--author">
+											<article>
+												<p class="infozap-chat-text__msg">
+													<?php echo substituiTags($_tipos[8]->texto);?>
+												</p>
+												<p class="infozap-chat-text__date">11:59</p>
+											</article>
+										</div>
+									</div>
+									
+								</div>
+							</fieldset>
+
+
+
+							<fieldset>
+								<legend>Envio de PDF de Prontuários</legend>
+
+								 <div class="grid grid_3" style="margin-bottom:0;">
+									<form method="post" class="form">
+										<dl>
+											<dd>
+												<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="9"<?php echo $_tipos[9]->pub?" checked":"";?> />Ativar</label></dd>
+											</dd>
+										</dl>
+
+										<dl>
+											<dd>Mensagem enviada para paciente quando é criado um novo prontuário.</dd>
+										</dl>
+									</form>
+									<div class="infozap-chat">
+										<div class="infozap-chat-text infozap-chat-text--author">
+											<article>
+												<p class="infozap-chat-text__msg">
+													<?php echo substituiTags($_tipos[9]->texto);?>
+												</p>
+												<p class="infozap-chat-text__date">11:59</p>
+											</article>
+										</div>
+									</div>
+
+
+								
+								</div>
+							</fieldset>
+
+						</div>
 
 						<?php
 
-						?>
+						/*?>
 
 						<form method="post" class="form formulario-validacao">
 							<input type="hidden" name="acao" value="wlib" />
 							
-							<p style="margin-bottom: 40px;text-align: center;" class="js-whatsappStatus" data-connected="<?php echo is_object($_wts)?1:0;?>">
-								<?php
-								if(is_object($_wts)) {
-								?>
-								<span class="iconify" data-icon="fluent:plug-connected-checkmark-20-filled" data-height="50" style="color:var(--verde);"></span>
-								<br />Conectado às <?php echo date('d/m/Y H:i', strtotime($_wts->data));?>
-								<?php
-								} else {
-								?>
-								<span class="iconify" data-icon="fluent:plug-connected-add-20-regular" data-height="50" style="color:var(--vermelho);"></span><br />Desconectado
-								<?php
-								}
-								?>
-							</p>
+							
 							<fieldset>
 								<legend>Tipos de Mensagens</legend>
 
@@ -276,40 +616,7 @@
 
 							</fieldset>
 
-						<?php 
-							/*<fieldset>
-								<legend>Respostas para Relacionamento de Gestão do Tempo</legend>
-
-
-								<dl>
-									<dt>
-										<label><input type="checkbox" class="input-switch" name="pubInteligenciaSim" value="1"<?php echo $wrc->pubInteligenciaSim==1?" checked":"";?> /> Confirmação de Agendamento (1)</label>
-									</dt>
-									<dd>
-										<textarea name="msgInteligenciaSim" style="height:120px;"><?php echo ($wrc->msgInteligenciaSim);?></textarea>
-									</dd>
-								</dl>
-
-								<dl>
-									<dt>
-										<label><input type="checkbox" class="input-switch" name="pubInteligenciaNao" value="1"<?php echo $wrc->pubInteligenciaNao==1?" checked":"";?> /> Não confirmação de Agendamento (2)</label>
-									</dt>
-									<dd>
-										<textarea name="msgInteligenciaNao" style="height:120px;"><?php echo ($wrc->msgInteligenciaNao);?></textarea>
-									</dd>
-								</dl>
-
-								<dl>
-									<dt>
-										<label><input type="checkbox" class="input-switch" name="pubInteligenciaNaoIdentificado" value="1"<?php echo $wrc->pubInteligenciaNaoIdentificado==1?" checked":"";?> /> Resposta não identificada</label>
-									</dt>
-									<dd>
-										<textarea name="msgInteligenciaNaoIdentificado" style="height:120px;"><?php echo ($wrc->msgInteligenciaNaoIdentificado);?></textarea>
-									</dd>
-								</dl>
-
-							</fieldset>*/
-						?>
+						
 
 							<fieldset class="box-registros">
 								<legend>Palavra Chaves</legend>
@@ -369,7 +676,7 @@
 
 
 						</form>
-
+*/?>
 					</div>
 					
 				</div>
