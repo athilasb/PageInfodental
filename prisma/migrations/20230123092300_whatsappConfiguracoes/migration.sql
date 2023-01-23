@@ -1,0 +1,1 @@
+ALTER TABLE `ident_parametros_formasdepagamento` ADD `politica_de_pagamento` BOOLEAN NOT NULL AFTER `tipo`;
