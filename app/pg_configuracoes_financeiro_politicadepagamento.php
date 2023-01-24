@@ -110,6 +110,7 @@
 				
 				$vSQL="de='".addslashes($de)."',
 						ate='".addslashes($ate)."',
+						tipo_politica='".$tipo."'
 						entrada='0',
 						parcelas='0',
 						parcelasParametros='".json_encode($parcelasJSON)."'";
@@ -257,7 +258,6 @@
 			</section>
  	
 			<section class="grid">
-
 				<div class="box box-col">
 
 					<?php
@@ -287,7 +287,6 @@
 						if($sql->rows==0) {
 							if(isset($values['busca'])) $msg="Nenhum registro encontrado";
 							else $msg="Nenhum registro";
-
 							echo "<center>$msg</center>";
 						} else {
 						?>	
@@ -297,7 +296,11 @@
 									while($x=mysqli_fetch_object($sql->mysqry)) {
 									?>
 									<tr class="js-item" data-id="<?php echo $x->id;?>">
-										<td><?php echo "De <b>R$".number_format($x->de,2,",",".")."</b> até <b>R$".number_format($x->ate,2,",",".")."</b>";?></td>
+									<?php if($x->tipo_politica=='intervalo'):?>
+										<td><?= "De <b>R$".number_format($x->de,2,",",".")."</b> até <b>R$".number_format($x->ate,2,",",".")."</b>";?></td>
+									<?php else: ?>
+										<td><?= "Acima de <b>R$".number_format($x->de,2,",",".");?></td>
+									<?php endif; ?>
 										<td>Entrada mínima: 
 											<?=$x->entrada?>%
 										</td>
@@ -327,7 +330,6 @@
 
 					</div>					
 				</div>
-
 			</section>
 		
 		</div>
@@ -380,7 +382,6 @@
 					success:function(rtn){ 
 						if(rtn.success) {
 							rtn.data.parcelasJSON.metodos.forEach(x=>{
-								console.log(x)
 								var closestParent = $($(`#status-${x.tipo}`)).closest('div');
 								$(`#status-${x.tipo}`).prop('checked',true);
 								showOptionsPolitica($(`#status-${x.tipo}`))
@@ -390,7 +391,13 @@
 								$(closestParent).find('[name="jurosAnual"]').val(x.jurosAnual);
 								$(closestParent).find('[name="descontoAvista"]').val(x.descontoAvista);
 							});
-							
+							$('[name="tipo_politica"]').filter(`[value=${rtn.data.parcelasJSON.tipoPolitica}]`).prop("checked", true);
+							if(rtn.data.parcelasJSON.tipoPolitica == 'acima'){
+								$('#parametros_gerais dl:eq(1)').hide();
+							}else{
+								$('#parametros_gerais dl:eq(1)').show();
+							}
+
 							$('#js-aside input[name=id]').val(rtn.data.id);
 							$('#js-aside input[name=de]').val(rtn.data.de);
 							$('#js-aside input[name=ate]').val(rtn.data.ate);
@@ -507,7 +514,7 @@
 				}else{
  					erro= ""
 					ObjetoPolitica = {
-						de,ate,metodos:[]
+						de,ate,tipoPolitica,metodos:[]
 					}
 					checkboxesChecked.each(function(i,checkbox){
 						if(checkbox.getAttribute('data-tipo')){
@@ -583,7 +590,6 @@
 			$('.js-table-parcelas').on('change','.js-prazo,.js-juros',function(){
 				asideParcelasPersiste();
 			})
-
 			// fechar aside de bandeiras
 			$('#js-aside .aside-close-parcelas').click(function(){
 				const checkboxesChecked =$('form input[type="checkbox"]');
@@ -643,27 +649,22 @@
 					})
 				}
 			});
-
-	
 			// nova operadora/maquininha
 			$('.js-openAside').click(function(){
 				$('#js-aside form.formulario-validacao').trigger('reset');
 				$('#js-aside input[name=id]').val(0);
 				openAside(0);
 			});
-
 			// abre aside de bandeira ao clicar na operadora/maquininha
 			$('.list1').on('click','.js-item',function(){
 				$('#js-aside form.formulario-validacao').trigger('reset');
 				let id = $(this).attr('data-id');
 				openAside(id);
 			});
-
 			// ao alterar alguma informação 
 			$('#js-aside').on('change','input,select,textarea',function(){
 				$('#js-aside input[name=alteracao]').val(1);
 			});
-
 			// configuracao dos inputs dias
 			$('#js-aside-taxas .js-input-dias').keyup(function(){
 				 var regexp = (/[^0-9\.]|^\.+(?!$)|^0+(?=[0-9]+)|\.(?=\.|.+\.)/g);
@@ -716,7 +717,7 @@
 		})
 	</script>
 
-	<!-- Aside Bandeiras -->
+	<!-- NOVA POLITICA -->
 	<section class="aside aside-form" id="js-aside">
 		<div class="aside__inner1">
 			<header class="aside-header">
@@ -750,7 +751,7 @@
 					<div class="colunas4">
 						<dl style="margin-bottom:2rem">
 							<dd>
-								<label><input type="radio" name="tipo_politica" value="intervalo" onclick="$('#parametros_gerais dl:eq(1)').show();"/> intervalo</label>
+								<label><input type="radio" name="tipo_politica" value="intervalo" onclick="$('#parametros_gerais dl:eq(1)').show();" checked/> intervalo</label>
 								<label><input type="radio" name="tipo_politica" value="acima" onclick="$('#parametros_gerais dl:eq(1)').hide();" /> Acima De</label>
 							</dd>
 						</dl>

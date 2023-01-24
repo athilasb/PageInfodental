@@ -1157,7 +1157,7 @@
 								<div class="filter-form form">
 									<dl>
 										<dd>
-											<a href="pacientes-plano-form.php" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Nova Cobrança</span></a>
+											<!-- <a href="pacientes-plano-form.php" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Nova Cobrança</span></a> -->
 										</dd>
 									</dl>
 								</div>

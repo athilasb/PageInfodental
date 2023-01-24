@@ -86,23 +86,27 @@
 						temPolitica = politica
 						if(temPolitica.parcelasParametros){
 							temPolitica.parcelasParametros = (typeof(temPolitica.parcelasParametros) !== "object")?JSON.parse(temPolitica.parcelasParametros):temPolitica.parcelasParametros
+							$('[name="tipo_financeiro').filter("[value='politica']").prop("disabled", false);
+
+							//$('[name="tipo_financeiro').filter("[value='politica']").prop("checked", true);
 						}
 					}else{
 					}
 				}
-			$('.js-valorTotal').text(number_format(valorTotal,2,",","."));
-			$('.js-valorTotalOriginal').text(number_format(valorOriginalProcedimentos,2,",","."));
-			valorTotalProcedimentos = valorTotal
-			AtualizaPolitica();
+				valorTotalProcedimentos = valorTotal
 			}
 			cont++;
 		});
- 
-		let parcelas = [];
+		AtualizaPolitica();
 
+		$('.js-valorTotal').text(number_format(valorTotal,2,",","."));
+		if(valorTotal !=valorOriginalProcedimentos){
+			$('.js-valorTotalOriginal').text(number_format(valorOriginalProcedimentos,2,",","."));
+		}
+		let parcelas = [];
 		if(atualizarParcelas===true) {
 			let numeroParcelas = $('.js-pagamentos-quantidade').val();
-			if(numeroParcelas.length==0 || numeroParcelas<=0) numeroParcelas=1;
+			if(numeroParcelas && numeroParcelas<=0) numeroParcelas=1;
 			valorParcela=(valorTotal/numeroParcelas);
 			valorParcela=valorParcela.toFixed(2);
 			let startDate = new Date();
@@ -253,13 +257,9 @@
 					pagamentosAtualizaCampos($('.js-pagamento-item .js-id_formadepagamento:last'),false);
 				}
 			});
-
-
 			if(pagamentos.length==1) $('.js-pagamento-item .js-valor:last').prop('disabled',true);
 		}
 		$('#js-textarea-pagamentos').val(JSON.stringify(pagamentos))
-		
-		
 	}
 
 	const procedimentosListar = () => {
@@ -270,23 +270,6 @@
 		if(procedimentos.length>0) {
 			procedimentos.forEach(x=>{
 				let valor = '';
-
-				//alert(x.id+" qtd = "+x.quantidade);
-
-				/*procedimentoValor=x.valor;
-				procedimentoValorCorrigido=x.valorCorrigido;
-				if(eval(x.quantitativo)==1) {
-					procedimentoValor*=x.quantidade;
-					procedimentoValorCorrigido*=x.quantidade;
-				}
-
-				if(x.desconto) {
-					valor = `<strike>${number_format(procedimentoValor,2,",",".")}</strike><br />${number_format(procedimentoValorCorrigido,2,",",".")}`;
-				} else {
-					valor = number_format(procedimentoValorCorrigido?procedimentoValorCorrigido:procedimentoValor,2,",",".");
-				}*/
-
-
 				procedimentoValor=x.valor;
 				if(x.quantitativo==1) procedimentoValor*=x.quantidade;
 				if(x.face==1) procedimentoValor*=x.faces.length;
@@ -624,6 +607,7 @@
 			let semJuros = eval($(selectCreditoBandeira).find('option:checked').attr('data-parcelas-semjuros'));
 			let parcelas = eval($(selectCreditoBandeira).find('option:checked').attr('data-parcelas'));
 			$(obj).find('.js-parcelas').html("")
+			console.log(parcelas)
 			if($.isNumeric(parcelas)) {
 				$(obj).find('.js-parcelas').append(`<option value="">-</option>`);
 				for(var i=1;i<=parcelas;i++) {
@@ -650,7 +634,6 @@
 	}
 
 	$(function(){
-
 		procedimentos=JSON.parse($('textarea#js-textarea-procedimentos').val());
 		procedimentosListar();
 		// verificar a forma de Pagamento ja Pré salva 
@@ -859,6 +842,9 @@
 		$('.js-listar-parcelas').on('change','.js-vencimento',pagamentosPersistirObjeto);
 
 		$('.js-listar-parcelas').on('change','.js-creditoBandeira',function(){
+			if($(this).find('option:checked').attr('data-populaParcela')=="false"){
+				return
+			}
 			creditoBandeiraAtualizaParcelas($(this),0);
 			pagamentosPersistirObjeto();
 		});
@@ -1041,7 +1027,9 @@
 
 		// adiciona procedimento
 		$('.aside-plano-procedimento-adicionar .js-salvarAdicionarProcedimento').click(function(){
+			$('.js-listar-parcelas .fpag').html('');
 			
+			pagamentos = []
 			// capta dados 
 				let id_procedimento = $('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento option:selected').val();
 				let procedimento = $(`.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento option:selected`).text();
@@ -1089,8 +1077,6 @@
 			if(erro.length>0) {
 				swal({title: "Erro!", text: erro, type:"error", html:true, confirmButtonColor: "#424242"});
 			} else {
-
-
 				let linhas=1;
 				if(id_regiao>=2) linhas = eval($(`.js-regiao-${id_regiao}-select option:selected`).length);
 				
@@ -1141,9 +1127,6 @@
 						item.opcao=opcao;
 						item.id_opcao=id_opcao;
 
-
-						console.log('quantitativo:'+ quantitativo+' ('+quantidade+')');
-
 					// Faces, Quantitativo ou Hof (id_regiao=5)
 						faces=[];
 						hof='';
@@ -1183,6 +1166,10 @@
 						atualizaValor(true);
 					}
 				}
+
+			}
+			if(temPolitica.parcelasParametros){
+				$('[name="tipo_financeiro').filter("[value='politica']").prop("checked", true);
 			}
 		});
 
