@@ -145,7 +145,7 @@
 	}
 
 	const pagamentosListar = (passo=0) => {
-		$('.js-listar-parcelas').html('');
+		$('.js-listar-parcelas .fpag').html('');
 		$('.js-listar-parcelas').show();
 		if(pagamentos.length>0) {
 			let index=1;
@@ -157,7 +157,7 @@
 				disabledForma = 'disabled'
 			}
 			pagamentos.forEach(x=>{
-				$('.js-listar-parcelas').append(`<div class="fpag-item js-pagamento-item">
+				$('.js-listar-parcelas .fpag').append(`<div class="fpag-item js-pagamento-item">
 												<aside>${index++}</aside>
 												<article>
 													<div class="colunas3">

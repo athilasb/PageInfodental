@@ -1141,7 +1141,7 @@
 					valor = valorParcela
 					valorTotalParcelado = valor*qtdParcelas
 					if(qtdParcelas<=qtdParcelasSemJuros){
-						if(x.entradaMinima.length>0){
+						if(x.entradaMinima>0){
 							valorEntrada = ((parseFloat(x.entradaMinima))/100)*(valorTotalParcelado)
 						 	valorParcela = ((valorTotalParcelado)-valorEntrada)/(qtdParcelas-1)
 						 	if(valorEntrada<valorParcela){
@@ -1162,14 +1162,13 @@
 						}
 
 					}else{
-						let tempo = Math.ceil(qtdParcelasTotal/12)
+						let tempo = Math.ceil(qtdParcelas/12)
 						let montante = valor+(1+(taxaJurosAnual/100))*(qtdParcelas/12)
-						//valor = valor+(valor*(taxaJurosAnual/100))
-						valor = valor+(valor*(taxaJurosAnual/100))*(qtdParcelas/12)
-
+						valor = valor+(valor*((taxaJurosAnual/100)*tempo))
+						//valor = valor+(valor*(taxaJurosAnual/100))*(qtdParcelas/12) // JUROS SOBRE JUROS
 						valorTotalParcelado = valor*qtdParcelas
 						valorEntrada = valorParcela = valor
-						if(x.entradaMinima.length>0){
+						if(x.entradaMinima>0){
 							valorEntrada = ((parseFloat(x.entradaMinima))/100)*(valorTotalParcelado)
 							valorParcela = ((valorTotalParcelado)-valorEntrada)/(qtdParcelas-1)
 							if(valorEntrada<valorParcela){
@@ -1374,7 +1373,7 @@
 			$('.js-listar-parcelas').hide()
 			$('#js-textarea-pagamentos').text("")
 			atualizaValor()
-			$('.js-listar-parcelas').html("")
+			$('.js-listar-parcelas .fpag').html("")
 			$('.filter-title').find('strike').html("")
 		}
 
@@ -1569,193 +1568,196 @@
 				<input type="hidden" name="status" />
 				<input type="hidden" name="id_politica" value='<?=$values['id_politica']??0;?>'/>
 				<div class="grid grid_2">
-					<!-- Identificacao -->
-					<fieldset>
-						<legend>Identificação</legend>
-						<dl>
-							<dd>
-								<?php
-								if(is_object($cnt)) {
-								?>
-								<div class="button-group">
-									<a href="javascript:;" data-status="PENDENTE" class="button js-btn-status<?php echo $cnt->status=="PENDENTE"?" active":"";?>"><i class="iconify" data-icon="fluent:timer-24-regular"></i><span>Aguard. Aprovação</span></a>
-									<a href="javascript:;" data-status="APROVADO" class="button js-btn-status<?php echo $cnt->status=="APROVADO"?" active":"";?>"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i><span>Aprovado</span></a>
-									<a href="javascript:;" data-status="CANCELADO" class="button js-btn-status<?php echo $cnt->status=="CANCELADO"?" active":"";?>"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Reprovado</span></a>
-								</div>
-								<?php
-								} else {
-								?>
-								<div class="button-group tooltip" style="opacity:0.4" title="Salve o tratamento para poder alterar o status">
-									<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:timer-24-regular"></i><span>Aguard. Aprovação</span></a>
-									<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i><span>Aprovado</span></a>
-									<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Reprovado</span></a>
-								</div>
-								<?php
-								}
-								?>
-							</dd>
-						</dl>
-						<div class="colunas">
+					<div>
+						<!-- Identificacao -->
+						<fieldset>
+							<legend>Identificação</legend>
 							<dl>
-								<dt>Título</dt>
-								<dd><input type="text" name="titulo" value="<?php echo $values['titulo'];?>"<?php echo $tratamentoAprovado==true?" disabled":"";?> /></dd>
-							</dl>
-							<dl>
-								<dt>Profissional</dt>
 								<dd>
-									<select name="id_profissional" class="js-id_profissional"<?php echo $tratamentoAprovado==true?" disabled":"";?>>
-										<option value=""><?php echo utf8_encode($clinica->clinica_nome);?></option>
-										<?php
-										foreach($_profissionais as $x) {
-											if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
-											$iniciais=$x->calendario_iniciais;
-											echo '<option value="'.$x->id.'" data-iniciais="'.$iniciais.'" data-iniciaisCor="'.$x->calendario_cor.'"'.($values['id_profissional']==$x->id?" selected":"").'>'.utf8_encode($x->nome).'</option>';
-										}
-										?>
-									</select>
+									<?php
+									if(is_object($cnt)) {
+									?>
+									<div class="button-group">
+										<a href="javascript:;" data-status="PENDENTE" class="button js-btn-status<?php echo $cnt->status=="PENDENTE"?" active":"";?>"><i class="iconify" data-icon="fluent:timer-24-regular"></i><span>Aguard. Aprovação</span></a>
+										<a href="javascript:;" data-status="APROVADO" class="button js-btn-status<?php echo $cnt->status=="APROVADO"?" active":"";?>"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i><span>Aprovado</span></a>
+										<a href="javascript:;" data-status="CANCELADO" class="button js-btn-status<?php echo $cnt->status=="CANCELADO"?" active":"";?>"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Reprovado</span></a>
+									</div>
+									<?php
+									} else {
+									?>
+									<div class="button-group tooltip" style="opacity:0.4" title="Salve o tratamento para poder alterar o status">
+										<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:timer-24-regular"></i><span>Aguard. Aprovação</span></a>
+										<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i><span>Aprovado</span></a>
+										<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Reprovado</span></a>
+									</div>
+									<?php
+									}
+									?>
 								</dd>
-							</dl>					
-						</div>
-
-						<div class="colunas">
-							<dl>
-								<dt>Tempo Estimado</dt>
-								<dd class="form-comp form-comp_pos"><input type="number" name="tempo_estimado" value="<?php echo $values['tempo_estimado'];?>"<?php echo $tratamentoAprovado==true?" disabled":"";?> /><span>dias</span></dd>
 							</dl>
-						</div>
-					</fieldset>
-					<!-- Financeiro -->
-					<fieldset>
-						<legend>Financeiro</legend>
-						<textarea name="pagamentos" id="js-textarea-pagamentos" style="display:none;"><?php echo $values['pagamentos'];?></textarea>
-						<section class="filter">
-							<div class="filter-group">	
-								<div class="filter-title">									
-									<h1>Total: <strike  class="js-valorTotalOriginal">R$ 350,00</strike> <strong  class="js-valorTotal">R$ 340,00</strong></h1>
-								</div>								
-							</div>
-							<div class="filter-group">
-							<?php if($tratamentoAprovado===false):?>
-								<div>
-									<a href="javascript:;" class="button js-btn-desconto"><i class="iconify" data-icon="fluent:money-calculator-24-filled"></i><span>Descontos</span></a>
-								</div>
-								<dl id='botao-voltar-menu-parcelas' style='display: none;'>
-									<dd>
-										<label onclick="voltarMenuParcelas()"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></label>
-									</dd>
+							<div class="colunas">
+								<dl>
+									<dt>Título</dt>
+									<dd><input type="text" name="titulo" value="<?php echo $values['titulo'];?>"<?php echo $tratamentoAprovado==true?" disabled":"";?> /></dd>
 								</dl>
-							<?php endif;?>
+								<dl>
+									<dt>Profissional</dt>
+									<dd>
+										<select name="id_profissional" class="js-id_profissional"<?php echo $tratamentoAprovado==true?" disabled":"";?>>
+											<option value=""><?php echo utf8_encode($clinica->clinica_nome);?></option>
+											<?php
+											foreach($_profissionais as $x) {
+												if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
+												$iniciais=$x->calendario_iniciais;
+												echo '<option value="'.$x->id.'" data-iniciais="'.$iniciais.'" data-iniciaisCor="'.$x->calendario_cor.'"'.($values['id_profissional']==$x->id?" selected":"").'>'.utf8_encode($x->nome).'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>					
 							</div>
-						</section>
-						<?php if($tratamentoAprovado===false):?>
-						<dl style="margin-bottom:2rem">
-							<dd>
-								<label><input type="radio" name="tipo_financeiro" value="politica" onclick="$('.js-tipo').hide(); $('.js-tipo-politica').show();" <?= (is_object($cnt) and $cnt->tipo_financeiro=="politica")?" checked":"";?>/> Política de pagamento</label>
-								<label><input type="radio" name="tipo_financeiro" value="manual" onclick="$('.js-tipo').hide(); $('.js-tipo-manual').show();atualizaValor(true);" <?= (is_object($cnt) and $cnt->tipo_financeiro=="manual")?" checked":"";?> /> Financeiro manual</label>
-							</dd>
-						</dl>
-						<?php endif;?>
-						<section class="js-tipo js-tipo-manual">
+							<div class="colunas">
+								<dl>
+									<dt>Tempo Estimado</dt>
+									<dd class="form-comp form-comp_pos"><input type="number" name="tempo_estimado" value="<?php echo $values['tempo_estimado'];?>"<?php echo $tratamentoAprovado==true?" disabled":"";?> /><span>dias</span></dd>
+								</dl>
+							</div>
+						</fieldset>
+						<!-- Procedimentos --> 
+						<fieldset>
+							<legend>Procedimentos</legend>
+							<textarea name="procedimentos" id="js-textarea-procedimentos" style="display:none"><?php echo $values['procedimentos'];?></textarea>
+							<?php
+							if($tratamentoAprovado===false) {
+							?>
 							<dl>
-								<dt>Parcelas</dt>
 								<dd>
-									<label><input class="js-pagamentos-quantidade" type="number" name="parcelas" value="<?=isset($values['parcelas'])?$values['parcelas']:'1';?>" style="width:80px;" /></label>
+									<a href="javascript:;" ata-aside="plano-procedimento-adicionar" class="button button_main js-btn-adicionarProcedimento"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar Procedimento</span></a>
 								</dd>
-							</dl>							
-						</section>
-						<section class="js-tipo js-tipo-politica" style="display:none;">
+							</dl>
+							<?php
+							}
+							?>
+							
 							<div class="list1">
-								<table >
+								<table id="js-table-procedimentos">
+									
 								</table>
 							</div>
-						</section>
-						<section class="js-tipo js-listar-parcelas" style="display:none;">
-							<div class="fpag" style="margin-top:1rem;">
-								<div class="fpag-item">
-									<aside>1</aside>
-									<article>
-										<div class="colunas3">
-											<dl>
-												<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
-											</dl>
-											<dl>
-												<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
-											</dl>
-											<dl>
-												<dd>
-													<select class="js-id_formadepagamento js-tipoPagamento">
-														<option value="9" data-tipo="boleto">BOLETO</option>
-													</select>
-												</dd>
-											</dl>
-										</div>
-										<div class="colunas3">
-											<dl>
-												<dt>Identificador</dt>
-												<dd><input type="text" name="" /></dd>
-											</dl>
-										</div>
-									</article>
+						</fieldset>
+					</div>
+					<div>
+						<!-- Financeiro -->
+						<fieldset>
+							<legend>Financeiro</legend>
+							<textarea name="pagamentos" id="js-textarea-pagamentos" style="display:none;"><?php echo $values['pagamentos'];?></textarea>
+							<section class="filter">
+								<div class="filter-group">	
+									<div class="filter-title">									
+										<h1>Total: <strike  class="js-valorTotalOriginal">R$ 350,00</strike> <strong  class="js-valorTotal">R$ 340,00</strong></h1>
+									</div>								
 								</div>
-								<div class="fpag-item">
-									<aside>2</aside>
-									<article>
-										<div class="colunas3">
-											<dl>
-												<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
-											</dl>
-											<dl>
-												<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
-											</dl>
-											<dl>
-												<dd>
-													<select class="js-id_formadepagamento js-tipoPagamento">
-														<option value="9" data-tipo="boleto">CARTÃO DE CRÉDITO</option>
-													</select>
-												</dd>
-											</dl>
-										</div>
-										<div class="colunas3">
-											<dl>
-												<dt>Bandeira</dt>
-												<dd><select name=""><option value=""></option></select></dd>
-											</dl>
-											<dl>
-												<dt>Parcelas</dt>
-												<dd><select name=""><option value="">1x</option></select></dd>
-											</dl>
-											<dl>
-												<dt>Identificador</dt>
-												<dd><input type="text" name="" /></dd>
-											</dl>
-										</div>
-									</article>
+								<div class="filter-group">
+								<?php if($tratamentoAprovado===false):?>
+									<div>
+										<a href="javascript:;" class="button js-btn-desconto"><i class="iconify" data-icon="fluent:money-calculator-24-filled"></i><span>Descontos</span></a>
+									</div>
+									<dl id='botao-voltar-menu-parcelas' style='display: none;'>
+										<dd>
+											<label onclick="voltarMenuParcelas()"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></label>
+										</dd>
+									</dl>
+								<?php endif;?>
 								</div>
-							</div>
-						</section>
-					</fieldset>
-					<!-- Procedimentos --> 
-					<fieldset>
-						<legend>Procedimentos</legend>
-						<textarea name="procedimentos" id="js-textarea-procedimentos" style="display:none"><?php echo $values['procedimentos'];?></textarea>
-						<?php
-						if($tratamentoAprovado===false) {
-						?>
-						<dl>
-							<dd>
-								<a href="javascript:;" ata-aside="plano-procedimento-adicionar" class="button button_main js-btn-adicionarProcedimento"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar Procedimento</span></a>
-							</dd>
-						</dl>
-						<?php
-						}
-						?>
-						
-						<div class="list1">
-							<table id="js-table-procedimentos">
-								
-							</table>
-						</div>
-					</fieldset>
+							</section>
+							<?php if($tratamentoAprovado===false):?>
+							<dl style="margin-bottom:2rem">
+								<dd>
+									<label><input type="radio" name="tipo_financeiro" value="politica" onclick="$('.js-tipo').hide(); $('.js-tipo-politica').show();" <?= (is_object($cnt) and $cnt->tipo_financeiro=="politica")?" checked":"";?>/> Política de pagamento</label>
+									<label><input type="radio" name="tipo_financeiro" value="manual" onclick="$('.js-tipo').hide(); $('.js-tipo-manual').show();atualizaValor(true);" <?= (is_object($cnt) and $cnt->tipo_financeiro=="manual")?" checked":"";?> /> Financeiro manual</label>
+								</dd>
+							</dl>
+							<?php endif;?>
+							<section class="js-tipo js-tipo-manual">
+								<dl>
+									<dt>Parcelas</dt>
+									<dd>
+										<label><input class="js-pagamentos-quantidade" type="number" name="parcelas" value="<?=isset($values['parcelas'])?$values['parcelas']:'1';?>" style="width:80px;" /></label>
+									</dd>
+								</dl>							
+							</section>
+							<section class="js-tipo js-tipo-politica" style="display:none;">
+								<div class="list1">
+									<table >
+									</table>
+								</div>
+							</section>
+							<section class="js-tipo js-listar-parcelas" style="display:none;">
+								<div class="fpag" style="margin-top:1rem;">
+									<div class="fpag-item">
+										<aside>1</aside>
+										<article>
+											<div class="colunas3">
+												<dl>
+													<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
+												</dl>
+												<dl>
+													<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
+												</dl>
+												<dl>
+													<dd>
+														<select class="js-id_formadepagamento js-tipoPagamento">
+															<option value="9" data-tipo="boleto">BOLETO</option>
+														</select>
+													</dd>
+												</dl>
+											</div>
+											<div class="colunas3">
+												<dl>
+													<dt>Identificador</dt>
+													<dd><input type="text" name="" /></dd>
+												</dl>
+											</div>
+										</article>
+									</div>
+									<div class="fpag-item">
+										<aside>2</aside>
+										<article>
+											<div class="colunas3">
+												<dl>
+													<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data" value="07/09/2022" /></dd>
+												</dl>
+												<dl>
+													<dd class="form-comp"><span>R$</i></span><input type="tel" name="" class="valor" value="" /></dd>
+												</dl>
+												<dl>
+													<dd>
+														<select class="js-id_formadepagamento js-tipoPagamento">
+															<option value="9" data-tipo="boleto">CARTÃO DE CRÉDITO</option>
+														</select>
+													</dd>
+												</dl>
+											</div>
+											<div class="colunas3">
+												<dl>
+													<dt>Bandeira</dt>
+													<dd><select name=""><option value=""></option></select></dd>
+												</dl>
+												<dl>
+													<dt>Parcelas</dt>
+													<dd><select name=""><option value="">1x</option></select></dd>
+												</dl>
+												<dl>
+													<dt>Identificador</dt>
+													<dd><input type="text" name="" /></dd>
+												</dl>
+											</div>
+										</article>
+									</div>
+								</div>
+							</section>
+						</fieldset>
+					</div>
 				</div>
 			</form>
 		</div>
