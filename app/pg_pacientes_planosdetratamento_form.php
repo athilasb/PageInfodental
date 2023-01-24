@@ -1080,7 +1080,12 @@
 				return
 				
 			}else{
-				atualizaValor(true)
+				$('[name="tipo_financeiro"]').each((i,x)=>{
+					console.log(x)
+					if($(x).val()=='politica'){
+					 	$(x).attr('disabled',true)
+					}
+				})
 			}
 		}
 
@@ -1377,7 +1382,6 @@
 			if(contrato.tipo_financeiro =='politica'){
 				$('.js-tipo-manual').hide()
 				$('.js-tipo-politica').show()
-				
 				let qtdParcelas = contrato.pagamentos.length
 				let valor = (valorTotalProcedimentos/qtdParcelas)
 				if(pagamentos.length>0){
