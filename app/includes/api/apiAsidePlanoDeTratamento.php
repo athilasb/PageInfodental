@@ -93,7 +93,7 @@
 			$('.js-valorTotal').text(number_format(valorTotal,2,",","."));
 			$('.js-valorTotalOriginal').text(number_format(valorOriginalProcedimentos,2,",","."));
 			valorTotalProcedimentos = valorTotal
-			ValidaPoliticaManual(0);
+			AtualizaPolitica();
 			}
 			cont++;
 		});
@@ -162,7 +162,7 @@
 												<article>
 													<div class="colunas3">
 														<dl>
-															<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data js-vencimento" data-ordem="${index}" value="${x.vencimento}" /></dd>
+															<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data js-vencimento" data-ordem="${index}" value="${x.vencimento}"/></dd>
 														</dl>
 														<dl>
 															<dd class="form-comp"><span>R$</i></span><input type="tel" name="" data-ordem="${index}" class="valor js-valor" value="${number_format(x.valor,2,",",".")}"  ${disabledValor}/></dd>
@@ -253,9 +253,13 @@
 					pagamentosAtualizaCampos($('.js-pagamento-item .js-id_formadepagamento:last'),false);
 				}
 			});
+
+
 			if(pagamentos.length==1) $('.js-pagamento-item .js-valor:last').prop('disabled',true);
 		}
 		$('#js-textarea-pagamentos').val(JSON.stringify(pagamentos))
+		
+		
 	}
 
 	const procedimentosListar = () => {
@@ -551,13 +555,13 @@
 		let id_formadepagamento  = formaDePagamento.val();
 		let obj = formaDePagamento.parent().parent().parent().parent();
 		let tipo = $(obj).find('select.js-id_formadepagamento option:checked').attr('data-tipo');
-		console.log(id_formadepagamento)
 
 		$(obj).find('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
 
-		if(id_formadepagamento=="credito") {
-			$(obj).find('.js-parcelas,.js-creditoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
-		} else if(id_formadepagamento=="debito") {
+
+		if(id_formadepagamento=="2") {
+			$(obj).find('.js-listar-parcelas,.js-creditoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
+		} else if(id_formadepagamento=="3") {
 			$(obj).find('.js-debitoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
 		} else {
 			$(obj).find('.js-identificador').parent().parent().show();
@@ -615,13 +619,13 @@
 
 	const creditoBandeiraAtualizaParcelas = (selectCreditoBandeira,qtdParcelasSelecionar) => {
 		let obj = $(selectCreditoBandeira).parent().parent().parent().parent();
-		
+
 		if($(selectCreditoBandeira).val().length>0) {
 			let semJuros = eval($(selectCreditoBandeira).find('option:checked').attr('data-parcelas-semjuros'));
 			let parcelas = eval($(selectCreditoBandeira).find('option:checked').attr('data-parcelas'));
-		
+			$(obj).find('.js-parcelas').html("")
 			if($.isNumeric(parcelas)) {
-				$(obj).find('select.js-listar-parcelas').append(`<option value="">-</option>`);
+				$(obj).find('.js-parcelas').append(`<option value="">-</option>`);
 				for(var i=1;i<=parcelas;i++) {
 					semjuros='';
 					if($.isNumeric(semJuros) && semJuros>=i) semjuros=` - sem juros`;
@@ -633,10 +637,15 @@
 					$(obj).find('select.js-parcelas').append(`<option value="${i}"${sel}>${i}x${semjuros}</option>`);
 				}
 			} else {
-				$(obj).find('select.js-listar-parcelas').append(`<option value="">erro</option>`);
+				$(obj).find('.js-parcelas').append(`<option value="">erro</option>`);
 			}
 		} else {
-			$(obj).find('select.js-listar-parcelas').append(`<option value="">selecione a bandeira</option>`);
+			$(obj).find('.js-parcelas').append(`<option value="">selecione a bandeira</option>`);
+		}
+
+		$(obj).find('.js-parcelas').closest('dl').show()
+		if($('[name="tipo_financeiro"]:checked').val()=='manual'){
+			$(obj).find('.js-parcelas').attr('disabled',false)
 		}
 	}
 
