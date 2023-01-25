@@ -62,7 +62,7 @@
 			$optionFormasDePagamento='';
 			$sql->consult($_p."parametros_formasdepagamento","*","where lixo=0 order by titulo asc");
 			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$_formasDePagamento[$x->id]=$x;
+				$_formasDePagamento[$x->id]=(object)array("id"=>$x->id,"lixo"=>$x->lixo,"titulo"=>utf8_encode($x->titulo),"tipo"=>$x->tipo,"politica_de_pagamento"=>$x->politica_de_pagamento);
 				$optionFormasDePagamento.='<option value="'.$x->id.'" data-tipo="'.$x->tipo.'">'.utf8_encode($x->titulo).'</option>';
 			}
 
@@ -445,13 +445,15 @@
 													} 
 												}
 											}
+											
 											$valorPagamento=number_format($valorPagamento,2,".","");
 											$valorProcedimento=number_format($valorProcedimento,2,".","");
 
 											//echo $valorPagamento." ".$valorProcedimento." = ".abs($valorPagamento - $valorProcedimento);die();
-											if(!(abs($valorPagamento - $valorProcedimento) < 0.50000001)) {
-												$erro="Defina as parcelas de pagamento!";
-											} 
+											// if(!(abs($valorPagamento) < 0.50000001)) {
+											//  	$erro="Defina as parcelas de pagamento!";
+											// } 
+										
 										}
 
 									
@@ -910,18 +912,21 @@
 		}
 ?>
 	<script type="text/javascript">
-		var procedimentos = [];
+		var procedimentos = JSON.parse(`<?=($values['procedimentos']);?>`);
 		let valorTotalProcedimentos = 0;
 		var valorOriginalProcedimentos = 0;
-		var _politicas = <?=json_encode($_politicas);?>;
+		var valorDescontos = 0;
+		var valorTaxas = 0;
+		var _politicas = <?=json_encode($_politicas??[]);?>;
+		var _formasDePagamento = <?=json_encode($_formasDePagamento)??false; ?>;
 		var temPolitica = false;
-		var pagamentos = JSON.parse(`<?php echo ($values['pagamentos']);?>`);
-		var usuario = '<?php echo utf8_encode($usr->nome);?>';
-		var id_usuario = <?php echo $usr->id;?>;
-		var tratamentoAprovado = <?php echo ($tratamentoAprovado===true)?1:0;?>;
+		var pagamentos = JSON.parse(`<?=($values['pagamentos']);?>`);
+		var usuario = '<?= utf8_encode($usr->nome);?>';
+		var id_usuario = <?= $usr->id;?>;
+		var tratamentoAprovado = <?=($tratamentoAprovado===true)?1:0;?>;
 		var contrato = <?=json_encode($values);?>;
 		contrato.pagamentos = pagamentos
-		contrato.procedimentos = JSON.parse(`<?php echo ($values['procedimentos']);?>`);
+		contrato.procedimentos = procedimentos;
 
 		const desativarCampos = () => {
 			if(tratamentoAprovado===1) { 
@@ -932,10 +937,9 @@
 		}
 		// Mostra as opções de Politicas disponiveis
 		const AtualizaPolitica = ()=>{
-			$('.filter-title').find('strike').html("")
 			$('.js-tipo-politica table').html("")
+		
 			if(temPolitica){
-				//$('.js-listar-parcelas').html("")
 				$('[name="id_politica"]').val(temPolitica.id)
 				let valorTotal = valorTotalProcedimentos
 				let metodosHabilitados = temPolitica.parcelasParametros.metodos
@@ -996,12 +1000,12 @@
 					let tr = ""
 					if(x.parcelas==1){
 						if(parseFloat(x.descontoAvista)>0){
-							valor = (valor-(valor*(parseFloat(x.descontoAvista)/100)))
-							desconto = `<em style="background:var(--verde); color:#fff;">desconto de R$ ${number_format(((valor*(parseFloat(x.descontoAvista)/100))),2,",",".")}</em>`
+							valor = valor-(valor*(parseFloat(x.descontoAvista)/100))
+							desconto = `<em style="background:var(--verde); color:#fff;">desconto de R$ ${number_format((valorTotal-valor),2,",",".")}</em>`
 						}
 						if(parseFloat(x.jurosAnual)>0){
 							let tempo = Math.ceil(qtdParcelasTotal/12)
-							valor = valor+(valor*(taxaJurosAnual/100))
+							valor = valor+(valor*((taxaJurosAnual/100)*tempo))
 							valorTotalParcelado = valor*qtdParcelasTotal
 						}
 						tr =`<tr onclick='politicaEscolhida("${metodo}")'>
@@ -1018,8 +1022,8 @@
 							</tr>`
 					}else{
 						if(parseFloat(x.descontoAvista)>0){
-							valor = (valor-(valor*(parseFloat(x.descontoAvista)/100)))
-							desconto = `<em style="background:var(--verde); color:#fff;">desconto de R$ ${number_format(((valor*(parseFloat(x.descontoAvista)/100))),2,",",".")}</em>`
+							valor = valor-(valor*(parseFloat(x.descontoAvista)/100))
+							desconto = `<em style="background:var(--verde); color:#fff;">desconto de R$ ${number_format((valorTotal-valor),2,",",".")}</em>`
 						}
 						if(qtdParcelasSemJuros>0){
 							textCard = `Em Até ${qtdParcelasSemJuros}x sem Juros`
@@ -1075,8 +1079,18 @@
 					}
 				})
 			}
+
+			if($('[name="tipo_financeiro"]:checked').val()=='politica'){
+				$('.js-tipo').hide(); 
+				$('.js-tipo-politica').show();
+				$('.js-tipo-manual').hide();
+			}else{
+				$('.js-tipo').hide(); 
+				$('.js-tipo-manual').show();
+				$('.js-tipo-politica').hide();
+			}
 		}
-		// MOSTRA AS PARCELAS
+		// MOSTRA AS PARCELAS DISPONIVEIS
 		const politicaEscolhida = (metodo)=>{
 			$('#botao-voltar-menu-parcelas').show()
 			$('.js-tipo-politica table').html("")
@@ -1189,13 +1203,13 @@
 				$('.js-tipo-politica table').append(tr)
 			}	
 		}
+		// quando a pessoa escolhe a parcela que deseja pagar 2º passo
 		const EscolheParcelas = (metodo,qtdParcelas,valor,primary=false)=>{
-			$('.js-valorTotal').html(number_format(qtdParcelas*valor,2,",","."));
 			$('#botao-voltar-menu-parcelas').show()
-			$('.js-pagamentos-quantidade').val(qtdParcelas)
+			$('.js-pagamentos-quantidade').val(pagamentos.length)
 			$('.js-tipo-politica').hide()
 			$('.js-listar-parcelas').show()
-			
+		
 			if(primary){
 				pagamentosListar(3);
 				if(contrato.pagamentos.length>0){
@@ -1205,6 +1219,11 @@
 					pagamentos.forEach(x=>{
 						valorPagamentos+=x.valor
 						$('.js-listar-parcelas').find('.js-id_formadepagamento').each((k,select)=>{
+							$(select).html(`<option value='${x.id_formapagamento}' selected>${_formasDePagamento[x.id_formapagamento]?.titulo}</option>`)
+							$(select).closest('article').find('.js-parcelas').html(`<option value='${x.parcelas}' selected>${x.parcelas}X</option>`)
+							$(select).closest('article').find('js-identificador').val(`${x.identificador}`)
+
+
 							$(select).find('option').each(function(key,option){
 								let dataTipo = $(option).attr('data-tipo')
 								if(dataTipo==x.metodo){
@@ -1212,6 +1231,8 @@
 									$(select).attr('disabled',true)
 								}
 							})
+							$(select).closest('article').find('dl').find('.js-metodo-selecionado').val(metodo);
+
 							$(select).closest('article').find('dl').each(function (ind,dls){
 								let classe = $(dls).find('select,input').attr('class')
 								if(typeof(classe)=='string'){
@@ -1227,13 +1248,13 @@
 											})
 											$(dls).find('select optgroup').html("")
 											bandeirasAceitas.forEach(x=>{
-												$(dls).find('select optgroup').append(`<option value="${x.value}" data-parcelas="${x['data-parcelas']}" data-parcelas-semjuros="${x['data-parcelas-semjuros']}" data-id_operadora="${x['data-id_operadora']}" data-id_operadorabandeira="${x['data-id_operadorabandeira']}" >${x.text()}</option>`)
+												$(dls).find('select optgroup').append(`<option value="${$(x).val()}" data-populaParcela="false" data-parcelas="${$(x).attr('data-parcelas')}" data-parcelas-semjuros="${$(x).attr('data-parcelas-semjuros')}" data-id_operadora="${$(x).attr('data-id_operadora')}" data-id_operadorabandeira="${$(x).attr('data-id_operadorabandeira')}" >${x.text()}</option>`)
 											})
 										}
 										if(classe == 'js-parcelas'){
 											$(dls).show()
 											$(dls).find('select').append(`
-												<option value='${x.parcelas??1}' selected>${x.parcelas??1} x </option>
+												<option value='${x.parcelas??1}' selected>${x.parcelas??0} x </option>
 											`)
 											$(dls).find('select').attr('disabled',true)
 										}
@@ -1246,7 +1267,7 @@
 											$(dls).show()
 										}
 									}else {
-										if(classe !== 'js-identificador' && classe !=='data js-vencimento' && classe !=='valor js-valor' && classe!=='js-id_formadepagamento'){
+										if(classe !== 'js-identificador' && classe !=='data js-vencimento' && classe !=='valor js-valor' && classe!=='js-id_formadepagamento' && classe !=='js-parcelas'){
 											$(dls).hide()
 										}
 										if(classe == 'js-creditoBandeira'){
@@ -1267,7 +1288,6 @@
 			let politicaEscolhida = temPolitica.parcelasParametros.metodos.find((item)=>{
 				return item.tipo==metodo
 			})
-		
 			$('#metodos-pagamento-politica .js-pagamentos').html("")
 			let valorEntrada = valor
 			let valorParcela = valor
@@ -1279,8 +1299,8 @@
 					valorParcela = ((qtdParcelas*valor))/(qtdParcelas)
 				}
 			}
+			
 			let parcelas = []
-			pagamentosTextarea = JSON.parse($('#js-textarea-pagamentos').val());
 			let parcelaAtual = 0
 			let startDate = new Date();
 			if(metodo == 'credito'){
@@ -1308,16 +1328,14 @@
 				startDate=newDate;
 			}else{
 				parcelaAtual =0
-				while(qtdParcelas>0){
-					qtdParcelas--
+				contadorParcela = qtdParcelas
+				while(contadorParcela>0){
+					contadorParcela--
 					parcelaAtual ++
 					let item = {}
 					let valorParcelaFinal = valorParcela
 					if(parcelaAtual==1){
 						valorParcelaFinal = valorEntrada
-					}
-					if(pagamentosTextarea[qtdParcelas-1]) {
-						item = pagamentosTextarea[qtdParcelas-1];
 					}
 					let mes = startDate.getMonth()+1;
 					let dia = startDate.getDate();
@@ -1334,10 +1352,10 @@
 					startDate=newDate;
 				}
 			}
-
-			$('#js-textarea-pagamentos').val(JSON.stringify(parcelas))
 			pagamentos = parcelas;
+
 			pagamentosListar(3);
+			updateValorText(((valorEntrada+(valorParcela*(qtdParcelas-1)))-valorTotalProcedimentos))
 			const selects = $('.js-listar-parcelas').find('.js-id_formadepagamento')
 			selects.each(function (i,select){
 				$(select).find('option').each(function(key,option){
@@ -1347,10 +1365,15 @@
 						$(select).attr('disabled',true)
 					}
 				})
+				$(select).closest('article').find('dl').find('.js-metodo-selecionado').val(metodo);
 				$(select).closest('article').find('dl').each(function (ind,dls){
-					let classe = $(dls).find('select').attr('class')
+					let classe = $(dls).find('select, input').attr('class')
+
 					if(typeof(classe)=='string'){
 						classe = classe.replace(' js-tipoPagamento',"")
+						if(classe =='js-metodo-selecionado'){
+
+						}
 						if(metodo=='credito'){
 							if(classe == 'js-creditoBandeira'){
 								$(dls).show()
@@ -1362,7 +1385,7 @@
 								})
 								$(dls).find('select optgroup').html("")
 								bandeirasAceitas.forEach(x=>{
-									$(dls).find('select optgroup').append(`<option value="${x.value}" data-populaParcela="false" data-parcelas="${$(x).attr('data-parcelas')}" data-parcelas-semjuros="${$(x).attr('data-parcelas-semjuros')}" data-id_operadora="${$(x).attr('data-id_operadora')}" data-id_operadorabandeira="${$(x).attr('data-id_operadorabandeira')}" >${x.text()}</option>`)
+									$(dls).find('select optgroup').append(`<option value="${$(x).val()}" data-populaParcela="false" data-parcelas="${$(x).attr('data-parcelas')}" data-parcelas-semjuros="${$(x).attr('data-parcelas-semjuros')}" data-id_operadora="${$(x).attr('data-id_operadora')}" data-id_operadorabandeira="${$(x).attr('data-id_operadorabandeira')}" >${x.text()}</option>`)
 								})
 							}
 							if(classe == 'js-parcelas'){
@@ -1383,20 +1406,18 @@
 		}
 		//botao de voltar
 		const voltarMenuParcelas = ()=>{
+			pagamentos=[]
 			$('#botao-voltar-menu-parcelas').hide()
 			$('.js-tipo-politica').show()
 			$('.js-listar-parcelas').hide()
 			$('#js-textarea-pagamentos').text("")
 			atualizaValor()
-			$('.js-listar-parcelas .fpag').html("")
-			$('.filter-title').find('strike').html("")
+			updateValorText();
 		}
 		// verifica no inicio do codigo se ja existe parcelas salvas
 		const verificaSeExisteParcelasSalvas = ()=>{
-			if(contrato.tipo_financeiro =='politica'){
-			
-				$('.js-tipo-manual').hide()
-				$('.js-tipo-politica').show()
+			if(contrato.tipo_financeiro =='politica'){	
+				alternaManualPolitica('politica')
 				let qtdParcelas = contrato.pagamentos.length
 				let valor = (valorTotalProcedimentos/qtdParcelas)
 				if(pagamentos.length>0){
@@ -1407,14 +1428,32 @@
 					EscolheParcelas(contrato.pagamentos[0].metodo,qtdParcelas,valor,true)
 				}
 			}else if(contrato.tipo_financeiro =='manual'){
-				$('.js-tipo-manual').show()
-				$('.js-tipo-politica').hide()
+				alternaManualPolitica('manual')
 				pagamentosListar();
 			}else{
 				$('.js-tipo-manual').hide()
 				$('.js-tipo-politica').show()
 			}
-			$('.filter-title').find('strike').html("")
+			updateValorText();
+		}
+
+		const alternaManualPolitica = (tipo)=>{
+			if(tipo=='manual'){
+				//pagamentos=[]
+				AtualizaPolitica()
+				$('.js-tipo').hide(); 
+				$('.js-tipo-manual').show();
+				$('.js-tipo-politica').hide();
+				$('.js-tipo-politica table').html("")
+				updateValorText();
+			}else if(tipo=='politica'){
+				//pagamentos=[]
+				AtualizaPolitica()
+				$('.js-tipo').hide(); 
+				$('.js-tipo-politica').show();
+				$('.js-tipo-manual').hide();
+				updateValorText();
+			}
 		}
 
 		$(function(){
@@ -1437,14 +1476,18 @@
 						}
 					})
 				}
+	
 				if(erro.length>0) {
 					swal({title:"Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 				} else {
+					$('.js-pagamentos-quantidade').val(pagamentos.length)
+					pagamentosPersistirObjeto()
 					$('.js-form-plano').submit();
 				}
 			});
 
 			$('.js-btn-status').click(function(){
+				let erro = ""
 				let status = $(this).attr('data-status');
 				if(status=="PENDENTE") {
 					$('input[name=status]').val('PENDENTE');
@@ -1453,13 +1496,19 @@
 
 				} else if(status=="CANCELADO") {
 					$('input[name=status]').val('CANCELADO');
-
 				} else  {
-
 					$('input[name=status]').val('');
 				}
-
-				$('form.js-form-plano').submit();
+				if(pagamentos.length<=0){
+					erro = "Voce Precisa Selecionar as parcelas!"
+				}
+				if(erro.length>0) {
+					swal({title:"Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+				} else {
+					$('.js-pagamentos-quantidade').val(pagamentos.length)
+					pagamentosPersistirObjeto()
+					$('form.js-form-plano').submit();
+				}
 			});
 
 			$('.js-btn-adicionarProcedimento').click(function(){
@@ -1595,9 +1644,9 @@
 									if(is_object($cnt)) {
 									?>
 									<div class="button-group">
-										<a href="javascript:;" data-status="PENDENTE" class="button js-btn-status<?php echo $cnt->status=="PENDENTE"?" active":"";?>"><i class="iconify" data-icon="fluent:timer-24-regular"></i><span>Aguard. Aprovação</span></a>
-										<a href="javascript:;" data-status="APROVADO" class="button js-btn-status<?php echo $cnt->status=="APROVADO"?" active":"";?>"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i><span>Aprovado</span></a>
-										<a href="javascript:;" data-status="CANCELADO" class="button js-btn-status<?php echo $cnt->status=="CANCELADO"?" active":"";?>"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Reprovado</span></a>
+										<a href="javascript:;" data-status="PENDENTE" class="button js-btn-status<?= $cnt->status=="PENDENTE"?" active":"";?>"><i class="iconify" data-icon="fluent:timer-24-regular"></i><span>Aguard. Aprovação</span></a>
+										<a href="javascript:;" data-status="APROVADO" class="button js-btn-status<?= $cnt->status=="APROVADO"?" active":"";?>"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i><span>Aprovado</span></a>
+										<a href="javascript:;" data-status="CANCELADO" class="button js-btn-status<?= $cnt->status=="CANCELADO"?" active":"";?>"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Reprovado</span></a>
 									</div>
 									<?php
 									} else {
@@ -1667,7 +1716,7 @@
 						<!-- Financeiro -->
 						<fieldset>
 							<legend>Financeiro</legend>
-							<textarea name="pagamentos" id="js-textarea-pagamentos" style="display:none;"><?php echo $values['pagamentos'];?></textarea>
+							<textarea name="pagamentos" id="js-textarea-pagamentos" style="display:none;"><?=$values['pagamentos'];?></textarea>
 							<section class="filter">
 								<div class="filter-group">	
 									<div class="filter-title">									
@@ -1690,12 +1739,12 @@
 							<?php if($tratamentoAprovado===false):?>
 							<dl style="margin-bottom:2rem">
 								<dd>
-									<label><input type="radio" name="tipo_financeiro" value="politica" onclick="$('.js-tipo').hide(); $('.js-tipo-politica').show();" <?= (is_object($cnt) and $cnt->tipo_financeiro=="politica")?" checked":"";?>/> Política de pagamento</label>
-									<label><input type="radio" name="tipo_financeiro" value="manual" onclick="$('.js-tipo').hide(); $('.js-tipo-manual').show();atualizaValor(true);" <?= (is_object($cnt) and $cnt->tipo_financeiro=="manual")?" checked":"";?> /> Financeiro manual</label>
+									<label><input type="radio" name="tipo_financeiro" value="politica" onclick="alternaManualPolitica('politica')" <?= (is_object($cnt) and $cnt->tipo_financeiro=="politica")?" checked":"";?>/> Política de pagamento</label>
+									<label><input type="radio" name="tipo_financeiro" value="manual" onclick="alternaManualPolitica('manual')" <?= (is_object($cnt) and $cnt->tipo_financeiro=="manual")?" checked":"";?> /> Financeiro manual</label>
 								</dd>
 							</dl>
 							<?php endif;?>
-							<section class="js-tipo js-tipo-manual">
+							<section class="js-tipo js-tipo-manual" style="display:none;">
 								<dl>
 									<dt>Parcelas</dt>
 									<dd>

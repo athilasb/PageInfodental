@@ -372,6 +372,7 @@
 		$_formasDePagamento[$x->id]=$x;
 		$optionFormasDePagamento.='<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
 	}
+
  
 	$_planos=array();
 	$sql->consult($_p."parametros_planos","*","where lixo=0");
@@ -405,7 +406,6 @@
 	$pagamentosUnidos=array(-1);
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		if($x->id_fusao==0) {
-			//echo $x->valor."<BR>";
 			$registros[]=$x;
 		}
 		$tratamentosIDs[]=$x->id_tratamento;
@@ -414,14 +414,7 @@
 		if($x->fusao==1) $pagamentosUnidos[]=$x->id;
 
 		if($x->fusao==0) $valor['valorTotal']+=$x->valor;
-		$atraso=(strtotime($x->data_vencimento)-strtotime(date('Y-m-d')))/(60*60*24);
-
-
-		if($atraso<0 and $x->pago==0) {
-
-			//echo $x->data_vencimento." ".date('Y-m-d')." -> $x->valor<br />";
-			$valor['valoresVencido']+=$x->valor;
-		}
+		
 	}
 
 
@@ -440,22 +433,17 @@
 			$pagamentosComBaixas[$x->id_pagamento]=$x->id_pagamento;
 		}
 	}
-
 	$sql->consult($_p."pacientes_tratamentos","*","where id IN (".implode(",",$tratamentosIDs).")");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_tratamentos[$x->id]=$x;
 
 	foreach($registros as $x) {
-
 		if(isset($_baixas[$x->id])) {
-
 			$valorAReceber=$x->valor;
-			//echo $valorAReceber."->";
 			$dataUltimoPagamento=date('d/m/Y',strtotime($_baixas[$x->id][count($_baixas[$x->id])-1]->data));
-
 	   		foreach($_baixas[$x->id] as $v) {
 	   			if($v->pago==1) {
-	   				//echo " - $v->valor";
 	   				$valorAReceber-=$v->valor;
+					//$valor['valoresVencido']-=$x->valor;
 					$valor['valorRecebido']+=$v->valor;
 				}
 				//$saldoAPagar-=$v->valor;
@@ -463,9 +451,16 @@
 				//$descontos+=$v->desconto;
 				//$multas+=$v->multas;
 			}
-			//echo " = $valorAReceber<BR> ";
 			$valor['aReceber']+=$valorAReceber;
+			$atraso=(strtotime($x->data_vencimento)-strtotime(date('Y-m-d')))/(60*60*24);
+			if($atraso<0 and $x->pago==0) {
+				$valor['valoresVencido']+=($x->valor-$valor['valorRecebido']);
+			}
 		} else {
+			$atraso=(strtotime($x->data_vencimento)-strtotime(date('Y-m-d')))/(60*60*24);
+			if($atraso<0 and $x->pago==0) {
+				$valor['valoresVencido']+=$x->valor;
+			}
 			$valor['aReceber']+=$x->valor;
 		}
 	}
@@ -674,7 +669,7 @@
 
 	<script type="text/javascript">
 		var pagamentos = [];
-		var dataHoje = '<?php echo date('d/m/Y');?>';
+		var dataHoje = '<?= date('d/m/Y');?>';
 
 		$(function(){
 
@@ -700,7 +695,7 @@
 						data:data,
 						success:function(rtn) {
 							if(rtn.success) {
-								document.location.href='<?php echo "$_page?$url";?>';
+								document.location.href='<?= "$_page?$url";?>';
 							} else if(rtn.error) {
 								swal({title: "Erro!", text: rtn.error,  html:true,type:"error", confirmButtonColor: "#424242"});
 							} else {
@@ -894,7 +889,7 @@
 
 							$.ajax({
 								type:"POST",
-								//url:'box/<?php echo basename($_SERVER['PHP_SELF']);?>',
+								//url:'box/<?= basename($_SERVER['PHP_SELF']);?>',
 								data:data,
 								success:function(rtn) {
 									if(rtn.success) {
@@ -1105,7 +1100,7 @@
 					closeOnCancel: false }, 
 					function(isConfirm){   
 						if (isConfirm) {   
-							document.location.href='?<?php echo "id_paciente=$paciente->id&id_pagamento=";?>'+idPagamento;
+							document.location.href='?<?= "id_paciente=$paciente->id&id_pagamento=";?>'+idPagamento;
 						} else {   
 							swal.close();   
 						} 
@@ -1137,18 +1132,13 @@
 				$(function(){
 					$('.js-item').click(function(){
 						let id = $(this).attr('data-id');
-						document.location.href=`pg_pacientes_planosdetratamento_form.php?edita=${id}<?php echo empty($url)?"":"&".$url;?>`;
+						document.location.href=`pg_pacientes_planosdetratamento_form.php?edita=${id}<?= empty($url)?"":"&".$url;?>`;
 					})
 				})
 			</script>
 			<section class="grid">
-
 				<div class="box box-col">
-
-					<?php 
-					require_once("includes/submenus/subPacientesFichaDoPaciente.php");
-					?>
-
+					<?php require_once("includes/submenus/subPacientesFichaDoPaciente.php");?>
 					<div class="box-col__inner1">
 				
 						<section class="filter">
@@ -1178,7 +1168,7 @@
 										<dl>								
 											<dd>
 												<a href="javascript:;" class="button button_main js-btn-unirPagamentos "><i class="iconify" data-icon="fluent:link-square-24-filled"></i><span>Salvar</span></a>
-												<a href="<?php echo $_page."?".$url;?>" class="button tooltip" title="Cancelar" style="background: var(--vermelho);color:#FFF;"><i class="iconify" data-icon="topcoat:cancel"></i><span>Cancelar</span></a>
+												<a href="<?= $_page."?".$url;?>" class="button tooltip" title="Cancelar" style="background: var(--vermelho);color:#FFF;"><i class="iconify" data-icon="topcoat:cancel"></i><span>Cancelar</span></a>
 											</dd>
 										</dl>
 									</div>				
@@ -1189,7 +1179,7 @@
 								<div class="filter-group">
 									<div class="filter-form form">
 										<dl>
-											<dd><a href="<?php echo $_page."?unirPagamentos=1&$url";?>" class="button"><i class="iconify" data-icon="fluent:link-square-24-filled"></i><span>Unir Pagamentos</span></a>
+											<dd><a href="<?= $_page."?unirPagamentos=1&$url";?>" class="button"><i class="iconify" data-icon="fluent:link-square-24-filled"></i><span>Unir Pagamentos</span></a>
 										</dl>
 									</div>						
 								</div>	
@@ -1199,16 +1189,16 @@
 								
 								<div class="filter-group">
 									<div class="filter-title">
-										<p>A receber<br /><strong>R$ <?php echo number_format($valor['aReceber'],2,",",".");?></strong></p>
+										<p>A receber<br /><strong>R$ <?= number_format($valor['aReceber'],2,",",".");?></strong></p>
 									</div>
 									<div class="filter-title">
-										<p style="color:var(--verde)">Recebido<br /><strong>R$ <?php echo number_format($valor['valorRecebido'],2,",",".");?></strong></p>
+										<p style="color:var(--verde)">Recebido<br /><strong>R$ <?= number_format($valor['valorRecebido'],2,",",".");?></strong></p>
 									</div>
 									<div class="filter-title">
-										<p style="color:var(--vermelho)">Vencido<br /><strong>R$ <?php echo number_format($valor['valoresVencido'],2,",",".");?></strong></p>
+										<p style="color:var(--vermelho)">Vencido<br /><strong>R$ <?= number_format($valor['valoresVencido'],2,",",".");?></strong></p>
 									</div>
 									<div class="filter-title">
-										<p style="color:var(--cinza5)">Total<br /><strong>R$ <?php echo number_format($valor['valorTotal'],2,",",".");?></strong></p>
+										<p style="color:var(--cinza5)">Total<br /><strong>R$ <?= number_format($valor['valorTotal'],2,",",".");?></strong></p>
 									</div>
 								</div>
 							</section>
@@ -1217,7 +1207,7 @@
 								<div class="list1">
 									<table class="js-table-pagamentos">
 									<?php
-
+									
 										$parcelasTratamentos=array();
 										foreach($registros as $x) {
 											if(!isset($parcelasTratamentos[$x->id_tratamento])) {
@@ -1229,10 +1219,10 @@
 
 
 										$pagamentosJSON=array();
-
 										$numeroParcela=array();
+										
 										foreach($registros as $x) {
-
+										
 											$opacity=1;
 											if(isset($_GET['unirPagamentos'])) {
 												if(isset($pagamentosComBaixas[$x->id])) { 
@@ -1247,21 +1237,19 @@
 											$valorDesconto=$valorDespesa=0;
 											if(isset($_baixas[$x->id])) {
 												$dataUltimoPagamento=date('d/m/Y',strtotime($_baixas[$x->id][count($_baixas[$x->id])-1]->data));
-
 												foreach($_baixas[$x->id] as $v) {
-												
 													$v->valor=number_format($v->valor,3,".","");
 													$saldoAPagar-=$v->valor;
 													$valorPago+=$v->valor;
 												}
 											}
-
+											
 											$saldoAPagar=round(number_format($saldoAPagar,3,".",""));
 											$atraso=(strtotime($x->data_vencimento)-strtotime(date('Y-m-d')))/(60*60*24);
 
 										
 											$status='';
-
+											$icone = '';
 											$baixas=$subpagamentos=array();
 											// verifica se possui baixas 
 											if(isset($_baixas[$x->id])) {
@@ -1292,13 +1280,6 @@
 															$formaobs="DESPESA";
 														}
 													}
-													//echo $b->data_vencimento."->".($baixaVencida?1:0)."<BR>";
-													/*$baixas[]=array('data'=>date('d/m',strtotime($b->data_vencimento)),
-																	'vencimento'=>$b->data_vencimento,
-																	'vencido'=>$baixaVencida,
-																	'pago'=>$b->pago,
-																	'formaobs'=>$formaobs,
-																	'valor'=>(float)$b->valor);*/
 													$baixas[]=array("id_baixa"=>(int)$b->id,
 																		"vencimento"=>$b->data_vencimento,
 																		"data"=>date('d/m/Y',strtotime($b->data_vencimento)),
@@ -1317,20 +1298,32 @@
 												
 
 												}
+									
 
 												if($baixaVencida===true) {
-													$status="<font color=red>INADIMPLENTE</font>";
+													$status="INADIMPLENTE";
+													$icone = 'fluent:warning-24-regular';
 													$cor="red";
-												} else if($baixaEmAberta==false) {
-													$status="<font color=green>ADIMPLENTE</font>";
+												} else if($baixaEmAberta==false && $saldoAPagar<=0) {
+													$status="ADIMPLENTE";
+													$icone = 'fluent:checkbox-checked-24-filled';
 													$cor="green";
 												} else {
 													if($saldoAPagar==0) {
-														$cor="orange";
-														$status="<font color=orange>PROMESSA DE PAGAMENTO</font>";
-													} else {
-														$status="<font color=blue>EM ABERTO</font>";
+														$status="EM ABERTO";
+														$icone = 'fluent:calendar-ltr-24-regular';
 														$cor="blue";
+													} else {
+														$cor="orange";
+														$status="PROMESSA DE PAGAMENTO";
+														$icone = 'fluent:checkbox-warning-24-regular';
+													}
+												}
+												if($saldoAPagar>0){
+													if(strtotime($x->data_vencimento)<strtotime(date('Y-m-d'))) {
+														$cor="red";
+														$status="INADIMPLENTE";
+														$icone = 'fluent:warning-24-regular';
 													}
 												}
 												
@@ -1339,18 +1332,18 @@
 											else {  
 												if(strtotime($x->data_vencimento)<strtotime(date('Y-m-d'))) {
 													$cor="red";
-													$status="<font color=red>INADIMPLENTE</font>";
+													$status="INADIMPLENTE";
+													$icone = 'fluent:warning-24-regular';
 												}
 												else {
-													$cor="blue";
-													$status="<font color=blue>EM ABERTO</font>";
+													$cor="orange";
+													$status="PROMESSA DE PAGAMENTO";
+													$icone = 'fluent:checkbox-warning-24-regular';
 												}
 											}
-
 											$subpagamentos=array();
 											if($x->fusao>0) {
 												$titulo="União de Pagamentos (".(isset($_subpagamentos[$x->id])?count($_subpagamentos[$x->id]):0).")";
-
 												if(isset($_subpagamentos[$x->id])) {
 													foreach($_subpagamentos[$x->id] as $y) {
 														$subpagamentos[]=array('id_pagamento'=>$y->id,
@@ -1377,7 +1370,6 @@
 											}
 											// possui baixa
 											else { 
-												//echo $saldoAPagar;
 												// se saldo = 0
 												if($saldoAPagar==0) {
 													$baixaVencida=false;
@@ -1440,47 +1432,43 @@
 
 
 										?>
-										<tr class="js-pagamento-item js-pagamento-item-<?php echo $x->id;?>" data-id="<?php echo $x->id;?>">
-											<?php
-											if(isset($_GET['unirPagamentos'])) {
-											?>
-											<td style="width:30px;">
-												<?php
-												if($x->fusao==0 and !isset($pagamentosComBaixas[$x->id])) {
-												?>
-												<input type="checkbox" name="pagamentos[]" class="js-checkbox-pagamentos" data-id_tratamento="<?php echo $x->id_tratamento;?>" value="<?php echo $x->id;?>" />
-												<span class="iconify js-checkbox-pagamentos-disabled" data-icon="fxemoji:cancellationx" style="opacity:0.2;display:none;" data-id_tratamento="<?php echo $x->id_tratamento;?>"></span>
-												<?php
-												} else {
-													echo '<span class="iconify" data-icon="fxemoji:cancellationx" style="opacity:0.2"></span>';
-												}
-												?>
+										<tr class="js-pagamento-item js-pagamento-item-<?= $x->id;?>" data-id="<?= $x->id;?>">
+											<?php if(isset($_GET['unirPagamentos'])) {?>
+												<td style="width:30px;">
+													<?php
+													if($x->fusao==0 and !isset($pagamentosComBaixas[$x->id])) {
+													?>
+													<input type="checkbox" name="pagamentos[]" class="js-checkbox-pagamentos" data-id_tratamento="<?= $x->id_tratamento;?>" value="<?= $x->id;?>" />
+													<span class="iconify js-checkbox-pagamentos-disabled" data-icon="fxemoji:cancellationx" style="opacity:0.2;display:none;" data-id_tratamento="<?= $x->id_tratamento;?>"></span>
+													<?php
+													} else {
+														echo '<span class="iconify" data-icon="fxemoji:cancellationx" style="opacity:0.2"></span>';
+													}
+													?>
 
-											</td>
-											<?php
-											}
-											?>
+												</td>
+											<?php }	?>
 											<td>
 												<h1>
 													<?php  
 													if($x->fusao>0) {
 													?>
-													<strong><i class="iconify" data-icon="codicon:group-by-ref-type" data-height="18" data-inline="true"></i> União de Pagamentos (<?php echo isset($_subpagamentos[$x->id])?count($_subpagamentos[$x->id]):0;?>)</strong>
+													<strong><i class="iconify" data-icon="codicon:group-by-ref-type" data-height="18" data-inline="true"></i> União de Pagamentos (<?= isset($_subpagamentos[$x->id])?count($_subpagamentos[$x->id]):0;?>)</strong>
 													<?php
 													} else {
 														echo isset($_tratamentos[$x->id_tratamento])?utf8_encode($_tratamentos[$x->id_tratamento]->titulo):'Avulso';
 													}
 													?>
 												</h1>
-												<p><?php echo date('d/m/Y',strtotime($x->data_vencimento));?></p>
+												<p><?= date('d/m/Y',strtotime($x->data_vencimento));?></p>
 											</td>
-											<td><div class="list1__icon" style="color:gray;"><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i> Em aberto</div></td>
-											<td><h1>R$ <?php echo number_format($x->valor,2,",",".");?></h1></td>
+											<td><div class="list1__icon" style="color:gray;"><i class="iconify" data-icon="<?=$icone?>"></i> <font color=<?=$cor?>><?=$status?></font> </div></td>
+											<td><h1>R$ <?= number_format($x->valor,2,",",".");?></h1><span><?=($status== 'INADIMPLENTE' && $saldoAPagar>0)?"Faltam: R$ ".number_format($saldoAPagar,2,",","."):""?></span></td>
 											<?php 
 											if(isset($parcelasTratamentos[$x->id_tratamento])) {
 												if(!isset($numeroParcela[$x->id_tratamento])) $numeroParcela[$x->id_tratamento]=1;
 											?>
-											<td>Parcela  <?php echo $numeroParcela[$x->id_tratamento]++;?> de <?php echo ($parcelasTratamentos[$x->id_tratamento]);?></td>
+											<td>Parcela  <?= $numeroParcela[$x->id_tratamento]++;?> de <?= ($parcelasTratamentos[$x->id_tratamento]);?></td>
 											<?php
 											}
 											?>
@@ -1499,7 +1487,7 @@
 		</div>
 	</main>
 	<script type="text/javascript">
-		pagamentos = JSON.parse(`<?php echo json_encode($pagamentosJSON);?>`);
+		pagamentos = JSON.parse(`<?= json_encode($pagamentosJSON);?>`);
 	</script>
 
 <?php 

@@ -359,7 +359,7 @@
 				</fieldset>
 
 				<fieldset class="js-fieldset-pagamentos">
-					<legend>Baixa</legend>
+					<legend>Definição de Pagamento</legend>
 					<div class="colunas5">
 
 						<dl>
@@ -390,14 +390,14 @@
 							<dd>
 								<select class="js-id_formadepagamento js-tipoPagamento">
 									<option value="">-</option>
-									<?php echo $optionFormasDePagamento;?>
+									<?= $optionFormasDePagamento;?>
 								</select>
 							</dd>
 						</dl>
 						
 						<dl>
 							<dt class="js-txt-vencimento">Vencimento</dt>
-							<dd><input type="text" class="js-vencimento js-tipoPagamento data" value="<?php echo date('d/m/Y');?>" /></dd>
+							<dd><input type="text" class="js-vencimento js-tipoPagamento data" value="<?= date('d/m/Y');?>" /></dd>
 						</dl>
 
 						<dl>
@@ -413,7 +413,6 @@
 						</dl>
 					</div>
 					<div class="colunas5">
-
 						<dl class="dl3">
 							<dt>Bandeira</dt>
 							<dd>
@@ -636,3 +635,10 @@
 		</form>
 	</div>
 </section><!-- .aside -->
+
+<script>
+	$(function(){
+		// adiciona o calendario quando selecionar a data de vencimento
+		$('.js-vencimento').datetimepicker({timepicker:false,format:'d/m/Y',scrollMonth:false,scrollInput:false});
+	})
+</script>

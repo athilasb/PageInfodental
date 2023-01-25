@@ -63,10 +63,8 @@
 
 	$_pagamentos=array();
 	foreach($pagRegs as $x) {
-
 		// se possui baixa
 		if(isset($_baixas[$x->id])) {
-
 			$valorTotal=$x->valor;
 			$valorBaixas=0;
 			foreach($_baixas[$x->id] as $b) {
@@ -75,21 +73,16 @@
 														'valor'=>$b->valor);
 				$valorBaixas+=$b->valor;
 			}
-
 			// restante que falta dar baixa
 			if($valorTotal>$valorBaixas) {
 				$_pagamentos[$x->id_tratamento][]=array('pago'=>0,
 														'tipos'=>'restante',
 														'valor'=>$valorTotal-$valorBaixas);
-
 			}
-
 		} else {
-
 			$_pagamentos[$x->id_tratamento][]=array('pago'=>$x->pago,
 													'tipo'=>'parcela '.$x->id,
 													'valor'=>$x->valor);
-			
 		}
 	}
 
@@ -148,7 +141,7 @@
 								<table>
 									<?php
 									foreach($registros as $x) {
-
+										
 										$procedimentos=array();
 										if(isset($_procedimentos[$x->id])) $procedimentos=$_procedimentos[$x->id];
 
@@ -189,7 +182,8 @@
 												$total=isset($_todosProcedimentos[$x->id])?count($_todosProcedimentos[$x->id]):0;
 												$finalizados=isset($_procedimentosFinalizados[$x->id])?count($_procedimentosFinalizados[$x->id]):0;
 												$perc=($total)==0?0:number_format(($finalizados/($total))*100,0,"","");
-
+												
+												
 
 
 												$pagPago=$pagTotal=0;
@@ -199,6 +193,7 @@
 
 													$pagTotal+=$p->valor;
 												}
+											
 												$percPag=($pagTotal)==0?0:number_format(($pagPago/($pagTotal))*100,0,"","");
 
 											?>
@@ -238,144 +233,143 @@
 									</tr>
 									<?php
 									}
-
 									/*
-									?>
-									<tr>								
-										<td>
-											<h1>Plano Teste</h1>
-											<p>18/11/2021 07:56</p>
-										</td>
-										<td><div class="list1__icon" style="color:gray;"><i class="iconify" data-icon="fluent:timer-24-regular"></i> Aguardando Aprovação</div></td>
-										<td style="width:20%;">
-											<div class="chart-bar">
-												<header>
-													<p>Evolução (0 de 4)</p>
-												</header>
-												<article>
-													<span style="width:0%"></span>
-												</article>
-											</div>
-										</td>
-										<td style="width:20%;">
-											<div class="chart-bar">
-												<header>
-													<p>Pagamento (recebido 0%)</p>
-												</header>
-												<article>
-													<span style="width:0%"></span>
-												</article>
-											</div>
-										</td>
-									</tr>
-									<tr>								
-										<td>
-											<h1>Plano Teste</h1>
-											<p>18/11/2021 07:56</p>
-										</td>
-										<td><div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div></td>
-										<td style="width:20%;">
-											<div class="chart-bar">
-												<header>
-													<p>Evolução (3 de 4)</p>
-												</header>
-												<article>
-													<span style="width:75%"></span>
-												</article>
-											</div>
-										</td>
-										<td style="width:20%;">
-											<div class="chart-bar">
-												<header>
-													<p>Pagamento (recebido 33%)</p>
-												</header>
-												<article>
-													<span style="width:33%"></span>
-												</article>
-											</div>
-										</td>
-									</tr>
-									<tr>								
-										<td>
-											<h1>Plano Teste</h1>
-											<p>18/11/2021 07:56</p>
-										</td>
-										<td><div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div></td>
-										<td style="width:20%;">
-											<div class="chart-bar">
-												<header>
-													<p>Evolução (1 de 4)</p>
-												</header>
-												<article>
-													<span style="width:25%"></span>
-												</article>
-											</div>
-										</td>
-										<td style="width:20%;">
-											<div class="chart-bar">
-												<header>
-													<p>Pagamento (recebido 0%)</p>
-												</header>
-												<article>
-													<span style="width:0%"></span>
-												</article>
-											</div>
-										</td>
-									</tr>
-									<tr>								
-										<td>
-											<h1>Plano Teste</h1>
-											<p>18/11/2021 07:56</p>
-										</td>
-										<td><div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div></td>
-										<td style="width:20%;">
-											<div class="chart-bar">
-												<header>
-													<p>Evolução (5 de 10)</p>
-												</header>
-												<article>
-													<span style="width:50%"></span>
-												</article>
-											</div>
-										</td>
-										<td style="width:20%;">
-											<div class="chart-bar">
-												<header>
-													<p>Pagamento (recebido 100%)</p>
-												</header>
-												<article>
-													<span style="width:100%"></span>
-												</article>
-											</div>
-										</td>
-									</tr>
-									<tr>								
-										<td>
-											<h1>Plano Teste</h1>
-											<p>18/11/2021 07:56</p>
-										</td>
-										<td><div class="list1__icon" style="color:var(--vermelho)"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i> Reprovado</div></td>
-										<td style="width:20%;">
-											<div class="chart-bar">
-												<header>
-													<p>Evolução (1 de 10)</p>
-												</header>
-												<article>
-													<span style="width:25%"></span>
-												</article>
-											</div>
-										</td>
-										<td style="width:20%;">
-											<div class="chart-bar">
-												<header>
-													<p>Pagamento (recebido 33%)</p>
-												</header>
-												<article>
-													<span style="width:33%"></span>
-												</article>
-											</div>
-										</td>
-									</tr>
+										?>
+										<tr>								
+											<td>
+												<h1>Plano Teste</h1>
+												<p>18/11/2021 07:56</p>
+											</td>
+											<td><div class="list1__icon" style="color:gray;"><i class="iconify" data-icon="fluent:timer-24-regular"></i> Aguardando Aprovação</div></td>
+											<td style="width:20%;">
+												<div class="chart-bar">
+													<header>
+														<p>Evolução (0 de 4)</p>
+													</header>
+													<article>
+														<span style="width:0%"></span>
+													</article>
+												</div>
+											</td>
+											<td style="width:20%;">
+												<div class="chart-bar">
+													<header>
+														<p>Pagamento (recebido 0%)</p>
+													</header>
+													<article>
+														<span style="width:0%"></span>
+													</article>
+												</div>
+											</td>
+										</tr>
+										<tr>								
+											<td>
+												<h1>Plano Teste</h1>
+												<p>18/11/2021 07:56</p>
+											</td>
+											<td><div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div></td>
+											<td style="width:20%;">
+												<div class="chart-bar">
+													<header>
+														<p>Evolução (3 de 4)</p>
+													</header>
+													<article>
+														<span style="width:75%"></span>
+													</article>
+												</div>
+											</td>
+											<td style="width:20%;">
+												<div class="chart-bar">
+													<header>
+														<p>Pagamento (recebido 33%)</p>
+													</header>
+													<article>
+														<span style="width:33%"></span>
+													</article>
+												</div>
+											</td>
+										</tr>
+										<tr>								
+											<td>
+												<h1>Plano Teste</h1>
+												<p>18/11/2021 07:56</p>
+											</td>
+											<td><div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div></td>
+											<td style="width:20%;">
+												<div class="chart-bar">
+													<header>
+														<p>Evolução (1 de 4)</p>
+													</header>
+													<article>
+														<span style="width:25%"></span>
+													</article>
+												</div>
+											</td>
+											<td style="width:20%;">
+												<div class="chart-bar">
+													<header>
+														<p>Pagamento (recebido 0%)</p>
+													</header>
+													<article>
+														<span style="width:0%"></span>
+													</article>
+												</div>
+											</td>
+										</tr>
+										<tr>								
+											<td>
+												<h1>Plano Teste</h1>
+												<p>18/11/2021 07:56</p>
+											</td>
+											<td><div class="list1__icon" style="color:var(--verde)"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i> Aprovado</div></td>
+											<td style="width:20%;">
+												<div class="chart-bar">
+													<header>
+														<p>Evolução (5 de 10)</p>
+													</header>
+													<article>
+														<span style="width:50%"></span>
+													</article>
+												</div>
+											</td>
+											<td style="width:20%;">
+												<div class="chart-bar">
+													<header>
+														<p>Pagamento (recebido 100%)</p>
+													</header>
+													<article>
+														<span style="width:100%"></span>
+													</article>
+												</div>
+											</td>
+										</tr>
+										<tr>								
+											<td>
+												<h1>Plano Teste</h1>
+												<p>18/11/2021 07:56</p>
+											</td>
+											<td><div class="list1__icon" style="color:var(--vermelho)"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i> Reprovado</div></td>
+											<td style="width:20%;">
+												<div class="chart-bar">
+													<header>
+														<p>Evolução (1 de 10)</p>
+													</header>
+													<article>
+														<span style="width:25%"></span>
+													</article>
+												</div>
+											</td>
+											<td style="width:20%;">
+												<div class="chart-bar">
+													<header>
+														<p>Pagamento (recebido 33%)</p>
+													</header>
+													<article>
+														<span style="width:33%"></span>
+													</article>
+												</div>
+											</td>
+										</tr>
 									*/
 									?>
 								</table>

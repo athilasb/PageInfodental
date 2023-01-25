@@ -56,10 +56,22 @@
 	var id_usuario = '<?php echo $usr->id;?>';
 	var autor = '<?php echo utf8_encode($usr->nome);?>';
 
+	const updateValorText = (extra=0)=>{
+		valorOriginalProcedimentos = valorOriginalProcedimentos+extra
+		$('.js-valorTotal').text(number_format((valorOriginalProcedimentos-valorDescontos),2,",","."));
+		$('.js-valorTotalOriginal').text("");
+		valorTotalProcedimentos = valorOriginalProcedimentos;
+		if(valorDescontos>0){
+			$('.js-valorTotalOriginal').text(number_format(valorOriginalProcedimentos,2,",","."));
+			valorTotalProcedimentos = (valorOriginalProcedimentos-valorDescontos)
+		}
+
+	}
 	const atualizaValor = (atualizarParcelas) => {
 		valorTotal=0;
-		valorOriginalProcedimentos = 0;
 		let cont = 1;
+		valorDescontos = 0
+		valorTotalProcedimentos = 0
 		procedimentos.forEach(x=> {
 			if(x.situacao!='naoAprovado') {
 				valorProcedimento=x.valor;
@@ -69,46 +81,46 @@
 				if(x.face==1) valorProcedimento*=x.faces.length;
 				if(x.id_regiao==5) valorProcedimento*=hof;
 
-				valorOriginalProcedimentos +=valorProcedimento
 				if(x.desconto>0) {
-					valorProcedimento=eval(valorProcedimento-x.desconto);
+					//valorProcedimento=eval(valorProcedimento-x.desconto);
+					valorDescontos += x.desconto
 				}
 				else {
 					valorProcedimento=eval(valorProcedimento);
 				}
 				valorTotal+=valorProcedimento;
 			}
-			if(cont==procedimentos.length) {
-				for(let x in _politicas){
-					let politica = _politicas[x]
-					if(valorTotal>= parseFloat(politica.de) && valorTotal<= parseFloat(politica.ate)){
-						temPolitica = true;
-						temPolitica = politica
-						if(temPolitica.parcelasParametros){
-							temPolitica.parcelasParametros = (typeof(temPolitica.parcelasParametros) !== "object")?JSON.parse(temPolitica.parcelasParametros):temPolitica.parcelasParametros
-							$('[name="tipo_financeiro').filter("[value='politica']").prop("disabled", false);
-
-							//$('[name="tipo_financeiro').filter("[value='politica']").prop("checked", true);
-						}
-					}else{
-					}
-				}
-				valorTotalProcedimentos = valorTotal
-			}
+			
 			cont++;
 		});
-		AtualizaPolitica();
-
-		$('.js-valorTotal').text(number_format(valorTotal,2,",","."));
-		if(valorTotal !=valorOriginalProcedimentos){
-			$('.js-valorTotalOriginal').text(number_format(valorOriginalProcedimentos,2,",","."));
+		valorOriginalProcedimentos = valorTotal
+		updateValorText();
+		if(procedimentos.length>0) {
+			for(let x in _politicas){
+				let politica = _politicas[x]
+				if((politica.tipo_politica=='intervalo' && valorTotalProcedimentos>= parseFloat(politica.de) && valorTotalProcedimentos<= parseFloat(politica.ate)) || (politica.tipo_politica=='acima' && valorTotalProcedimentos>= parseFloat(politica.de))){
+					temPolitica = politica
+					if(temPolitica.parcelasParametros){
+						temPolitica.parcelasParametros = (typeof(temPolitica.parcelasParametros) !== "object")?JSON.parse(temPolitica.parcelasParametros):temPolitica.parcelasParametros
+					}
+					break
+				}else{
+					$('.js-tipo-manual').show();
+					$('.js-tipo-politica').hide();
+					$('.js-tipo-politica table').html("")
+					$('[name="tipo_financeiro').filter("[value='politica']").prop("disabled", false);
+					temPolitica = false
+				}
+			}
 		}
+
+		//$('.js-valorTotal').text(number_format(valorTotal,2,",","."));
 		let parcelas = [];
 		if(atualizarParcelas===true) {
 			let numeroParcelas = $('.js-pagamentos-quantidade').val();
-			if(numeroParcelas && numeroParcelas<=0) numeroParcelas=1;
-			valorParcela=(valorTotal/numeroParcelas);
-			valorParcela=valorParcela.toFixed(2);
+			if(numeroParcelas && numeroParcelas<=0) numeroParcelas=0;
+			valorParcela=(valorTotalProcedimentos/numeroParcelas);
+			valorParcela=valorParcela;
 			let startDate = new Date();
 			if($('.js-vencimento:eq(0)').val()!=undefined) {
 				aux = $('.js-vencimento:eq(0)').val().split('/');
@@ -117,12 +129,9 @@
 				startDate.setMonth(eval(aux[1])-1);
 				startDate.setFullYear(aux[2]);
 			}
-			pagamentosTextarea = JSON.parse($('#js-textarea-pagamentos').val());
 			for(var i=1;i<=numeroParcelas;i++) {
 				let item = {};
-				if(pagamentosTextarea[i-1]) {
-					item = pagamentosTextarea[i-1];
-				}
+			
 
 				let mes = startDate.getMonth()+1;
 				mes = mes <= 9 ? `0${mes}`:mes;
@@ -145,6 +154,8 @@
 				}
 			}
 		}
+		updateValorText();
+		AtualizaPolitica();
 		pagamentosListar();
 	}
 
@@ -156,7 +167,7 @@
 			let metodosPagamentosAceito ='<?php echo $optionFormasDePagamento;?>';
 			let disabledValor = ''
 			let disabledForma = ''
-			if(contrato.tipo_financeiro=='politica'){
+			if(contrato.tipo_financeiro=='politica' && $('[name="tipo_financeiro"]:checked').val()=='politica'){
 				disabledValor = 'disabled'
 				disabledForma = 'disabled'
 			}
@@ -230,6 +241,9 @@
 															<dt>Identificador</dt>
 															<dd><input type="text" class="js-identificador js-tipoPagamento" /></dd>
 														</dl>
+														<dl style="display:none" disabled>
+															<dd><input type="hidden" class="js-metodo-selecionado js-tipoPagamento" /></dd>
+														</dl>
 
 													</div>
 												</article>
@@ -257,33 +271,46 @@
 					pagamentosAtualizaCampos($('.js-pagamento-item .js-id_formadepagamento:last'),false);
 				}
 			});
-			if(pagamentos.length==1) $('.js-pagamento-item .js-valor:last').prop('disabled',true);
-		}
-		$('#js-textarea-pagamentos').val(JSON.stringify(pagamentos))
+			if(pagamentos.length==1) {
+				$('.js-pagamento-item .js-valor:last').prop('disabled',true);
+			}
+		}else{
+				$('.js-listar-parcelas').hide();
+				if(temPolitica){
+					$('[name="tipo_financeiro"]:eq(0)').prop('checked', true);
+					$('.js-tipo-politica').show()
+					$('.js-tipo-manual').hide()
+				}else{
+					$('[name="tipo_financeiro"]:eq(1)').prop('checked', true);
+					$('.js-tipo-politica').hide()
+					$('.js-tipo-manual').show()
+				}
+			}
 	}
 
 	const procedimentosListar = () => {
-
 		$('#js-table-procedimentos').html('');
+		valorOriginalProcedimentos=0
+		valorDescontos=0
 		let cont = 1;
-
 		if(procedimentos.length>0) {
+
+			let valor = ""
 			procedimentos.forEach(x=>{
-				let valor = '';
 				procedimentoValor=x.valor;
+				valorOriginalProcedimentos +=procedimentoValor
+				valorDescontos+=x.desconto
 				if(x.quantitativo==1) procedimentoValor*=x.quantidade;
 				if(x.face==1) procedimentoValor*=x.faces.length;
 				if(x.id_regiao==5) procedimentoValor*=eval(x.hof>0?x.hof:1);
-
 				if(x.desconto>0) {
 					procedimentoValorComDesconto=procedimentoValor-x.desconto;
 					valor = `<strike>${number_format(procedimentoValor,2,",",".")}</strike><br />${number_format(procedimentoValorComDesconto,2,",",".")}`;
 				} else {
 					valor = number_format(procedimentoValor,2,",",".");
 				}
-
-
 				let opcao = '';
+
 				if(x.id_regiao==4) {
 					opcaoAux='';
 					if(x.face==1) {
@@ -301,6 +328,7 @@
 					opcao=`<i class="iconify" data-icon="mdi:tooth-outline"></i> ${x.opcao}<br />${opcaoAux}`;
 				}
 				else if(x.id_regiao==5) {
+
 					if(x.hof>0) {
 						opcao=`${x.hof} unidade(s)`;
 					} else if(x.quantidade>0) {
@@ -308,10 +336,12 @@
 					}
 				}
 				else {
-					if(x.quantitativo==1) opcao=`Qtd. ${x.quantidade}`;
-					else opcao=x.opcao;
+					if(x.quantitativo==1){
+						 opcao=`Qtd. ${x.quantidade}`;
+					}else{
+						opcao=x.opcao;
+					}
 				}
-
 				let reprovadoCss='';
 				if(x.situacao=="naoAprovado") reprovadoCss=` style="opacity:0.3"`;
 
@@ -330,7 +360,7 @@
 					atualizaValor(false);
 				}
 				cont++;
-
+			
 			});
 			$('input[name=pagamento]').prop('disabled',false);
 		} else {	
@@ -422,28 +452,22 @@
 		let totalProcedimentos = 0;
 		let totalDescontoAplicado = 0;
 		$('#js-descontos-table-procedimentos .js-desconto-procedimento').each(function(ind,el) {
-			
 			let index = $(el).attr('data-index');
 			if($(el).prop('checked')===true) {
-				//console.log(eval(procedimentos[index].quantitativo));
 				valorProcedimento = eval(procedimentos[index].valor);
-
 				// verifica se possui faces
 				if(procedimentos[index].face==1) {
 					valorProcedimento*=procedimentos[index].faces.length;
 				}
-
 				// verifica se id_regiao = 5 (hof)
 				if(procedimentos[index].id_regiao==5) {
 					valorProcedimento*=eval(procedimentos[index].hof);
 				}
-
 				if(eval(procedimentos[index].quantitativo)==1) {
 					totalProcedimentos+=(valorProcedimento*procedimentos[index].quantidade);
 				} else {
 					totalProcedimentos+=valorProcedimento;
 				}
-
 				totalDescontoAplicado+=eval(procedimentos[index].desconto);
 			}
 
@@ -538,9 +562,8 @@
 		let id_formadepagamento  = formaDePagamento.val();
 		let obj = formaDePagamento.parent().parent().parent().parent();
 		let tipo = $(obj).find('select.js-id_formadepagamento option:checked').attr('data-tipo');
-
+		$(obj).find('.js-metodo-selecionado').val(tipo);
 		$(obj).find('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
-
 
 		if(id_formadepagamento=="2") {
 			$(obj).find('.js-listar-parcelas,.js-creditoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
@@ -565,33 +588,29 @@
 			let vencimento = $(el).find('.js-vencimento').val();
 			let valor = eval(unMoney($(el).find('.js-valor').val()));
 			let id_formapagamento = $(el).find('.js-id_formadepagamento').val();
-			let identificador = $(el).find('.js-identificador').val();
+			let identificador = $(el).find('.js-identificador').val(); 
+			let metodo = $(el).find('.js-metodo-selecionado').val();
 
-			let item = { vencimento, 
-							valor,
-							id_formapagamento,
-							identificador };
+			let item = { vencimento, valor, id_formapagamento, identificador, metodo,	qtdParcelas:1 };
 
 			// se credito
 			if(id_formapagamento==2) {
-				let creditoBandeira = $(el).find('.js-creditoBandeira').val();;
+				let creditoBandeira = $(el).find('.js-creditoBandeira option:selected').val();
 				let id_operadora = $(el).find('.js-creditoBandeira option:selected').attr('data-id_operadora');
-				let qtdParcelas = $(el).find('.js-parcelas').val();;
+				let parcelas = $(el).find('.js-parcelas').val();;
 
 				item.creditoBandeira=creditoBandeira;
-				item.qtdParcelas=qtdParcelas;
+				item.qtdParcelas=parcelas;
 				item.id_operadora=id_operadora;
 			}
 			// se debito
 			else if(id_formapagamento==3) {
 				debitoBandeira = $(el).find('.js-debitoBandeira').val();
 				let id_operadora = $(el).find('.js-debitoBandeira option:selected').attr('data-id_operadora');
-
+				item.qtdParcelas=1;
 				item.debitoBandeira=debitoBandeira;
 				item.id_operadora=id_operadora;
 			}
-
-
 			parcelas.push(item);
 		});
 
@@ -607,7 +626,6 @@
 			let semJuros = eval($(selectCreditoBandeira).find('option:checked').attr('data-parcelas-semjuros'));
 			let parcelas = eval($(selectCreditoBandeira).find('option:checked').attr('data-parcelas'));
 			$(obj).find('.js-parcelas').html("")
-			console.log(parcelas)
 			if($.isNumeric(parcelas)) {
 				$(obj).find('.js-parcelas').append(`<option value="">-</option>`);
 				for(var i=1;i<=parcelas;i++) {
@@ -640,7 +658,6 @@
 		verificaSeExisteParcelasSalvas();
 
 		$('.js-pagamentos').on('change','.js-vencimento:eq(0)',function(){
-			console.log('ATUALIZADO DATA')
 			let pagamento = $('input[name=pagamento]:checked').val();
 
 			if(pagamento!="avista") {
@@ -667,10 +684,7 @@
 					mes = mes <= 9 ? `0${mes}`:mes;
 					let dia = startDate.getDate();
 					dia = dia <= 9 ? `0${dia}`:dia;
-
 					pagamentos[i-1].vencimento=`${dia}/${mes}/${startDate.getFullYear()}`;
-
-
 					newDate = startDate;
 					newDate.setMonth(newDate.getMonth()+1);
 
@@ -686,7 +700,8 @@
 
 		// remove descontos
 		$('.aside-plano-desconto .js-btn-removerDesconto').click(function(){
-
+			pagamentos = [];
+			$('.js-pagamentos-quantidade').val("0")
 			let cont = 0;
 			procedimentos.forEach(x=>{
 				procedimentos[cont].desconto=0;
@@ -700,17 +715,22 @@
 
 		// clica no botao de aplicar desconto na janela de desconto
 		$('.aside-plano-desconto .js-btn-aplicarDesconto').click(function(){
+			pagamentos = [];
+			$('.js-pagamentos-quantidade').val("0")
 			let tipoDesconto = $('.aside-plano-desconto .js-select-tipoDesconto').val();
 			let quantidadeDesconto = $('.aside-plano-desconto .js-desconto-procedimento:checked').length;
 			let desconto = unMoney($(`.aside-plano-desconto .js-input-desconto`).val());
 			let valorOriginal = unMoney($(`.js-total-procedimentos`).val())
-
+			let DescontosJaAplicados = procedimentos.reduce((acc, obj) => acc + obj.desconto, 0);
+		
 			if(quantidadeDesconto==0) {
 				swal({title: "Erro", text: 'Selecione pelo menos um procedimento para aplicar desconto!', html:true, type:"error", confirmButtonColor: "#424242"});
 			} 
 			else if(desconto==0 || desconto===undefined || desconto==='' || !desconto) {
 				swal({title: "Erro", text: 'Defina o desconto que deverá ser aplicado!', html:true, type:"error", confirmButtonColor: "#424242"});
-			} 
+			}else if((DescontosJaAplicados+desconto)>valorOriginal){
+				swal({title: "Erro", text: 'a Soma dos Descontos Não Podem Ser maior que o Valor total dos Procedimentos!', html:true, type:"error", confirmButtonColor: "#424242"});
+			}
 			else {
 				let valorTotal = 0;
 				let cont = 0;
@@ -725,7 +745,6 @@
 					if(x.situacao=="aprovado") {
 						if($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked')===true) {
 							valorTotal+=eval(x.valorCorrigido);
-							//console.log(cont+' '+x.situacao+'->'+x.valorCorrigido);
 							qtdItensDesconto++;
 							valorItens[cont] = x.valor;
 							percItens[cont] = (x.valor/valorOriginal).toFixed(5)
@@ -758,7 +777,6 @@
 				else {
 					let cont = 0;
 					let contProcedimento = 0;
-				
 					procedimentos.forEach(x=>{
 						if(x.situacao=="aprovado") {
 							if($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked')===true) {
@@ -770,45 +788,19 @@
 								} else {
 									descontoAplicar=descontoAplicar
 								}
-								/*
-									if(procedimentos[contProcedimento].face==1) {
-										valorProc*= procedimentos[contProcedimento].faces.length;
-									} else if(procedimentos[contProcedimento].quantitativo==1) {
-										valorProc*=procedimentos[contProcedimento].quantidade;
-									} else if(procedimentos[contProcedimento].id_regiao==5) {
-										valorProc*=procedimentos[contProcedimento].hof;
-									}
-
-									//equivalente = (valorProc/valorTotal).toFixed(8);
-									//equivalente = 12
-									//descontoAplicar = desconto*equivalente;
-										if(procedimentos[contProcedimento].desconto && $.isNumeric(procedimentos[contProcedimento].desconto)) {
-											desc=procedimentos[contProcedimento].desconto+descontoAplicar;
-										} else {
-											desc=descontoAplicar;
-										}
-									valorProc=procedimentos[contProcedimento].valorCorrigido;
-									if(eval(x.quantitativo)==1) {
-										//procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
-										procedimentos[contProcedimento].desconto=desc;///eval(x.quantidade);
-									} else {
-										//procedimentos[contProcedimento].valorCorrigido=valorProc-desc;
-										procedimentos[contProcedimento].desconto=desc
-									}
-								*/
 								procedimentos[contProcedimento].desconto=descontoAplicar
 							}
 							cont++;
 						}
 						contProcedimento++;
 					});
-
-					procedimentosListar();
-					descontoListarProcedimentos(0);
-					atualizaValor(true);
+				
 					$('.js-input-desconto').val('');
 
 				}
+				procedimentosListar();
+				descontoListarProcedimentos(0);
+				atualizaValor(true);
 			}
 		})
 
@@ -817,9 +809,10 @@
 			$(".aside-plano-desconto").fadeIn(100,function() {
 				$(".aside-plano-desconto .aside__inner1").addClass("active");
 			});
-
+			// $('.js-tipo-manual').hide();
+			// $('.js-tipo-politica').hide();
+			// $('.js-tipo-politica table').html("")
 			descontoListarProcedimentos(1);
-
 		});
 
 		// ao selecionar procedimento em desconto
@@ -880,7 +873,6 @@
 				debitoBandeira = $(`.js-pagamentos .js-debitoBandeira:eq(${i})`).val();
 				qtdParcelas = $(`.js-pagamentos .js-parcelas:eq(${i})`).val();
 				valorAcumulado += val;
-				//console.log(`${i} => ${val} = ${valorAcumulado}`);
 
 				let item = pagamentos[i];
 
@@ -946,7 +938,7 @@
 				}
 
 				pagamentos=parcelas;
-				$('textarea#js-textarea-pagamentos').val(JSON.stringify(pagamentos));
+				pagamentosPersistirObjeto()
 			}
 		});
 
@@ -958,10 +950,9 @@
 		$('.js-pagamentos-quantidade').change(function(){
 			let qtd = $(this).val();
 			if(!$.isNumeric(eval(qtd))) qtd=1;
-			else if(qtd<1) qtd=2;
+			else if(qtd<1) qtd=1;
 			else if(qtd>=36) qtd=36;
 			$('.js-pagamentos-quantidade').val(qtd);
-
 			atualizaValor(true);
 		});
 
@@ -986,6 +977,7 @@
 						if (isConfirm) {    
 							let index = $('.aside-plano-procedimento-editar .js-asidePlanoEditar-index').val();
 							procedimentos.splice(index,1);
+							pagamentos = [];
 							procedimentosListar();	
 							swal.close();
 							$('.aside-plano-procedimento-editar .aside-close').click();
@@ -997,8 +989,6 @@
 
 		// edita procedimento
 		$('.aside-plano-procedimento-editar .js-salvarEditarProcedimento').click(function(){
-
-
 			// capta dados
 			let index = $('.aside-plano-procedimento-editar .js-asidePlanoEditar-index').val();
 			let situacao = $('.aside-plano-procedimento-editar .js-asidePlanoEditar-situacao').val();
@@ -1028,8 +1018,8 @@
 		// adiciona procedimento
 		$('.aside-plano-procedimento-adicionar .js-salvarAdicionarProcedimento').click(function(){
 			$('.js-listar-parcelas .fpag').html('');
-			
-			pagamentos = []
+			pagamentos = [];
+			$('.js-pagamentos-quantidade').val("0")
 			// capta dados 
 				let id_procedimento = $('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento option:selected').val();
 				let procedimento = $(`.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento option:selected`).text();
@@ -1073,18 +1063,15 @@
 						}
 					});
 				}
-
+			
 			if(erro.length>0) {
 				swal({title: "Erro!", text: erro, type:"error", html:true, confirmButtonColor: "#424242"});
 			} else {
 				let linhas=1;
 				if(id_regiao>=2) linhas = eval($(`.js-regiao-${id_regiao}-select option:selected`).length);
-				
 				let item= {};
 				let opcoes = ``;
-
 				for(var i=0;i<linhas;i++) {
-
 					item = {};
 					item.obs = obs;
 					item.id_procedimento=id_procedimento;
@@ -1099,8 +1086,7 @@
 					item.valor=valor;
 					item.quantitativo=eval(quantitativo);
 					item.desconto=0;
-
-				
+					item.taxas=0;
 					// Data e Usuario
 						let dt = new Date();
 						let dia = dt.getDate();
@@ -1157,20 +1143,26 @@
 						item.faces=faces;
 
 					item.valorCorrigido=valorCorrigido;
+					
 
 					procedimentos.push(item);
 
 					if((i+1)==linhas) {
-						$(`.aside-plano-procedimento-adicionar .js-asidePlano-quantidade`).val(1).parent().parent().hide();;  
+						$(`.aside-plano-procedimento-adicionar .js-asidePlano-quantidade`).val(1).parent().parent().hide();
 						procedimentosListar();
+
 						atualizaValor(true);
+
 					}
 				}
-
+				
 			}
+			
 			if(temPolitica.parcelasParametros){
 				$('[name="tipo_financeiro').filter("[value='politica']").prop("checked", true);
 			}
+		
+
 		});
 
 		// quando seleciona o procedimento, exibe as regioes parametrizadas
