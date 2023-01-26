@@ -1560,6 +1560,7 @@
 			});
 			//verifica se ha alteracao no valor de cada parcela 
 			$('.js-listar-parcelas').on('keyup','.js-valor',function(){
+				let indexInicial = $(this).attr('data-ordem');
 				let CamposValor = $('.js-listar-parcelas').find('.js-valor');
 				let valorDigitado = unMoney($(this).val());
 				let numeroParcelas = CamposValor.length;
@@ -1567,31 +1568,39 @@
 				let erro = "";
 				if(valorDigitado>valorTotalProcedimentos){
 					swal({title: "Erro!", text: 'Os valores das parcelas não podem superar o valor total', html:true, type:"error", confirmButtonColor: "#424242"});
-					$(this).val(number_format(valorTotalProcedimentos/numeroParcelas,2,",","."))
+					console.log(indexInicial)
+					let valor = 0
+					console.log(this)
+					CamposValor.each(function (index, input){
+						if($(input).attr('data-ordem')<indexInicial){
+							valor +=unMoney($(input).val())
+						}
+					})
+					$(this).val(number_format(valorTotalProcedimentos-valor,2,",","."))
+					// $(this).val(number_format(valorTotalProcedimentos/numeroParcelas,2,",","."))
 					return;
 				}
 				let valor = 0
 				let valorAteInput = valorDigitado
 				let valorFinal =0
 				let valorRestante = (valorTotalProcedimentos-valorDigitado)
+			
 				CamposValor.each(function (index, input){
 					valorFinal += valorRestante-unMoney($(input).val())
-					
-					if(index+1<dataOrdem){
+					if((index+1)<dataOrdem){
 						valorRestante = valorRestante-unMoney($(input).val())
 					}
-					if(index+1>dataOrdem){
-						
-						$(input).val(number_format(valorRestante/((numeroParcelas-dataOrdem)),2,",","."))
+					if((index+1)>dataOrdem){
+						$('.js-listar-parcelas').find(`.js-valor:eq(${index})`).val(number_format(valorRestante/((numeroParcelas-dataOrdem)),2,",","."))
 					}
-					if(index+1 == numeroParcelas){
-						if(valorDigitado>valorRestante){
-							swal({title: "Erro!", text: 'Os valores das parcelas não podem superar o valor total do procedimento', html:true, type:"error", confirmButtonColor: "#424242"});
-							$(this).val(number_format(valorRestante,2,",","."))
-							valorRestante = 0
-							return
-						}
-					}
+					// if(index+1 == numeroParcelas){
+					// 	if(valorDigitado>valorRestante){
+					// 		swal({title: "Erro!", text: 'Os valores das parcelas não podem superar o valor total do procedimento', html:true, type:"error", confirmButtonColor: "#424242"});
+					// 		$(this).val(number_format(valorRestante,2,",","."))
+					// 		valorRestante = 0
+					// 		return
+					// 	}
+					// }
 				});
 			});
 		});

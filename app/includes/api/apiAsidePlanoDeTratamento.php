@@ -777,6 +777,7 @@
 				else {
 					let cont = 0;
 					let contProcedimento = 0;
+					let descontoAPlicado = 0
 					procedimentos.forEach(x=>{
 						if(x.situacao=="aprovado") {
 							if($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked')===true) {
@@ -785,8 +786,10 @@
 								if(x.desconto>0) {
 									//valorProc=procedimentos[contProcedimento].valorCorrigido;
 									descontoAplicar = descontoAplicar+procedimentos[contProcedimento].desconto
+									descontoAPlicado +=descontoAplicar
 								} else {
 									descontoAplicar=descontoAplicar
+									descontoAPlicado +=descontoAplicar
 								}
 								procedimentos[contProcedimento].desconto=descontoAplicar
 							}
@@ -794,7 +797,9 @@
 						}
 						contProcedimento++;
 					});
-				
+					if(descontoAPlicado<desconto){
+						procedimentos[0].desconto=procedimentos[0].desconto+(desconto-descontoAPlicado)
+					}
 					$('.js-input-desconto').val('');
 
 				}
@@ -845,10 +850,8 @@
 		$('.js-listar-parcelas').on('keyup','.js-identificador',pagamentosPersistirObjeto);
 		$('.js-listar-parcelas').on('change','.js-debitoBandeira,.js-creditoBandeira,.js-parcelas',pagamentosPersistirObjeto);
 
-		$('.js-listar-parcelas').on('blur','.js-valor',function(){
-			pagamentosListar();
-		});
 		
+		/*
 		$('.js-pagamentos').on('keyup','.js-valor',function(){
 			let index = $(this).index('.js-pagamentos .js-valor');
 			let numeroParcelas = eval($('.js-pagamentos-quantidade').val());
@@ -856,10 +859,8 @@
 			let valorAcumulado = 0;
 			let parcelas = [];
 			let val = unMoney($(this).val());
-
 			for(i=0;i<=index;i++) {
 				val = unMoney($(`.js-pagamentos .js-valor:eq(${i})`).val());
-
 				id_formapagamento = $(`.js-pagamentos .js-id_formadepagamento:eq(${i})`).val();
 				identificador = $(`.js-pagamentos .js-identificador:eq(${i})`).val();
 				creditoBandeira = $(`.js-pagamentos .js-creditoBandeira:eq(${i})`).val();
@@ -879,20 +880,12 @@
 
 				item.vencimento=pagamentos[i].vencimento;
 				item.valor=val;
-				/*item.id_formapagamento=id_formapagamento;
-				item.identificador=identificador;
-				item.creditoBandeira=creditoBandeira;
-				item.operadora=operadora;
-				item.debitoBandeira=debitoBandeira;
-				item.qtdParcelas=qtdParcelas;*/
-
 				parcelas.push(item);
 			}
 
 			let valorRestante = valorTotal-valorAcumulado;
 			let continua = true;
 			if(valorAcumulado>valorTotal) {
-
 				let dif = valorAcumulado - valorTotal;
 				dif=dif.toFixed(2);
 
@@ -903,8 +896,6 @@
 			}  
 
 			if(continua) {
-
-
 				numeroParcelasRestantes = numeroParcelas - (index+1);
 				valorParcela=valorRestante/numeroParcelasRestantes;
 				valorParcela=valorParcela.toFixed(2);
@@ -941,7 +932,7 @@
 				pagamentosPersistirObjeto()
 			}
 		});
-
+		*/
 		$('.js-listar-parcelas').on('change','.js-id_formadepagamento',function(){
 			pagamentosAtualizaCampos($(this),true);
 		});

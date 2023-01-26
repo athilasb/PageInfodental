@@ -535,9 +535,7 @@
 		}
 
 		const baixasAtualizar = () => {
-
 			let data = `ajax=baixas&id_pagamento=${id_pagamento}`;
-
 			$.ajax({
 				type:"POST",
 				//url:"box/boxPacientePagamentos.php",
@@ -545,6 +543,7 @@
 				success:function(rtn) {
 					if(rtn.success) {
 						$('#js-aside-asFinanceiro .js-baixas .js-tr').remove();
+						$('[name="alteracao"]').val("1")
 						total = 0;
 						let desconto = 0;
 						let despesas = 0;
@@ -658,7 +657,6 @@
 			valorCorrigido+=despesas;
 
 			$('.js-valorCorrigido').val(number_format(valorCorrigido,2,",","."));
-			
 			if(saldoPagar<=0) {
 				$('.js-fieldset-pagamentos').hide();
 			} else {
@@ -672,9 +670,6 @@
 		var dataHoje = '<?= date('d/m/Y');?>';
 
 		$(function(){
-
-
-
 		<?php
 		if(isset($_GET['unirPagamentos'])) {
 		?>
@@ -894,6 +889,7 @@
 								success:function(rtn) {
 									if(rtn.success) {
 										baixasAtualizar();
+										$('[name="alteracao"]').val("1")
 									} else if(rtn.error) {
 										swal({title: "Erro!", text: rtn.error,  html:true,type:"error", confirmButtonColor: "#424242"});
 										obj.html(objHTMLAntigo);
@@ -957,6 +953,8 @@
 													$('#js-aside-asFinanceiro-receber .aside-close').click();
 													$('#js-aside-asFinanceiro .aside-close').click();
 													$('.js-pagamento-item-'+id_parcela).click();
+													$('[name="alteracao"]').val("1")
+													document.location.reload();
 												} else if(rtn.error) {
 													swal({title: "Erro!", text: rtn.error,  html:true,type:"error", confirmButtonColor: "#424242"});
 												} else {
@@ -1046,6 +1044,7 @@
 										$('#js-aside-asFinanceiro-receber .aside-close').click();
 										$('#js-aside-asFinanceiro .aside-close').click();
 										$('.js-pagamento-item-'+id_parcela).click();
+										document.location.reload();
 									} else if(rtn.error) {
 										swal({title: "Erro!", text: rtn.error,  html:true,type:"error", confirmButtonColor: "#424242"});
 									} else {
@@ -1111,6 +1110,7 @@
 
 			$('.js-btn-fechar').click(function(){
 				$('.cal-popup').hide();
+				document.location.reload();
 			});
 
 		});
@@ -1258,7 +1258,7 @@
 												foreach($_baixas[$x->id] as $b) {
 													$formaobs='';
 													$baixaVencida=false;
-													if(strtotime($b->data_vencimento)<strtotime(date('Y-m-d'))) {
+													if((strtotime($b->data_vencimento)<strtotime(date('Y-m-d'))) && $b->pago==0) {
 														$baixaVencida=true;
 														
 													} else {  
@@ -1269,7 +1269,6 @@
 
 
 												//	echo $b->data_vencimento."-> ".date('Y-m-d')." -> ".$baixaVencida."<BR>";
-
 													if($b->tipoBaixa=="pagamento") {
 														$formaobs=isset($_formasDePagamento[$b->id_formadepagamento])?utf8_encode($_formasDePagamento[$b->id_formadepagamento]->titulo):'';
 													} else {
@@ -1298,7 +1297,7 @@
 												
 
 												}
-									
+											
 
 												if($baixaVencida===true) {
 													$status="INADIMPLENTE";
@@ -1310,12 +1309,12 @@
 													$cor="green";
 												} else {
 													if($saldoAPagar==0) {
-														$status="EM ABERTO";
+														$status="A VENCER";
 														$icone = 'fluent:calendar-ltr-24-regular';
 														$cor="blue";
 													} else {
 														$cor="orange";
-														$status="PROMESSA DE PAGAMENTO";
+														$status="DEFINIR PAGAMENTO";
 														$icone = 'fluent:checkbox-warning-24-regular';
 													}
 												}
@@ -1330,6 +1329,7 @@
 											} 
 											// nao possui nenhuma baixa
 											else {  
+											
 												if(strtotime($x->data_vencimento)<strtotime(date('Y-m-d'))) {
 													$cor="red";
 													$status="INADIMPLENTE";
@@ -1337,7 +1337,7 @@
 												}
 												else {
 													$cor="orange";
-													$status="PROMESSA DE PAGAMENTO";
+													$status="DEFINIR PAGAMENTO";
 													$icone = 'fluent:checkbox-warning-24-regular';
 												}
 											}
@@ -1429,8 +1429,6 @@
 														'fusao'=>$x->fusao);
 
 											$pagamentosJSON[]=$item;
-
-
 										?>
 										<tr class="js-pagamento-item js-pagamento-item-<?= $x->id;?>" data-id="<?= $x->id;?>">
 											<?php if(isset($_GET['unirPagamentos'])) {?>
@@ -1462,7 +1460,7 @@
 												</h1>
 												<p><?= date('d/m/Y',strtotime($x->data_vencimento));?></p>
 											</td>
-											<td><div class="list1__icon" style="color:gray;"><i class="iconify" data-icon="<?=$icone?>"></i> <font color=<?=$cor?>><?=$status?></font> </div></td>
+											<td><div class="list1__icon" style="color:gray;"><font color=<?=$cor?>><i class="iconify" data-icon="<?=$icone?>"></i> <?=$status?></font> </div></td>
 											<td><h1>R$ <?= number_format($x->valor,2,",",".");?></h1><span><?=($status== 'INADIMPLENTE' && $saldoAPagar>0)?"Faltam: R$ ".number_format($saldoAPagar,2,",","."):""?></span></td>
 											<?php 
 											if(isset($parcelasTratamentos[$x->id_tratamento])) {

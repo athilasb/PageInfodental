@@ -86,10 +86,7 @@
 					//$(obj).find('.js-obs').parent().parent().show();
 				}
 			}
-
-
 			let index = $('.js-pagamentos .js-id_formadepagamento').index(this);
-
 		} else {
 			$('#js-aside-asFinanceiro').find('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
 		}
@@ -292,11 +289,18 @@
 		});
 		
 		$('input.money').maskMoney({symbol:'', allowZero:false, showSymbol:true, thousands:'.', decimal:',', symbolStay: true});
+
+		$('.aside-close').click(function(){
+			if($('[name="alteracao"]').val()=='1'){
+				document.location.reload();
+			}
+		})
+
 	});
 </script>
-<section class="aside" id="js-aside-asFinanceiro">
+<section class="aside" id="js-aside-asFinanceiro">	
 	<div class="aside__inner1">
-
+		<input type="hidden" name="alteracao" value="0">
 		<header class="aside-header">
 			<h1 class="js-titulo"></h1>
 			<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
