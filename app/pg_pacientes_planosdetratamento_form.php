@@ -1568,9 +1568,7 @@
 				let erro = "";
 				if(valorDigitado>valorTotalProcedimentos){
 					swal({title: "Erro!", text: 'Os valores das parcelas não podem superar o valor total', html:true, type:"error", confirmButtonColor: "#424242"});
-					console.log(indexInicial)
 					let valor = 0
-					console.log(this)
 					CamposValor.each(function (index, input){
 						if($(input).attr('data-ordem')<indexInicial){
 							valor +=unMoney($(input).val())

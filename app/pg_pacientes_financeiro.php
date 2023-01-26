@@ -1126,8 +1126,6 @@
 					</div>
 				</div>
 			</section>
-
-
 			<script type="text/javascript">
 				$(function(){
 					$('.js-item').click(function(){
@@ -1138,7 +1136,7 @@
 			</script>
 			<section class="grid">
 				<div class="box box-col">
-					<?php require_once("includes/submenus/subPacientesFichaDoPaciente.php");?>
+					<?#php require_once("includes/submenus/subPacientesFichaDoPaciente.php");?>
 					<div class="box-col__inner1">
 				
 						<section class="filter">
@@ -1484,7 +1482,6 @@
 										<?php
 										}
 										if($DefinirPagamento>0){
-											echo "<script>console.log('R$ ".number_format($DefinirPagamento,2,",",".")."')</script>";
 											echo "<script>$('#definir_pgto').text('R$ ".number_format($DefinirPagamento,2,",",".")."')</script>";
 										}
 										?>
@@ -1498,6 +1495,7 @@
 
 		</div>
 	</main>
+
 	<script type="text/javascript">
 		pagamentos = JSON.parse(`<?= json_encode($pagamentosJSON);?>`);
 	</script>
