@@ -183,6 +183,33 @@
 			}
 		}
 
+		else if($_POST['ajax']=="procedimentoPub") {
+
+			$pub = (isset($_POST['pub']) and $_POST['pub']==1)?1:0;
+
+			if(is_object($procedimento)) {
+
+				$vSQL = "pub='$pub'";
+				$vWHERE = "where id='$procedimento->id'";
+
+				$sql->update($_p."parametros_procedimentos",$vSQL,$vWHERE);
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."parametros_procedimentos',id_reg='$procedimento->id'");
+
+				$rtn = array('success'=>true);
+
+
+			} else {
+				$erro='Procedimento não encontrado';
+			}
+
+			if(empty($erro)) {
+				$rtn=array('success'=>true);
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
+
+		}
+
 		header("Content-type: application/json");
 		echo json_encode($rtn);
 		die();
@@ -321,6 +348,7 @@
 								});
 							}
 						}
+
 						$(function(){
 							$('#js-aside .js-btn-remover').click(function(){
 								let id = $('input[name=id]').val();
@@ -374,6 +402,29 @@
 								let id = $(this).attr('data-id');
 								openAside(id);
 							});
+
+
+							$('.js-checkbox-procedimento').click(function(){
+
+								let id_procedimento = $(this).attr('data-id_procedimento');
+								let pub = $(this).prop('checked')==1?1:0;
+								let data = `ajax=procedimentoPub&id_procedimento=${id_procedimento}&pub=${pub}`;
+
+								$.ajax({
+									type:"POST",
+									data:data,
+									success:function(rtn) {
+										if(rtn.success) {
+											
+										} else if(rtn.error) {
+											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+										} else {
+											swal({title: "Erro!", text: 'Algum erro ocorreu durante a ativação/desativação do procedimento', type:"error", confirmButtonColor: "#424242"});
+										}
+									}
+								})
+
+							})
 						})
 					</script>
 
@@ -412,18 +463,21 @@
 								echo "<center>$msg</center>";
 							} else {
 
+
+
 								$registros=$procedimentosIds=array();
 								while($x=mysqli_fetch_object($sql->mysqry)) {
 									$registros[]=$x;
 									$procedimentosIds[]=$x->id;
 								}
 
+								$_planosProcedimentos=[];
 								if(count($procedimentosIds)>0) {
 									$sql->consult($_table."_planos","*","where id_procedimento IN (".implode(",",$procedimentosIds).") and lixo=0");
 									if($sql->rows) {
 										while($x=mysqli_fetch_object($sql->mysqry)) {
-											if(!isset($_planos[$x->id_procedimento])) {
-												$_planos[$x->id_procedimento]=$x;
+											if(!isset($_planosProcedimentos[$x->id_procedimento])) {
+												$_planosProcedimentos[$x->id_procedimento]=$x;
 											}
 										}
 									}
@@ -431,25 +485,40 @@
 
 
 							?>	
-								<div class="list1">
+								<div class="list2">
 									<table>
+										<tr>
+											<th colspan="2">Plano</th>
+											<?php
+											foreach($_planos as $p) {
+											?>
+											<th colspan="2"><?php echo utf8_encode($p->titulo);?></th>
+											<?php
+											}
+											?>
+										</tr>
 										<?php
 										foreach($registros as $x) {
-
 											$plano='';
 											$obs='-';
-											if(isset($_planos[$x->id])) {
-												$plano=$_planos[$x->id];
-												$valor=$plano->valor;
-												$obs=utf8_encode($plano->obs);
-											}
 										?>
 										<tr class="js-item" data-id="<?php echo $x->id;?>">
+											<td style="width:40px;">
+												<input type="checkbox" class="input-switch js-checkbox-procedimento" data-id_procedimento="<?php echo $x->id;?>"<?php echo $x->pub==1?" checked":"";?> />
+											</td>
 											<td><h1><strong><?php echo utf8_encode($x->titulo);?></strong></h1></td>
-											<td><?php echo isset($_regioes[$x->id_regiao])?utf8_encode($_regioes[$x->id_regiao]->titulo):"-";?></td>
-											<td><?php echo isset($_especialidades[$x->id_especialidade])?utf8_encode($_especialidades[$x->id_especialidade]->titulo):"-";?></td>
-											<td><?php echo (isset($valor))?number_format($valor,2,",","."):'sem plano';?></td>
-											<td><?php echo $obs;?></td>
+											<?php
+											foreach($_planos as $p) {
+											?>
+											<td style="width:20px;">
+												<input type="checkbox" class="js-checkbox-procedimentoPlano-checkbox" data-id_plano="<?php echo $p->id;?>" data-id_procedimento="<?php echo $x->id;?>" checked />
+											</td>
+											<td>
+												<input type="tel" class="js-checkbox-procedimentoPlano-valor" data-id_plano="<?php echo $p->id;?>" data-id_procedimento="<?php echo $x->id;?>" style="width:70px;" /></td>
+											</td>
+											<?php	
+											}
+											?>
 										<?php
 										}
 										?>
