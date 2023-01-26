@@ -1002,7 +1002,8 @@
 
 			procedimentos[index].situacao=situacao;
 			procedimentos[index].obs=obs;
-
+			pagamentos = []
+			$('.js-pagamentos-quantidade').val("")
 			procedimentosListar();
 			atualizaValor(true);
 
