@@ -92,14 +92,11 @@
 		}
 	}
 	$(function(){
-
-
 		// se clicar nas abas
 		$('#js-aside-asFinanceiro .js-tab a').click(function() {
 			$(".js-tab a").removeClass("active");
 			$(this).addClass("active");							
 		});
-
 
 		// desfaz uniao de agrupamento de pagametnos
 		$('#js-aside-asFinanceiro').on('click','.js-desfazerUniao',function(){
@@ -336,7 +333,7 @@
 				
 				<fieldset>
 					<legend>Informações do Pagamento</legend>
-					<div class="colunas5">
+					<div class="colunas4">
 						<dl>
 							<dt>Valor da Parcela</dt>
 							<dd><input type="text" class="js-valorParcela" value=""  disabled style="background: #ccc" /></dd>
@@ -348,17 +345,30 @@
 						</dl>
 						<dl>
 							<dt>Despesa (+)</dt>
-							<dd><input type="text" class="js-valorDespesa money" data-tipo="despesas" style="background: #ccc" disabled  /></dd>
-						</dl>
-						<dl>
-							<dt>Multas/Juros (+)</dt>
-							<dd><input type="text" class="js-multasJuros money"  value="0,0" style="background: #ccc"  /></dd>
+							<dd><input type="text" class="js-valorDespesa money" data-tipo="despesas" style="background: #ccc" disabled /></dd>
 						</dl>
 						<dl>
 							<dt>Valor Corrigido</dt>
-							<dd><input type="text" class="js-valorCorrigido" value="" disabled style="background: #ccc" /></dd>
+							<dd><input type="text" class="js-valorCorrigido money" value="" disabled style="background: #ccc" disabled/></dd>
 						</dl>
 
+					</div>
+					<div class="colunas4 js-colunaMultasJuros" style="display:none;">
+						<dl>
+							<dt>Multas e Juros</dt>
+							<label><input type="checkbox" class="input-switch js-mostra-juros-multas" /></label>
+						</dl>
+						<dl style="display:none;">
+							<dt>Valor Disponivel</dt>
+							<dd><input type="text" class="js-multasJuros money"  value="0,0" style="background: #ccc"  disabled/></dd>
+						</dl>
+						<dl style="display:none;">
+							<dt>Valor a Aplicar</dt>
+							<dd><input type="text" class="js-multasJurosAplicar money"  value="0,0" style="" /></dd>
+						</dl>
+						<dl style="display:none;justify-content: center;top:10px;">
+							<dd><a href="javascript:;" class="button__full button button_main js-btn-addMulta" data-loading="0">adicionar multa</a></dd>
+						</dl>
 					</div>
 				</fieldset>
 

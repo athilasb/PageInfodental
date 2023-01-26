@@ -1456,6 +1456,7 @@
 				$('.js-tipo-manual').show();
 				$('.js-tipo-politica').hide();
 				$('.js-tipo-politica table').html("")
+				atualizaValor()
 				updateValorText();
 			}else if(tipo=='politica'){
 				//pagamentos=[]
