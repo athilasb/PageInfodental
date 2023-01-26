@@ -1189,17 +1189,22 @@
 								
 								<div class="filter-group">
 									<div class="filter-title">
-										<p>A receber<br /><strong>R$ <?= number_format($valor['aReceber'],2,",",".");?></strong></p>
+										<p style="color:var(--cinza5);font-size:18px">Total<br /><strong>R$ <?= number_format($valor['valorTotal'],2,",",".");?></strong></p>
 									</div>
 									<div class="filter-title">
-										<p style="color:var(--verde)">Recebido<br /><strong>R$ <?= number_format($valor['valorRecebido'],2,",",".");?></strong></p>
+										<p style="font-size:13px">A receber<br /><strong>R$ <?= number_format($valor['aReceber'],2,",",".");?></strong></p>
 									</div>
 									<div class="filter-title">
-										<p style="color:var(--vermelho)">Vencido<br /><strong>R$ <?= number_format($valor['valoresVencido'],2,",",".");?></strong></p>
+										<p style="color:var(--laranja);font-size:13px">Definir Pagamento<br /><strong id='definir_pgto'>R$ <?= number_format(0,2,",",".");?></strong></p>
 									</div>
 									<div class="filter-title">
-										<p style="color:var(--cinza5)">Total<br /><strong>R$ <?= number_format($valor['valorTotal'],2,",",".");?></strong></p>
+										<p style="color:var(--verde);font-size:13px">Recebido<br /><strong>R$ <?= number_format($valor['valorRecebido'],2,",",".");?></strong></p>
 									</div>
+									<div class="filter-title">
+										<p style="color:var(--vermelho);font-size:13px">Vencido<br /><strong>R$ <?= number_format($valor['valoresVencido'],2,",",".");?></strong></p>
+									</div>
+									
+								
 								</div>
 							</section>
 
@@ -1209,6 +1214,7 @@
 									<?php
 									
 										$parcelasTratamentos=array();
+										$DefinirPagamento=0;
 										foreach($registros as $x) {
 											if(!isset($parcelasTratamentos[$x->id_tratamento])) {
 												$parcelasTratamentos[$x->id_tratamento]=0;
@@ -1309,7 +1315,7 @@
 													$cor="green";
 												} else {
 													if($saldoAPagar==0) {
-														$status="A VENCER";
+														$status="A RECEBER";
 														$icone = 'fluent:calendar-ltr-24-regular';
 														$cor="blue";
 													} else {
@@ -1413,7 +1419,7 @@
 												} else {
 
 												}
-
+											
 											} 
 
 											$item=array('id_parcela'=>$x->id,
@@ -1429,6 +1435,10 @@
 														'fusao'=>$x->fusao);
 
 											$pagamentosJSON[]=$item;
+											if($status=='DEFINIR PAGAMENTO'){
+												$DefinirPagamento+=$x->valor;
+											}
+			
 										?>
 										<tr class="js-pagamento-item js-pagamento-item-<?= $x->id;?>" data-id="<?= $x->id;?>">
 											<?php if(isset($_GET['unirPagamentos'])) {?>
@@ -1472,6 +1482,10 @@
 											?>
 										</tr>
 										<?php
+										}
+										if($DefinirPagamento>0){
+											echo "<script>console.log('R$ ".number_format($DefinirPagamento,2,",",".")."')</script>";
+											echo "<script>$('#definir_pgto').text('R$ ".number_format($DefinirPagamento,2,",",".")."')</script>";
 										}
 										?>
 									</table>

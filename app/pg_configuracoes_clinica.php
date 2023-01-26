@@ -177,7 +177,7 @@
 						<form method="post" class="form formulario-validacao">
 							<input type="hidden" name="acao" value="wlib" />
 							<button style="display:none;"></button>
-
+							<!-- DADOS GERAIS  -->
 							<fieldset>
 								<legend>Dados Gerais</legend>
 
@@ -410,7 +410,22 @@
 									</div>
 								</div>
 							</fieldset>
-
+							<!-- MULTAS E JUROS -->
+							<fieldset>
+								<legend>Politica de Multas e Juros</legend>
+								<div class="grid grid_3">
+									<div style="grid-column:span 2">
+										<div class="colunas">
+											<dl>
+												<dt>Multas</dt>
+												<dd class="form-comp"><span>%</i></span><input type="tel" name="multas" class="valor js-valor" value="<?= $values['politica_multas']??0;?>"/></dd>
+											</dl>
+											<dl>
+												<dt>Juros</dt>
+												<dd class="form-comp"><span>%</i></span><input type="tel" name="juros" class="valor js-valor" value="<?= $values['politica_juros']??0;?>"/></dd>
+											</dl>
+										</div>
+							</fieldset>
 							<?php /*<fieldset>
 								<legend>Certificação Digital</legend>
 
