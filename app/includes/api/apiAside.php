@@ -799,6 +799,61 @@
 					$rtn=array('success'=>true,'regs'=>$regs);
 				}
 			}
+
+			else if($_POST['ajax']=="tagsRemover") {
+
+				$agenda='';
+				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
+					$sql->consult($_p."agenda","*","where id='".addslashes($_POST['id_agenda'])."'");
+					if($sql->rows) {
+						$agenda=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$tag='';
+				if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+					$sql->consult($_p."parametros_tags","*","where id='".addslashes($_POST['id'])."'");
+					if($sql->rows) {
+						$tag=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				if(empty($agenda)) $rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
+				else if(empty($tag)) $rtn=array('success'=>false,'error'=>'Tag não encontrada');
+				else {
+
+					$sql->update($_p."parametros_tags","lixo=1","WHERE id='".$tag->id."'");
+
+					$_tags=array();
+					$sql->consult($_p."parametros_tags","*","WHERE lixo=0");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$_tags[$x->id]=$x;
+					}
+
+					$regs=array();
+					if(!empty($agenda->tags)) {
+
+						$tagsIDs=array();
+						$tags = explode(",", $agenda->tags);
+						foreach($tags as $id) {
+							if(is_numeric($id) and isset($_tags[$id])) {
+								$tagsIDs[]=$id;
+								$regs[]=array('id_tag'=>$id,
+											  'id_agenda'=>$agenda->id,
+											  'titulo' => utf8_encode($_tags[$id]->titulo),
+											  'cor'=>utf8_encode($_tags[$id]->cor));
+							}
+						}
+
+						if(count($tagsIDs)>0) $vSQL="tags=',".implode(",",$tagsIDs).",'";
+						else $vSQL="tags=''";
+
+						$sql->update($_p."agenda",$vSQL,"WHERE id='".$agenda->id."'");
+					}
+
+					$rtn=array('success'=>true,'regs'=>$regs);
+				}
+			}
 		 
 
 		# Especialidades
@@ -4173,6 +4228,66 @@
 											$('.js-asTag-cor').val(cor);
 										}
 									});
+
+									$('.js-tags-table').on('click','.js-remover',function(){
+
+										let id_agenda = $('#js-aside-edit input[name=id]').val();
+										let id = $(this).attr('data-id');
+										if($.isNumeric(id) && id>0) {
+										
+										swal({   
+												title: "Atenção",   
+												text: "Você tem certeza que deseja remover este registro?",   
+												type: "warning",   
+												showCancelButton: true,   
+												confirmButtonColor: "#DD6B55",   
+												confirmButtonText: "Sim!",   
+												cancelButtonText: "Não",   
+												closeOnConfirm: false,   
+												closeOnCancel: false 
+											}, function(isConfirm){   
+												if (isConfirm) {    
+
+													let data = `ajax=tagsRemover&id=${id}&id_agenda=${id_agenda}`;
+													$.ajax({
+														type:"POST",
+														url:baseURLApiAside,
+														data:data,
+														success:function(rtn) {
+															if(rtn.success) {
+
+																if(rtn.regs.length>0) {
+																	$('.js-tags').empty();
+
+																	rtn.regs.forEach(x=>{
+
+																		$('.js-tags').append(`<option value="${x.id_tag}" selected>${x.titulo}</option>`);
+																	});
+
+																	$('.js-tags').trigger('chosen:updated');
+																	tagsListar();
+
+																}
+																swal.close();
+																
+															} else if(rtn.error) {
+																swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+															} else {
+																swal({title: "Erro!", text: 'Algum erro ocorreu durante a remoção deste registro', type:"error", confirmButtonColor: "#424242"});
+															}
+														},
+														error:function(){
+															swal({title: "Erro!", text: 'Algum erro ocorreu durante a remoção deste registro.', type:"error", confirmButtonColor: "#424242"});
+														}
+													}) 
+												} else {   
+													swal.close();   
+												} 
+											});
+										}
+									});
+
+
 								});
 							</script>
 							<section class="tab tab_alt js-tab">
@@ -5253,7 +5368,7 @@
 
 												$(`.js-asTag-titulo`).val(``);
 
-												//$('.js-tags').empty();
+												$('.js-tags').empty();
 												$('.js-tags').append(`<option value="${rtn.id_tag}" selected>${rtn.titulo}</option>`);
 												$('.js-tags').trigger('chosen:updated');
 												$('.aside-tag .aside-close').click();
