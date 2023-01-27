@@ -50,3 +50,13 @@ const horarioDisponivel = (id_agenda,obj) => {
 		agenda_horaObj.append(`<option value="">Complete os campos</option>`);
 	}
 }
+
+$(function(){
+	$('.js-salvar-loading').click(function(){
+
+		if(!$(this).attr('data-loading') || $(this).attr('data-loading')==0) {
+			$(this).html('<span class="iconify" data-icon="eos-icons:loading"></span>');
+			$(this).attr('data-loading',1);
+		}
+	})
+})

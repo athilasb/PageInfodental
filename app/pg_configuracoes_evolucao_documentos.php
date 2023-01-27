@@ -269,7 +269,7 @@
 							<?php
 								if(isset($sql->myspaginacao) and !empty($sql->myspaginacao)) {
 							?>
-							<div class="paginacao">						
+							<div class="pagination">						
 								<?php echo $sql->myspaginacao;?>
 							</div>
 							<?php

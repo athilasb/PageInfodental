@@ -28,7 +28,7 @@
 
 	$_dirLogo=$_cloudinaryPath."arqs/clinica/logo/";
 
-	$campos = explode(",","tipo,clinica_nome,instagram,site,email,whatsapp,telefone,endereco,complemento,lat,lng,tipo,razao_social,cnpj,inscricao_estadual,cpf,nome,responsavel_cro,responsavel_cro_uf,responsavel_cro_tipo");
+	$campos = explode(",","tipo,clinica_nome,instagram,site,email,whatsapp,telefone,endereco,complemento,lat,lng,tipo,razao_social,cnpj,inscricao_estadual,cpf,nome,responsavel_cro,responsavel_cro_uf,responsavel_cro_tipo,politica_multas,politica_juros");
 
 	$values=array();
 	foreach($campos as $v) $values[$v]='';
@@ -52,7 +52,6 @@
 	if(isset($_POST['acao'])) {
 		$vSQL=$adm->vSQL($campos,$_POST);
 		$values=$adm->values;
-
 		$vSQL=substr($vSQL,0,strlen($vSQL)-1);
 		$vWHERE="where id='".$cnt->id."'";
 		$sql->update($_table,$vSQL,$vWHERE);
@@ -177,7 +176,7 @@
 						<form method="post" class="form formulario-validacao">
 							<input type="hidden" name="acao" value="wlib" />
 							<button style="display:none;"></button>
-
+							<!-- DADOS GERAIS  -->
 							<fieldset>
 								<legend>Dados Gerais</legend>
 
@@ -410,7 +409,22 @@
 									</div>
 								</div>
 							</fieldset>
-
+							<!-- MULTAS E JUROS -->
+							<fieldset>
+								<legend>Politica de Multas e Juros</legend>
+								<div class="grid grid_3">
+									<div style="grid-column:span 2">
+										<div class="colunas">
+											<dl>
+												<dt>Multas</dt>
+												<dd class="form-comp"><span>%</i></span><input type="tel" name="politica_multas" class="valor js-valor" value="<?= $values['politica_multas']??0;?>"/></dd>
+											</dl>
+											<dl>
+												<dt>Juros</dt>
+												<dd class="form-comp"><span>%</i></span><input type="tel" name="politica_juros" class="valor js-valor" value="<?= $values['politica_juros']??0;?>"/></dd>
+											</dl>
+										</div>
+							</fieldset>
 							<?php /*<fieldset>
 								<legend>Certificação Digital</legend>
 

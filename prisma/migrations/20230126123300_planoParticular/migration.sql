@@ -1,0 +1,1 @@
+INSERT INTO ident_parametros_planos set id=1000,titulo='PARTICULAR';
