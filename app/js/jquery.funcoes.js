@@ -29,9 +29,11 @@ function number_format (number, decimals, dec_point, thousands_sep) {
   return s.join(dec);
 }
 function unMoney(valor) {
-	valor = valor.replace(/[^\d,-.]+/g,'');
-    valor = valor.replace('.','').replace('.','').replace('.','').replace('.','').replace('.','').replace(',','.');
-    return eval(valor);
+	if(!Number.isFinite(valor)){
+		valor = valor.replace(/[^\d,-.]+/g,'');
+		valor = valor.replace('.','').replace('.','').replace('.','').replace('.','').replace('.','').replace(',','.');
+	}
+	return eval(valor);
 }
 
 function retira_acentos(str) {

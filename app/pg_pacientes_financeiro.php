@@ -18,9 +18,7 @@
 	}
 
 	if(isset($_POST['ajax'])) {
-		
 		$rtn=array();
-
 		$pagamento='';
 		if(isset($_POST['id_pagamento']) and is_numeric($_POST['id_pagamento'])) {
 			$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id='".$_POST['id_pagamento']."'");
@@ -28,7 +26,6 @@
 				$pagamento=mysqli_fetch_object($sql->mysqry);
 			}
 		}
-
 
 		if($_POST['ajax']=='pagamentoBaixa') {
 
@@ -41,13 +38,13 @@
 						$formaDePagamento=mysqli_fetch_object($sql->mysqry);
 					}
 				}
-
-
-
 				$dataPagamento = (isset($_POST['dataPagamento']) and !empty($_POST['dataPagamento']))?$_POST['dataPagamento']:"";
 				$dataVencimento = (isset($_POST['dataVencimento']) and !empty($_POST['dataVencimento']))?invDate($_POST['dataVencimento']):date('Y-m-d');
 				$valor = (isset($_POST['valor']) and !empty($_POST['valor']))?$_POST['valor']:"";
 				$valorParcela = (isset($_POST['valorParcela']) and !empty($_POST['valorParcela']))?($_POST['valorParcela']):0;
+				$valorMulta = (isset($_POST['valorMulta']) and !empty($_POST['valorMulta']))?($_POST['valorMulta']):0;
+				$valorJuros = (isset($_POST['valorJuros']) and !empty($_POST['valorJuros']))?($_POST['valorJuros']):0;
+				$descontoMultasJuros = (isset($_POST['descontoMultasJuros']) and !empty($_POST['descontoMultasJuros']))?($_POST['descontoMultasJuros']):0;
 				
 				$tipoBaixa = (isset($_POST['tipoBaixa']) and !empty($_POST['tipoBaixa']))?$_POST['tipoBaixa']:"";
 				$obs = (isset($_POST['obs']) and !empty($_POST['obs']))?$_POST['obs']:"";
@@ -56,7 +53,7 @@
 				$creditoBandeira = (isset($_POST['creditoBandeira']) and is_numeric($_POST['creditoBandeira']))?$_POST['creditoBandeira']:"";
 				$creditoParcelas = (isset($_POST['creditoParcelas']) and is_numeric($_POST['creditoParcelas']))?$_POST['creditoParcelas']:"";
 				$id_operadora = (isset($_POST['id_operadora']) and is_numeric($_POST['id_operadora']))?$_POST['id_operadora']:0;
-				$taxa = (isset($_POST['taxa']) and !empty($_POST['taxa']))?valor($_POST['taxa']):0;
+				$taxa = (isset($_POST['taxa']) and !empty($_POST['taxa']))?$_POST['taxa']:0;
 
 				$taxa = floatval($taxa);
 	
@@ -72,6 +69,9 @@
 										id_formadepagamento=$formaDePagamento->id,
 										tipoBaixa='".$tipoBaixa."',
 										cobrarJuros='".$cobrarJuros."',
+										valorJuros='".$valorJuros."',
+										valorMulta='".$valorMulta."',
+										descontoMultasJuros='".$descontoMultasJuros."',
 										id_operadora='".$id_operadora."',
 										id_bandeira='".$creditoBandeira."',
 										id_usuario='".$usr->id."',
@@ -99,6 +99,9 @@
 										id_formadepagamento=$formaDePagamento->id,
 										tipoBaixa='".$tipoBaixa."',
 										cobrarJuros='".$cobrarJuros."',
+										valorJuros='".$valorJuros."',
+										valorMulta='".$valorMulta."',
+										descontoMultasJuros='".$descontoMultasJuros."',
 										id_operadora='".$id_operadora."',
 										taxa='".$taxa."',
 										id_bandeira='".$debitoBandeira."',	
@@ -108,6 +111,9 @@
 							$vSQLBaixa="data='".invDate($dataPagamento)."',
 										data_vencimento='".($dataVencimento)."',
 										id_pagamento=$pagamento->id,
+										valorJuros='".$valorJuros."',
+										valorMulta='".$valorMulta."',
+										descontoMultasJuros='".$descontoMultasJuros."',
 										id_formadepagamento=$formaDePagamento->id,
 										tipoBaixa='".$tipoBaixa."',
 										valor='".($valor)."',
@@ -118,6 +124,9 @@
 										data_vencimento='".invDate($dataPagamento)."',
 										id_pagamento=$pagamento->id,
 										tipoBaixa='".$tipoBaixa."',
+										valorJuros='".$valorJuros."',
+										valorMulta='".$valorMulta."',
+										descontoMultasJuros='".$descontoMultasJuros."',
 										valor='".($valor)."',
 										id_usuario='".$usr->id."'";
 					}
@@ -175,6 +184,9 @@
 							   	"formaDePagamento"=>isset($_formasDePagamento[$x->id_formadepagamento])?utf8_encode($_formasDePagamento[$x->id_formadepagamento]->titulo):'',
 							   	"pago"=>$x->pago,
 							   	"recibo"=>$x->recibo,
+								"valorMulta"=>$x->valorMulta,
+								"valorJuros"=>$x->valorJuros,
+								"descontoMultasJuros"=>$x->descontoMultasJuros,
 							   	"parcelas"=>$x->parcelas,
 							   	"vencido"=>(strtotime($x->data_vencimento)<strtotime(date('Y-m-d'))?true:false),
 							   	"parcela"=>$x->parcela,
@@ -191,7 +203,6 @@
 			$tipo=(isset($_POST['tipo']) and ($_POST['tipo']=='descontos' || $_POST['tipo']=='despesas'))?$_POST['tipo']:'';
 			$valor=(isset($_POST['valor']) and ($_POST['valor']))?$_POST['valor']:0;
 			
-
 			$pagamento='';
 			if(isset($_POST['id_pagamento']) and is_numeric($_POST['id_pagamento'])) {
 				$sql->consult($_p."pacientes_tratamentos_pagamentos","*","where id='".$_POST['id_pagamento']."'");
@@ -360,7 +371,6 @@
 
 		header("Content-type: application/json");
 		echo json_encode($rtn);
-
 		die();
 	}
 	include "includes/header.php";
@@ -556,13 +566,19 @@
 						let despesas = 0;
 						if(rtn.baixas.length>0) {
 							let contador = 0;
-
 							rtn.baixas.forEach(x=> {
+								let textJuros = "";
+								let textMulta = "";
+								let TextDescontoIncargos ="";
+								let ValorParcela = 0
 								let pagamento = '';
+								let alertVencimento = "";
+								let taxaCartao=""
 								if(x.tipoBaixa=="PAGAMENTO") {
 									if(x.formaDePagamento.length>0) {
 										if(x.id_formadepagamento==2) {
 											pagamento=`${x.formaDePagamento}<font color=#999><br />Parcela ${x.parcela} de ${x.parcelas}</font>`;
+											taxaCartao = `<span style="font-size:12px;color:var(--cinza4)">Taxa Cartão: R$ ${number_format((x.valor*parseFloat(x.taxa)/100),2,",",".")}</span><br>`
 										} else {
 											pagamento=x.formaDePagamento; 
 										}
@@ -603,16 +619,37 @@
 								}
 
 								contador++;
-								
+								ValorParcela+=x.valor;
+								if(x.valorMulta>0){
+									ValorParcela+=parseFloat(x.valorMulta);
+									textMulta = `<span style="font-size:12px;color:var(--cinza4)">Multa: R$${number_format(x.valorMulta,2,",",".")}</span></br>`
+								}
+								if(x.valorJuros>0){
+									ValorParcela+=parseFloat(x.valorJuros);
+									textJuros = `<span style="font-size:12px;color:var(--cinza4)">Juros: R$ ${number_format(x.valorJuros,2,",",".")}</span></br>`
+								}
+								if(x.descontoMultasJuros>0){
+									ValorParcela-=parseFloat(x.descontoMultasJuros);
+									TextDescontoIncargos = `<span style="font-size:12px;color:var(--cinza4)">Descontos: R$ ${number_format(x.descontoMultasJuros,2,",",".")}</span></br>`
+								}
+								// let diferenca = (new Date().getTime()-new Date(`${x.vencimento.split('/')[2]}/${x.vencimento.split('/')[1]}/${x.vencimento.split('/')[0]}`).getTime()) / (1000 * 60 * 60 * 24);
+								// if(diferenca>=1){
+								// 	alertVencimento = `<span style="color:red">FATURA VENCIDA!</span>` 
+								// }
 							
-						
 
 								html = `<tr class="js-tr">
 											<td>${icon}</td>
-											<td>${x.data}</td>
+											<td>${x.data}<br>${alertVencimento}</td>
 											<td>${x.tipoBaixa}</td>
 											<td>${pagamento}</td>
-											<td>${number_format(x.valor,2,",",".")}</td>
+											<td>
+												<font style="font-size:18px">${number_format(ValorParcela,2,",",".")}</font></br>
+												${taxaCartao}
+												${textMulta}
+												${textJuros}
+												${TextDescontoIncargos}
+											</td>
 											<td>${btns}</td>
 										</tr>`;
 
@@ -646,7 +683,7 @@
 			})
 		}
 
-		const baixasAtualizarValores = (multasJuros=false) => {
+		const baixasAtualizarValores = () => {
 			let valorParcela = unMoney($('.js-valorParcela').val())
 			let desconto = unMoney($('.js-valorDesconto').val());
 			let despesas = unMoney($('.js-valorDespesa').val());
@@ -656,10 +693,7 @@
 			let valorCorrigido = valorParcela;
 			valorCorrigido-=desconto;
 			valorCorrigido+=despesas;
-			if(multasJuros){
-				saldoPagar+=multasJuros;
-				valorCorrigido+=multasJuros;
-			}
+			
 			$('.js-saldoPagar').val(number_format(saldoPagar,2,",","."));
 			$('.js-valorCorrigido').val(number_format(valorCorrigido,2,",","."));
 		
@@ -670,51 +704,7 @@
 			}
 		}
 
-		const VerificaMultas = (index)=>{
-			let pagamento = pagamentos[index]
-			let erro = "";
-			if(pagamento && pagamento.baixas && pagamento.baixas.length>0){
-				let data = new Date(`${pagamento.vencimento.split('/')[2]}/${pagamento.vencimento.split('/')[1]}/${pagamento.vencimento.split('/')[0]}`);
-				let hoje = new Date();
-				let diferenca = (hoje.getTime()-data.getTime()) / (1000 * 60 * 60 * 24);
-				if(diferenca>0 && pagamento.saldoApagar>0){
-					let ValorMulta = (pagamento.saldoApagar*((_clinica[1].politica_multas)/100))
-					let ValorJuros = (pagamento.saldoApagar*((_clinica[1].politica_juros)/100))*Math.floor(diferenca)
-					pagamentos[index].multaAtraso+=ValorMulta;
-					pagamentos[index].jurosMensal+=ValorJuros;
-					console.log()
-				}
-				pagamento.baixas.forEach((x)=>{
-					if(x.pago==0){
-						data = new Date(`${x.data.split('/')[2]}/${x.data.split('/')[1]}/${x.data.split('/')[0]}`);
-						hoje = new Date();
-						diferenca = (hoje.getTime()-data.getTime()) / (1000 * 60 * 60 * 24);
-						if(diferenca>0 && pagamento.saldoApagar>0){
-							let ValorMulta = (x.valor*((_clinica[1].politica_multas)/100))
-							let ValorJuros = (x.valor*((_clinica[1].politica_juros)/100))*Math.floor(diferenca)
-							pagamentos[index].multaAtraso+=ValorMulta;
-							pagamentos[index].jurosMensal+=ValorJuros;
-							console.log(ValorMulta)
-							console.log(ValorJuros)
-							console.log(diferenca)
-						}
-					}
-				})
-				return true
-			}else{
-				let data = new Date(`${pagamento.vencimento.split('/')[2]}/${pagamento.vencimento.split('/')[1]}/${pagamento.vencimento.split('/')[0]}`);
-				let hoje = new Date();
-				let diferenca = (hoje.getTime()-data.getTime()) / (1000 * 60 * 60 * 24);
-				if(diferenca>0 && pagamento.saldoApagar>0){
-					let ValorMulta = (pagamento.saldoApagar*((_clinica[1].politica_multas)/100))
-					let ValorJuros = (pagamento.saldoApagar*((_clinica[1].politica_juros)/100))*Math.floor(diferenca)
-					pagamentos[index].multaAtraso=ValorMulta;
-					pagamentos[index].jurosMensal=ValorJuros;
-					return true 
-				}
-			}
-			return false
-		}
+	
 	</script>
 
 	<script type="text/javascript">
@@ -777,9 +767,9 @@
 		<?php
 		} else {
 		?>
+			// Quando clica para abrir o aside
 			$('.js-pagamento-item').click(function(){
 				let index = $(this).index('table.js-table-pagamentos .js-pagamento-item');
-				VerificaMultas(index)
 				let jurosMultas=pagamentos[index].multaAtraso+pagamentos[index].jurosMensal
 				$('.js-colunaMultasJuros').hide()
 				$('#js-aside-asFinanceiro .js-multasJuros').val(number_format(0,2,",","."));
@@ -833,13 +823,18 @@
 					let contador = 0;
 					if(pagamentos[index].baixas && pagamentos[index].baixas.length>0) {
 						pagamentos[index].baixas.forEach(x=> {
-
+							let textJuros = "";
+							let textMulta = "";
+							let TextDescontoIncargos ="";
+							let ValorParcela = 0
 							let pagamento = '';
-
+							let alertVencimento = "";
+							let taxaCartao = "";
 							if(x.tipoBaixa=="PAGAMENTO") {
 								if(x.formaDePagamento.length>0) {
 									if(x.id_formadepagamento==2) {
 										pagamento=`${x.formaDePagamento}<font color=#999><br />Parcela ${x.parcela} de ${x.parcelas}</font>`;
+										taxaCartao = `<span style="font-size:12px;color:var(--cinza4)">Taxa Cartão: R$ ${number_format((x.valor*parseFloat(x.taxa)/100),2,",",".")}</span><br>`
 									} else {
 										pagamento=x.formaDePagamento; 
 									}
@@ -878,17 +873,36 @@
 									icon = `<span class="iconify" data-icon="bx:bx-hourglass" data-inline="true" style="color:orange"></span>`;
 								}
 							}
-
-							
-						
+							ValorParcela=x.valor;
+							if(x.valorMulta>0){
+								ValorParcela += parseFloat(x.valorMulta);
+								textMulta = `<span style="font-size:12px;color:var(--cinza4)">Multa: R$${number_format(x.valorMulta,2,",",".")}</span></br>`
+							}
+							if(x.valorJuros>0){
+								ValorParcela+=parseFloat(x.valorJuros);
+							 	textJuros = `<span style="font-size:12px;color:var(--cinza4)">Juros: R$ ${number_format(x.valorJuros,2,",",".")}</span></br>`
+							 }
+							if(x.descontoMultasJuros>0){
+							 	ValorParcela-=parseFloat(x.descontoMultasJuros);
+							 	TextDescontoIncargos = `<span style="font-size:12px;color:var(--cinza4)">Descontos: R$ ${number_format(x.descontoMultasJuros,2,",",".")}</span></br>`
+							}
+							let diferenca = (new Date().getTime()-new Date(`${x.vencimento.split('/')[2]}/${x.vencimento.split('/')[1]}/${x.vencimento.split('/')[0]}`).getTime()) / (1000 * 60 * 60 * 24);
+							if(diferenca>=1){
+								alertVencimento = `<span style="color:red">FATURA VENCIDA!</span>` 
+							}
 							contador++;
-
 							html = `<tr class="js-tr">
 										<td>${icon}</td>
-										<td>${x.data}</td>
+										<td>${x.data}<br>${alertVencimento}</td>
 										<td>${x.tipoBaixa}</td>
 										<td>${pagamento}</td>
-										<td>${number_format(x.valor,2,",",".")}</td>
+										<td>
+											<font style="font-size:18px">${number_format(ValorParcela,2,",",".")}</font></br>
+											${taxaCartao}
+											${textMulta}
+											${textJuros}
+											${TextDescontoIncargos}
+										</td>
 										<td>${btns}</td>
 									</tr>`;
 
@@ -1035,7 +1049,6 @@
 					}
 				}
 			});
-
 
 			$('#js-aside-asFinanceiro .js-baixas').on('click','.js-receber',function(){
 				let pagamentoIndex = $('#js-aside-asFinanceiro .js-index').val();
@@ -1191,39 +1204,84 @@
 			<script type="text/javascript">
 				$(function(){
 					$('.js-item').click(function(){
+
 						let id = $(this).attr('data-id');
 						document.location.href=`pg_pacientes_planosdetratamento_form.php?edita=${id}<?= empty($url)?"":"&".$url;?>`;
 					})
-					$('.js-mostra-juros-multas').click(function(){
-						if($(this).prop('checked')==true){
-							$(this).closest('div').find('dl').each((i,x)=>{
-								if(i>0){
-									$(x).show();
-								}
-							})
+					$('.js-valor').keyup(function(){
+						let idPagamento = $('.js-id_pagamento').val()
+						let pagamento = pagamentos.filter((item)=>{ return item.id_parcela==idPagamento })[0]
+						let data = new Date(`${pagamento.vencimento.split('/')[2]}/${pagamento.vencimento.split('/')[1]}/${pagamento.vencimento.split('/')[0]}`);
+						let hoje = new Date();
+						let diferenca = (hoje.getTime()-data.getTime()) / (1000 * 60 * 60 * 24);
+						if(diferenca>=1){
+							if($('.js-aplicar-multas-juros').prop('checked')==true){
+								$('.js-valorMultas').closest('dl').show()
+								$('.js-valorJuros').closest('dl').show()
+								$('.js-TotalaPagar').closest('dl').show()
+								$('.js-descontoMultasJuros').closest('dl').show()
+							}
+							let ValorDigitado = unMoney($(this).val())
+							let ValorMulta = (ValorDigitado*((_clinica[1].politica_multas)/100))
+							let ValorJuros = (ValorDigitado*(((_clinica[1].politica_juros)/100)))*Math.floor(diferenca)
+							$('.js-valorMultas').val(number_format(ValorMulta,2,",","."))
+							$('.js-valorJuros').val(number_format(ValorJuros,2,",","."))
+							$('.js-TotalaPagar').val(number_format(ValorDigitado+ValorMulta+ValorJuros,2,",","."))
 						}else{
-							$(this).closest('div').find('dl').each((i,x)=>{
-								if(i>0){
-									$(x).hide();
-									if(i==2){
-										$(x).find('input').val("0")
-									}
-								}
-							})
+							$('.js-valorMultas').val(number_format(0,2,",","."))
+							$('.js-valorJuros').val(number_format(0,2,",","."))
+							$('.js-TotalaPagar').val(number_format(0,2,",","."))
+							$('.js-descontoMultasJuros').val(number_format(0,2,",","."))
+							$('.js-descontoMultasJuros').closest('dl').attr('disabled',true)
 						}
 					})
-					$('.js-btn-addMulta').click(function(){
-						let valorDisponivel = unMoney($('.js-multasJuros').val())
-						let valorAplicado = unMoney($('.js-multasJurosAplicar').val())
-						let erro = ""
-						if(valorAplicado<=0) erro ="Voce Não Pode Aplicar 0R$ de Multa";
-						if(valorAplicado>valorDisponivel) erro =`Voce Não Pode Aplicar Mais do que o Limite de Multa Disponivel: ${number_format(valorDisponivel,2,",",".")}`;
-						if(erro){
-							swal({title: "Erro!", text: erro,  html:true,type:"error", confirmButtonColor: "#424242"});
-							return
-						}else{
-							baixasAtualizarValores(valorAplicado)
+					$('.js-descontoMultasJuros').keyup(function(){
+						let ValorDigitado = unMoney($(this).val())
+						let valorOriginal = unMoney($('.js-valor').val())
+						let ValorJuros = unMoney($('.js-valorJuros').val())
+						let ValorMulta = unMoney($('.js-valorMultas').val())
+						if(ValorDigitado>(valorOriginal+ValorJuros+ValorMulta)){
+							swal({title: "Erro!", text: "Voce Não Pode Ofertar um Desconto Maior que o valor da Parcela Somando aos encargos!",  html:true,type:"error", confirmButtonColor: "#424242"});
+							($(this).val("0"));
+							ValorDigitado=0
 						}
+						$('.js-TotalaPagar').val(number_format((valorOriginal+ValorJuros+ValorMulta)-ValorDigitado,2,",","."))
+					})
+					$('.js-aplicar-multas-juros').click(function(){
+						let idPagamento = $('.js-id_pagamento').val()
+						let pagamento = pagamentos.filter((item)=>{ return item.id_parcela==idPagamento })[0]
+						let data = new Date(`${pagamento.vencimento.split('/')[2]}/${pagamento.vencimento.split('/')[1]}/${pagamento.vencimento.split('/')[0]}`);
+						let hoje = new Date();
+						let diferenca = (hoje.getTime()-data.getTime()) / (1000 * 60 * 60 * 24);
+						if(diferenca>=1){
+							if($(this).prop('checked')==true){
+								let ValorDigitado = unMoney($('.js-valor').val())
+								if(ValorDigitado>0){
+									let ValorMulta = (ValorDigitado*((_clinica[1].politica_multas)/100))
+									let ValorJuros = (ValorDigitado*(((_clinica[1].politica_juros)/100)))*Math.floor(diferenca)
+									$('.js-valorMultas').val(number_format(ValorMulta,2,",","."))
+									$('.js-valorJuros').val(number_format(ValorJuros,2,",","."))
+									$('.js-TotalaPagar').val(number_format(ValorDigitado+ValorJuros+ValorMulta,2,",","."))
+								}
+								$('.js-valorMultas').closest('dl').show()
+								$('.js-valorJuros').closest('dl').show()
+								$('.js-TotalaPagar').closest('dl').show()
+								$('.js-descontoMultasJuros').closest('dl').show()
+							}else{
+							$('.js-valorMultas').val("0")
+							$('.js-valorJuros').val("0")
+							$('.js-valorMultas').closest('dl').hide()
+							$('.js-valorJuros').closest('dl').hide()
+							$('.js-TotalaPagar').closest('dl').hide()
+							$('.js-descontoMultasJuros').closest('dl').hide()
+							$('.js-valorMultas').val(number_format(0,2,",","."))
+							$('.js-valorJuros').val(number_format(0,2,",","."))
+							$('.js-TotalaPagar').val(number_format(0,2,",","."))
+							$('.js-descontoMultasJuros').val(number_format(0,2,",","."))
+			
+
+						}
+					}
 					})
 				})
 			</script>
@@ -1354,7 +1412,7 @@
 												$baixaEmAberta=false;
 												foreach($_baixas[$x->id] as $b) {
 													$formaobs='';
-													$baixaVencida=false;
+												//	$baixaVencida=false;
 													if((strtotime($b->data_vencimento)<strtotime(date('Y-m-d'))) && $b->pago==0) {
 														$baixaVencida=true;
 														
@@ -1390,6 +1448,9 @@
 																	   	"vencido"=>(strtotime($b->data_vencimento)<strtotime(date('Y-m-d'))?true:false),
 																	   	"parcela"=>$b->parcela,
 																	   	"obs"=>utf8_encode($b->obs),
+																	   	"valorJuros"=>$b->valorJuros,
+																	   	"valorMulta"=>$b->valorMulta,
+																	   	"taxa"=>$b->taxa,
 																	   	"total"=>(float)$b->valor);
 												
 
