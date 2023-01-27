@@ -58,7 +58,7 @@
 
 	// banco e contas
 		$_bancos=array();
-		$sql->consult($_p."financeiro_bancosecontas","*","order by titulo asc");
+		$sql->consult($_p."financeiro_bancosecontas","*"," WHERE lixo =0 order by titulo asc");
 		while($x=mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id]=$x;
 
 	
@@ -653,17 +653,15 @@
 
 				<fieldset class="js-fieldset-conta">
 					<legend>Conta</legend>
-					
-
 					<dl>
 						<dd>
 							<select class="js-id_banco">
 								<option value="">-</option>
 								<?php
 								foreach($_bancos as $x) {
-									if($x->tipo=="dinheiro") {
+									//if($x->tipo=="dinheiro") {
 										echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
-									}
+									//}
 								}
 								?>
 							</select>

@@ -344,7 +344,8 @@
 
 				}
 			}
-
+			$id_banco = (isset($_POST['id_banco']) and is_numeric($_POST['id_banco']))?$_POST['id_banco']:0;
+		
 			$dataPagamento='';
 			if(isset($_POST['dataPagamento']) and !empty($_POST['dataPagamento'])) {
 				list($dia,$mes,$ano) = explode("/",$_POST['dataPagamento']);
@@ -357,7 +358,7 @@
 
 			if(is_object($baixa))  {
 				if(!empty($dataPagamento)) {
-					$sql->update($_p."pacientes_tratamentos_pagamentos_baixas","pago=1,pago_data='".$dataPagamento."',pago_id_usuario=$usr->id","where id=$baixa->id");
+					$sql->update($_p."pacientes_tratamentos_pagamentos_baixas","pago=1,pago_data='".$dataPagamento."',pago_id_usuario=$usr->id,id_banco='$id_banco'","where id=$baixa->id");
 
 					$rtn=array('success'=>true);
 				} else {
@@ -1069,12 +1070,11 @@
 						$('#js-aside-asFinanceiro-receber .js-valorParcela').val(number_format(baixa.valor,2,",","."));
 						$('#js-aside-asFinanceiro-receber .js-formaPagamento').val(baixa.formaDePagamento);
 
-						if(baixa.formaDePagamentoTipo=="dinheiro") {
-							$('#js-aside-asFinanceiro-receber .js-fieldset-conta').show();
-						} else {
-
-							$('#js-aside-asFinanceiro-receber .js-fieldset-conta').hide();
-						}
+						$('#js-aside-asFinanceiro-receber .js-fieldset-conta').show();
+						// if(baixa.formaDePagamentoTipo=="dinheiro") {
+						// } else {
+						// 	$('#js-aside-asFinanceiro-receber .js-fieldset-conta').hide();
+						// }
 
 						$("#js-aside-asFinanceiro-receber").fadeIn(100,function() {
 							$("#js-aside-asFinanceiro-receber .aside__inner1").addClass("active");
@@ -1087,6 +1087,8 @@
 				let pagamentoIndex = $('#js-aside-asFinanceiro .js-index').val();
 				let baixaIndex = $('#js-aside-asFinanceiro-receber .js-index').val();
 				let dataPagamento = $('#js-aside-asFinanceiro-receber .js-dataPagamento').val();
+				let bancoPagamento = $('#js-aside-asFinanceiro-receber .js-id_banco').val();
+				return 	
 
 				let erro='';
 				if(!pagamentos[pagamentoIndex].baixas[baixaIndex]) erro='Pagamento não encontrado!';
@@ -1108,7 +1110,7 @@
 							obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>');
 							obj.attr('data-loading',1);
 
-							let data = `ajax=receber&id_baixa=${id_baixa}&dataPagamento=${dataPagamento}`;
+							let data = `ajax=receber&id_baixa=${id_baixa}&dataPagamento=${dataPagamento}&id_banco=${bancoPagamento}`;
 
 							$.ajax({
 								type:"POST",

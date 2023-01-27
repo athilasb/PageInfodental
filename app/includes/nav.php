@@ -37,7 +37,11 @@
 						'whatsapp'=>array('page'=>'pg_configuracoes_whatsapp.php',
 												'pages'=>explode(",","pg_configuracoes_whatsapp.php,pg_configuracoes_whatsapp_pesquisadesatisfacao.php"),
 												'title'=>'Whatsapp',
-												'icon'=>'<i class="iconify" data-icon="la:whatsapp"></i>')
+												'icon'=>'<i class="iconify" data-icon="la:whatsapp"></i>'),
+						'financeiro'=>array('page'=>'pg_clinica_financeiro.php',
+												'pages'=>explode(",","pg_clinica_financeiro.php"),
+												'title'=>'Financeiro',
+												'icon'=>'<i class="iconify" data-icon="tabler:pig-money"></i>')
 						
 				   );
 	?>
