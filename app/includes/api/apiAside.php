@@ -354,7 +354,7 @@
 						$vSQL.=",data=now(),id_usuario=$usr->id";
 
 						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
-						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags)."'";
+						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags).",'";
 						else $vSQL.=",tags=''";
 
 						$sql->add($_p."agenda",$vSQL);
@@ -419,7 +419,7 @@
 
 
 						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
-						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags)."'";
+						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags).",'";
 						else $vSQL.=",tags=''";
 
 						$vSQL.=",data=now(),id_usuario=$usr->id";
@@ -578,7 +578,7 @@
 								";
 
 						if(isset($_POST['obs'])) $vSQL.=",obs='".addslashes(utf8_decode($_POST['obs']))."'";
-						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags)."'";
+						if(count($tags)>0) $vSQL.=",tags=',".implode(",",$tags).",'";
 						else $vSQL.=",tags=''";
 
 						$idStatusNovo=((isset($_POST['id_status']) and is_numeric($_POST['id_status']))?$_POST['id_status']:'');
@@ -760,6 +760,43 @@
 					$checado=(isset($_POST['checado']) and $_POST['checado']==1)?1:0;
 					$sql->update($_tableChecklist,"checado='".$checado."'","WHERE id='".$agendaChecklist->id."' and id_agenda='".$agenda->id."'");
 					$rtn=array('success'=>true);
+				}
+			}
+
+			else if($_POST['ajax']=="tagsListar") {
+
+				$agenda='';
+				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
+					$sql->consult($_p."agenda","*","where id='".addslashes($_POST['id_agenda'])."'");
+					if($sql->rows) {
+						$agenda=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				if(empty($agenda)) $rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
+				else {
+
+					$_tags=array();
+					$sql->consult($_p."parametros_tags","*","WHERE lixo=0");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$_tags[$x->id]=$x;
+					}
+
+					$regs=array();
+					if(!empty($agenda->tags)) {
+
+						$tags = explode(",", $agenda->tags);
+						foreach($tags as $id) {
+							if(is_numeric($id) and isset($_tags[$id])) {
+								$regs[]=array('id_tag'=>$id,
+											  'id_agenda'=>$agenda->id,
+											  'titulo' => utf8_encode($_tags[$id]->titulo),
+											  'cor'=>utf8_encode($_tags[$id]->cor));
+							}
+						}
+					}
+
+					$rtn=array('success'=>true,'regs'=>$regs);
 				}
 			}
 		 
@@ -2786,8 +2823,15 @@
 				else {
 
 					$vSQL="titulo='$titulo',cor='$cor'";
-					$sql->add($_tableTags,$vSQL);
-					$id_tag=$sql->ulid;
+
+					if(isset($_POST['id']) and is_numeric($_POST['id']) and $_POST['id']>0) {
+						$sql->update($_tableTags, $vSQL, "WHERE id='".addslashes($_POST['id'])."'");
+						$id_tag=$_POST['id'];
+					} else {
+						$sql->add($_tableTags,$vSQL);
+						$id_tag=$sql->ulid;
+					}
+					
 					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='',tabela='".$_tableTags."',id_reg='$id_tag'");
 				
 					$rtn=array('success'=>true,
@@ -4088,10 +4132,66 @@
 							</section>
 
 							<script>
+								const tagsListar = () => {
+									let id_agenda = $('#js-aside-edit input[name=id]').val();
+									$('.js-tags-table tbody').html('');
+									$('.js-asTag-titulo').val('');
+									$('.js-asTag-cor').val("#c18c6a");
+									$('input[name=id_tag]').val(0);
+
+									let data = `ajax=tagsListar&id_agenda=${id_agenda}`;
+
+									$.ajax({
+										type:"POST",
+										url:baseURLApiAside,
+										data:data,
+										success:function(rtn) {
+											if(rtn.success) {
+
+												if(rtn.regs.length>0) {
+
+													rtn.regs.forEach(x=>{
+														$(`.js-tags-table tbody`).append(`<tr>
+																<td>
+																	${x.titulo}
+																</td>
+																<td><input type="color" value="${x.cor}" disabled /></td>
+																<td style="text-align:right;">
+																	<a href="javascript:;" class="button js-editar" data-id="${x.id_tag}" data-titulo="${x.titulo}" data-cor="${x.cor}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+
+																	<a href="javascript:;" class="button js-remover" data-id="${x.id_tag}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+																</td>
+															</tr>`);
+													});
+												}
+											}
+										}
+									})
+								}
+
 								$(function() {
 									$('.js-tab a').click(function() {
 										$(".js-tab a").removeClass("active");
 										$(this).addClass("active");							
+									});
+
+									$(".js-btn-aside-tag").click(function() {
+										$(".aside-tag").fadeIn(100,function() {
+											$(".aside-tag .aside__inner1").addClass("active");
+											tagsListar();
+										});
+									});
+
+									$('.js-tags-table').on('click','.js-editar',function(){
+										let id = $(this).attr('data-id');
+										let titulo = $(this).attr('data-titulo');
+										let cor = $(this).attr('data-cor');
+
+										if(id) {
+											$('input[name=id_tag]').val(id);
+											$('.js-asTag-titulo').val(titulo);
+											$('.js-asTag-cor').val(cor);
+										}
 									});
 								});
 							</script>
@@ -4208,7 +4308,7 @@
 													?>
 											</select>
 
-											<a  href="javascript:;" class="js-btn-aside button" data-aside="tag" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
+											<a  href="javascript:;" class="js-btn-aside-tag button" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
 										</dd>
 									</dl>
 								</div>
@@ -5073,7 +5173,6 @@
 
 					$(function(){
 
-
 						$('.js-asPaciente-submit').click(function(){
 							let obj = $(this);
 							if(obj.attr('data-loading')==0) {
@@ -5152,6 +5251,7 @@
 							let obj = $(this);
 							if(obj.attr('data-loading')==0) {
 
+								let id = $('input[name=id_tag]').val();
 								let titulo = $(`.js-asTag-titulo`).val();
 								let cor = $(`.js-asTag-cor`).val();
 
@@ -5162,7 +5262,7 @@
 									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 									obj.attr('data-loading',1);
 
-									let data = `ajax=asTagPersistir&titulo=${titulo}&cor=${cor}`;
+									let data = `ajax=asTagPersistir&titulo=${titulo}&cor=${cor}&id=${id}`;
 
 									$.ajax({
 										type:'POST',
@@ -5173,6 +5273,7 @@
 
 												$(`.js-asTag-titulo`).val(``);
 
+												//$('.js-tags').empty();
 												$('.js-tags').append(`<option value="${rtn.id_tag}" selected>${rtn.titulo}</option>`);
 												$('.js-tags').trigger('chosen:updated');
 												$('.aside-tag .aside-close').click();
@@ -5314,8 +5415,13 @@
 				</section>
 
 				<!-- Aside Tag -->
-				<section class="aside aside-tag">
+				<section class="aside aside-tag aside_sub">
 					<div class="aside__inner1">
+
+						<script type="text/javascript">
+							$(function(){
+							});
+						</script>
 
 						<header class="aside-header">
 							<h1>Nova Tag</h1>
@@ -5323,6 +5429,7 @@
 						</header>
 
 						<form method="post" class="aside-content form js-asTag-form">
+							<input type="hidden" name="id_tag" value="0" />
 
 							<section class="filter" style="margin-bottom:0;">
 								<div class="filter-group"></div>
@@ -5346,6 +5453,20 @@
 									<dt>Cor</dt>
 									<dd><input type="color" class="js-asTag-cor" value="#c18c6a" /></dd>
 								</dl>
+							</div>
+
+							<div class="list2" style="margin-top:2rem;">
+								<table class="js-tags-table">
+									<thead>
+										<tr>
+											<th>TÍTULO</th>
+											<th>COR</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
 							</div>
 
 						</form>

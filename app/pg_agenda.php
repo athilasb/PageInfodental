@@ -1107,8 +1107,8 @@
 			$('#js-aside-add .js-tags').chosen('destroy');
 			$('#js-aside-add .js-tags').chosen();
 			$('#js-aside-add .js-tags').trigger('chosen:updated');
-			checklistItens();
 			agendamentosProfissionais(`add`);
+			checklistItens();
 		}
 		
 		const formatTemplate = (state) => {
