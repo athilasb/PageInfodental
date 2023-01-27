@@ -292,6 +292,7 @@
 		if(isset($_POST['acao'])) {
 			if($_POST['acao']=="wlib") {
 				$processa=true;
+			
 				if(empty($cnt)) {
 					$sql->consult($_p."pacientes_tratamentos","*","where id_paciente=$paciente->id and titulo='".addslashes($_POST['titulo'])."' and lixo=0");
 					if($sql->rows) {
@@ -304,9 +305,10 @@
 				if($processa===true) {	
 					// persiste as informacoes do tratamento
 					if($_POST['acao']=="wlib") {
-						if(isset($_POST['tipo_financeiro']) && $_POST['tipo_financeiro']=='politica'){
+						if(isset($_POST['tipo_financeiro']) && $_POST['tipo_financeiro']=='politica' && !$_POST['parcelas']){
 							$_POST['parcelas'] = count(json_decode($_POST['pagamentos']))??0;
 						}
+					
 						$vSQL=$adm->vSQL($campos,$_POST);
 						$values=$adm->values;
 					
@@ -316,9 +318,8 @@
 						}
 						$idProfissional=(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional']))?$_POST['id_profissional']:0;
 
-						if(isset($_POST['parcelas']) and is_numeric($_POST['parcelas'])) $vSQL.="parcelas='".$_POST['parcelas']."',";
+						//if(isset($_POST['parcelas']) and is_numeric($_POST['parcelas'])) $vSQL.="parcelas='".$_POST['parcelas']."',";
 						if(isset($_POST['pagamento'])) $vSQL.="pagamento='".$_POST['pagamento']."',";
-
 						if(is_object($cnt)) {
 							if(!empty($vSQL)) {
 								$vSQL=substr($vSQL,0,strlen($vSQL)-1);
@@ -654,11 +655,10 @@
 													$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQLPagamento)."',tabela='".$_table."_pagamentos',id_reg='".$id_tratamento_pagamento."'");
 												}
 
-
+											
 												if(isset($x->id_formapagamento) and is_numeric($x->id_formapagamento) and isset($_formasDePagamento[$x->id_formapagamento])) {
 													$f=$_formasDePagamento[$x->id_formapagamento];
 													if($f->tipo=="credito") {
-
 														if(isset($x->creditoBandeira) and is_numeric($x->creditoBandeira) and isset($_bandeiras[$x->creditoBandeira])) {
 
 															$b = $_bandeiras[$x->creditoBandeira];
@@ -742,7 +742,6 @@
 													}
 												}
 											} 
-
 											foreach($vSQLBaixa as $x) {
 												$x=(object)$x;
 												$vsql="";
@@ -919,6 +918,7 @@
 		var valorTaxas = 0;
 		var _politicas = <?=json_encode($_politicas??[]);?>;
 		var _formasDePagamento = <?=json_encode($_formasDePagamento)??false; ?>;
+		var _bandeiras = <?=json_encode($creditoBandeiras)??false; ?>;
 		var temPolitica = false;
 		var pagamentos = JSON.parse(`<?=($values['pagamentos']);?>`);
 		var usuario = '<?= utf8_encode($usr->nome);?>';
@@ -1220,7 +1220,8 @@
 						valorPagamentos+=x.valor
 						$('.js-listar-parcelas').find('.js-id_formadepagamento').each((k,select)=>{
 							$(select).html(`<option value='${x.id_formapagamento}' selected>${_formasDePagamento[x.id_formapagamento]?.titulo}</option>`)
-							$(select).closest('article').find('.js-parcelas').html(`<option value='${x.parcelas}' selected>${x.parcelas}X</option>`)
+							$(select).attr('disabled',true);
+							$(select).closest('article').find('.js-parcelas').html(`<option value='${x.qtdParcelas}' selected>${x.qtdParcelas}X</option>`)
 							$(select).closest('article').find('js-identificador').val(`${x.identificador}`)
 
 
@@ -1240,21 +1241,28 @@
 									if(x.metodo=='credito'){
 										if(classe == 'js-creditoBandeira'){
 											$(dls).show()
-											let bandeirasAceitas = []
-											$(dls).find('select optgroup option').each((key,option)=>{
-												if($(option).attr('data-parcelas')>=x.parcelas){
-													bandeirasAceitas.push($(option))
-												}		
-											})
+											$(dls).find('select').attr('disabled',true)
+											let bandeiraFiltrada = false
+											for(let g in _bandeiras){
+												if(_bandeiras[g].bandeiras ){
+													for(let b in _bandeiras[g].bandeiras){
+														if(_bandeiras[g].bandeiras[b].id_bandeira==x.creditoBandeira ){
+															bandeiraFiltrada = _bandeiras[g].bandeiras[b]
+															bandeiraFiltrada.id_operadora = g
+															bandeiraFiltrada.id_operadorabandeira = `${g}${bandeiraFiltrada.id_bandeira}`
+														}
+													}
+												}
+											}
 											$(dls).find('select optgroup').html("")
-											bandeirasAceitas.forEach(x=>{
-												$(dls).find('select optgroup').append(`<option value="${$(x).val()}" data-populaParcela="false" data-parcelas="${$(x).attr('data-parcelas')}" data-parcelas-semjuros="${$(x).attr('data-parcelas-semjuros')}" data-id_operadora="${$(x).attr('data-id_operadora')}" data-id_operadorabandeira="${$(x).attr('data-id_operadorabandeira')}" >${x.text()}</option>`)
-											})
+											 if(bandeiraFiltrada){
+											 	$(dls).find('select optgroup').append(`<option value="${bandeiraFiltrada.id_bandeira}" data-populaParcela="false" data-parcelas="${bandeiraFiltrada.parcelas}" data-parcelas-semjuros="${bandeiraFiltrada.semJuros}" data-id_operadora="${bandeiraFiltrada.id_operadora}" data-id_operadorabandeira="${bandeiraFiltrada.id_operadora}" selected >${bandeiraFiltrada.titulo}</option>`)
+											}
 										}
 										if(classe == 'js-parcelas'){
 											$(dls).show()
 											$(dls).find('select').append(`
-												<option value='${x.parcelas??1}' selected>${x.parcelas??0} x </option>
+												<option value='${x.qtdParcelas??1}' selected>${x.qtdParcelas??0} x </option>
 											`)
 											$(dls).find('select').attr('disabled',true)
 										}
@@ -1282,6 +1290,8 @@
 							})
 						})
 					})
+					valorOriginalProcedimentos = valorPagamentos
+					updateValorText()
 				}
 				return
 			}
@@ -1440,14 +1450,17 @@
 		const alternaManualPolitica = (tipo)=>{
 			if(tipo=='manual'){
 				//pagamentos=[]
+			//	$('.js-pagamentos-quantidade').val("0")
 				AtualizaPolitica()
 				$('.js-tipo').hide(); 
 				$('.js-tipo-manual').show();
 				$('.js-tipo-politica').hide();
 				$('.js-tipo-politica table').html("")
+				atualizaValor()
 				updateValorText();
 			}else if(tipo=='politica'){
 				//pagamentos=[]
+			//	$('.js-pagamentos-quantidade').val("")
 				AtualizaPolitica()
 				$('.js-tipo').hide(); 
 				$('.js-tipo-politica').show();
@@ -1481,7 +1494,8 @@
 					swal({title:"Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 				} else {
 					$('.js-pagamentos-quantidade').val(pagamentos.length)
-					pagamentosPersistirObjeto()
+					pagamentosPersistirObjeto();
+
 					$('.js-form-plano').submit();
 				}
 			});
@@ -1547,6 +1561,7 @@
 			});
 			//verifica se ha alteracao no valor de cada parcela 
 			$('.js-listar-parcelas').on('keyup','.js-valor',function(){
+				let indexInicial = $(this).attr('data-ordem');
 				let CamposValor = $('.js-listar-parcelas').find('.js-valor');
 				let valorDigitado = unMoney($(this).val());
 				let numeroParcelas = CamposValor.length;
@@ -1554,31 +1569,37 @@
 				let erro = "";
 				if(valorDigitado>valorTotalProcedimentos){
 					swal({title: "Erro!", text: 'Os valores das parcelas não podem superar o valor total', html:true, type:"error", confirmButtonColor: "#424242"});
-					$(this).val(number_format(valorTotalProcedimentos/numeroParcelas,2,",","."))
+					let valor = 0
+					CamposValor.each(function (index, input){
+						if($(input).attr('data-ordem')<indexInicial){
+							valor +=unMoney($(input).val())
+						}
+					})
+					$(this).val(number_format(valorTotalProcedimentos-valor,2,",","."))
+					// $(this).val(number_format(valorTotalProcedimentos/numeroParcelas,2,",","."))
 					return;
 				}
 				let valor = 0
 				let valorAteInput = valorDigitado
 				let valorFinal =0
 				let valorRestante = (valorTotalProcedimentos-valorDigitado)
+			
 				CamposValor.each(function (index, input){
 					valorFinal += valorRestante-unMoney($(input).val())
-					
-					if(index+1<dataOrdem){
+					if((index+1)<dataOrdem){
 						valorRestante = valorRestante-unMoney($(input).val())
 					}
-					if(index+1>dataOrdem){
-						
-						$(input).val(number_format(valorRestante/((numeroParcelas-dataOrdem)),2,",","."))
+					if((index+1)>dataOrdem){
+						$('.js-listar-parcelas').find(`.js-valor:eq(${index})`).val(number_format(valorRestante/((numeroParcelas-dataOrdem)),2,",","."))
 					}
-					if(index+1 == numeroParcelas){
-						if(valorDigitado>valorRestante){
-							swal({title: "Erro!", text: 'Os valores das parcelas não podem superar o valor total do procedimento', html:true, type:"error", confirmButtonColor: "#424242"});
-							$(this).val(number_format(valorRestante,2,",","."))
-							valorRestante = 0
-							return
-						}
-					}
+					// if(index+1 == numeroParcelas){
+					// 	if(valorDigitado>valorRestante){
+					// 		swal({title: "Erro!", text: 'Os valores das parcelas não podem superar o valor total do procedimento', html:true, type:"error", confirmButtonColor: "#424242"});
+					// 		$(this).val(number_format(valorRestante,2,",","."))
+					// 		valorRestante = 0
+					// 		return
+					// 	}
+					// }
 				});
 			});
 		});
@@ -1652,7 +1673,7 @@
 									} else {
 									?>
 									<div class="button-group tooltip" style="opacity:0.4" title="Salve o tratamento para poder alterar o status">
-										<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:timer-24-regular"></i><span>Aguard. Aprovação</span></a>
+										<a href="javascript:;" class="button  active"><i class="iconify" data-icon="fluent:timer-24-regular"></i><span>Aguard. Aprovação</span></a>
 										<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i><span>Aprovado</span></a>
 										<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Reprovado</span></a>
 									</div>

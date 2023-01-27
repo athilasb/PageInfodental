@@ -913,7 +913,7 @@
 				<fieldset  class="js-fieldset-credito">
 					<legend>Crédito</legend>
 
-						<div class="colunas5">
+						<div class="colunas5" style="display:none">
 							<dl class="dl2">
 								<dt>Quantidade de parcelas sem juros para o cliente</dt>
 								<dd>

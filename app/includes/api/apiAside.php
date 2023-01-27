@@ -2980,7 +2980,6 @@
 												$('#js-aside-edit select[name=id_profissional]').find(':selected').prop('selected',false);
 												if(rtn.data.profissionais) {
 													rtn.data.profissionais.forEach(idProfissional=> {
-														//console.log(idProfissional);
 														$('#js-aside-edit-agendaPessoal select[name=id_profissional]').find(`[value=${idProfissional}]`).prop('selected',true);
 													})
 												}
@@ -3203,33 +3202,20 @@
 						}
 
 						const agendamentosProfissionais = (tipo) => {
-							
 
 							if(tipo=="add" || tipo=="edit") {
-
 								let aside = $(`#js-aside-${tipo}`);
-
 								let profissionaisSelecionados = aside.find('.js-profissionais option:selected').length>0 ? aside.find('.js-profissionais').val() : [];
 								let aData = aside.find('input[name=agenda_data]').val();
 								let aHora = aside.find('input[name=agenda_hora]').val();
 								let id_cadeira = $(`#js-aside-${tipo} select[name=id_cadeira] option:selected`).val();
 
 								let data = `ajax=agendamentosProfissionais&data=${aData}&hora=${aHora}&id_cadeira=${id_cadeira}`;
-								
-								console.log('------ CHAMOU AQUI ----------')
-								console.log(tipo)
-								console.log(profissionaisSelecionados)
-								console.log(aData)
-								console.log(aHora)
-								console.log(id_cadeira)
-								console.log(data)
-								console.log("--------------------------")
 								$.ajax({
 									type:"POST",
 									url:baseURLApiAside,
 									data:data,
 									success:function(rtn) {
-										console.log(rtn)
 										if(rtn.success) {
 											if(rtn.listaProfissionais || rtn.listaProfissionaisDestaque) {
 												aside.find('.js-profissionais option').remove();
@@ -3312,7 +3298,6 @@
 
 									let erro=false;
 									$(`#js-aside-add form .obg-${agendaPessoal}`).each(function(index,elem){
-									//	console.log($(this).attr('name'));
 										if($(this).attr('name')!==undefined && $(this).val()  && $(this).val().length==0) {
 											$(elem).addClass('erro');
 											erro=true;
@@ -3643,7 +3628,6 @@
 
 									let erro=false;
 									$('#js-aside-edit-agendaPessoal form .obg').each(function(index,elem){
-										//console.log($(this).attr('name'));
 										if($(this).attr('name')!==undefined && $(this).val().length==0) {
 											$(elem).addClass('erro');
 											erro=true;
@@ -3935,7 +3919,6 @@
 
 									let erro=false;
 									$('#js-aside-edit form .obg').each(function(index,elem){
-										//console.log($(this).attr('name'));
 										if($(this).attr('name')!==undefined && $(this).val().length==0) {
 											$(elem).addClass('erro');
 											erro=true;
@@ -3983,16 +3966,13 @@
 
 													//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
 												} else if(rtn.error) {
-													console.log(rtn)
 													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 
 												} else {
-													console.log(rtn)
 													swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente! Error:001", type:"error", confirmButtonColor: "#424242"});
 												}
 											},
 											error:function(rtn){
-												console.log(rtn)
 												swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente! Error:002", type:"error", confirmButtonColor: "#424242"});
 											}
 										}).done(function(){
