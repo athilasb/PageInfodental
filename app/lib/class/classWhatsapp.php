@@ -482,7 +482,7 @@
 			$sql->consult($_p."whatsapp_disparos","*","where ativo=1 and data > NOW() - INTERVAL 15 MINUTE");
 			if($sql->rows) {
 				$this->erro="Já existe disparo ativo";
-				return false;
+				//return false;
 			}
 
 			// consulta lista de disparos

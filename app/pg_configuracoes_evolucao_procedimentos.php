@@ -19,7 +19,7 @@
 
 		$procedimento='';
 		if(isset($_POST['id_procedimento']) and is_numeric($_POST['id_procedimento'])) {
-			$sql->consult($_p."parametros_procedimentos","*","where id='".addslashes($_POST['id_procedimento'])."' and lixo=0");
+			$sql->consult($_p."parametros_procedimentos","*","where id='".($_POST['id_procedimento'])."' and lixo=0");
 			if($sql->rows) {
 				$procedimento=mysqli_fetch_object($sql->mysqry);
 			}
@@ -40,6 +40,7 @@
 			} else {
 
 				$data = array('id'=>$cnt->id,
+								'pub'=>$cnt->pub,
 								'titulo'=>utf8_encode($cnt->titulo),
 								'id_especialidade'=>$cnt->id_especialidade,
 								'id_regiao'=>$cnt->id_regiao,
@@ -89,6 +90,7 @@
 			$plano=(isset($_POST['id_plano']) and isset($_planos[$_POST['id_plano']]))?$_planos[$_POST['id_plano']]:'';
 			$valor=(isset($_POST['valor']) and is_numeric($_POST['valor']))?addslashes($_POST['valor']):0;
 			$obs=isset($_POST['obs'])?addslashes(utf8_decode($_POST['obs'])):'';
+			$pub=(isset($_POST['pub']) and $_POST['pub']==1)?1:0;
 
 			if(empty($procedimento)) $rtn=array('success'=>false,'error'=>'Procedimento não encontrado!');
 			else if(empty($plano)) $rtn=array('success'=>false,'error'=>'Plano não encontrado!');
@@ -99,6 +101,7 @@
 						id_plano='$plano->id',
 						valor='".$valor."',
 						obs='".$obs."',
+						pub='".$pub."',
 						lixo=0";
 
 				if(is_object($procedimentoPlano)) {
@@ -128,6 +131,7 @@
 				if($sql->rows) {
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						$regs[]=array('id' =>$x->id,
+											'pub' =>$x->pub,
 											'id_plano' =>$x->id_plano,
 											'plano' =>isset($_planos[$x->id_plano])?utf8_encode($_planos[$x->id_plano]->titulo):'',
 											'valor' => (float)$x->valor,
@@ -147,9 +151,10 @@
 				if($sql->rows) {
 					$x=mysqli_fetch_object($sql->mysqry);
 					$procedimentoPlano=(object)array('id' =>$x->id,
-									'id_plano' =>$x->id_plano,
-									'obs' =>utf8_encode((addslashes($x->obs))),
-									'valor' => $x->valor);
+														'pub'=>$x->pub,
+														'id_plano' =>$x->id_plano,
+														'obs' =>utf8_encode((addslashes($x->obs))),
+														'valor' => $x->valor);
 				}
 			}
 
@@ -177,7 +182,7 @@
 			if(is_object($procedimentoPlano)) {
 				$sql->update($_table."_planos","lixo=$usr->id,lixo_data=now()","where id=$procedimentoPlano->id");
 
-				$rtn=array('success'=>true);
+				$rtn=array('success'=>true,'id_procedimento'=>$procedimentoPlano->id_procedimento,'id_plano'=>$procedimentoPlano->id_plano);
 			} else {
 				$rtn=array('success'=>false,'error'=>'Plano não encontrado!');
 			}
@@ -210,6 +215,105 @@
 
 		}
 
+		else if($_POST['ajax']=="procedimentoPlanoPub") {
+
+			$pub = (isset($_POST['pub']) and $_POST['pub']==1)?1:0;
+			$plano = (isset($_POST['id_plano']) and isset($_planos[$_POST['id_plano']]))?$_planos[$_POST['id_plano']]:'';
+
+			$erro='';
+
+			$procedimentoPlano='';
+			if(empty($procedimento)) $erro='Procedimento não encontrado!';
+			else if(empty($plano)) $erro='Plano não encontrado!';
+			else {
+				$sql->consult($_p."parametros_procedimentos_planos","*","where id_plano=$plano->id and id_procedimento=$procedimento->id and lixo=0");
+				if($sql->rows) {
+					$procedimentoPlano=mysqli_fetch_object($sql->mysqry);
+				} else {
+					$vSQL="id_procedimento=$procedimento->id,
+							pub=1,
+							id_plano='$plano->id',
+							valor='0',
+							obs='',
+							lixo=0,
+							data=now(),
+							id_usuario=$usr->id";
+
+					$sql->add($_p."parametros_procedimentos_planos",$vSQL);
+					$sql->consult($_p."parametros_procedimentos_planos","*","where id=$sql->ulid");
+					if($sql->rows) $procedimentoPlano=mysqli_fetch_object($sql->mysqry);
+
+					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='',tabela='".$_table."_planos',id_reg='$procedimentoPlano->id'");
+				}
+			}
+
+			if(empty($erro)) {
+
+				$vSQL="pub='$pub'";
+				$vWHERE="where id=$procedimentoPlano->id";
+
+				$sql->update($_p."parametros_procedimentos_planos",$vSQL,$vWHERE);
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."parametros_procedimentos_planos',id_reg='$procedimentoPlano->id'");
+
+
+				
+
+				$rtn=array('success'=>true);
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
+
+		}
+
+		else if($_POST['ajax']=="procedimentoPlanoValor") {
+			$pub = (isset($_POST['pub']) and $_POST['pub']==1)?1:0;
+			$valor = (isset($_POST['valor']) and is_numeric($_POST['valor']))?$_POST['valor']:'';
+			$plano = (isset($_POST['id_plano']) and isset($_planos[$_POST['id_plano']]))?$_planos[$_POST['id_plano']]:'';
+
+			$erro='';
+
+			$procedimentoPlano='';
+			if(empty($procedimento)) $erro='Procedimento não encontrado!';
+			else if(empty($plano)) $erro='Plano não encontrado!';
+			else if(empty($valor)) $erro='Valor não informado!';
+			else {
+				$sql->consult($_p."parametros_procedimentos_planos","*","where id_plano=$plano->id and id_procedimento=$procedimento->id and lixo=0");
+				if($sql->rows) {
+					$procedimentoPlano=mysqli_fetch_object($sql->mysqry);
+				} else {
+					$vSQL="id_procedimento=$procedimento->id,
+							pub=1,
+							id_plano='$plano->id',
+							valor='0',
+							obs='',
+							lixo=0,
+							data=now(),
+							id_usuario=$usr->id";
+
+					$sql->add($_p."parametros_procedimentos_planos",$vSQL);
+					$sql->consult($_p."parametros_procedimentos_planos","*","where id=$sql->ulid");
+					if($sql->rows) $procedimentoPlano=mysqli_fetch_object($sql->mysqry);
+
+					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='',tabela='".$_table."_planos',id_reg='$procedimentoPlano->id'");
+				}
+			}
+			if(empty($erro)) {
+
+				$vSQL="valor='$valor'";
+				$vWHERE="where id=$procedimentoPlano->id";
+
+				$sql->update($_p."parametros_procedimentos_planos",$vSQL,$vWHERE);
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."parametros_procedimentos_planos',id_reg='$procedimentoPlano->id'");
+
+
+				
+
+				$rtn=array('success'=>true);
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
+		}
+
 		header("Content-type: application/json");
 		echo json_encode($rtn);
 		die();
@@ -238,7 +342,7 @@
 	include "includes/nav.php";
 
 	$values=$adm->get($_GET);
-	$campos=explode(",","titulo,id_regiao,quantitativo,id_especialidade,face");
+	$campos=explode(",","titulo,id_regiao,quantitativo,id_especialidade,face,pub");
 
 	if(isset($_POST['acao'])) {
 
@@ -266,9 +370,9 @@
 			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',vwhere='',tabela='$_table',id_reg='$id_reg'");
 		}
 
-		?>
+		/*?>
 		<script type="text/javascript">$(function(){openAside(<?php echo $id_reg;?>)});</script>
-		<?php
+		<?php*/
 	}
 
 ?>
@@ -316,6 +420,8 @@
 									success:function(rtn){ 
 										if(rtn.success) {
 											$('#js-aside input[name=titulo]').val(rtn.data.titulo);
+											if(rtn.data.pub==1) $('#js-aside input[name=pub]').prop('checked',true);
+											else $('#js-aside input[name=pub]').prop('checked',false);
 											$('#js-aside input[name=id]').val(rtn.data.id);
 											$('#js-aside select[name=id_especialidade]').val(rtn.data.id_especialidade);
 											$('#js-aside select[name=id_regiao]').val(rtn.data.id_regiao).trigger('change');
@@ -397,7 +503,7 @@
 								openAside(0);
 							});
 
-							$('.list1').on('click','.js-item',function(){
+							$('.list2 .js-item').on('click','.js-plano',function(){
 								$('#js-aside form.formulario-validacao').trigger('reset');
 								let id = $(this).attr('data-id');
 								openAside(id);
@@ -415,15 +521,76 @@
 									data:data,
 									success:function(rtn) {
 										if(rtn.success) {
-											
+											if(pub==1) {
+												$('.js-item-'+id_procedimento).find('input.js-checkbox').show();
+											} else {
+												$('.js-item-'+id_procedimento).find('input.js-checkbox').hide();
+
+											}
 										} else if(rtn.error) {
 											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 										} else {
 											swal({title: "Erro!", text: 'Algum erro ocorreu durante a ativação/desativação do procedimento', type:"error", confirmButtonColor: "#424242"});
 										}
 									}
-								})
+								});
+							});
 
+
+							$('.js-checkbox-procedimentoPlano-pub').click(function(){
+
+								let id_procedimento = $(this).attr('data-id_procedimento');
+								let id_plano = $(this).attr('data-id_plano');
+								let pub = $(this).prop('checked')==1?1:0;
+
+								let data = `ajax=procedimentoPlanoPub&id_procedimento=${id_procedimento}&id_plano=${id_plano}&pub=${pub}`;
+
+								$.ajax({
+									type:"POST",
+									data:data,
+									success:function(rtn) {
+										if(rtn.success) {
+
+											if(pub==1) {
+												$('.js-checkbox-procedimentoPlano-valor-'+id_plano+'-'+id_procedimento).prop('disabled',false);
+											} else {
+												$('.js-checkbox-procedimentoPlano-valor-'+id_plano+'-'+id_procedimento).prop('disabled',true);
+
+											}
+
+										} else if(rtn.error) {
+											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+										} else {
+											swal({title: "Erro!", text: 'Algum erro ocorreu durante a ativação/desativação do procedimento', type:"error", confirmButtonColor: "#424242"});
+										}
+									}
+								});
+							});
+
+							$('.js-checkbox-procedimentoPlano-valor').change(function(){
+
+								let id_procedimento = $(this).attr('data-id_procedimento');
+								let id_plano = $(this).attr('data-id_plano');
+								let valor = unMoney($(this).val());
+
+								let data = `ajax=procedimentoPlanoValor&id_procedimento=${id_procedimento}&id_plano=${id_plano}&valor=${valor}`;
+
+
+								$.ajax({
+									type:"POST",
+									data:data,
+									success:function(rtn) {
+										if(rtn.success) {
+
+										
+
+										} else if(rtn.error) {
+											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+										} else {
+											swal({title: "Erro!", text: 'Algum erro ocorreu durante a ativação/desativação do procedimento', type:"error", confirmButtonColor: "#424242"});
+										}
+									}
+								});
 							})
 						})
 					</script>
@@ -476,8 +643,8 @@
 									$sql->consult($_table."_planos","*","where id_procedimento IN (".implode(",",$procedimentosIds).") and lixo=0");
 									if($sql->rows) {
 										while($x=mysqli_fetch_object($sql->mysqry)) {
-											if(!isset($_planosProcedimentos[$x->id_procedimento])) {
-												$_planosProcedimentos[$x->id_procedimento]=$x;
+											if(!isset($_planosProcedimentos[$x->id_procedimento][$x->id_plano])) {
+												$_planosProcedimentos[$x->id_procedimento][$x->id_plano]=$x;
 											}
 										}
 									}
@@ -502,19 +669,31 @@
 											$plano='';
 											$obs='-';
 										?>
-										<tr class="js-item" data-id="<?php echo $x->id;?>">
+										<tr class="js-item js-item-<?php echo $x->id;?>">
 											<td style="width:40px;">
 												<input type="checkbox" class="input-switch js-checkbox-procedimento" data-id_procedimento="<?php echo $x->id;?>"<?php echo $x->pub==1?" checked":"";?> />
 											</td>
-											<td><h1><strong><?php echo utf8_encode($x->titulo);?></strong></h1></td>
+											<td>
+												<h1><u><strong class="js-plano<?php echo $x->fixo==1?"-fixo":"";?>" data-id="<?php echo $x->id;?>" style="cursor: pointer;"><?php echo utf8_encode($x->titulo);?></strong></u> <?php if($x->fixo==1) echo '<span class="iconify" data-icon="mdi:lock-outline" style="color:var(--cinza4);"></span>';?></h1>
+												<?php
+												if(isset($_regioes[$x->id_regiao])) echo utf8_encode($_regioes[$x->id_regiao]->titulo);
+												if($x->quantitativo==1) echo " - QUANTITATIVO";
+												if($x->face==1) echo " - POR FACE";
+
+												
+ 												?>
+
+											</td>
 											<?php
 											foreach($_planos as $p) {
+												$checked = (isset($_planosProcedimentos[$x->id][$p->id]) and $_planosProcedimentos[$x->id][$p->id]->pub==1)?" checked":"";
+												$valor = (isset($_planosProcedimentos[$x->id][$p->id]))?$_planosProcedimentos[$x->id][$p->id]->valor:0;
 											?>
 											<td style="width:20px;">
-												<input type="checkbox" class="js-checkbox-procedimentoPlano-checkbox" data-id_plano="<?php echo $p->id;?>" data-id_procedimento="<?php echo $x->id;?>" checked />
+												<input type="checkbox" class="js-checkbox js-checkbox-procedimentoPlano-pub js-checkbox-procedimentoPlano-pub-<?php echo $p->id;?>-<?php echo $x->id;?>" data-id_plano="<?php echo $p->id;?>" data-id_procedimento="<?php echo $x->id;?>"<?php echo $x->pub==0?" style=\"display:none\"":"";?><?php echo $checked;?> />
 											</td>
 											<td>
-												<input type="tel" class="js-checkbox-procedimentoPlano-valor" data-id_plano="<?php echo $p->id;?>" data-id_procedimento="<?php echo $x->id;?>" style="width:70px;" /></td>
+												<input type="tel" class="money js-checkbox js-checkbox-procedimentoPlano-valor js-checkbox-procedimentoPlano-valor-<?php echo $p->id;?>-<?php echo $x->id;?>" data-id_plano="<?php echo $p->id;?>" data-id_procedimento="<?php echo $x->id;?>" style="width:70px;<?php echo $x->pub==0?"display:none":"";?>" value="<?php echo number_format($valor,2,",",".");?>"<?php echo empty($checked)?" disabled":"";?> /></td>
 											</td>
 											<?php	
 											}
@@ -527,7 +706,7 @@
 								<?php
 									if(isset($sql->myspaginacao) and !empty($sql->myspaginacao)) {
 								?>
-								<div class="paginacao">						
+								<div class="pagination">						
 									<?php echo $sql->myspaginacao;?>
 								</div>
 								<?php
@@ -562,7 +741,7 @@
 					$('input[name=face]').parent().parent().parent().hide();
 				}
 			}).trigger('change');
-		})
+		});
 	</script>
 	<section class="aside aside-form" id="js-aside">
 		<div class="aside__inner1">
@@ -584,7 +763,7 @@
 								<dd><a href="javascript:;" class="button js-btn-remover"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
 							</dl>
 							<dl>
-								<dd><button class="button button_main"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+								<dd><button class="button button_main js-salvar-loading"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
 							</dl>
 						</div>								
 					</div>
@@ -592,6 +771,12 @@
 
 				<fieldset>
 					<legend>Dados do Procedimento</legend>
+
+					<dt>
+						<dd>
+							<label><input type="checkbox" class="input-switch" name="pub" value="1" /> Ativo</label>
+						</dd>
+					</dt>
 					<dl>
 						<dt>Título</dt>
 						<dd><input type="text" name="titulo" class="obg" /></dd>
@@ -658,6 +843,7 @@
 
 								$(`.js-id_plano`).find(`option[value=${x.id_plano}]`).prop('disabled',true);
 								$(`.js-regs-table tbody`).append(`<tr class="aside-open js-editar" data-id="${x.id}">
+																	<td style="width:15px;">${x.pub==1?'<span class="iconify" data-icon="material-symbols:check-circle-rounded" style="color:var(--verde)"></span>':'<span class="iconify" data-icon="ic:baseline-cancel" style="color:var(--vermelho)"></span>'}</td>
 																	<td><h1>${x.plano}</h1></td>
 																	<td>${number_format(x.valor,2,",",".")}</td>
 																	<td>${x.obs}</td>
@@ -707,6 +893,12 @@
 									$(`.js-id`).val(reg.id);
 									$(`.js-id_plano`).val(reg.id_plano).find(`option[value=${reg.id_plano}]`).prop('disabled',false);
 									$(`.js-valor`).val(number_format(reg.valor,2,",","."));
+									if(reg.pub==1) {
+										$(`.js-pub`).prop('checked',true);
+									} else {
+										$(`.js-pub`).prop('checked',false);
+
+									}
 									$(`.js-obs`).val(reg.obs);
 
 									
@@ -739,6 +931,7 @@
 								let id_plano = $(`.js-id_plano`).val();
 								let valor = unMoney($(`.js-valor`).val());
 								let obs = $(`.js-obs`).val();
+								let pub = $(`.js-pub`).prop('checked')===true?1:0;
 
 							
 
@@ -749,7 +942,7 @@
 									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 									obj.attr('data-loading',1);
 
-									let data = `ajax=regsPersistir&id_procedimento=${id_procedimento}&id=${id}&id_plano=${id_plano}&valor=${valor}&obs=${obs}`;
+									let data = `ajax=regsPersistir&id_procedimento=${id_procedimento}&id=${id}&id_plano=${id_plano}&valor=${valor}&pub=${pub}&obs=${obs}`;
 									
 									$.ajax({
 										type:'POST',
@@ -757,11 +950,20 @@
 										success:function(rtn) {
 											if(rtn.success) {
 												regsAtualizar();	
+												if(pub==1) {
+													$(`.js-checkbox-procedimentoPlano-pub-${id_plano}-${id_procedimento}`).prop('checked',true);
+													$(`.js-checkbox-procedimentoPlano-valor-${id_plano}-${id_procedimento}`).prop('disabled',false);
+												} else {
+													$(`.js-checkbox-procedimentoPlano-pub-${id_plano}-${id_procedimento}`).prop('checked',false);
+													$(`.js-checkbox-procedimentoPlano-valor-${id_plano}-${id_procedimento}`).prop('disabled',true);
+												}
+												$(`.js-checkbox-procedimentoPlano-valor-${id_plano}-${id_procedimento}`).val(number_format(valor,2,",","."));
 
 												$(`.js-id`).val(0);
 												$(`.js-id_plano`).val(``);
 												$(`.js-valor`).val(``);
 												$(`.js-obs`).val(``);
+												$('.js-pub').prop('checked',false);
 
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -820,6 +1022,9 @@
 														$(`.js-id_plano`).val('');
 														$(`.js-valor`).val('');
 														$(`.js-obs`).val('');
+														//alert(`.js-checkbox-procedimentoPlano-valor-${rtn.id_plano}-${rtn.id_procedimento}`);
+														$(`.js-checkbox-procedimentoPlano-valor-${rtn.id_plano}-${rtn.id_procedimento}`).val('0,00').prop('disabled',true);
+														$(`.js-checkbox-procedimentoPlano-pub-${rtn.id_plano}-${rtn.id_procedimento}`).prop('checked', false);
 														regsAtualizar();
 														swal.close();   
 													} else if(rtn.error) {
@@ -873,7 +1078,13 @@
 				<fieldset class="js-fieldset-regs">
 					<input type="hidden" class="js-id" />
 					<legend>Planos</legend>
+					<dl>
+						<dd >
+							<label><input type="checkbox" class="js-pub input-switch" value="1" /> Ativo</label>
+						</dd>
+					</dl>
 					<div class="colunas3">
+						
 						<dl>
 							<dt>Plano</dt>
 							<dd class="form-comp form-comp_pos">
@@ -907,6 +1118,7 @@
 						<table class="js-regs-table">
 							<thead>
 								<tr>
+									<th></th>
 									<th>PLANO</th>
 									<th>VALOR</th>
 									<th>OBSERVAÇÕES</th>
@@ -914,18 +1126,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr>
-									<td><h1>Nome do Plano</h1></td>
-									<td>R$ 500,00</td>
-									<td>Plano especial</td>
-									<td style="text-align:right;"><a href="" class="button"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
-								</tr>
-								<tr>
-									<td><h1>Nome do Plano</h1></td>
-									<td>R$ 500,00</td>
-									<td>Plano especial</td>
-									<td style="text-align:right;"><a href="" class="button"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
-								</tr>
+								
 							</tbody>
 						</table>
 					</div>

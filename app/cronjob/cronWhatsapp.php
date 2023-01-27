@@ -33,8 +33,8 @@
 				$dif = strtotime(date('Y-m-d H:i:s')) - strtotime($x->data);
 				$dif /= 60 * 60 *24;
 				$dif= round($dif);
-
-				if($dif<=7) {
+				echo $x->id." ".$dif."<BR>";
+				if($dif<=7) { 
 					echo $x->data." - $dif - -> ".$x->agenda_data." -> <BR> -> $x->id";
 					$attr=array('id_tipo'=>1,
 								'id_paciente'=>$x->id_paciente,
