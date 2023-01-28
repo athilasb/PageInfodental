@@ -18,6 +18,7 @@
 
 		$creditoBandeiras=array();
 		$debitoBandeiras=array();
+		$taxasBandeiras = array();
 		$_operadoras=array();
 
 		$sql->consult($_p."parametros_cartoes_operadoras","*","where lixo=0 order by titulo");
@@ -30,13 +31,11 @@
 		$sql->consult($_p."parametros_cartoes_operadoras_bandeiras","*","where lixo=0");
 		while($x=mysqli_fetch_object($sql->mysqry)) {
 			if(!isset($_operadoras[$x->id_operadora])) continue;
-
+		
 			if(isset($_bandeiras[$x->id_bandeira])) {
 				$bandeira=$_bandeiras[$x->id_bandeira];
-				
 				$txJson = json_decode($x->taxas);
-
-
+				$taxasBandeiras[$x->id_operadora][$x->id_bandeira] = $txJson->creditoTaxas??[];
 				if($x->check_debito==1) {
 					$debitoTaxa=isset($txJson->debitoTaxas->taxa)?$txJson->debitoTaxas->taxa:0;
 					$debitoDias=isset($txJson->debitoTaxas->dias)?$txJson->debitoTaxas->dias:0;
@@ -46,6 +45,7 @@
 																						 	'dias'=>$debitoDias);
 				}
 				if($x->check_credito==1) {
+				
 					$creditoTaxa=isset($txJson->creditoTaxas->taxa)?$txJson->creditoTaxas->taxa:0;
 					$creditoBandeiras[$x->id_operadora]['bandeiras'][$x->id_bandeira]=array('id_bandeira'=>$x->id_bandeira,
 																							'titulo'=>utf8_encode($bandeira->titulo),
@@ -58,14 +58,14 @@
 
 	// banco e contas
 		$_bancos=array();
-		$sql->consult($_p."financeiro_bancosecontas","*","order by titulo asc");
+		$sql->consult($_p."financeiro_bancosecontas","*"," WHERE lixo =0 order by titulo asc");
 		while($x=mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id]=$x;
 
-
+	
 ?>
 
 <script type="text/javascript">
-
+	const _taxaBandeiras = <?=json_encode($taxasBandeiras)?>;
 	// carrega campos de complemento da forma de pagamento
 	const pagamentosAtualizaCampos = (formaDePagamento) => {
 		if(formaDePagamento) {
@@ -161,27 +161,22 @@
 
 		// se clicar em adicionar baixa
 		$('.js-btn-addBaixa').click(function(){
-
-
 			let obj = $(this);
 			let objHTMLAntigo = obj.html();
 			let loading = obj.attr('data-loading');
-
 			if(loading==0) {
 				obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>');
 				obj.attr('data-loading',1);
-
 				let tipoPagamento = $('.js-id_formadepagamento option:checked').attr('data-tipo');
-
 				saldoAPagar = unMoney($('.js-saldoPagar').val());
-				
 				let tipoBaixa = $('input[name=tipoBaixa]:checked').val();
-
 				if(tipoBaixa=="despesa" || tipoBaixa=="desconto" || tipoPagamento!==undefined) {
-
 					let dataPagamento = $('input.js-dataPagamento').val();
 					let dataVencimento = $('input.js-vencimento').val();
 					let valor = ($('input.js-valor').val().length>0 && unMoney($('input.js-valor').val())>0)?unMoney($('input.js-valor').val()):'';
+					let valorJuros = ($('input.js-valorJuros').val().length>0 && unMoney($('input.js-valorJuros').val())>0)?unMoney($('input.js-valorJuros').val()):'';
+					let valorMulta = ($('input.js-valorMultas').val().length>0 && unMoney($('input.js-valorMultas').val())>0)?unMoney($('input.js-valorMultas').val()):'';
+					let descontoMultasJuros = ($('input.js-descontoMultasJuros').val().length>0 && unMoney($('input.js-descontoMultasJuros').val())>0)?unMoney($('input.js-descontoMultasJuros').val()):0;
 					let id_formadepagamento = $('.js-id_formadepagamento').val();
 					let obs = $('input.js-obs').val();
 					let debitoBandeira=$('select.js-debitoBandeira').val();
@@ -190,31 +185,36 @@
 					let id_operadora=0;
 					let taxa=0;
 					id_pagamento = $('#js-aside-asFinanceiro .js-id_pagamento').val();
-
 					let erro = '';
-
+					if($('.js-aplicar-multas-juros').prop('checked')==false){
+						valorJuros=0
+						valorMulta=0
+						descontoMultasJuros=0
+					}
 					if(tipoBaixa=='pagamento') {
 						if(tipoPagamento=='credito') {
 							if(dataVencimento.length==0) erro= 'Defina a <b>Data do Vencimento</b>';
 							else if(valor.length==0) erro= 'Defina o <b>Valor do Pagamento</b>';
 							else if(creditoBandeira.length==0) erro= 'Selecione a <b>Bandeira</b> do Cartão de Crédito';
 							else if(creditoParcelas.length==0) erro= 'Selecione o <b>Nº de Parcelas</b> do Cartão de Crédito';
-
+							else if(saldoAPagar<unMoney($('input.js-valor').val())) erro=`O valor não pode ser maior que <b>${number_format(saldoAPagar,2,",",".")}`;
 							id_operadora=$('select.js-creditoBandeira option:selected').attr('data-id_operadora');
-							taxa=$('input.js-valorCreditoDebitoTaxa').val().replace(/[^\d,-.]+/g,'');
-							valorParcela=$('input.js-valorCreditoDebito').val().replace(/[^\d,-.]+/g,'');
+							taxa=$('input.js-valorCreditoDebitoTaxa').val();
+							valorParcela=$('input.js-valorCreditoDebito').val();
+							valorJuros = valorJuros/creditoParcelas
+							valorMulta = valorMulta/creditoParcelas
+							descontoMultasJuros = descontoMultasJuros/creditoParcelas
 
 						} else if(tipoPagamento=='debito') {
 							if(dataVencimento.length==0) erro= 'Defina a <b>Data do Vencimento</b>';
 							else if(valor.length==0) erro= 'Defina o <b>Valor do Pagamento</b>';
 							else if(debitoBandeira.length==0) erro= 'Selecione a <b>Bandeira</b> do Cartão de Débito';
-							
+							else if(saldoAPagar<unMoney($('input.js-valor').val())) erro=`O valor não pode ser maior que <b>${number_format(saldoAPagar,2,",",".")}`;
 							id_operadora=$('select.js-debitoBandeira option:selected').attr('data-id_operadora');
-							taxa=$('input.js-valorCreditoDebitoTaxa').val().replace(/[^\d,-.]+/g,'');
-							valorParcela=$('input.js-valorCreditoDebito').val().replace(/[^\d,-.]+/g,'');
-
+							taxa=$('input.js-valorCreditoDebitoTaxa').val();
+							valorParcela=$('input.js-valorCreditoDebito').val();
+						
 						} else {
-
 							id_operadora=0;
 							taxa=0;
 							valorParcela=$('input.js-valor').val().replace(/[^\d,-.]+/g,'');
@@ -229,19 +229,17 @@
 						valorParcela=$('input.js-valor').val().replace(/[^\d,-.]+/g,'');
 					}
 
-
-
 					if(dataPagamento.length==0) erro='Defina a <b>Data</b>';
 					else if(tipoBaixa.length==0) erro='Defina o <b>Tipo de Baixa</b>';
 					else if(valor.length==0) erro= 'Defina o <b>Valor</b> a ser pago';
 					else if(tipoBaixa=="pagamento" && id_formadepagamento.length==0) erro='Defina a <b>Forma de Pagamento</b>';
 					else if(saldoAPagar<=0) erro=`Não existe mais débitos!`; 
+					else if(descontoMultasJuros>=(valorParcela+valorJuros+valorMulta)) erro=`Voce Não Pode dar um Desconto Maior do que o Valor da Parcela!`; 
 					else if(saldoAPagar<unMoney(valorParcela)) erro=`O valor não pode ser maior que <b>${number_format(saldoAPagar,2,",",".")}`;
-				
+					valorParcela=(unMoney(valorParcela)+valorJuros+valorMulta)-descontoMultasJuros
 					if(erro.length==0) {
 						//return;
-						let data = `ajax=pagamentoBaixa&tipoBaixa=${tipoBaixa}&id_pagamento=${id_pagamento}&dataPagamento=${dataPagamento}&dataVencimento=${dataVencimento}&valor=${valor}&id_formadepagamento=${id_formadepagamento}&debitoBandeira=${debitoBandeira}&creditoBandeira=${creditoBandeira}&creditoParcelas=${creditoParcelas}&obs=${obs}&id_operadora=${id_operadora}&taxa=${taxa}&valorParcela=${unMoney(valorParcela)}`;
-
+						let data = `ajax=pagamentoBaixa&tipoBaixa=${tipoBaixa}&id_pagamento=${id_pagamento}&dataPagamento=${dataPagamento}&dataVencimento=${dataVencimento}&valor=${valor}&id_formadepagamento=${id_formadepagamento}&debitoBandeira=${debitoBandeira}&creditoBandeira=${creditoBandeira}&creditoParcelas=${creditoParcelas}&obs=${obs}&id_operadora=${id_operadora}&taxa=${taxa}&valorParcela=${(valorParcela)}&valorJuros=${(valorJuros)}&valorMulta=${(valorMulta)}&descontoMultasJuros=${descontoMultasJuros}`;
 						$.ajax({
 							type:"POST",
 							data:data,
@@ -254,9 +252,23 @@
 									$('.js-desconto').val('');
 									$('.js-id_formadepagamento').val('');
 									$('.js-obs').val('');
-									$('.js-identificador').val('');
-									if(saldoAPagar<=0) $('.js-form-pagamentos').hide();
+									$('.js-valorJuros').val('');
+									$('.js-valorMultas').val('');
+									$('.js-descontoMultasJuros').val('');
+									$('.js-TotalaPagar').val('');
 
+									$('.js-valorJuros').closest('dl').hide()
+									$('.js-valorMultas').closest('dl').hide()
+									$('.js-descontoMultasJuros').closest('dl').hide()
+									$('.js-TotalaPagar').closest('dl').hide()
+
+									$('.js-valorCreditoDebitoTaxa').closest('dl').hide()
+									$('.js-valorCreditoDebito').closest('dl').hide()
+									$('.js-parcelas').closest('dl').hide()
+									$('.js-creditoBandeira').closest('dl').hide()
+
+
+									if(saldoAPagar<=0) $('.js-form-pagamentos').hide();
 								} else if(rtn.error) {
 									swal({title: "Erro!", text: rtn.error,  html:true,type:"error", confirmButtonColor: "#424242"});
 								} else {
@@ -338,7 +350,6 @@
 							<dt>Valor da Parcela</dt>
 							<dd><input type="text" class="js-valorParcela" value=""  disabled style="background: #ccc" /></dd>
 						</dl>
-
 						<dl>
 							<dt>Desconto (-)</dt>
 							<dd><input type="text" class="js-valorDesconto money" data-tipo="descontos" style="background: #ccc" disabled  /></dd>
@@ -353,25 +364,7 @@
 						</dl>
 
 					</div>
-					<div class="colunas4 js-colunaMultasJuros" style="display:none;">
-						<dl>
-							<dt>Multas e Juros</dt>
-							<label><input type="checkbox" class="input-switch js-mostra-juros-multas" /></label>
-						</dl>
-						<dl style="display:none;">
-							<dt>Valor Disponivel</dt>
-							<dd><input type="text" class="js-multasJuros money"  value="0,0" style="background: #ccc"  disabled/></dd>
-						</dl>
-						<dl style="display:none;">
-							<dt>Valor a Aplicar</dt>
-							<dd><input type="text" class="js-multasJurosAplicar money"  value="0,0" style="" /></dd>
-						</dl>
-						<dl style="display:none;justify-content: center;top:10px;">
-							<dd><a href="javascript:;" class="button__full button button_main js-btn-addMulta" data-loading="0">adicionar multa</a></dd>
-						</dl>
-					</div>
 				</fieldset>
-
 				<fieldset class="js-fieldset-pagamentos">
 					<legend>Definição de Pagamento</legend>
 					<div class="colunas5">
@@ -386,6 +379,14 @@
 								<label><input type="radio" name="tipoBaixa" value="pagamento" /> Pagamento</label>
 								<label><input type="radio" name="tipoBaixa" value="desconto" /> Desconto (-)</label>
 								<label><input type="radio" name="tipoBaixa" value="despesa" /> Despesa (+)</label>
+								
+							</dd>
+							
+						</dl>
+						<dl style="justify-content:center;align-items: center;">
+							<dd style='margin-left:50px;'>
+								<dt style="text-align:center">Aplicar Juros e Multas</dt>
+								<label><input  type="checkbox" class="input-switch js-aplicar-multas-juros" checked/></label>
 							</dd>
 						</dl>
 
@@ -418,9 +419,6 @@
 							<dt>Identificador</dt>
 							<dd><input type="text" class="js-identificador js-tipoPagamento" /></dd>
 						</dl>
-
-
-
 						<dl class="dl3">
 							<dt>Obs.:</dt>
 							<dd><input type="text" class="js-obs js-tipoDescontoDespesa" /></dd>
@@ -463,12 +461,27 @@
 							<dt>Taxa (%)</dt>
 							<dd><input type="text" class="js-valorCreditoDebitoTaxa js-tipoPagamento" readonly style="background:#CCC" /></dd>
 						</dl>
-
+						<dl  style="display:none">
+							<dt>Valor Multa</dt>
+							<dd><input type="text" class="js-valorMultas money" style="background:#CCC" disabled/></dd>
+						</dl>
+						<dl style="display:none">
+							<dt>Valor juros</dt>
+							<dd><input type="text" class="js-valorJuros money" style="background:#CCC" disabled/></dd>
+						</dl>
+						<dl style="display:none">
+							<dt>Desconto Multas/Juros</dt>
+							<dd><input type="text" class="js-descontoMultasJuros money" value="0,00"/></dd>
+						</dl>
+						<dl style="display:none">
+							<dt>Total a ser Pago</dt>
+							<dd><input type="text" class="js-TotalaPagar money" style="background:#CCC" disabled/></dd>
+						</dl>
 						<script type="text/javascript">
 							$(function(){
+								// quando seleciona a bandeira do cartao
 								$('.js-creditoBandeira').change(function(){
 									$('select.js-parcelas option').remove();
-									
 									if($(this).val().length>0) {
 										let parcelas = eval($(this).find('option:checked').attr('data-parcelas'));
 										//alert(parcelas);
@@ -483,8 +496,26 @@
 									} else {
 										$('select.js-parcelas').append(`<option value="">selecione a bandeira</option>`);
 									}
-
+							
 								});
+								//quando selecionar a quantidade de parcelas
+								$('.js-parcelas').change(function(){
+									let qtdParcelas = unMoney($(this).val())
+									let valorDigitado = unMoney($('.js-valor').val())
+									let valorMulta =  unMoney($('.js-valorMultas').val())
+									let valorJuros =  unMoney($('.js-valorJuros').val())
+									let valorDesconto = unMoney($('.js-descontoMultasJuros').val())
+									let valorSomado = (valorDigitado+valorMulta+valorJuros)-valorDesconto
+									let valorParcelas = valorSomado/qtdParcelas
+									let id_operadora = $('.js-creditoBandeira option:selected').attr('data-id_operadora')
+									let id_bandeira = $('.js-creditoBandeira option:selected').val()
+									if(_taxaBandeiras[id_operadora] && _taxaBandeiras[id_operadora][id_bandeira] && _taxaBandeiras[id_operadora][id_bandeira][qtdParcelas] && _taxaBandeiras[id_operadora][id_bandeira]	[qtdParcelas][qtdParcelas] && _taxaBandeiras[id_operadora][id_bandeira][qtdParcelas][qtdParcelas].taxa){
+										valorTaxa = unMoney(_taxaBandeiras[id_operadora][id_bandeira][qtdParcelas][qtdParcelas].taxa)
+									}
+									$('.js-valorCreditoDebito').val(number_format(valorParcelas,2,",","."))
+									$('.js-valorCreditoDebitoTaxa').val(number_format(valorTaxa,2))
+
+								})
 							});
 						</script>
 						
@@ -520,7 +551,6 @@
 
 				<fieldset>
 					<legend>Pagamentos</legend>
-
 					<div class="list2">
 						<table class="js-baixas">
 							<tr>
@@ -531,7 +561,6 @@
 								<th>Valor</th>
 								<th style="width:80px;"></th>
 							</tr>
-
 						</table>
 					</div>
 
@@ -624,17 +653,15 @@
 
 				<fieldset class="js-fieldset-conta">
 					<legend>Conta</legend>
-					
-
 					<dl>
 						<dd>
 							<select class="js-id_banco">
 								<option value="">-</option>
 								<?php
 								foreach($_bancos as $x) {
-									if($x->tipo=="dinheiro") {
+									//if($x->tipo=="dinheiro") {
 										echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
-									}
+									//}
 								}
 								?>
 							</select>
