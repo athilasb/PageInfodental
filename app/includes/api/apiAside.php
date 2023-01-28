@@ -3339,7 +3339,7 @@
 													$('#js-aside-add input[name=agenda_duracao]').val('');
 
 													$.fancybox.close();
-													calendar.refetchEvents();
+													if(calendar) calendar.refetchEvents();
 													$('#js-aside-add input[name=alteracao]').val(0);
 													$('#js-aside-add .aside-close-novoAgendamento').click();
 
@@ -3594,7 +3594,7 @@
 														swal.close();  
 														if(rtn.success) {
 															$.fancybox.close();
-															calendar.refetchEvents();
+															if(calendar) calendar.refetchEvents();
 															$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click();
 															//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
 														} else if(rtn.error) {
@@ -3651,7 +3651,7 @@
 											success:function(rtn) {
 												if(rtn.success) {
 													$.fancybox.close();
-													calendar.refetchEvents();
+													if(calendar) calendar.refetchEvents();
 													//$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click();
 
 													$('.aside-close-edicaoAgendamentoPessoal').parent().parent().removeClass("active");
@@ -3885,7 +3885,7 @@
 														swal.close();  
 														if(rtn.success) {
 															$.fancybox.close();
-															calendar.refetchEvents();
+															if(calendar) calendar.refetchEvents();
 															$('#js-aside-edit .aside-close-edicaoAgendamento').click();
 															//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
 														} else if(rtn.error) {
@@ -3949,7 +3949,7 @@
 											success:function(rtn) {
 												if(rtn.success) {
 													$.fancybox.close();
-													calendar.refetchEvents();
+													if(calendar) calendar.refetchEvents();
 													$('#js-aside-edit input[name=alteracao]').val(0);
 													$('#js-aside-edit .aside-close-edicaoAgendamento').click();
 

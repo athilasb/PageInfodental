@@ -958,7 +958,6 @@
 	</div>
 
 	<script>
-		var calendar = '';
 		var calendarView = 'resourceTimeGridOneDay';
 
 		var filtroStatus=``;
