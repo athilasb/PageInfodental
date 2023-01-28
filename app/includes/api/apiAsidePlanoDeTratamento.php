@@ -10,7 +10,7 @@
 		if($_POST['ajax']=="planos") {
 			$planos=array();
 			if(isset($_POST['id_procedimento']) and is_numeric($_POST['id_procedimento'])) {
-				$sql->consult($_p."parametros_procedimentos","*","where id='".addslashes($_POST['id_procedimento'])."' and lixo=0");
+				$sql->consult($_p."parametros_procedimentos","*","where id='".addslashes($_POST['id_procedimento'])."' and lixo=0 and pub=1");
 				if($sql->rows) {
 					$procedimento=mysqli_fetch_object($sql->mysqry);
 				}
@@ -28,7 +28,7 @@
 
 
 				if(count($planosID)) {
-					$sql->consult($_p."parametros_planos","*","where id IN (".implode(",",$planosID).")");
+					$sql->consult($_p."parametros_planos","*","where id IN (".implode(",",$planosID).") and lixo=0");
 					if($sql->rows) {
 						while($x=mysqli_fetch_object($sql->mysqry)) {
 							if(isset($procedimentoPlano[$x->id])) {
@@ -1206,9 +1206,9 @@
 					success:function(rtn) {
 						if(rtn.success) { 
 							$('.aside-plano-procedimento-adicionar .js-asidePlano-id_plano option').remove();
-							$('.aside-plano-procedimento-adicionar .js-asidePlano-id_plano').append(`<option value="">-</option>`);
 						
-							if(rtn.planos) {
+							if(rtn.planos && rtn.planos.length>0) {
+								$('.aside-plano-procedimento-adicionar .js-asidePlano-id_plano').append(`<option value="">-</option>`);
 								let cont = 1;
 								rtn.planos.forEach(x=> {
 									$('.aside-plano-procedimento-adicionar .js-asidePlano-id_plano').append(`<option value="${x.id}" data-valor="${x.valor}">${x.titulo}</option>`);
@@ -1218,6 +1218,8 @@
 									} 
 									cont++;
 								});
+							} else {
+								$('.aside-plano-procedimento-adicionar .js-asidePlano-id_plano').append(`<option value="">- SEM PLANO CADASTRAO -<option>`);
 							}
 						}
 					},
@@ -1462,6 +1464,7 @@
 								<option value=""></option>
 								<?php
 								foreach($_procedimentos as $p) {
+									if($p->lixo==1 or $p->pub==0) continue;
 									echo '<option value="'.$p->id.'" 
 													data-id_regiao="'.$p->id_regiao.'" 
 													data-regiao="'.(isset($_regioes[$p->id_regiao])?utf8_encode($_regioes[$p->id_regiao]->titulo):"-").'" 

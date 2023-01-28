@@ -1,0 +1,1 @@
+ALTER TABLE `ident_pacientes_tratamentos_pagamentos_baixas` ADD `id_banco` INT NOT NULL AFTER `pago_id_usuario`;

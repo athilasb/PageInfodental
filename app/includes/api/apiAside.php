@@ -965,7 +965,7 @@
 					$sql->consult($_tablePlanos,"*","where id='".addslashes($_POST['id'])."' and lixo=0");
 					if($sql->rows) {
 						$x=mysqli_fetch_object($sql->mysqry);
-						$cnt=(object)array('id' =>$x->id,'titulo' =>utf8_encode($x->titulo));
+						$cnt=(object)array('id' =>$x->id,'titulo' =>utf8_encode($x->titulo),'fixo'=>$x->fixo);
 					}
 				}
 
@@ -4836,7 +4836,11 @@
 									
 									$('.js-asPlanos-form').animate({scrollTop: 0},'fast');
 									$('.js-asPlanos-submit').html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
-									$('.js-asPlanos-remover').show();
+									if(rtn.fixo==1) {
+										$('.js-asPlanos-remover').hide();
+									} else {
+										$('.js-asPlanos-remover').show();
+									}
 
 								} else if(rtn.error) {
 									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
