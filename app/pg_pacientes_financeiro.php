@@ -416,7 +416,8 @@
 	$valor=array('aReceber'=>0,
 				'valorRecebido'=>0,
 				'valoresVencido'=>0,
-				'valorTotal'=>0);
+				'valorTotal'=>0,
+				"definirPagamento"=>0);
 
 	$registros=array();
 	$tratamentosIDs=array(-1);
@@ -454,30 +455,34 @@
 	$sql->consult($_p."pacientes_tratamentos","*","where id IN (".implode(",",$tratamentosIDs).")");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_tratamentos[$x->id]=$x;
 
-	$valorAReceber = $valorTotal= $saldoAPagar= 0;
+	$valorAReceber = $saldoAPagar= $valorDefinido=0;
 	foreach($registros as $x) {
+		$valorDefinido=0;
 		if(isset($_baixas[$x->id])) {
-			$valor['aReceber']+=$x->valor;
 			$dataUltimoPagamento=date('d/m/Y',strtotime($_baixas[$x->id][count($_baixas[$x->id])-1]->data));
-	   		foreach($_baixas[$x->id] as $v) {
+			foreach($_baixas[$x->id] as $v) {
+				$valor['aReceber']+=$v->valor;
+				$valorDefinido+=$v->valor;
 	   			if($v->pago==1) {
 					$valor['aReceber']-=$v->valor;
 					$valor['valorRecebido']+=$v->valor;
+				}else{
+					$atraso=(strtotime($v->data_vencimento)-strtotime(date('Y-m-d')))/(60*60*24);
+					if($atraso<0) {
+						$valor['valoresVencido']+=$v->valor;
+						$valor['aReceber'] -= $v->valor;
+					}
 				}
-				//$saldoAPagar-=$v->valor;
-				//$valorPago+=$v->valor;
-				//$descontos+=$v->desconto;
-				//$multas+=$v->multas;
 			}
-			$atraso=(strtotime($v->data)-strtotime(date('Y-m-d')))/(60*60*24);
-			if($atraso<0 and $x->pago==0) {
-				$valor['valoresVencido']+=($x->valor-$valor['valorRecebido']);
-				$valor['aReceber'] -= $v->valor;
+			if($x->valor>$valorDefinido){
+				$valor['definirPagamento']+=($x->valor-$valorDefinido);
 			}
 		} else {
 			$atraso=(strtotime($x->data_vencimento)-strtotime(date('Y-m-d')))/(60*60*24);
 			if($atraso<0 and $x->pago==0) {
-				$valor['valoresVencido']+=$x->valor;
+			 	$valor['valoresVencido']+=$x->valor;
+			}else{
+				$valor['definirPagamento']+=$x->valor;
 			}
 			//$valor['aReceber']+=$x->valor;
 		}
@@ -1346,7 +1351,7 @@
 										<p style="font-size:13px">A receber<br /><strong>R$ <?= number_format(($valor['aReceber']),2,",",".");?></strong></p>
 									</div>
 									<div class="filter-title">
-										<p style="color:var(--laranja);font-size:13px">Definir Pagamento<br /><strong id='definir_pgto'>R$ <?= number_format(0,2,",",".");?></strong></p>
+										<p style="color:var(--laranja);font-size:13px">Definir Pagamento<br /><strong>R$ <?= number_format($valor['definirPagamento'],2,",",".");?></strong></p>
 									</div>
 									<div class="filter-title">
 										<p style="color:var(--verde);font-size:13px">Recebido<br /><strong>R$ <?= number_format($valor['valorRecebido'],2,",",".");?></strong></p>
@@ -1639,9 +1644,6 @@
 											?>
 										</tr>
 										<?php
-										}
-										if($DefinirPagamento>0){
-											echo "<script>$('#definir_pgto').text('R$ ".number_format($DefinirPagamento,2,",",".")."')</script>";
 										}
 										?>
 									</table>
