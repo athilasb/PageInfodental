@@ -12,7 +12,11 @@
 	$attr=array('prefixo'=>$_p,'usr'=>$usr);
 	$wts = new Whatsapp($attr);
 
-
+	if(isset($_GET['dispara'])) {
+		if($wts->dispara()) echo "Disparado!";
+		else echo "Erro: $wts->erro";
+		die();
+	}
 
 	# Envia confirmacao de 24-48h para agendamentos realizados a menos de 7 dias (id_tipo=1)
 		echo "<h1>Lembrete de 23h-24h</h1>";
@@ -26,7 +30,9 @@
 		// agendamentos nas proximas 23h-24h
 		$sql->consult($_p."agenda","*","where agenda_data >= '$dataInicio' and 
 												agenda_data <= '$dataFim' and id_status=1 and lixo=0 order by agenda_data asc");
-		//echo $dataInicio."<br />".$dataFim."<BR>Resultado: $sql->rows<BR><BR>";die();
+		echo $dataInicio."<br />".$dataFim."<BR>Resultado: $sql->rows<BR><BR>";
+		///die();
+
 		if($sql->rows) {
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 
@@ -44,7 +50,7 @@
 					echo "<hr>";
 				}
 			}
-		}
+		} 
 
 	# Envia confirmacao de 47-48h para agendamentos realizados a mais de 7 dias (id_tipo=1)
 		echo "<h1>Lembrete de 47h-48h</h1>";
@@ -183,9 +189,8 @@
 		}
 
 	# Dispara
+		if($wts->dispara()) echo "Disparado!";
+		else echo "Erro: $wts->erro";
 
-		//if(isset($_GET['dispara'])) {
-			if($wts->dispara()) echo "Disparado!";
-			else echo "Erro: $wts->erro";
-		//}
+		
 ?>

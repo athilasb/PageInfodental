@@ -498,7 +498,6 @@
 					if($x->id_profissional>0)  $profissionaisIds[$x->id_profissional]=$x->id_profissional;
 				}
 			}
-
 			if(count($enviarMsgs)>0) {
 
 				$_agendas=array();
@@ -670,16 +669,37 @@
 
 				$postfields=array("number"=>$this->wtsNumero($numero),
 									"quotedMessageId"=>$quotedMessageId,
-									"text"=>$mensagem,
-									"instance"=>$conexao->wid);
+									"instance"=>$conexao->wid,
+									"text"=>$mensagem,);
+
+				/*
+				{
+					"instance": "556282400606",
+					"number": "556282400606",
+					"text": "Teste",
+					"title":"Titulo",
+					"footer":"Footer",
+					"quotedMessageId": "",
+					"buttons": [
+						{
+							"id": "1",
+							"text": "Sim"
+						},
+						{
+							"id": "0",
+							"text":  "Não"
+						}
+					]
+				}
+				*/
 
 
 				if($conexao->versao==2) {
 					$url=$this->endpoint."/v2/message/text";
 
 					if(isset($attr['id_tipo']) and $attr['id_tipo']==1) {
-						//$postfields['buttons'][]=array('id'=>"nao",'text'=>'Não');
-						//$postfields['buttons'][]=array('id'=>"sim",'text'=>'Sim');
+						$postfields['buttons'][]=array('id'=>"nao",'text'=>'Não');
+						$postfields['buttons'][]=array('id'=>"sim",'text'=>'Sim');
 					}
 				} else {
 					$url=$this->endpoint."/message/text";
@@ -687,13 +707,12 @@
 
 
 
-				echo json_encode($postfields);die();
 
 
 				if($offline===true) $postfields['offline']=true;
 				
 
-				echo json_encode($postfields);
+				//echo json_encode($postfields);
 
 				/*$sql->add($_p."whatsapp_log","data=now(),
 												endpoint='".$this->endpoint."/send/text',

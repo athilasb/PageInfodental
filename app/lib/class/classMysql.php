@@ -94,6 +94,7 @@ class Mysql {
 
 		$this->connecting->begin_transaction();
 		$inserting="INSERT INTO $ms_table ($ms_fields) VALUES $ms_values";
+		//echo $inserting;die();
 	
 		$qry=mysqli_query($this->connecting, $inserting) or die(mysqli_error($this->connecting));
 		if(mysqli_affected_rows($this->connecting)==0) $this->resul="erro";
