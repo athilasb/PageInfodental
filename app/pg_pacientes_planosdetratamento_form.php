@@ -938,10 +938,9 @@
 		// Mostra as opções de Politicas disponiveis
 		const AtualizaPolitica = ()=>{
 			$('.js-tipo-politica table').html("")
-		
 			if(temPolitica){
 				$('[name="id_politica"]').val(temPolitica.id)
-				let valorTotal = valorTotalProcedimentos
+				let valorTotal = valorOriginalProcedimentos-valorDescontos
 				let metodosHabilitados = temPolitica.parcelasParametros.metodos
 				metodosHabilitados.forEach(x=>{
 					let qtdParcelas = 0
@@ -1097,7 +1096,7 @@
 			let x = temPolitica.parcelasParametros.metodos.find((item)=>{
 				return item.tipo==metodo
 			})
-			let valorTotal = valorTotalProcedimentos
+			let valorTotal = valorOriginalProcedimentos-valorDescontos
 			let qtdParcelas = 0
 			let taxaJuros = 0
 			let qtdParcelasTotal = parseInt(x.parcelas)
@@ -1209,7 +1208,7 @@
 			$('.js-pagamentos-quantidade').val(pagamentos.length)
 			$('.js-tipo-politica').hide()
 			$('.js-listar-parcelas').show()
-		
+			console.log(valor)
 			if(primary){
 				pagamentosListar(3);
 				if(contrato.pagamentos.length>0){
@@ -1290,7 +1289,7 @@
 							})
 						})
 					})
-					valorOriginalProcedimentos = valorPagamentos
+					//valorOriginalProcedimentos = valorPagamentos
 					updateValorText()
 				}
 				return
@@ -1309,7 +1308,6 @@
 					valorParcela = ((qtdParcelas*valor))/(qtdParcelas)
 				}
 			}
-			
 			let parcelas = []
 			let parcelaAtual = 0
 			let startDate = new Date();
@@ -1365,7 +1363,8 @@
 			pagamentos = parcelas;
 
 			pagamentosListar(3);
-			updateValorText(((valorEntrada+(valorParcela*(qtdParcelas-1)))-valorTotalProcedimentos))
+			console.log(valorOriginalProcedimentos)
+			updateValorText((((valorEntrada+(valorParcela*(qtdParcelas-1)))-(valorOriginalProcedimentos-valorDescontos))))
 			const selects = $('.js-listar-parcelas').find('.js-id_formadepagamento')
 			selects.each(function (i,select){
 				$(select).find('option').each(function(key,option){
@@ -1427,9 +1426,9 @@
 		// verifica no inicio do codigo se ja existe parcelas salvas
 		const verificaSeExisteParcelasSalvas = ()=>{
 			if(contrato.tipo_financeiro =='politica'){	
-				alternaManualPolitica('politica')
+				//alternaManualPolitica('politica')
 				let qtdParcelas = contrato.pagamentos.length
-				let valor = (valorTotalProcedimentos/qtdParcelas)
+				let valor = (valorOriginalProcedimentos-valorDescontos/qtdParcelas)
 				if(pagamentos.length>0){
 					valor = pagamentos.reduce((acc, obj) => acc + obj.valor, 0);
 					valor = valor/parseInt(contrato.parcelas)
@@ -1438,34 +1437,26 @@
 					EscolheParcelas(contrato.pagamentos[0].metodo,qtdParcelas,valor,true)
 				}
 			}else if(contrato.tipo_financeiro =='manual'){
-				alternaManualPolitica('manual')
-				pagamentosListar();
+				//	alternaManualPolitica('manual')
 			}else{
 				$('.js-tipo-manual').hide()
 				$('.js-tipo-politica').show()
 			}
-			updateValorText();
 		}
 
 		const alternaManualPolitica = (tipo)=>{
+			pagamentos=[]
 			if(tipo=='manual'){
-				//pagamentos=[]
-			//	$('.js-pagamentos-quantidade').val("0")
-				AtualizaPolitica()
 				$('.js-tipo').hide(); 
 				$('.js-tipo-manual').show();
 				$('.js-tipo-politica').hide();
 				$('.js-tipo-politica table').html("")
-				atualizaValor()
-				updateValorText();
+				atualizaValor();
 			}else if(tipo=='politica'){
-				//pagamentos=[]
-			//	$('.js-pagamentos-quantidade').val("")
-				AtualizaPolitica()
 				$('.js-tipo').hide(); 
 				$('.js-tipo-politica').show();
 				$('.js-tipo-manual').hide();
-				updateValorText();
+				atualizaValor();
 			}
 		}
 

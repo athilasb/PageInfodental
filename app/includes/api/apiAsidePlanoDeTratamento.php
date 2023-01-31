@@ -57,33 +57,28 @@
 	var autor = '<?php echo utf8_encode($usr->nome);?>';
 
 	const updateValorText = (extra=0)=>{
-		valorOriginalProcedimentos = valorOriginalProcedimentos+extra
-		$('.js-valorTotal').text(number_format((valorOriginalProcedimentos-valorDescontos),2,",","."));
 		$('.js-valorTotalOriginal').text("");
+		$('.js-valorTotal').text(number_format(((valorOriginalProcedimentos+extra)-valorDescontos),2,",","."));
 		valorTotalProcedimentos = valorOriginalProcedimentos;
 		if(valorDescontos>0){
-			$('.js-valorTotalOriginal').text(number_format(valorOriginalProcedimentos,2,",","."));
-			valorTotalProcedimentos = (valorOriginalProcedimentos-valorDescontos)
+			$('.js-valorTotalOriginal').text(number_format((valorOriginalProcedimentos),2,",","."));
 		}
-
 	}
 	const atualizaValor = (atualizarParcelas) => {
 		valorTotal=0;
+		valorOriginalProcedimentos = 0;
 		let cont = 1;
-		valorDescontos = 0
-		valorTotalProcedimentos = 0
+		let descontos = 0
 		procedimentos.forEach(x=> {
 			if(x.situacao!='naoAprovado') {
 				valorProcedimento=x.valor;
 				hof=x.hof>0?x.hof:1;
-
 				if(x.quantitativo==1) valorProcedimento*=x.quantidade;
 				if(x.face==1) valorProcedimento*=x.faces.length;
 				if(x.id_regiao==5) valorProcedimento*=hof;
-
 				if(x.desconto>0) {
 					//valorProcedimento=eval(valorProcedimento-x.desconto);
-					valorDescontos += x.desconto
+					descontos += x.desconto
 				}
 				else {
 					valorProcedimento=eval(valorProcedimento);
@@ -94,11 +89,11 @@
 			cont++;
 		});
 		valorOriginalProcedimentos = valorTotal
-		updateValorText();
+		valorDescontos = descontos
 		if(procedimentos.length>0) {
 			for(let x in _politicas){
 				let politica = _politicas[x]
-				if((politica.tipo_politica=='intervalo' && valorTotalProcedimentos>= parseFloat(politica.de) && valorTotalProcedimentos<= parseFloat(politica.ate)) || (politica.tipo_politica=='acima' && valorTotalProcedimentos>= parseFloat(politica.de))){
+				if((politica.tipo_politica=='intervalo' && valorOriginalProcedimentos>= parseFloat(politica.de) && valorOriginalProcedimentos<= parseFloat(politica.ate)) || (politica.tipo_politica=='acima' && valorOriginalProcedimentos>= parseFloat(politica.de))){
 					temPolitica = politica
 					if(temPolitica.parcelasParametros){
 						temPolitica.parcelasParametros = (typeof(temPolitica.parcelasParametros) !== "object")?JSON.parse(temPolitica.parcelasParametros):temPolitica.parcelasParametros
@@ -119,7 +114,7 @@
 		if(atualizarParcelas===true) {
 			let numeroParcelas = $('.js-pagamentos-quantidade').val();
 			if(numeroParcelas && numeroParcelas<=0) numeroParcelas=0;
-			valorParcela=(valorTotalProcedimentos/numeroParcelas);
+			valorParcela=((valorTotalProcedimentos-valorDescontos)/numeroParcelas);
 			valorParcela=valorParcela;
 			let startDate = new Date();
 			if($('.js-vencimento:eq(0)').val()!=undefined) {
@@ -276,7 +271,7 @@
 			}
 		}else{
 				$('.js-listar-parcelas').hide();
-				if(temPolitica){
+				if(temPolitica && $('[name="tipo_financeiro"]:eq(0)').prop('checked')==true){
 					$('[name="tipo_financeiro"]:eq(0)').prop('checked', true);
 					$('.js-tipo-politica').show()
 					$('.js-tipo-manual').hide()
@@ -477,7 +472,6 @@
 
 			}
 		});
-
 
 		$('.aside-plano-desconto .js-total-procedimentos').val(number_format(totalProcedimentos,2,",","."));
 		$('.aside-plano-desconto .js-total-descontosAplicados').val(number_format(totalDescontoAplicado,2,",","."));

@@ -32,7 +32,7 @@
 				<div class="filter-group">
 					<div class="filter-form form">
 						<dl>
-							<dd><a href="pg_pacientes.php?form=1" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Novo Paciente</span></a></dd>
+							<dd><a href="javascript:;" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Nova Cobrança</span></a></dd>
 						</dl>
 					</div>
 				</div>
@@ -49,6 +49,13 @@
 							<dl>
 								<dd>
 									<select name="profissional_multiple[]" multiple class="chosen" style="width:200px;" data-placeholder="Profisionais...">
+										<option value=""></option>
+									</select>
+								</dd>
+							</dl>
+							<dl>
+								<dd>
+									<select name="paciente_multiple[]" multiple class="chosen" style="width:200px;" data-placeholder="Pacientes...">
 										<option value=""></option>
 									</select>
 								</dd>
