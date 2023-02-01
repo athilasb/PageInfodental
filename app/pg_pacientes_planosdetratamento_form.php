@@ -1504,8 +1504,8 @@
 				} else  {
 					$('input[name=status]').val('');
 				}
-				if(pagamentos.length<=0){
-					erro = "Voce Precisa Selecionar as parcelas!"
+				if((status=="APROVADO") && pagamentos.length<=0){
+					erro = "Voce Precisa Selecionar as parcelas antes de Aprovar!"
 				}
 				if(erro.length>0) {
 					swal({title:"Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
@@ -1583,14 +1583,7 @@
 					if((index+1)>dataOrdem){
 						$('.js-listar-parcelas').find(`.js-valor:eq(${index})`).val(number_format(valorRestante/((numeroParcelas-dataOrdem)),2,",","."))
 					}
-					// if(index+1 == numeroParcelas){
-					// 	if(valorDigitado>valorRestante){
-					// 		swal({title: "Erro!", text: 'Os valores das parcelas não podem superar o valor total do procedimento', html:true, type:"error", confirmButtonColor: "#424242"});
-					// 		$(this).val(number_format(valorRestante,2,",","."))
-					// 		valorRestante = 0
-					// 		return
-					// 	}
-					// }
+					
 				});
 			});
 		});

@@ -702,7 +702,7 @@
 				procedimentos[cont].valorCorrigido=procedimentos[cont].valor;
 				cont++;
 			});
-			descontoListarProcedimentos(0);
+			descontoListarProcedimentos(1);
 			procedimentosListar();
 			atualizaValor(true);
 		});
@@ -741,19 +741,19 @@
 							valorTotal+=eval(x.valorCorrigido);
 							qtdItensDesconto++;
 							valorItens[cont] = x.valor;
-							percItens[cont] = (x.valor/valorOriginal).toFixed(5)
+							percItens[cont] = unMoney(x.valor/valorOriginal)
 
 							if(x.quantitativo>0){
-								valorItens[cont] = (x.quantidade*x.valor);
-								percItens[cont] = ((x.quantidade*x.valor)/valorOriginal).toFixed(5)
+								valorItens[cont] = unMoney(x.quantidade*x.valor);
+								percItens[cont] = unMoney((x.quantidade*x.valor)/valorOriginal)
 							}
 							else if(x.face==1){
-								valorItens[cont] = (x.faces.length*x.valor);
-								percItens[cont] = ((x.faces.length*x.valor)/valorOriginal).toFixed(5)
+								valorItens[cont] = unMoney(x.faces.length*x.valor);
+								percItens[cont] = unMoney((x.faces.length*x.valor)/valorOriginal)
 							}
 							else if(x.id_regiao==5){
-								valorItens[cont] = (x.hof*x.valor);
-								percItens[cont] = ((x.hof*x.valor)/valorOriginal).toFixed(5)
+								valorItens[cont] = unMoney(x.hof*x.valor);
+								percItens[cont] = unMoney((x.hof*x.valor)/valorOriginal)
 							}
 						}
 						cont++;
