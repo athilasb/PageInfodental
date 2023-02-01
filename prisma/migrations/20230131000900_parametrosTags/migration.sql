@@ -1,0 +1,1 @@
+ALTER TABLE `ident_parametros_tags` ADD `cor` VARCHAR(50) NOT NULL AFTER `titulo`;
