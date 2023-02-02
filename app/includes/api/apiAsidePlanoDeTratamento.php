@@ -162,7 +162,7 @@
 			let metodosPagamentosAceito ='<?php echo $optionFormasDePagamento;?>';
 			let disabledValor = ''
 			let disabledForma = ''
-			if(contrato.tipo_financeiro=='politica' || $('[name="tipo_financeiro"]:checked').val()=='politica'){
+			if(contrato.tipo_financeiro=='politica' && tipoFinaneiroPadrao == 'politica'){
 				disabledValor = 'disabled'
 				disabledForma = 'disabled'
 			}
@@ -266,7 +266,7 @@
 					pagamentosAtualizaCampos($('.js-pagamento-item .js-id_formadepagamento:last'),false);
 				}
 			});
-			console.log('ENTROU AQUI')
+			console.log(disabledValor)
 
 			if(pagamentos.length==1) {
 				$('.js-pagamento-item .js-valor:last').prop('disabled',true);

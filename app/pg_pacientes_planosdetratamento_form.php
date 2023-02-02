@@ -234,7 +234,6 @@
 												/*'iniciais'=>$iniciais,
 												'iniciaisCor'=>$iniciaisCor);*/
 					}
-					
 					if($cnt->status=="APROVADO") {
 						$values['procedimentos']=json_encode($procedimentos);
 					} else {
@@ -384,7 +383,6 @@
 
 							// APROVACAO
 								if($_POST['status']=="APROVADO") { 
-
 									// verifica se todos procedimentos estao com situacao/status APROVADO, OBSERVADO e/ou REPROVADO
 										$erro="";
 										if(isset($_POST['procedimentos'])  and !empty($_POST['procedimentos'])) {
@@ -458,7 +456,7 @@
 
 
 									if(empty($erro)) {
-										if($cnt->status=="PENDENTE" or $cnt->status=="CANCELADO") {
+										if($cnt->status=="PENDENTE" or $cnt->status=="CANCELADO"  or $cnt->status=="REPROVADO") {
 											$sql->update($_table,"status='APROVADO',id_aprovado=$usr->id,data_aprovado=now()","where id=$cnt->id");
 											$msgOk="Plano de Tratamento foi <b>APROVADO</b> com sucesso!";
 										} else {
@@ -516,7 +514,7 @@
 									}
 								}
 
-								// REPROVADO
+							// REPROVADO
 								else if($_POST['status']=="REPROVADO") {
 									if($pagamentosBaixas==0) {
 										if($cnt->status=="APROVADO" || $cnt->status=="PENDENTE") {
@@ -1684,7 +1682,7 @@
 			</section>
 			<form method="POST" class="form js-form-plano" action="">
 				<input type="hidden" name="acao" value="wlib" />
-				<input type="hidden" name="status" />
+				<input type="hidden" name="status" value="<?#=$values['status']?>"/>
 				<input type="hidden" name="id_politica" value='<?=$values['id_politica']??0;?>'/>
 				<div class="grid grid_2">
 					<div>
