@@ -505,6 +505,10 @@
 									let valorMulta =  unMoney($('.js-valorMultas').val())
 									let valorJuros =  unMoney($('.js-valorJuros').val())
 									let valorDesconto = unMoney($('.js-descontoMultasJuros').val())
+									if ($('.js-aplicar-multas-juros').prop('checked') == false) {
+										valorMulta = 0
+										valorJuros = 0
+									}
 									let valorSomado = (valorDigitado+valorMulta+valorJuros)-valorDesconto
 									let valorParcelas = valorSomado/qtdParcelas
 									let id_operadora = $('.js-creditoBandeira option:selected').attr('data-id_operadora')
