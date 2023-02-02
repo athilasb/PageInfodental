@@ -162,7 +162,7 @@
 			let metodosPagamentosAceito ='<?php echo $optionFormasDePagamento;?>';
 			let disabledValor = ''
 			let disabledForma = ''
-			if(contrato.tipo_financeiro=='politica' && $('[name="tipo_financeiro"]:checked').val()=='politica'){
+			if(contrato.tipo_financeiro=='politica' || $('[name="tipo_financeiro"]:checked').val()=='politica'){
 				disabledValor = 'disabled'
 				disabledForma = 'disabled'
 			}
@@ -266,6 +266,8 @@
 					pagamentosAtualizaCampos($('.js-pagamento-item .js-id_formadepagamento:last'),false);
 				}
 			});
+			console.log('ENTROU AQUI')
+
 			if(pagamentos.length==1) {
 				$('.js-pagamento-item .js-valor:last').prop('disabled',true);
 			}
@@ -695,6 +697,7 @@
 		// remove descontos
 		$('.aside-plano-desconto .js-btn-removerDesconto').click(function(){
 			pagamentos = [];
+			$('[name="pagamentos"]').html("");
 			$('.js-pagamentos-quantidade').val("0")
 			let cont = 0;
 			procedimentos.forEach(x=>{
@@ -710,6 +713,7 @@
 		// clica no botao de aplicar desconto na janela de desconto
 		$('.aside-plano-desconto .js-btn-aplicarDesconto').click(function(){
 			pagamentos = [];
+			$('[name="pagamentos"]').html("");
 			$('.js-pagamentos-quantidade').val("0")
 			let tipoDesconto = $('.aside-plano-desconto .js-select-tipoDesconto').val();
 			let quantidadeDesconto = $('.aside-plano-desconto .js-desconto-procedimento:checked').length;
@@ -963,6 +967,7 @@
 							let index = $('.aside-plano-procedimento-editar .js-asidePlanoEditar-index').val();
 							procedimentos.splice(index,1);
 							pagamentos = [];
+							$('[name="pagamentos"]').html("");
 							procedimentosListar();	
 							swal.close();
 							$('.aside-plano-procedimento-editar .aside-close').click();
@@ -988,6 +993,7 @@
 			procedimentos[index].situacao=situacao;
 			procedimentos[index].obs=obs;
 			pagamentos = []
+			$('[name="pagamentos"]').html("");
 			$('.js-pagamentos-quantidade').val("")
 			procedimentosListar();
 			atualizaValor(true);
@@ -1005,6 +1011,7 @@
 		$('.aside-plano-procedimento-adicionar .js-salvarAdicionarProcedimento').click(function(){
 			//$('.js-listar-parcelas .fpag').html('');
 			pagamentos = [];
+			$('[name="pagamentos"]').html("");
 			$('.js-pagamentos-quantidade').val("0")
 			// capta dados 
 				let id_procedimento = $('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento option:selected').val();

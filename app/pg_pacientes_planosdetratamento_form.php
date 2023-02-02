@@ -172,7 +172,7 @@
 						$usuariosIds[$x->id_usuario]=$x->id_usuario;
 						$procedimentosRegs[]=$x;
 					}
-
+				
 					$_usuarios=array();
 					if(count($usuariosIds)>0) {
 						$sql->consult($_p."colaboradores","id,nome","where id IN (".implode(",",$usuariosIds).")");
@@ -234,7 +234,7 @@
 												/*'iniciais'=>$iniciais,
 												'iniciaisCor'=>$iniciaisCor);*/
 					}
-
+					
 					if($cnt->status=="APROVADO") {
 						$values['procedimentos']=json_encode($procedimentos);
 					} else {
@@ -289,7 +289,7 @@
 		$tratamentoAprovado=(is_object($cnt) and $cnt->status=="APROVADO")?true:false;
 
 	// submit
-		if(isset($_POST['acao'])) {
+	if(isset($_POST['acao'])) {
 			if($_POST['acao']=="wlib") {
 				$processa=true;
 			
@@ -346,13 +346,12 @@
 
 						$sql->update($_table."_procedimentos","id_profissional=$idProfissional","where id_tratamento=$id_tratamento");
 					}
+				
 					if(isset($_POST['status']) and !empty($_POST['status'])) {
 						if(is_object($cnt)) {
 							$persistir=true;
 							$msgOk='';
 							$erro='';
-
-
 							// Baixas de pagamento
 							$pagamentosUnidosIds=array(-1);
 							$pagamentosBaixas=0;
@@ -389,9 +388,7 @@
 									// verifica se todos procedimentos estao com situacao/status APROVADO, OBSERVADO e/ou REPROVADO
 										$erro="";
 										if(isset($_POST['procedimentos'])  and !empty($_POST['procedimentos'])) {
-									
 											$procedimetosJSON=!empty($_POST['procedimentos'])?json_decode($_POST['procedimentos']):array();
-
 											if(is_array($procedimetosJSON)){ 
 												foreach($procedimetosJSON as $x) {
 													$x=(object)$x;
@@ -474,15 +471,11 @@
 							// PENDENTE
 								else if($_POST['status']=="PENDENTE") {
 									if($pagamentosBaixas==0) {
-										if($cnt->status=="APROVADO" || $cnt->status=="CANCELADO") {
-
-
+										if($cnt->status=="APROVADO" || $cnt->status=="CANCELADO" || $cnt->status=="REPROVADO") {
 											if(empty($erro)) {
-
 												$sql->update($_table,"status='PENDENTE',id_aprovado=0,data_aprovado='0000-00-00 00:00:00'","where id=$cnt->id");
 												$msgOk="Plano de Tratamento foi <b>ABERTO</b> com sucesso!";
 												$persistir=false;
-
 
 												// remove os pagamentos com fusao
 												$sql->consult($_table."_pagamentos","*","where id_tratamento=$cnt->id and id_fusao>0");
@@ -560,15 +553,9 @@
 									}
 								}
 
-
-
 							// CANCELADO
 								else if($_POST['status']=="CANCELADO") {
-
-									
-
 									if($pagamentosBaixas==0) {
-
 										if($cnt->status=="APROVADO" || $cnt->status=="PENDENTE") {
 											$sql->update($_table,"status='CANCELADO',id_aprovado=0,data_aprovado='0000-00-00 00:00:00'","where id=$cnt->id");
 											$msgOk="Plano de Tratamento foi <b>REPROVADO</b> com sucesso!";
@@ -979,10 +966,11 @@
 		// Mostra as opções de Politicas disponiveis
 		const AtualizaPolitica = ()=>{
 			$('.js-tipo-politica table').html("")
-			if(temPolitica){
+			if(temPolitica && tipoFinaneiroPadrao){
 				$('[name="id_politica"]').val(temPolitica.id)
 				let valorTotal = valorOriginalProcedimentos-valorDescontos
 				let metodosHabilitados = temPolitica.parcelasParametros.metodos
+
 				metodosHabilitados.forEach(x=>{
 					let qtdParcelas = 0
 					let taxaJuros = 0
@@ -995,6 +983,7 @@
 					let metodo = x.tipo
 					let icone = '<i class="iconify" data-icon="ep:tickets">'
 					let textoAux = ""
+
 					switch(metodo){
 						case 'dinheiro':
 							icone = `ri:money-dollar-box-line`
@@ -1112,6 +1101,7 @@
 					}
 					$('.js-tipo-politica table').append(tr)
 				})
+
 			}else{
 				$('[name="tipo_financeiro"]').each((i,x)=>{
 					if($(x).val()=='politica'){
@@ -1119,13 +1109,13 @@
 					}
 				})
 			}
-
 			if($('[name="tipo_financeiro"]:checked').val()=='politica'){
 				$('.js-tipo').hide(); 
 				$('.js-tipo-politica').show();
 				$('.js-tipo-manual').hide();
 			}else{
-				$('.js-tipo').hide(); 
+				$('.js-tipo').hide();
+				$('.js-listar-parcelas').show();
 				$('.js-tipo-manual').show();
 				$('.js-tipo-politica').hide();
 			}
@@ -1402,7 +1392,6 @@
 				}
 			}
 			pagamentos = parcelas;
-
 			pagamentosListar(3);
 			console.log(valorOriginalProcedimentos)
 			updateValorText((((valorEntrada+(valorParcela*(qtdParcelas-1)))-(valorOriginalProcedimentos-valorDescontos))))
@@ -1457,6 +1446,7 @@
 		//botao de voltar
 		const voltarMenuParcelas = ()=>{
 			pagamentos=[]
+			$('[name="pagamentos"]').html("");
 			$('#botao-voltar-menu-parcelas').hide()
 			$('.js-tipo-politica').show()
 			$('.js-listar-parcelas').hide()
@@ -1487,6 +1477,7 @@
 
 		const alternaManualPolitica = (tipo)=>{
 			pagamentos=[]
+			$('[name="pagamentos"]').html("");
 			if(tipo=='manual'){
 				tipoFinaneiroPadrao ='manual'
 				$('.js-tipo').hide(); 
@@ -1505,9 +1496,14 @@
 
 		const disabledForm = ()=>{
 			if(contrato.status=='APROVADO' || contrato.status=='REPROVADO' || contrato.status=='CANCELADO'){
-				$("form :input").prop("disabled", true);
-				$('#botao-voltar-menu-parcelas').hide()
-				console.log('HORA DE DESABILITAR')
+				("form :input").prop("disabled", true);
+			 	$('#botao-voltar-menu-parcelas').hide()
+				 $('[name="acao"]').prop("disabled", false);
+				 $('[name="status"]').prop("disabled", false);
+				 $('[name="id_politica"]').prop("disabled", false);
+				 $('[name="procedimentos"]').prop("disabled", false);
+				 $('[name="pagamentos"]').prop("disabled", false);
+				 $('[name="parcelas"]').prop("disabled", false);
 			}
 		}
 
@@ -1686,7 +1682,7 @@
 					</div>
 				</div>				
 			</section>
-			<form method="post" class="form js-form-plano">
+			<form method="POST" class="form js-form-plano" action="">
 				<input type="hidden" name="acao" value="wlib" />
 				<input type="hidden" name="status" />
 				<input type="hidden" name="id_politica" value='<?=$values['id_politica']??0;?>'/>
