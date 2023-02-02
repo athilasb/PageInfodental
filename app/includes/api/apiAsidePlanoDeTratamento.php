@@ -150,8 +150,8 @@
 			}
 		}
 		updateValorText();
-		AtualizaPolitica();
 		pagamentosListar();
+		AtualizaPolitica();
 	}
 
 	const pagamentosListar = (passo=0) => {
@@ -271,7 +271,7 @@
 			}
 		}else{
 				$('.js-listar-parcelas').hide();
-				if(temPolitica && $('[name="tipo_financeiro"]:eq(0)').prop('checked')==true){
+				if(temPolitica && tipoFinaneiroPadrao=='politica'){
 					$('[name="tipo_financeiro"]:eq(0)').prop('checked', true);
 					$('.js-tipo-politica').show()
 					$('.js-tipo-manual').hide()
@@ -1003,7 +1003,7 @@
 
 		// adiciona procedimento
 		$('.aside-plano-procedimento-adicionar .js-salvarAdicionarProcedimento').click(function(){
-			$('.js-listar-parcelas .fpag').html('');
+			//$('.js-listar-parcelas .fpag').html('');
 			pagamentos = [];
 			$('.js-pagamentos-quantidade').val("0")
 			// capta dados 
@@ -1316,6 +1316,7 @@
 		})
 
 		desativarCampos();
+		disabledForm()
 	});
 </script>
 

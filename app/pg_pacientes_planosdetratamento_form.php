@@ -153,7 +153,7 @@
 
 	// formulario
 		$cnt='';
-		$campos=explode(",","titulo,id_profissional,tempo_estimado,pagamento,id_politica,tipo_financeiro,parcelas");
+		$campos=explode(",","titulo,id_profissional,tempo_estimado,pagamento,id_politica,tipo_financeiro,parcelas,status");
 			
 		foreach($campos as $v) $values[$v]='';
 		$values['procedimentos']="[]";
@@ -523,6 +523,45 @@
 									}
 								}
 
+								// REPROVADO
+								else if($_POST['status']=="REPROVADO") {
+									if($pagamentosBaixas==0) {
+										if($cnt->status=="APROVADO" || $cnt->status=="PENDENTE") {
+											$sql->update($_table,"status='REPROVADO',id_aprovado=0,data_aprovado='0000-00-00 00:00:00'","where id=$cnt->id");
+											$msgOk="Plano de Tratamento foi <b>REPROVADO</b> com sucesso!";
+											$persistir=false;
+											// remove os pagamentos com fusao
+											$sql->consult($_table."_pagamentos","*","where id_tratamento=$cnt->id and id_fusao>0");
+											$pagamentosUnidosIds=array(-1);
+											while($x=mysqli_fetch_object($sql->mysqry)) {
+												$pagamentosUnidosIds[$x->id_fusao]=$x->id_fusao;
+											}
+											// retorna pagamentos de uniao
+											$pagamentosFusaoIds=array(-1);
+											$sql->consult($_table."_pagamentos","*","where id IN (".implode(",",$pagamentosUnidosIds).") and fusao=1");
+											while($x=mysqli_fetch_object($sql->mysqry)) {
+												$pagamentosFusaoIds[$x->id_fusao]=$x->id_fusao;
+											}
+											// retorna procedimentos de evolucao
+											$tratamentosProcedimentosIds=array(-1);
+											$sql->consult($_table."_procedimentos","id","where id_tratamento=$cnt->id");
+											while($x=mysqli_fetch_object($sql->mysqry)) $tratamentosProcedimentosIds[]=$x->id;
+											$sql->update($_table."_procedimentos_evolucao","lixo=1","where id_tratamento_procedimento IN (".implode(",",$tratamentosProcedimentosIds).")");
+											$sql->update($_table."_procedimentos","lixo=1","where id_tratamento=$cnt->id");
+											$sql->update($_table."_pagamentos","lixo=1,lixo_obs=3,lixo_data=now(),lixo_id_usuario=$usr->id","where id_tratamento=$cnt->id or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
+											//$sql->update($_table,"pagamentos=''","where id=$cnt->id");
+										} else {
+											$erro="Este tratamento já está REPROVADO";
+											$persistir=false;
+										}
+									} else {
+										$erro="Não é possível REPROVAR este tratamento, pois ele já teve baixas de pagamentos. Estorne as baixas para poder REPROVÁ-LO!";
+										$persistir=false;
+									}
+								}
+
+
+
 							// CANCELADO
 								else if($_POST['status']=="CANCELADO") {
 
@@ -565,7 +604,7 @@
 											$persistir=false;
 										}
 									} else {
-										$erro="Não é possível REPROVAR este tratamento, pois ele já teve baixas de pagamentos. Estorne as baixas para poder REPROVÁ-LO!";
+										$erro="Não é possível CANCELAR este tratamento, pois ele já teve baixas de pagamentos. Estorne as baixas para poder CANCELA-LO!";
 										$persistir=false;
 									}
 								}
@@ -909,9 +948,11 @@
 				}
 			}
 		}
+
 ?>
 	<script type="text/javascript">
 		var procedimentos = JSON.parse(`<?=($values['procedimentos']);?>`);
+		var tipoFinaneiroPadrao = 'politica';
 		let valorTotalProcedimentos = 0;
 		var valorOriginalProcedimentos = 0;
 		var valorDescontos = 0;
@@ -1447,12 +1488,14 @@
 		const alternaManualPolitica = (tipo)=>{
 			pagamentos=[]
 			if(tipo=='manual'){
+				tipoFinaneiroPadrao ='manual'
 				$('.js-tipo').hide(); 
 				$('.js-tipo-manual').show();
 				$('.js-tipo-politica').hide();
-				$('.js-tipo-politica table').html("")
+				//$('.js-tipo-politica table').html("")
 				atualizaValor();
 			}else if(tipo=='politica'){
+				tipoFinaneiroPadrao ='politica'
 				$('.js-tipo').hide(); 
 				$('.js-tipo-politica').show();
 				$('.js-tipo-manual').hide();
@@ -1460,7 +1503,16 @@
 			}
 		}
 
+		const disabledForm = ()=>{
+			if(contrato.status=='APROVADO' || contrato.status=='REPROVADO' || contrato.status=='CANCELADO'){
+				$("form :input").prop("disabled", true);
+				$('#botao-voltar-menu-parcelas').hide()
+				console.log('HORA DE DESABILITAR')
+			}
+		}
+
 		$(function(){
+		
 			// clica no botao salvar para fazer o submit
 			$('.js-btn-salvar').click(function(){
 				let erro = ``;
@@ -1651,7 +1703,8 @@
 									<div class="button-group">
 										<a href="javascript:;" data-status="PENDENTE" class="button js-btn-status<?= $cnt->status=="PENDENTE"?" active":"";?>"><i class="iconify" data-icon="fluent:timer-24-regular"></i><span>Aguard. Aprovação</span></a>
 										<a href="javascript:;" data-status="APROVADO" class="button js-btn-status<?= $cnt->status=="APROVADO"?" active":"";?>"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i><span>Aprovado</span></a>
-										<a href="javascript:;" data-status="CANCELADO" class="button js-btn-status<?= $cnt->status=="CANCELADO"?" active":"";?>"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Reprovado</span></a>
+										<a href="javascript:;" data-status="REPROVADO" class="button js-btn-status<?= $cnt->status=="REPROVADO"?" active":"";?>"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Reprovado</span></a>
+										<a href="javascript:;" data-status="CANCELADO" class="button js-btn-status<?= $cnt->status=="CANCELADO"?" active":"";?>"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Cancelado</span></a>
 									</div>
 									<?php
 									} else {
@@ -1660,6 +1713,7 @@
 										<a href="javascript:;" class="button  active"><i class="iconify" data-icon="fluent:timer-24-regular"></i><span>Aguard. Aprovação</span></a>
 										<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i><span>Aprovado</span></a>
 										<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Reprovado</span></a>
+										<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Cancelado</span></a>
 									</div>
 									<?php
 									}

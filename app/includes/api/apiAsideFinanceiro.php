@@ -170,6 +170,7 @@
 				let tipoPagamento = $('.js-id_formadepagamento option:checked').attr('data-tipo');
 				saldoAPagar = unMoney($('.js-saldoPagar').val());
 				let tipoBaixa = $('input[name=tipoBaixa]:checked').val();
+
 				if(tipoBaixa=="despesa" || tipoBaixa=="desconto" || tipoPagamento!==undefined) {
 					let dataPagamento = $('input.js-dataPagamento').val();
 					let dataVencimento = $('input.js-vencimento').val();
@@ -218,7 +219,6 @@
 							id_operadora=0;
 							taxa=0;
 							valorParcela=$('input.js-valor').val().replace(/[^\d,-.]+/g,'');
-
 							if(dataVencimento.length==0) erro= 'Defina a <b>Data do Vencimento</b>';
 							else if(valor.length==0) erro= 'Defina o <b>Valor do Pagamento</b>';
 						}
@@ -237,7 +237,7 @@
 					else if(descontoMultasJuros>=(valorParcela+valorJuros+valorMulta)) erro=`Voce Não Pode dar um Desconto Maior do que o Valor da Parcela!`; 
 					else if(saldoAPagar<unMoney(valorParcela)) erro=`O valor não pode ser maior que <b>${number_format(saldoAPagar,2,",",".")}`;
 					valorParcela=(unMoney(valorParcela)+valorJuros+valorMulta)-descontoMultasJuros
-					if(erro.length==0) {
+						if(erro.length==0) {
 						//return;
 						let data = `ajax=pagamentoBaixa&tipoBaixa=${tipoBaixa}&id_pagamento=${id_pagamento}&dataPagamento=${dataPagamento}&dataVencimento=${dataVencimento}&valor=${valor}&id_formadepagamento=${id_formadepagamento}&debitoBandeira=${debitoBandeira}&creditoBandeira=${creditoBandeira}&creditoParcelas=${creditoParcelas}&obs=${obs}&id_operadora=${id_operadora}&taxa=${taxa}&valorParcela=${(valorParcela)}&valorJuros=${(valorJuros)}&valorMulta=${(valorMulta)}&descontoMultasJuros=${descontoMultasJuros}`;
 						$.ajax({
