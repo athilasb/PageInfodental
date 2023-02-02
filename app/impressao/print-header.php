@@ -40,11 +40,11 @@
 	<?php
 	if(!empty($imagem)) {
 	?>
-	<img src="<?php echo $imagem;?>" height="50" class="print-header__logo" />
+	<img src="<?php echo $imagem;?>" class="print-header__logo" style="width: auto;height: 30px;" />
 	<?php
 	} else {
 	?>
-	<img src="../img/logo-cliente.png" height="68" class="print-header__logo" />
+	<img src="../img/logo-info.svg"  class="print-header__logo" style="width: auto;height: 25px;" />
 	<?php
 	}
 	?>

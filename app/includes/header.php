@@ -184,7 +184,7 @@
 
              ?>
              <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
-                    <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;A sua conta está bloqueada. Para utilizar o Info Dental é preciso que você regularize a sua conta!
+                    <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;A sua conta está bloqueada. Para utilizar o Info Dental é preciso que você regularize a sua assinatura!
               </div>
              <?php 
               } else {
@@ -193,7 +193,7 @@
                     <?php
                     die();
               }
-        } else if($infoConta->status=="ativo") {
+        } else if($infoConta->status=="inadimplente") {
              ?>
              <div style="width:100%;padding:20px;display: flex;background: red;color:#fff;justify-content: center;">
                     <span class="iconify" data-icon="mdi:alert-rhombus" data-height="20" data-inline="true"></span>&nbsp;A sua conta está inadimplente. Para evitar bloqueios&nbsp;<a href="pg_configuracoes_assinatura.php"><b><u>clique aqui</u></b></a>&nbsp;para se regularizar!

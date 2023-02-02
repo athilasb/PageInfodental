@@ -107,7 +107,6 @@
 			} else {
 				$rtn=array('success'=>false,'error'=>$erro);
 			}
-		
 		} else if($_POST['ajax']=="paymentMethodsList") {
 
 			if($iugu->customersDetail($infoConta->iugu_customer_id)) {
@@ -177,192 +176,193 @@
 	/*
 
 
-	// verifica se possui assinatura
-	$subscription='';
-	if(!empty($cnt->iugu_subscription_id)) {
-		if($iugu->assinaturaConsultar($cnt->iugu_subscription_id)) {
-			if(isset($iugu->response->id)) {
-				$subscription=$iugu->response;
+		// verifica se possui assinatura
+		$subscription='';
+		if(!empty($cnt->iugu_subscription_id)) {
+			if($iugu->assinaturaConsultar($cnt->iugu_subscription_id)) {
+				if(isset($iugu->response->id)) {
+					$subscription=$iugu->response;
 
-				
-				$assinatura = new Assinatura();
-
-				$attr=array('instancia'=>$_ENV['NAME'],
-							'subscription'=>$subscription);
-				$assinatura->validarAssinatura($attr);
-
-				
-			}
-		}
-	}
-
-	if(isset($_GET['cancelar'])) {
-		if(is_object($subscription)) {
-
-			if($iugu->assinaturaSuspender($cnt->iugu_subscription_id)) {
-				$sql->update("infodentalADM.infod_contas","iugu_subscription_id=''","where instancia='$cnt->instancia'");
-				$jsc->jAlert("Assinatura foi suspensa com sucesso!","sucesso","document.location.href='$_page'");
-				die();
-			} else {
-				$jsc->jAlert("Algum erro ocorreu durante a suspensão desta assinatura!","erro","");
-			}
-
-		} else {
-			$jsc->jAlert("Sua conta não possui nenhuma assinatura!","erro","");
-		}
-	} else if(isset($_GET['reativar'])) {
-		if(is_object($subscription)) {
-
-			if($iugu->assinaturaAtivar($cnt->iugu_subscription_id)) {
-				//$sql->update("infodentalADM.infod_contas","iugu_subscription_id='$subscription_id'","where instancia='$cnt->instancia'");
-				$jsc->jAlert("Assinatura foi ativada com sucesso!","sucesso","document.location.href='$_page'");
-				die();
-			} else {
-				$jsc->jAlert("Algum erro ocorreu durante a suspensão desta assinatura!","erro","");
-			}
-
-		} else {
-			$jsc->jAlert("Sua conta não possui nenhuma assinatura!","erro","");
-		}
-	}
-
-
-	// se nao encontrar registro
-	if(empty($cnt)) {
-		$sql->add($_table,"tipo='PJ'");
-		$sql->consult($_table,"*","where id=$sql->ulid");
-		$cnt=mysqli_fetch_object($sql->mysqry);
-	}
-
-	if(isset($_POST['acao'])) {
-		$vSQL=$adm->vSQL($campos,$_POST);
-		$values=$adm->values;
-
-		$vSQL=substr($vSQL,0,strlen($vSQL)-1);
-		$vWHERE="where instancia='".$cnt->instancia."'";
-
-
-		$sql->update($_table,$vSQL,$vWHERE);
-		$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."'");
-
-		# Persistencia do Cliente
-			
-			$sql->consult($_table,"*","where instancia='".addslashes($_ENV['NAME'])."'");
-			if($sql->rows) {
-				$cnt=mysqli_fetch_object($sql->mysqry);
-
-				$attr=array('email'=>$cnt->email,
-							'name'=>$cnt->tipo=="PF"?utf8_encode($cnt->responsavel):utf8_encode($cnt->razao_social),
-							'cpf_cnpj'=>$cnt->tipo=="PF"?utf8_encode($cnt->cpf):utf8_encode($cnt->cnpj),
-							'zip_code'=>$cnt->cep,
-							'number'=>$cnt->numero,
-							'street'=>utf8_encode($cnt->logradouro),
-							'state'=>utf8_encode($cnt->estado),
-							'city'=>utf8_encode($cnt->cidade),
-							'district'=>utf8_encode($cnt->bairro),
-							'complement'=>utf8_encode($cnt->complemento)
-							);
-
-				// se não possui cadastro na iugu
-				if(empty($cnt->iugu_customer_id)) {
-					if($iugu->clientesCriar($attr)) {
-						$customer_id=$iugu->response->id;
-						$sql->update($_table,"iugu_customer_id='".addslashes($customer_id)."'","where instancia='$cnt->instancia'");
-					} else {
-						$jsc->jAlert($iugu->erro,"erro","");
-
-					}
 					
-				} 
-				// se possuir altera dados
-				else {
-					if($iugu->clientesAlterar($cnt->iugu_customer_id,$attr)) {
-						$customer_id=$cnt->iugu_customer_id;
-					} else {
-						$jsc->jAlert($iugu->erro,"erro","");
+					$assinatura = new Assinatura();
 
-					}
+					$attr=array('instancia'=>$_ENV['NAME'],
+								'subscription'=>$subscription);
+					$assinatura->validarAssinatura($attr);
+
+					
 				}
 			}
+		}
 
-		# Assinatura do Plano
-			// se ja possui assinatura
-			if($cnt->iugu_subscription_id) {
+		if(isset($_GET['cancelar'])) {
+			if(is_object($subscription)) {
 
+				if($iugu->assinaturaSuspender($cnt->iugu_subscription_id)) {
+					$sql->update("infodentalADM.infod_contas","iugu_subscription_id=''","where instancia='$cnt->instancia'");
+					$jsc->jAlert("Assinatura foi suspensa com sucesso!","sucesso","document.location.href='$_page'");
+					die();
+				} else {
+					$jsc->jAlert("Algum erro ocorreu durante a suspensão desta assinatura!","erro","");
+				}
+
+			} else {
+				$jsc->jAlert("Sua conta não possui nenhuma assinatura!","erro","");
 			}
-			// se nao possui assinatura
-			else {
+		} else if(isset($_GET['reativar'])) {
+			if(is_object($subscription)) {
 
-				if(isset($_POST['iugu_plano']) and !empty($_POST['iugu_plano'])) {
-					$plan_identifier=addslashes($_POST['iugu_plano']);
+				if($iugu->assinaturaAtivar($cnt->iugu_subscription_id)) {
+					//$sql->update("infodentalADM.infod_contas","iugu_subscription_id='$subscription_id'","where instancia='$cnt->instancia'");
+					$jsc->jAlert("Assinatura foi ativada com sucesso!","sucesso","document.location.href='$_page'");
+					die();
+				} else {
+					$jsc->jAlert("Algum erro ocorreu durante a suspensão desta assinatura!","erro","");
+				}
+
+			} else {
+				$jsc->jAlert("Sua conta não possui nenhuma assinatura!","erro","");
+			}
+		}
 
 
-					// verifica se cliente possui assinatura na iugu antes de criar uma nova
-					$subscriptionIugu='';
-					if($iugu->assinaturaListar($cnt->iugu_customer_id)) {
-						if(isset($iugu->response->items)) {
-							foreach($iugu->response->items as $it) {
-								if($it->suspended===false) {
-									$subscriptionIugu=$it;
+		// se nao encontrar registro
+		if(empty($cnt)) {
+			$sql->add($_table,"tipo='PJ'");
+			$sql->consult($_table,"*","where id=$sql->ulid");
+			$cnt=mysqli_fetch_object($sql->mysqry);
+		}
+
+		if(isset($_POST['acao'])) {
+			$vSQL=$adm->vSQL($campos,$_POST);
+			$values=$adm->values;
+
+			$vSQL=substr($vSQL,0,strlen($vSQL)-1);
+			$vWHERE="where instancia='".$cnt->instancia."'";
+
+
+			$sql->update($_table,$vSQL,$vWHERE);
+			$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_table."'");
+
+			# Persistencia do Cliente
+				
+				$sql->consult($_table,"*","where instancia='".addslashes($_ENV['NAME'])."'");
+				if($sql->rows) {
+					$cnt=mysqli_fetch_object($sql->mysqry);
+
+					$attr=array('email'=>$cnt->email,
+								'name'=>$cnt->tipo=="PF"?utf8_encode($cnt->responsavel):utf8_encode($cnt->razao_social),
+								'cpf_cnpj'=>$cnt->tipo=="PF"?utf8_encode($cnt->cpf):utf8_encode($cnt->cnpj),
+								'zip_code'=>$cnt->cep,
+								'number'=>$cnt->numero,
+								'street'=>utf8_encode($cnt->logradouro),
+								'state'=>utf8_encode($cnt->estado),
+								'city'=>utf8_encode($cnt->cidade),
+								'district'=>utf8_encode($cnt->bairro),
+								'complement'=>utf8_encode($cnt->complemento)
+								);
+
+					// se não possui cadastro na iugu
+					if(empty($cnt->iugu_customer_id)) {
+						if($iugu->clientesCriar($attr)) {
+							$customer_id=$iugu->response->id;
+							$sql->update($_table,"iugu_customer_id='".addslashes($customer_id)."'","where instancia='$cnt->instancia'");
+						} else {
+							$jsc->jAlert($iugu->erro,"erro","");
+
+						}
+						
+					} 
+					// se possuir altera dados
+					else {
+						if($iugu->clientesAlterar($cnt->iugu_customer_id,$attr)) {
+							$customer_id=$cnt->iugu_customer_id;
+						} else {
+							$jsc->jAlert($iugu->erro,"erro","");
+
+						}
+					}
+				}
+
+			# Assinatura do Plano
+				// se ja possui assinatura
+				if($cnt->iugu_subscription_id) {
+
+				}
+				// se nao possui assinatura
+				else {
+
+					if(isset($_POST['iugu_plano']) and !empty($_POST['iugu_plano'])) {
+						$plan_identifier=addslashes($_POST['iugu_plano']);
+
+
+						// verifica se cliente possui assinatura na iugu antes de criar uma nova
+						$subscriptionIugu='';
+						if($iugu->assinaturaListar($cnt->iugu_customer_id)) {
+							if(isset($iugu->response->items)) {
+								foreach($iugu->response->items as $it) {
+									if($it->suspended===false) {
+										$subscriptionIugu=$it;
+									}
 								}
 							}
 						}
-					}
 
-					if(is_object($subscriptionIugu)) {
-						$sql->update("infodentalADM.infod_contas","iugu_subscription_id='$subscriptionIugu->id'","where instancia='$cnt->instancia'");
-						$jsc->jAlert("Sua conta já possui assinatura ativa!","erro","document.location.href='$_page'");
-						die();
-					} else {
-
-						$attr = array('plan_identifier'=>$plan_identifier,
-										'customer_id'=>$customer_id,
-										'expires_at'=>date('Y-m-d H:i:s',strtotime(" + 7 days")));
-						if($iugu->assinaturaCriar($attr)) {
-
-							$subscription_id=$iugu->response->id;
-
-							$sql->update("infodentalADM.infod_contas","iugu_subscription_id='$subscription_id'","where instancia='$cnt->instancia'");
-						
-							$jsc->jAlert("Assinatura realizada com sucesso!","sucesso","document.location.href='$_page'");
+						if(is_object($subscriptionIugu)) {
+							$sql->update("infodentalADM.infod_contas","iugu_subscription_id='$subscriptionIugu->id'","where instancia='$cnt->instancia'");
+							$jsc->jAlert("Sua conta já possui assinatura ativa!","erro","document.location.href='$_page'");
 							die();
 						} else {
-							$jsc->jAlert($iugu->erro,"erro","");
+
+							$attr = array('plan_identifier'=>$plan_identifier,
+											'customer_id'=>$customer_id,
+											'expires_at'=>date('Y-m-d H:i:s',strtotime(" + 7 days")));
+							if($iugu->assinaturaCriar($attr)) {
+
+								$subscription_id=$iugu->response->id;
+
+								$sql->update("infodentalADM.infod_contas","iugu_subscription_id='$subscription_id'","where instancia='$cnt->instancia'");
+							
+								$jsc->jAlert("Assinatura realizada com sucesso!","sucesso","document.location.href='$_page'");
+								die();
+							} else {
+								$jsc->jAlert($iugu->erro,"erro","");
+							}
 						}
+
 					}
 
 				}
-
-			}
-	
-		$jsc->go($_page);
-		die();
-	}*/
+		
+			$jsc->go($_page);
+			die();
+		}*/
 
 
-	// Se possuir assinatura
-	/*$iuguSubstription='';
-	if(!empty($infoConta->iugu_subscription_id)) {
-		// consulta assinatura
-		if($iugu->assinaturaConsultar($infoConta->iugu_subscription_id)) {
-			if(isset($iugu->response->id)) {
-				$iuguSubstription=$iugu->response;
+		// Se possuir assinatura
+		/*$iuguSubstription='';
+		if(!empty($infoConta->iugu_subscription_id)) {
+			// consulta assinatura
+			if($iugu->assinaturaConsultar($infoConta->iugu_subscription_id)) {
+				if(isset($iugu->response->id)) {
+					$iuguSubstription=$iugu->response;
+				}
 			}
 		}
-	}
 
-	// Se não possuir assinatura
-	if(empty($iuguSubstription)) {
-		$sql->update("infodentalADM.infod_contas","iugu_subscription_id=''","where instancia='".$infoConta->instancia."'");
-		$infoConta->iugu_subscription_id='';
-	} else {
+		// Se não possuir assinatura
+		if(empty($iuguSubstription)) {
+			$sql->update("infodentalADM.infod_contas","iugu_subscription_id=''","where instancia='".$infoConta->instancia."'");
+			$infoConta->iugu_subscription_id='';
+		} else {
 
 	*/
-	if(!empty($infoConta->iugu_customer_id)) {
-		if(isset($_GET['cancelar'])) {
 
+	if(!empty($infoConta->iugu_subscription_id)) {
+		if(isset($_GET['cancelar'])) {
 			if($iugu->assinaturaCancelar($infoConta->iugu_subscription_id)) {
 				$sql->update("infodentalADM.infod_contas","iugu_subscription_id=''","where instancia='$infoConta->instancia'");
+				$sql->add("infodentalADM.infod_contas_subscriptions","data=now(),evento='cancelar',iugu_subscription_id='$infoConta->iugu_subscription_id',instancia='$infoConta->instancia'");
 				$jsc->jAlert("Assinatura cancelada com sucesso!","sucesso","document.location.href='$_page'");
 				die();
 			} else {
@@ -549,138 +549,15 @@
 					?>
 
 					<div class="box-col__inner1">
-
-					<?php
-
-					// Nao possui assinatura
-					if(empty($infoConta->iugu_subscription_id)) {
-					?>
-						<script type="text/javascript">
-							$(function(){
-
-								$('.js-btn-assinar').click(function(){
-									let erro='';
-
-									if($('input[name=tipo]:checked').val()=="PF") {
-										if($('input[name=responsavel]').val().length==0) erro='Complete o campo <b>Responsável</b>';
-										else if($('input[name=cpf]').val().length==0) erro='Complete o campo <b>CPF</b>';
-										else if(validarCPF($('input[name=cpf]').val())===false) erro='CPF inválido!';
-									} else {
-										if($('input[name=razao_social]').val().length==0) erro='Complete o campo <b>Razão Social</b>';
-										else if($('input[name=cnpj]').val().length==0) erro='Complete o campo <b>CNPJ</b>';
-										else if(validarCNPJ($('input[name=cnpj]').val())===false) erro='CPF inválido!';
-									}
-
-									if(erro.length==0) {
-										if($('input[name=celular]').val().length==0) erro='Complete o campo <b>Celular</b>';
-										else if($('input[name=email]').val().length==0) erro='Complete o campo <b>E-mail</b>';
-										else if($('input[name=termos]').prop('checked')==false) erro='Para realizar assinatura é preciso aceitar o Termo de Uso';
-									}
-									
-									if(erro.length>0){
-										swal({title: "Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
-									} else {
-
-										let obj = $(this);
-
-										if(obj.attr('data-loading')==0) {
-											obj.attr('data-loading',1).html(`<i class="iconify" data-icon="eos-icons:loading"></i> <span>Assinando...</span>`);
-											$('form.js-form-assinatura').submit();
-											
-										} 
-									}
-
-								});
-							})
-						</script>
-
-						<form method="post" class="form js-form-assinatura" action="<?php echo $_page;?>">
-							<input type="hidden" name="acao" value="assinatura" />
-							<input type="hidden" name="iugu_plano" value="<?php echo $planoUnico->iugu_identifier;?>" />
-
-							<fieldset>
-								<legend>Assinatura</legend>
-
-								<div class="colunas2">
-									<dl>
-										<dt>Plano</dt>
-										<dd><?php echo utf8_encode($planoUnico->titulo);?></dd>
-									</dl>
-									<dl>
-										<dt>Valor</dt>
-										<dd>R$ <?php echo number_format($planoUnico->valor,2,",",".");?>/mês</dd>
-									</dl>
-								</div>
-							</fieldset>
-
-							<fieldset>
-								<legend>Dados Cadastrais</legend>
-
-									<div>
-										<dl>
-											<dd>
-												<label><input type="radio" name="tipo" value="PF"<?php echo $infoConta->tipo=="PF"?" checked":"";?> />Pessoa Física</label>
-												<label><input type="radio" name="tipo" value="PJ"<?php echo $infoConta->tipo=="PJ"?" checked":"";?> />Pessoa Jurídica</label>
-											</dd>
-										</dl>
-
-										<div class="colunas4 js-cpf">
-											<dl class="dl2">
-												<dt>Responsável</dt>
-												<dd><input type="text" name="responsavel" value="<?php echo utf8_encode($infoConta->responsavel);?>" class="obg" /></dd>
-											</dl>
-											<dl>
-												<dt>CPF</dt>
-												<dd><input type="text" name="cpf" value="<?php echo ($infoConta->cpf);?>" class="obg cpf" /></dd>
-											</dl>
-										</div>
-
-										<div class="colunas4 js-cnpj">
-											<dl class="dl2">
-												<dt>Razão Social</dt>
-												<dd><input type="text" name="razao_social" value="<?php echo utf8_encode($infoConta->razao_social);?>" class="obg" /></dd>
-											</dl>
-											<dl>
-												<dt>CNPJ</dt>
-												<dd><input type="text" name="cnpj" value="<?php echo ($infoConta->cnpj);?>" class="obg cnpj" /></dd>
-											</dl>
-										</div>
-										<div class="colunas4">
-											<dl>
-												<dt>Celular</dt>
-												<dd><input type="text" name="celular" value="<?php echo ($infoConta->celular);?>" class="obg celular" /></dd>
-											</dl>
-											<dl class="dl2">
-												<dt>E-mail</dt>
-												<dd><input type="email" name="email" value="<?php echo utf8_encode($infoConta->email);?>" class="obg" /></dd>
-											</dl>
-										</div>
-
-										<dl>
-											<dd>
-												<label><input type="checkbox" name="termos" class="input-switch" /> Aceito os Termos de Uso e Privacidade Info Dental</label>
-											</dd>
-											<dd>
-												<a href="javascript:;" class="button"><span class="iconify" data-icon="ic:sharp-manage-search" data-height="20"></span> Visualizar Termos de Uso </a>
-											</dd>
-										</dl>
-										
-									</div>
-							</fieldset>
-
-							<center>
-								<a href="javascript:;" class="button button_main js-btn-assinar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Assinar</span></a>
-							</center>
-						</form>
-					<?php
-					} 
-					else {
-					?>
-
+						<script type="text/javascript" src="https://js.iugu.com/v2"></script>
 						<script type="text/javascript">
 							var iuguSubstription = {};
+							var paymentMethods = [];
+							Iugu.setAccountID("26CC7D7DF11A49998FFD2EAFE7FECDB9");
+							Iugu.setup();
+							var bandeira = '';
 
-							const subdescriptionDetail = () => {
+							const subdescriptionDetail = (withDescription) => {
 								let data = `ajax=subdescriptionDetail`;
 
 								$.ajax({
@@ -689,7 +566,9 @@
 									success:function(rtn) {
 										if(rtn.success) {
 											if(rtn.iuguSubstription==0) {
-												document.location.reload();
+												if( withDescription===true) { 
+													document.location.reload();
+												}
 											} else {
 												iuguSubstription = rtn.iuguSubstription;
 
@@ -713,16 +592,25 @@
 
 												// lista faturas
 												$('.js-invoices tr').remove();
-												if(iuguSubstription.recent_invoices.length>0) {
+												if(iuguSubstription.recent_invoices.length>0) {	
 													iuguSubstription.recent_invoices.forEach(x=>{
+
 														let statusCor = '';
 														let status = ''; 
 														if(x.status=="paid") {
 															status="Pago";
 															statusCor="var(--verde)";
 														} else if(x.status=="pending") {
-															status="A Vencer";
-															statusCor="#ffcc00";
+
+															let dtVencimento = new Date(x.due_date);
+															let dtHoje = new Date('<?php echo date('Y-m-d');?>');
+															if(dtVencimento>dtHoje) {
+																status="A Vencer";
+																statusCor="#ffcc00";
+															} else {
+																status='Vencido';
+																statusCor='var(--vermelho)'
+															}
 														} else if(x.status="expired") {
 															status="Expirada";
 															statusCor="var(--vermelho)";
@@ -755,17 +643,21 @@
 
 								$('.js-cartao-carregando').show();
 								$('.js-cartao-carregado').hide();
+								$('.js-paymentsMethods tr').remove();
 
 								let data = `ajax=paymentMethodsList`;
-								$('.js-paymentsMethods tr').remove();
 								$.ajax({
 									type:"POST",
 									data:data,
 									success:function(rtn) {
 										if(rtn.success) {
-											$('.js-paymentsMethods tr').remove();
 
+											paymentMethods=rtn.paymentMethods;
+
+											$('.js-paymentsMethods tr').remove();
 											if(rtn.paymentMethods.length>0) {
+
+												let num = 1;
 												rtn.paymentMethods.forEach(x=>{
 
 													let btn=``;
@@ -783,8 +675,18 @@
 																						<td>${x.nome}</td>
 																						<td style="width:90px;">${btn}</td>
 																					</tr>`);
+
+													if(num++==rtn.paymentMethods.length) {
+
+														$('.js-paymentsMethods').append(`<tr class="js-item" style="background:var(--cinza2);">
+																							<td colspan="5" style="border-radius:var(--border-radius2);color:var(--cinza5);border-color:var(--cinza5);cursor:pointer" onclick="$(this).parent().hide();$('.js-cc-add').show()"><center><a href="javascript:;" style="text-decoration:none"><i class="iconify" data-icon="material-symbols:add" data-height="15" data-inline="true"></i> Novo Cartão</a></center></td>
+																						</tr>`);
+													}
 												});
+
+
 											} else {
+												$('.js-cc-add').show();
 												$('.js-paymentsMethods').append('<tr><td><center>Nenhum cartão de crédito cadastrado.</center></td></tr>');
 											}
 
@@ -794,10 +696,85 @@
 									}
 								})
 							}
-							
+
+							/* Máscaras ER */
+							function mascara(o,f){
+							    v_obj=o
+							    v_fun=f
+							    setTimeout("execmascara()",1)
+							}
+							function execmascara(){
+							    v_obj.value=v_fun(v_obj.value)
+							}
+							function mcc(v){
+							    v=v.replace(/\D/g,"");
+							    v=v.replace(/^(\d{4})(\d)/g,"$1 $2");
+							    v=v.replace(/^(\d{4})\s(\d{4})(\d)/g,"$1 $2 $3");
+							    v=v.replace(/^(\d{4})\s(\d{4})\s(\d{4})(\d)/g,"$1 $2 $3 $4");
+							    return v;
+							}
+							function id( el ){
+								return document.getElementById( el );
+							}
 							$(function(){
+
+								$('input[name=number]').keyup(function(){
+									v=$(this).val();
+								    v=v.replace(/\D/g,"");
+								    v=v.replace(/^(\d{4})(\d)/g,"$1 $2");
+								    v=v.replace(/^(\d{4})\s(\d{4})(\d)/g,"$1 $2 $3");
+								    v=v.replace(/^(\d{4})\s(\d{4})\s(\d{4})(\d)/g,"$1 $2 $3 $4");
+								    $(this).val(v);
+								});
+
+								$('input[name=expiration]').keyup(function(e){
+
+									if(e.which && e.which==8) return true;
+
+									v=$(this).val();
+								    v=v.replace(/\D/g,"");
+								    v=v.replace(/^(\d{1})(\d)/g,"$1$2/");
+								    v=v.replace(/^(\d{2})(\d)/g,"$1/$2");
+								    $(this).val(v);
+								});
+
 								paymentMethodsList();
-								subdescriptionDetail();
+								subdescriptionDetail(<?php echo empty($infoConta->iugu_subscription_id)?false:true;?>);
+
+								$('.js-btn-assinar').click(function(){
+									let erro='';
+
+									if($('input[name=tipo]:checked').val()=="PF") {
+										if($('input[name=responsavel]').val().length==0) erro='Complete o campo <b>Responsável</b>';
+										else if($('input[name=cpf]').val().length==0) erro='Complete o campo <b>CPF</b>';
+										else if(validarCPF($('input[name=cpf]').val())===false) erro='CPF inválido!';
+									} else {
+										if($('input[name=razao_social]').val().length==0) erro='Complete o campo <b>Razão Social</b>';
+										else if($('input[name=cnpj]').val().length==0) erro='Complete o campo <b>CNPJ</b>';
+										else if(validarCNPJ($('input[name=cnpj]').val())===false) erro='CPF inválido!';
+									}
+
+									if(erro.length==0) {
+										if($('input[name=celular]').val().length==0) erro='Complete o campo <b>Celular</b>';
+										else if($('input[name=email]').val().length==0) erro='Complete o campo <b>E-mail</b>';
+										else if($('input[name=termos]').prop('checked')==false) erro='Para realizar assinatura é preciso aceitar o Termo de Uso';
+										else if(paymentMethods.length==0) erro='Cadsatre um Cartão de Crédito para prosseguir com a assinatura';
+									}
+									
+									if(erro.length>0){
+										swal({title: "Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+									} else {
+
+										let obj = $(this);
+
+										if(obj.attr('data-loading')==0) {
+											obj.attr('data-loading',1).html(`<i class="iconify" data-icon="eos-icons:loading"></i> <span>Assinando...</span>`);
+											$('form.js-form-assinatura').submit();
+											
+										} 
+									}
+
+								});
 
 								$('.js-paymentsMethods').on('click','.js-btn-paymentMethodRemove',function(){
 									let obj = $(this);
@@ -853,11 +830,269 @@
 									})
 
 								});
+
+								$('.js-form-adicionar-cartao input[name=validade]').inputmask('99/99');
+
+								$('.js-btn-novoCartao').click(function(){
+									$(".aside-cartao").fadeIn(100,function() {
+										$(".aside-cartao .aside__inner1").addClass("active");
+										$('.aside-cartao input[name=expiration]').inputmask("99/99");
+									});
+								});
+
+								$('.js-navHaderback').attr('href','pagamentos');
+								$('.js-navHaderback').html(`<span class="iconify" data-icon="eva:arrow-ios-back-fill" data-inline="false" data-height="30"></span>`)
+
+
+
+								$('.js-salvarCartao').click(function(){
+
+									let obj = $(this);
+									let objAntigo = $(this).html();
+
+									if(obj.attr('data-loading')==0) {
+
+										let erro = ``;
+										$('form.js-form-adicionar-cartao input[type=tel],form.js-form-adicionar-cartao input[type=text]').each(function(index,elem){
+											if(erro.length==0 && $(elem).hasClass('obg')===true && $(elem).val().length==0) {
+												erro = $(elem).attr('data-msg');
+												$(elem).addClass('erro');
+											}
+										})
+
+										if(erro.length>0) {
+											swal({title: "Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+										} else {
+
+											let number = ($('input[name=number]').val());
+											let expiration = $('input[name=expiration]').val().split('/');
+											let expiration_mes = expiration[0] ? expiration[0] : '';
+											let expiration_ano = expiration[1] ? expiration[1] : '';
+											let verification_value = $('input[name=verification_value]').val();
+											let full_name = $('input[name=full_name]').val().split(' ');
+											let first_name = full_name[0];
+
+											let last_name = '';
+											for(var i = 0;i<full_name.length; i++) {
+												if(i>0) last_name+=full_name[i]+' ';
+											}
+
+											bandeira = Iugu.utils.getBrandByCreditCardNumber(number);;
+
+											if(Iugu.utils.validateCreditCardNumber(number)===false) {
+												erro='Número de cartão inválido!';
+											} else if(Iugu.utils.validateExpiration(expiration_mes, expiration_ano)===false) {
+												erro='Data de validade inválida!';
+											} else if(Iugu.utils.validateCVV(verification_value, bandeira)===false) {
+												erro='CVV inválido!';
+											} 
+
+											if(erro.length>0) {
+												swal({title: "Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+											} else {
+
+												cc = Iugu.CreditCard(number,expiration_mes,expiration_ano,first_name,last_name,verification_value);
+
+												if(cc.valid()===false) {
+													swal({title: "Erro", text: 'Dados do cartão de crédito inválido!', html:true, type:"error", confirmButtonColor: "#424242"});
+												} else {
+
+													obj.html(`<span class="iconify" data-icon="eos-icons:three-dots-loading"></span>`);
+													obj.attr('data-loading',1);
+
+													Iugu.createPaymentToken(cc, function(response) {
+													    if (response.errors) {
+
+													    	console.log(response.errors);
+															swal({title: "Erro", text: "Algum erro ocorreu durante o registro de seu cartão. Tente novamente!", html:true, type:"error", confirmButtonColor: "#424242"});
+
+															obj.html(objAntigo);
+															obj.attr('data-loading',0);
+													    } else {
+
+													    	cc_token = response.id;
+
+													    	let data = `ajax=paymentMethodsCreate&bandeira=${bandeira}&cc_token=${cc_token}`;
+													   
+													        $.ajax({
+													        	type:"POST",
+													        	data:data,
+													        	success:function(rtn){
+													        		if(rtn.success===true) {
+													        			$('input.js-cc').val('');
+													        			$('.aside-cartao .aside-close').click();
+																		paymentMethodsList();
+																		$('.js-cc-add').hide();
+													        		} else if(rtn.error) {
+																		swal({title: "Erro", text: rtn.error, html:true, type:"error", confirmButtonColor: "#424242"});
+													        		} else {
+																		swal({title: "Erro", text: 'Algum erro ocorreu. Tente novamente!', html:true, type:"error", confirmButtonColor: "#424242"});
+													        		}
+													        	},
+													        	error:function(){
+													        		swal({title: "Erro", text: 'Algum erro ocorreu. Tente novamente.', html:true, type:"error", confirmButtonColor: "#424242"});
+													        	}
+													        }).done(function(){
+													        	obj.html(objAntigo);
+																obj.attr('data-loading',0);
+													        });
+
+													    }   
+													});
+												}
+											}
+										}
+									}
+								});
+
+								$('form.js-cadastro input[type=tel],form.js-cadastro input[type=text]').keyup(function(){
+									$(this).removeClass('erro')
+								});
+
 							});
+						</script>
+					<?php
+
+					// Nao possui assinatura
+					if(empty($infoConta->iugu_subscription_id)) {
+					?>
+						
+
+						<form method="post" class="form js-form-assinatura js-form-adicionar-cartao" action="<?php echo $_page;?>">
+							<input type="hidden" name="acao" value="assinatura" />
+							<input type="hidden" name="iugu_plano" value="<?php echo $planoUnico->iugu_identifier;?>" />
+
+							<!-- Assinatura --> 
+							<fieldset>
+								<legend>Assinatura</legend>
+
+								<div class="colunas2">
+									<dl>
+										<dt>Plano</dt>
+										<dd><?php echo utf8_encode($planoUnico->titulo);?></dd>
+									</dl>
+									<dl>
+										<dt>Valor</dt>
+										<dd>R$ <?php echo number_format($planoUnico->valor,2,",",".");?>/mês</dd>
+									</dl>
+								</div>
+							</fieldset>
+
+							<!-- Dados Cadastrais --> 
+							<fieldset>
+								<legend>Dados Cadastrais</legend>
+
+									<div>
+										<dl>
+											<dd>
+												<label><input type="radio" name="tipo" value="PF"<?php echo $infoConta->tipo=="PF"?" checked":"";?> />Pessoa Física</label>
+												<label><input type="radio" name="tipo" value="PJ"<?php echo $infoConta->tipo=="PJ"?" checked":"";?> />Pessoa Jurídica</label>
+											</dd>
+										</dl>
+
+										<div class="colunas4 js-cpf">
+											<dl class="dl2">
+												<dt>Responsável</dt>
+												<dd><input type="text" name="responsavel" value="<?php echo utf8_encode($infoConta->responsavel);?>" class="obg" /></dd>
+											</dl>
+											<dl>
+												<dt>CPF</dt>
+												<dd><input type="text" name="cpf" value="<?php echo ($infoConta->cpf);?>" class="obg cpf" /></dd>
+											</dl>
+										</div>
+
+										<div class="colunas4 js-cnpj">
+											<dl class="dl2">
+												<dt>Razão Social</dt>
+												<dd><input type="text" name="razao_social" value="<?php echo utf8_encode($infoConta->razao_social);?>" class="obg" /></dd>
+											</dl>
+											<dl>
+												<dt>CNPJ</dt>
+												<dd><input type="text" name="cnpj" value="<?php echo ($infoConta->cnpj);?>" class="obg cnpj" /></dd>
+											</dl>
+										</div>
+
+										<div class="colunas4">
+											<dl>
+												<dt>Celular</dt>
+												<dd><input type="text" name="celular" value="<?php echo ($infoConta->celular);?>" class="obg celular" /></dd>
+											</dl>
+											<dl class="dl2">
+												<dt>E-mail</dt>
+												<dd><input type="email" name="email" value="<?php echo utf8_encode($infoConta->email);?>" class="obg" /></dd>
+											</dl>
+										</div>
+
+										<dl>
+											<dd>
+												<label><input type="checkbox" name="termos" class="input-switch" /> Aceito os Termos de Uso e Privacidade Info Dental</label>
+											</dd>
+											<dd>
+												<a href="javascript:;" class="button"><span class="iconify" data-icon="ic:sharp-manage-search" data-height="20"></span> Visualizar Termos de Uso </a>
+											</dd>
+										</dl>
+										
+									</div>
+							</fieldset>
+
+							<!-- Cartao de Credito -->
+							<fieldset>
+								<legend>Cartão de Crédito</legend>
+
+								<div class="colunas7 js-cc-add" style="display:none;">
+									<dl class="dl2">
+										<dt>Número do Cartão</dt>
+										<dd><input type="text" name="number" class="obg js-cc" data-msg="Digite o número do cartão" maxlength="19" /></dd>	
+									</dl>
+									<dl class="dl2">
+										<dt>Nome impresso no Cartão</dt>
+										<dd><input type="text" name="full_name" placeholder="Joao A Silva" class="obg js-cc" data-msg="Digite o nome impresso no cartão" style="text-transform:uppercase;" /></dd>	
+									</dl>
+									<dl class="">
+										<dt>Validade</dt>
+										<dd><input type="text" name="expiration" placeholder="mm/aa" class="obg js-cc" data-msg="Digite a Data de Validade do cartão" maxlength="5" /></dd>	
+									</dl>
+									<dl>
+										<dt>CVV</dt>
+										<dd><input type="number" name="verification_value" placeholder="123" class="obg js-cc" data-msg="Digite o código CVV do cartão" maxlength="3" /></dd>	
+									</dl>
+									<dl>
+										<dt>&nbsp;</dt>
+										<dd><a href="javascript:;" class="button button_main js-salvarCartao" data-loading="0" style="float:right"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a></dd>
+									</dl>
+								</div>
+
+								<div class="js-cartao-carregando" style="margin-top:20px;font-size:0.875em;color:var(--cinza4)">
+									<center><span class="iconify" data-icon="eos-icons:loading"></span> Carregando...</center>
+								</div>
+
+								<div class="js-cartao-carregado" style="display:none">
+
+									<div class="list1">
+										<table class="js-paymentsMethods">
+											
+										</table>
+									</div>
+								</div>
+							</fieldset>
+
+							<center>
+								<a href="javascript:;" class="button button_main js-btn-assinar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Assinar</span></a>
+							</center>
+						</form>
+					<?php
+					} 
+					else {
+					?>
+
+						<script type="text/javascript">
+							
 						</script>
 
 						<form method="post" class="form formulario-validacao" action="<?php echo $_page;?>">
 							<input type="hidden" name="acao" value="wlib" />
+
+							<!-- Assinatura -->
 							<fieldset>
 								<legend>Assinatura</legend>
 								<div class="js-assinatura-carregando" style="font-size:0.875em;color:var(--cinza4)">
@@ -891,14 +1126,35 @@
 
 									</center>
 								</div>
-								
 							</fieldset>
 
-
+							<!-- Cartao de Credito -->
 							<fieldset>
 								
 								<legend>Cartão de Crédito</legend>
 
+								<div class="colunas7 js-cc-add" style="display:none;">
+									<dl class="dl2">
+										<dt>Número do Cartão</dt>
+										<dd><input type="text" name="number" class="obg js-cc" data-msg="Digite o número do cartão" maxlength="19" /></dd>	
+									</dl>
+									<dl class="dl2">
+										<dt>Nome impresso no Cartão</dt>
+										<dd><input type="text" name="full_name" placeholder="Joao A Silva" class="obg js-cc" data-msg="Digite o nome impresso no cartão" style="text-transform:uppercase;" /></dd>	
+									</dl>
+									<dl class="">
+										<dt>Validade</dt>
+										<dd><input type="text" name="expiration" placeholder="mm/aa" class="obg js-cc" data-msg="Digite a Data de Validade do cartão" maxlength="5" /></dd>	
+									</dl>
+									<dl>
+										<dt>CVV</dt>
+										<dd><input type="number" name="verification_value" placeholder="123" class="obg js-cc" data-msg="Digite o código CVV do cartão" maxlength="3" /></dd>	
+									</dl>
+									<dl>
+										<dt>&nbsp;</dt>
+										<dd><a href="javascript:;" class="button button_main js-salvarCartao" data-loading="0" style="float:right"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a></dd>
+									</dl>
+								</div>
 
 								<div class="js-cartao-carregando" style="font-size:0.875em;color:var(--cinza4)">
 									<center><span class="iconify" data-icon="eos-icons:loading"></span> Carregando...</center>
@@ -906,15 +1162,6 @@
 
 								<div class="js-cartao-carregado" style="display:none">
 
-									<a href="javascript:;" class="button button_main js-btn-novoCartao" data-loading="0" style="float:right"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Novo Cartão</span></a>
-
-									<?php
-									$conta='';
-									$sql->consult("infodentalADM.infod_contas","*","where instancia='".$_ENV['NAME']."'");
-									if($sql->rows) {
-										$conta=mysqli_fetch_object($sql->mysqry);
-									}
-									?>
 									<div class="list1">
 										<table class="js-paymentsMethods">
 											
@@ -923,6 +1170,7 @@
 								</div>
 							</fieldset>
 
+							<!-- Faturas -->
 							<fieldset>
 								<legend>Faturas Recentes</legend>
 
@@ -939,8 +1187,6 @@
 										</table>
 									</div>
 								</div>
-								
-
 							</fieldset>
 
 						</form>
@@ -957,137 +1203,9 @@
 		</div>
 	</main>
 
-	<script type="text/javascript" src="https://js.iugu.com/v2"></script>
-	<script type="text/javascript">
-		Iugu.setAccountID("26CC7D7DF11A49998FFD2EAFE7FECDB9");
-		
-		Iugu.setup();
-		var bandeira = '';
+	
 
-		$(function(){ 
-
-			$('.js-form-adicionar-cartao input[name=validade]').inputmask('99/99');
-
-			$('.js-btn-novoCartao').click(function(){
-				$(".aside-cartao").fadeIn(100,function() {
-					$(".aside-cartao .aside__inner1").addClass("active");
-					$('.aside-cartao input[name=expiration]').inputmask("99/99");
-				});
-			});
-
-			$('.js-navHaderback').attr('href','pagamentos');
-			$('.js-navHaderback').html(`<span class="iconify" data-icon="eva:arrow-ios-back-fill" data-inline="false" data-height="30"></span>`)
-
-
-
-			$('.js-salvarCartao').click(function(){
-
-				let obj = $(this);
-				let objAntigo = $(this).html();
-
-				if(obj.attr('data-loading')==0) {
-
-					let erro = ``;
-					$('form.js-form-adicionar-cartao input[type=tel],form.js-form-adicionar-cartao input[type=text]').each(function(index,elem){
-						if(erro.length==0 && $(elem).hasClass('obg')===true && $(elem).val().length==0) {
-							erro = $(elem).attr('data-msg');
-							$(elem).addClass('erro');
-						}
-					})
-
-					if(erro.length>0) {
-						swal({title: "Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
-					} else {
-
-						let number = ($('input[name=number]').val());
-						let expiration = $('input[name=expiration]').val().split('/');
-						let expiration_mes = expiration[0] ? expiration[0] : '';
-						let expiration_ano = expiration[1] ? expiration[1] : '';
-						let verification_value = $('input[name=verification_value]').val();
-						let full_name = $('input[name=full_name]').val().split(' ');
-						let first_name = full_name[0];
-
-						let last_name = '';
-						for(var i = 0;i<full_name.length; i++) {
-							if(i>0) last_name+=full_name[i]+' ';
-						}
-
-						bandeira = Iugu.utils.getBrandByCreditCardNumber(number);;
-
-						if(Iugu.utils.validateCreditCardNumber(number)===false) {
-							erro='Número de cartão inválido!';
-						} else if(Iugu.utils.validateExpiration(expiration_mes, expiration_ano)===false) {
-							erro='Data de validade inválida!';
-						} else if(Iugu.utils.validateCVV(verification_value, bandeira)===false) {
-							erro='CVV inválido!';
-						} 
-
-						if(erro.length>0) {
-							swal({title: "Erro", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
-						} else {
-
-							cc = Iugu.CreditCard(number,expiration_mes,expiration_ano,first_name,last_name,verification_value);
-
-							if(cc.valid()===false) {
-								swal({title: "Erro", text: 'Dados do cartão de crédito inválido!', html:true, type:"error", confirmButtonColor: "#424242"});
-							} else {
-
-								obj.html(`<span class="iconify" data-icon="eos-icons:three-dots-loading"></span> Cadastrando...`);
-								obj.attr('data-loading',1);
-
-								Iugu.createPaymentToken(cc, function(response) {
-								    if (response.errors) {
-
-								    	console.log(response.errors);
-										swal({title: "Erro", text: "Algum erro ocorreu durante o registro de seu cartão. Tente novamente!", html:true, type:"error", confirmButtonColor: "#424242"});
-
-										obj.html(objAntigo);
-										obj.attr('data-loading',0);
-								    } else {
-
-								    	cc_token = response.id;
-
-								    	let data = `ajax=paymentMethodsCreate&bandeira=${bandeira}&cc_token=${cc_token}`;
-								   
-										obj.html(`<span class="iconify" data-icon="eos-icons:three-dots-loading"></span> Criando forma de pagamento...`);
-								        $.ajax({
-								        	type:"POST",
-								        	data:data,
-								        	success:function(rtn){
-								        		if(rtn.success===true) {
-								        			$('.aside-cartao .aside-close').click();
-													paymentMethodsList();
-								        		} else if(rtn.error) {
-													swal({title: "Erro", text: rtn.error, html:true, type:"error", confirmButtonColor: "#424242"});
-								        		} else {
-													swal({title: "Erro", text: 'Algum erro ocorreu. Tente novamente!', html:true, type:"error", confirmButtonColor: "#424242"});
-								        		}
-								        	},
-								        	error:function(){
-								        		swal({title: "Erro", text: 'Algum erro ocorreu. Tente novamente.', html:true, type:"error", confirmButtonColor: "#424242"});
-								        	}
-								        }).done(function(){
-								        	obj.html(objAntigo);
-											obj.attr('data-loading',0);
-								        });
-
-								    }   
-								});
-							}
-						}
-					}
-				}
-			});
-
-			$('form.js-cadastro input[type=tel],form.js-cadastro input[type=text]').keyup(function(){
-				$(this).removeClass('erro')
-			})
-
-			
-		})
-	</script>
-
-	<section class="aside aside-cartao" style="display: none;">
+	<?php /*<section class="aside aside-cartao" style="display: none;">
 		<div class="aside__inner1">
 			<header class="aside-header">
 				<h1>Cartão de Crédito</h1>
@@ -1135,7 +1253,7 @@
 				</fieldset>
 			</form>
 		</div>
-	</section>
+	</section>*/?>
 
 <?php 
 include "includes/footer.php";

@@ -1,0 +1,22 @@
+
+INSERT INTO `ident_parametros_examedeimagem` (`id`, `lixo`, `titulo`, `id_regiao`, `clinicas`, `obs`) VALUES
+(1000, 0, 'Periapical Total', 0, '', ' Check Up'),
+(1001, 0, 'Periapical Dentes Indicados ', 0, '', ''),
+(1002, 0, 'Periapical Do Implante ', 0, '', ''),
+(1003, 0, 'Interproximal Dentes Indicados ', 0, '', ''),
+(1004, 0, 'Interproximal Total ', 0, '', 'Premolares / Molares - Direito e Esquerdo'),
+(1005, 0, 'Oclusal ', 0, '', ''),
+(1006, 0, 'ATM ', 0, '', '04 Incidências '),
+(1007, 0, 'Carpal ', 0, '', 'Mão e Punho'),
+(1008, 0, 'P.A.', 0, '', ''),
+(1009, 0, 'Panorâmica - Em Oclusão ', 0, '', 'Tamanho 1:1'),
+(1010, 0, 'Panorâmica - Topo', 0, '', 'Tamanho 1:1'),
+(1011, 0, 'Teleradiografia Lateral ', 0, '', ''),
+(1012, 0, 'Teleradiografia Frontal ', 0, '', ''),
+(1013, 0, 'Tomografia Computadorizada', 0, '', ''),
+(1014, 0, 'Escaneamento Intraoral ', 0, '', ''),
+(1015, 0, 'Modelo 3D Impresso ', 0, '', ''),
+(1016, 0, 'Modelo em Gesso ', 0, '', ''),
+(1017, 0, 'Foto Extrabucal ', 0, '', ''),
+(1018, 0, 'Foto Intrabucal ', 0, '', ''),
+(1019, 0, 'Tomografia ATM', 0, '', '');

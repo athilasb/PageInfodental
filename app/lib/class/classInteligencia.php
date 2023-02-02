@@ -415,7 +415,7 @@
 										
 										foreach($aux as $idP) {
 											if(!empty($idP) and is_numeric($idP) and isset($_profissionais[$idP])) {
-												$profissionais[]=array('nome'=>$_profissionais[$idP]->nome);
+												$profissionais[]=array('nome'=>utf8_encode($_profissionais[$idP]->nome));
 											}
 										}	
 									}
