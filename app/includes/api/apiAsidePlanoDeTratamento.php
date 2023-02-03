@@ -64,6 +64,7 @@
 			$('.js-valorTotalOriginal').text(number_format((valorOriginalProcedimentos),2,",","."));
 		}
 	}
+	
 	const atualizaValor = (atualizarParcelas) => {
 		valorTotal=0;
 		valorOriginalProcedimentos = 0;
