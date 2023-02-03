@@ -307,6 +307,7 @@
 
 	});
 </script>
+<!-- .aside INICIO-->
 <section class="aside" id="js-aside-asFinanceiro">	
 	<div class="aside__inner1">
 		<input type="hidden" name="alteracao" value="0">
@@ -596,8 +597,9 @@
 			</div>
 		</form>
 	</div>
-</section><!-- .aside -->
-
+</section>
+<!-- .aside  FIM-->
+<!-- .aside CONFIRMACAO RECEBER-->
 <section class="aside" id="js-aside-asFinanceiro-receber">
 	<div class="aside__inner1" style="width:600px;">
 
@@ -608,8 +610,6 @@
 
 		<form method="post" class="aside-content form">
 			<input type="hidden" class="js-id_pagamento" value="0" />
-
-
 
 			<!-- Programacao de pagamento -->
 			<div class="js-fin js-fin-programacao" style="display: ;">
