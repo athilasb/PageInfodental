@@ -10,9 +10,11 @@
 
 
 	# Clientes
+
 		if(1==2) {
 			$arq = file("clientes.csv");
 
+			//$sql->del($_p."pacientes","");//die();
 			$values='';
 			foreach($arq as $x) {
 				list($id_paciente,$data_registro,$nome,$celular,$cpf,$datanascimento,$email,$bairro,$cep,$cidade,$logradouro,$numeroprontuario,$numeropaciente,$observacao,$rg,$sexo,$telefone,$uf,$complemento,$plano,$motivo_chegar_clinica,$titular_plano,$cpf_resposavel_plano,$numero_carteirinha,$excluido) = explode(",",$x);
@@ -77,6 +79,7 @@
 	# Consulta
 		if(1==2) {
 
+			$sql->del($_p."agenda","");//die();
 
 			$_pacientes=array();
 			$sql->consult($_p."pacientes","id,nome","");
@@ -112,8 +115,8 @@
 			        $num = count($data);
 			       	$linha++;
 			        for ($c=0; $c < $num; $c++) {
-			        	if($c==0) {
-			        		$datareg=$data[$c];
+			        	if($c==0) { 
+			        		$datareg=date('Y-m-d H:i:s',strtotime($data[$c]." - 3 hour"));
 			        	}
 			        	if($c==1) {
 			        		$paciente=trim($data[$c]);
@@ -152,6 +155,7 @@
 					if($datareg=="data") continue;
 					$v="('$datareg','$id_paciente','$profissionais','$id_status','$agenda_duracao','$agenda_data_final','$obs'),";
 			        $values.=$v;
+			       // echo $values;die();
 
 			      
 			    }
