@@ -304,6 +304,7 @@ code {font-size:0.875em; background:rgba(0,0,0,0.1); margin:0 .5rem;}
 .list1 em {background:var(--cinza2); margin:0 .25rem; padding:.125rem .375rem; font-style:normal; display:inline-block; border-radius:4px; font-size:0.875em;}
 
 .list2 {margin-bottom:var(--margin1);}
+.list2_sm td {font-size:0.875em;}
 .list2 table {width:100%;}
 .list2 tr {text-align:left;}
 .list2 td, .list2 th {padding:calc(var(--padding1)/2);}

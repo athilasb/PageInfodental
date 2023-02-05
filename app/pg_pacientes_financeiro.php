@@ -185,7 +185,8 @@ if (isset($_POST['ajax'])) {
 				"vencido" => (strtotime($x->data_vencimento) < strtotime(date('Y-m-d')) ? true : false),
 				"parcela" => $x->parcela,
 				"obs" => utf8_encode($x->obs),
-				"total" => (float)$x->valor
+				"taxa" => $x->taxa,
+				"total" => (float)$x->valor,
 			);
 		}
 
@@ -441,7 +442,7 @@ foreach ($registros as $x) {
 	if (isset($_baixas[$x->id])) {
 		$dataUltimoPagamento = date('d/m/Y', strtotime($_baixas[$x->id][count($_baixas[$x->id]) - 1]->data));
 		foreach ($_baixas[$x->id] as $v) {
-			if ($v->lixo == 0 && $v->tipoBaixa=='pagamento') {
+			if ($v->lixo == 0 && $v->tipoBaixa == 'pagamento') {
 				$valor['valorJuros'] += $v->valorJuros;
 				$valor['valorMulta'] += $v->valorMulta;
 				$valorDefinido += $v->valor;
@@ -548,13 +549,18 @@ foreach ($registros as $x) {
 			data: data,
 			success: function(rtn) {
 				if (rtn.success) {
-					$('#js-aside-asFinanceiro .js-baixas .js-tr').remove();
+					$('#js-aside-asFinanceiro .js-baixas tr').remove();
 					$('[name="alteracao"]').val("1")
 					total = 0;
 					let desconto = 0;
 					let despesas = 0;
 					if (rtn.baixas.length > 0) {
 						let contador = 0;
+						baixas = rtn.baixas
+						let index = pagamentos.findIndex((item, index) => {
+							return item.id_parcela == id_pagamento
+						})
+						pagamentos[index].baixas = baixas
 						rtn.baixas.forEach(x => {
 							let textJuros = "";
 							let textMulta = "";
@@ -563,11 +569,12 @@ foreach ($registros as $x) {
 							let pagamento = '';
 							let alertVencimento = "";
 							let taxaCartao = ""
+							let btnReceber = ''
+							let btnEstorno = ''
 							if (x.tipoBaixa == "PAGAMENTO") {
 								if (x.formaDePagamento.length > 0) {
 									if (x.id_formadepagamento == 2) {
 										pagamento = `${x.formaDePagamento}<font color=#999><br />Parcela ${x.parcela} de ${x.parcelas}</font>`;
-										taxaCartao = `<span style="font-size:12px;color:var(--cinza4)">Taxa Cartão: R$ ${number_format((x.valor*parseFloat(x.taxa)/100),2,",",".")}</span><br>`
 									} else {
 										pagamento = x.formaDePagamento;
 									}
@@ -588,20 +595,19 @@ foreach ($registros as $x) {
 							let btns = ``;
 
 							if (x.pago == 1) {
-								icon = `<span class="iconify" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
-
-								btns = `<a href="javascript:;" class="js-estornoPagamento button button__sec tooltip" data-id_baixa="${x.id_baixa}" data-index="${contador}" style="color:#FFF;background:red" title="Estornar Pagamento"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
-
+								icon = `<span class="iconify tooltip" title="pago" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
+								btnReceber = `<a href="" class="button_green" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar" disabled><span>Recebido</span></a>`
 							} else {
 								btns = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
-
+								btnEstorno = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><i class="iconify" data-icon="fluent:delete-24-regular"></i></span></a>`;
 								if (x.tipoBaixa == "PAGAMENTO") {
 									btns += ` <a href="javascript:;" class="js-receber button button__sec" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar"><span class="iconify" data-icon="ic:round-attach-money" data-inline="false"></span></a>`;
+									btnReceber = `<a href="javascript:;" class="js-receber button button__sec" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar"><i class="iconify" data-icon="fluent:checkmark-24-filled"></i><span>Receber</span></a>`
 								}
 								if (x.vencido) {
-									icon = `<span class="iconify" data-icon="icons8:cancel" data-inline="true" style="color:red"></span>`;
+									icon = `<span class="iconify tooltip" title="vencido" data-icon="icons8:cancel" data-inline="true" style="color:red"></span>`;
 								} else {
-									icon = `<span class="iconify" data-icon="bx:bx-hourglass" data-inline="true" style="color:orange"></span>`;
+									icon = `<span class="iconify tooltip" title="em aberto" data-icon="bx:bx-hourglass" data-inline="true" style="color:orange"></span>`;
 								}
 							}
 
@@ -623,26 +629,29 @@ foreach ($registros as $x) {
 							// if(diferenca>=1){
 							// 	alertVencimento = `<span style="color:red">FATURA VENCIDA!</span>` 
 							// }
+							if (x.tipoBaixa == "PAGAMENTO") {
+								if (x.formaDePagamento.length > 0) {
+									if (x.id_formadepagamento == 2) {
+										taxaCartao = `<span style="font-size:12px;color:var(--cinza4)">Taxa Cartão: R$${number_format(((ValorParcela)*parseFloat(x.taxa)/100),2,",",".")}</span><br>`
+									}
+								}
+							}
 
-
-							html = `<tr class="js-tr">
-											<td>${icon}</td>
-											<td>${x.data}<br>${alertVencimento}</td>
-											<td>${x.tipoBaixa}</td>
-											<td>${pagamento}</td>
-											<td>
-												<font style="font-size:18px">${number_format(ValorParcela,2,",",".")}</font></br>
-												${taxaCartao}
-												${textMulta}
-												${textJuros}
-												${TextDescontoIncargos}
-											</td>
-											<td>${btns}</td>
-										</tr>`;
-
-
-
-
+							html = `<tr class="">
+									<td>${icon}</td>
+									<td>${x.data}<br>${alertVencimento}</td>
+									<td>${x.tipoBaixa}</td>
+									<td>${pagamento}</td>
+									<td>
+										<font style="font-size:18px">${number_format(ValorParcela,2,",",".")}</font></br>
+										${taxaCartao}
+										${textMulta}
+										${textJuros}
+										${TextDescontoIncargos}
+									</td>
+									<td>${btnReceber}</td>
+									<td>${btnEstorno}</td>
+								</tr>`;
 							$('.js-tr .js-recibo, .js-tr .js-estorno').tooltipster({
 								theme: "borderless"
 							});
@@ -651,15 +660,13 @@ foreach ($registros as $x) {
 					} else {
 						$('#js-aside-asFinanceiro .js-baixas').append('<tr class="js-tr"><td colspan="4"><center>Nenhuma baixa cadastrada</center></td></tr>');
 					}
-
-
-
-
 					$('.js-valorDesconto').val(number_format(desconto, 2, ",", "."));
 					$('.js-valorDespesa').val(number_format(despesas, 2, ",", "."));
-
 					baixasAtualizarValores();
-
+					let index = pagamentos.findIndex((item, index) => {
+						return item.id_parcela == id_pagamento
+					})
+					pagamentos[index].saldoApagar = unMoney($('.js-saldoPagar').text())
 				} else if (rtn.error) {
 					swal({
 						title: "Erro!",
@@ -693,22 +700,18 @@ foreach ($registros as $x) {
 	const baixasAtualizarValores = () => {
 		let valorParcela = unMoney($('.js-valorParcela').val())
 		let desconto = unMoney($('.js-valorDesconto').val());
-		let despesas = unMoney($('.js-valorDespesa').val());
 		let saldoPagar = (valorParcela - total).toFixed(2);
 		saldoPagar -= desconto;
-		saldoPagar += despesas;
 		let valorCorrigido = valorParcela;
 		valorCorrigido -= desconto;
-		valorCorrigido += despesas;
-
-		$('.js-saldoPagar').val(number_format(saldoPagar, 2, ",", "."));
-		$('.js-valorCorrigido').val(number_format(valorCorrigido, 2, ",", "."));
-
+		$('.js-saldoPagar').html(`R$ ${number_format(saldoPagar, 2, ",", ".")}`);
+		$('.js-valorCorrigido').html(`R$ ${number_format(valorCorrigido, 2, ",", ".")}`);
 		if (saldoPagar <= 0) {
 			$('.js-fieldset-pagamentos').hide();
 		} else {
 			$('.js-fieldset-pagamentos').show();
 		}
+
 	}
 </script>
 
@@ -721,9 +724,7 @@ foreach ($registros as $x) {
 		if (isset($_GET['unirPagamentos'])) {
 		?>
 			$('.js-btn-unirPagamentos').click(function() {
-
 				let dataVencimento = $('.js-dataVencimento').val();
-
 				if (dataVencimento.length == 0 || !validaData(dataVencimento)) {
 					swal({
 						title: "Erro!",
@@ -812,22 +813,17 @@ foreach ($registros as $x) {
 				if (jurosMultas > 0) {
 					$('.js-colunaMultasJuros').show()
 					$('#js-aside-asFinanceiro .js-multasJuros').val(number_format(jurosMultas, 2, ",", "."));
-
 				}
 				// Resumo
 				$('#js-aside-asFinanceiro .js-index').val(index);
 				$('#js-aside-asFinanceiro .js-id_pagamento').val(pagamentos[index].id_parcela);
 				$('#js-aside-asFinanceiro .js-titulo').html(pagamentos[index].titulo);
-				$('#js-aside-asFinanceiro .js-vencimento').html(`Vencto: ${pagamentos[index].vencimento}`);
-				$('#js-aside-asFinanceiro .js-desconto').val(number_format(pagamentos[index].valorDesconto, 2, ",", "."));
-				$('#js-aside-asFinanceiro .js-parcela').val(number_format(pagamentos[index].valorParcela, 2, ",", "."));
-				$('#js-aside-asFinanceiro .js-despesa').val(number_format(pagamentos[index].valorDespesa, 2, ",", "."));
-
-
-				$('#js-aside-asFinanceiro .js-corrigido').val(number_format(pagamentos[index].valorCorrigido, 2, ",", "."));
-				$('#js-aside-asFinanceiro .js-pago').val(number_format(pagamentos[index].valorPago, 2, ",", "."));
+				$('#js-aside-asFinanceiro .js-dataOriginal').html(`${pagamentos[index].vencimento}`);
+				$('#js-aside-asFinanceiro .js-valorParcela').html(`R$ ${number_format(pagamentos[index].valorParcela, 2, ",", ".")}`);
+				$('#js-aside-asFinanceiro .js-valorDesconto').html(`R$ ${number_format(pagamentos[index].valorDesconto, 2, ",", ".")}`);
+				$('#js-aside-asFinanceiro .js-valorCorrigido').html(`R$ ${number_format(pagamentos[index].valorCorrigido, 2, ",", ".")}`);
 				$('#js-aside-asFinanceiro .js-btn-pagamento').attr('data-id_pagamento', pagamentos[index].id_parcela);
-				$('#js-aside-asFinanceiro .js-apagar').val(number_format(pagamentos[index].valorCorrigido - pagamentos[index].valorPago, 2, ",", "."));
+				//$('#js-aside-asFinanceiro .js-apagar').html(number_format(pagamentos[index].valorCorrigido - pagamentos[index].valorPago, 2, ",", "."));
 
 				// Agrupamento
 				$('#js-aside-asFinanceiro .js-subpagamentos tr').remove();
@@ -856,6 +852,7 @@ foreach ($registros as $x) {
 				let desconto = 0;
 				let despesas = 0;
 				let contador = 0;
+
 				if (pagamentos[index].baixas && pagamentos[index].baixas.length > 0) {
 					pagamentos[index].baixas.forEach(x => {
 						let textJuros = "";
@@ -865,17 +862,19 @@ foreach ($registros as $x) {
 						let pagamento = '';
 						let alertVencimento = "";
 						let taxaCartao = "";
+						let btnReceber = ''
+						let btnEstorno = ''
 						if (x.tipoBaixa == "PAGAMENTO") {
 							if (x.formaDePagamento.length > 0) {
 								if (x.id_formadepagamento == 2) {
 									pagamento = `${x.formaDePagamento}<font color=#999><br />Parcela ${x.parcela} de ${x.parcelas}</font>`;
-									taxaCartao = `<span style="font-size:12px;color:var(--cinza4)">Taxa Cartão: R$ ${number_format((x.valor*parseFloat(x.taxa)/100),2,",",".")}</span><br>`
+									taxaCartao = `<span style="font-size:12px;color:var(--cinza4)">Taxa Cartão: R$ ${number_format(((x.valor)*parseFloat(x.taxa)/100),2,",",".")}</span><br>`
 								} else {
 									pagamento = x.formaDePagamento;
 								}
 							}
 						} else {
-							pagamento = `<span class="iconify" data-icon="il:dialog" data-inline="true" data-height="18"></span> ${x.obs}`;
+							pagamento = `<span class="iconify tooltip"  title="Desconto"  data-icon="il:dialog" data-inline="true" data-height="18"></span> ${x.obs}`;
 						}
 
 						if (x.tipoBaixa == "DESCONTO") {
@@ -890,20 +889,19 @@ foreach ($registros as $x) {
 						let btns = ``;
 
 						if (x.pago == 1) {
-							icon = `<span class="iconify" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
-
-							btns = `<a href="javascript:;" class="js-estornoPagamento button button__sec tooltip" data-id_baixa="${x.id_baixa}" data-index="${contador}" style="color:#FFF;background:red" title="Estornar Pagamento"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
-
+							icon = `<span class="iconify tooltip" title="pago" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
+							btnReceber = `<a href="" class="button_green" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar" disabled><span>Recebido</span></a>`
 						} else {
 							btns = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
-
+							btnEstorno = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><i class="iconify" data-icon="fluent:delete-24-regular"></i></span></a>`;
 							if (x.tipoBaixa == "PAGAMENTO") {
 								btns += ` <a href="javascript:;" class="js-receber button button__sec" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar"><span class="iconify" data-icon="ic:round-attach-money" data-inline="false"></span></a>`;
+								btnReceber = `<a href="javascript:;" class="js-receber button button__sec" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar"><i class="iconify" data-icon="fluent:checkmark-24-filled"></i><span>Receber</span></a>`
 							}
 							if (x.vencido) {
-								icon = `<span class="iconify" data-icon="icons8:cancel" data-inline="true" style="color:red"></span>`;
+								icon = `<span class="iconify tooltip" title="vencido" data-icon="icons8:cancel" data-inline="true" style="color:red"></span>`;
 							} else {
-								icon = `<span class="iconify" data-icon="bx:bx-hourglass" data-inline="true" style="color:orange"></span>`;
+								icon = `<span class="iconify tooltip" title="em aberto" data-icon="bx:bx-hourglass" data-inline="true" style="color:orange"></span>`;
 							}
 						}
 						ValorParcela = x.valor;
@@ -920,24 +918,32 @@ foreach ($registros as $x) {
 							TextDescontoIncargos = `<span style="font-size:12px;color:var(--cinza4)">Descontos: R$ ${number_format(x.descontoMultasJuros,2,",",".")}</span></br>`
 						}
 						let diferenca = (new Date().getTime() - new Date(`${x.vencimento.split('/')[2]}/${x.vencimento.split('/')[1]}/${x.vencimento.split('/')[0]}`).getTime()) / (1000 * 60 * 60 * 24);
-						if (diferenca >= 1) {
+						if (diferenca >= 1 && x.tipoBaixa != 'DESCONTO') {
 							alertVencimento = `<span style="color:red">FATURA VENCIDA!</span>`
 						}
+						if (x.tipoBaixa == "PAGAMENTO") {
+							if (x.formaDePagamento.length > 0) {
+								if (x.id_formadepagamento == 2) {
+									taxaCartao = `<span style="font-size:12px;color:var(--cinza4)">Taxa Cartão: R$${number_format(((ValorParcela)*parseFloat(x.taxa)/100),2,",",".")}</span><br>`
+								}
+							}
+						}
 						contador++;
-						html = `<tr class="js-tr">
-										<td>${icon}</td>
-										<td>${x.data}<br>${alertVencimento}</td>
-										<td>${x.tipoBaixa}</td>
-										<td>${pagamento}</td>
-										<td>
-											<font style="font-size:18px">${number_format(ValorParcela,2,",",".")}</font></br>
-											${taxaCartao}
-											${textMulta}
-											${textJuros}
-											${TextDescontoIncargos}
-										</td>
-										<td>${btns}</td>
-									</tr>`;
+						html = `<tr class="">
+									<td>${icon}</td>
+									<td>${x.data}<br>${alertVencimento}</td>
+									<td>${x.tipoBaixa}</td>
+									<td>${pagamento}</td>
+									<td>
+										<font style="font-size:18px">${number_format(ValorParcela,2,",",".")}</font></br>
+										${taxaCartao}
+										${textMulta}
+										${textJuros}
+										${TextDescontoIncargos}
+									</td>
+									<td>${btnReceber}</td>
+									<td>${btnEstorno}</td>
+								</tr>`;
 
 
 
@@ -953,7 +959,7 @@ foreach ($registros as $x) {
 					$('#js-aside-asFinanceiro .js-baixas').append('<tr class="js-tr"><td colspan="4"><center>Nenhuma baixa cadastrada</center></td></tr>');
 				}
 				$('#js-aside-asFinanceiro .js-valorDespesa,#js-aside-asFinanceiro .js-despesa').val(number_format(despesas, 2, ",", "."));
-				$('#js-aside-asFinanceiro .js-valorDesconto,#js-aside-asFinanceiro .js-desconto').val(number_format(desconto, 2, ",", "."));
+				$('#js-aside-asFinanceiro .js-valorDesconto,#js-aside-asFinanceiro .js-valorDesconto').val(number_format(desconto, 2, ",", "."));
 				$('#js-aside-asFinanceiro .js-valorParcela').val(number_format(pagamentos[index].valorParcela, 2, ",", "."));
 
 
@@ -977,7 +983,6 @@ foreach ($registros as $x) {
 
 			let obj = $(this);
 			let objHTMLAntigo = obj.html();
-
 			swal({
 				title: "Atenção",
 				text: "Você tem certeza que deseja estornar esta baixa?",
@@ -990,9 +995,7 @@ foreach ($registros as $x) {
 				closeOnCancel: true
 			}, function(isConfirm) {
 				if (isConfirm) {
-
 					obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>');
-
 					$.ajax({
 						type: "POST",
 						//url:'box/<?= basename($_SERVER['PHP_SELF']); ?>',
@@ -1043,13 +1046,9 @@ foreach ($registros as $x) {
 			let baixaIndex = $(this).attr('data-index');
 
 			if (pagamentos[pagamentoIndex]) {
-
 				let pagamento = pagamentos[pagamentoIndex];
-
 				if (pagamento.baixas[baixaIndex]) {
-
 					let baixa = pagamento.baixas[baixaIndex];
-
 					if (baixa.pago == "0") {
 						swal({
 							title: "Erro!",
@@ -1058,14 +1057,10 @@ foreach ($registros as $x) {
 							type: "error",
 							confirmButtonColor: "#424242"
 						});
-
 					} else {
-
 						let id_baixa = pagamento.baixas[baixaIndex].id_baixa;
 						let id_parcela = pagamento.id_parcela;
-
 						let data = `ajax=baixaEstornarPagamento&id_baixa=${id_baixa}&id_pagamento=${id_parcela}`;
-
 						swal({
 							title: "Atenção",
 							text: "Você tem certeza que deseja estornar este pagamento?",
@@ -1128,20 +1123,19 @@ foreach ($registros as $x) {
 		$('#js-aside-asFinanceiro .js-baixas').on('click', '.js-receber', function() {
 			let pagamentoIndex = $('#js-aside-asFinanceiro .js-index').val();
 			let baixaIndex = $(this).attr('data-index');
-
 			if (pagamentos[pagamentoIndex]) {
-
 				let pagamento = pagamentos[pagamentoIndex];
-
 				if (pagamento.baixas[baixaIndex]) {
-
 					let baixa = pagamento.baixas[baixaIndex];
-
+					let valorParcela = baixa.valor
+					let valorJuros = baixa.valorJuros ?? 0
+					let valorMulta = baixa.valorMulta ?? 0
+					let descontoMultasJuros = baixa.descontoMultasJuros ?? 0
+					valorParcela = valorParcela + parseFloat(valorJuros) + parseFloat(valorMulta) + parseFloat(descontoMultasJuros)
 					$('#js-aside-asFinanceiro-receber .js-index').val(baixaIndex);
-
 					$('#js-aside-asFinanceiro-receber .js-dataPagamento').val(dataHoje);
 					$('#js-aside-asFinanceiro-receber .js-vencimentoParcela').val(baixa.data);
-					$('#js-aside-asFinanceiro-receber .js-valorParcela').val(number_format(baixa.valor, 2, ",", "."));
+					$('#js-aside-asFinanceiro-receber .js-valorParcela').val(number_format((valorParcela), 2, ",", "."));
 					$('#js-aside-asFinanceiro-receber .js-formaPagamento').val(baixa.formaDePagamento);
 
 					$('#js-aside-asFinanceiro-receber .js-fieldset-conta').show();
@@ -1277,7 +1271,6 @@ foreach ($registros as $x) {
 
 		})
 
-
 		$('.js-btn-fechar').click(function() {
 			$('.cal-popup').hide();
 			document.location.reload();
@@ -1303,40 +1296,51 @@ foreach ($registros as $x) {
 					let id = $(this).attr('data-id');
 					document.location.href = `pg_pacientes_planosdetratamento_form.php?edita=${id}<?= empty($url) ? "" : "&" . $url; ?>`;
 				})
+				// quando digita o valor a ser pago na parcela ASIDE
 				$('.js-valor').keyup(function() {
 					let idPagamento = $('.js-id_pagamento').val()
 					let pagamento = pagamentos.filter((item) => {
 						return item.id_parcela == idPagamento
 					})[0]
+					let ValorDigitado = unMoney($(this).val())
+					if (ValorDigitado > pagamento.saldoApagar) {
+						swal({
+							title: "Erro!",
+							text: "o Valor da Parcela Não Pode ser Maior que o Saldo a Pagar!",
+							html: true,
+							type: "error",
+							confirmButtonColor: "#424242"
+						});
+						($(this).val(pagamento.saldoApagar));
+						ValorDigitado = pagamento.saldoApagar
+					}
 					let data = new Date(`${pagamento.vencimento.split('/')[2]}/${pagamento.vencimento.split('/')[1]}/${pagamento.vencimento.split('/')[0]}`);
 					let hoje = new Date();
 					let diferenca = (hoje.getTime() - data.getTime()) / (1000 * 60 * 60 * 24);
 					if (diferenca >= 1) {
 						if ($('.js-aplicar-multas-juros').prop('checked') == true) {
-							$('.js-valorMultas').closest('dl').show()
-							$('.js-valorJuros').closest('dl').show()
-							$('.js-TotalaPagar').closest('dl').show()
-							$('.js-descontoMultasJuros').closest('dl').show()
+							$('.js-multa').show()
+							let ValorMulta = (ValorDigitado * ((_clinica[1].politica_multas) / 100))
+							let ValorJuros = (ValorDigitado * (((_clinica[1].politica_juros) / 100))) * Math.floor(diferenca)
+							$('.js-valorMultas').text(number_format(ValorMulta, 2, ",", "."))
+							$('.js-valorJuros').text(number_format(ValorJuros, 2, ",", "."))
+							$('.js-TotalaPagar').text(number_format(ValorDigitado + ValorMulta + ValorJuros, 2, ",", "."))
 						}
-						let ValorDigitado = unMoney($(this).val())
-						let ValorMulta = (ValorDigitado * ((_clinica[1].politica_multas) / 100))
-						let ValorJuros = (ValorDigitado * (((_clinica[1].politica_juros) / 100))) * Math.floor(diferenca)
-						$('.js-valorMultas').val(number_format(ValorMulta, 2, ",", "."))
-						$('.js-valorJuros').val(number_format(ValorJuros, 2, ",", "."))
-						$('.js-TotalaPagar').val(number_format(ValorDigitado + ValorMulta + ValorJuros, 2, ",", "."))
 					} else {
-						$('.js-valorMultas').val(number_format(0, 2, ",", "."))
-						$('.js-valorJuros').val(number_format(0, 2, ",", "."))
-						$('.js-TotalaPagar').val(number_format(0, 2, ",", "."))
-						$('.js-descontoMultasJuros').val(number_format(0, 2, ",", "."))
-						$('.js-descontoMultasJuros').closest('dl').attr('disabled', true)
+						$('.js-multa').hide()
+						$('.js-valorMultas').text(number_format(0, 2, ",", "."))
+						$('.js-valorJuros').text(number_format(0, 2, ",", "."))
+						$('.js-TotalaPagar').text(number_format(0, 2, ",", "."))
+						$('.js-descontoMultasJuros').text(number_format(0, 2, ",", "."))
 					}
 				})
+				// quando digita o valor de desconto que deseja Dar na Parcela
 				$('.js-descontoMultasJuros').keyup(function() {
 					let ValorDigitado = unMoney($(this).val())
 					let valorOriginal = unMoney($('.js-valor').val())
-					let ValorJuros = unMoney($('.js-valorJuros').val())
-					let ValorMulta = unMoney($('.js-valorMultas').val())
+					let ValorJuros = unMoney($('.js-valorJuros').text())
+					let ValorMulta = unMoney($('.js-valorMultas').text())
+
 					if (ValorDigitado > (valorOriginal + ValorJuros + ValorMulta)) {
 						swal({
 							title: "Erro!",
@@ -1348,8 +1352,9 @@ foreach ($registros as $x) {
 						($(this).val("0"));
 						ValorDigitado = 0
 					}
-					$('.js-TotalaPagar').val(number_format((valorOriginal + ValorJuros + ValorMulta) - ValorDigitado, 2, ",", "."))
+					$('.js-TotalaPagar').text(number_format((valorOriginal + ValorJuros + ValorMulta) - ValorDigitado, 2, ",", "."))
 				})
+				// quando clica para ativa e desativar o juros
 				$('.js-aplicar-multas-juros').click(function() {
 					let idPagamento = $('.js-id_pagamento').val()
 					let pagamento = pagamentos.filter((item) => {
@@ -1360,31 +1365,33 @@ foreach ($registros as $x) {
 					let diferenca = (hoje.getTime() - data.getTime()) / (1000 * 60 * 60 * 24);
 					if (diferenca >= 1) {
 						if ($(this).prop('checked') == true) {
+							$('.js-multa').show()
 							let ValorDigitado = unMoney($('.js-valor').val())
 							if (ValorDigitado > 0) {
 								let ValorMulta = (ValorDigitado * ((_clinica[1].politica_multas) / 100))
 								let ValorJuros = (ValorDigitado * (((_clinica[1].politica_juros) / 100))) * Math.floor(diferenca)
-								$('.js-valorMultas').val(number_format(ValorMulta, 2, ",", "."))
-								$('.js-valorJuros').val(number_format(ValorJuros, 2, ",", "."))
-								$('.js-TotalaPagar').val(number_format(ValorDigitado + ValorJuros + ValorMulta, 2, ",", "."))
+								$('.js-valorMultas').text(number_format(ValorMulta, 2, ",", "."))
+								$('.js-valorJuros').text(number_format(ValorJuros, 2, ",", "."))
+								$('.js-TotalaPagar').text(number_format(ValorDigitado + ValorJuros + ValorMulta, 2, ",", "."))
 							}
-							$('.js-valorMultas').closest('dl').show()
-							$('.js-valorJuros').closest('dl').show()
-							$('.js-TotalaPagar').closest('dl').show()
-							$('.js-descontoMultasJuros').closest('dl').show()
+							if ($('.js-id_formadepagamento option:checked').attr('data-tipo') == 'credito') {
+								$(".js-parcelas").trigger("change");
+							} else if ($('.js-id_formadepagamento option:checked').attr('data-tipo') == 'debito') {
+								pagamentosAtualizaCampos($('.js-id_formadepagamento.js-tipoPagamento'))
+							}
 						} else {
-							$('.js-valorMultas').val("0")
-							$('.js-valorJuros').val("0")
-							$('.js-valorMultas').closest('dl').hide()
-							$('.js-valorJuros').closest('dl').hide()
-							$('.js-TotalaPagar').closest('dl').hide()
-							$('.js-descontoMultasJuros').closest('dl').hide()
-							$('.js-valorMultas').val(number_format(0, 2, ",", "."))
-							$('.js-valorJuros').val(number_format(0, 2, ",", "."))
-							$('.js-TotalaPagar').val(number_format(0, 2, ",", "."))
+							$('.js-multa').hide()
+							let ValorDigitado = unMoney($('.js-valor').val())
+							$('.js-valorMultas').text(number_format(0, 2, ",", "."))
+							$('.js-valorJuros').text(number_format(0, 2, ",", "."))
 							$('.js-descontoMultasJuros').val(number_format(0, 2, ",", "."))
-
-
+							$('.js-TotalaPagar').text(number_format(ValorDigitado, 2, ",", "."))
+							let tipoPagamento = $('.js-id_formadepagamento option:checked').attr('data-tipo');
+							if ($('.js-id_formadepagamento option:checked').attr('data-tipo') == 'credito') {
+								$(".js-parcelas").trigger("change");
+							} else if ($('.js-id_formadepagamento option:checked').attr('data-tipo') == 'debito') {
+								pagamentosAtualizaCampos($('.js-id_formadepagamento.js-tipoPagamento'))
+							}
 						}
 					}
 				})
@@ -1546,6 +1553,7 @@ foreach ($registros as $x) {
 													"id_baixa" => (int)$b->id,
 													"vencimento" => $b->data_vencimento,
 													"data" => date('d/m/Y', strtotime($b->data_vencimento)),
+													"descontoMultasJuros" => (float)$b->descontoMultasJuros,
 													"valor" => (float)$b->valor,
 													"tipoBaixa" => isset($_tipoBaixa[$b->tipoBaixa]) ? $_tipoBaixa[$b->tipoBaixa] : $b->tipoBaixa,
 													"id_formadepagamento" => (int)$b->id_formadepagamento,
@@ -1578,7 +1586,7 @@ foreach ($registros as $x) {
 													$status = "A RECEBER";
 													$icone = 'fluent:calendar-ltr-24-regular';
 													$cor = "blue";
-												} else  {
+												} else {
 													$cor = "orange";
 													$status = "DEFINIR PAGAMENTO";
 													$icone = 'fluent:checkbox-warning-24-regular';
@@ -1737,9 +1745,9 @@ foreach ($registros as $x) {
 											</td>
 											<td>
 												<h1>R$ <?= number_format($x->valor, 2, ",", "."); ?></h1>
-												<span><?= ($saldoAPagar > 0) ? "Faltam: R$ " . number_format($saldoAPagar, 2, ",", ".")."<br>" : "" ?></span>
-												<span><?= ($item['multaAtraso'] > 0) ? "Multa: R$ " . number_format($item['multaAtraso'], 2, ",", ".")."<br>" : "" ?></span>
-												<span><?= ($item['jurosMensal'] > 0) ? "Juros: R$ " . number_format($item['jurosMensal'], 2, ",", ".")."<br>" : "" ?></span>
+												<span><?= ($saldoAPagar > 0) ? "Faltam: R$ " . number_format($saldoAPagar, 2, ",", ".") . "<br>" : "" ?></span>
+												<span><?= ($item['multaAtraso'] > 0) ? "Multa: R$ " . number_format($item['multaAtraso'], 2, ",", ".") . "<br>" : "" ?></span>
+												<span><?= ($item['jurosMensal'] > 0) ? "Juros: R$ " . number_format($item['jurosMensal'], 2, ",", ".") . "<br>" : "" ?></span>
 											</td>
 											<?php
 											if (isset($parcelasTratamentos[$x->id_tratamento])) {
