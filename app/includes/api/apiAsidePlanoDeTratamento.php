@@ -267,8 +267,6 @@
 					pagamentosAtualizaCampos($('.js-pagamento-item .js-id_formadepagamento:last'),false);
 				}
 			});
-			console.log(disabledValor)
-
 			if(pagamentos.length==1) {
 				$('.js-pagamento-item .js-valor:last').prop('disabled',true);
 			}

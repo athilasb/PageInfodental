@@ -1237,7 +1237,6 @@ if (isset($_POST['acao'])) {
 		$('.js-pagamentos-quantidade').val(pagamentos.length)
 		$('.js-tipo-politica').hide()
 		$('.js-listar-parcelas').show()
-		console.log(valor)
 		if (primary) {
 			pagamentosListar(3);
 			if (contrato.pagamentos.length > 0) {
@@ -1252,7 +1251,6 @@ if (isset($_POST['acao'])) {
 						$(select).closest('article').find('.js-parcelas').html(`<option value='${x.qtdParcelas}' selected>${x.qtdParcelas}X</option>`)
 						$(select).closest('article').find('js-identificador').val(`${x.identificador}`)
 
-
 						$(select).find('option').each(function(key, option) {
 							let dataTipo = $(option).attr('data-tipo')
 							if (dataTipo == x.metodo) {
@@ -1264,6 +1262,7 @@ if (isset($_POST['acao'])) {
 
 						$(select).closest('article').find('dl').each(function(ind, dls) {
 							let classe = $(dls).find('select,input').attr('class')
+						
 							if (typeof(classe) == 'string') {
 								classe = classe.replace(' js-tipoPagamento', "")
 								if (x.metodo == 'credito') {
@@ -1456,7 +1455,7 @@ if (isset($_POST['acao'])) {
 	const verificaSeExisteParcelasSalvas = () => {
 		if (contrato.tipo_financeiro == 'politica') {
 			//alternaManualPolitica('politica')
-			let qtdParcelas = contrato.pagamentos.length
+			let qtdParcelas = contrato.parcelas
 			let valor = (valorOriginalProcedimentos - valorDescontos / qtdParcelas)
 			if (pagamentos.length > 0) {
 				valor = pagamentos.reduce((acc, obj) => acc + obj.valor, 0);
@@ -1467,6 +1466,15 @@ if (isset($_POST['acao'])) {
 			}
 		} else if (contrato.tipo_financeiro == 'manual') {
 			//	alternaManualPolitica('manual')
+			let qtdParcelas = contrato.parcelas
+			let valor = (valorOriginalProcedimentos - valorDescontos / qtdParcelas)
+			if (pagamentos.length > 0) {
+				valor = pagamentos.reduce((acc, obj) => acc + obj.valor, 0);
+				valor = valor / parseInt(contrato.parcelas)
+			}
+			if (qtdParcelas > 0) {
+				EscolheParcelas(contrato.pagamentos[0].metodo, qtdParcelas, valor, true)
+			}
 		} else {
 			$('.js-tipo-manual').hide()
 			$('.js-tipo-politica').show()
@@ -1494,7 +1502,7 @@ if (isset($_POST['acao'])) {
 
 	const disabledForm = () => {
 		if (contrato.status == 'APROVADO' || contrato.status == 'REPROVADO' || contrato.status == 'CANCELADO') {
-			("form :input").prop("disabled", true);
+			//("form :input").prop("disabled", true);
 			$('#botao-voltar-menu-parcelas').hide()
 			$('[name="acao"]').prop("disabled", false);
 			$('[name="status"]').prop("disabled", false);
@@ -1610,13 +1618,14 @@ if (isset($_POST['acao'])) {
 		});
 		//verifica se ha alteracao no valor de cada parcela 
 		$('.js-listar-parcelas').on('keyup', '.js-valor', function() {
+			let valorEmCurso = valorOriginalProcedimentos-valorDescontos
 			let indexInicial = $(this).attr('data-ordem');
 			let CamposValor = $('.js-listar-parcelas').find('.js-valor');
 			let valorDigitado = unMoney($(this).val());
 			let numeroParcelas = CamposValor.length;
 			let dataOrdem = ($(this).attr('data-ordem') - 1)
 			let erro = "";
-			if (valorDigitado > valorTotalProcedimentos) {
+			if (valorDigitado > valorEmCurso) {
 				swal({
 					title: "Erro!",
 					text: 'Os valores das parcelas não podem superar o valor total',
@@ -1630,14 +1639,14 @@ if (isset($_POST['acao'])) {
 						valor += unMoney($(input).val())
 					}
 				})
-				$(this).val(number_format(valorTotalProcedimentos - valor, 2, ",", "."))
-				// $(this).val(number_format(valorTotalProcedimentos/numeroParcelas,2,",","."))
+				$(this).val(number_format(valorEmCurso - valor, 2, ",", "."))
+				// $(this).val(number_format(valorOriginalProcedimentos/numeroParcelas,2,",","."))
 				return;
 			}
 			let valor = 0
 			let valorAteInput = valorDigitado
 			let valorFinal = 0
-			let valorRestante = (valorTotalProcedimentos - valorDigitado)
+			let valorRestante = (valorEmCurso - valorDigitado)
 
 			CamposValor.each(function(index, input) {
 				valorFinal += valorRestante - unMoney($(input).val())
