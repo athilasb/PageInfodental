@@ -4,8 +4,15 @@
 	<header class="header">
 		<section class="header__content">
 			
+			<?php 
+				$sql->consult($_p."clinica","*","limit 1");
+				$clinica=mysqli_fetch_object($sql->mysqry);
+			?>
 			<section class="header-logo">
-				<img src="img/logo.png" alt="" width="281" height="40" />
+				<?php 
+					$image=$_cloudinaryURL.$clinica->cn_logo;
+				?>
+				<img src="<?php echo $image;?>" alt="" width="281" height="40" />
 			</section>
 
 			<nav class="header-nav">
