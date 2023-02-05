@@ -143,7 +143,12 @@
 							$now = new DateTime();
 							$idade = $now->diff($dob)->y;
 						} else $idade=0;
-					
+
+						$_status=array();
+						$sql->consult($_p."agenda_status","*","where lixo=0 order by kanban_ordem asc");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_status[$x->id]=$x;
+						}
 
 						$_pacientesAgendamentos=array();
 						$sql->consult($_p."agenda","*","where id_paciente=$paciente->id and agenda_data>'".date('Y-m-d')."' and id_status IN (1,2) and lixo=0 order by agenda_data");
@@ -171,8 +176,9 @@
 								}
 							}
 
-							$aux = explode(",",$x->tags);
 							$tags=array();
+							$aux = explode(",",$x->tags);
+							
 							foreach($aux as $id_tag) {
 								if(!empty($id_tag) and is_numeric($id_tag)) {
 
@@ -183,7 +189,7 @@
 										$tags[]=array('titulo'=>$titulo,'cor'=>$cor);
 									}
 								}
-							}
+							} 
 
 							$_pacientesAgendamentos[$x->id_paciente][]=array('id_agenda'=>$x->id,
 																				'obs'=>str_replace("'","`",utf8_encode($x->obs)),
@@ -194,7 +200,6 @@
 																				'tags'=>$tags);
 						}
 
-					
 						if(isset($_pacientesAgendamentos[$paciente->id])) {
 							$agendamentosFuturos=$_pacientesAgendamentos[$paciente->id];
 						}
@@ -227,7 +232,6 @@
 							}
 							
 						}
-
 
 
 						$dias=strtotime(date('Y-m-d H:i:s'))-strtotime($cnt->data);
@@ -2871,9 +2875,18 @@
 		# Tags
 			else if($_POST['ajax']=="asTagPersistir") {
 
+				$agenda='';
+				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
+					$sql->consult($_p."agenda","*","where id='".addslashes($_POST['id_agenda'])."'");
+					if($sql->rows) {
+						$agenda=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
 				$titulo=isset($_POST['titulo'])?addslashes(utf8_decode($_POST['titulo'])):'';
 				$cor=isset($_POST['cor'])?addslashes($_POST['cor']):'';
 
+				if(empty($agenda)) $rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
 				if(empty($titulo)) $rtn=array('success'=>false,'error'=>'Preencha o título da Tag!');
 				else {
 
@@ -2885,13 +2898,39 @@
 					} else {
 						$sql->add($_tableTags,$vSQL);
 						$id_tag=$sql->ulid;
+
+						if(!empty($agenda->tags))
+							$tags = $agenda->tags.$id_tag.",";
+						else
+							$tags = ",".$id_tag.",";
+
+						$sql->update($_p."agenda", "tags='".$tags."'" , "WHERE id='".$agenda->id."'");
+					}
+
+					$_tags=array();
+					$sql->consult($_p."parametros_tags","*","WHERE lixo=0 order by titulo asc");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$_tags[$x->id]=$x;
+					}
+
+					$tags=array();
+					$sql->consult($_p."agenda","tags","WHERE id='".$agenda->id."'");
+					$agenda=mysqli_fetch_object($sql->mysqry);
+
+					if(!empty($agenda->tags)) {
+						$tagsAux = explode(",", $agenda->tags);
+
+						foreach($tagsAux as $id) {
+							if(is_numeric($id) and isset($_tags[$id])) {
+								$tags[]=array('id'=>$id, 'titulo' => utf8_encode($_tags[$id]->titulo));
+							}
+						}
 					}
 					
 					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='',tabela='".$_tableTags."',id_reg='$id_tag'");
 				
 					$rtn=array('success'=>true,
-								'id_tag'=>$id_tag,
-								'titulo'=>utf8_encode($titulo));
+								'tags'=>$tags);
 				}
 
 			}
@@ -4255,19 +4294,16 @@
 														data:data,
 														success:function(rtn) {
 															if(rtn.success) {
+																$('.js-tags').empty();
 
 																if(rtn.regs.length>0) {
-																	$('.js-tags').empty();
-
 																	rtn.regs.forEach(x=>{
-
 																		$('.js-tags').append(`<option value="${x.id_tag}" selected>${x.titulo}</option>`);
 																	});
-
-																	$('.js-tags').trigger('chosen:updated');
-																	tagsListar();
-
 																}
+
+																$('.js-tags').trigger('chosen:updated');
+																tagsListar();
 																swal.close();
 																
 															} else if(rtn.error) {
@@ -4396,11 +4432,6 @@
 										<dd>
 											<select class="js-tags" multiple>
 												<option value=""></option>
-												<?php
-													foreach($_tags as $p) {
-														echo '<option value="'.$p->id.'">'.utf8_encode($p->titulo).'</option>';
-													}
-													?>
 											</select>
 
 											<a  href="javascript:;" class="js-btn-aside-tag button" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
@@ -5350,6 +5381,7 @@
 							let obj = $(this);
 							if(obj.attr('data-loading')==0) {
 
+								let id_agenda = $('#js-aside-edit input[name=id]').val();
 								let id = $('input[name=id_tag]').val();
 								let titulo = $(`.js-asTag-titulo`).val();
 								let cor = $(`.js-asTag-cor`).val();
@@ -5361,7 +5393,7 @@
 									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 									obj.attr('data-loading',1);
 
-									let data = `ajax=asTagPersistir&titulo=${titulo}&cor=${cor}&id=${id}`;
+									let data = `ajax=asTagPersistir&titulo=${titulo}&cor=${cor}&id=${id}&id_agenda=${id_agenda}`;
 
 									$.ajax({
 										type:'POST',
@@ -5371,11 +5403,17 @@
 											if(rtn.success) {
 
 												$(`.js-asTag-titulo`).val(``);
-
 												$('.js-tags').empty();
-												$('.js-tags').append(`<option value="${rtn.id_tag}" selected>${rtn.titulo}</option>`);
+
+												if(rtn.tags.length>0) {
+													rtn.tags.forEach(x=>{
+														$('.js-tags').append(`<option value="${x.id}" selected>${x.titulo}</option>`);
+													});
+												}
+												
 												$('.js-tags').trigger('chosen:updated');
-												$('.aside-tag .aside-close').click();
+												tagsListar();
+												//$('.aside-tag .aside-close').click();
 
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -5390,7 +5428,7 @@
 									}).done(function(){
 										obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
 										obj.attr('data-loading',0);
-									});
+									}); 
 								}
 							}
 						});

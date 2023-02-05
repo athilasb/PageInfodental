@@ -274,7 +274,7 @@ if(empty($landingpage)){
 <?php
 if(isset($_POST['acao']) and $_POST['acao']=="preco") {
 
-	$sql->consult($_p."landingpage_formulario","*","where lixo='0' and ip='".$_SERVER['REMOTE_ADDR']."' and data > NOW() - INTERVAL 5 MINUTE and preferencia='".addslashes($_POST['preferencia'])."'");
+	$sql->consult($_p."landingpage_formulario","*","where lixo='0' and ip='".$_SERVER['REMOTE_ADDR']."' and data > NOW() - INTERVAL 10 MINUTE and preferencia='".addslashes($_POST['preferencia'])."'");
 	if($sql->rows) {
 		$jsc->jAlert("Já recebemos seu contato!<br />Entraremos em contato o mais breve!","sucesso","");
 
@@ -291,7 +291,10 @@ if(isset($_POST['acao']) and $_POST['acao']=="preco") {
 				email='".utf8_decode(addslashes($_POST['email']))."'";
 
 		$sql->add($_p."landingpage_formulario",$vSQL);
-		$jsc->jAlert("Entraremos em contato o mais breve!","sucesso","#captacao");
+
+		$sql->add($_p."pacientes","data=now(),nome='".utf8_decode(addslashes($_POST['nome']))."',telefone1='".telefone($_POST['telefone'])."',email='".utf8_decode(addslashes($_POST['email']))."',codigo_bi=1");
+
+		$jsc->jAlert("Entraremos em contato o mais breve!","sucesso","");
 	}
 }
 include "includes/footer.php";
