@@ -159,7 +159,7 @@ if (isset($_POST['ajax'])) {
 			let metodosPagamentosAceito = '<?php echo $optionFormasDePagamento; ?>';
 			let disabledValor = ''
 			let disabledForma = ''
-			if ((contrato.tipo_financeiro == 'politica' && tipoFinaneiroPadrao == 'politica' )|| (contrato.tipo_financeiro == '' && tipoFinaneiroPadrao == 'politica')) {
+			if ((contrato.tipo_financeiro == 'politica' && tipoFinaneiroPadrao == 'politica' )|| (tipoFinaneiroPadrao == 'politica')) {
 				disabledValor = 'disabled'
 				disabledForma = 'disabled'
 			}
@@ -188,7 +188,7 @@ if (isset($_POST['ajax'])) {
 														<dl style="display:none">
 															<dt>Bandeira</dt>
 															<dd>
-															<select class="js-debitoBandeira js-tipoPagamento">
+															<select class="js-debitoBandeira js-tipoPagamento" ${disabledForma}>
 																<option value="">selecione</option>
 																<?php
 																foreach ($debitoBandeiras as $id_operadora => $x) {
@@ -204,7 +204,7 @@ if (isset($_POST['ajax'])) {
 														<dl style="display:none">
 															<dt>Bandeira</dt>
 															<dd>
-																<select class="js-creditoBandeira js-tipoPagamento">
+																<select class="js-creditoBandeira js-tipoPagamento" ${disabledForma}>
 																	<option value="">selecione</option>
 																	<?php
 																	foreach ($creditoBandeiras as $id_operadora => $x) {

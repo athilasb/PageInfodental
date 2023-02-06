@@ -1262,7 +1262,7 @@ if (isset($_POST['acao'])) {
 
 						$(select).closest('article').find('dl').each(function(ind, dls) {
 							let classe = $(dls).find('select,input').attr('class')
-						
+
 							if (typeof(classe) == 'string') {
 								classe = classe.replace(' js-tipoPagamento', "")
 								if (x.metodo == 'credito') {
@@ -1390,7 +1390,6 @@ if (isset($_POST['acao'])) {
 		}
 		pagamentos = parcelas;
 		pagamentosListar(3);
-		console.log(valorOriginalProcedimentos)
 		updateValorText((((valorEntrada + (valorParcela * (qtdParcelas - 1))) - (valorOriginalProcedimentos - valorDescontos))))
 		const selects = $('.js-listar-parcelas').find('.js-id_formadepagamento')
 		selects.each(function(i, select) {
@@ -1593,6 +1592,9 @@ if (isset($_POST['acao'])) {
 		})
 		// verifica se ha alteracao na primeira data de pagamento 
 		$('.js-listar-parcelas').on('change', '.js-vencimento:eq(0)', function() {
+			if (tipoFinaneiroPadrao == 'politica') {
+				return
+			}
 			let CamposDatas = $('.js-listar-parcelas').find('.js-vencimento');
 			if (CamposDatas.length > 1) {
 				let numeroParcelas = CamposDatas.length
@@ -1618,7 +1620,7 @@ if (isset($_POST['acao'])) {
 		});
 		//verifica se ha alteracao no valor de cada parcela 
 		$('.js-listar-parcelas').on('keyup', '.js-valor', function() {
-			let valorEmCurso = valorOriginalProcedimentos-valorDescontos
+			let valorEmCurso = valorOriginalProcedimentos - valorDescontos
 			let indexInicial = $(this).attr('data-ordem');
 			let CamposValor = $('.js-listar-parcelas').find('.js-valor');
 			let valorDigitado = unMoney($(this).val());

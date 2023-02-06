@@ -63,6 +63,7 @@ body {height:100vh; text-rendering: optimizeSpeed; -webkit-font-smoothing:antial
 .button_lg {font-size:1.25em;}
 .button_disabled {background:transparent;}
 .button_full {width:100%; text-align:center;}
+.button_green {background:var(--verde); color:#fff;}
 .button-group {display:flex; }
 .button-group * {border-radius:0; margin-left:-1px;}
 .button-group *:first-child {border-radius:8px 0 0 8px;}

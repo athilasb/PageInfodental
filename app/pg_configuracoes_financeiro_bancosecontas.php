@@ -18,8 +18,6 @@
 		require_once("usuarios/checa.php");
 
 		$rtn=array();
-
-		
  
 		if($_POST['ajax']=="editar") {
 
@@ -44,9 +42,7 @@
 								'pix_tipo'=>utf8_encode($cnt->pix_tipo),
 								'pix_chave'=>utf8_encode($cnt->pix_chave),
 								'pix_beneficiario'=>utf8_encode($cnt->pix_beneficiario));
-
 				$rtn=array('success'=>true,'data'=>$data);
-
 			}
 		} 
 
@@ -142,7 +138,6 @@
 
 	<main class="main">
 		<div class="main__content content">
-
 			<section class="filter">
 				<div class="filter-group">
 					<div class="filter-title">
@@ -150,11 +145,8 @@
 					</div>
 				</div>
 			</section>
- 	
 			<section class="grid">
-
 				<div class="box box-col">
-
 					<?php
 					require_once("includes/submenus/subConfiguracoesFinanceiro.php");
 					?>

@@ -596,7 +596,7 @@ foreach ($registros as $x) {
 
 							if (x.pago == 1) {
 								icon = `<span class="iconify tooltip" title="pago" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
-								btnReceber = `<a href="" class="button_green" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar" disabled><span>Recebido</span></a>`
+								btnReceber = `<button type="button" class="button button_green" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar" disabled><span>Recebido</span></button>`
 							} else {
 								btns = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
 								btnEstorno = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><i class="iconify" data-icon="fluent:delete-24-regular"></i></span></a>`;
@@ -890,7 +890,7 @@ foreach ($registros as $x) {
 
 						if (x.pago == 1) {
 							icon = `<span class="iconify tooltip" title="pago" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
-							btnReceber = `<a href="" class="button_green" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar" disabled><span>Recebido</span></a>`
+							btnReceber = `<button type="button" class="button button_green" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar" disabled><span>Recebido</span></button>`
 						} else {
 							btns = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
 							btnEstorno = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><i class="iconify" data-icon="fluent:delete-24-regular"></i></span></a>`;
@@ -1156,7 +1156,6 @@ foreach ($registros as $x) {
 			let baixaIndex = $('#js-aside-asFinanceiro-receber .js-index').val();
 			let dataPagamento = $('#js-aside-asFinanceiro-receber .js-dataPagamento').val();
 			let bancoPagamento = $('#js-aside-asFinanceiro-receber .js-id_banco').val();
-			return
 
 			let erro = '';
 			if (!pagamentos[pagamentoIndex].baixas[baixaIndex]) erro = 'Pagamento não encontrado!';
