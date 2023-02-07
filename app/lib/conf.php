@@ -11,7 +11,7 @@
 				$_ENV['NAME']=$_ENV['MYSQL_DB']='';
 
 			} else {
-				$_ENV['NAME']=$_ENV['MYSQL_DB']='keiko';
+				$_ENV['NAME']=$_ENV['MYSQL_DB']='agenda';
 			}
 
 
