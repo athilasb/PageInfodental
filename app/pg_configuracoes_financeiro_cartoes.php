@@ -6,15 +6,9 @@ $_table = $_p . "parametros_cartoes_operadoras";
 
 
 if (isset($_POST['ajax'])) {
-
 	require_once("usuarios/checa.php");
-
 	$rtn = array();
-
-
-
 	if ($_POST['ajax'] == "editar") {
-
 		$cnt = '';
 		if (isset($_POST['id']) and is_numeric($_POST['id'])) {
 			$sql->consult($_table, "*", "where id=" . $_POST['id']);
@@ -22,11 +16,9 @@ if (isset($_POST['ajax'])) {
 				$cnt = mysqli_fetch_object($sql->mysqry);
 			}
 		}
-
 		if (empty($cnt)) {
 			$rtn = array('success' => false, 'error' => 'Registro não encontrado!');
 		} else {
-
 			// consulta as bandeiras vinculadas
 			$bandeirasJson = array();
 			$sql->consult($_p . "parametros_cartoes_operadoras_bandeiras", "*", "where id_operadora=$cnt->id and lixo=0");
@@ -35,14 +27,12 @@ if (isset($_POST['ajax'])) {
 					$bandeirasJson[$x->id_bandeira] = json_decode($x->taxas);
 				}
 			}
-
 			$data = array(
 				'id' => $cnt->id,
 				'titulo' => utf8_encode($cnt->titulo),
 				'id_banco' => $cnt->id_banco,
 				'bandeiras' => $bandeirasJson
 			);
-
 			$rtn = array('success' => true, 'data' => $data);
 		}
 	} else if ($_POST['ajax'] == "remover") {
@@ -53,12 +43,9 @@ if (isset($_POST['ajax'])) {
 				$cnt = mysqli_fetch_object($sql->mysqry);
 			}
 		}
-
 		if (empty($cnt)) {
 			$rtn = array('success' => false, 'error' => 'Registro não encontrado!');
 		} else {
-
-
 			$vWHERE = "where id=$cnt->id";
 			$vSQL = "lixo=1";
 			$sql->update($_table, $vSQL, $vWHERE);
@@ -98,9 +85,13 @@ $campos = explode(",", "titulo,id_banco");
 if (isset($_POST['acao'])) {
 	$vSQL = $adm->vSQL($campos, $_POST);
 	$values = $adm->values;
-	//echo $vSQL;die();
-
 	$cnt = '';
+	if(isset($_POST['pixOperadora'])){
+		// HORA DE ATUALIZAR O PIX DA OPERADORA
+		echo "<pre>";
+		print_r($_POST);
+		die();
+	}
 	if (isset($_POST['id']) and is_numeric($_POST['id'])) {
 		$sql->consult($_table, "*", "where id=" . $_POST['id'] . " and lixo=0");
 		if ($sql->rows) {
@@ -137,7 +128,7 @@ if (isset($_POST['acao'])) {
 		$bandeiraJson = json_decode($_POST['bandeiras_json']);
 
 		$sql->update($_p . "parametros_cartoes_operadoras_bandeiras", "lixo=1", "where id_operadora=$id_operadora and lixo=0");
-	
+
 		foreach ($bandeiraJson as $idBandeira => $obj) {
 			// verifica se bandeira ja esta vinculado a operadora
 			$sql->consult($_p . "parametros_cartoes_operadoras_bandeiras", "*", "where id_operadora=$id_operadora and id_bandeira=$idBandeira and lixo=0");
@@ -151,9 +142,9 @@ if (isset($_POST['acao'])) {
 						credito_parcelas_semjuros='$obj->creditoSemJuros',
 						taxas='" . addslashes(json_encode($obj)) . "',
 						lixo=0";
-						
+
 			if (is_object($vinculo)) {
-			
+
 				$vWHERE = "where id=$vinculo->id";
 				$sql->update($_p . "parametros_cartoes_operadoras_bandeiras", $vSQL, $vWHERE);
 				$sql->add($_p . "log", "data=now(),
@@ -510,42 +501,6 @@ if (isset($_POST['acao'])) {
 
 				// popula os campos de taxas e dias
 				let objeto = JSON.parse($('#js-aside .js-bandeiras-json').val());
-				if (objeto[id_bandeira]) {
-					// popula debito
-					if (objeto[id_bandeira].debitoTaxas) {
-						$('#js-aside-taxas .js-debito-taxa').val(objeto[id_bandeira].debitoTaxas.taxa);
-						$('#js-aside-taxas .js-debito-dias').val(objeto[id_bandeira].debitoTaxas.dias);
-					} else {
-						$('#js-aside-taxas .js-debito-taxa').val('');
-						$('#js-aside-taxas .js-debito-dias').val('');
-					}
-
-
-					// popula credito
-					if (objeto[id_bandeira].creditoTaxas) {
-						let objMin = objeto[id_bandeira].creditoTaxas;
-						for (var parcela = 1; parcela <= parcelas; parcela++) {
-							if (objMin[parcela]) {
-								for (var interno = 1; interno <= parcela; interno++) {
-									if (objMin[parcela][interno]) {
-										$(`#js-aside-taxas .js-parcela-${parcela} .js-taxa-${interno}`).val(objMin[parcela][interno].taxa);
-										$(`#js-aside-taxas .js-parcela-${parcela} .js-dias-${interno}`).val(objMin[parcela][interno].dias);
-									} else {
-										$(`#js-aside-taxas .js-parcela-${parcela} .js-taxa-${interno}`).val('');
-										$(`#js-aside-taxas .js-parcela-${parcela} .js-dias-${interno}`).val('');
-									}
-								}
-							}
-						}
-					}
-					// popula credito sem juros
-					$('#js-aside-taxas select.js-credito-parcelasSemJuros option:selected').prop('selected', false);
-					if (objeto[id_bandeira].creditoSemJuros) {
-						if ($(`#js-aside-taxas select.js-credito-parcelasSemJuros option[value=${objeto[id_bandeira].creditoSemJuros}]`).attr('data-active') == 1) {
-							$('#js-aside-taxas select.js-credito-parcelasSemJuros').val(objeto[id_bandeira].creditoSemJuros);
-						}
-					}
-				}
 				$('#js-aside-taxas input[name=alteracao]').val(0);
 				let contador = 0
 				$('#table-parcelas').html(``)
@@ -563,6 +518,65 @@ if (isset($_POST['acao'])) {
 														</div>
 													</td>
 												</tr>`)
+				}
+				if (objeto[id_bandeira]) {
+					// popula crediario
+					if (objeto[id_bandeira].debitoTaxas) {
+						$('#js-aside-taxas .js-crediario-taxa').val(objeto[id_bandeira].crediarioTaxas.taxa);
+						$('#js-aside-taxas .js-crediario-dias').val(objeto[id_bandeira].crediarioTaxas.dias);
+					} else {
+						$('#js-aside-taxas .js-crediario-taxa').val('');
+						$('#js-aside-taxas .js-crediario-dias').val('');
+					}
+					// popula creditoEmissor
+					if (objeto[id_bandeira].debitoTaxas) {
+						$('#js-aside-taxas .js-credito-emissor-taxa').val(objeto[id_bandeira].creditoEmissorTaxas.taxa);
+						$('#js-aside-taxas .js-credito-emissor-dias').val(objeto[id_bandeira].creditoEmissorTaxas.dias);
+					} else {
+						$('#js-aside-taxas .js-credito-emissor-taxa').val('');
+						$('#js-aside-taxas .js-credito-emissor-dias').val('');
+					}
+					// popula recorrente
+					if (objeto[id_bandeira].debitoTaxas) {
+						$('#js-aside-taxas .js-recorrente-taxa').val(objeto[id_bandeira].recorrente.taxa);
+						$('#js-aside-taxas .js-recorrente-dias').val(objeto[id_bandeira].recorrente.dias);
+					} else {
+						$('#js-aside-taxas .js-recorrente-taxa').val('');
+						$('#js-aside-taxas .js-recorrente-dias').val('');
+					}
+					// popula debito
+					if (objeto[id_bandeira].debitoTaxas) {
+						$('#js-aside-taxas .js-debito-taxa').val(objeto[id_bandeira].debitoTaxas.taxa);
+						$('#js-aside-taxas .js-debito-dias').val(objeto[id_bandeira].debitoTaxas.dias);
+					} else {
+						$('#js-aside-taxas .js-debito-taxa').val('');
+						$('#js-aside-taxas .js-debito-dias').val('');
+					}
+
+					// popula credito
+					if (objeto[id_bandeira].creditoTaxas) {
+						let objMin = objeto[id_bandeira].creditoTaxas;
+						for (var parcela = 1; parcela <= parcelas; parcela++) {
+							if (objMin[parcela]) {
+								for (var interno = 1; interno <= parcela; interno++) {
+									if (objMin[parcela][interno]) {
+										$(`#js-aside-taxas .js-parcela-${parcela} .js-taxa-${interno}`).val(objMin[parcela][interno].taxa);
+										$(`#js-aside-taxas .js-parcela-${parcela} .js-dias-${interno}`).val(objMin[parcela][interno].dias);
+									} else {
+										$(`#js-aside-taxas .js-parcela-${parcela} .js-taxa-${interno}`).val('0');
+										$(`#js-aside-taxas .js-parcela-${parcela} .js-dias-${interno}`).val('0');
+									}
+								}
+							}
+						}
+					}
+					// popula credito sem juros
+					$('#js-aside-taxas select.js-credito-parcelasSemJuros option:selected').prop('selected', false);
+					if (objeto[id_bandeira].creditoSemJuros) {
+						if ($(`#js-aside-taxas select.js-credito-parcelasSemJuros option[value=${objeto[id_bandeira].creditoSemJuros}]`).attr('data-active') == 1) {
+							$('#js-aside-taxas select.js-credito-parcelasSemJuros').val(objeto[id_bandeira].creditoSemJuros);
+						}
+					}
 				}
 			}
 		});
@@ -776,7 +790,6 @@ if (isset($_POST['acao'])) {
 			let creditoEmissor = $(`#js-aside .js-credito_emissor_${id_bandeira}`).prop('checked') === true ? 1 : 0;
 			let recorrente = $(`#js-aside .js-credito_recorrente_${id_bandeira}`).prop('checked') === true ? 1 : 0;
 			let parcelas = $(`#js-aside .js-credito_parcelas_${id_bandeira}`).val();
-			
 
 			// se debito estiver habilitado
 			if (debito == 1) {
@@ -823,25 +836,16 @@ if (isset($_POST['acao'])) {
 				let creditoTaxas = {};
 				for (var parcela = 1; parcela <= parcelas; parcela++) {
 					let taxasParcelas = {};
-					for (var interno = 1; interno <= parcela; interno++) {
-						let item = {};
-						item.parcela = parcela;
-						item.interno = interno;
-						item.taxa = $(`#js-aside-taxas .js-parcela-${parcela} .js-taxa-${interno}`).val();
-						item.dias = $(`#js-aside-taxas .js-parcela-${parcela} .js-dias-${interno}`).val();
-						taxasParcelas[interno] = item;
-						if (interno == parcela) {
-							creditoTaxas[interno] = taxasParcelas;
-						}
-					}
-					if (parcela == parcelas) {
-						objeto[id_bandeira].creditoTaxas = creditoTaxas;
-					}
+					let item = {};
+					item.parcela = parcela;
+					item.taxa = $(`#js-aside-taxas .js-taxa-${parcela}`).val();
+					item.dias = $(`#js-aside-taxas .js-dias-${parcela}`).val();
+					taxasParcelas[parcela] = item;
+					creditoTaxas[parcela] = taxasParcelas;
 				}
-
-				objeto[id_bandeira].creditoSemJuros = $('#js-aside-taxas select.js-credito-parcelasSemJuros').val();
+				objeto[id_bandeira].creditoTaxas = creditoTaxas;
+				//objeto[id_bandeira].creditoSemJuros = $('#js-aside-taxas select.js-credito-parcelasSemJuros').val();
 			}
-
 			$('#js-aside .js-bandeiras-json').val(JSON.stringify(objeto));
 			$('#js-aside-taxas').find('.js-input-taxa,.js-input-dias').val('');
 			$('#js-aside-taxas .aside-close-taxas').parent().parent().removeClass("active");
@@ -855,12 +859,10 @@ if (isset($_POST['acao'])) {
 <!-- Aside Bandeiras -->
 <section class="aside aside-form" id="js-aside">
 	<div class="aside__inner1">
-
 		<header class="aside-header">
 			<h1>Operadora</h1>
 			<a href="javascript:;" class="aside-header__fechar aside-close-bandeiras"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 		</header>
-
 		<form method="post" class="aside-content form js-form formulario-validacao">
 			<input type="hidden" name="acao" value="wlib" />
 			<input type="hidden" name="id" value="0" />
@@ -913,7 +915,7 @@ if (isset($_POST['acao'])) {
 					<dl>
 						<dt>Pix Operadora</dt>
 						<dd>
-							<label><input type="checkbox" class="input-switch js-input-bandeira js-pix-operadora_<?php echo $b->id; ?>" />PIX Operadora</label>
+							<label><input type="checkbox" class="input-switch js-input-bandeira js-pix-operadora_<?=$b->id; ?>" name="pixOperadora"/>PIX Operadora</label>
 						<dd>
 					</dl>
 				</div>
