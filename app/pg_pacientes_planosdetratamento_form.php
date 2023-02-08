@@ -1244,13 +1244,17 @@ if (isset($_POST['acao'])) {
 				$('.js-parcelas').closest('dl').show();
 				let valorPagamentos = 0
 				pagamentos.forEach(x => {
+					let disabledValor = ''
+					let disabledForma = ''
+					if ((contrato.tipo_financeiro == 'politica' && tipoFinaneiroPadrao == 'politica') || (tipoFinaneiroPadrao == 'politica') || (contrato.status == 'APROVADO')) {
+						disabledForma = 'disabled'
+					}
 					valorPagamentos += x.valor
 					$('.js-listar-parcelas').find('.js-id_formadepagamento').each((k, select) => {
 						$(select).html(`<option value='${x.id_formapagamento}' selected>${_formasDePagamento[x.id_formapagamento]?.titulo}</option>`)
 						$(select).attr('disabled', true);
 						$(select).closest('article').find('.js-parcelas').html(`<option value='${x.qtdParcelas}' selected>${x.qtdParcelas}X</option>`)
 						$(select).closest('article').find('js-identificador').val(`${x.identificador}`)
-
 						$(select).find('option').each(function(key, option) {
 							let dataTipo = $(option).attr('data-tipo')
 							if (dataTipo == x.metodo) {
@@ -1259,16 +1263,14 @@ if (isset($_POST['acao'])) {
 							}
 						})
 						$(select).closest('article').find('dl').find('.js-metodo-selecionado').val(metodo);
-
 						$(select).closest('article').find('dl').each(function(ind, dls) {
 							let classe = $(dls).find('select,input').attr('class')
-
 							if (typeof(classe) == 'string') {
 								classe = classe.replace(' js-tipoPagamento', "")
 								if (x.metodo == 'credito') {
 									if (classe == 'js-creditoBandeira') {
 										$(dls).show()
-										$(dls).find('select').attr('disabled', true)
+										$(dls).find('select').attr(disabledForma, true)
 										let bandeiraFiltrada = false
 										for (let g in _bandeiras) {
 											if (_bandeiras[g].bandeiras) {
@@ -1291,7 +1293,7 @@ if (isset($_POST['acao'])) {
 										$(dls).find('select').append(`
 												<option value='${x.qtdParcelas??1}' selected>${x.qtdParcelas??0} x </option>
 											`)
-										$(dls).find('select').attr('disabled', true)
+										$(dls).find('select').attr(disabledForma, true)
 									}
 									if (classe == 'js-identificador') {
 										$(dls).val(x.identificador ?? "")
@@ -1460,21 +1462,26 @@ if (isset($_POST['acao'])) {
 				valor = pagamentos.reduce((acc, obj) => acc + obj.valor, 0);
 				valor = valor / parseInt(contrato.parcelas)
 			}
+			atualizaValor()
 			if (qtdParcelas > 0) {
 				EscolheParcelas(contrato.pagamentos[0].metodo, qtdParcelas, valor, true)
 			}
+			//procedimentosListar();
 		} else if (contrato.tipo_financeiro == 'manual') {
 			//	alternaManualPolitica('manual')
+			tipoFinaneiroPadrao = 'manual'
 			let qtdParcelas = contrato.parcelas
 			let valor = (valorOriginalProcedimentos - valorDescontos / qtdParcelas)
 			if (pagamentos.length > 0) {
 				valor = pagamentos.reduce((acc, obj) => acc + obj.valor, 0);
 				valor = valor / parseInt(contrato.parcelas)
 			}
-			if (qtdParcelas > 0) {
-				EscolheParcelas(contrato.pagamentos[0].metodo, qtdParcelas, valor, true)
-			}
+			// if (qtdParcelas > 0) {
+			// 	EscolheParcelas(contrato.pagamentos[0].metodo, qtdParcelas, valor, true)
+			// }
+			procedimentosListar();
 		} else {
+			procedimentosListar();
 			$('.js-tipo-manual').hide()
 			$('.js-tipo-politica').show()
 		}

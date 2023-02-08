@@ -159,7 +159,10 @@ if (isset($_POST['ajax'])) {
 			let metodosPagamentosAceito = '<?php echo $optionFormasDePagamento; ?>';
 			let disabledValor = ''
 			let disabledForma = ''
-			if ((contrato.tipo_financeiro == 'politica' && tipoFinaneiroPadrao == 'politica' )|| (tipoFinaneiroPadrao == 'politica')) {
+			if ((contrato.tipo_financeiro == 'politica' && tipoFinaneiroPadrao == 'politica' ) || (tipoFinaneiroPadrao == 'politica')) {
+				disabledValor = 'disabled'
+				disabledForma = 'disabled'
+			}else if((contrato.status=='APROVADO')){
 				disabledValor = 'disabled'
 				disabledForma = 'disabled'
 			}
@@ -657,7 +660,7 @@ if (isset($_POST['ajax'])) {
 
 	$(function() {
 		procedimentos = JSON.parse($('textarea#js-textarea-procedimentos').val());
-		procedimentosListar();
+		//procedimentosListar();
 		// verificar a forma de Pagamento ja Pré salva 
 		verificaSeExisteParcelasSalvas();
 
