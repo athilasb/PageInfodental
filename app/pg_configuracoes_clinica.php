@@ -175,7 +175,7 @@
 						</script>
 						<form method="post" class="form formulario-validacao">
 							<input type="hidden" name="acao" value="wlib" />
-							<button style="display:none;"></button>
+							<?php /*<button style="display:none;"></button>*/?>
 							<!-- DADOS GERAIS  -->
 							<fieldset>
 								<legend>Dados Gerais</legend>

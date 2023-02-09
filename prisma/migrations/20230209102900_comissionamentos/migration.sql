@@ -1,0 +1,1 @@
+RENAME TABLE ident_colaboradores_comissionamentos TO ident_financeiro_comissionamentos;
