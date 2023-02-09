@@ -1244,9 +1244,18 @@ if (isset($_POST['acao'])) {
 				$('.js-parcelas').closest('dl').show();
 				let valorPagamentos = 0
 				pagamentos.forEach(x => {
+					let disabledData = ''
 					let disabledValor = ''
+					let disabledFormaPagamento = ''
+					let disabledbandeira = ''
+					let disabledqtdParcelas = ''
 					let disabledForma = ''
 					if ((contrato.tipo_financeiro == 'politica' && tipoFinaneiroPadrao == 'politica') || (tipoFinaneiroPadrao == 'politica') || (contrato.status == 'APROVADO')) {
+						disabledData = 'disabled'
+						disabledValor = 'disabled'
+						disabledFormaPagamento = 'disabled'
+						disabledbandeira = 'disabled'
+						disabledqtdParcelas = 'disabled'
 						disabledForma = 'disabled'
 					}
 					valorPagamentos += x.valor
@@ -1270,7 +1279,7 @@ if (isset($_POST['acao'])) {
 								if (x.metodo == 'credito') {
 									if (classe == 'js-creditoBandeira') {
 										$(dls).show()
-										$(dls).find('select').attr(disabledForma, true)
+										$(dls).find('select').attr(disabledbandeira, true)
 										let bandeiraFiltrada = false
 										for (let g in _bandeiras) {
 											if (_bandeiras[g].bandeiras) {

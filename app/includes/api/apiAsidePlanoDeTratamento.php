@@ -65,6 +65,9 @@ if (isset($_POST['ajax'])) {
 	}
 
 	const atualizaValor = (atualizarParcelas) => {
+		if(contrato.status=='REPROVADO' || contrato.status=='CANCELADO'){
+			return;
+		}
 		valorTotal = 0;
 		valorOriginalProcedimentos = 0;
 		let cont = 1;
@@ -154,6 +157,9 @@ if (isset($_POST['ajax'])) {
 	const pagamentosListar = (passo = 0) => {
 		$('.js-listar-parcelas .fpag').html('');
 		$('.js-listar-parcelas').show();
+		if(contrato.status=='REPROVADO' || contrato.status=='CANCELADO'){
+			return;
+		}
 		if (pagamentos.length > 0) {
 			let index = 1;
 			let metodosPagamentosAceito = '<?php echo $optionFormasDePagamento; ?>';
@@ -298,7 +304,6 @@ if (isset($_POST['ajax'])) {
 		valorDescontos = 0
 		let cont = 1;
 		if (procedimentos.length > 0) {
-
 			let valor = ""
 			procedimentos.forEach(x => {
 				procedimentoValor = x.valor;
@@ -318,11 +323,9 @@ if (isset($_POST['ajax'])) {
 				if (x.id_regiao == 4) {
 					opcaoAux = '';
 					if (x.face == 1) {
-
 						let cont = 1;
 						x.faces.forEach(fId => {
 							opcaoAux += facesInfos[fId].abreviacao + ', ';
-
 							if (cont == x.faces.length) {
 								opcaoAux = opcaoAux.substr(0, opcaoAux.length - 2);
 							}
@@ -660,7 +663,7 @@ if (isset($_POST['ajax'])) {
 
 	$(function() {
 		procedimentos = JSON.parse($('textarea#js-textarea-procedimentos').val());
-		//procedimentosListar();
+		procedimentosListar();
 		// verificar a forma de Pagamento ja Pré salva 
 		verificaSeExisteParcelasSalvas();
 
