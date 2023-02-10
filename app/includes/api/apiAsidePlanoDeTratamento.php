@@ -65,7 +65,7 @@ if (isset($_POST['ajax'])) {
 	}
 
 	const atualizaValor = (atualizarParcelas) => {
-		if(contrato.status=='REPROVADO' || contrato.status=='CANCELADO'){
+		if (contrato.status == 'REPROVADO' || contrato.status == 'CANCELADO') {
 			return;
 		}
 		valorTotal = 0;
@@ -94,7 +94,7 @@ if (isset($_POST['ajax'])) {
 		valorDescontos = descontos
 		for (let x in _politicas) {
 			let politica = _politicas[x]
-			if ((politica.tipo_politica == 'intervalo' && (valorOriginalProcedimentos-descontos) >= parseFloat(politica.de) && (valorOriginalProcedimentos-descontos) <= parseFloat(politica.ate)) || (politica.tipo_politica == 'acima' && (valorOriginalProcedimentos-descontos) >= parseFloat(politica.de))) {
+			if ((politica.tipo_politica == 'intervalo' && (valorOriginalProcedimentos - descontos) >= parseFloat(politica.de) && (valorOriginalProcedimentos - descontos) <= parseFloat(politica.ate)) || (politica.tipo_politica == 'acima' && (valorOriginalProcedimentos - descontos) >= parseFloat(politica.de))) {
 				temPolitica = politica
 				if (temPolitica.parcelasParametros) {
 					temPolitica.parcelasParametros = (typeof(temPolitica.parcelasParametros) !== "object") ? JSON.parse(temPolitica.parcelasParametros) : temPolitica.parcelasParametros
@@ -157,20 +157,25 @@ if (isset($_POST['ajax'])) {
 	const pagamentosListar = (passo = 0) => {
 		$('.js-listar-parcelas .fpag').html('');
 		$('.js-listar-parcelas').show();
-		if(contrato.status=='REPROVADO' || contrato.status=='CANCELADO'){
+		if (contrato.status == 'REPROVADO' || contrato.status == 'CANCELADO') {
 			return;
 		}
 		if (pagamentos.length > 0) {
 			let index = 1;
 			let metodosPagamentosAceito = '<?php echo $optionFormasDePagamento; ?>';
+			let disabledData = ''
 			let disabledValor = ''
 			let disabledForma = ''
-			if ((contrato.tipo_financeiro == 'politica' && tipoFinaneiroPadrao == 'politica' ) || (tipoFinaneiroPadrao == 'politica')) {
+			let disabledBandeira = ''
+			let disabledParcelas = ''
+			let disabledIdent = ''
+			if (contrato.status == 'APROVADO') {
+				disabledData = 'disabled'
 				disabledValor = 'disabled'
 				disabledForma = 'disabled'
-			}else if((contrato.status=='APROVADO')){
-				disabledValor = 'disabled'
-				disabledForma = 'disabled'
+				disabledBandeira = 'disabled'
+				disabledParcelas = 'disabled'
+				disabledIdent = 'disabled'
 			}
 			pagamentos.forEach(x => {
 				$('.js-listar-parcelas .fpag').append(`<div class="fpag-item js-pagamento-item">
@@ -178,14 +183,14 @@ if (isset($_POST['ajax'])) {
 												<article>
 													<div class="colunas3">
 														<dl>
-															<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data js-vencimento" data-ordem="${index}" value="${x.vencimento}"/></dd>
+															<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data js-vencimento" data-ordem="${index}" value="${x.vencimento}" ${disabledData}/></dd>
 														</dl>
 														<dl>
 															<dd class="form-comp"><span>R$</i></span><input type="tel" name="" data-ordem="${index}" class="valor js-valor" value="${number_format(x.valor,2,",",".")}"  ${disabledValor}/></dd>
 														</dl>
 														<dl>
 															<dd>
-																<select class="js-id_formadepagamento js-tipoPagamento">
+																<select class="js-id_formadepagamento js-tipoPagamento" ${disabledForma}>
 																<option value="">Forma de Pagamento...</option>
 																	${metodosPagamentosAceito}
 																</select>
@@ -197,7 +202,7 @@ if (isset($_POST['ajax'])) {
 														<dl style="display:none">
 															<dt>Bandeira</dt>
 															<dd>
-															<select class="js-debitoBandeira js-tipoPagamento" ${disabledForma}>
+															<select class="js-debitoBandeira js-tipoPagamento" ${disabledBandeira}>
 																<option value="">selecione</option>
 																<?php
 																foreach ($debitoBandeiras as $id_operadora => $x) {
@@ -213,7 +218,7 @@ if (isset($_POST['ajax'])) {
 														<dl style="display:none">
 															<dt>Bandeira</dt>
 															<dd>
-																<select class="js-creditoBandeira js-tipoPagamento" ${disabledForma}>
+																<select class="js-creditoBandeira js-tipoPagamento" ${disabledBandeira}>
 																	<option value="">selecione</option>
 																	<?php
 																	foreach ($creditoBandeiras as $id_operadora => $x) {
@@ -232,13 +237,13 @@ if (isset($_POST['ajax'])) {
 														<dl style="display:none">
 															<dt>Qtd. Parcelas</dt>
 															<dd>
-																<select class="js-parcelas js-tipoPagamento" ${disabledForma}>
+																<select class="js-parcelas js-tipoPagamento" ${disabledParcelas}>
 																	<option value="">selecione a as Parcelas</option>
 																</select>
 															</dd>
 														</dl>
 
-														<dl style="display:none" ${disabledForma}>
+														<dl style="display:none" ${disabledIdent}>
 															<dt>Identificador</dt>
 															<dd><input type="text" class="js-identificador js-tipoPagamento" /></dd>
 														</dl>
@@ -1380,9 +1385,8 @@ if (isset($_POST['ajax'])) {
 				this.value = this.value.replace(regexp, '');
 			}
 		})
-
-		desativarCampos();
-		disabledForm()
+		// desativarCampos();
+		// disabledForm()
 	});
 </script>
 

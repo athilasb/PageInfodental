@@ -1107,7 +1107,7 @@ if (isset($_POST['acao'])) {
 				}
 			})
 		}
-		if ($('[name="tipo_financeiro"]:checked').val() == 'politica') {
+		if (tipoFinaneiroPadrao == 'politica') {
 			$('.js-tipo').hide();
 			$('.js-tipo-politica').show();
 			$('.js-tipo-manual').hide();
@@ -1231,108 +1231,174 @@ if (isset($_POST['acao'])) {
 			$('.js-tipo-politica table').append(tr)
 		}
 	}
+	//quando possui pagamentos salvos ele persiste as info
+	const PossuiPagamentosSalvos = () => {
+		console.log('PossuiPagamentosSalvos')
+		$('.js-tipo-manual').hide();
+		$('.js-tipo-politica').hide();
+		pagamentosListar(3);
+		if (contrato.pagamentos.length > 0) {
+			$('.js-creditoBandeira').closest('dl').show();
+			$('.js-parcelas').closest('dl').show();
+			let valorPagamentos = 0
+			pagamentos.forEach(x => {
+				let disabledData = 'null'
+				let disabledValor = 'null'
+				let disabledForma = 'null'
+				let disabledBandeira = 'null'
+				let disabledParcelas = 'null'
+				let disabledIdent = 'null'
+				// se o status for APROVADO VAI DESABILITAR TODOS OS INPUTS
+				if (contrato.status == 'APROVADO') {
+					disabledData = 'disabled'
+					disabledValor = 'disabled'
+					disabledForma = 'disabled'
+					disabledBandeira = 'disabled'
+					disabledParcelas = 'disabled'
+					disabledIdent = 'disabled'
+				}
+
+				if ((contrato.tipo_financeiro == 'politica' && tipoFinaneiroPadrao == 'politica') || (tipoFinaneiroPadrao == 'politica') || (contrato.status == 'APROVADO')) {
+					disabledForma = 'disabled'
+					disabledValor = 'disabled'
+					disabledParcelas = 'disabled'
+				}
+
+				valorPagamentos += x.valor
+				$('.js-pagamento-item article').each((k, x) => {
+					let pagamento = pagamentos[k]
+					if(parseInt(pagamento.creditoBandeira)>0){
+						disabledBandeira = 'disabled'
+					}
+					//desabilitando valor 
+					$(x).find('.js-valor').attr(disabledValor, true);
+					//desabilitando forma de pagamento 
+					$(x).find('.js-id_formadepagamento').attr(disabledForma, true);
+					//desabilitando bandeira
+					$(x).find('.js-creditoBandeira').attr(disabledBandeira, true);
+					$(x).find('.js-debitoBandeira').attr(disabledBandeira, true);
+					//desabilitando parcelas
+					$(x).find('.js-parcelas').html(`<option value='${pagamento.qtdParcelas}' selected>${pagamento.qtdParcelas}X</option>`)
+					$(x).find('.js-parcelas').attr(disabledParcelas, true);
+					console.log(pagamento)
+
+					//se o pagamento for = credito popular o campo apenas com as bandeiras selecionadas
+					if (pagamento.metodo == 'credito') {
+						let bandeiraFiltrada = false
+						let bandeirasPermitidas = [];
+						let operadoresPermitidas = [];
+						for (let g in _bandeiras) {
+							if (_bandeiras[g].bandeiras) {
+								for (let b in _bandeiras[g].bandeiras) {
+									if (parseInt(_bandeiras[g].bandeiras[b].parcelas) > parseInt(pagamento.qtdParcelas)) {
+										_bandeiras[g].bandeiras[b]['id_operadora'] = g
+										bandeirasPermitidas.push(_bandeiras[g].bandeiras[b])
+									}
+									if (_bandeiras[g].bandeiras[b].id_bandeira == pagamento.creditoBandeira) {
+										bandeiraFiltrada = _bandeiras[g].bandeiras[b]
+										bandeiraFiltrada.id_operadora = g
+										bandeiraFiltrada.id_operadorabandeira = `${g}${bandeiraFiltrada.id_bandeira}`
+									}
+								}
+							}
+						}
+						// se existe uma bandeira salva
+						if (bandeiraFiltrada) {
+							$(x).find('.js-creditoBandeira optgroup').html("")
+							$(x).find('.js-creditoBandeira optgroup').append(`<option value="${bandeiraFiltrada.id_bandeira}" data-populaParcela="false" data-parcelas="${bandeiraFiltrada.parcelas}" data-parcelas-semjuros="${bandeiraFiltrada.semJuros}" data-id_operadora="${bandeiraFiltrada.id_operadora}" data-id_operadorabandeira="${bandeiraFiltrada.id_operadora}" selected >${bandeiraFiltrada.titulo}</option>`)
+						} else if (bandeirasPermitidas.length > 0) {
+							$(x).find('.js-creditoBandeira optgroup').html("")
+							for (let band of bandeirasPermitidas) {
+								$(x).find('.js-creditoBandeira optgroup').append(`<option value="${band.id_bandeira}" data-populaParcela="false" data-parcelas="${band.parcelas}" data-id_operadora="${band.id_operadora}" data-id_operadorabandeira="${band.id_operadora}" selected >${band.titulo}</option>`)
+							}
+							$(x).find('.js-creditoBandeira').val($("select option:first").val());
+						}
+					}
+				})
+				return
+				$('.js-listar-parcelas').find('.js-id_formadepagamento').each((k, select) => {
+					console.log(select)
+					$(select).html(`<option value='${x.id_formapagamento}' selected>${_formasDePagamento[x.id_formapagamento]?.titulo}</option>`)
+					$(select).attr('disabled', true);
+					$(select).closest('article').find('.js-parcelas').html(`<option value='${x.qtdParcelas}' selected>${x.qtdParcelas}X</option>`)
+					$(select).closest('article').find('js-identificador').val(`${x.identificador}`)
+					$(select).find('option').each(function(key, option) {
+						let dataTipo = $(option).attr('data-tipo')
+						if (dataTipo == x.metodo) {
+							$(option).attr('selected', true)
+							$(select).attr('disabled', true)
+						}
+					})
+					$(select).closest('article').find('dl').find('.js-metodo-selecionado').val(metodo);
+					$(select).closest('article').find('dl').each(function(ind, dls) {
+						let classe = $(dls).find('select,input').attr('class')
+						if (typeof(classe) != 'string') {
+							return
+						}
+						classe = classe.replace(' js-tipoPagamento', "")
+						if (x.metodo == 'credito') {
+							if (classe == 'js-creditoBandeira') {
+								$(dls).show()
+								$(dls).find('select').attr(disabledForma, true)
+								let bandeiraFiltrada = false
+								for (let g in _bandeiras) {
+									if (_bandeiras[g].bandeiras) {
+										for (let b in _bandeiras[g].bandeiras) {
+											if (_bandeiras[g].bandeiras[b].id_bandeira == x.creditoBandeira) {
+												bandeiraFiltrada = _bandeiras[g].bandeiras[b]
+												bandeiraFiltrada.id_operadora = g
+												bandeiraFiltrada.id_operadorabandeira = `${g}${bandeiraFiltrada.id_bandeira}`
+											}
+										}
+									}
+								}
+								$(dls).find('select optgroup').html("")
+								if (bandeiraFiltrada) {
+									$(dls).find('select optgroup').append(`<option value="${bandeiraFiltrada.id_bandeira}" data-populaParcela="false" data-parcelas="${bandeiraFiltrada.parcelas}" data-parcelas-semjuros="${bandeiraFiltrada.semJuros}" data-id_operadora="${bandeiraFiltrada.id_operadora}" data-id_operadorabandeira="${bandeiraFiltrada.id_operadora}" selected >${bandeiraFiltrada.titulo}</option>`)
+								}
+							}
+							if (classe == 'js-parcelas') {
+								$(dls).show()
+								$(dls).find('select').append(`
+												<option value='${x.qtdParcelas??1}' selected>${x.qtdParcelas??0} x </option>
+											`)
+								$(dls).find('select').attr(disabledForma, true)
+							}
+							if (classe == 'js-identificador') {
+								$(dls).val(x.identificador ?? "")
+								$(dls).show()
+							}
+						} else if (x.metodo == 'debito') {
+							if (classe == 'js-debitoBandeira') {
+								$(dls).show()
+							}
+						} else {
+							if (classe !== 'js-identificador' && classe !== 'data js-vencimento' && classe !== 'valor js-valor' && classe !== 'js-id_formadepagamento' && classe !== 'js-parcelas') {
+								$(dls).hide()
+							}
+							if (classe == 'js-creditoBandeira') {
+								$(dls).hide()
+							}
+							if (classe == 'js-debitoBandeira') {
+								$(dls).hide()
+							}
+						}
+
+					})
+				})
+			})
+			//valorOriginalProcedimentos = valorPagamentos
+			updateValorText()
+		}
+		return
+	}
 	// quando a pessoa escolhe a parcela que deseja pagar 2º passo
 	const EscolheParcelas = (metodo, qtdParcelas, valor, primary = false) => {
+		console.log('EscolheParcelas')
 		$('#botao-voltar-menu-parcelas').show()
 		$('.js-pagamentos-quantidade').val(pagamentos.length)
 		$('.js-tipo-politica').hide()
 		$('.js-listar-parcelas').show()
-		if (primary) {
-			pagamentosListar(3);
-			if (contrato.pagamentos.length > 0) {
-				$('.js-creditoBandeira').closest('dl').show();
-				$('.js-parcelas').closest('dl').show();
-				let valorPagamentos = 0
-				pagamentos.forEach(x => {
-					let disabledData = ''
-					let disabledValor = ''
-					let disabledFormaPagamento = ''
-					let disabledbandeira = ''
-					let disabledqtdParcelas = ''
-					let disabledForma = ''
-					if ((contrato.tipo_financeiro == 'politica' && tipoFinaneiroPadrao == 'politica') || (tipoFinaneiroPadrao == 'politica') || (contrato.status == 'APROVADO')) {
-						disabledData = 'disabled'
-						disabledValor = 'disabled'
-						disabledFormaPagamento = 'disabled'
-						disabledbandeira = 'disabled'
-						disabledqtdParcelas = 'disabled'
-						disabledForma = 'disabled'
-					}
-					valorPagamentos += x.valor
-					$('.js-listar-parcelas').find('.js-id_formadepagamento').each((k, select) => {
-						$(select).html(`<option value='${x.id_formapagamento}' selected>${_formasDePagamento[x.id_formapagamento]?.titulo}</option>`)
-						$(select).attr('disabled', true);
-						$(select).closest('article').find('.js-parcelas').html(`<option value='${x.qtdParcelas}' selected>${x.qtdParcelas}X</option>`)
-						$(select).closest('article').find('js-identificador').val(`${x.identificador}`)
-						$(select).find('option').each(function(key, option) {
-							let dataTipo = $(option).attr('data-tipo')
-							if (dataTipo == x.metodo) {
-								$(option).attr('selected', true)
-								$(select).attr('disabled', true)
-							}
-						})
-						$(select).closest('article').find('dl').find('.js-metodo-selecionado').val(metodo);
-						$(select).closest('article').find('dl').each(function(ind, dls) {
-							let classe = $(dls).find('select,input').attr('class')
-							if (typeof(classe) == 'string') {
-								classe = classe.replace(' js-tipoPagamento', "")
-								if (x.metodo == 'credito') {
-									if (classe == 'js-creditoBandeira') {
-										$(dls).show()
-										$(dls).find('select').attr(disabledbandeira, true)
-										let bandeiraFiltrada = false
-										for (let g in _bandeiras) {
-											if (_bandeiras[g].bandeiras) {
-												for (let b in _bandeiras[g].bandeiras) {
-													if (_bandeiras[g].bandeiras[b].id_bandeira == x.creditoBandeira) {
-														bandeiraFiltrada = _bandeiras[g].bandeiras[b]
-														bandeiraFiltrada.id_operadora = g
-														bandeiraFiltrada.id_operadorabandeira = `${g}${bandeiraFiltrada.id_bandeira}`
-													}
-												}
-											}
-										}
-										$(dls).find('select optgroup').html("")
-										if (bandeiraFiltrada) {
-											$(dls).find('select optgroup').append(`<option value="${bandeiraFiltrada.id_bandeira}" data-populaParcela="false" data-parcelas="${bandeiraFiltrada.parcelas}" data-parcelas-semjuros="${bandeiraFiltrada.semJuros}" data-id_operadora="${bandeiraFiltrada.id_operadora}" data-id_operadorabandeira="${bandeiraFiltrada.id_operadora}" selected >${bandeiraFiltrada.titulo}</option>`)
-										}
-									}
-									if (classe == 'js-parcelas') {
-										$(dls).show()
-										$(dls).find('select').append(`
-												<option value='${x.qtdParcelas??1}' selected>${x.qtdParcelas??0} x </option>
-											`)
-										$(dls).find('select').attr(disabledForma, true)
-									}
-									if (classe == 'js-identificador') {
-										$(dls).val(x.identificador ?? "")
-										$(dls).show()
-									}
-								} else if (x.metodo == 'debito') {
-									if (classe == 'js-debitoBandeira') {
-										$(dls).show()
-									}
-								} else {
-									if (classe !== 'js-identificador' && classe !== 'data js-vencimento' && classe !== 'valor js-valor' && classe !== 'js-id_formadepagamento' && classe !== 'js-parcelas') {
-										$(dls).hide()
-									}
-									if (classe == 'js-creditoBandeira') {
-										$(dls).hide()
-									}
-									if (classe == 'js-debitoBandeira') {
-										$(dls).hide()
-									}
-								}
-
-							}
-						})
-					})
-				})
-				//valorOriginalProcedimentos = valorPagamentos
-				updateValorText()
-			}
-			return
-		}
 		let politicaEscolhida = temPolitica.parcelasParametros.metodos.find((item) => {
 			return item.tipo == metodo
 		})
@@ -1470,10 +1536,8 @@ if (isset($_POST['acao'])) {
 			if (pagamentos.length > 0) {
 				valor = pagamentos.reduce((acc, obj) => acc + obj.valor, 0);
 				valor = valor / parseInt(contrato.parcelas)
-			}
-			atualizaValor()
-			if (qtdParcelas > 0) {
-				EscolheParcelas(contrato.pagamentos[0].metodo, qtdParcelas, valor, true)
+				PossuiPagamentosSalvos()
+				return
 			}
 			//procedimentosListar();
 		} else if (contrato.tipo_financeiro == 'manual') {
@@ -1484,10 +1548,9 @@ if (isset($_POST['acao'])) {
 			if (pagamentos.length > 0) {
 				valor = pagamentos.reduce((acc, obj) => acc + obj.valor, 0);
 				valor = valor / parseInt(contrato.parcelas)
+				PossuiPagamentosSalvos()
+				return
 			}
-			// if (qtdParcelas > 0) {
-			// 	EscolheParcelas(contrato.pagamentos[0].metodo, qtdParcelas, valor, true)
-			// }
 			procedimentosListar();
 		} else {
 			procedimentosListar();
