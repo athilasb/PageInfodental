@@ -414,20 +414,15 @@ if (isset($_POST['acao'])) {
 						if (empty($erro)) {
 							$valorProcedimento = 0;
 							if (isset($_POST['procedimentos'])  and !empty($_POST['procedimentos'])) {
-
 								$procedimetosJSON = !empty($_POST['procedimentos']) ? json_decode($_POST['procedimentos']) : array();
-
 								if (is_array($procedimetosJSON)) {
 									foreach ($procedimetosJSON as $x) {
 										$x = (object)$x;
 										if ($x->situacao == 'aprovado') {
-
-
 											$qtd = 1;
 											if ($x->quantitativo == 1) $qtd = $x->quantidade;
 											else if ($x->face == 1) $qtd = count($x->faces);
 											else if ($x->id_regiao == 5) $qtd = $x->hof;
-
 											$valorProcedimento += number_format($x->valor * $qtd, 2, ".", "");
 											$valorProcedimento -= $x->desconto;
 										}
@@ -456,10 +451,6 @@ if (isset($_POST['acao'])) {
 							// } 
 
 						}
-
-
-
-
 						if (empty($erro)) {
 							if ($cnt->status == "PENDENTE" or $cnt->status == "CANCELADO"  or $cnt->status == "REPROVADO") {
 								$sql->update($_table, "status='APROVADO',id_aprovado=$usr->id,data_aprovado=now()", "where id=$cnt->id");
@@ -679,8 +670,6 @@ if (isset($_POST['acao'])) {
 										$id_tratamento_pagamento = $sql->ulid;
 										$sql->add($_p . "log", "data=now(),id_usuario='" . $usr->id . "',tipo='insert',vsql='" . addslashes($vSQLPagamento) . "',tabela='" . $_table . "_pagamentos',id_reg='" . $id_tratamento_pagamento . "'");
 									}
-
-
 									if (isset($x->id_formapagamento) and is_numeric($x->id_formapagamento) and isset($_formasDePagamento[$x->id_formapagamento])) {
 										$f = $_formasDePagamento[$x->id_formapagamento];
 										if ($f->tipo == "credito") {
@@ -1233,7 +1222,6 @@ if (isset($_POST['acao'])) {
 	}
 	//quando possui pagamentos salvos ele persiste as info
 	const PossuiPagamentosSalvos = () => {
-		console.log('PossuiPagamentosSalvos')
 		$('.js-tipo-manual').hide();
 		$('.js-tipo-politica').hide();
 		pagamentosListar(3);
@@ -1280,7 +1268,6 @@ if (isset($_POST['acao'])) {
 					//desabilitando parcelas
 					$(x).find('.js-parcelas').html(`<option value='${pagamento.qtdParcelas}' selected>${pagamento.qtdParcelas}X</option>`)
 					$(x).find('.js-parcelas').attr(disabledParcelas, true);
-					console.log(pagamento)
 
 					//se o pagamento for = credito popular o campo apenas com as bandeiras selecionadas
 					if (pagamento.metodo == 'credito') {
@@ -1394,7 +1381,6 @@ if (isset($_POST['acao'])) {
 	}
 	// quando a pessoa escolhe a parcela que deseja pagar 2º passo
 	const EscolheParcelas = (metodo, qtdParcelas, valor, primary = false) => {
-		console.log('EscolheParcelas')
 		$('#botao-voltar-menu-parcelas').show()
 		$('.js-pagamentos-quantidade').val(pagamentos.length)
 		$('.js-tipo-politica').hide()
