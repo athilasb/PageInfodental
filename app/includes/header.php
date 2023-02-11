@@ -101,7 +101,7 @@
         }
 
     $_page=basename($_SERVER['PHP_SELF']);
-    $link_landingpage="http://163.172.187.183:5000/";
+    $link_landingpage="https://".$_ENV['NAME'].".infodental.dental/";
       
 ?>
 <!doctype html>

@@ -85,6 +85,7 @@
 			?>
 			$('input[name=titulo]').keyup(function(){
 				let code = retira_acentos($(this).val().toLowerCase().split(' ').join('-'));
+				code = code.replace(/[,!/&'".%$#@*()_=+^~`´;:]/g, '');
 				$('input[name=code]').val(code);
 			});
 			<?php

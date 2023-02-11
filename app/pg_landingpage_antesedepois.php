@@ -105,7 +105,7 @@
 			<div class="header__inner1">
 				<section class="header-title">
 					<h1><?php echo utf8_encode($landingpage->titulo);?></h1>
-					<p>studiodental.infodental.dental/<?php echo $landingpage->code;?></p>
+					<a href="<?php echo $link_landingpage.$landingpage->code;?>" target="_blank"><p><?php echo $link_landingpage.$landingpage->code;?></p></a>
 				</section>
 				<?php
 				require_once("includes/menus/menuLandingPage.php");
