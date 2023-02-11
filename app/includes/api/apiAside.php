@@ -90,7 +90,7 @@
 					if($sql->rows) {
 						$cnt=mysqli_fetch_object($sql->mysqry);
 
-						$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,foto,codigo_bi,musica,periodicidade,foto_cn","where id=$cnt->id_paciente");
+						$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1,foto,codigo_bi,musica,periodicidade,foto_cn,plano_odontologico","where id=$cnt->id_paciente");
 						if($sql->rows) {
 							$paciente=mysqli_fetch_object($sql->mysqry);
 						}
@@ -259,6 +259,7 @@
 										'id_status'=>$cnt->id_status,
 										'nome'=>addslashes(utf8_encode($paciente->nome)),
 										'idade'=>(int)$idade,
+										'plano_odontologico'=>$paciente->plano_odontologico,
 										'id_cadeira'=>$cnt->id_cadeira,
 										'telefone1'=>$paciente->telefone1,
 										'musica'=>utf8_encode($paciente->musica),
@@ -3147,6 +3148,12 @@
 													$('#js-aside-edit .js-idade').html(``);
 												}
 
+												if(rtn.data.plano_odontologico && rtn.data.plano_odontologico.length>0) {
+													$('#js-aside-edit .js-planoOdontologico').html(`Plano Odontológico: ${rtn.data.plano_odontologico}`);
+												} else {
+													$('#js-aside-edit .js-planoOdontologico').html(`Plano Odontológico: -`);
+												}
+
 												if(rtn.data.periodicidade && rtn.data.periodicidade.length>0) {
 													
 													$('#js-aside-edit .js-periodicidade').html(`Periodicidade: ${rtn.data.periodicidade}`);
@@ -4201,6 +4208,7 @@
 										<p class="js-idade"></p>
 										<p class="js-periodicidade">Periodicidade: 6 meses</p>
 										<p class="js-musica"></p>
+										<p class="js-planoOdontologico"></p>
 									</div>
 								</div>
 							</section>
@@ -6871,6 +6879,12 @@
 							aside.find('.js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
 						} else {
 							aside.find(' .js-idade').html(``);
+						}
+
+						if(rtn.data.plano_odontologico && rtn.data.plano_odontologico.length>0) {
+							aside.find('.js-planoOdontologico').html(`Plano Odontológico: ${rtn.data.plano_odontologico}`);
+						} else {
+							aside.find('.js-planoOdontologico').html(`Plano Odontológico: -`);
 						}
 
 						if(rtn.data.periodicidade && rtn.data.periodicidade.length>0) {
