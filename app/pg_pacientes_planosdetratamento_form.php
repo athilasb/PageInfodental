@@ -591,16 +591,13 @@ if (isset($_POST['acao'])) {
 
 					// Persiste informações
 					if ($persistir === true) {
-
 						// Pagamentos
 						if (isset($_POST['pagamentos'])  and !empty($_POST['pagamentos'])) {
 							$pagamentosJSON = json_decode($_POST['pagamentos']);
 							if (is_array($pagamentosJSON)) {
 								$vSQLBaixa = array();
 								foreach ($pagamentosJSON as $x) {
-
 									$taxasPrazos = array();
-
 									// se for credito/debito
 									if (isset($x->id_formapagamento)) {
 										// se for credito
@@ -791,11 +788,23 @@ if (isset($_POST['acao'])) {
 														parcela='$x->parcela',
 														id_operadora='$x->id_operadora',
 														id_bandeira='$x->id_bandeira'";
-									//echo $vsql."<BR>";die();
+
+									$vsql = "id_tratamento='$x->id_pagamento',
+												data_vencimento='" . ($x->data_vencimento) . "',
+												tipo='paciente',
+												id_pagante=$usr->id,
+												valor='$x->valor',
+												valor_taxa='" . (isset($x->taxa) ? $x->taxa : 0) . "',
+												valor_multa='" . (isset($x->multa) ? $x->taxa : 0) . "',
+												valor_desconto='" . (isset($x->desconto) ? $x->taxa : 0) . "',
+												id_formapagamento='$x->id_formadepagamento',
+												qtdParcelas='$x->parcelas',
+												pago='0',";
+									echo $vsql."<BR>";die();
 									if (is_object($baixa)) {
 										$sql->update($_p . "pacientes_tratamentos_pagamentos_baixas", $vsql, "where id=$baixa->id");
 									} else {
-										$sql->add($_p . "pacientes_tratamentos_pagamentos_baixas", "data=now()," . $vsql);
+										$sql->add($_p . "pacientes_tratamentos_pagamentos_baixas", "data_emissao=now()," . $vsql);
 									}
 								}
 							}
