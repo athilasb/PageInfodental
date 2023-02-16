@@ -408,14 +408,14 @@ while ($x = mysqli_fetch_object($sql->mysqry)) {
 		$registros[] = $x;
 	}
 	$tratamentosIDs[] = $x->id_tratamento;
-	$pagamentosIDs[$x->id] = $x->id;
+	$pagamentosIDs[$x->id_tratamento] = $x->id_tratamento;
 
 	if ($x->fusao == 1) $pagamentosUnidos[] = $x->id;
 
 	//if ($x->fusao == 0) $valor['valorTotal'] += $x->valor;
 	$valor['valorTotal'] += $x->valor;
-}
 
+}
 
 $_subpagamentos = array();
 $sql->consult($_table, "*", "where id_fusao IN (" . implode(",", $pagamentosUnidos) . ") and lixo=0");
@@ -425,13 +425,14 @@ while ($x = mysqli_fetch_object($sql->mysqry)) {
 
 $_baixas = array();
 $pagamentosComBaixas = array();
-$sql->consult($_table . "_baixas", "*", "where id_pagamento IN (" . implode(",", $pagamentosIDs) . ") and lixo=0 order by data_vencimento asc");
+$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "WHERE id_tratamento IN (" . implode(",", $pagamentosIDs) . ") and lixo=0 order by data_vencimento asc");
 if ($sql->rows) {
 	while ($x = mysqli_fetch_object($sql->mysqry)) {
-		$_baixas[$x->id_pagamento][] = $x;
-		$pagamentosComBaixas[$x->id_pagamento] = $x->id_pagamento;
+		$_baixas[$x->id_tratamento][] = $x;
+		$pagamentosComBaixas[$x->id_tratamento] = $x->id_tratamento;
 	}
 }
+
 $sql->consult($_p . "pacientes_tratamentos", "*", "where id IN (" . implode(",", $tratamentosIDs) . ")");
 while ($x = mysqli_fetch_object($sql->mysqry)) $_tratamentos[$x->id] = $x;
 
@@ -471,6 +472,8 @@ foreach ($registros as $x) {
 		//$valor['aReceber']+=$x->valor;
 	}
 }
+
+
 ?>
 
 <script type="text/javascript">
