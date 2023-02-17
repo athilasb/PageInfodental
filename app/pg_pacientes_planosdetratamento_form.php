@@ -365,24 +365,24 @@ if (isset($_POST['acao'])) {
 					if ($sql->rows) {
 						$pagamentosIds = array(-1);
 						while ($x = mysqli_fetch_object($sql->mysqry)) {
-							$pagamentosIds[] = $x->id;
+							$pagamentosIds[] = $x->id_tratamento;
 
 							// se for pagamento de fusao/uniao
 							if ($x->id_fusao > 0) {
 								$pagamentosUnidosIds[$x->id_fusao] = $x->id_fusao;
 							}
 						}
-
+					
 						// retorna pagamentos unidos
 						$sql->consult($_table . "_pagamentos", "*", "where id IN (" . implode(",", $pagamentosUnidosIds) . ") and fusao=1 and lixo=0");
 						if ($sql->rows) {
 							while ($x = mysqli_fetch_object($sql->mysqry)) {
-								$pagamentosIds[] = $x->id;
+								$pagamentosIds[] = $x->id_tratamento;
 							}
 						}
 
-
-						$sql->consult($_table . "_pagamentos_baixas", "*", "where id_pagamento IN (" . implode(",", $pagamentosIds) . ") and lixo=0");
+						
+						$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id_tratamento IN (" . implode(",", $pagamentosIds) . ") and lixo=0");
 						$pagamentosBaixas = $sql->rows;
 					}
 
@@ -667,6 +667,7 @@ if (isset($_POST['acao'])) {
 										$id_tratamento_pagamento = $sql->ulid;
 										$sql->add($_p . "log", "data=now(),id_usuario='" . $usr->id . "',tipo='insert',vsql='" . addslashes($vSQLPagamento) . "',tabela='" . $_table . "_pagamentos',id_reg='" . $id_tratamento_pagamento . "'");
 									}
+									$id_tratamento_pagamento = $id_tratamento;
 									if (isset($x->id_formapagamento) and is_numeric($x->id_formapagamento) and isset($_formasDePagamento[$x->id_formapagamento])) {
 										$f = $_formasDePagamento[$x->id_formapagamento];
 										if ($f->tipo == "credito") {
@@ -700,7 +701,7 @@ if (isset($_POST['acao'])) {
 
 
 														$vSQLBaixa[] = array(
-															"id_pagamento" => $id_tratamento_pagamento,
+															"id_tratamento" => $id_tratamento_pagamento,
 															"data_vencimento" => $dtVencimento,
 															"valor" => $valorParcela,
 															"id_formadepagamento" => $f->id,
@@ -735,7 +736,7 @@ if (isset($_POST['acao'])) {
 
 
 												$vSQLBaixa[] = array(
-													"id_pagamento" => $id_tratamento_pagamento,
+													"id_tratamento" => $id_tratamento_pagamento,
 													"data_vencimento" => $dtVencimento,
 													"valor" => $x->valor,
 													"id_formadepagamento" => $f->id,
@@ -747,7 +748,7 @@ if (isset($_POST['acao'])) {
 											}
 										} else {
 											$vSQLBaixa[] = array(
-												"id_pagamento" => $id_tratamento_pagamento,
+												"id_tratamento" => $id_tratamento_pagamento,
 												"data_vencimento" => invDate($x->vencimento),
 												"valor" => $x->valor,
 												"id_formadepagamento" => $f->id,
@@ -756,17 +757,17 @@ if (isset($_POST['acao'])) {
 										}
 									}
 								}
+							
 								foreach ($vSQLBaixa as $x) {
 									$x = (object)$x;
 									$vsql = "";
-									$where = "where id_pagamento=$x->id_pagamento";
+									$where = "where id_tratamento=$x->id_tratamento";
 
 									if ($x->tipo == "credito") $where .= " and id_operadora='" . $x->id_operadora . "'
-																					and id_bandeira='" . $x->id_bandeira . "' 
-																					and parcela='" . $x->parcelas . "' 
-																					and parcela='" . $x->parcela . "'";
+																					and id_bandeira='" . $x->id_bandeira . "'";
+																				
 									$baixa = '';
-									$sql->consult($_p . "pacientes_tratamentos_pagamentos_baixas", "*", $where);
+									$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", $where);
 									if ($sql->rows) {
 										$baixa = mysqli_fetch_object($sql->mysqry);
 									}
@@ -776,35 +777,25 @@ if (isset($_POST['acao'])) {
 									if (!isset($x->parcelas)) $x->parcelas = 0;
 									if (!isset($x->parcela)) $x->parcela = 0;
 
-									$vsql = "id_pagamento='$x->id_pagamento',
-														id_usuario=$usr->id,
-														tipoBaixa='pagamento',
-														valor='$x->valor',
-														taxa='" . (isset($x->taxa) ? $x->taxa : 0) . "',
-														dias='" . (isset($x->dias) ? $x->dias : 0) . "',
-														id_formadepagamento='$x->id_formadepagamento',
-														data_vencimento='" . ($x->data_vencimento) . "',
-														parcelas='$x->parcelas',
-														parcela='$x->parcela',
-														id_operadora='$x->id_operadora',
-														id_bandeira='$x->id_bandeira'";
-
-									$vsql = "id_tratamento='$x->id_pagamento',
+									$vsql = "id_tratamento='$x->id_tratamento',
 												data_vencimento='" . ($x->data_vencimento) . "',
 												tipo='paciente',
 												id_pagante=$usr->id,
 												valor='$x->valor',
-												valor_taxa='" . (isset($x->taxa) ? $x->taxa : 0) . "',
+												taxa_cartao='" . (isset($x->taxa) ? $x->taxa : 0) . "',
+												valor_taxa='0',
 												valor_multa='" . (isset($x->multa) ? $x->taxa : 0) . "',
 												valor_desconto='" . (isset($x->desconto) ? $x->taxa : 0) . "',
 												id_formapagamento='$x->id_formadepagamento',
-												qtdParcelas='$x->parcelas',
-												pago='0',";
-									echo $vsql."<BR>";die();
+												qtdParcelas='1',
+												pago='0'";
+								
+											
+								//echo $vsql."<BR>";die();
 									if (is_object($baixa)) {
-										$sql->update($_p . "pacientes_tratamentos_pagamentos_baixas", $vsql, "where id=$baixa->id");
+										$sql->update($_p . "financeiro_fluxo_recebimentos", $vsql, "where id=$baixa->id");
 									} else {
-										$sql->add($_p . "pacientes_tratamentos_pagamentos_baixas", "data_emissao=now()," . $vsql);
+										$sql->add($_p . "financeiro_fluxo_recebimentos", "data_emissao=now()," . $vsql);
 									}
 								}
 							}
