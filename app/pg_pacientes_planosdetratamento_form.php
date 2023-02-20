@@ -117,46 +117,6 @@ while ($x = mysqli_fetch_object($sql->mysqry)) {
 }
 
 
-
-/*$_semJuros=array();
-			$sql->consult($_p."parametros_cartoes_taxas_semjuros","*","where lixo=0");
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				$_semJuros[$x->id_operadora][$x->id_bandeira]=$x->semjuros;
-			}
-
-
-			$sql->consult($_p."parametros_cartoes_taxas","*","where lixo=0");
-			$_taxasCredito=$_taxasCreditoSemJuros=array();
-			while($x=mysqli_fetch_object($sql->mysqry)) {
-				if(isset($_bandeiras[$x->id_bandeira])) {
-					$bandeira=$_bandeiras[$x->id_bandeira];
-					if($x->operacao=="credito") {
-						if(isset($creditoBandeiras[$x->id_operadora])) {
-							$semJurosTexto="";
-							if($bandeira->parcelasAte>0) {
-								$semJurosTexto.=" - em ate ".$bandeira->parcelasAte."x";
-							}
-							if(!isset($_taxasCredito[$x->id_operadora][$bandeira->id][$x->parcela])) {
-								$_taxasCredito[$x->id_operadora][$bandeira->id][$x->parcela]=$x->taxa;
-							}
-
-							$creditoBandeiras[$x->id_operadora]['bandeiras'][$bandeira->id]=array('id_bandeira'=>$bandeira->id,
-																								//	'semJuros'=>$semJuros,
-																									'parcelas'=>$bandeira->parcelasAte,
-																									'taxa'=>$x->taxa,	
-																									'titulo'=>utf8_encode($bandeira->titulo).$semJurosTexto);
-						}
-					} else {
-
-						$debitoBandeiras[$x->id_operadora]['bandeiras'][$bandeira->id]=array('id_bandeira'=>$bandeira->id,
-																								'titulo'=>utf8_encode($bandeira->titulo),
-																								'taxa'=>$x->taxa);
-					}
-
-				}
-			}*/
-
-
 // formulario
 $cnt = '';
 $campos = explode(",", "titulo,id_profissional,tempo_estimado,pagamento,id_politica,tipo_financeiro,parcelas,status");
@@ -169,6 +129,7 @@ if (isset($_GET['edita']) and is_numeric($_GET['edita'])) {
 	$sql->consult($_table, "*", "where id=" . $_GET['edita']);
 	if ($sql->rows) {
 		$cnt = mysqli_fetch_object($sql->mysqry);
+
 		$values = $adm->values($campos, $cnt);
 		// Procedimentos
 		$procedimentosRegs = $usuariosIds = array();
@@ -178,7 +139,7 @@ if (isset($_GET['edita']) and is_numeric($_GET['edita'])) {
 			$usuariosIds[$x->id_usuario] = $x->id_usuario;
 			$procedimentosRegs[] = $x;
 		}
-
+	
 		$_usuarios = array();
 		if (count($usuariosIds) > 0) {
 			$sql->consult($_p . "colaboradores", "id,nome", "where id IN (" . implode(",", $usuariosIds) . ")");
@@ -187,17 +148,8 @@ if (isset($_GET['edita']) and is_numeric($_GET['edita'])) {
 			}
 		}
 
-
 		$procedimentos = array();
 		foreach ($procedimentosRegs as $x) {
-			/*$profissional=isset($_profissionais[$x->id_profissional])?$_profissionais[$x->id_profissional]:'';
-						$iniciaisCor='';
-						$iniciais='?';
-						if(is_object($profissional)) {
-							$iniciais=$profissional->calendario_iniciais;
-
-							$iniciaisCor=$profissional->calendario_cor;
-						}*/
 
 			$valor = $x->valorSemDesconto;
 
@@ -239,18 +191,19 @@ if (isset($_GET['edita']) and is_numeric($_GET['edita'])) {
 				'faces' => $facesArray,
 				'hof' => $x->hof
 			);
-			/*'iniciais'=>$iniciais,
-												'iniciaisCor'=>$iniciaisCor);*/
+			
 		}
+	
 		if ($cnt->status == "APROVADO") {
 			$values['procedimentos'] = json_encode($procedimentos);
 		} else {
 			$values['procedimentos'] = empty($cnt->procedimentos) ? "[]" : utf8_encode($cnt->procedimentos);
 		}
+
 		// Pagamentos
 		$pagamentos = array();
-		$where = "where id_tratamento=$cnt->id and id_paciente=$paciente->id and lixo=0";
-		$sql->consult($_table . "_pagamentos", "*", $where);
+		$where = "where id_tratamento=$cnt->id and id_pagante=$paciente->id and lixo=0";
+		$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", $where);
 		while ($x = mysqli_fetch_object($sql->mysqry)) {
 			$pagamentos[] = array(
 				'id' => $x->id,
@@ -282,9 +235,7 @@ if (is_object($cnt)) {
 			} else {
 				$sql->update($_table, $vsql, $vwhere);
 				$sql->add($_p . "log", "data=now(),id_usuario='" . $usr->id . "',tipo='update',vsql='" . addslashes($vsql) . "',vwhere='" . addslashes($vwhere) . "',tabela='" . $_table . "',id_reg='" . $x->id . "'");
-
-				$sql->update($_table . "_pagamentos", "lixo=1,lixo_obs=6,lixo_data=now(),lixo_id_usuario=$usr->id", "where id_tratamento=$x->id and id_paciente=$paciente->id");
-
+				$sql->update($_p . "financeiro_fluxo_recebimentos", "lixo=1,lixo_data=now(),lixo_id_colaborador=$usr->id", "where id_tratamento=$x->id and id_paganete=$paciente->id");
 				$adm->biCategorizacao();
 				$jsc->jAlert("Tratamento excluído com sucesso!", "sucesso", "document.location.href='pg_pacientes_planosdetratamento.php?$url'");
 			}
@@ -309,9 +260,9 @@ if (isset($_POST['acao'])) {
 				//die();
 			}
 		}
+
 		if ($processa === true) {
 			// persiste as informacoes do tratamento
-
 			if ($_POST['acao'] == "wlib") {
 				if (isset($_POST['tipo_financeiro']) && $_POST['tipo_financeiro'] == 'politica' && !$_POST['parcelas']) {
 					$_POST['parcelas'] = count(json_decode($_POST['pagamentos'])) ?? 0;
@@ -324,23 +275,23 @@ if (isset($_POST['acao'])) {
 					$vSQL .= "procedimentos='" . addslashes(utf8_decode($_POST['procedimentos'])) . "',";
 					$vSQL .= "pagamentos='" . addslashes(utf8_decode($_POST['pagamentos'])) . "',";
 				}
+
 				$idProfissional = (isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional'])) ? $_POST['id_profissional'] : 0;
 				//if(isset($_POST['parcelas']) and is_numeric($_POST['parcelas'])) $vSQL.="parcelas='".$_POST['parcelas']."',";
 				if (isset($_POST['pagamento'])) $vSQL .= "pagamento='" . $_POST['pagamento'] . "',";
 				if (is_object($cnt)) {
+
 					if (!empty($vSQL)) {
 						$vSQL = substr($vSQL, 0, strlen($vSQL) - 1);
 						$vWHERE = "where id='" . $cnt->id . "'";
 						$sql->update($_table, $vSQL, $vWHERE);
 						$sql->add($_p . "log", "data=now(),id_usuario='" . $usr->id . "',tipo='update',vsql='" . addslashes($vSQL) . "',vwhere='" . addslashes($vWHERE) . "',tabela='" . $_table . "',id_reg='" . $cnt->id . "'");
 						$id_tratamento = $cnt->id;
-
 						if ($tratamentoAprovado === false) {
 							$sql->update($_table . "_procedimentos", "lixo=1", "where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
-							$sql->update($_table . "_pagamentos", "lixo=1,lixo_obs=1,lixo_data=now(),lixo_id_usuario=$usr->id", "where id_tratamento=$id_tratamento and id_paciente=$paciente->id");
+							$sql->update($_p . "financeiro_fluxo_recebimentos", "lixo=1,lixo_data=now(),lixo_id_colaborador=$usr->id", "where id_tratamento=$id_tratamento and id_pagante=$paciente->id");
 						}
 					} else {
-
 						$id_tratamento = $cnt->id;
 					}
 				} else {
@@ -361,31 +312,29 @@ if (isset($_POST['acao'])) {
 					// Baixas de pagamento
 					$pagamentosUnidosIds = array(-1);
 					$pagamentosBaixas = 0;
-					$sql->consult($_table . "_pagamentos", "*", "where id_tratamento=$cnt->id and lixo=0");
+					$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id_tratamento=$cnt->id and lixo=0");
 					if ($sql->rows) {
 						$pagamentosIds = array(-1);
 						while ($x = mysqli_fetch_object($sql->mysqry)) {
-							$pagamentosIds[] = $x->id_tratamento;
-
+							$pagamentosIds[] = $x->id;
 							// se for pagamento de fusao/uniao
 							if ($x->id_fusao > 0) {
 								$pagamentosUnidosIds[$x->id_fusao] = $x->id_fusao;
 							}
 						}
-					
+
 						// retorna pagamentos unidos
-						$sql->consult($_table . "_pagamentos", "*", "where id IN (" . implode(",", $pagamentosUnidosIds) . ") and fusao=1 and lixo=0");
+						$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id IN (" . implode(",", $pagamentosUnidosIds) . ") and fusao=1 and lixo=0");
 						if ($sql->rows) {
 							while ($x = mysqli_fetch_object($sql->mysqry)) {
-								$pagamentosIds[] = $x->id_tratamento;
+								$pagamentosIds[] = $x->id;
 							}
 						}
 
-						
-						$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id_tratamento IN (" . implode(",", $pagamentosIds) . ") and lixo=0");
+
+						$sql->consult($_p . "financeiro_fluxo", "*", "where id_registro IN (" . implode(",", $pagamentosIds) . ") and lixo=0");
 						$pagamentosBaixas = $sql->rows;
 					}
-
 
 					// APROVACAO
 					if ($_POST['status'] == "APROVADO") {
@@ -402,10 +351,10 @@ if (isset($_POST['acao'])) {
 										break;
 									}
 									/*if($x->situacao=="aprovado" and ($x->id_profissional==0 or empty($x->id_profissional))) {
-														$erro='Para aprovar o tratamento, é necessário selecionar o Profissional para todos os procedimentos aprovados';
-														$persistir=false;
-														break;
-													}*/
+										$erro='Para aprovar o tratamento, é necessário selecionar o Profissional para todos os procedimentos aprovados';
+										$persistir=false;
+										break;
+									}*/
 								}
 							}
 						};
@@ -441,15 +390,8 @@ if (isset($_POST['acao'])) {
 									}
 								}
 							}
-
 							$valorPagamento = number_format($valorPagamento, 2, ".", "");
 							$valorProcedimento = number_format($valorProcedimento, 2, ".", "");
-
-							//echo $valorPagamento." ".$valorProcedimento." = ".abs($valorPagamento - $valorProcedimento);die();
-							// if(!(abs($valorPagamento) < 0.50000001)) {
-							//  	$erro="Defina as parcelas de pagamento!";
-							// } 
-
 						}
 						if (empty($erro)) {
 							if ($cnt->status == "PENDENTE" or $cnt->status == "CANCELADO"  or $cnt->status == "REPROVADO") {
@@ -472,7 +414,7 @@ if (isset($_POST['acao'])) {
 									$persistir = false;
 
 									// remove os pagamentos com fusao
-									$sql->consult($_table . "_pagamentos", "*", "where id_tratamento=$cnt->id and id_fusao>0");
+									$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id_tratamento=$cnt->id and id_fusao>0");
 									$pagamentosUnidosIds = array(-1);
 									while ($x = mysqli_fetch_object($sql->mysqry)) {
 										$pagamentosUnidosIds[$x->id_fusao] = $x->id_fusao;
@@ -480,7 +422,7 @@ if (isset($_POST['acao'])) {
 
 									// retorna pagamentos de uniao
 									$pagamentosFusaoIds = array(-1);
-									$sql->consult($_table . "_pagamentos", "*", "where id IN (" . implode(",", $pagamentosUnidosIds) . ") and fusao=1");
+									$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id IN (" . implode(",", $pagamentosUnidosIds) . ") and fusao=1");
 									while ($x = mysqli_fetch_object($sql->mysqry)) {
 										$pagamentosFusaoIds[$x->id_fusao] = $x->id_fusao;
 									}
@@ -492,8 +434,8 @@ if (isset($_POST['acao'])) {
 
 									$sql->update($_table . "_procedimentos_evolucao", "lixo=1", "where id_tratamento_procedimento IN (" . implode(",", $tratamentosProdecimentosIds) . ")");
 
-									$sql->update($_table . "_procedimentos", "lixo=1", "where id_tratamento=$cnt->id");
-									$sql->update($_table . "_pagamentos", "lixo=1,lixo_obs='2 $cnt->id or id_fusao IN (" . implode(",", $pagamentosFusaoIds) . ")',lixo_data=now(),lixo_id_usuario=$usr->id", "where id_tratamento=$cnt->id"); // or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
+									//$sql->update($_table . "_procedimentos", "lixo=1", "where id_tratamento=$cnt->id");
+									$sql->update($_p . "financeiro_fluxo_recebimentos", "lixo=1,lixo_data=now(),lixo_id_colaborador=$usr->id", "where id_tratamento=$cnt->id"); // or id_fusao IN (".implode(",", $pagamentosFusaoIds).")");
 									//$sql->update($_table,"pagamentos=''","where id=$cnt->id");
 
 								}
@@ -515,14 +457,14 @@ if (isset($_POST['acao'])) {
 								$msgOk = "Plano de Tratamento foi <b>REPROVADO</b> com sucesso!";
 								$persistir = false;
 								// remove os pagamentos com fusao
-								$sql->consult($_table . "_pagamentos", "*", "where id_tratamento=$cnt->id and id_fusao>0");
+								$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id_tratamento=$cnt->id and id_fusao>0");
 								$pagamentosUnidosIds = array(-1);
 								while ($x = mysqli_fetch_object($sql->mysqry)) {
 									$pagamentosUnidosIds[$x->id_fusao] = $x->id_fusao;
 								}
 								// retorna pagamentos de uniao
 								$pagamentosFusaoIds = array(-1);
-								$sql->consult($_table . "_pagamentos", "*", "where id IN (" . implode(",", $pagamentosUnidosIds) . ") and fusao=1");
+								$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id IN (" . implode(",", $pagamentosUnidosIds) . ") and fusao=1");
 								while ($x = mysqli_fetch_object($sql->mysqry)) {
 									$pagamentosFusaoIds[$x->id_fusao] = $x->id_fusao;
 								}
@@ -532,7 +474,7 @@ if (isset($_POST['acao'])) {
 								while ($x = mysqli_fetch_object($sql->mysqry)) $tratamentosProcedimentosIds[] = $x->id;
 								$sql->update($_table . "_procedimentos_evolucao", "lixo=1", "where id_tratamento_procedimento IN (" . implode(",", $tratamentosProcedimentosIds) . ")");
 								$sql->update($_table . "_procedimentos", "lixo=1", "where id_tratamento=$cnt->id");
-								$sql->update($_table . "_pagamentos", "lixo=1,lixo_obs=3,lixo_data=now(),lixo_id_usuario=$usr->id", "where id_tratamento=$cnt->id or id_fusao IN (" . implode(",", $pagamentosFusaoIds) . ")");
+								$sql->update($_p . "financeiro_fluxo_recebimentos", "lixo=1,lixo_data=now(),lixo_id_colaborador=$usr->id", "where id_tratamento=$cnt->id or id_fusao IN (" . implode(",", $pagamentosFusaoIds) . ")");
 								//$sql->update($_table,"pagamentos=''","where id=$cnt->id");
 							} else {
 								$erro = "Este tratamento já está REPROVADO";
@@ -553,7 +495,7 @@ if (isset($_POST['acao'])) {
 								$persistir = false;
 
 								// remove os pagamentos com fusao
-								$sql->consult($_table . "_pagamentos", "*", "where id_tratamento=$cnt->id and id_fusao>0");
+								$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id_tratamento=$cnt->id and id_fusao>0");
 								$pagamentosUnidosIds = array(-1);
 								while ($x = mysqli_fetch_object($sql->mysqry)) {
 									$pagamentosUnidosIds[$x->id_fusao] = $x->id_fusao;
@@ -561,7 +503,7 @@ if (isset($_POST['acao'])) {
 
 								// retorna pagamentos de uniao
 								$pagamentosFusaoIds = array(-1);
-								$sql->consult($_table . "_pagamentos", "*", "where id IN (" . implode(",", $pagamentosUnidosIds) . ") and fusao=1");
+								$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id IN (" . implode(",", $pagamentosUnidosIds) . ") and fusao=1");
 								while ($x = mysqli_fetch_object($sql->mysqry)) {
 									$pagamentosFusaoIds[$x->id_fusao] = $x->id_fusao;
 								}
@@ -575,7 +517,7 @@ if (isset($_POST['acao'])) {
 								$sql->update($_table . "_procedimentos_evolucao", "lixo=1", "where id_tratamento_procedimento IN (" . implode(",", $tratamentosProcedimentosIds) . ")");
 
 								$sql->update($_table . "_procedimentos", "lixo=1", "where id_tratamento=$cnt->id");
-								$sql->update($_table . "_pagamentos", "lixo=1,lixo_obs=3,lixo_data=now(),lixo_id_usuario=$usr->id", "where id_tratamento=$cnt->id or id_fusao IN (" . implode(",", $pagamentosFusaoIds) . ")");
+								$sql->update($_p . "financeiro_fluxo_recebimentos", "lixo=1,lixo_data=now(),lixo_id_colaborador=$usr->id", "where id_tratamento=$cnt->id or id_fusao IN (" . implode(",", $pagamentosFusaoIds) . ")");
 								//$sql->update($_table,"pagamentos=''","where id=$cnt->id");
 							} else {
 								$erro = "Este tratamento já está CANCELADO";
@@ -586,7 +528,6 @@ if (isset($_POST['acao'])) {
 							$persistir = false;
 						}
 					}
-
 
 
 					// Persiste informações
@@ -640,41 +581,41 @@ if (isset($_POST['acao'])) {
 
 
 									$vSQLPagamento = "lixo=0,
-																id_paciente=$paciente->id,
-																id_tratamento=$id_tratamento,
-																id_formapagamento='" . addslashes(isset($x->id_formapagamento) ? $x->id_formapagamento : 0) . "',
-																qtdParcelas='" . addslashes(isset($x->qtdParcelas) ? $x->qtdParcelas : 0) . "',
-																data_vencimento='" . addslashes(invDate($x->vencimento)) . "',
-																valor='" . addslashes(($x->valor)) . "',";
+													id_pagante=$paciente->id,
+													id_tratamento=$id_tratamento,
+													id_formapagamento='" . addslashes(isset($x->id_formapagamento) ? $x->id_formapagamento : 0) . "',
+													qtdParcelas='" . addslashes(isset($x->qtdParcelas) ? $x->qtdParcelas : 0) . "',
+													data_vencimento='" . addslashes(invDate($x->vencimento)) . "',
+													valor='" . addslashes(($x->valor)) . "',";
+
 
 									$pagamento = '';
 									if (isset($x->id) and is_numeric($x->id)) {
-										$sql->consult($_table . "_pagamentos", "*", "where id_tratamento=$id_tratamento and id=$x->id");
+										$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id_tratamento=$id_tratamento and id=$x->id");
 										if ($sql->rows) {
 											$pagamento = mysqli_fetch_object($sql->mysqry);
 										}
 									}
 
 									if (is_object($pagamento)) {
-										$vSQLPagamento .= "data_alteracao=now(),id_usuario_alteracao=$usr->id";
+										//$vSQLPagamento .= "data_alteracao=now(),id_usuario_alteracao=$usr->id";
 										$vWHERE = "WHERE id=$pagamento->id";
-										$sql->update($_table . "_pagamentos", $vSQLPagamento, $vWHERE);
+										$sql->update($_p . "financeiro_fluxo_recebimentos", $vSQLPagamento, $vWHERE);
 										$id_tratamento_pagamento = $sql->ulid;
-										$sql->add($_p . "log", "data=now(),id_usuario='" . $usr->id . "',tipo='update',vsql='" . addslashes($vSQLPagamento) . "',vwhere='" . addslashes($vWHERE) . "',tabela='" . $_table . "_pagamentos',id_reg='" . $id_tratamento_pagamento . "'");
+										$sql->add($_p . "log", "data=now(),id_usuario='" . $usr->id . "',tipo='update',vsql='" . addslashes($vSQLPagamento) . "',vwhere='" . addslashes($vWHERE) . "',tabela='" . $_p . "financeiro_fluxo_recebimentos',id_reg='" . $id_tratamento_pagamento . "'");
 									} else {
-										$vSQLPagamento .= "data=now(),id_usuario=$usr->id";
-										$sql->add($_table . "_pagamentos", $vSQLPagamento);
+										$vSQLPagamento .= "data_emissao=now(),id_colaborador=$usr->id";
+										$sql->add($_p . "financeiro_fluxo_recebimentos", $vSQLPagamento);
 										$id_tratamento_pagamento = $sql->ulid;
-										$sql->add($_p . "log", "data=now(),id_usuario='" . $usr->id . "',tipo='insert',vsql='" . addslashes($vSQLPagamento) . "',tabela='" . $_table . "_pagamentos',id_reg='" . $id_tratamento_pagamento . "'");
+										$sql->add($_p . "log", "data=now(),id_usuario='" . $usr->id . "',tipo='insert',vsql='" . addslashes($vSQLPagamento) . "',tabela='" . $_p . "financeiro_fluxo_recebimentos',id_reg='" . $id_tratamento_pagamento . "'");
 									}
-									$id_tratamento_pagamento = $id_tratamento;
+								
 									if (isset($x->id_formapagamento) and is_numeric($x->id_formapagamento) and isset($_formasDePagamento[$x->id_formapagamento])) {
 										$f = $_formasDePagamento[$x->id_formapagamento];
 										if ($f->tipo == "credito") {
 											if (isset($x->creditoBandeira) and is_numeric($x->creditoBandeira) and isset($_bandeiras[$x->creditoBandeira])) {
 
 												$b = $_bandeiras[$x->creditoBandeira];
-
 												$id_bandeira = $b->id;
 												$id_operadora = $x->id_operadora;
 
@@ -701,7 +642,7 @@ if (isset($_POST['acao'])) {
 
 
 														$vSQLBaixa[] = array(
-															"id_tratamento" => $id_tratamento_pagamento,
+															"id_registro" => $id_tratamento_pagamento,
 															"data_vencimento" => $dtVencimento,
 															"valor" => $valorParcela,
 															"id_formadepagamento" => $f->id,
@@ -736,7 +677,7 @@ if (isset($_POST['acao'])) {
 
 
 												$vSQLBaixa[] = array(
-													"id_tratamento" => $id_tratamento_pagamento,
+													"id_registro" => $id_tratamento_pagamento,
 													"data_vencimento" => $dtVencimento,
 													"valor" => $x->valor,
 													"id_formadepagamento" => $f->id,
@@ -748,7 +689,7 @@ if (isset($_POST['acao'])) {
 											}
 										} else {
 											$vSQLBaixa[] = array(
-												"id_tratamento" => $id_tratamento_pagamento,
+												"id_registro" => $id_tratamento_pagamento,
 												"data_vencimento" => invDate($x->vencimento),
 												"valor" => $x->valor,
 												"id_formadepagamento" => $f->id,
@@ -761,13 +702,10 @@ if (isset($_POST['acao'])) {
 								foreach ($vSQLBaixa as $x) {
 									$x = (object)$x;
 									$vsql = "";
-									$where = "where id_tratamento=$x->id_tratamento";
-
-									if ($x->tipo == "credito") $where .= " and id_operadora='" . $x->id_operadora . "'
-																					and id_bandeira='" . $x->id_bandeira . "'";
-																				
+									$where = "where id_registro=$x->id_registro";
+									if ($x->tipo == "credito") $where .= " and id_operadora='" . $x->id_operadora . "' and id_bandeira='" . $x->id_bandeira . "'";
 									$baixa = '';
-									$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", $where);
+									$sql->consult($_p . "financeiro_fluxo", "*", $where);
 									if ($sql->rows) {
 										$baixa = mysqli_fetch_object($sql->mysqry);
 									}
@@ -777,25 +715,25 @@ if (isset($_POST['acao'])) {
 									if (!isset($x->parcelas)) $x->parcelas = 0;
 									if (!isset($x->parcela)) $x->parcela = 0;
 
-									$vsql = "id_tratamento='$x->id_tratamento',
+									$vsql = "	lixo=0,
+												id_origem=1,
+												id_registro=$x->id_registro,
 												data_vencimento='" . ($x->data_vencimento) . "',
-												tipo='paciente',
-												id_pagante=$usr->id,
-												valor='$x->valor',
-												taxa_cartao='" . (isset($x->taxa) ? $x->taxa : 0) . "',
-												valor_taxa='0',
-												valor_multa='" . (isset($x->multa) ? $x->taxa : 0) . "',
-												valor_desconto='" . (isset($x->desconto) ? $x->taxa : 0) . "',
+												pagamento_id_colaborador=$usr->id,
 												id_formapagamento='$x->id_formadepagamento',
-												qtdParcelas='1',
-												pago='0'";
+												id_banco='" . (isset($x->id_banco) ? $x->id_banco : 0) . "',
+												tipo='paciente',
+												valor=$x->valor,
+												valor_taxa='0',
+												valor_multa='" . (isset($x->multa) ? $x->multa : 0) . "',
+												valor_desconto='" . (isset($x->desconto) ? $x->desconto : 0) . "',
+												taxa_cartao='" . (isset($x->taxa) ? $x->taxa : 0) . "'";
+
 								
-											
-								//echo $vsql."<BR>";die();
 									if (is_object($baixa)) {
-										$sql->update($_p . "financeiro_fluxo_recebimentos", $vsql, "where id=$baixa->id");
+										$sql->update($_p . "financeiro_fluxo", $vsql, "where id=$baixa->id");
 									} else {
-										$sql->add($_p . "financeiro_fluxo_recebimentos", "data_emissao=now()," . $vsql);
+										$sql->add($_p . "financeiro_fluxo", "data=now()," . $vsql);
 									}
 								}
 							}
@@ -807,34 +745,33 @@ if (isset($_POST['acao'])) {
 							//echo json_encode($procedimetosJSON);die();
 							if (is_array($procedimetosJSON)) {
 
-
 								$procedimentosEvolucao = array();
 								foreach ($procedimetosJSON as $x) {
 
 									if (!isset($x->quantidade)) $x->quantidade = 1;
 
 									$vSQLProcedimento = "lixo=0,
-																	id_paciente=$paciente->id,
-																	id_tratamento=$id_tratamento,
-																	id_procedimento='" . addslashes($x->id_procedimento) . "',
-																	procedimento='" . addslashes(utf8_decode($x->procedimento)) . "',
-																	id_plano='" . addslashes($x->id_plano) . "',
-																	plano='" . addslashes(utf8_decode($x->plano)) . "',
-																	profissional='" . addslashes(utf8_decode($x->profissional)) . "',
-																	situacao='" . addslashes($x->situacao) . "',
-																	id_profissional='" . $idProfissional . "',
-																	valor='" . addslashes($x->valor) . "',
-																	desconto='" . addslashes($x->desconto) . "',
-																	valorSemDesconto='" . addslashes($x->valor) . "',
-																	quantitativo='" . addslashes($x->quantitativo) . "',
-																	quantidade='" . addslashes($x->quantidade) . "',
-																	id_opcao='" . addslashes($x->id_opcao) . "',
-																	obs='" . addslashes(utf8_decode($x->obs)) . "',
-																	opcao='" . addslashes(utf8_decode($x->opcao)) . "',
-																	id_regiao='" . addslashes($x->id_regiao) . "',
-																	face='" . addslashes(utf8_decode($x->face)) . "',
-																	faces='" . (implode(",", $x->faces)) . "',
-																	hof='" . (isset($x->hof) ? addslashes($x->hof) : "") . "',";
+														id_paciente=$paciente->id,
+														id_tratamento=$id_tratamento,
+														id_procedimento='" . addslashes($x->id_procedimento) . "',
+														procedimento='" . addslashes(utf8_decode($x->procedimento)) . "',
+														id_plano='" . addslashes($x->id_plano) . "',
+														plano='" . addslashes(utf8_decode($x->plano)) . "',
+														profissional='" . addslashes(utf8_decode($x->profissional)) . "',
+														situacao='" . addslashes($x->situacao) . "',
+														id_profissional='" . $idProfissional . "',
+														valor='" . addslashes($x->valor) . "',
+														desconto='" . addslashes($x->desconto) . "',
+														valorSemDesconto='" . addslashes($x->valor) . "',
+														quantitativo='" . addslashes($x->quantitativo) . "',
+														quantidade='" . addslashes($x->quantidade) . "',
+														id_opcao='" . addslashes($x->id_opcao) . "',
+														obs='" . addslashes(utf8_decode($x->obs)) . "',
+														opcao='" . addslashes(utf8_decode($x->opcao)) . "',
+														id_regiao='" . addslashes($x->id_regiao) . "',
+														face='" . addslashes(utf8_decode($x->face)) . "',
+														faces='" . (implode(",", $x->faces)) . "',
+														hof='" . (isset($x->hof) ? addslashes($x->hof) : "") . "',";
 
 									//var_dump($x->faces);die();
 									//id_profissional='".addslashes($x->id_profissional)."',
@@ -1255,7 +1192,7 @@ if (isset($_POST['acao'])) {
 				valorPagamentos += x.valor
 				$('.js-pagamento-item article').each((k, x) => {
 					let pagamento = pagamentos[k]
-					if(parseInt(pagamento.creditoBandeira)>0){
+					if (parseInt(pagamento.creditoBandeira) > 0) {
 						disabledBandeira = 'disabled'
 					}
 					//desabilitando valor 

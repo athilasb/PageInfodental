@@ -21,19 +21,18 @@ if (isset($_POST['ajax'])) {
 	$rtn = array();
 	$pagamento = '';
 	if (isset($_POST['id_pagamento']) and is_numeric($_POST['id_pagamento'])) {
-		$sql->consult($_p . "pacientes_tratamentos_pagamentos", "*", "where id='" . $_POST['id_pagamento'] . "'");
+		$id_pagamento =  $_POST['id_pagamento'];
+		$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id='$id_pagamento'");
 		if ($sql->rows) {
 			$pagamento = mysqli_fetch_object($sql->mysqry);
 		}
 	}
 
 	if ($_POST['ajax'] == 'pagamentoBaixa') {
-
 		if (is_object($pagamento)) {
-
 			$formaDePagamento = '';
-			if (isset($_POST['id_formadepagamento'])) {
-				$sql->consult($_p . "parametros_formasdepagamento", "*", "where id='" . $_POST['id_formadepagamento'] . "'");
+			if (isset($_POST['id_formapagamento'])) {
+				$sql->consult($_p . "parametros_formasdepagamento", "*", "where id='" . $_POST['id_formapagamento'] . "'");
 				if ($sql->rows) {
 					$formaDePagamento = mysqli_fetch_object($sql->mysqry);
 				}
@@ -47,114 +46,60 @@ if (isset($_POST['ajax'])) {
 			$descontoMultasJuros = (isset($_POST['descontoMultasJuros']) and !empty($_POST['descontoMultasJuros'])) ? ($_POST['descontoMultasJuros']) : 0;
 
 			$tipoBaixa = (isset($_POST['tipoBaixa']) and !empty($_POST['tipoBaixa'])) ? $_POST['tipoBaixa'] : "";
-			$obs = (isset($_POST['obs']) and !empty($_POST['obs'])) ? $_POST['obs'] : "";
+			$obs = (isset($_POST['obs']) and !empty($_POST['obs'])) ? addslashes(utf8_decode($_POST['obs'])) : "";
 			$cobrarJuros = (isset($_POST['cobrarJuros']) and isset($_POST['cobrarJuros']) and $_POST['cobrarJuros'] == 1) ? $_POST['cobrarJuros'] : 0;
 			$debitoBandeira = (isset($_POST['debitoBandeira']) and is_numeric($_POST['debitoBandeira'])) ? $_POST['debitoBandeira'] : "";
 			$creditoBandeira = (isset($_POST['creditoBandeira']) and is_numeric($_POST['creditoBandeira'])) ? $_POST['creditoBandeira'] : "";
 			$creditoParcelas = (isset($_POST['creditoParcelas']) and is_numeric($_POST['creditoParcelas'])) ? $_POST['creditoParcelas'] : "";
 			$id_operadora = (isset($_POST['id_operadora']) and is_numeric($_POST['id_operadora'])) ? $_POST['id_operadora'] : 0;
 			$taxa = (isset($_POST['taxa']) and !empty($_POST['taxa'])) ? $_POST['taxa'] : 0;
-
 			$taxa = floatval($taxa);
 
-			$erro = '';
-
 			if (empty($erro)) {
-
 				if ($tipoBaixa == "pagamento") {
-					if ($formaDePagamento->tipo == "credito") {
-
-						$vSQLBaixa = "data=now(),
-										id_pagamento=$pagamento->id,
-										id_formadepagamento=$formaDePagamento->id,
-										tipoBaixa='" . $tipoBaixa . "',
-										cobrarJuros='" . $cobrarJuros . "',
-										valorJuros='" . $valorJuros . "',
-										valorMulta='" . $valorMulta . "',
-										descontoMultasJuros='" . $descontoMultasJuros . "',
-										id_operadora='" . $id_operadora . "',
-										id_bandeira='" . $creditoBandeira . "',
-										id_usuario='" . $usr->id . "',
-										taxa='" . $taxa . "',
-										parcelas='" . $creditoParcelas . "'";
-					} else if ($formaDePagamento->tipo == "debito") {
-						$where = "where id_operadora=$id_operadora and 
-											id_bandeira=$debitoBandeira and 
-											operacao='debito' and lixo=0";
-						$sql->consult($_p . "parametros_cartoes_taxas", "*", $where);
-
-						$prazo = 0;
-						if ($sql->rows) {
-							$x = mysqli_fetch_object($sql->mysqry);
-
-							$prazo = $x->prazo;
-						}
-
-
-						$dtVencimento = date('Y-m-d', strtotime(date($dataVencimento) . " + $prazo days"));
-						$vSQLBaixa = "data=now(),
-										data_vencimento='" . ($dtVencimento) . "',
-										id_pagamento=$pagamento->id,
-										id_formadepagamento=$formaDePagamento->id,
-										tipoBaixa='" . $tipoBaixa . "',
-										cobrarJuros='" . $cobrarJuros . "',
-										valorJuros='" . $valorJuros . "',
-										valorMulta='" . $valorMulta . "',
-										descontoMultasJuros='" . $descontoMultasJuros . "',
-										id_operadora='" . $id_operadora . "',
-										taxa='" . $taxa . "',
-										id_bandeira='" . $debitoBandeira . "',	
-										valor='" . ($valor) . "',
-										id_usuario='" . $usr->id . "'";
-					} else {
-						$vSQLBaixa = "data='" . invDate($dataPagamento) . "',
-										data_vencimento='" . ($dataVencimento) . "',
-										id_pagamento=$pagamento->id,
-										valorJuros='" . $valorJuros . "',
-										valorMulta='" . $valorMulta . "',
-										descontoMultasJuros='" . $descontoMultasJuros . "',
-										id_formadepagamento=$formaDePagamento->id,
-										tipoBaixa='" . $tipoBaixa . "',
-										valor='" . ($valor) . "',
-										id_usuario='" . $usr->id . "'";
-					}
+					$vSQLBaixa = "data=now(),
+								lixo=0,
+								id_origem=1,
+								id_registro=$pagamento->id,
+								pagamento_id_colaborador=" . $usr->id . ",
+								id_formapagamento=$formaDePagamento->id,
+								id_operadora='" . $id_operadora . "',
+								id_bandeira='" . $creditoBandeira . "',
+								taxa_cartao='" . $taxa . "',
+								tipo='paciente',
+								valor_juros='" . $valorJuros . "',
+								valor_multa='" . $valorMulta . "',
+								valor_desconto='" . $descontoMultasJuros . "',
+								obs='" . $obs . "'";
 				} else {
-					$vSQLBaixa = "data='" . invDate($dataPagamento) . "',
-										data_vencimento='" . invDate($dataPagamento) . "',
-										id_pagamento=$pagamento->id,
-										tipoBaixa='" . $tipoBaixa . "',
-										valorJuros='" . $valorJuros . "',
-										valorMulta='" . $valorMulta . "',
-										descontoMultasJuros='" . $descontoMultasJuros . "',
-										valor='" . ($valor) . "',
-										id_usuario='" . $usr->id . "'";
+					$vSQLBaixa = "data=now(),
+									lixo=0,
+									id_origem=1,
+									id_registro=$pagamento->id,
+									pagamento_id_colaborador=" . $usr->id . ",
+									id_formapagamento=0,
+									tipo='paciente',
+									desconto='1',
+									obs='" . $obs . "'";
 				}
-
-
-				if (isset($_POST['obs'])) $vSQLBaixa .= ",obs='" . addslashes(utf8_decode($_POST['obs'])) . "'";
-
 				if ($tipoBaixa == "pagamento" and $formaDePagamento->tipo == "credito") {
-
 					$_prazos = array();
-					$sql->consult($_p . "parametros_cartoes_taxas", "*", "where id_operadora=$id_operadora and id_bandeira=$creditoBandeira and operacao='credito' and vezes='$creditoParcelas' and lixo=0");
+					$sql->consult($_p . "parametros_cartoes_operadoras_bandeiras", "*", "where id_operadora=$id_operadora and id_bandeira=$creditoBandeira and lixo=0");
 					while ($x = mysqli_fetch_object($sql->mysqry)) {
-						$_prazos[$x->parcela] = $x->prazo;
+						$taxas = json_decode($x->taxas);
+						foreach ($taxas->creditoTaxas as $qtd => $tx) {
+							$_prazos[$qtd] = $tx->$qtd->dias;
+						}
 					}
-
-
 					for ($i = 1; $i <= $creditoParcelas; $i++) {
 						$prazo = isset($_prazos[$i]) ? $_prazos[$i] : 0;
-
 						$dtVencimento = date('Y-m-d', strtotime(date($dataVencimento) . " + $prazo days"));
-						$vSQLComp = ",data_vencimento='$dtVencimento',valor='$valorParcela',parcela='$i'";
-						//echo $dtVencimento."\n";
-
-						$sql->add($_p . "pacientes_tratamentos_pagamentos_baixas", $vSQLBaixa . $vSQLComp);
+						$vSQLComp = ",data_vencimento='$dtVencimento',valor='$valorParcela'";
+						$sql->add($_p . "financeiro_fluxo", $vSQLBaixa . $vSQLComp);
 					}
 				} else {
-					$sql->add($_p . "pacientes_tratamentos_pagamentos_baixas", $vSQLBaixa);
+					$sql->add($_p . "financeiro_fluxo", $vSQLBaixa . ",data_vencimento='$dataVencimento',valor='$valor'");
 				}
-
 				$rtn = array('success' => true);
 			} else {
 				$rtn = array('success' => false, 'error' => $erro);
@@ -164,28 +109,26 @@ if (isset($_POST['ajax'])) {
 		}
 	} else if ($_POST['ajax'] == "baixas") {
 		$baixas = array();
-		$sql->consult($_p . "pacientes_tratamentos_pagamentos_baixas", "*", "where id_pagamento=$pagamento->id and lixo=0 order by data_vencimento asc");
+		$sql->consult($_p . "financeiro_fluxo", "*", "WHERE id_registro='$pagamento->id' AND lixo=0 order by data_vencimento asc");
 		while ($x = mysqli_fetch_object($sql->mysqry)) {
-
-			if ($x->tipoBaixa == "desconto" or $x->tipoBaixa == "despesa") $x->data_vencimento = $x->data;
-
+			if ($x->desconto == "1") $x->data_vencimento = $x->data;
 			$baixas[] = array(
 				"id_baixa" => (int)$x->id,
 				"data" => date('d/m/Y', strtotime($x->data_vencimento)),
 				"valor" => (float)$x->valor,
-				"tipoBaixa" => isset($_tipoBaixa[$x->tipoBaixa]) ? $_tipoBaixa[$x->tipoBaixa] : $x->tipoBaixa,
-				"id_formadepagamento" => (int)$x->id_formadepagamento,
-				"formaDePagamento" => isset($_formasDePagamento[$x->id_formadepagamento]) ? utf8_encode($_formasDePagamento[$x->id_formadepagamento]->titulo) : '',
-				"pago" => $x->pago,
-				"recibo" => $x->recibo,
-				"valorMulta" => $x->valorMulta,
-				"valorJuros" => $x->valorJuros,
-				"descontoMultasJuros" => $x->descontoMultasJuros,
-				"parcelas" => $x->parcelas,
+				"tipoBaixa" => $x->desconto == 0 ? 'PAGAMENTO' : 'DESCONTO',
+				"id_formapagamento" => (int)$x->id_formapagamento,
+				"formaDePagamento" => isset($_formasDePagamento[$x->id_formapagamento]) ? utf8_encode($_formasDePagamento[$x->id_formapagamento]->titulo) : '',
+				"pago" => $x->pagamento,
+				//"recibo" => $x->recibo,
+				"valorMulta" => $x->valor_multa,
+				"valorJuros" => $x->valor_juros,
+				"descontoMultasJuros" => $x->valor_desconto,
+				//"parcelas" => $x->parcelas,
 				"vencido" => (strtotime($x->data_vencimento) < strtotime(date('Y-m-d')) ? true : false),
-				"parcela" => $x->parcela,
+				//"parcela" => $x->parcela,
 				"obs" => utf8_encode($x->obs),
-				"taxa" => $x->taxa,
+				"taxa_cartao" => $x->taxa_cartao,
 				"total" => (float)$x->valor,
 			);
 		}
@@ -198,7 +141,7 @@ if (isset($_POST['ajax'])) {
 
 		$pagamento = '';
 		if (isset($_POST['id_pagamento']) and is_numeric($_POST['id_pagamento'])) {
-			$sql->consult($_p . "pacientes_tratamentos_pagamentos", "*", "where id='" . $_POST['id_pagamento'] . "'");
+			$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id='" . $_POST['id_pagamento'] . "'");
 			if ($sql->rows) {
 				$pagamento = mysqli_fetch_object($sql->mysqry);
 			}
@@ -207,7 +150,7 @@ if (isset($_POST['ajax'])) {
 		if (!empty($tipo) and is_object($pagamento)) {
 			$vSQL = "$tipo='" . $valor . "'";
 			$vWHERE = "where id=$pagamento->id";
-			$sql->update($_p . "pacientes_tratamentos_pagamentos", $vSQL, $vWHERE);
+			$sql->update($_p . "financeiro_fluxo_recebimentos", $vSQL, $vWHERE);
 
 			$rtn = array('success' => true);
 		} else {
@@ -218,14 +161,14 @@ if (isset($_POST['ajax'])) {
 		if (is_object($pagamento)) {
 			$baixa = '';
 			if (isset($_POST['id_baixa']) && is_numeric($_POST['id_baixa'])) {
-				$sql->consult($_p . "pacientes_tratamentos_pagamentos_baixas", "*", "where id='" . $_POST['id_baixa'] . "' and id_pagamento=$pagamento->id");
+				$sql->consult($_p . "financeiro_fluxo", "*", "where id='" . $_POST['id_baixa'] . "' and id_registro=$pagamento->id");
 				if ($sql->rows) {
 					$baixa = mysqli_fetch_object($sql->mysqry);
 				}
 			}
 
 			if (is_object($baixa)) {
-				$sql->update($_p . "pacientes_tratamentos_pagamentos_baixas", "lixo=1,lixo_data=now(),lixo_id_usuario=$usr->id", "where id=$baixa->id");
+				$sql->update($_p . "financeiro_fluxo", "lixo=1,lixo_data=now(),lixo_id_colaborador=$usr->id", "where id=$baixa->id");
 				$rtn = array('success' => true);
 			} else {
 				$rtn = array('success' => false, 'error' => 'Baixa não encontrada!');
@@ -238,14 +181,14 @@ if (isset($_POST['ajax'])) {
 		if (is_object($pagamento)) {
 			$baixa = '';
 			if (isset($_POST['id_baixa']) && is_numeric($_POST['id_baixa'])) {
-				$sql->consult($_p . "pacientes_tratamentos_pagamentos_baixas", "*", "where id='" . $_POST['id_baixa'] . "' and id_pagamento=$pagamento->id");
+				$sql->consult($_p . "financeiro_fluxo", "*", "where id='" . $_POST['id_baixa'] . "' and id_registro=$pagamento->id");
 				if ($sql->rows) {
 					$baixa = mysqli_fetch_object($sql->mysqry);
 				}
 			}
 
 			if (is_object($baixa)) {
-				$sql->update($_p . "pacientes_tratamentos_pagamentos_baixas", "pago=0,pago_data=now(),pago_id_usuario=$usr->id", "where id=$baixa->id");
+				$sql->update($_p . "financeiro_fluxo", "pagamento=1,data_efetivado=now(),pagamento_id_colaborador=$usr->id", "where id=$baixa->id");
 				$rtn = array('success' => true);
 			} else {
 				$rtn = array('success' => false, 'error' => 'Baixa não encontrada!');
@@ -256,11 +199,10 @@ if (isset($_POST['ajax'])) {
 	} else if ($_POST['ajax'] == "unirPagamentos") {
 		if (isset($_POST['pagamentos']) and is_array($_POST['pagamentos'])) {
 			if (count($_POST['pagamentos']) >= 2) {
-
 				$uniaoIds = array();
 				$valor = 0;
 				$id_tratamento = 0;
-				$sql->consult($_p . "pacientes_tratamentos_pagamentos", "*", "where id IN (" . implode(",", $_POST['pagamentos']) . ")");
+				$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id IN (" . implode(",", $_POST['pagamentos']) . ")");
 				if ($sql->rows) {
 					while ($x = mysqli_fetch_object($sql->mysqry)) {
 						$valor += $x->valor;
@@ -272,19 +214,18 @@ if (isset($_POST['ajax'])) {
 				}
 
 				if (count($uniaoIds) >= 2) {
-					$vSQL = "data=now(),
+					$vSQL = "data_emissao=now(),
 								data_vencimento='" . (isset($_POST['dataVencimento']) ? invDate($_POST['dataVencimento']) : now()) . "',
-								id_usuario=$usr->id,
-								id_unidade=$id_unidade,
+								id_colaborador=$usr->id,
 								id_tratamento=$id_tratamento,
-								id_paciente=$id_paciente,
+								id_pagante=$id_paciente,
 								valor='" . $valor . "',
 								fusao=1";
 					//echo $vSQL;die();
-					$sql->add($_p . "pacientes_tratamentos_pagamentos", $vSQL);
+					$sql->add($_p . "financeiro_fluxo_recebimentos", $vSQL);
 					$id_fusao = $sql->ulid;
 
-					$sql->update($_p . "pacientes_tratamentos_pagamentos", "id_fusao=$id_fusao", "where id IN (" . implode(",", $uniaoIds) . ")");
+					$sql->update($_p . "financeiro_fluxo_recebimentos", "id_fusao=$id_fusao", "where id IN (" . implode(",", $uniaoIds) . ")");
 
 					$rtn = array('success' => true);
 				} else {
@@ -297,27 +238,24 @@ if (isset($_POST['ajax'])) {
 	} else if ($_POST['ajax'] == "desfazerUniao") {
 		if (is_object($pagamento)) {
 			if ($pagamento->fusao == 1) {
-
-				$sql->consult($_p . "pacientes_tratamentos_pagamentos_baixas", "*", "where id_pagamento=$pagamento->id and lixo=0");
+				$sql->consult($_p . "financeiro_fluxo", "*", "where id_registro=$pagamento->id and lixo=0");
 				if ($sql->rows == 0) {
-					$sql->update($_p . "pacientes_tratamentos_pagamentos", "id_fusao=0", "where id_fusao=$pagamento->id");
-					$sql->update($_p . "pacientes_tratamentos_pagamentos", "lixo=1,lixo_obs=5,lixo_data=now(),lixo_id_usuario=$usr->id", "where id=$pagamento->id");
+					$sql->update($_p . "financeiro_fluxo_recebimentos", "id_fusao=0", "where id_fusao=$pagamento->id");
+					$sql->update($_p . "financeiro_fluxo_recebimentos", "lixo=1,lixo_data=now(),lixo_id_colaborador=$usr->id", "where id=$pagamento->id");
 					$rtn = array('success' => true);
 				} else {
 					$rtn = array('success' => false, 'error' => 'Estorne todas as baixas desta parcela para desfazer a união!');
 				}
 			} else {
-
 				$rtn = array('success' => false, 'Este pagamento não é uma união de pagamento!');
 			}
 		} else {
 			$rtn = array('success' => false, 'error' => 'Pagamento não encontrado!');
 		}
 	} else if ($_POST['ajax'] == "receber") {
-
 		$baixa = '';
 		if (isset($_POST['id_baixa']) and is_numeric($_POST['id_baixa'])) {
-			$sql->consult($_p . "pacientes_tratamentos_pagamentos_baixas", "*", "where id='" . $_POST['id_baixa'] . "'");
+			$sql->consult($_p . "financeiro_fluxo", "*", "where id='" . $_POST['id_baixa'] . "'");
 			if ($sql->rows) {
 				$baixa = mysqli_fetch_object($sql->mysqry);
 			}
@@ -336,8 +274,7 @@ if (isset($_POST['ajax'])) {
 
 		if (is_object($baixa)) {
 			if (!empty($dataPagamento)) {
-				$sql->update($_p . "pacientes_tratamentos_pagamentos_baixas", "pago=1,pago_data='" . $dataPagamento . "',pago_id_usuario=$usr->id,id_banco='$id_banco'", "where id=$baixa->id");
-
+				$sql->update($_p . "financeiro_fluxo", "pagamento=1,data_efetivado='" . $dataPagamento . "',pagamento_id_colaborador=$usr->id,id_banco='$id_banco'", "where id=$baixa->id");
 				$rtn = array('success' => true);
 			} else {
 				$rtn = array('success' => false, 'error' => 'Defina uma data de pagamento válida!');
@@ -346,7 +283,6 @@ if (isset($_POST['ajax'])) {
 			$rtn = array('success' => false, 'error' => 'Baixa não encontrada!');
 		}
 	}
-
 
 	header("Content-type: application/json");
 	echo json_encode($rtn);
@@ -357,7 +293,7 @@ include "includes/nav.php";
 
 require_once("includes/header/headerPacientes.php");
 
-$_table = $_p . "pacientes_tratamentos_pagamentos";
+$_table = $_p . "financeiro_fluxo_recebimentos";
 $_page = basename($_SERVER['PHP_SELF']);
 
 
@@ -377,17 +313,15 @@ while ($x = mysqli_fetch_object($sql->mysqry)) {
 }
 
 if (isset($_GET['id_pagamento']) and is_numeric($_GET['id_pagamento'])) {
-	$sql->consult($_p . "pacientes_tratamentos_pagamentos", "*", "where id='" . $_GET['id_pagamento'] . "' and id_paciente=$paciente->id");
+	$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id='" . $_GET['id_pagamento'] . "' and id_pagante=$paciente->id");
 	if ($sql->rows) {
 		$pag = mysqli_fetch_object($sql->mysqry);
-
-		$sql->update($_p . "pacientes_tratamentos_pagamentos", "lixo=1,lixo_data=now(),lixo_obs='excluido'", "where id=$pag->id");
+		$sql->update($_p . "financeiro_fluxo_recebimentos", "lixo=1,lixo_data=now()", "where id=$pag->id");
 	}
 }
 
-$where = "WHERE id_paciente=$paciente->id and id_fusao=0 and lixo=0 order by data desc, id asc";
-$sql->consult($_p . "pacientes_tratamentos_pagamentos", "*", $where);
-
+$where = "WHERE id_pagante=$paciente->id and id_fusao=0 and lixo=0 order by data_emissao desc, id asc";
+$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", $where);
 
 $valor = array(
 	'aReceber' => 0,
@@ -408,13 +342,12 @@ while ($x = mysqli_fetch_object($sql->mysqry)) {
 		$registros[] = $x;
 	}
 	$tratamentosIDs[] = $x->id_tratamento;
-	$pagamentosIDs[$x->id_tratamento] = $x->id_tratamento;
+	$pagamentosIDs[$x->id] = $x->id;
 
 	if ($x->fusao == 1) $pagamentosUnidos[] = $x->id;
 
 	//if ($x->fusao == 0) $valor['valorTotal'] += $x->valor;
 	$valor['valorTotal'] += $x->valor;
-
 }
 
 $_subpagamentos = array();
@@ -425,13 +358,14 @@ while ($x = mysqli_fetch_object($sql->mysqry)) {
 
 $_baixas = array();
 $pagamentosComBaixas = array();
-$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "WHERE id_tratamento IN (" . implode(",", $pagamentosIDs) . ") and lixo=0 order by data_vencimento asc");
+$sql->consult($_p . "financeiro_fluxo", "*", "WHERE id_registro IN (" . implode(",", $pagamentosIDs) . ") and lixo=0 order by data_vencimento asc");
 if ($sql->rows) {
 	while ($x = mysqli_fetch_object($sql->mysqry)) {
-		$_baixas[$x->id_tratamento][] = $x;
-		$pagamentosComBaixas[$x->id_tratamento] = $x->id_tratamento;
+		$_baixas[$x->id_registro][] = $x;
+		$pagamentosComBaixas[$x->id] = $x->id_registro;
 	}
 }
+
 
 $sql->consult($_p . "pacientes_tratamentos", "*", "where id IN (" . implode(",", $tratamentosIDs) . ")");
 while ($x = mysqli_fetch_object($sql->mysqry)) $_tratamentos[$x->id] = $x;
@@ -443,18 +377,17 @@ foreach ($registros as $x) {
 	if (isset($_baixas[$x->id])) {
 		$dataUltimoPagamento = date('d/m/Y', strtotime($_baixas[$x->id][count($_baixas[$x->id]) - 1]->data));
 		foreach ($_baixas[$x->id] as $v) {
-			if ($v->lixo == 0 && $v->tipoBaixa == 'pagamento') {
-				$valor['valorJuros'] += $v->valorJuros;
-				$valor['valorMulta'] += $v->valorMulta;
+			//if ($v->lixo == 0 && $v->tipoBaixa == 'pagamento') {
+			if ($v->lixo == 0) {
+				$valor['valorJuros'] += $v->valor_multa;
+				$valor['valorMulta'] += $v->valor_taxa;
 				$valorDefinido += $v->valor;
 				$atraso = (strtotime($v->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
-				if ($v->pago == 1) {
-					//$valor['aReceber'] -= $v->valor;
+				if ($v->pagamento == 1) {
 					$valor['valorRecebido'] += $v->valor;
 				} else if ($atraso < 0) {
 					$valor['valoresVencido'] += $v->valor;
-					//$valor['aReceber'] -= $v->valor;
-				} else if ($v->pago == 0) {
+				} else if ($v->pagamento == 0) {
 					$valor['aReceber'] += $v->valor;
 				}
 			}
@@ -483,10 +416,10 @@ foreach ($registros as $x) {
 
 	const creditoDebitoValorParcela = () => {
 
-		let id_formadepagamento = $('select.js-id_formadepagamento option:selected').val();
-		let tipo = $('select.js-id_formadepagamento option:selected').attr('data-tipo');
+		let id_formapagamento = $('select.js-id_formapagamento option:selected').val();
+		let tipo = $('select.js-id_formapagamento option:selected').attr('data-tipo');
 
-		if (id_formadepagamento.length > 0) {
+		if (id_formapagamento.length > 0) {
 
 			let valor = $('.js-valor').val().length > 0 ? unMoney($('.js-valor').val()) : 0;
 
@@ -576,8 +509,9 @@ foreach ($registros as $x) {
 							let btnEstorno = ''
 							if (x.tipoBaixa == "PAGAMENTO") {
 								if (x.formaDePagamento.length > 0) {
-									if (x.id_formadepagamento == 2) {
-										pagamento = `${x.formaDePagamento}<font color=#999><br />Parcela ${x.parcela} de ${x.parcelas}</font>`;
+									if (x.id_formapagamento == 2) {
+										// pagamento = `${x.formaDePagamento}<font color=#999><br />Parcela ${x.parcela} de ${x.parcelas}</font>`;
+										pagamento = `${x.formaDePagamento}<font color=#999><br /></font>`;
 									} else {
 										pagamento = x.formaDePagamento;
 									}
@@ -634,7 +568,7 @@ foreach ($registros as $x) {
 							// }
 							if (x.tipoBaixa == "PAGAMENTO") {
 								if (x.formaDePagamento.length > 0) {
-									if (x.id_formadepagamento == 2) {
+									if (x.id_formapagamento == 2) {
 										taxaCartao = `<span style="font-size:12px;color:var(--cinza4)">Taxa Cartão: R$${number_format(((ValorParcela)*parseFloat(x.taxa)/100),2,",",".")}</span><br>`
 									}
 								}
@@ -688,7 +622,7 @@ foreach ($registros as $x) {
 					});
 				}
 			},
-			error: function() {
+			error: function(err) {
 				swal({
 					title: "Erro!",
 					text: "Algum erro ocorreu durante a baixa deste pagamento!",
@@ -707,6 +641,7 @@ foreach ($registros as $x) {
 		saldoPagar -= desconto;
 		let valorCorrigido = valorParcela;
 		valorCorrigido -= desconto;
+		saldoPagar = saldoPagar < 0 ? 0 : saldoPagar
 		$('.js-saldoPagar').html(`R$ ${number_format(saldoPagar, 2, ",", ".")}`);
 		$('.js-valorCorrigido').html(`R$ ${number_format(valorCorrigido, 2, ",", ".")}`);
 		if (saldoPagar <= 0) {
@@ -810,6 +745,7 @@ foreach ($registros as $x) {
 			$('.js-pagamento-item').click(function() {
 				let index = $(this).index('table.js-table-pagamentos .js-pagamento-item');
 				let jurosMultas = pagamentos[index].multaAtraso + pagamentos[index].jurosMensal
+				id_pagamento = pagamentos[index].id_parcela
 				$('.js-colunaMultasJuros').hide()
 				$('#js-aside-asFinanceiro .js-multasJuros').val(number_format(0, 2, ",", "."));
 
@@ -855,7 +791,6 @@ foreach ($registros as $x) {
 				let desconto = 0;
 				let despesas = 0;
 				let contador = 0;
-
 				if (pagamentos[index].baixas && pagamentos[index].baixas.length > 0) {
 					pagamentos[index].baixas.forEach(x => {
 						let textJuros = "";
@@ -869,8 +804,9 @@ foreach ($registros as $x) {
 						let btnEstorno = ''
 						if (x.tipoBaixa == "PAGAMENTO") {
 							if (x.formaDePagamento.length > 0) {
-								if (x.id_formadepagamento == 2) {
-									pagamento = `${x.formaDePagamento}<font color=#999><br />Parcela ${x.parcela} de ${x.parcelas}</font>`;
+								if (x.id_formapagamento == 2) {
+									//pagamento = `${x.formaDePagamento}<font color=#999><br />Parcela ${x.parcela} de ${x.parcelas}</font>`;
+									pagamento = `${x.formaDePagamento}<font color=#999><br /></font>`;
 									taxaCartao = `<span style="font-size:12px;color:var(--cinza4)">Taxa Cartão: R$ ${number_format(((x.valor)*parseFloat(x.taxa)/100),2,",",".")}</span><br>`
 								} else {
 									pagamento = x.formaDePagamento;
@@ -926,7 +862,7 @@ foreach ($registros as $x) {
 						}
 						if (x.tipoBaixa == "PAGAMENTO") {
 							if (x.formaDePagamento.length > 0) {
-								if (x.id_formadepagamento == 2) {
+								if (x.id_formapagamento == 2) {
 									taxaCartao = `<span style="font-size:12px;color:var(--cinza4)">Taxa Cartão: R$${number_format(((ValorParcela)*parseFloat(x.taxa)/100),2,",",".")}</span><br>`
 								}
 							}
@@ -979,6 +915,7 @@ foreach ($registros as $x) {
 		<?php
 		}
 		?>
+		// clica para estornar 
 		$('#js-aside-asFinanceiro .js-baixas').on('click', '.js-estorno', function() {
 			id_pagamento = $('#js-aside-asFinanceiro .js-id_pagamento').val();
 			let id_baixa = $(this).attr('data-id_baixa')
@@ -1313,7 +1250,7 @@ foreach ($registros as $x) {
 							type: "error",
 							confirmButtonColor: "#424242"
 						});
-						($(this).val(pagamento.saldoApagar));
+						$(this).val(0);
 						ValorDigitado = pagamento.saldoApagar
 					}
 					let data = new Date(`${pagamento.vencimento.split('/')[2]}/${pagamento.vencimento.split('/')[1]}/${pagamento.vencimento.split('/')[0]}`);
@@ -1376,10 +1313,10 @@ foreach ($registros as $x) {
 								$('.js-valorJuros').text(number_format(ValorJuros, 2, ",", "."))
 								$('.js-TotalaPagar').text(number_format(ValorDigitado + ValorJuros + ValorMulta, 2, ",", "."))
 							}
-							if ($('.js-id_formadepagamento option:checked').attr('data-tipo') == 'credito') {
+							if ($('.js-id_formapagamento option:checked').attr('data-tipo') == 'credito') {
 								$(".js-parcelas").trigger("change");
-							} else if ($('.js-id_formadepagamento option:checked').attr('data-tipo') == 'debito') {
-								pagamentosAtualizaCampos($('.js-id_formadepagamento.js-tipoPagamento'))
+							} else if ($('.js-id_formapagamento option:checked').attr('data-tipo') == 'debito') {
+								pagamentosAtualizaCampos($('.js-id_formapagamento.js-tipoPagamento'))
 							}
 						} else {
 							$('.js-multa').hide()
@@ -1388,11 +1325,11 @@ foreach ($registros as $x) {
 							$('.js-valorJuros').text(number_format(0, 2, ",", "."))
 							$('.js-descontoMultasJuros').val(number_format(0, 2, ",", "."))
 							$('.js-TotalaPagar').text(number_format(ValorDigitado, 2, ",", "."))
-							let tipoPagamento = $('.js-id_formadepagamento option:checked').attr('data-tipo');
-							if ($('.js-id_formadepagamento option:checked').attr('data-tipo') == 'credito') {
+							let tipoPagamento = $('.js-id_formapagamento option:checked').attr('data-tipo');
+							if ($('.js-id_formapagamento option:checked').attr('data-tipo') == 'credito') {
 								$(".js-parcelas").trigger("change");
-							} else if ($('.js-id_formadepagamento option:checked').attr('data-tipo') == 'debito') {
-								pagamentosAtualizaCampos($('.js-id_formadepagamento.js-tipoPagamento'))
+							} else if ($('.js-id_formapagamento option:checked').attr('data-tipo') == 'debito') {
+								pagamentosAtualizaCampos($('.js-id_formapagamento.js-tipoPagamento'))
 							}
 						}
 					}
@@ -1512,8 +1449,8 @@ foreach ($registros as $x) {
 												$v->valor = number_format($v->valor, 3, ".", "");
 												$saldoAPagar -= $v->valor;
 												$valorPago += $v->valor;
-												$valorMulta += $v->valorMulta;
-												$valorJuros += $v->valorJuros;
+												$valorMulta += $v->valor_multa;
+												$valorJuros += $v->valor_juros;
 											}
 										}
 
@@ -1528,48 +1465,37 @@ foreach ($registros as $x) {
 										if (isset($_baixas[$x->id])) {
 											$baixaVencida = false;
 											$baixaEmAberta = false;
+											$contador = 0;
 											foreach ($_baixas[$x->id] as $b) {
+												$contador++;
 												$formaobs = '';
 												//	$baixaVencida=false;
-												if ((strtotime($b->data_vencimento) < strtotime(date('Y-m-d'))) && $b->pago == 0) {
+												if ((strtotime($b->data_vencimento) < strtotime(date('Y-m-d'))) && $b->pagamento == 0) {
 													$baixaVencida = true;
 												} else {
-													if ($b->pago == 0) {
+													if ($b->pagamento == 0) {
 														$baixaEmAberta = true;
-													}
-												}
-
-
-												//	echo $b->data_vencimento."-> ".date('Y-m-d')." -> ".$baixaVencida."<BR>";
-												if ($b->tipoBaixa == "pagamento") {
-													$formaobs = isset($_formasDePagamento[$b->id_formadepagamento]) ? utf8_encode($_formasDePagamento[$b->id_formadepagamento]->titulo) : '';
-												} else {
-													$formaobs = $b->tipoBaixa;
-													if ($b->tipoBaixa == "desconto") {
-														$formaobs = "DESCONTO";
-													} else if ($b->tipoBaixa == "despesa") {
-														$formaobs = "DESPESA";
 													}
 												}
 												$baixas[] = array(
 													"id_baixa" => (int)$b->id,
 													"vencimento" => $b->data_vencimento,
 													"data" => date('d/m/Y', strtotime($b->data_vencimento)),
-													"descontoMultasJuros" => (float)$b->descontoMultasJuros,
+													"descontoMultasJuros" => (float)$b->valor_desconto,
 													"valor" => (float)$b->valor,
-													"tipoBaixa" => isset($_tipoBaixa[$b->tipoBaixa]) ? $_tipoBaixa[$b->tipoBaixa] : $b->tipoBaixa,
-													"id_formadepagamento" => (int)$b->id_formadepagamento,
-													"formaDePagamento" => isset($_formasDePagamento[$b->id_formadepagamento]) ? utf8_encode($_formasDePagamento[$b->id_formadepagamento]->titulo) : '',
-													"formaDePagamentoTipo" => isset($_formasDePagamento[$b->id_formadepagamento]) ? $_formasDePagamento[$b->id_formadepagamento]->tipo : '',
-													"pago" => $b->pago,
-													"recibo" => $b->recibo,
-													"parcelas" => $b->parcelas,
+													"tipoBaixa" => ($b->desconto == 0) ? "PAGAMENTO" : "DESCONTO",
+													"id_formapagamento" => (int)$b->id_formapagamento,
+													"formaDePagamento" => isset($_formasDePagamento[$b->id_formapagamento]) ? utf8_encode($_formasDePagamento[$b->id_formapagamento]->titulo) : '',
+													"formaDePagamentoTipo" => isset($_formasDePagamento[$b->id_formapagamento]) ? $_formasDePagamento[$b->id_formapagamento]->tipo : '',
+													"pago" => $b->pagamento,
+													//"recibo" => $b->recibo,
+													"parcelas" => $x->qtdParcelas,
 													"vencido" => (strtotime($b->data_vencimento) < strtotime(date('Y-m-d')) ? true : false),
-													"parcela" => $b->parcela,
+													"parcela" => $contador,
 													"obs" => utf8_encode($b->obs),
-													"valorJuros" => $b->valorJuros,
-													"valorMulta" => $b->valorMulta,
-													"taxa" => $b->taxa,
+													"valorJuros" => $b->valor_juros,
+													"valorMulta" => $b->valor_multa,
+													"taxa" => $b->taxa_cartao,
 													"total" => (float)$b->valor
 												);
 											}
@@ -1584,7 +1510,7 @@ foreach ($registros as $x) {
 												$icone = 'fluent:checkbox-checked-24-filled';
 												$cor = "green";
 											} else {
-												if ($saldoAPagar == 0 || $saldoAPagar < 0) {
+												if (number_format($saldoAPagar, 2) == 0 || $saldoAPagar < 0) {
 													$status = "A RECEBER";
 													$icone = 'fluent:calendar-ltr-24-regular';
 													$cor = "blue";
@@ -1594,13 +1520,13 @@ foreach ($registros as $x) {
 													$icone = 'fluent:checkbox-warning-24-regular';
 												}
 											}
-											if ($saldoAPagar > 0) {
-												if (strtotime($x->data_vencimento) < strtotime(date('Y-m-d'))) {
-													$cor = "red";
-													$status = "INADIMPLENTE";
-													$icone = 'fluent:warning-24-regular';
-												}
-											}
+											// if ($saldoAPagar > 0) {
+											// 	if (strtotime($x->data_vencimento) < strtotime(date('Y-m-d'))) {
+											// 		$cor = "red";
+											// 		$status = "INADIMPLENTE2";
+											// 		$icone = 'fluent:warning-24-regular';
+											// 	}
+											// }
 										}
 										// nao possui nenhuma baixa
 										else {
@@ -1698,7 +1624,7 @@ foreach ($registros as $x) {
 											'valorPago' => $valorPago,
 											'baixas' => $baixas,
 											'subpagamentos' => $subpagamentos,
-											'saldoApagar' => $saldoAPagar,
+											'saldoApagar' => number_format($saldoAPagar, 2),
 											'fusao' => $x->fusao,
 											'multaAtraso' => $valorMulta,
 											'jurosMensal' => $valorJuros
@@ -1708,7 +1634,7 @@ foreach ($registros as $x) {
 										if ($status == 'DEFINIR PAGAMENTO') {
 											$DefinirPagamento += $x->valor;
 										}
-
+										$saldoAPagar = $saldoAPagar < 0 ? 0 : number_format($saldoAPagar, 2)
 									?>
 										<tr class="js-pagamento-item js-pagamento-item-<?= $x->id; ?>" data-id="<?= $x->id; ?>">
 											<?php if (isset($_GET['unirPagamentos'])) { ?>
@@ -1747,7 +1673,7 @@ foreach ($registros as $x) {
 											</td>
 											<td>
 												<h1>R$ <?= number_format($x->valor, 2, ",", "."); ?></h1>
-												<span><?= ($saldoAPagar > 0) ? "Faltam: R$ " . number_format($saldoAPagar, 2, ",", ".") . "<br>" : "" ?></span>
+												<span><?= ($saldoAPagar > 0) ? "Faltam: R$ " . $saldoAPagar . "<br>" : "" ?></span>
 												<span><?= ($item['multaAtraso'] > 0) ? "Multa: R$ " . number_format($item['multaAtraso'], 2, ",", ".") . "<br>" : "" ?></span>
 												<span><?= ($item['jurosMensal'] > 0) ? "Juros: R$ " . number_format($item['jurosMensal'], 2, ",", ".") . "<br>" : "" ?></span>
 											</td>

@@ -71,9 +71,9 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 	// carrega campos de complemento da forma de pagamento
 	const pagamentosAtualizaCampos = (formaDePagamento) => {
 		if (formaDePagamento) {
-			let id_formadepagamento = formaDePagamento.val();
+			let id_formapagamento = formaDePagamento.val();
 			let obj = formaDePagamento.parent().parent().parent().parent();
-			let tipo = $(obj).find('select.js-id_formadepagamento option:checked').attr('data-tipo');
+			let tipo = $(obj).find('select.js-id_formapagamento option:checked').attr('data-tipo');
 			$(obj).find('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
 			if (tipo == "credito") {
 				$(obj).find('.js-parcelas,.js-creditoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
@@ -98,7 +98,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 				let valorParcelas = valorSomado
 				let id_operadora = $('.js-creditoBandeira option:selected').attr('data-id_operadora')
 				let id_bandeira = $('.js-creditoBandeira option:selected').val()
-				valorTaxa =0
+				valorTaxa = 0
 				$('.js-valorCreditoDebito').text(`R$ ${number_format(valorParcelas, 2, ",", ".")}`)
 				$('.js-valorCreditoDebitoTaxa').text(`${number_format(valorTaxa, 2)}`)
 				$(obj).find('.js-valorCreditoDebitoTaxa').parent().parent().hide();
@@ -108,7 +108,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 					//$(obj).find('.js-obs').parent().parent().show();
 				}
 			}
-			let index = $('.js-pagamentos .js-id_formadepagamento').index(this);
+			let index = $('.js-pagamentos .js-id_formapagamento').index(this);
 		} else {
 			$('#js-aside-asFinanceiro').find('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
 		}
@@ -178,7 +178,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 		});
 
 		// atualiza complementos das formas de pagamento 
-		$('select.js-id_formadepagamento').change(function() {
+		$('select.js-id_formapagamento').change(function() {
 			pagamentosAtualizaCampos($(this));
 		});
 
@@ -188,7 +188,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 				$('.js-tipoPagamento').parent().parent().show();
 				$('.js-tipoDescontoDespesa').parent().parent().hide();
 				$('.js-obs').parent().parent().hide();
-				$('select.js-id_formadepagamento').trigger('change');
+				$('select.js-id_formapagamento').trigger('change');
 			} else {
 				$('.js-tipoPagamento').parent().parent().hide();
 				$('.js-tipoDescontoDespesa').parent().parent().show();
@@ -207,7 +207,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 			if (loading == 0) {
 				obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>');
 				obj.attr('data-loading', 1);
-				let tipoPagamento = $('.js-id_formadepagamento option:checked').attr('data-tipo');
+				let tipoPagamento = $('.js-id_formapagamento option:checked').attr('data-tipo');
 				let saldoAPagar = unMoney($('.js-saldoPagar').text());
 				let tipoBaixa = $('input[name=tipoBaixa]:checked').val();
 
@@ -219,7 +219,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 					let valorJuros = ($('.js-valorJuros').text() && $('.js-valorJuros').text().length > 0 && unMoney($('.js-valorJuros').text()) > 0) ? unMoney($('.js-valorJuros').text()) : '';
 					let valorMulta = ($('.js-valorMultas').text() && $('.js-valorMultas').text().length > 0 && unMoney($('.js-valorMultas').text()) > 0) ? unMoney($('.js-valorMultas').text()) : '';
 					let descontoMultasJuros = ($('input.js-descontoMultasJuros').val() && $('input.js-descontoMultasJuros').val().length > 0 && unMoney($('input.js-descontoMultasJuros').val()) > 0) ? unMoney($('input.js-descontoMultasJuros').val()) : 0;
-					let id_formadepagamento = $('.js-id_formadepagamento').val();
+					let id_formapagamento = $('.js-id_formapagamento').val();
 					let obs = $('input.js-obs').val();
 					let obsDesconto = $('input.js-obs-desconto').val();
 					let debitoBandeira = $('select.js-debitoBandeira').val();
@@ -250,7 +250,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 							valorJuros = valorJuros / creditoParcelas
 							valorMulta = valorMulta / creditoParcelas
 							descontoMultasJuros = descontoMultasJuros / creditoParcelas
-							valorParcela = valorParcela-(valorJuros+valorMulta-descontoMultasJuros)
+							valorParcela = valorParcela - (valorJuros + valorMulta - descontoMultasJuros)
 
 						} else if (tipoPagamento == 'debito') {
 							if (dataVencimento.length == 0) erro = 'Defina a <b>Data do Vencimento</b>';
@@ -278,17 +278,17 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 
 					if (dataVencimento.length == 0) erro = 'Defina a <b>Data</b> de Vencimento';
 					else if (tipoBaixa.length == 0) erro = 'Defina o <b>Tipo de Baixa</b>';
-					else if (tipoBaixa == "pagamento" && id_formadepagamento.length == 0) erro = 'Defina a <b>Forma de Pagamento</b>';
+					else if (tipoBaixa == "pagamento" && id_formapagamento.length == 0) erro = 'Defina a <b>Forma de Pagamento</b>';
 					else if (saldoAPagar <= 0) erro = `Não existe mais débitos!`;
 					else if (descontoMultasJuros >= (saldoAPagar + valorJuros + valorMulta)) erro = `Voce Não Pode dar um Desconto Maior do que o Valor da Parcela!`;
 					//valorParcela = (unMoney(valorParcela) + valorJuros + valorMulta) - descontoMultasJuros
-					
 					if (erro.length == 0) {
-						let data = `ajax=pagamentoBaixa&tipoBaixa=${tipoBaixa}&id_pagamento=${id_pagamento}&dataPagamento=${dataPagamento}&dataVencimento=${dataVencimento}&valor=${valor}&id_formadepagamento=${id_formadepagamento}&debitoBandeira=${debitoBandeira}&creditoBandeira=${creditoBandeira}&creditoParcelas=${creditoParcelas}&obs=${obs}&id_operadora=${id_operadora}&taxa=${taxa}&valorParcela=${(valorParcela)}&valorJuros=${(valorJuros)}&valorMulta=${(valorMulta)}&descontoMultasJuros=${descontoMultasJuros}`;
+						let data = `ajax=pagamentoBaixa&tipoBaixa=${tipoBaixa}&id_pagamento=${id_pagamento}&dataPagamento=${dataPagamento}&dataVencimento=${dataVencimento}&valor=${valor}&id_formapagamento=${id_formapagamento}&debitoBandeira=${debitoBandeira}&creditoBandeira=${creditoBandeira}&creditoParcelas=${creditoParcelas}&obs=${obs}&id_operadora=${id_operadora}&taxa=${taxa}&valorParcela=${(valorParcela)}&valorJuros=${(valorJuros)}&valorMulta=${(valorMulta)}&descontoMultasJuros=${descontoMultasJuros}`;
 						$.ajax({
 							type: "POST",
 							data: data,
 							success: function(rtn) {
+								console.log(rtn)
 								if (rtn.success) {
 									let index = pagamentos.findIndex((item, index) => {
 										return item.id_parcela == id_pagamento
@@ -298,7 +298,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 									$('.js-dataPagamento').val('<?= date('d/m/Y'); ?>');
 									$('.js-valor').val('');
 									$('.js-valorDesconto').val('');
-									$('.js-id_formadepagamento').val('');
+									$('.js-id_formapagamento').val('');
 									$('.js-obs').val('');
 									$('.js-valorJuros').val('');
 									$('.js-valorMultas').val('');
@@ -311,6 +311,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 									$('.js-parcelas').closest('dl').hide()
 									$('.js-creditoBandeira').closest('dl').hide()
 									if (saldoAPagar <= 0) $('.js-form-pagamentos').hide();
+
 								} else if (rtn.error) {
 									swal({
 										title: "Erro!",
@@ -329,7 +330,8 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 									});
 								}
 							},
-							error: function() {
+							error: function(error) {
+								console.log(error)
 								swal({
 									title: "Erro!",
 									text: "Algum erro ocorreu durante a baixa deste pagamento",
@@ -381,7 +383,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 		$('.aside-close').click(function() {
 			if ($('[name="alteracao"]').val() == '1') {
 				document.location.reload();
-			}else{
+			} else {
 				// $('#js-aside-asFinanceiro .js-index').val("");
 				// $('#js-aside-asFinanceiro .js-id_pagamento').val("");
 				// $('#js-aside-asFinanceiro .js-titulo').html("");
@@ -472,7 +474,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 							</dl>
 							<dl>
 								<dt>Forma de Pagamento</dt>
-								<dd><select class="js-id_formadepagamento js-tipoPagamento">
+								<dd><select class="js-id_formapagamento js-tipoPagamento">
 										<option value=""></option>
 										<?= $optionFormasDePagamento; ?>
 									</select>
