@@ -398,7 +398,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 		})
 	});
 </script>
-<!-- .aside INICIO-->
+<!-- ASIDE PROGRAMAÇÂO DE PAGAMENTO-->
 <section class="aside aside-form" id="js-aside-asFinanceiro">
 	<div class="aside__inner1">
 		<input type="hidden" name="alteracao" value="0">
@@ -628,8 +628,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 		</form>
 	</div>
 </section>
-<!-- .aside  FIM-->
-<!-- .aside CONFIRMACAO RECEBER-->
+<!--ASIDE CONFIRMACAO RECEBER-->
 <section class="aside" id="js-aside-asFinanceiro-receber">
 	<div class="aside__inner1" style="width:600px;">
 
@@ -637,10 +636,8 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 			<h1 class="js-titulo"></h1>
 			<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 		</header>
-
 		<form method="post" class="aside-content form">
 			<input type="hidden" class="js-id_pagamento" value="0" />
-
 			<!-- Programacao de pagamento -->
 			<div class="js-fin js-fin-programacao" style="display: ;">
 				<section class="filter">
@@ -709,7 +706,7 @@ while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
 
 		</form>
 	</div>
-</section><!-- .aside -->
+</section>
 
 <script type="text/javascript">
 	$(function() {
