@@ -75,6 +75,29 @@ function validaHoraMinuto(val) {
 
 	return err;
 }
+function formatarData(data, formato = 'DD/MM/YYYY') {
+	// Dividir a string da data em ano, mês e dia
+	const partes = data.split('-');
+
+	let dataFormatada = '';
+	// Formatar a data de acordo com o formato especificado
+	switch (formato) {
+		case 'DD/MM/YYYY':
+			dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+			break;
+		case 'MM/DD/YYYY':
+			dataFormatada = `${partes[1]}/${partes[2]}/${partes[0]}`;
+			break;
+		case 'YYYY-MM-DD':
+			dataFormatada = `${partes[0]}-${partes[1]}-${partes[2]}`;
+			break;
+		default:
+			dataFormatada = data;
+	}
+
+	return dataFormatada;
+}
+
 $(function () {
 
 	$("input.data").inputmask("99/99/9999");

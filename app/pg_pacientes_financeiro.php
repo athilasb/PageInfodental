@@ -406,7 +406,6 @@ foreach ($registros as $x) {
 	}
 }
 
-
 ?>
 
 <script type="text/javascript">
