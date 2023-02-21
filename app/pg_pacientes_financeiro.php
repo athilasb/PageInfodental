@@ -856,7 +856,7 @@ foreach ($registros as $x) {
 							TextDescontoIncargos = `<span style="font-size:12px;color:var(--cinza4)">Descontos: R$ ${number_format(x.descontoMultasJuros,2,",",".")}</span></br>`
 						}
 						let diferenca = (new Date().getTime() - new Date(`${x.vencimento.split('/')[2]}/${x.vencimento.split('/')[1]}/${x.vencimento.split('/')[0]}`).getTime()) / (1000 * 60 * 60 * 24);
-						if (diferenca >= 1 && x.tipoBaixa != 'DESCONTO') {
+						if (diferenca >= 1 && x.tipoBaixa != 'DESCONTO' && x.pago==0) {
 							alertVencimento = `<span style="color:red">FATURA VENCIDA!</span>`
 						}
 						if (x.tipoBaixa == "PAGAMENTO") {
