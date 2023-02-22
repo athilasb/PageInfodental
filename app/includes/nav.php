@@ -48,7 +48,7 @@
 		),
 		'whatsapp' => array(
 			'page' => 'pg_configuracoes_whatsapp.php',
-			'pages' => explode(",", "pg_configuracoes_whatsapp.php,pg_configuracoes_whatsapp_pesquisadesatisfacao.php"),
+			'pages' => explode(",", "pg_configuracoes_whatsapp.php,pg_configuracoes_whatsapp_pesquisadesatisfacao.php,pg_configuracoes_whatsapp_aniversario.php"),
 			'title' => 'Whatsapp',
 			'icon' => '<i class="iconify" data-icon="la:whatsapp"></i>'
 		),

@@ -1,5 +1,5 @@
 <?php
-	$pagesWhatsapp=explode(",","pg_configuracoes_whatsapp.php,pg_configuracoes_whatsapp_pesquisadesatisfacao.php");
+	$pagesWhatsapp=explode(",","pg_configuracoes_whatsapp.php,pg_configuracoes_whatsapp_pesquisadesatisfacao.php,pg_configuracoes_whatsapp_aniversario.php");
 ?>
 
 <section class="tab">

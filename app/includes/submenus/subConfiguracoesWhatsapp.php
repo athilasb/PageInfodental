@@ -7,4 +7,10 @@
 		<i class="iconify" data-icon="ic:twotone-star-border"></i>
 		<p>Pesquisa de Satifação</p>
 	</a>
+	</a>
+		<a href="pg_configuracoes_whatsapp_aniversario.php" class="list5-item<?php echo basename($_SERVER['PHP_SELF'])=="pg_configuracoes_whatsapp_aniversario.php"?" active":"";?>">
+		<span class="iconify" data-icon="cil:birthday-cake"></span>
+		<p>Aniversário</p>
+	</a>
+
 </div>
