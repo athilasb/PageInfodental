@@ -640,8 +640,9 @@ if (isset($_POST['ajax'])) {
 	<script>
 		const abrirAside = (tipo, index) => {
 			if (tipo == 'financeiroPaciente') {
-				let jurosMultas = pagamentos[index].multaAtraso + pagamentos[index].jurosMensal
-				id_pagamento = pagamentos[index].id_parcela
+				let jurosMultas = _pagamentos[index].multaAtraso + _pagamentos[index].jurosMensal
+				id_pagamento = _pagamentos[index].id_parcela
+				console.log(_pagamentos[index])
 				$('.js-colunaMultasJuros').hide()
 				$('#js-aside-asFinanceiro .js-multasJuros').val(number_format(0, 2, ",", "."));
 
@@ -651,19 +652,19 @@ if (isset($_POST['ajax'])) {
 				}
 				// Resumo
 				$('#js-aside-asFinanceiro .js-index').val(index);
-				$('#js-aside-asFinanceiro .js-id_pagamento').val(pagamentos[index].id_parcela);
-				$('#js-aside-asFinanceiro .js-titulo').html(pagamentos[index].titulo);
-				$('#js-aside-asFinanceiro .js-dataOriginal').html(`${pagamentos[index].vencimento}`);
-				$('#js-aside-asFinanceiro .js-valorParcela').html(`R$ ${number_format(pagamentos[index].valorParcela, 2, ",", ".")}`);
-				$('#js-aside-asFinanceiro .js-valorDesconto').html(`R$ ${number_format(pagamentos[index].valorDesconto, 2, ",", ".")}`);
-				$('#js-aside-asFinanceiro .js-valorCorrigido').html(`R$ ${number_format(pagamentos[index].valorCorrigido, 2, ",", ".")}`);
-				$('#js-aside-asFinanceiro .js-btn-pagamento').attr('data-id_pagamento', pagamentos[index].id_parcela);
-				//$('#js-aside-asFinanceiro .js-apagar').html(number_format(pagamentos[index].valorCorrigido - pagamentos[index].valorPago, 2, ",", "."));
+				$('#js-aside-asFinanceiro .js-id_pagamento').val(_pagamentos[index].id_parcela);
+				$('#js-aside-asFinanceiro .js-titulo').html(_pagamentos[index].titulo);
+				$('#js-aside-asFinanceiro .js-dataOriginal').html(`${_pagamentos[index].vencimento}`);
+				$('#js-aside-asFinanceiro .js-valorParcela').html(`R$ ${number_format(_pagamentos[index].valorParcela, 2, ",", ".")}`);
+				$('#js-aside-asFinanceiro .js-valorDesconto').html(`R$ ${number_format(_pagamentos[index].valorDesconto, 2, ",", ".")}`);
+				$('#js-aside-asFinanceiro .js-valorCorrigido').html(`R$ ${number_format(_pagamentos[index].valorCorrigido, 2, ",", ".")}`);
+				$('#js-aside-asFinanceiro .js-btn-pagamento').attr('data-id_pagamento', _pagamentos[index].id_parcela);
+				//$('#js-aside-asFinanceiro .js-apagar').html(number_format(_pagamentos[index].valorCorrigido - _pagamentos[index].valorPago, 2, ",", "."));
 
 				// Agrupamento
 				$('#js-aside-asFinanceiro .js-subpagamentos tr').remove();
-				if (pagamentos[index].subpagamentos && pagamentos[index].subpagamentos.length > 0) {
-					pagamentos[index].subpagamentos.forEach(x => {
+				if (_pagamentos[index].subpagamentos && _pagamentos[index].subpagamentos.length > 0) {
+					_pagamentos[index].subpagamentos.forEach(x => {
 						$('#js-aside-asFinanceiro .js-subpagamentos').append(`<tr>
 																					<td>${x.vencimento}</td>
 																					<td>${x.titulo}</td>
@@ -672,7 +673,7 @@ if (isset($_POST['ajax'])) {
 					});
 
 					$('#js-aside-asFinanceiro .js-subpagamentos').append(`<tr>
-																				<td colspan="3"><center><a href="javascript:;" class="js-desfazerUniao" data-id_pagamento="${pagamentos[index].id_parcela}"><span class="iconify" data-icon="eva:undo-fill" data-inline="false"></span> Desfazer união</a></center></td>
+																				<td colspan="3"><center><a href="javascript:;" class="js-desfazerUniao" data-id_pagamento="${_pagamentos[index].id_parcela}"><span class="iconify" data-icon="eva:undo-fill" data-inline="false"></span> Desfazer união</a></center></td>
 																			</tr>`)
 
 					$('#js-aside-asFinanceiro .js-tab-agrupamento').show();
@@ -687,8 +688,8 @@ if (isset($_POST['ajax'])) {
 				let desconto = 0;
 				let despesas = 0;
 				let contador = 0;
-				if (pagamentos[index].baixas && pagamentos[index].baixas.length > 0) {
-					pagamentos[index].baixas.forEach(x => {
+				if (_pagamentos[index].baixas && _pagamentos[index].baixas.length > 0) {
+					_pagamentos[index].baixas.forEach(x => {
 						let textJuros = "";
 						let textMulta = "";
 						let TextDescontoIncargos = "";
@@ -793,7 +794,7 @@ if (isset($_POST['ajax'])) {
 				}
 				$('#js-aside-asFinanceiro .js-valorDespesa,#js-aside-asFinanceiro .js-despesa').val(number_format(despesas, 2, ",", "."));
 				$('#js-aside-asFinanceiro .js-valorDesconto,#js-aside-asFinanceiro .js-valorDesconto').val(number_format(desconto, 2, ",", "."));
-				$('#js-aside-asFinanceiro .js-valorParcela').val(number_format(pagamentos[index].valorParcela, 2, ",", "."));
+				$('#js-aside-asFinanceiro .js-valorParcela').val(number_format(_pagamentos[index].valorParcela, 2, ",", "."));
 
 				// Triggers
 				$('#js-aside-asFinanceiro input[name=tipoBaixa]:eq(0)').click();
@@ -926,10 +927,10 @@ if (isset($_POST['ajax'])) {
 						if (rtn.baixas.length > 0) {
 							let contador = 0;
 							baixas = rtn.baixas
-							let index = pagamentos.findIndex((item, index) => {
+							let index = _pagamentos.findIndex((item, index) => {
 								return item.id_parcela == id_pagamento
 							})
-							pagamentos[index].baixas = baixas
+							_pagamentos[index].baixas = baixas
 							rtn.baixas.forEach(x => {
 								let textJuros = "";
 								let textMulta = "";
@@ -1033,10 +1034,10 @@ if (isset($_POST['ajax'])) {
 						$('.js-valorDesconto').val(number_format(desconto, 2, ",", "."));
 						$('.js-valorDespesa').val(number_format(despesas, 2, ",", "."));
 						baixasAtualizarValores();
-						let index = pagamentos.findIndex((item, index) => {
+						let index = _pagamentos.findIndex((item, index) => {
 							return item.id_parcela == id_pagamento
 						})
-						pagamentos[index].saldoApagar = unMoney($('.js-saldoPagar').text())
+						_pagamentos[index].saldoApagar = unMoney($('.js-saldoPagar').text())
 					} else if (rtn.error) {
 						swal({
 							title: "Erro!",
@@ -1156,8 +1157,8 @@ if (isset($_POST['ajax'])) {
 				let pagamentoIndex = $('#js-aside-asFinanceiro .js-index').val();
 				let baixaIndex = $(this).attr('data-index');
 
-				if (pagamentos[pagamentoIndex]) {
-					let pagamento = pagamentos[pagamentoIndex];
+				if (_pagamentos[pagamentoIndex]) {
+					let pagamento = _pagamentos[pagamentoIndex];
 					if (pagamento.baixas[baixaIndex]) {
 						let baixa = pagamento.baixas[baixaIndex];
 						if (baixa.pago == "0") {
@@ -1236,7 +1237,7 @@ if (isset($_POST['ajax'])) {
 				let pagamentoIndex = $('#js-aside-asFinanceiro .js-index').val();
 				let baixaIndex = $(this).attr('data-index');
 				if (pagamentos[pagamentoIndex]) {
-					let pagamento = pagamentos[pagamentoIndex];
+					let pagamento = _pagamentos[pagamentoIndex];
 					if (pagamento.baixas[baixaIndex]) {
 						let baixa = pagamento.baixas[baixaIndex];
 						let valorParcela = baixa.valor
@@ -1285,8 +1286,8 @@ if (isset($_POST['ajax'])) {
 				} else {
 
 					if (pagamentos[pagamentoIndex].baixas[baixaIndex]) {
-						let id_baixa = pagamentos[pagamentoIndex].baixas[baixaIndex].id_baixa;
-						let id_parcela = pagamentos[pagamentoIndex].id_parcela;
+						let id_baixa = _pagamentos[pagamentoIndex].baixas[baixaIndex].id_baixa;
+						let id_parcela = _pagamentos[pagamentoIndex].id_parcela;
 
 						let obj = $(this);
 						let objHTMLAntigo = $(this).html();
@@ -1361,7 +1362,7 @@ if (isset($_POST['ajax'])) {
 			});
 
 			$('#cal-popup').on('click', '.js-btn-pagamento-excluir', function() {
-				let idPagamento = pagamentos[index].id_parcela;
+				let idPagamento = _pagamentos[index].id_parcela;
 				swal({
 						title: "Atenção",
 						text: "Você tem certeza que deseja remover este registro?",
@@ -1375,7 +1376,7 @@ if (isset($_POST['ajax'])) {
 					},
 					function(isConfirm) {
 						if (isConfirm) {
-							document.location.href = '?<?= "id_paciente=$paciente->id&id_pagamento="; ?>' + idPagamento;
+							document.location.href = '?<#?= "id_paciente=$paciente->id&id_pagamento="; ?>' + idPagamento;
 						} else {
 							swal.close();
 						}
@@ -1385,7 +1386,7 @@ if (isset($_POST['ajax'])) {
 			// quando digita o valor a ser pago na parcela ASIDE
 			$('.js-valor').keyup(function() {
 				let idPagamento = $('.js-id_pagamento').val()
-				let pagamento = pagamentos.filter((item) => {
+				let pagamento = _pagamentos.filter((item) => {
 					return item.id_parcela == idPagamento
 				})[0]
 				let ValorDigitado = unMoney($(this).val())
@@ -1443,7 +1444,7 @@ if (isset($_POST['ajax'])) {
 			// quando clica para ativa e desativar o juros
 			$('.js-aplicar-multas-juros').click(function() {
 				let idPagamento = $('.js-id_pagamento').val()
-				let pagamento = pagamentos.filter((item) => {
+				let pagamento = _pagamentos.filter((item) => {
 					return item.id_parcela == idPagamento
 				})[0]
 				let data = new Date(`${pagamento.vencimento.split('/')[2]}/${pagamento.vencimento.split('/')[1]}/${pagamento.vencimento.split('/')[0]}`);
@@ -1653,10 +1654,10 @@ if (isset($_POST['ajax'])) {
 								data: data,
 								success: function(rtn) {
 									if (rtn.success) {
-										let index = pagamentos.findIndex((item, index) => {
+										let index = _pagamentos.findIndex((item, index) => {
 											return item.id_parcela == id_pagamento
 										})
-										pagamentos[index].saldoApagar = unMoney(pagamentos[index].saldoApagar) - unMoney(valor)
+										_pagamentos[index].saldoApagar = unMoney(_pagamentos[index].saldoApagar) - unMoney(valor)
 										baixasAtualizar();
 										$('.js-dataPagamento').val('<?= date('d/m/Y'); ?>');
 										$('.js-valor').val('');

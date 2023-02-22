@@ -135,43 +135,55 @@ function getValores($data_inicial, $data_final)
 		}
 	}
 
-	$valorAReceber = $saldoAPagar = $valorDefinido = $multas = $juros = 0;
 	// faço um laço de repetição aqui para pegar os valores a receber, em atraso, a definir pagamento etc
-	foreach ($registros as $x) {
+	foreach ($registros as $id => $x) {
+		$valorAReceber = $saldoAPagar = $definirPagamento = $valoresVencido = $valorRecebido = $valorDefinido = $multas = $juros = 0;
 		$valorDefinido = 0;
 		if (isset($_baixas[$x->id])) {
+			$registros[$id]->baixas = $_baixas[$x->id];
 			$dataUltimoPagamento = date('d/m/Y', strtotime($_baixas[$x->id][count($_baixas[$x->id]) - 1]->data));
 			foreach ($_baixas[$x->id] as $v) {
 				$valor['valorTotal'] += $v->valor;
 				if ($v->lixo == 0 && ($v->data_vencimento >= $data_inicial && $v->data_vencimento <= $data_final)) {
-					$valor['valorJuros'] += $v->valor_multa;
-					$valor['valorMulta'] += $v->valor_taxa;
+					$valor['valorJuros'] += $v->valor_juros;
+					$valor['valorMulta'] += $v->valor_multa;
+					$multas += $v->valor_multa;
+					$juros += $v->valor_juros;
 					$valorDefinido += $v->valor;
 					$atraso = (strtotime($v->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
 					if ($v->pagamento == 1) {
 						$valor['valorRecebido'] += $v->valor;
+						$valorRecebido += $v->valor;
 					} else if ($atraso < 0) {
 						$valor['valoresVencido'] += $v->valor;
+						$valoresVencido += $v->valor;
 					} else if ($v->pagamento == 0) {
 						$valor['aReceber'] += $v->valor;
+						$valorAReceber += $v->valor;
 					}
 				}
 			}
 			if ($valorDefinido < $x->valor) {
 				$valor['definirPagamento'] += $x->valor;
+				$definirPagamento += $x->valor;
 			}
 		} else {
 			$valor['valorTotal'] += $x->valor;
 			$atraso = (strtotime($x->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
 			if ($atraso < 0 and $x->pago == 0) {
 				$valor['valoresVencido'] += $x->valor;
+				$valoresVencido += $x->valor;
 			} else {
 				$valor['definirPagamento'] += $x->valor;
+				$definirPagamento += $x->valor;
 			}
-			//$valor['aReceber']+=$x->valor;
 		}
+		$registros[$id]->id_parcela = $x->id;
+		$registros[$id]->jurosMensal = $juros;
+		$registros[$id]->saldoApagar = number_format($x->valor - $valorDefinido, 2);
+		$registros[$id]->titulo = $_tratamentos[$x->id_tratamento]['titulo'];
+		// $registros[$id]->valorCorrigido = $valorDefinido - $x->valor;
 	}
-
 	return [$registros, $_baixas, $valor, $_tratamentos, $_pagantes];
 }
 [$registros, $_baixas, $valor, $_tratamentos, $_pagantes] = getValores($data_inicial_filtro, $data_final_filtro);
@@ -407,7 +419,7 @@ function getValores($data_inicial, $data_final)
 						<span style="color:var(--cinza3)" title="Não conciliado" class="tooltip"><i class="iconify" data-icon="fluent:checkbox-checked-sync-20-regular"></i></span>
 						<span style="color:var(--cinza3)" title="Regua não executada" class="tooltip"><i class="iconify" data-icon="fluent:task-list-ltr-20-filled"></i></span>
 						</td>
-						<td><a href="javascript:;" class="button" style="width:120px"><i class="iconify" data-icon="ph:currency-circle-dollar"></i> <span>Receber</span></a></td>
+						<td><a href="javascript:;" class="button js-pagamento-item"  data-id-pagamento='${pagamento.id}' data-id-baixa='${baixa.id}' style="width:120px"><i class="iconify" data-icon="ph:currency-circle-dollar"></i> <span>Receber</span></a></td>
 						</tr>
 					`)
 			}
@@ -429,7 +441,7 @@ function getValores($data_inicial, $data_final)
 						<span style="color:var(--cinza3)" title="Não conciliado" class="tooltip"><i class="iconify" data-icon="fluent:checkbox-checked-sync-20-regular"></i></span>
 						<span style="color:var(--cinza3)" title="Regua não executada" class="tooltip"><i class="iconify" data-icon="fluent:task-list-ltr-20-filled"></i></span>
 						</td>
-						<td><a href="javascript:;" class="button" style="width:120px"><i class="iconify" data-icon="ph:currency-circle-dollar"></i> <span>Receber</span></a></td>
+						<td><a href="javascript:;" class="button js-pagamento-item"  data-id-pagamento='${pagamento.id}' style="width:120px"><i class="iconify" data-icon="ph:currency-circle-dollar"></i> <span>Receber</span></a></td>
 						</tr>
 					`)
 			}
@@ -461,7 +473,7 @@ function getValores($data_inicial, $data_final)
 						<span style="color:var(--cinza3)" title="Não conciliado" class="tooltip"><i class="iconify" data-icon="fluent:checkbox-checked-sync-20-regular"></i></span>
 						<span style="color:var(--cinza3)" title="Regua não executada" class="tooltip"><i class="iconify" data-icon="fluent:task-list-ltr-20-filled"></i></span>
 						</td>
-						<td><a href="javascript:;" class="button" style="width:120px"><i class="iconify" data-icon="ph:currency-circle-dollar"></i> <span>Receber</span></a></td>
+						<td><a href="javascript:;" class="button js-pagamento-item" data-id-pagamento='${pagamento.id}' style="width:120px"><i class="iconify" data-icon="ph:currency-circle-dollar"></i> <span>Receber</span></a></td>
 						</tr>
 					`)
 			}
@@ -470,6 +482,7 @@ function getValores($data_inicial, $data_final)
 
 
 	$(function() {
+		// quando clica em algum pre filtro de datas
 		$('.btn-prefiltro').click(function() {
 			$(this).closest('div').find('a').map((i, el) => {
 				$(el).removeClass('active')
@@ -522,10 +535,30 @@ function getValores($data_inicial, $data_final)
 				}
 			})
 		})
+		// Quando clica para abrir o aside
+		$('.js-pagamento-item').on('click', (function() {
+			console.log('clicou Aqui')
+			let idPagamento = $(this).attr('data-id-pagamento') ?? false
+			let idBaixa = $(this).attr('data-id-baixa') ?? false
+			if (idBaixa) {
+				console.log('HORA DE MANDAR JA PAGAR DIRETO A BAIXA')
+			} else if (idPagamento) {
+				console.log('DEFINIR UM PAGAMENTO')
+				abrirAside('financeiroPaciente', idPagamento)
+			}
+		}));
 	})
 	updateValoresHeader()
 	updateDatas(data_inicial, data_final)
 	populaPagamentos();
 </script>
 
-<?php include "includes/footer.php"; ?>
+
+<?php
+$apiConfig = array(
+	'Pagamentos' => 1,
+);
+require_once("includes/api/apiAsidePagamentos.php");
+
+include "includes/footer.php";
+?>

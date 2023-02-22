@@ -215,7 +215,7 @@ foreach ($registros as $x) {
 </script>
 
 <script type="text/javascript">
-	var pagamentos = [];
+	var _pagamentos = [];
 	var dataHoje = '<?= date('d/m/Y'); ?>';
 
 	$(function() {
@@ -698,7 +698,7 @@ foreach ($registros as $x) {
 </main>
 
 <script type="text/javascript">
-	pagamentos = JSON.parse(`<?= json_encode($pagamentosJSON); ?>`);
+	_pagamentos = JSON.parse(`<?= json_encode($pagamentosJSON); ?>`);
 </script>
 
 <?php
@@ -707,7 +707,7 @@ foreach ($registros as $x) {
 $apiConfig = array(
 	'Pagamentos' => 1,
 );
-require_once("includes/api/apiAsidePagamentos.php");
+include_once "includes/api/apiAsidePagamentos.php";
 
 include "includes/footer.php";
 ?>
