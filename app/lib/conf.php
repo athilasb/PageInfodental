@@ -22,18 +22,17 @@
 		} 
 	}
 	require_once("classes.php"); 
-
+	
 
 	// Whatsapp Suporte
 	$_whatsappSuporte="6299181775";
 
 	// S3 Scaleway
-	$_scalewayBucket='';
-	$_scalewayAccessKey='SCWVDWHW5XXB500W2XGK';
-	$_scalewaySecretKey='9c13e802-ef5d-4bea-8a31-76f3e0ca4550';
-	$_scalewayS3endpoint = "infodental.s3.fr-par.scw.cloud";
+	$_scalewayBucket='infodental';
+	$_scalewayAccessKey='SCW20D80FP948XW2RZ28';
+	$_scalewaySecretKey='98d766ca-941c-4a61-85aa-0b41ff878773';
+	$_scalewayS3endpoint = "https://infodental.s3.fr-par.scw.cloud";
 	$_scalewayS3Region = "fr-par";
-	$scalewayS3 = new S3($_scalewayAccessKey, $_scalewaySecretKey, false, $_scalewayS3endpoint, $_scalewayS3Region);
 
 	// S3 Wasabi
 	$_wasabiBucket="storage.infodental.dental"; 

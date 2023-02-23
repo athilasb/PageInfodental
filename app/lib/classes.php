@@ -542,8 +542,7 @@
 	}
 	
 	function __autoload($class_name) {
-		//echo "wlib=".$class_name."-> ".(file_exists("lib/class/class" . $class_name . ".php")?1:0);
-		$classSFTP=array('Net_SSH2','SFTP','Math_BigInteger','Crypt_Hash','Crypt_Base','Crypt_Rijndael','Crypt_RC4');
+		$classSFTP=array('S3Client');
 		if(!in_array($class_name,$classSFTP))require_once("class/class" . $class_name . ".php");
 	}
 ?>

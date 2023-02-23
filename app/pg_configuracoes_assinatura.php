@@ -173,6 +173,11 @@
 	}
 
 	$planoUnico=$_iuguPlanos['unico'];
+
+	if($_ENV['NAME']=="dratalita") {
+		$planoUnico=$_iuguPlanos['unico_anual'];
+		
+	}
 	/*
 
 

@@ -66,6 +66,8 @@
 
 		
 				<a href="pg_pacientes_dadospessoais.php?id_paciente=<?php echo $paciente->id;?>"<?php echo $_page=="pg_pacientes_dadospessoais.php"?' class="active"':'';?>>Dados Pessoais</a>
+				
+				<a href="pg_pacientes_arquivos.php?id_paciente=<?php echo $paciente->id;?>"<?php echo $_page=="pg_pacientes_arquivos.php"?' class="active"':'';?>>Arquivos</a>
 			</section>
 		</div>
 
