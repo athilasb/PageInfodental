@@ -9,7 +9,7 @@
 		if($sql->rows) {
 			$evolucao=mysqli_fetch_object($sql->mysqry);
 
-			$sql->consult($_p."colaboradores","id,nome","where id=$evolucao->id_usuario");
+			$sql->consult($_p."colaboradores","id,nome","where id=$evolucao->id_profissional");
 			if($sql->rows) {
 				$solicitante=mysqli_fetch_object($sql->mysqry);
 			}

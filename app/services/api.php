@@ -105,7 +105,7 @@
 						# PEDIDO DE EXAME
 						if($evolucao->id_tipo==6) {
 
-							$sql->consult($_p."colaboradores","id,nome","where id=$evolucao->id_usuario");
+							$sql->consult($_p."colaboradores","id,nome","where id=$evolucao->id_profissional");
 							if($sql->rows) {
 								$solicitante=mysqli_fetch_object($sql->mysqry);
 							}
@@ -256,7 +256,7 @@
 						# RECEITUARIO
 						else if($evolucao->id_tipo==7) {
 
-							$sql->consult($_p."colaboradores","id,nome,cro,uf_cro","where id=$evolucao->id_usuario");
+							$sql->consult($_p."colaboradores","id,nome,cro,uf_cro","where id=$evolucao->id_profissional");
 							if($sql->rows) {
 								$solicitante=mysqli_fetch_object($sql->mysqry);
 							}
@@ -382,7 +382,7 @@
 											<br /><br />
 											<table>
 												<tr>
-													<td><small>Nome do Médico</small><br /><span style="font-weght:normal;font-size:0.85em">'.utf8_encode($solicitante->nome).'</span></td>
+													<td><small>Nome do Dentista</small><br /><span style="font-weght:normal;font-size:0.85em">'.utf8_encode($solicitante->nome).'</span></td>
 													<td><small>CRO</small><br /><span style="font-weght:normal;font-size:0.85em">'.utf8_encode($solicitante->cro).'</span></td>
 													<td><small>UF</small><br /><span style="font-weght:normal;font-size:0.85em">'.utf8_encode($solicitante->uf_cro).'</span></td>
 												</tr>

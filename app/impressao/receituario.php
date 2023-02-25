@@ -131,7 +131,7 @@
 	<table>
 		<tr>
 			<td colspan="2">
-				<h1>NOME DO MÉDICO</h1>
+				<h1>NOME DO DENTISTA</h1>
 				<p><?php echo utf8_encode($profissional->nome);?></p>
 			</td>
 			<td>
