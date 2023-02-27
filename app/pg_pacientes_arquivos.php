@@ -171,8 +171,7 @@
 							<div class="list-toggle">
 
 								
-								<div>sdf</div>
-								<div>sdf</div>
+								<div>DESENVOLVIMENTO</div>
 
 							</div>	
 						</div>

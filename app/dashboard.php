@@ -53,10 +53,15 @@ include "includes/nav.php";
 						$telefones[]=$x->telefone1;
 					}
 
-					$sql->consult($_p."whatsapp_mensagens","id","WHERE enviado=1 and id_tipo=10 and numero IN (".implode(",", $telefones).") and month(data_enviado)='".date('m')."' and day(data_enviado)='".date('d')."'");
+					if(count($telefones)>0) {
+						$sql->consult($_p."whatsapp_mensagens","id","WHERE enviado=1 and id_tipo=10 and numero IN (".implode(",", $telefones).") and month(data_enviado)='".date('m')."' and day(data_enviado)='".date('d')."'");
 				?>
 				<h1><?php echo $sql->rows;?> Mensagens Enviadas</h1>
-				<?php if($total>0){?><a href="javascript:;" class="js-listaAniversarios" data-valor="0">Ver Lista</a><?php }?>
+				<?php 
+						if($total>0) echo '<a href="javascript:;" class="js-listaAniversarios" data-valor="0">Ver Lista</a>';
+					}
+					
+				?>
 			</div>
 
 			<div class="box box_inv js-divAniversarios" style="display: none;">
