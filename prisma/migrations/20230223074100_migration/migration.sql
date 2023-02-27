@@ -1,9 +1,5 @@
 ALTER TABLE `ident_parametros_cartoes_operadoras` ADD `pixOperadora` INT NOT NULL DEFAULT '0' AFTER `id_banco`;
 
-
-ALTER TABLE `ident_financeiro_fluxo_recebimentos` CHANGE `data_vecimento` `data_vencimento` DATE NOT NULL;
-
-
 ALTER TABLE `ident_financeiro_fluxo_recebimentos` ADD `id_colaborador` INT NOT NULL AFTER `id_pagante`;
 
 
