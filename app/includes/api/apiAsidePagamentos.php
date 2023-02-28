@@ -14,7 +14,7 @@ if (isset($_POST['ajax'])) {
 	$_tableListaPersonalizada = $_p . "parametros_indicacoes";
 	$_tableTags = $_p . "parametros_tags";
 	$_tableChecklist = $_p . "agenda_checklist";
-	$pagamento = '';
+	$pagamento;
 	if (isset($_POST['id_pagamento']) and is_numeric($_POST['id_pagamento'])) {
 		$id_pagamento =  $_POST['id_pagamento'];
 		$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "where id='$id_pagamento'");
@@ -101,6 +101,54 @@ if (isset($_POST['ajax'])) {
 			}
 		} else {
 			$rtn = array('success' => false, 'error' => 'Pagamento não encontrado!');
+		}
+	} else if ($_POST['ajax'] == "getPagamentosBaixas") {
+		if (is_object($pagamento)) {
+			$baixas = array();
+			$sql->consult($_p . "pacientes_tratamentos", "*", "WHERE id='$pagamento->id_tratamento'");
+			$tratamento = mysqli_fetch_object($sql->mysqry);
+			$sql->consult($_p . "financeiro_fluxo", "*", "WHERE id_registro='$pagamento->id' AND lixo=0 order by data_vencimento asc");
+			$saldoPago = 0;
+			$saldoApagar = $pagamento->valor;
+			while ($x = mysqli_fetch_object($sql->mysqry)) {
+				if ($x->desconto == "1") $x->data_vencimento = $x->data;
+				$baixas[] = array(
+					"id_baixa" => (int)$x->id,
+					"data" => date('d/m/Y', strtotime($x->data_vencimento)),
+					"valor" => (float)$x->valor,
+					"tipoBaixa" => $x->desconto == 0 ? 'PAGAMENTO' : 'DESCONTO',
+					"id_formapagamento" => (int)$x->id_formapagamento,
+					"formaDePagamento" => isset($_formasDePagamento[$x->id_formapagamento]) ? utf8_encode($_formasDePagamento[$x->id_formapagamento]->titulo) : '',
+					"pago" => $x->pagamento,
+					"valorMulta" => $x->valor_multa,
+					"valorJuros" => $x->valor_juros,
+					"descontoMultasJuros" => $x->valor_desconto,
+					"vencido" => (strtotime($x->data_vencimento) < strtotime(date('Y-m-d')) ? true : false),
+					"obs" => utf8_encode($x->obs),
+					"taxa_cartao" => $x->taxa_cartao,
+					"total" => (float)$x->valor,
+				);
+				$saldoApagar -= $x->valor;
+			}
+			$dados = array(
+				"id" => $pagamento->id,
+				"data_vencimento" => $pagamento->data_vencimento,
+				"data_emissao" => $pagamento->data_emissao,
+				"id_tratamento" => $pagamento->id_tratamento,
+				"qtdParcelas" => $pagamento->qtdParcelas,
+				"valor" => $pagamento->valor,
+				"valor_desconto" => $pagamento->valor_desconto,
+				"valor_multa" => $pagamento->valor_multa,
+				"valor_taxa" => $pagamento->valor_taxa,
+				"taxa_cartao" => $pagamento->taxa_cartao,
+				"pago" => $pagamento->pago,
+				"titulo" => $tratamento->titulo,
+				"saldoApagar" => $saldoApagar,
+				"baixas" => $baixas,
+			);
+			$rtn = array('success' => true, 'dados' => $dados);;
+		} else {
+			$rtn = array('error' => true, 'message' => "Pagamento Não Encontrado");
 		}
 	} else if ($_POST['ajax'] == "baixas") {
 		$baixas = array();
@@ -638,11 +686,65 @@ if (isset($_POST['ajax'])) {
 		</div>
 	</section>
 	<script>
+		let id_pagamento = 0;
 		const abrirAside = (tipo, index) => {
-			if (tipo == 'financeiroPaciente') {
+			if (tipo == 'contasAreceber') {
+				console.log('ABRINDO ASIDE...')
+				let data = `ajax=getPagamentosBaixas&id_pagamento=${index}`;
+				$.ajax({
+					type: "POST",
+					url: baseURLApiAsidePagamentos,
+					data: data,
+					success: function(rtn) {
+						if (rtn.success) {
+							let dados = rtn.dados
+							id_pagamento = dados.id
+							// preenche o HEADER 
+							$('#js-aside-asFinanceiro .js-index').val(dados.id);
+							$('#js-aside-asFinanceiro .js-id_pagamento').val(dados.id);
+							$('#js-aside-asFinanceiro .js-titulo').html(dados.titulo);
+							$('#js-aside-asFinanceiro .js-dataOriginal').html(`${dados.data_vencimento}`);
+							$('#js-aside-asFinanceiro .js-valorParcela').html(`R$ ${number_format(dados.valor, 2, ",", ".")}`);
+							$('#js-aside-asFinanceiro .js-valorDesconto').html(`R$ ${number_format(dados.valor_desconto, 2, ",", ".")}`);
+							$('#js-aside-asFinanceiro .js-valorCorrigido').html(`R$ ${number_format((dados.valor-dados.valor_desconto), 2, ",", ".")}`);
+							$('#js-aside-asFinanceiro .js-saldoPagar').html(`R$ ${number_format((dados.saldoApagar), 2, ",", ".")}`);
+							$('#js-aside-asFinanceiro .js-btn-pagamento').attr('data-id_pagamento', dados.id);
+							// de fato abre o ASIDE
+							$("#js-aside-asFinanceiro").fadeIn(100, function() {
+								$("#js-aside-asFinanceiro .aside__inner1").addClass("active");
+							});
+							baixasAtualizar();
+						} else if (rtn.error) {
+							swal({
+								title: "Erro!",
+								text: rtn.error,
+								html: true,
+								type: "error",
+								confirmButtonColor: "#424242"
+							});
+						} else {
+							swal({
+								title: "Erro!",
+								text: "Algum erro ocorreu durante a busca por este pagamento",
+								html: true,
+								type: "error",
+								confirmButtonColor: "#424242"
+							});
+						}
+					},
+					error: function(err) {
+						swal({
+							title: "Erro!",
+							text: "Algum erro ocorreu durante a busca por este pagamento",
+							html: true,
+							type: "error",
+							confirmButtonColor: "#424242"
+						});
+					}
+				}).done(function() {});
+			} else if (tipo == 'financeiroPaciente') {
 				let jurosMultas = _pagamentos[index].multaAtraso + _pagamentos[index].jurosMensal
 				id_pagamento = _pagamentos[index].id_parcela
-				console.log(_pagamentos[index])
 				$('.js-colunaMultasJuros').hide()
 				$('#js-aside-asFinanceiro .js-multasJuros').val(number_format(0, 2, ",", "."));
 
@@ -910,14 +1012,15 @@ if (isset($_POST['ajax'])) {
 
 			}
 		}
-
 		const baixasAtualizar = () => {
+			console.log('CHAMOU AQUI')
 			let data = `ajax=baixas&id_pagamento=${id_pagamento}`;
 			$.ajax({
 				type: "POST",
 				url: baseURLApiAsidePagamentos,
 				data: data,
 				success: function(rtn) {
+					console.log(rtn)
 					if (rtn.success) {
 						$('#js-aside-asFinanceiro .js-baixas tr').remove();
 						$('[name="alteracao"]').val("1")
@@ -927,10 +1030,6 @@ if (isset($_POST['ajax'])) {
 						if (rtn.baixas.length > 0) {
 							let contador = 0;
 							baixas = rtn.baixas
-							let index = _pagamentos.findIndex((item, index) => {
-								return item.id_parcela == id_pagamento
-							})
-							_pagamentos[index].baixas = baixas
 							rtn.baixas.forEach(x => {
 								let textJuros = "";
 								let textMulta = "";
@@ -1067,11 +1166,10 @@ if (isset($_POST['ajax'])) {
 				}
 			})
 		}
-
 		const baixasAtualizarValores = () => {
 			let valorParcela = unMoney($('.js-valorParcela').val())
 			let desconto = unMoney($('.js-valorDesconto').val());
-			let saldoPagar = (valorParcela - total).toFixed(2);
+			let saldoPagar = (valorParcela).toFixed(2);
 			saldoPagar -= desconto;
 			let valorCorrigido = valorParcela;
 			valorCorrigido -= desconto;
