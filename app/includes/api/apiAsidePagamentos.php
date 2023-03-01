@@ -349,24 +349,19 @@ if (isset($_POST['ajax'])) {
 	while ($x = mysqli_fetch_object($sql->mysqry)) {
 		$_bandeiras[$x->id] = $x;
 	}
-
-
 	$creditoBandeiras = array();
 	$debitoBandeiras = array();
 	$taxasBandeiras = array();
 	$_operadoras = array();
-
 	$sql->consult($_p . "parametros_cartoes_operadoras", "*", "where lixo=0 order by titulo");
 	while ($x = mysqli_fetch_object($sql->mysqry)) {
 		$creditoBandeiras[$x->id] = array('titulo' => utf8_encode($x->titulo), 'bandeiras' => array());
 		$debitoBandeiras[$x->id] = array('titulo' => utf8_encode($x->titulo), 'bandeiras' => array());
 		$_operadoras[$x->id] = $x;
 	}
-
 	$sql->consult($_p . "parametros_cartoes_operadoras_bandeiras", "*", "where lixo=0");
 	while ($x = mysqli_fetch_object($sql->mysqry)) {
 		if (!isset($_operadoras[$x->id_operadora])) continue;
-
 		if (isset($_bandeiras[$x->id_bandeira])) {
 			$bandeira = $_bandeiras[$x->id_bandeira];
 			$txJson = json_decode($x->taxas);
@@ -586,17 +581,13 @@ if (isset($_POST['ajax'])) {
 								</tr>
 							</table>
 						</div>
-
 					</fieldset>
-
 				</div>
-
 				<!-- Agrupamento de pagamento -->
 				<div class="js-fin js-fin-agrupamento" style="display: none;">
 					<section class="filter"></section>
 					<fieldset>
 						<legend>Agrupamento de Pagamentos</legend>
-
 						<div class="list2">
 							<table>
 								<thead>
@@ -607,7 +598,6 @@ if (isset($_POST['ajax'])) {
 									</tr>
 								</thead>
 								<tbody class="js-subpagamentos">
-
 								</tbody>
 							</table>
 						</div>
@@ -663,7 +653,6 @@ if (isset($_POST['ajax'])) {
 								<dt>Forma de Pagamento</dt>
 								<dd><input type="text" class="js-formaPagamento" readonly /></dd>
 							</dl>
-
 						</div>
 					</fieldset>
 					<fieldset class="js-fieldset-conta">
