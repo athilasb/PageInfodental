@@ -211,7 +211,7 @@ function getValores($data_inicial, $data_final)
 							</tr>
 						</thead>
 						<tbody>
-							<?php foreach ($dados as $x) : ?>
+							<?php foreach ($dados as $x){ ?>
 								<tr>
 									<td><?= date('d/m/Y', strtotime($x->data_vencimento)) ?></td>
 									<td><?= $x->status ?></td>
@@ -226,7 +226,7 @@ function getValores($data_inicial, $data_final)
 									</td>
 									<td><a href="javascript:;" class="button js-pagamento-item" style="width:120px" data-idRegistro='<?= $x->id_registro ?>'><i class="iconify" data-icon="ph:currency-circle-dollar"></i> <span>Receber</span></a></td>
 								</tr>
-							<?php endforeach; ?>
+							<?php } ?>
 						</tbody>
 					</table>
 				</div>
