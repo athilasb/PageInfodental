@@ -21,3 +21,5 @@ ALTER TABLE `ident_parametros_procedimentos_regioes_faces`
 ALTER TABLE `ident_parametros_procedimentos_regioes_faces`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 COMMIT;
+
+ALTER TABLE `ident_financeiro_fluxo_recebimentos` CHANGE `data_vecimento` `data_vencimento` DATE NOT NULL;

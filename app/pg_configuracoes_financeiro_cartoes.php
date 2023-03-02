@@ -521,7 +521,7 @@ if (isset($_POST['acao'])) {
 				}
 				if (objeto[id_bandeira]) {
 					// popula crediario
-					if (objeto[id_bandeira].debitoTaxas) {
+					if (objeto[id_bandeira].crediarioTaxas) {
 						$('#js-aside-taxas .js-crediario-taxa').val(objeto[id_bandeira].crediarioTaxas.taxa);
 						$('#js-aside-taxas .js-crediario-dias').val(objeto[id_bandeira].crediarioTaxas.dias);
 					} else {
@@ -529,7 +529,7 @@ if (isset($_POST['acao'])) {
 						$('#js-aside-taxas .js-crediario-dias').val('');
 					}
 					// popula creditoEmissor
-					if (objeto[id_bandeira].debitoTaxas) {
+					if (objeto[id_bandeira].creditoEmissorTaxas) {
 						$('#js-aside-taxas .js-credito-emissor-taxa').val(objeto[id_bandeira].creditoEmissorTaxas.taxa);
 						$('#js-aside-taxas .js-credito-emissor-dias').val(objeto[id_bandeira].creditoEmissorTaxas.dias);
 					} else {

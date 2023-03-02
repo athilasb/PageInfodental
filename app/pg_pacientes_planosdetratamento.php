@@ -85,7 +85,7 @@ foreach ($pagRegs as $x) {
 		}
 	} else {
 		$_pagamentos[$x->id_tratamento][] = array(
-			'pago' => $x->pagamento,
+			'pago' => $x->pago,
 			'tipo' => 'parcela ' . $x->id,
 			'valor' => $x->valor
 		);
