@@ -215,7 +215,7 @@ foreach ($registros as $x) {
 
 <script type="text/javascript">
 	var _pagamentosList = [];
-	var dataHoje = '<?= date('d/m/Y'); ?>';
+	
 
 	$(function() {
 		<?php
