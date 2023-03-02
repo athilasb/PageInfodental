@@ -132,6 +132,7 @@ if (isset($_POST['ajax'])) {
 			}
 			$dados = array(
 				"id" => $pagamento->id,
+				"id_parcela" => (int)$pagamento->id,
 				"data_vencimento" => $pagamento->data_vencimento,
 				"data_emissao" => $pagamento->data_emissao,
 				"id_tratamento" => $pagamento->id_tratamento,
@@ -414,7 +415,7 @@ if (isset($_POST['ajax'])) {
 				</section>
 
 				<!-- Programacao de pagamento -->
-				<div class="js-fin js-fin-programacao" style="display: ;">
+				<div class="js-fin js-fin-programacao">
 					<fieldset style="padding:.75rem 1.5rem;">
 						<div class="colunas5">
 							<dl>
@@ -550,7 +551,7 @@ if (isset($_POST['ajax'])) {
 								</div>
 							</div>
 						</section>
-						<section class="js-desconto">
+						<section class="js-desconto" style="display:none">
 							<div class="colunas4">
 								<dl>
 									<dt>Valor</dt>
@@ -676,9 +677,9 @@ if (isset($_POST['ajax'])) {
 	</section>
 	<script>
 		let id_pagamento = 0;
+		let _pagamentos = [];
 		const abrirAside = (tipo, index) => {
 			if (tipo == 'contasAreceber') {
-				console.log('ABRINDO ASIDE...')
 				let data = `ajax=getPagamentosBaixas&id_pagamento=${index}`;
 				$.ajax({
 					type: "POST",
@@ -687,6 +688,7 @@ if (isset($_POST['ajax'])) {
 					success: function(rtn) {
 						if (rtn.success) {
 							let dados = rtn.dados
+							_pagamentos[dados.id] = dados
 							id_pagamento = dados.id
 							// preenche o HEADER 
 							$('#js-aside-asFinanceiro .js-index').val(dados.id);
@@ -1009,7 +1011,6 @@ if (isset($_POST['ajax'])) {
 				url: baseURLApiAsidePagamentos,
 				data: data,
 				success: function(rtn) {
-					console.log(rtn)
 					if (rtn.success) {
 						$('#js-aside-asFinanceiro .js-baixas tr').remove();
 						$('[name="alteracao"]').val("1")
@@ -1122,10 +1123,6 @@ if (isset($_POST['ajax'])) {
 						$('.js-valorDesconto').val(number_format(desconto, 2, ",", "."));
 						$('.js-valorDespesa').val(number_format(despesas, 2, ",", "."));
 						baixasAtualizarValores();
-						let index = _pagamentos.findIndex((item, index) => {
-							return item.id_parcela == id_pagamento
-						})
-						_pagamentos[index].saldoApagar = unMoney($('.js-saldoPagar').text())
 					} else if (rtn.error) {
 						swal({
 							title: "Erro!",
@@ -1156,13 +1153,14 @@ if (isset($_POST['ajax'])) {
 			})
 		}
 		const baixasAtualizarValores = () => {
-			let valorParcela = unMoney($('.js-valorParcela').val())
-			let desconto = unMoney($('.js-valorDesconto').val());
-			let saldoPagar = (valorParcela).toFixed(2);
-			saldoPagar -= desconto;
+			let valorParcela = unMoney($('.js-valorParcela').html()) ?? 0
+			let desconto = unMoney($('.js-valorDesconto').html());
+			let pagamentoIndex = $('#js-aside-asFinanceiro .js-index').val();
+			let pagamento = _pagamentos[pagamentoIndex]
 			let valorCorrigido = valorParcela;
 			valorCorrigido -= desconto;
-			saldoPagar = saldoPagar < 0 ? 0 : saldoPagar
+			let saldoPagar = pagamento.saldoApagar
+
 			$('.js-saldoPagar').html(`R$ ${number_format(saldoPagar, 2, ",", ".")}`);
 			$('.js-valorCorrigido').html(`R$ ${number_format(valorCorrigido, 2, ",", ".")}`);
 			if (saldoPagar <= 0) {
@@ -1177,6 +1175,7 @@ if (isset($_POST['ajax'])) {
 			pagamentosAtualizaCampos('');
 			// clica para estornar 
 			$('#js-aside-asFinanceiro .js-baixas').on('click', '.js-estorno', function() {
+				console.log('CLICOU PARA ESTORNAR')
 				id_pagamento = $('#js-aside-asFinanceiro .js-id_pagamento').val();
 				let id_baixa = $(this).attr('data-id_baixa')
 				let data = `ajax=baixaEstornar&id_baixa=${id_baixa}&id_pagamento=${id_pagamento}`;
@@ -1488,14 +1487,14 @@ if (isset($_POST['ajax'])) {
 					$(this).val(0);
 					ValorDigitado = pagamento.saldoApagar
 				}
-				let data = new Date(`${pagamento.vencimento.split('/')[2]}/${pagamento.vencimento.split('/')[1]}/${pagamento.vencimento.split('/')[0]}`);
+				let data = new Date(`${pagamento.data_vencimento.split('-')[2]}/${pagamento.data_vencimento.split('-')[1]}/${pagamento.data_vencimento.split('-')[0]}`);
 				let hoje = new Date();
 				let diferenca = (hoje.getTime() - data.getTime()) / (1000 * 60 * 60 * 24);
 				if (diferenca >= 1) {
 					if ($('.js-aplicar-multas-juros').prop('checked') == true) {
 						$('.js-multa').show()
 						let ValorMulta = (ValorDigitado * ((_clinica[1].politica_multas) / 100))
-						let ValorJuros = (ValorDigitado * (((_clinica[1].politica_juros) / 100))) * Math.floor(diferenca)
+						let ValorJuros = (ValorDigitado * (((_clinica[1].politica_juros)/30) / 100)) * Math.floor(diferenca)
 						$('.js-valorMultas').text(number_format(ValorMulta, 2, ",", "."))
 						$('.js-valorJuros').text(number_format(ValorJuros, 2, ",", "."))
 						$('.js-TotalaPagar').text(number_format(ValorDigitado + ValorMulta + ValorJuros, 2, ",", "."))
@@ -1534,7 +1533,7 @@ if (isset($_POST['ajax'])) {
 				let pagamento = _pagamentos.filter((item) => {
 					return item.id_parcela == idPagamento
 				})[0]
-				let data = new Date(`${pagamento.vencimento.split('/')[2]}/${pagamento.vencimento.split('/')[1]}/${pagamento.vencimento.split('/')[0]}`);
+				let data = new Date(`${pagamento.data_vencimento.split('-')[2]}/${pagamento.data_vencimento.split('-')[1]}/${pagamento.data_vencimento.split('-')[0]}`);
 				let hoje = new Date();
 				let diferenca = (hoje.getTime() - data.getTime()) / (1000 * 60 * 60 * 24);
 				if (diferenca >= 1) {
@@ -1741,10 +1740,8 @@ if (isset($_POST['ajax'])) {
 								data: data,
 								success: function(rtn) {
 									if (rtn.success) {
-										let index = _pagamentos.findIndex((item, index) => {
-											return item.id_parcela == id_pagamento
-										})
-										_pagamentos[index].saldoApagar = unMoney(_pagamentos[index].saldoApagar) - unMoney(valor)
+										let pagamentoIndex = $('#js-aside-asFinanceiro .js-index').val();
+										_pagamentos[pagamentoIndex].saldoApagar = unMoney(_pagamentos[pagamentoIndex].saldoApagar) - unMoney(valor)
 										baixasAtualizar();
 										$('.js-dataPagamento').val('<?= date('d/m/Y'); ?>');
 										$('.js-valor').val('');

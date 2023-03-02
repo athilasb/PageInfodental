@@ -210,12 +210,11 @@ foreach ($registros as $x) {
 
 <script type="text/javascript">
 	var baixas = [];
-	var id_pagamento = 0;
 	const _clinica = <?= json_encode($_clinica) ?>;
 </script>
 
 <script type="text/javascript">
-	var _pagamentos = [];
+	var _pagamentosList = [];
 	var dataHoje = '<?= date('d/m/Y'); ?>';
 
 	$(function() {
@@ -304,8 +303,8 @@ foreach ($registros as $x) {
 		?>
 			// Quando clica para abrir o aside
 			$('.js-pagamento-item').click(function() {
-				let index = $(this).index('table.js-table-pagamentos .js-pagamento-item');
-				abrirAside('financeiroPaciente', index)
+				let id = $(this).attr('data-id');
+				abrirAside('contasAreceber', id)
 			});
 
 		<?php
@@ -367,8 +366,8 @@ foreach ($registros as $x) {
 											<dd>
 												<a href="javascript:;" class="button button_main js-btn-unirPagamentos "><i class="iconify" data-icon="fluent:link-square-24-filled"></i><span>Salvar</span></a>
 												<a href="<?= $_page . "?" . $url; ?>" class="button tooltip" title="Cancelar" style="background: var(--vermelho);color:#FFF;"><i class="iconify" data-icon="topcoat:cancel"></i><span>Cancelar</span></a>
-											</dd>
-										</dl>
+
+
 									</div>
 								</div>
 							<?php
@@ -627,7 +626,7 @@ foreach ($registros as $x) {
 											'jurosMensal' => $valorJuros
 										);
 
-										$pagamentosJSON[] = $item;
+										$pagamentosJSON[$x->id] = $item;
 										if ($status == 'DEFINIR PAGAMENTO') {
 											$DefinirPagamento += $x->valor;
 										}
@@ -693,12 +692,11 @@ foreach ($registros as $x) {
 				</div>
 			</div>
 		</section>
-
 	</div>
 </main>
 
 <script type="text/javascript">
-	_pagamentos = JSON.parse(`<?= json_encode($pagamentosJSON); ?>`);
+	_pagamentosList = JSON.parse(`<?= json_encode($pagamentosJSON); ?>`);
 </script>
 
 <?php

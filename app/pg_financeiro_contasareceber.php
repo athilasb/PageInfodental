@@ -16,6 +16,7 @@ include "includes/header.php";
 include "includes/nav.php";
 $data_inicial_filtro = isset($_GET['data_inicio']) ? $_GET['data_inicio'] : date('Y-m-d');
 $data_final_filtro =  isset($_GET['data_final']) ? $_GET['data_final'] : date('Y-m-d', strtotime("+7 days"));
+$dias_filtro = (strtotime($data_final_filtro) - strtotime($data_inicial_filtro)) / (60 * 60 * 24);
 
 function getValores($data_inicial, $data_final)
 {
@@ -47,7 +48,7 @@ function getValores($data_inicial, $data_final)
 	}
 	// aqui eu busco as baixas que foram dadas
 	$_baixas = array();
-	$sql->consult($_p . "financeiro_fluxo", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 order by data_vencimento asc");
+	$sql->consult($_p . "financeiro_fluxo", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 AND desconto=0 order by data_vencimento asc");
 	if ($sql->rows) {
 		while ($x = mysqli_fetch_object($sql->mysqry)) {
 			$_baixas[$x->id] = $x;
@@ -82,7 +83,6 @@ function getValores($data_inicial, $data_final)
 		}
 	}
 
-
 	$dados = [];
 	foreach ($_baixas as $baixa) {
 		$dados[$baixa->id]['id_baixa'] = $baixa->id;
@@ -90,7 +90,7 @@ function getValores($data_inicial, $data_final)
 		$dados[$baixa->id]['id_registro'] = $baixa->id_registro;
 		$dados[$baixa->id]['pagamento'] = $baixa->pagamento;
 		$dados[$baixa->id]['data_efetivado'] = $baixa->data_efetivado;
-		$dados[$baixa->id]['tipo'] = $baixa->tipo;
+		$dados[$baixa->id]['tipo'] = 'fluxo';
 		$dados[$baixa->id]['valor'] = $baixa->valor;
 		$dados[$baixa->id]['valor_multa'] = $baixa->valor_multa;
 		$dados[$baixa->id]['valor_taxa'] = $baixa->valor_taxa;
@@ -116,12 +116,23 @@ function getValores($data_inicial, $data_final)
 			}
 		}
 	}
+	$_registros = array();
+	$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 order by data_vencimento asc");
+	if ($sql->rows) {
+		while ($x = mysqli_fetch_object($sql->mysqry)) {
+			$_registros[$x->id] = $x;
+		}
+	}
 
 	$dados = json_decode(json_encode($dados));
-	return [$dados, $valor];
+	return [$dados, $_registros, $valor];
 }
 
-[$dados, $valor] = getValores($data_inicial_filtro, $data_final_filtro);
+[$dados, $_registros, $valor] = getValores($data_inicial_filtro, $data_final_filtro);
+
+// echo "<pre>";
+// print_r($_registros);
+// die();
 ?>
 <header class="header">
 	<div class="header__content content">
@@ -134,11 +145,11 @@ function getValores($data_inicial, $data_final)
 		<div class="header__inner2">
 			<section class="header-date">
 				<div class="header-date-now">
-					<h1 id="dia_i"></h1>
-					<h2 id="mes_i"></h2>
+					<h1 id="dia_i"><?= date('d', strtotime($data_inicial_filtro)) ?></h1>
+					<h2 id="mes_i"><?= date('M', strtotime($data_inicial_filtro)) ?></h2>
 					até
-					<h1 id="dia_f"></h1>
-					<h2 id="mes_f"></h2>
+					<h1 id="dia_f"><?= date('d', strtotime($data_final_filtro)) ?></h1>
+					<h2 id="mes_f"><?= date('M', strtotime($data_final_filtro)) ?></h2>
 				</div>
 			</section>
 		</div>
@@ -158,11 +169,11 @@ function getValores($data_inicial, $data_final)
 					<span class="iconify" data-icon="bi:calendar-week"></span>
 				</a>
 				<div class="button-group">
-					<a href="javascript:;" class="button active btn-prefiltro" data-dias='7'>7 dias</a>
-					<a href="javascript:;" class="button btn-prefiltro" data-dias='30'>30 dias</a>
-					<a href="javascript:;" class="button btn-prefiltro" data-dias='60'>60 dias</a>
-					<a href="javascript:;" class="button btn-prefiltro" data-dias='90'>90 dias</a>
-					<a href="javascript:;" class="button btn-prefiltro" data-dias='365'>ano</a>
+					<a href="/pg_financeiro_contasareceber.php?data_inicial=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 7 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 7) ? 'active' : '' ?>" data-dias='7'>7 dias</a>
+					<a href="/pg_financeiro_contasareceber.php?data_inicial=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 30 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 30) ? 'active' : '' ?>" data-dias='30'>30 dias</a>
+					<a href="/pg_financeiro_contasareceber.php?data_inicial=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 60 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 60) ? 'active' : '' ?>" data-dias='60'>60 dias</a>
+					<a href="/pg_financeiro_contasareceber.php?data_inicial=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 90 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 90) ? 'active' : '' ?>" data-dias='90'>90 dias</a>
+					<a href="/pg_financeiro_contasareceber.php?data_inicial=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 365 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 365) ? 'active' : '' ?>" data-dias='365'>ano</a>
 				</div>
 			</div>
 		</section>
@@ -179,6 +190,10 @@ function getValores($data_inicial, $data_final)
 							<h2 style="color:var(--cinza4)" id='valor-aReceber'>R$ <?= number_format($valor['aReceber'], 2, ',', '.') ?></h2>
 						</div>
 						<div class="filter-title">
+							<p>A definir pagamento</p>
+							<h2 style="color:var(--laranja)" id='valor-definirPagamento'>R$ 0,00</h2>
+						</div>
+						<div class="filter-title">
 							<p>Recebido</p>
 							<h2 style="color:var(--verde)" id='valor-valorRecebido'>R$ <?= number_format($valor['valorRecebido'], 2, ',', '.') ?></h2>
 						</div>
@@ -188,15 +203,15 @@ function getValores($data_inicial, $data_final)
 						</div>
 					</div>
 					<div class="filter-group">
-						<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i> <span>Gráficos</span></a>
+						<!-- <a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i> <span>Gráficos</span></a> -->
 					</div>
 				</section>
 			</div>
 
 			<div class="box">
-				<div class="filter">
+				<!-- <div class="filter">
 					<a href="" class="button"><i class="iconify" data-icon="fluent:link-square-24-filled"></i><span>Unir pagamentos</span></a>
-				</div>
+				</div> -->
 				<div class="list2">
 					<table class="tablesorter" id="list-payments">
 						<thead>
@@ -211,7 +226,7 @@ function getValores($data_inicial, $data_final)
 							</tr>
 						</thead>
 						<tbody>
-							<?php foreach ($dados as $x){ ?>
+							<?php foreach ($dados as $x) { ?>
 								<tr>
 									<td><?= date('d/m/Y', strtotime($x->data_vencimento)) ?></td>
 									<td><?= $x->status ?></td>
