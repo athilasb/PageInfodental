@@ -421,7 +421,6 @@ if (isset($_POST['ajax'])) {
 					<a href="javascript:;" onclick="$('.js-fin').hide(); $('.js-fin-programacao').show();" class="active">Programação de Pagamento</a>
 					<a href="javascript:;" onclick="$('.js-fin').hide(); $('.js-fin-agrupamento').show();" class="js-tab-agrupamento">Agrupamento</a>
 				</section>
-
 				<!-- Programacao de pagamento -->
 				<div class="js-fin js-fin-programacao">
 					<fieldset style="padding:.75rem 1.5rem;">
@@ -510,7 +509,6 @@ if (isset($_POST['ajax'])) {
 												}
 												echo '</optgroup>';
 											}
-
 											?>
 										</select>
 									</dd>
@@ -523,7 +521,6 @@ if (isset($_POST['ajax'])) {
 										</select>
 									</dd>
 								</dl>
-
 								<dl>
 									<dt>Valor da Parcela</dt>
 									<dd><label class="js-valorCreditoDebito js-tipoPagamento">R$ 0,00</label></dd>
@@ -533,7 +530,6 @@ if (isset($_POST['ajax'])) {
 									<dt>Taxa (%)</dt>
 									<dd><label class="js-valorCreditoDebitoTaxa js-tipoPagamento">R$ 0,00</label></dd>
 								</dl>
-
 							</div>
 							<dl>
 								<dd><label><input type="checkbox" name="juros" class="input-switch  js-aplicar-multas-juros" onclick="//$('.js-multa').toggle();" checked />Aplicar juros e multas</label></dd>
@@ -575,7 +571,6 @@ if (isset($_POST['ajax'])) {
 							<dd><button href="javascript:;" class="button button_main js-btn-addBaixa" type="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar</span></button></dd>
 						</dl>
 					</fieldset>
-
 					<fieldset>
 						<legend>FATURAS</legend>
 						<div class="list2 list2_sm">
@@ -649,7 +644,6 @@ if (isset($_POST['ajax'])) {
 							</dl>
 						</div>
 						<div class="colunas3">
-
 							<dl>
 								<dt>Vencimento da Parcela</dt>
 								<dd><input type="text" class="js-vencimentoParcela" readonly /></dd>
@@ -745,7 +739,6 @@ if (isset($_POST['ajax'])) {
 				}).done(function() {});
 			}
 		}
-
 		const pagamentosAtualizaCampos = (formaDePagamento) => {
 			if (formaDePagamento) {
 				let id_formapagamento = formaDePagamento.val();

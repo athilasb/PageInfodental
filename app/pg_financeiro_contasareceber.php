@@ -130,9 +130,9 @@ function getValores($data_inicial, $data_final)
 
 [$dados, $_registros, $valor] = getValores($data_inicial_filtro, $data_final_filtro);
 
-//  echo "<pre>";
-//  print_r($data_inicial_filtro);
-//  die();
+ echo "<pre>";
+ print_r($data_inicial_filtro);
+ die();
 ?>
 <header class="header">
 	<div class="header__content content">
@@ -163,7 +163,6 @@ function getValores($data_inicial, $data_final)
 					<p>Lançamentos de contas a receber</p>
 				</div>
 			</div>
-
 			<div class="filter-group">
 				<a href="javascript:;" class="button js-calendario">
 					<span class="iconify" data-icon="bi:calendar-week"></span>
@@ -207,7 +206,6 @@ function getValores($data_inicial, $data_final)
 					</div>
 				</section>
 			</div>
-
 			<div class="box">
 				<!-- <div class="filter">
 					<a href="" class="button"><i class="iconify" data-icon="fluent:link-square-24-filled"></i><span>Unir pagamentos</span></a>
