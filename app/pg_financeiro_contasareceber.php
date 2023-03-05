@@ -130,9 +130,9 @@ function getValores($data_inicial, $data_final)
 
 [$dados, $_registros, $valor] = getValores($data_inicial_filtro, $data_final_filtro);
 
- echo "<pre>";
- print_r($data_inicial_filtro);
- die();
+//   echo "<pre>";
+//   print_r($_registros);
+//   die();
 ?>
 <header class="header">
 	<div class="header__content content">
