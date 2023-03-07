@@ -117,14 +117,26 @@ function getValores($data_inicial, $data_final)
 		}
 	}
 	$_registros = array();
+	$idsPagamentos = array();
 	$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 order by data_vencimento asc");
 	if ($sql->rows) {
 		while ($x = mysqli_fetch_object($sql->mysqry)) {
 			$_registros[$x->id] = $x;
+			$idsPagamentos[$x->id] = $x->id;
 		}
 	}
 
+	$fluxosPagamentos = array();
+	$sql->consult($_p . "financeiro_fluxo", "*", "WHERE id_registro IN (" . implode(',', $idsPagamentos) . ") AND lixo=0");
+	if ($sql->rows) {
+		while ($x = mysqli_fetch_object($sql->mysqry)) {
+			$fluxosPagamentos[$x->id] = $x;
+		}
+	}
 
+	// echo "<pre>";
+	// print_r($fluxosPagamentos);
+	// die();
 	$dados = json_decode(json_encode($dados));
 	return [$dados, $_registros, $valor];
 }
@@ -132,9 +144,9 @@ function getValores($data_inicial, $data_final)
 
 [$dados, $_registros, $valor] = getValores($data_inicial_filtro, $data_final_filtro);
 
-//   echo "<pre>";
-//   print_r($_registros);
-//   die();
+// echo "<pre>";
+// print_r($_registros);
+// die();
 ?>
 <header class="header">
 	<div class="header__content content">
@@ -172,7 +184,7 @@ function getValores($data_inicial, $data_final)
 				<div class="button-group">
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 7 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 7) ? 'active' : '' ?>" data-dias='7'>7 dias</a>
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 30 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 30) ? 'active' : '' ?>" data-dias='30'>30 dias</a>
-]					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 60 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 60) ? 'active' : '' ?>" data-dias='60'>60 dias</a>
+					] <a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 60 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 60) ? 'active' : '' ?>" data-dias='60'>60 dias</a>
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 90 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 90) ? 'active' : '' ?>" data-dias='90'>90 dias</a>
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 365 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 365) ? 'active' : '' ?>" data-dias='365'>ano</a>
 				</div>
