@@ -125,18 +125,37 @@ function getValores($data_inicial, $data_final)
 			$idsPagamentos[$x->id] = $x->id;
 		}
 	}
-
-	$fluxosPagamentos = array();
-	$sql->consult($_p . "financeiro_fluxo", "*", "WHERE id_registro IN (" . implode(',', $idsPagamentos) . ") AND lixo=0");
-	if ($sql->rows) {
-		while ($x = mysqli_fetch_object($sql->mysqry)) {
-			$fluxosPagamentos[$x->id] = $x;
+	foreach ($_registros as $id => $pag) {
+		$sql->consult($_p . "financeiro_fluxo", "SUM(valor)", "WHERE id_registro='$id' AND id_origem=1");
+		$key = "SUM(valor)";
+		$soma = mysqli_fetch_object($sql->mysqry);
+		if ($soma->$key >= $pag->valor) {
+			//echo "SOMA È MAIOR OU IGUAL QUE O VALOR ORIGINAL<br>";
+		} else {
+			$faltam = ($pag->valor - $soma->$key);
+			//echo "AINDA FALTA UM VALOR DE: $faltam<br>";
+			$valor['definirPagamento'] += $faltam;
+			$dados[$baixa->id]['id_baixa'] = $pag->id;
+			$dados[$baixa->id]['data_vencimento'] = $pag->data_vencimento;
+			$dados[$baixa->id]['id_registro'] = $pag->id;
+			$dados[$baixa->id]['pagamento'] = 0;
+			$dados[$baixa->id]['data_efetivado'] = null;
+			$dados[$baixa->id]['tipo'] = 'recebimento';
+			$dados[$baixa->id]['valor'] = $faltam;
+			$dados[$baixa->id]['valor_multa'] = $pag->valor_multa;
+			$dados[$baixa->id]['valor_taxa'] = $pag->valor_taxa;
+			$dados[$baixa->id]['valor_desconto'] = $pag->valor_desconto;
+			$dados[$baixa->id]['valor_juros'] = 0;
+			$dados[$baixa->id]['desconto'] = 0;
+			$dados[$baixa->id]['valorTotalPagamento'] = $_registros[$pag->id]->valor;
+			$dados[$baixa->id]['titulo'] = $_tratamentos[$_registros[$pag->id]->id_tratamento]->titulo;
+			$dados[$baixa->id]['nome_pagante'] = $_pagantes[$_registros[$pag->id]->id_pagante]->nome;
+			$dados[$baixa->id]['status'] = 'DEFINIR PAGAMENTO';
+			$valor['valorTotal'] += $baixa->valor;
 		}
 	}
 
-	// echo "<pre>";
-	// print_r($fluxosPagamentos);
-	// die();
+
 	$dados = json_decode(json_encode($dados));
 	return [$dados, $_registros, $valor];
 }
@@ -144,9 +163,9 @@ function getValores($data_inicial, $data_final)
 
 [$dados, $_registros, $valor] = getValores($data_inicial_filtro, $data_final_filtro);
 
-// echo "<pre>";
-// print_r($_registros);
-// die();
+// // echo "<pre>";
+// // print_r($_registros);
+// // die();
 ?>
 <header class="header">
 	<div class="header__content content">
@@ -204,7 +223,7 @@ function getValores($data_inicial, $data_final)
 						</div>
 						<div class="filter-title">
 							<p>A definir pagamento</p>
-							<h2 style="color:var(--laranja)" id='valor-definirPagamento'>R$ 0,00</h2>
+							<h2 style="color:var(--laranja)" id='valor-definirPagamento'>R$ <?= number_format($valor['definirPagamento'], 2, ',', '.') ?></h2>
 						</div>
 						<div class="filter-title">
 							<p>Recebido</p>
