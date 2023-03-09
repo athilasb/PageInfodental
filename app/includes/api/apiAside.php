@@ -3501,7 +3501,7 @@
 								<a href="javascript:;" onclick="$('.js-paciente').hide();$('#js-aside-add input[name=agendaPessoal]').val(1);">Compromisso Pessoal</a>				
 							</section>
 						
-							<section class="filter">
+							<section class="filter" style="overflow-x: visible">
 								<div class="filter-group">
 								</div>
 								<div class="filter-group">

@@ -694,11 +694,12 @@ if (isset($_POST['ajax'])) {
 							let dados = rtn.dados
 							_pagamentos[dados.id] = dados
 							id_pagamento = dados.id
-							// preenche o HEADER 
+							// preenche o HEADER
+							console.log(dados)
 							$('#js-aside-asFinanceiro .js-index').val(dados.id);
 							$('#js-aside-asFinanceiro .js-id_pagamento').val(dados.id);
 							$('#js-aside-asFinanceiro .js-titulo').html(dados.titulo);
-							$('#js-aside-asFinanceiro .js-dataOriginal').html(`${`${dados.data_vencimento.split('/')[2]}/${dados.data_vencimento.split('/')[1]}/${dados.data_vencimento.split('/')[0]}`}`);
+							$('#js-aside-asFinanceiro .js-dataOriginal').html(`${`${dados.data_vencimento.split('-')[2]}/${dados.data_vencimento.split('-')[1]}/${dados.data_vencimento.split('-')[0]}`}`);
 							$('#js-aside-asFinanceiro .js-valorParcela').html(`R$ ${number_format(dados.valor, 2, ",", ".")}`);
 							$('#js-aside-asFinanceiro .js-valorDesconto').html(`R$ ${number_format(dados.valor_desconto, 2, ",", ".")}`);
 							$('#js-aside-asFinanceiro .js-valorCorrigido').html(`R$ ${number_format((dados.valor-dados.valor_desconto), 2, ",", ".")}`);

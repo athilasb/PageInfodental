@@ -117,22 +117,55 @@ function getValores($data_inicial, $data_final)
 		}
 	}
 	$_registros = array();
+	$idsPagamentos = array();
 	$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 order by data_vencimento asc");
 	if ($sql->rows) {
 		while ($x = mysqli_fetch_object($sql->mysqry)) {
 			$_registros[$x->id] = $x;
+			$idsPagamentos[$x->id] = $x->id;
 		}
 	}
+	foreach ($_registros as $id => $pag) {
+		$sql->consult($_p . "financeiro_fluxo", "SUM(valor)", "WHERE id_registro='$id' AND id_origem=1");
+		$key = "SUM(valor)";
+		$soma = mysqli_fetch_object($sql->mysqry);
+		if ($soma->$key >= $pag->valor) {
+			//echo "SOMA È MAIOR OU IGUAL QUE O VALOR ORIGINAL<br>";
+		} else {
+			$faltam = ($pag->valor - $soma->$key);
+			//echo "AINDA FALTA UM VALOR DE: $faltam<br>";
+			$valor['definirPagamento'] += $faltam;
+			$dados[$baixa->id]['id_baixa'] = $pag->id;
+			$dados[$baixa->id]['data_vencimento'] = $pag->data_vencimento;
+			$dados[$baixa->id]['id_registro'] = $pag->id;
+			$dados[$baixa->id]['pagamento'] = 0;
+			$dados[$baixa->id]['data_efetivado'] = null;
+			$dados[$baixa->id]['tipo'] = 'recebimento';
+			$dados[$baixa->id]['valor'] = $faltam;
+			$dados[$baixa->id]['valor_multa'] = $pag->valor_multa;
+			$dados[$baixa->id]['valor_taxa'] = $pag->valor_taxa;
+			$dados[$baixa->id]['valor_desconto'] = $pag->valor_desconto;
+			$dados[$baixa->id]['valor_juros'] = 0;
+			$dados[$baixa->id]['desconto'] = 0;
+			$dados[$baixa->id]['valorTotalPagamento'] = $_registros[$pag->id]->valor;
+			$dados[$baixa->id]['titulo'] = $_tratamentos[$_registros[$pag->id]->id_tratamento]->titulo;
+			$dados[$baixa->id]['nome_pagante'] = $_pagantes[$_registros[$pag->id]->id_pagante]->nome;
+			$dados[$baixa->id]['status'] = 'DEFINIR PAGAMENTO';
+			$valor['valorTotal'] += $baixa->valor;
+		}
+	}
+
 
 	$dados = json_decode(json_encode($dados));
 	return [$dados, $_registros, $valor];
 }
 
+
 [$dados, $_registros, $valor] = getValores($data_inicial_filtro, $data_final_filtro);
 
-//   echo "<pre>";
-//   print_r($_registros);
-//   die();
+// // echo "<pre>";
+// // print_r($_registros);
+// // die();
 ?>
 <header class="header">
 	<div class="header__content content">
@@ -170,7 +203,7 @@ function getValores($data_inicial, $data_final)
 				<div class="button-group">
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 7 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 7) ? 'active' : '' ?>" data-dias='7'>7 dias</a>
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 30 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 30) ? 'active' : '' ?>" data-dias='30'>30 dias</a>
-					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 60 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 60) ? 'active' : '' ?>" data-dias='60'>60 dias</a>
+					] <a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 60 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 60) ? 'active' : '' ?>" data-dias='60'>60 dias</a>
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 90 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 90) ? 'active' : '' ?>" data-dias='90'>90 dias</a>
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 365 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 365) ? 'active' : '' ?>" data-dias='365'>ano</a>
 				</div>
@@ -190,7 +223,7 @@ function getValores($data_inicial, $data_final)
 						</div>
 						<div class="filter-title">
 							<p>A definir pagamento</p>
-							<h2 style="color:var(--laranja)" id='valor-definirPagamento'>R$ 0,00</h2>
+							<h2 style="color:var(--laranja)" id='valor-definirPagamento'>R$ <?= number_format($valor['definirPagamento'], 2, ',', '.') ?></h2>
 						</div>
 						<div class="filter-title">
 							<p>Recebido</p>
