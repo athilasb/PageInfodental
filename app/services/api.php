@@ -3,11 +3,25 @@
 
 	require_once '../lib/conf.php';
 	require_once '../lib/class/classMysql.php';
-	require_once 'dompdf/autoload.inc.php';
+	require_once '../vendor/autoload.php';
 
-	use Dompdf\Dompdf;
-	$dompdf = new Dompdf(array('enable_remote'=>true));
-	$dompdf = new Dompdf(array('isRemoteEnabled'=>true));
+use Dompdf\Options;$options = new Options();die();
+
+
+	use Aws\S3\S3Client;
+	$s3 = new S3Client([
+	    'version' => 'latest',
+	    'endpoint' => $_scalewayS3endpoint,
+	    'region'  => $_scalewayS3Region,
+	    'credentials' => [
+	    	'key' => $_scalewayAccessKey,
+	    	'secret' => $_scalewaySecretKey
+	    ],
+	     'bucket_endpoint' => true
+	]);
+
+
+	die();
 	$sql = new Mysql();
 	$id_evolucao=1990;
 
@@ -17,6 +31,14 @@
 	$token='ee7a1554b556f657e8659a56d1a19c315684c39d';
 	$request = file_get_contents('php://input');
 	$request = json_decode($request);
+
+	$infoConta = '';
+	if(isset($request->infoConta) and !empty($request->infoConta)) {
+		$sql->consult("infodentalADM.infod_contas","instancia","where instancia='".addslashes($request->infoConta)."'");
+		if($sql->rows) {
+			$infoConta = mysqli_fetch_object($sql->mysqry);
+		}
+	}
 
 	if(isset($request->token) and $request->token==$token) {
 
@@ -31,11 +53,9 @@
 
 		$rtn = [];
 
-		$infoConta = '';
-		$sql->consult("infodentalADM.infod_contas","*","where instancia='".addslashes($_ENV['NAME'])."'");
-		if($sql->rows) $infoConta=mysqli_fetch_object($sql->mysqry);
-
 		if(is_object($infoConta)) {
+
+			$_p=$infoConta->instancia.".ident_";
 
 			if(isset($request->method)) {
 
@@ -45,9 +65,12 @@
 
 					$erro='';
 
+					$enviaWhatsapp = (isset($request->enviaWhatsapp) and $request->enviaWhatsapp==1) ? 1 : 0; 
+
 					$evolucao=$evolucaoTipo=$paciente='';
 					if(isset($request->id_evolucao) and is_numeric($request->id_evolucao)) {
 						$sql->consult($_p."pacientes_evolucoes","*","where id=$request->id_evolucao"); 
+
 						if($sql->rows) {
 							$evolucao = mysqli_fetch_object($sql->mysqry);
 
@@ -69,9 +92,9 @@
 					if(empty($evolucao)) $erro='Evolução não encontrada!';
 					else if(empty($evolucaoTipo)) $erro='Tipo de evolução não encontrado!';
 					else if(empty($paciente)) $erro='Paciente não encontrado!';
-					else if(is_object($paciente) and empty($paciente->telefone1)) $erro='Paciente não possui celular cadastrado para envio do whatsapp';
-					else if(empty($conexao)) $erro='Infozap não conectado';
-					else if(is_object($conexao) and $conexao->versao!=2) $erro='Versão do Infozap não suporta envio de arquivos. Favor atualize seu Infozap!';
+					else if($enviaWhatsapp==1 and is_object($paciente) and empty($paciente->telefone1)) $erro='Paciente não possui celular cadastrado para envio do whatsapp';
+					else if($enviaWhatsapp==1 and empty($conexao)) $erro='Infozap não conectado';
+					else if($enviaWhatsapp==1 and is_object($conexao) and $conexao->versao!=2) $erro='Versão do Infozap não suporta envio de arquivos. Favor atualize seu Infozap!';
 
 
 
@@ -417,10 +440,7 @@
 					} 
 
 
-					$enviaWhatsapp = (isset($request->enviaWhatsapp) and $request->enviaWhatsapp==1) ? 1 : 0; 
-
-
-					// dispara whatsapp com o PDF gerado
+					// dispara whatsapp com o PDF gerado se parametro enviaWhatsapp = 1
 					if($enviaWhatsapp and empty($erro)) {
 
 						// verifica se possui conexao
@@ -478,5 +498,6 @@
 		echo json_encode($rtn);
 
 	} else http_response_code(403);
+
 
 ?>

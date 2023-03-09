@@ -571,10 +571,10 @@
 					if(empty($erro)) {
 
 						// id_tipo = 7 -> receituario
-						$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
+						/*$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
 																								id_paciente=$paciente->id and
 																								id_tipo=7 and  
-																								id_usuario=$usr->id");	
+																								id_usuario=$usr->id");	*/
 						/*if($sql->rows) {
 							$e=mysqli_fetch_object($sql->mysqry);
 							$sql->update($_p."pacientes_evolucoes","data_pedido='".addslashes(invDate($_POST['data']))."',
@@ -620,7 +620,41 @@
 							
 						}
 
-						$rtn=array('success'=>true);
+						// gera PDF
+							$endpoint="https://".$_SERVER['HTTP_HOST']."/services/api.php";
+
+							$params = [];
+							$params['token']='ee7a1554b556f657e8659a56d1a19c315684c39d';
+							$params['method']='generatePDF';
+							$params['infoConta']='studiodental';
+							$params['id_evolucao']=4724;
+							$params['enviaWhatsapp']=0;
+
+								
+							$curl = curl_init();
+							curl_setopt_array($curl, [
+							  CURLOPT_URL => $endpoint,
+							  CURLOPT_RETURNTRANSFER => true,
+							  CURLOPT_ENCODING => "",
+							  CURLOPT_MAXREDIRS => 10,
+							  CURLOPT_TIMEOUT => 30,
+							  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+							  CURLOPT_CUSTOMREQUEST => "GET",
+							  CURLOPT_POSTFIELDS => json_encode($params),
+							  CURLOPT_HTTPHEADER => ["Content-Type: application/json"]
+							]);
+
+							$response = curl_exec($curl);
+							$err = curl_error($curl);
+
+							curl_close($curl);
+							if ($err) {
+							  $rtn=array('success'=>false,
+							  				'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
+							} else {
+								$rtn=array('success'=>true);
+							}
+
 
 
 					} else {
@@ -1010,7 +1044,15 @@
 				if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
 					$sql->consult($_p."pacientes","id,nome","where id=".$_POST['id_paciente']);
 					if($sql->rows) $paciente=mysqli_fetch_object($sql->mysqry);
+				}	
+
+				$profissional = '';
+				if(isset($_POST['id_profissional']) and is_numeric($_POST['id_profissional'])) {
+					$sql->consult($_p."colaboradores","id,nome","where id=".$_POST['id_profissional']);
+					if($sql->rows) $profissional=mysqli_fetch_object($sql->mysqry);
 				}
+
+
 
 				$procedimentos = (isset($_POST['procedimentos']) and is_array($_POST['procedimentos'])) ? $_POST['procedimentos'] : '';
 				$obs = (isset($_POST['obs']) and !empty($_POST['obs'])) ? $_POST['obs'] :'';
@@ -1035,6 +1077,7 @@
 											id_tipo=2, 
 											id_paciente=$paciente->id,
 											id_usuario=$usr->id,
+											id_profissional=$profissional->id,
 											data_evolucao='".$dataEvolucao."'";
 
 							$sql->add($_p."pacientes_evolucoes",$vSQLEvolucao);
@@ -1051,6 +1094,7 @@
 							}
 
 						# Evolução dos Procedimentos
+
 							if(is_array($procedimentos) and count($procedimentos)>0) {
 								foreach($procedimentos as $v) {
 									$v=(object)$v;	
@@ -1116,7 +1160,7 @@
 													id_procedimento_aevoluir='".addslashes($procedimentoAEvoluir->id)."',
 													id_procedimento='".addslashes($procedimentoAprovado->id_procedimento)."',
 													id_tratamento='".addslashes($procedimentoAprovado->id_tratamento)."',
-													id_profissional='".addslashes($procedimentoEvolucao->id_profissional)."',
+													id_profissional='".addslashes($profissional->id)."',
 													status='".addslashes($procedimentoEvolucao->statusEvolucao)."',
 													id_plano='$procedimentoAprovado->id_plano',
 													id_opcao='$procedimentoAprovado->id_opcao',

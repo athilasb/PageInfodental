@@ -769,50 +769,19 @@
 
 			else if($_POST['ajax']=="tagsListar") {
 
-				$agenda='';
-				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
-					$sql->consult($_p."agenda","*","where id='".addslashes($_POST['id_agenda'])."'");
-					if($sql->rows) {
-						$agenda=mysqli_fetch_object($sql->mysqry);
-					}
+				
+				$_tags=array();
+				$sql->consult($_p."parametros_tags","*","WHERE lixo=0");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_tags[]=$x;
 				}
 
-				if(empty($agenda)) $rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
-				else {
 
-					$_tags=array();
-					$sql->consult($_p."parametros_tags","*","WHERE lixo=0");
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$_tags[$x->id]=$x;
-					}
-
-					$regs=array();
-					if(!empty($agenda->tags)) {
-
-						$tags = explode(",", $agenda->tags);
-						foreach($tags as $id) {
-							if(is_numeric($id) and isset($_tags[$id])) {
-								$regs[]=array('id_tag'=>$id,
-											  'id_agenda'=>$agenda->id,
-											  'titulo' => utf8_encode($_tags[$id]->titulo),
-											  'cor'=>utf8_encode($_tags[$id]->cor));
-							}
-						}
-					}
-
-					$rtn=array('success'=>true,'regs'=>$regs);
-				}
+				$rtn=array('success'=>true,'regs'=>$_tags);
+				
 			}
 
 			else if($_POST['ajax']=="tagsRemover") {
-
-				$agenda='';
-				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
-					$sql->consult($_p."agenda","*","where id='".addslashes($_POST['id_agenda'])."'");
-					if($sql->rows) {
-						$agenda=mysqli_fetch_object($sql->mysqry);
-					}
-				}
 
 				$tag='';
 				if(isset($_POST['id']) and is_numeric($_POST['id'])) {
@@ -822,8 +791,7 @@
 					}
 				}
 
-				if(empty($agenda)) $rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
-				else if(empty($tag)) $rtn=array('success'=>false,'error'=>'Tag não encontrada');
+				if(empty($tag)) $rtn=array('success'=>false,'error'=>'Tag não encontrada');
 				else {
 
 					$sql->update($_p."parametros_tags","lixo=1","WHERE id='".$tag->id."'");
@@ -831,31 +799,10 @@
 					$_tags=array();
 					$sql->consult($_p."parametros_tags","*","WHERE lixo=0");
 					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$_tags[$x->id]=$x;
+						$_tags[]=$x;
 					}
 
-					$regs=array();
-					if(!empty($agenda->tags)) {
-
-						$tagsIDs=array();
-						$tags = explode(",", $agenda->tags);
-						foreach($tags as $id) {
-							if(is_numeric($id) and isset($_tags[$id])) {
-								$tagsIDs[]=$id;
-								$regs[]=array('id_tag'=>$id,
-											  'id_agenda'=>$agenda->id,
-											  'titulo' => utf8_encode($_tags[$id]->titulo),
-											  'cor'=>utf8_encode($_tags[$id]->cor));
-							}
-						}
-
-						if(count($tagsIDs)>0) $vSQL="tags=',".implode(",",$tagsIDs).",'";
-						else $vSQL="tags=''";
-
-						$sql->update($_p."agenda",$vSQL,"WHERE id='".$agenda->id."'");
-					}
-
-					$rtn=array('success'=>true,'regs'=>$regs);
+					$rtn=array('success'=>true,'regs'=>$_tags);
 				}
 			}
 		 
@@ -2875,11 +2822,11 @@
 		# Tags
 			else if($_POST['ajax']=="asTagPersistir") {
 
-				$agenda='';
-				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
-					$sql->consult($_p."agenda","*","where id='".addslashes($_POST['id_agenda'])."'");
+				$tag='';
+				if(isset($_POST['id']) and is_numeric($_POST['id']) and $_POST['id']>0) {
+					$sql->consult($_tableTags,"*","where id='".addslashes($_POST['id'])."'");
 					if($sql->rows) {
-						$agenda=mysqli_fetch_object($sql->mysqry);
+						$tag=mysqli_fetch_object($sql->mysqry);
 					}
 				}
 
@@ -2892,45 +2839,29 @@
 
 					$vSQL="titulo='$titulo',cor='$cor'";
 
-					if(isset($_POST['id']) and is_numeric($_POST['id']) and $_POST['id']>0) {
-						$sql->update($_tableTags, $vSQL, "WHERE id='".addslashes($_POST['id'])."'");
-						$id_tag=$_POST['id'];
+					if(is_object($tag)) {
+						$vWHERE="WHERE id=$tag->id";
+						$sql->update($_tableTags, $vSQL,$vWHERE);
+						
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_tableTags."',id_reg='$tag->id'");
 					} else {
 						$sql->add($_tableTags,$vSQL);
 						$id_tag=$sql->ulid;
-
-						if(!empty($agenda->tags))
-							$tags = $agenda->tags.$id_tag.",";
-						else
-							$tags = ",".$id_tag.",";
-
-						$sql->update($_p."agenda", "tags='".$tags."'" , "WHERE id='".$agenda->id."'");
+						
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',vwhere='',tabela='".$_tableTags."',id_reg='$id_tag'");
 					}
 
 					$_tags=array();
 					$sql->consult($_p."parametros_tags","*","WHERE lixo=0 order by titulo asc");
 					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$_tags[$x->id]=$x;
+						$_tags[]=$x;
 					}
 
-					$tags=array();
-					$sql->consult($_p."agenda","tags","WHERE id='".$agenda->id."'");
-					$agenda=mysqli_fetch_object($sql->mysqry);
-
-					if(!empty($agenda->tags)) {
-						$tagsAux = explode(",", $agenda->tags);
-
-						foreach($tagsAux as $id) {
-							if(is_numeric($id) and isset($_tags[$id])) {
-								$tags[]=array('id'=>$id, 'titulo' => utf8_encode($_tags[$id]->titulo));
-							}
-						}
-					}
 					
-					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='',tabela='".$_tableTags."',id_reg='$id_tag'");
+					
 				
 					$rtn=array('success'=>true,
-								'tags'=>$tags);
+								'tags'=>$_tags);
 				}
 
 			}
@@ -4238,9 +4169,9 @@
 																</td>
 																<td><input type="color" value="${x.cor}" disabled /></td>
 																<td style="text-align:right;">
-																	<a href="javascript:;" class="button js-editar" data-id="${x.id_tag}" data-titulo="${x.titulo}" data-cor="${x.cor}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+																	<a href="javascript:;" class="button js-editar" data-id="${x.id}" data-titulo="${x.titulo}" data-cor="${x.cor}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
 
-																	<a href="javascript:;" class="button js-remover" data-id="${x.id_tag}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+																	<a href="javascript:;" class="button js-remover" data-id="${x.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 																</td>
 															</tr>`);
 													});
@@ -4277,7 +4208,6 @@
 
 									$('.js-tags-table').on('click','.js-remover',function(){
 
-										let id_agenda = $('#js-aside-edit input[name=id]').val();
 										let id = $(this).attr('data-id');
 										if($.isNumeric(id) && id>0) {
 										
@@ -4305,7 +4235,7 @@
 
 																if(rtn.regs.length>0) {
 																	rtn.regs.forEach(x=>{
-																		$('.js-tags').append(`<option value="${x.id_tag}" selected>${x.titulo}</option>`);
+																		$('.js-tags').append(`<option value="${x.id}" selected>${x.titulo}</option>`);
 																	});
 																}
 
@@ -5386,6 +5316,8 @@
 
 						$('.js-asTag-submit').click(function(){
 							let obj = $(this);
+							let objHTMLAntigo = $(this).html();
+
 							if(obj.attr('data-loading')==0) {
 
 								let id_agenda = $('#js-aside-edit input[name=id]').val();
@@ -5400,7 +5332,7 @@
 									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 									obj.attr('data-loading',1);
 
-									let data = `ajax=asTagPersistir&titulo=${titulo}&cor=${cor}&id=${id}&id_agenda=${id_agenda}`;
+									let data = `ajax=asTagPersistir&titulo=${titulo}&cor=${cor}&id=${id}`;
 
 									$.ajax({
 										type:'POST',
@@ -5433,7 +5365,7 @@
 											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
 										} 
 									}).done(function(){
-										obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+										obj.html(objHTMLAntigo);
 										obj.attr('data-loading',0);
 									}); 
 								}
@@ -5568,7 +5500,7 @@
 						</script>
 
 						<header class="aside-header">
-							<h1>Nova Tag</h1>
+							<h1>Tags</h1>
 							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 						</header>
 

@@ -124,9 +124,6 @@
 
 	$_table=$_p."pacientes_prontuarios";
 	require_once("includes/header/headerPacientes.php");
-	
-	
-
 ?>
 
 
@@ -158,7 +155,7 @@
 								<div class="filter-form form">
 									<dl>
 										<dd>
-											<a href="javascript:;" data-aside="prontuario-opcoes" class="button button_main">
+											<a href="javascript:;" class="button button_main js-btn-asideArquivo">
 												<i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Enviar Arquivo(s)</span>
 											</a>
 										</dd>
@@ -188,17 +185,7 @@
 
 <?php 
 
-
-	$apiConfig=array('geral'=>1,
-						'anamnese'=>1,
-						'atestado'=>1,
-						'pedidoExame'=>1,
-						'receituario'=>1,
-						'proximaConsulta'=>1,
-						'documentos'=>1,
-						'procedimentos'=>1);
-	
-	require_once("includes/api/apiAsidePaciente.php");
+	require_once("includes/api/apiAsideArquivos.php");
 
 	include "includes/footer.php";
 ?>	

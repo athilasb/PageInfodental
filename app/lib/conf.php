@@ -3,7 +3,7 @@
 	$_p="ident_";
 
 	if(isset($_SERVER['HTTP_HOST'])) {
-		if($_SERVER['HTTP_HOST']=="163.172.187.183:5000") {
+		if($_SERVER['HTTP_HOST']=="163.172.187.183:5000" or $_SERVER['HTTP_HOST']=="testes.infodental.dental") {
 			$_ENV['MYSQL_HOST']='51.159.74.70:23821';
 
 
@@ -11,7 +11,7 @@
 				$_ENV['NAME']=$_ENV['MYSQL_DB']='';
 
 			} else {
-				$_ENV['NAME']=$_ENV['MYSQL_DB']='agenda';
+				$_ENV['NAME']=$_ENV['MYSQL_DB']='studiodental';
 			}
 
 
