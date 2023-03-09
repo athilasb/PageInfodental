@@ -110,7 +110,7 @@
 				
 				$vSQL="de='".addslashes($de)."',
 						ate='".addslashes($ate)."',
-						tipo_politica='".$tipo."'
+						tipo_politica='".$tipo."',
 						entrada='0',
 						parcelas='0',
 						parcelasParametros='".json_encode($parcelasJSON)."'";
