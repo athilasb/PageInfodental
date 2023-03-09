@@ -41,6 +41,8 @@ services:
     ports:
       - '5000:80'
       - '5300:3000'
+      - '80:80'
+      - '443:443'
   app:
     depends_on:
       - mysql

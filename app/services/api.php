@@ -1,11 +1,12 @@
 <?php
-
+	die();
 
 	require_once '../lib/conf.php';
 	require_once '../lib/class/classMysql.php';
 	require_once '../vendor/autoload.php';
 
-use Dompdf\Options;$options = new Options();die();
+	//use Dompdf\Dompdf;
+	$dompdf = new Dompdf(array('isRemoteEnabled'=>true));
 
 
 	use Aws\S3\S3Client;
