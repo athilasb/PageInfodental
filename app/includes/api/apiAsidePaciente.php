@@ -620,14 +620,14 @@
 							
 						}
 
-						// gera PDF
+						# gera PDF
 							$endpoint="https://".$_SERVER['HTTP_HOST']."/services/api.php";
 
 							$params = [];
 							$params['token']='ee7a1554b556f657e8659a56d1a19c315684c39d';
 							$params['method']='generatePDF';
-							$params['infoConta']='studiodental';
-							$params['id_evolucao']=4724;
+							$params['infoConta']=$_ENV['NAME'];
+							$params['id_evolucao']=$id_evolucao;
 							$params['enviaWhatsapp']=0;
 
 								
@@ -649,6 +649,7 @@
 
 							curl_close($curl);
 							if ($err) {
+								var_dump($err);
 							  $rtn=array('success'=>false,
 							  				'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
 							} else {

@@ -1,13 +1,12 @@
 <?php
-	die();
-
+	
+	
 	require_once '../lib/conf.php';
 	require_once '../lib/class/classMysql.php';
 	require_once '../vendor/autoload.php';
 
-	//use Dompdf\Dompdf;
+	use Dompdf\Dompdf;
 	$dompdf = new Dompdf(array('isRemoteEnabled'=>true));
-
 
 	use Aws\S3\S3Client;
 	$s3 = new S3Client([
@@ -22,11 +21,8 @@
 	]);
 
 
-	die();
 	$sql = new Mysql();
 	$id_evolucao=1990;
-
-
 
 
 	$token='ee7a1554b556f657e8659a56d1a19c315684c39d';
@@ -62,7 +58,6 @@
 
 
 				if($request->method=='generatePDF') {
-					require_once 'dompdf/autoload.inc.php';
 
 					$erro='';
 
@@ -434,7 +429,25 @@
 							
 							$_dirReceituario="arqs/pacientes/receituarios/";
 							$uploadPathFile=$infoConta->instancia."/".$_dirReceituario.sha1($evolucao->id).".pdf";
-							$uploaded=$wasabiS3->putObject(S3::inputFile('arqs/temp.pdf',true),$_wasabiBucket,$uploadPathFile,S3::ACL_PUBLIC_READ);
+
+							try {
+								 $s3->putObject(array(
+												        'Bucket'=>$_scalewayBucket,
+												        'Key' =>  $uploadPathFile,
+												        'SourceFile' => 'arqs/temp.pdf',
+												        'ACL'    => 'public-read', //for public access
+												    ));
+
+								 $sql->update($_p."pacientes_evolucoes","s3=1","where id=$evolucao->id");
+							} catch (S3Exception $e) {
+							    $erro='Algum erro ocorreu durante a persistência do PDF em nosso cloud de armazenamento. Favor contactar nossa equipe de suporte!';
+							}
+							//$uploaded=$wasabiS3->putObject(S3::inputFile('arqs/temp.pdf',true),$_wasabiBucket,$uploadPathFile,S3::ACL_PUBLIC_READ);
+
+						}
+
+						# ATESTADO
+						else if($evolucao->id_tipo==4) {
 
 						}
 
