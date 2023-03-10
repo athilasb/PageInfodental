@@ -1082,7 +1082,6 @@ if (isset($_POST['ajax'])) {
 			//if(quantitativo==1) valorCorrigido=quantidade*valor;
 
 
-
 			// valida
 			let erro = '';
 			if (id_procedimento.length == 0) erro = 'Selecione o Procedimento para adicionar';
@@ -1140,6 +1139,7 @@ if (isset($_POST['ajax'])) {
 					item.quantitativo = eval(quantitativo);
 					item.desconto = 0;
 					item.taxas = 0;
+					console.log(item)
 					// Data e Usuario
 					let dt = new Date();
 					let dia = dt.getDate();
@@ -1169,26 +1169,29 @@ if (isset($_POST['ajax'])) {
 					// Faces, Quantitativo ou Hof (id_regiao=5)
 					faces = [];
 					hof = '';
+					// console.log('-------------------------------------')
+					// console.log(valor)
+					// console.log(hof)
+					// console.log('-------------------------------------')
 					if (face == 1) {
-
 						$(`.aside-plano-procedimento-adicionar select.js-regiao-${id_regiao}-select option:selected:eq(${i})`).each(function(index, el) {
 							let id_opcao = $(el).val();
 							let faceItem = {};
 							facesItens = $(`.aside-plano-procedimento-adicionar select.js-face-${id_opcao}-select`).val();
-
 							faces = facesItens;
-
 						});
 
 						valorCorrigido = faces.length * valor;
-					} else if (quantitativo == 1) {
-						valorCorrigido = quantidade * valor;
 					} else if (id_regiao == 5) {
+						console.log('ID REGIAO 5')
 						$(`.aside-plano-procedimento-adicionar select.js-regiao-${id_regiao}-select option:selected:eq(${i})`).each(function(index, el) {
 							let id_opcao = $(el).val();
 							hof = eval($(`.aside-plano-procedimento-adicionar input.js-hof-${id_opcao}-input`).val());
 						});
+
 						valorCorrigido = valor * eval(hof);
+					} else if (quantitativo == 1) {
+						valorCorrigido = quantidade * valor;
 					}
 					item.hof = hof;
 					item.faces = faces;
@@ -1201,9 +1204,7 @@ if (isset($_POST['ajax'])) {
 					if ((i + 1) == linhas) {
 						$(`.aside-plano-procedimento-adicionar .js-asidePlano-quantidade`).val(1).parent().parent().hide();
 						procedimentosListar();
-
 						atualizaValor(true);
-
 					}
 				}
 
@@ -1370,7 +1371,7 @@ if (isset($_POST['ajax'])) {
 					$('.aside-plano-procedimento-adicionar .js-fieldset-hof').append(`<dl class="js-hofs js-hof-${i}">
 																							<dt>${regioesAtivas[i]}</dt>
 																							<dd>
-																								<input type="text" class="js-input-hofs js-hof-${i}-input" style="width:80px;" maxlength="2" /> unidade(s)
+																								<input type="number" class="js-input-hofs js-hof-${i}-input" style="width:80px;" maxlength="3" value="1" step="0.1" min="0"/> unidade(s)
 																							</dd>
 																						</dl>`);
 				}
@@ -1381,9 +1382,9 @@ if (isset($_POST['ajax'])) {
 
 		$('.aside-plano-procedimento-adicionar').on('keyup', '.js-input-hofs', function() {
 			var regexp = (/[^0-9]|^\.+(?!$)|^0+(?=[0-9]+)|\.(?=\.|.+\.)/g);
-			if (regexp.test(this.value)) {
-				this.value = this.value.replace(regexp, '');
-			}
+			// if (regexp.test(this.value)) {
+			// 	this.value = this.value.replace(regexp, '');
+			// }
 		})
 		// desativarCampos();
 		// disabledForm()

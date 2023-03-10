@@ -37,7 +37,7 @@ $dias_filtro = (strtotime($data_final_filtro) - strtotime($data_inicial_filtro))
 			<div class="filter-group">
 				<div class="filter-title">
 					<dl>
-						<dd><a href="#" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Novo Pagamento</span></a></dd>
+						<dd><a class="button button_main js-btn-abrir-aside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Novo Pagamento</span></a></dd>
 					</dl>
 				</div>
 			</div>
@@ -54,94 +54,73 @@ $dias_filtro = (strtotime($data_final_filtro) - strtotime($data_inicial_filtro))
 				</div>
 			</div>
 		</section>
-		<section class="grid" style="grid-template-columns:40% auto">
+		<section class="grid">
 			<div class="box">
-				<div class="filter">
+				<section class="filter" style="margin-bottom:0;">
 					<div class="filter-group">
 						<div class="filter-title">
-							<h1>Indicadores</h1>
+							<p>Total</p>
+							<h2><strong id='valor-valorTotal'>R$ <?= number_format(0, 2, ',', '.') ?></strong></h2>
+						</div>
+						<div class="filter-title">
+							<p>A receber</p>
+							<h2 style="color:var(--cinza4)" id='valor-aReceber'>R$ <?= number_format(0, 2, ',', '.') ?></h2>
+						</div>
+						<div class="filter-title">
+							<p>Recebido</p>
+							<h2 style="color:var(--verde)" id='valor-valorRecebido'>R$ <?= number_format(0, 2, ',', '.') ?></h2>
+						</div>
+						<div class="filter-title">
+							<p>Vencido</p>
+							<h2 style="color:var(--vermelho)" id='valor-valoresVencido'>R$ <?= number_format(0, 2, ',', '.') ?></h2>
 						</div>
 					</div>
 					<div class="filter-group">
-						<div class="filter-title">
-							<h1>0 Pagamentos</h1>
-						</div>
+						<!-- <a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i> <span>Gráficos</span></a> -->
 					</div>
-				</div>
-
-				<div class="list4">
-					<a href="javascript:;" class="list4-item active js-grafico" data-grafico="2">
-						<div>
-							<h1><i class="iconify" data-icon="fluent:food-cake-20-regular"></i></h1>
-						</div>
-						<div>
-							<p>Status <strong>por Pagamento</strong></p>
-						</div>
-					</a>
-					<a href="javascript:;" class="list4-item js-grafico" data-grafico="3">
-						<div>
-							<h1><i class="iconify" data-icon="ph:gender-intersex"></i></h1>
-						</div>
-						<div>
-							<p>Formas <strong>de Pagamento</strong></p>
-						</div>
-					</a>
-					<a href="javascript:;" class="list4-item js-grafico" data-grafico="4">
-						<div>
-							<h1><i class="iconify" data-icon="fluent:location-20-regular"></i></h1>
-						</div>
-						<div>
-							<p>Conciliações <strong>de Pagamentos</strong></p>
-						</div>
-					</a>
-					<a href="javascript:;" class="list4-item js-grafico" data-grafico="1">
-						<div>
-							<h1><i class="iconify" data-icon="fluent:person-add-20-regular"></i></h1>
-						</div>
-						<div>
-							<p>Emissão de <strong>Notas e Recibos</strong></p>
-						</div>
-					</a>
-				</div>
-				<div class="grafico">
-					<canvas id="grafico1" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
-					<canvas id="grafico2" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
-					<canvas id="grafico3" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
-					<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo $_googleMapsKey; ?>&libraries=geometry,drawing,places&callback=initMap" defer></script>
-					<section id="grafico4" class="box-grafico" style="width: 600px;height:500px;margin-bottom: 10px;display:none;"></section>
-					<canvas id="grafico5" class="box-grafico" width="300px" height="150px" style="display: none;"></canvas>
-				</div>
-				<?php /*<section style="width:100%; height:300px; background:var(--cinza2); margin-bottom:var(--margin1);" class="grafico">						
-					</section>*/ ?>
+				</section>
 			</div>
-
 			<div class="box">
-				<div class="list1">
-					<table>
-						<tr class="js-item" data-id="id">
-							<td class="list1__border" style="color:red"></td>
-							<td>
-								<h1></h1>
-								<p></p>
-							</td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-
+				<div class="list2">
+					<table class="tablesorter" id="list-payments">
+						<thead>
+							<tr>
+								<th>Vencimento</th>
+								<th>Status</th>
+								<th>Descrição</th>
+								<th>Valor</th>
+								<th>Valor Detalhes</th>
+								<th>Detalhes</th>
+								<th style="width:120px;">Receber</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+						</tbody>
 					</table>
-				</div>
-				<div class="pagination">
-
 				</div>
 			</div>
 		</section>
 	</div>
 </main>
+<script>
+	$('.js-btn-abrir-aside').on('click', (function() {
+		console.log('ABRIU ')
+		abrirAside1()
+	}));
+</script>
 
 <?php
 $apiConfig = array(
-	'Pagamentos' => 1,
+	'AddPagamento' => 1,
 );
 require_once("includes/api/apiAsidePagamentos.php");
 
