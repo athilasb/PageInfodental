@@ -1742,3 +1742,169 @@ if (isset($_POST['ajax'])) {
 		})
 	</script>
 <?php } ?>
+
+<?php if (isset($apiConfig['AddPagamento'])) { ?>
+	<section class="aside aside-form" id="js-aside-asFinanceiro">
+		<div class="aside__inner1">
+			<input type="hidden" name="alteracao" value="0">
+			<header class="aside-header">
+				<h1 class="js-titulo"></h1>
+				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+			</header>
+
+			<form method="post" class="aside-content form">
+				<input type="hidden" class="js-id_pagamento" value="0" />
+				<input type="hidden" class="js-index" />
+				<!-- Programacao de pagamento -->
+				<div class="js-fin js-fin-programacao">
+					<fieldset style="padding:.75rem 1.5rem;">
+						<div class="colunas5">
+							<dl>
+								<dt>Data Original</dt>
+								<dd class="js-dataOriginal">12/01/2023</dd>
+							</dl>
+							<dl>
+								<dt>Valor da Parcela</dt>
+								<dd class="js-valorParcela"> R$ 0,00</dd>
+							</dl>
+							<dl>
+								<dt>Desconto</dt>
+								<dd class="js-valorDesconto" data-tipo="descontos">R$ 0,00</dd>
+							</dl>
+							<dl style="font-weight:bold">
+								<dt>Total</dt>
+								<dd><strong class="js-valorCorrigido">R$ 1,00</strong></dd>
+							</dl>
+							<dl style="font-weight:bold; color:var(--vermelho);">
+								<dt>Saldo a Pagar</dt>
+								<dd class="js-saldoPagar">R$ 0,00</dd>
+							</dl>
+						</div>
+					</fieldset>
+					<fieldset class="js-fieldset-pagamentos">
+						<legend>Definir fatura</legend>
+						<dl>
+							<dd>
+								<label><input type="radio" name="tipoBaixa" value="pagamento" checked onclick="$('.js-pagamento').show(); $('.js-desconto').hide()"> Pagamento</label>
+								<label><input type="radio" name="tipoBaixa" value="desconto" onclick="$('.js-pagamento').hide(); $('.js-desconto').show();"> Desconto</label>
+							</dd>
+						</dl>
+						<section class="js-pagamento">
+							<div class="colunas4">
+								<dl>
+									<dt>Valor</dt>
+									<dd class="form-comp"><span>R$</span>
+										<input type="text" class="js-valor money" />
+									</dd>
+								</dl>
+								<dl>
+									<dt>Forma de Pagamento</dt>
+									<dd><select class="js-id_formapagamento js-tipoPagamento">
+											<option value=""></option>
+											<?= $optionFormasDePagamento; ?>
+										</select>
+									</dd>
+								</dl>
+								<dl>
+									<dt>Vencimento</dt>
+									<dd><input type="text" class="js-vencimento js-tipoPagamento data" value="<?= date('d/m/Y'); ?>" /></dd>
+								</dl>
+								<dl>
+									<dt>Obs.:</dt>
+									<dd><input type="text" class="js-obs" /></dd>
+								</dl>
+								<dl class="dl2">
+									<dt>Bandeira</dt>
+									<dd>
+										<select class="js-debitoBandeira js-tipoPagamento">
+											<option value="">selecione</option>
+										</select>
+									</dd>
+								</dl>
+								<dl class="dl2">
+									<dt>Bandeira</dt>
+									<dd>
+										<select class="js-creditoBandeira js-tipoPagamento">
+											<option value="">selecione</option>
+											<?php
+											foreach ($creditoBandeiras as $id_operadora => $x) {
+												echo '<optgroup label="' . utf8_encode($x['titulo']) . '">';
+												foreach ($x['bandeiras'] as $band) {
+													echo '<option value="' . $band['id_bandeira'] . '" data-id_operadora="' . $id_operadora . '" data-semjuros="' . $band['semJuros'] . '" data-parcelas="' . $band['parcelas'] . '" data-taxa="' . $band['taxa'] . '">' . utf8_encode($band['titulo']) . '</option>';
+												}
+												echo '</optgroup>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
+								<dl class="dl2">
+									<dt>Qtd. Parcelas</dt>
+									<dd>
+										<select class="js-parcelas js-tipoPagamento">
+											<option value="">selecione a bandeira</option>
+										</select>
+									</dd>
+								</dl>
+								<dl>
+									<dt>Valor da Parcela</dt>
+									<dd><label class="js-valorCreditoDebito js-tipoPagamento">R$ 0,00</label></dd>
+								</dl>
+
+								<dl>
+									<dt>Taxa (%)</dt>
+									<dd><label class="js-valorCreditoDebitoTaxa js-tipoPagamento">R$ 0,00</label></dd>
+								</dl>
+							</div>
+							<dl>
+								<dd><label><input type="checkbox" name="juros" class="input-switch  js-aplicar-multas-juros" onclick="//$('.js-multa').toggle();" checked />Aplicar juros e multas</label></dd>
+							</dl>
+							<div class="js-multa" style="display:none;">
+								<div class="colunas4">
+									<dl>
+										<dt>Multa</dt>
+										<dd><label class="js-valorMultas money">R$ 0,0</label></dd>
+									</dl>
+									<dl>
+										<dt>Juros</dt>
+										<dd><label class="js-valorJuros money">R$ 0,00</label></dd>
+									</dl>
+									<dl>
+										<dt>Desconto Juros</dt>
+										<dd class="form-comp"><span>R$</span><input type="text" class="js-descontoMultasJuros money" style="width:100px;" value="0,00" /></dd>
+									</dl>
+									<dl style="font-weight:bold">
+										<dt>Total</dt>
+										<dd><label class="js-TotalaPagar money">R$ 0,00</label></dd>
+									</dl>
+								</div>
+							</div>
+						</section>
+						<section class="js-desconto" style="display:none">
+							<div class="colunas4">
+								<dl>
+									<dt>Valor</dt>
+									<dd class="form-comp"><span>R$</span><input type="text" class="js-valorDesconto money" /></dd>
+								</dl>
+								<dl class="dl3">
+									<dt>Observações</dt>
+									<dd><input type="text" class="js-obs-desconto" /></dd>
+								</dl>
+							</div>
+						</section>
+						<dl style="margin-top:1.5rem;">
+							<dd><button href="javascript:;" class="button button_main js-btn-addBaixa" type="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar</span></button></dd>
+						</dl>
+					</fieldset>
+				</div>
+			</form>
+		</div>
+	</section>
+	<script>
+		const abrirAside1 = (tipo, index) => {
+			$("#js-aside-asFinanceiro").fadeIn(100, function() {
+				$("#js-aside-asFinanceiro .aside__inner1").addClass("active");
+			});
+		}
+	</script>
+<?php } ?>
