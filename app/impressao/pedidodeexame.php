@@ -14,7 +14,7 @@
 				$profissional=mysqli_fetch_object($sql->mysqry);
 			}
 
-			$sql->consult($_p."parametros_fornecedores","*","where id=$evolucao->id_clinica and lixo=0");
+			$sql->consult($_p."clinica","*","");
 			if($sql->rows) {
 				$clinica=mysqli_fetch_object($sql->mysqry);
 			}
@@ -109,12 +109,12 @@
 		<tr>
 			<td>
 				<h1>Nome</h1>
-				<p><?php echo utf8_encode($clinica->nome_fantasia);?></p>
+				<p><?php echo utf8_encode($clinica->clinica_nome);?></p>
 			</td>
 			
 			<td>
 				<h1>Telefone</h1>
-				<p><?php echo maskTelefone($clinica->telefone1);?></p>
+				<p><?php echo maskTelefone($clinica->telefone);?></p>
 			</td>
 		</tr>
 		<tr>

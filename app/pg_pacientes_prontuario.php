@@ -823,8 +823,8 @@
 							obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>');
 
 							let data = {'token':'ee7a1554b556f657e8659a56d1a19c315684c39d',
-										'method':'generatePDF',
-										'enviaWhatsapp':1,
+										'method':'sendWhatsapp',
+										'infoConta':'<?php echo $_ENV['NAME'];?>',
 										'id_evolucao':id_evolucao};
 
 							$.ajax({

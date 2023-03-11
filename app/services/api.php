@@ -496,6 +496,67 @@
 
 
 				} 
+				else if($request->method=="sendWhatsapp") {
+					$evolucao=$evolucaoTipo=$paciente='';
+					if(isset($request->id_evolucao) and is_numeric($request->id_evolucao)) {
+						$sql->consult($_p."pacientes_evolucoes","*","where id=$request->id_evolucao"); 
+
+						if($sql->rows) {
+							$evolucao = mysqli_fetch_object($sql->mysqry);
+
+							$sql->consult($_p."pacientes_evolucoes_tipos","*","where id='$evolucao->id_tipo'");
+							if($sql->rows) $evolucaoTipo=mysqli_fetch_object($sql->mysqry);
+
+							$sql->consult($_p."pacientes","id,telefone1,nome","where id=$evolucao->id_paciente");
+							if($sql->rows) $paciente=mysqli_fetch_object($sql->mysqry);
+						}
+					}
+
+
+					// verifica se possui conexao
+					$conexao='';
+					$sql->consult("infodentalADM.infod_contas_onlines","*","where instancia='".$_ENV['NAME']."' and lixo=0");
+					if($sql->rows) $conexao=mysqli_fetch_object($sql->mysqry);
+
+					if(empty($evolucao)) $erro='Evolução não encontrada!';
+					else if(empty($evolucaoTipo)) $erro='Tipo de evolução não encontrado!';
+					else if(empty($paciente)) $erro='Paciente não encontrado!';
+					else if(is_object($paciente) and empty($paciente->telefone1)) $erro='Paciente não possui celular cadastrado para envio do whatsapp';
+					else if(empty($conexao)) $erro='Infozap não conectado';
+					else if(is_object($conexao) and $conexao->versao!=2) $erro='Versão do Infozap não suporta envio de arquivos. Favor atualize seu Infozap!';
+
+					if(empty($erro)) {
+
+						// Se Receituario
+						if($evolucao->id_tipo==7) {
+
+
+							$pdf="$_scalewayS3endpoint/".$infoConta->instancia."/arqs/pacientes/receituarios/";
+
+							// verifica se foi assinado
+							if($evolucao->receita_assinada=="0000-00-00 00:00:00") {
+								$pdf.=sha1($evolucao->id).".pdf";
+							} else {
+								$pdf.="assinados/".sha1($evolucao->id).".pdf";
+							}
+
+							// envia whatsapp
+							$attr=array('numero'=>$paciente->telefone1,
+										'arq'=>$pdf,
+										'documentName'=>utf8_encode($evolucaoTipo->titulo)." ".date('d/m/Y',strtotime($evolucao->data))." - ".utf8_encode($paciente->nome).".pdf",
+										'id_conexao'=>$conexao->id);
+
+							if(!$infozap->enviaArquivo($attr)) {
+								$erro='Algum erro ocorreu durante o envio do Receituário via Whatsapp. Entre em contato com nossa equipe de suporte!';
+							}
+
+						}
+					}
+
+					if(!empty($erro)) {
+						$rtn=array('success'=>false,'error'=>$erro);
+					}
+				}
 
 				else {
 					$rtn=array('success'=>false,'error'=>'Method undefined');

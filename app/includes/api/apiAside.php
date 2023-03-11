@@ -80,7 +80,6 @@
 			}
 
 			else if($_POST['ajax']=="editar") {
-
 				$cnt = '';
 				$paciente='';
 				$carga = '';
@@ -95,6 +94,7 @@
 						}
 					}
 				}
+
 
 
 				if(empty($cnt)) {
@@ -258,7 +258,7 @@
 										'id_status'=>$cnt->id_status,
 										'nome'=>addslashes(utf8_encode($paciente->nome)),
 										'idade'=>(int)$idade,
-										'plano_odontologico'=>$paciente->plano_odontologico,
+										'plano_odontologico'=>utf8_encode($paciente->plano_odontologico),
 										'id_cadeira'=>$cnt->id_cadeira,
 										'telefone1'=>$paciente->telefone1,
 										'musica'=>utf8_encode($paciente->musica),
@@ -270,7 +270,6 @@
 										'agendamentosFuturos'=>$agendamentosFuturos,
 										'historico'=>$_historico);
 					}
-		
 					$rtn=array('success'=>true,'data'=>$data);
 
 				}
