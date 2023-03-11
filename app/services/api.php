@@ -553,7 +553,9 @@
 						}
 					}
 
-					if(!empty($erro)) {
+					if(empty($erro)) {
+						$rtn=array('success'=>true,'numero'=>mask($paciente->telefone1));
+					} else {
 						$rtn=array('success'=>false,'error'=>$erro);
 					}
 				}
