@@ -130,80 +130,102 @@
 ?>
 				<script type="text/javascript">
 
+					function removeFile(index){
+					    var attachments = document.getElementById("js-asArquivos-arquivos").files; // <-- reference your file input here
+					    var fileBuffer = new DataTransfer();
 
-					function enviaArquivo(file,index) {
+					    // append the file list to an array iteratively
+					    for (let i = 0; i < attachments.length; i++) {
+					        // Exclude file in specified index
+					        if (index !== i)
+					            fileBuffer.items.add(attachments[i]);
+					    }
+					    
+					    // Assign buffer to file input
+					    document.getElementById("js-asArquivos-arquivos").files = fileBuffer.files; // <-- according to your file input reference
+					}
+
+					function enviaArquivo(file,index,obj,objHTMLAntigo) {
 						return new Promise(resolve => {
 
 							console.log(file.name+'....');
 
 							const data = new FormData();
 							data.append("act", "upload");
-							data.append("instancia", "studiodental");
+							data.append("instancia", "<?php echo $infoConta->instancia;?>");
 							data.append("file", file);
-							data.append("id_paciente", "6216");
+							data.append("id_paciente", "<?php echo $paciente->id;?>");
 							data.append("tipo", "outros");
 							data.append("obs", "observação vem aqui");
-							data.append("id_colaborador", "19");
+							data.append("id_colaborador", "<?php echo $usr->id;?>");
 
-							const xhr = new XMLHttpRequest();
-							xhr.withCredentials = true;
+							// XMLHttpRequest
+								/*const xhr = new XMLHttpRequest();
+								xhr.withCredentials = true;
 
-							xhr.addEventListener("readystatechange", function () {
-							  if (this.readyState === this.DONE) {
-							    console.log(this.responseText);
-							    resolve();
-							  }
-							});
+								xhr.addEventListener("readystatechange", function () {
+								  if (this.readyState === this.DONE) {
+								    console.log(this.responseText);
+								    resolve();
+								  }
+								});
 
-							/*xhr.addEventListener("xhr", function () {
-								 var xhr = new window.XMLHttpRequest();
-							        xhr.upload.addEventListener("progress", function(evt) {
-							            if (evt.lengthComputable) {
-							                var percentComplete = (evt.loaded / evt.total) * 100;
-							                //console.log(`${index} => ${percentComplete}`)
-							                $(`.js-asArquivos-lista div.arquivo-item:eq(${index}) .progress`).css('width',`${percentComplete}%`);
-							            }
-							        }, false);
-							        return xhr;
-							});*/
+								xhr.addEventListener("progress", function (evt) {
+								 var percentComplete = (evt.loaded / evt.total) * 100;
+						                console.log(`${index} => ${percentComplete}`)
+						                $(`.js-asArquivos-lista div.arquivo-item:eq(${index}) .progress`).css('width',`${percentComplete}%`);
+						            
+								});
 
-							xhr.open("POST", "https://upload.infodental.dental/api/");
-							xhr.setRequestHeader("Authorization", "Basic ZDNudDRsaW5mMDo4ZTMwM2I1ZDVjMTJkNjg0ZjBjN2VhZGZmNjVkMDg5Yzk3OTM4YWZj");
+								xhr.open("POST", "https://upload.infodental.dental/api/");
+								xhr.setRequestHeader("Authorization", "Basic ZDNudDRsaW5mMDo4ZTMwM2I1ZDVjMTJkNjg0ZjBjN2VhZGZmNjVkMDg5Yzk3OTM4YWZj");
 
-							xhr.send(data);
+								xhr.send(data);*/
 
-							var formData = new FormData();
 
-							formData.append("ajax","enviaArquivo");
-							formData.append("file",file);
+							// jQuery
+								$.ajax({
+									type:"POST",
+									headers: {
+									    "Authorization": "Basic ZDNudDRsaW5mMDo4ZTMwM2I1ZDVjMTJkNjg0ZjBjN2VhZGZmNjVkMDg5Yzk3OTM4YWZj"
+									 },
+									url:"https://upload.infodental.dental/api/",
+									data:data,
+									contentType:false,
+									processData:false,
+									 xhr: function() {
+								        var xhr = new window.XMLHttpRequest();
+								        xhr.upload.addEventListener("progress", function(evt) {
+								            if (evt.lengthComputable) {
+								                var percentComplete = (evt.loaded / evt.total) * 100;
+								                //console.log(`${index} => ${percentComplete}`)
+								                $(`.js-asArquivos-lista div.arquivo-item:eq(${index}) .progress`).css('width',`${percentComplete}%`);
+								            }
+								        }, false);
+								        return xhr;
+								    },
+									success: function(rtn) {
+										console.log(rtn);
+										if(rtn.success) {
+											$(`.arquivo-item:eq(${index})`).find('.progress').remove();
+											$(`.arquivo-item:eq(${index})`).append(` <span class="iconify" data-icon="ep:success-filled" style="color:var(--verde)"></span>`);
 
-							return ;
-							 $.ajax({
-								type:"post",
-								url:"https://upload.infodental.dental/api",
-								data:formData,
-								contentType:false,
-								processData:false,
-								 xhr: function() {
-							        var xhr = new window.XMLHttpRequest();
-							        xhr.upload.addEventListener("progress", function(evt) {
-							            if (evt.lengthComputable) {
-							                var percentComplete = (evt.loaded / evt.total) * 100;
-							                //console.log(`${index} => ${percentComplete}`)
-							                $(`.js-asArquivos-lista div.arquivo-item:eq(${index}) .progress`).css('width',`${percentComplete}%`);
-							            }
-							        }, false);
-							        return xhr;
-							    },
-								success: function(rtn) {
-									resolve();
-									console.log(index+' ok');
-								},
-								error:function(a,b,c){
-									alert('erro');
-									resolve();
-								}
-							});
+											if((index+1)==document.getElementById('js-asArquivos-arquivos').files.length) {
+												swal({title: "Sucesso", text: "Arquivo(s) enviado(s) com sucesso!", type:"success", confirmButtonColor: "#424242"},function(){
+													document.location.reload();
+												});
+											}
+										} else {
+											$(`.arquivo-item:eq(${index})`).find('.progress').remove();
+											$(`.arquivo-item:eq(${index})`).append(` <span class="iconify" data-icon="ic:round-cancel" style="color:var(--vermelho)"></span>`);
+										}
+										resolve();
+									},
+									error:function(a,b,c){
+										alert('erro');
+										resolve();
+									}
+								});
 						})
 					}
 					$(function(){
@@ -224,59 +246,16 @@
 						$('.js-asArquivos-submit').click(async function(){
 
 							let obj = $(this);
+							let objHTMLAntigo = $(this).html()
 							if(obj.attr('data-loading')==0) {
 
+								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span> Enviando... Por favor aguarde!`);
+								obj.attr('data-loading',1);
 
 								var totalfiles = document.getElementById('js-asArquivos-arquivos').files.length;
 								for (var index = 0; index < totalfiles; index++) {
 									let file = document.getElementById('js-asArquivos-arquivos').files[index];
-									await enviaArquivo(file,index);
-								}
-								console.log('fim');
-
-								return;
-
-								let id = $(`.js-asEspecialidades-id`).val();
-								let titulo = $(`.js-asEspecialidades-titulo`).val();
-
-							
-
-								if(titulo.length==0) {
-									swal({title: "Erro!", text: "Digite a Especialidade", type:"error", confirmButtonColor: "#424242"});
-								}  else {
-
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
-
-									let data = `ajax=asEspecialidadesPersistir&id=${id}&titulo=${titulo}`;
-									
-									$.ajax({
-										type:'POST',
-										data:data,
-										url:baseURLApiAside,
-										success:function(rtn) {
-											if(rtn.success) {
-												asEspecialidadesAtualizar();	
-
-												$(`.js-asEspecialidades-id`).val(0);
-												$(`.js-asEspecialidades-titulo`).val(``);
-
-											} else if(rtn.error) {
-												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-											} else {
-												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-											}
-											
-										},
-										error:function() {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										}
-									}).done(function(){
-										$('.js-asEspecialidades-remover').hide();
-										obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-										obj.attr('data-loading',0);
-									});
-
+									await enviaArquivo(file,index,obj,objHTMLAntigo);
 								}
 							}
 						});

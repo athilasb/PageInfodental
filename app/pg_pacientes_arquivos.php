@@ -150,7 +150,7 @@
 					<div class="box-col__inner1">
 				
 						<section class="filter">
-							<div class="filter-group"></div>
+							
 							<div class="filter-group">
 								<div class="filter-form form">
 									<dl>
@@ -161,17 +161,62 @@
 										</dd>
 									</dl>
 								</div>
-							</div>							
+							</div>
+
+							<form method="get" class="js-filtro">
+								<input type="hidden" name="id_paciente" value="<?php echo $paciente->id;?>">
+								<div class="filter-group">
+									<div class="filter-form form">
+										
+										<script type="text/javascript">
+											$(function(){
+												$('input[name=busca]').keydown(function(e){
+													if(e.which==13) {
+														$('.js-btn-buscar').click();
+													}
+												});
+											})
+										</script>
+										<dl>
+											<dd class="form-comp form-comp_pos"><input type="text" name="busca" placeholder="Buscar..." value="<?php echo isset($_GET['busca'])?($_GET['busca']):"";?>" /><a href="javascript:;" class="js-btn-buscar" onclick="$('form.js-filtro').submit();"><i class="iconify" data-icon="fluent:search-12-filled"></i></a></dd>
+										</dl>
+									</div>					
+								</div>
+							</form>						
 						</section>
 
-						<div class="box">
-							<div class="list-toggle">
+						<div class="list1">
 
-								
-								<div>DESENVOLVIMENTO</div>
+							<?php
+							$_dir="arqs/pacientes/arquivos/";
+							$registros=[];
+							$where="where id_paciente=$paciente->id and lixo=0 order by data desc";
+							$sql->consult($_p."pacientes_arquivos","*",$where);
+							while($x=mysqli_fetch_object($sql->mysqry)) {
+								$registros[]=$x;
+							}
 
-							</div>	
-						</div>
+							if(count($registros)==0) echo "<center>Este paciente não possui nenhum arquivo.</center>";
+							else {
+							?>
+							<table class="js-table-pagamentos">
+								<?php
+								foreach($registros as $x) {
+								?>
+								<tr>
+									<td style="width: 100px;"><?php echo date('d/m/Y\<\b\r\ \/\>H:i',strtotime($x->data));?></td>
+									<td><strong><?php echo utf8_encode($x->titulo.".".$x->extensao);?></strong></td>
+									<td style="width: 50px;"><a href="<?php echo $_scalewayS3endpoint."/".$infoConta->instancia."/".$_dir.md5($x->id).".".$x->extensao;?>" target="_blank" class="button button_main"><span class="iconify" data-icon="ic:baseline-file-download"></span></a></td>
+								</tr>
+								<?php
+								}
+								?>
+							</table>
+							<?php
+							}
+							?>
+
+						</div>	
 					</div>
 					
 				</div>
