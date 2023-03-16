@@ -76,7 +76,7 @@ class RabbitMQ
 	 * @param string $message
 	 * @return bool
 	 */
-	public function sendMessageToQueueWts($message,$rabbitmqFila,$id_whatsapp): bool
+	public function sendMessageToQueueWts($message,$rabbitmqFila): bool
 	{	
 		if(empty($this->authData)) return false;
 		else if(empty($this->queue)) return false;
@@ -84,45 +84,46 @@ class RabbitMQ
 		try {
 			
 
-			$sql = new Mysql(true);
-			$wts = new WhatsApp(array('prefixo'=>"lbox_"));
 
 			$wtsMsg='';
-			if(isset($id_whatsapp) and is_numeric($id_whatsapp) and !empty($message)) {
-				$sql->consult("lbox_whatsapp_mensagens","*","where id=$id_whatsapp");
+			///if(isset($id_whatsapp) and is_numeric($id_whatsapp) and !empty($message)) {
+				//$sql->consult("ident_whatsapp_mensagens","*","where id=$id_whatsapp");
 		
-				if($sql->rows) {
-					$wtsMsg=mysqli_fetch_object($sql->mysqry);
+				//if($sql->rows) {
+					//$wtsMsg=mysqli_fetch_object($sql->mysqry);
 
 
 					$expiration=1800000;
-					$sql->consult("lbox_whatsapp_mensagens_tipos","*","where id=$wtsMsg->id_tipo");
+					/*$sql->consult("lbox_whatsapp_mensagens_tipos","*","where id=$wtsMsg->id_tipo");
 					if($sql->rows) {
 						$wtsMsgTipo=mysqli_fetch_object($sql->mysqry);
 
 						if($wtsMsgTipo->rabbitmq_expiration>0) $expiration=$wtsMsgTipo->rabbitmq_expiration;
 					}
 
-					$this->id_unidade=$wtsMsg->id_unidade;
-
+					$this->id_unidade=$wtsMsg->id_unidade;*/
+					
+					
 
 					$AMQPMessage = new AMQPMessage($message, array('expiration' => $expiration));
 					$this->channel->basic_publish($AMQPMessage, '', $this->queue);
 					$this->channel->wait_for_pending_acks(100000);
-					$sql->update("lbox_whatsapp_mensagens","rabbitmq_enviado=now()","WHERE id='".$id_whatsapp."'");
+					//$sql->update("lbox_whatsapp_mensagens","rabbitmq_enviado=now()","WHERE id='".$id_whatsapp."'");
 			
 					$this->channel->set_nack_handler(
 						function (AMQPMessage $message){
 							$body = json_decode($message->body);
-							$sql->update("lbox_whatsapp_mensagens","rabbitmq_enviado='0000-00-00 00:00:00'","WHERE id='".$body->impressoes[0]->id."'");
-							$vsql="fila='".addslashes($message->delivery_info['routing_key'])."',json_envio='".addslashes(json_encode($body->impressoes[0]))."',id_impressao='". $body->impressoes[0]->id."',erro=1";
+							var_dump($body);
+							
+							//$sql->update("lbox_whatsapp_mensagens","rabbitmq_enviado='0000-00-00 00:00:00'","WHERE id='".$body->impressoes[0]->id."'");
+							//$vsql="fila='".addslashes($message->delivery_info['routing_key'])."',json_envio='".addslashes(json_encode($body->impressoes[0]))."',id_impressao='". $body->impressoes[0]->id."',erro=1";
 							
 							//$sql->update($vucaName."impressoras_fila_rabbitmq",$vsql,"WHERE id='".$body->impressoes[0]->id."'");
 						}
 					);
 					
-				}
-			}
+				//}
+			//}
 
 			
 

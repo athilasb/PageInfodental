@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '13e571c00e17e82946d4ed6839f62f6ad68b7533',
+        'reference' => 'ee7ebdf4085213260818e5d28548d06ea11c61bd',
         'name' => '__root__',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '13e571c00e17e82946d4ed6839f62f6ad68b7533',
+            'reference' => 'ee7ebdf4085213260818e5d28548d06ea11c61bd',
             'dev_requirement' => false,
         ),
         'aws/aws-crt-php' => array(
@@ -29,12 +29,12 @@
             'dev_requirement' => false,
         ),
         'aws/aws-sdk-php' => array(
-            'pretty_version' => '3.261.7',
-            'version' => '3.261.7.0',
+            'pretty_version' => '3.261.12',
+            'version' => '3.261.12.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../aws/aws-sdk-php',
             'aliases' => array(),
-            'reference' => '2f0a97018eb9fd05bbd69a75a943ef15d0bbc785',
+            'reference' => '9816402afa9ad9fe8ff7ff8131ea1dca2c6b7700',
             'dev_requirement' => false,
         ),
         'dompdf/dompdf' => array(

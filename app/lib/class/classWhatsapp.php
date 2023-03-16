@@ -21,6 +21,83 @@
 			$this->tipos=$tipos;
 		}
 
+		function wtsRabbitmq($id_whatsapp) {
+			$rabbitmqFila="infozap_".$_ENV['NAME'];
+
+			$sql=new Mysql();
+			$_p=$this->prefixo;
+
+			$whatsappMessage='';
+			if(is_numeric($id_whatsapp)) {
+				$sql->consult($_p."whatsapp_mensagens","*","where id=".$id_whatsapp);
+				if($sql->rows) $whatsappMessage=mysqli_fetch_object($sql->mysqry);
+			}
+
+
+			if(is_object($whatsappMessage)) {
+
+				if(!empty($rabbitmqFila)) {
+
+
+					$_rabbitMQServer='51.158.67.192';
+					$_rabbitMQPort='5672';
+					$_rabbitMQUsername='infozap';
+					$_rabbitMQPassword='zapInf0@#';
+					$_rabbitmqFila=$rabbitmqFila;
+
+					/*$dir="";
+					if(getcwd()=="/var/www/html/frentedeloja/endpoint") $dir="../../retaguarda/";
+					else if(getcwd()=="/var/www/html/frentedeloja") $dir="../retaguarda/";
+					else if(getcwd()=="/var/www/html/retaguarda/integracoes/ifood") $dir="../../";
+					else if(getcwd()=="/var/www/html/retaguarda/integracoes/ubereats") $dir="../../";
+					else if(getcwd()=="/var/www/html") $dir="retaguarda/";
+					else if(getcwd()=="/var/www/html/retaguarda/cronjob") $dir="../";
+					else if(getcwd()=="/root") $dir="../var/www/html/retaguarda/";
+					else if(getcwd()=="/var/www/html/vucafood") $dir="../retaguarda/";*/
+					
+					$dir="../";//
+					require_once $dir.'vendor/autoload.php';
+					require_once $dir.'lib/class/classRabbitMQ.php';
+
+					$rabbitmq = new RabbitMQ(array(
+						'host' => $_rabbitMQServer,
+						'port' => $_rabbitMQPort,
+						'username' => $_rabbitMQUsername,
+						'password' => $_rabbitMQPassword
+					));
+
+					$isConnected = $rabbitmq->createConnection();
+
+					if ($isConnected) {
+						$rabbitmq->setQueue($_rabbitmqFila);
+
+					
+						$message=json_encode(array('type'=>'sendTextMessage',
+														   'data'=>array('number'=>$this->wtsNumero($whatsappMessage->numero),
+																         'text'=>utf8_encode($whatsappMessage->mensagem))));
+
+						
+						if($rabbitmq->sendMessageToQueueWts($message,$_rabbitmqFila)) {
+							echo "ok";die();
+							
+							
+						} else {
+							echo "erro";die();
+						}
+					} 
+
+					$rabbitmq->closeConnection();
+				} else {
+					$this->erro="Fila do Rabbitmq não definida!"; 
+					return false;
+				}
+
+			} else {
+				$this->erro="Mensagem não encontrada!"; 
+				return false;
+			}
+		}
+
 		function wtsNumero($numero) {
 
 			
@@ -295,7 +372,6 @@
 						if(is_object($paciente)) {
 
 							if(is_object($agenda)) {
-
 								if(is_object($profissional)) {
 									if($agenda->id_paciente == $paciente->id) {
 
@@ -341,14 +417,18 @@
 
 												$sqlWts->add($_p."whatsapp_mensagens",$vSQL);
 
-												$id_whatsapp_fila=$sqlWts->ulid;
+												$id_whatsapp=$sqlWts->ulid;
+
 
 												
 
+												$this->wtsRabbitmq($id_whatsapp);
 												return true;
 
 											} else {
-												$this->erro="Esta mensagem já foi cadastrada nos últimos 60 minutos";
+												$x=mysqli_fetch_object($sql->mysqry);
+												$this->wtsRabbitmq($x->id);
+												return true;
 											}
 										} else {
 											$this->erro="Paciente #$paciente->id não possui número de whatsapp";
