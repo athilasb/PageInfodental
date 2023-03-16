@@ -14,11 +14,6 @@
 				$profissional=mysqli_fetch_object($sql->mysqry);
 			}
 
-			$sql->consult($_p."clinica","*","");
-			if($sql->rows) {
-				$clinica=mysqli_fetch_object($sql->mysqry);
-			}
-
 			$sql->consult($_p."pacientes","*","where id=$evolucao->id_paciente");
 			if($sql->rows) {
 				$paciente=mysqli_fetch_object($sql->mysqry);
@@ -30,6 +25,12 @@
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$exames[]=$x;
 				$examesIds[]=$x->id_exame;
+			}
+
+
+			$sql->consult($_p."parametros_fornecedores","*","where id=".$exames[0]->id_clinica."");
+			if($sql->rows) {
+				$clinica=mysqli_fetch_object($sql->mysqry);
 			}
 
 			$sql->consult($_p."parametros_examedeimagem","*","where id IN (".implode(",",$examesIds).")");
@@ -109,12 +110,12 @@
 		<tr>
 			<td>
 				<h1>Nome</h1>
-				<p><?php echo utf8_encode($clinica->clinica_nome);?></p>
+				<p><?php echo utf8_encode($clinica->nome_fantasia);?></p>
 			</td>
 			
 			<td>
 				<h1>Telefone</h1>
-				<p><?php echo maskTelefone($clinica->telefone);?></p>
+				<p><?php echo maskTelefone($clinica->telefone1);?></p>
 			</td>
 		</tr>
 		<tr>
