@@ -40,11 +40,10 @@
 					if($sql->rows) $whatsappMessage=mysqli_fetch_object($sql->mysqry);
 				}
 
-
+						echo base64_encode(file_get_contents("https://testes.infodental.dental/img/ilustra-usuario.jpg"));;die();
 				if(is_object($whatsappMessage)) {
 
 					if(!empty($rabbitmqFila)) {
-
 
 						$_rabbitMQServer='51.158.67.192';
 						$_rabbitMQPort='5672';
@@ -80,8 +79,8 @@
 
 							// ident_whatsapp_mensagens_tipos.id=1 -> Envio de arquivo
 
-							if($whatsappMessage->id_tipo=="10") {
-								$arquivo = file_get_contents($whatsappMessage->arquivo); 
+							if($whatsappMessage->id_tipo=="10") { 
+								$arquivo = file_get_contents("../img/ilustra-usuario.jpg");//$whatsappMessage->arquivo); 
 								$arquivo64 = "data:application/pdf;base64,".base64_encode($arquivo); 
 
 								$message=json_encode(array('type'=>'sendFileMessage',
@@ -91,7 +90,7 @@
 																					     	        'caption'  => "Teste",
 																					     	        'filename' => utf8_encode($whatsappMessage->arquivo_titulo)))));
 
-								var_dump($message);
+								
 							} else {
 								$message=json_encode(array('type'=>'sendTextMessage',
 															   'data'=>array('number'=>$this->wtsNumero($whatsappMessage->numero),
@@ -1159,10 +1158,9 @@
 
 
 				// se enviou essa mensagem
-				if(is_object($whatsappMessage)) {
+				if(is_object($whatsappMessage) and 1==2) {
 
 				} else {
-
 					$vSQL="data=now(),
 							enviado=0,
 							id_paciente=$id_paciente,
