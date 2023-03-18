@@ -606,7 +606,12 @@
 							
 						}
 
-						$rtn = generatePDF($id_evolucao);
+						$erro='';
+						if(generatePDF($id_evolucao)) {
+							$rtn=array('success'=>true);
+						} else {
+							$rtn=array('success'=>false,'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
+						}
 
 					} else {
 						$rtn=array('success'=>false,'error'=>$erro);
