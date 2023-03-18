@@ -25,7 +25,6 @@ function uploader($instancia, $_dirEvolucao, $id_evolucao, $html)
 	file_put_contents('arqs/temp.pdf', $output);
 
 	$uploadPathFile = $instancia . "/" . $_dirEvolucao . sha1($id_evolucao) . ".pdf";
-
 	try {
 		$s3->putObject(
 			array(
@@ -113,7 +112,7 @@ if (isset($request->token) and $request->token == $token) {
 						if ($sql->rows)
 							$evolucaoTipo = mysqli_fetch_object($sql->mysqry);
 
-						$sql->consult($_p . "pacientes", "id,telefone1,nome", "where id=$evolucao->id_paciente");
+						$sql->consult($_p . "pacientes", "*", "where id=$evolucao->id_paciente");
 						if ($sql->rows)
 							$paciente = mysqli_fetch_object($sql->mysqry);
 					}
@@ -169,7 +168,7 @@ if (isset($request->token) and $request->token == $token) {
 						$unidadeDigital .= '</td></tr>';
 					}
 
-					$sql->consult($_p . "colaboradores", "id,nome", "where id=$evolucao->id_profissional");
+					$sql->consult($_p . "colaboradores", "*", "where id=$evolucao->id_profissional");
 					if ($sql->rows) {
 						$solicitante = mysqli_fetch_object($sql->mysqry);
 					}
@@ -307,11 +306,13 @@ if (isset($request->token) and $request->token == $token) {
 						$erro = uploader($infoConta->instancia, "arqs/pacientes/anamneses/", $evolucao->id, $html);
 					}
 
+					#ATESTADO
 					if ($evolucao->id_tipo == 4) {
 						$sql->consult($_p . "pacientes_evolucoes_atestados", "*", "where id_evolucao=$evolucao->id");
 						if ($sql->rows) {
 							$atestado = mysqli_fetch_object($sql->mysqry);
 						}
+
 
 						$html = '	
 						<html>
