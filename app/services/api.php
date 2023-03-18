@@ -752,7 +752,7 @@ if (isset($request->token) and $request->token == $token) {
 					$erro = 'Infozap não conectado';
 				else if (is_object($conexao) and $conexao->versao != 2)
 					$erro = 'Versão do Infozap não suporta envio de arquivos. Favor atualize seu Infozap!';
-
+				
 				if (empty($erro)) {
 
 					// Se Receituario
@@ -772,6 +772,7 @@ if (isset($request->token) and $request->token == $token) {
 						$attr = array(
 							'numero' => $paciente->telefone1,
 							'arq' => $pdf,
+							'id_paciente'=>$paciente->id,
 							'documentName' => utf8_encode($evolucaoTipo->titulo) . " " . date('d/m/Y', strtotime($evolucao->data)) . " - " . utf8_encode($paciente->nome) . ".pdf",
 							'id_conexao' => $conexao->id
 						);

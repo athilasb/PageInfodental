@@ -546,7 +546,7 @@
 	 * @param int $id_evolucao
 	 * @return mixed mensagem de sucesso ou erro ao assinar o documento
 	 */
-	function generatePDF($id_evolucao){
+	function generatePDF($id_evolucao) {
 		$endpoint="https://".$_SERVER['HTTP_HOST']."/services/api.php";
 
 		$params = [];
@@ -574,14 +574,12 @@
 
 		curl_close($curl);
 		if ($err) {
-			var_dump($err);
-			$rtn=array('success'=>false,
-							'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
+			return false;
 		} else {
-			$rtn=array('success'=>true);
+			return true;
 		}
 
-		return $rtn;
+		
 	}
 	
 	
