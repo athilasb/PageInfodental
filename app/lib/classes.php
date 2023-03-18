@@ -586,7 +586,9 @@
 	
 	
 	function __autoload($class_name) {
-		$classSFTP=array('S3Client');
-		if(!in_array($class_name,$classSFTP))require_once("class/class" . $class_name . ".php");
+		$classSFTP=array('AMQPStreamConnection','TCPDF','S3Client');
+		if(!in_array($class_name,$classSFTP)) {
+			require_once("class/class" . $class_name . ".php");
+		}
 	}
 ?>

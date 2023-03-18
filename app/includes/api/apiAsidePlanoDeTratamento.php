@@ -25,8 +25,6 @@ if (isset($_POST['ajax'])) {
 				$procedimentoPlano[$x->id_plano] = $x;
 				$planosID[] = $x->id_plano;
 			}
-
-
 			if (count($planosID)) {
 				$sql->consult($_p . "parametros_planos", "*", "where id IN (" . implode(",", $planosID) . ") and lixo=0");
 				if ($sql->rows) {
@@ -38,13 +36,11 @@ if (isset($_POST['ajax'])) {
 					}
 				}
 			}
-
 			$rtn = array('success' => true, 'planos' => $planos);
 		} else {
 			$rtn = array('success' => false, 'error' => 'Procedimento não encontrado!');
 		}
 	}
-
 	header("Content-type: application/json");
 	echo json_encode($rtn);
 	die();
@@ -739,7 +735,12 @@ if (isset($_POST['ajax'])) {
 			let desconto = unMoney($(`.aside-plano-desconto .js-input-desconto`).val());
 			let valorOriginal = unMoney($(`.js-total-procedimentos`).val())
 			let DescontosJaAplicados = procedimentos.reduce((acc, obj) => acc + obj.desconto, 0);
-
+			if (tipoDesconto != "dinheiro") {
+				desconto = $(`.aside-plano-desconto .js-input-desconto`).val();
+				desconto = ((parseFloat(desconto.replace('%', ""))) / 100) * valorOriginal;
+			}
+			console.log(DescontosJaAplicados)
+			console.log(desconto)
 			if (quantidadeDesconto == 0) {
 				swal({
 					title: "Erro",
@@ -756,24 +757,21 @@ if (isset($_POST['ajax'])) {
 					type: "error",
 					confirmButtonColor: "#424242"
 				});
-			} else if ((DescontosJaAplicados + desconto) > valorOriginal) {
-				swal({
-					title: "Erro",
-					text: 'a Soma dos Descontos Não Podem Ser maior que o Valor total dos Procedimentos!',
-					html: true,
-					type: "error",
-					confirmButtonColor: "#424242"
-				});
+				// } else if ((DescontosJaAplicados + desconto) > valorOriginal) {
+				// 	swal({
+				// 		title: "Erro",
+				// 		text: 'a Soma dos Descontos Não Podem Ser maior que o Valor total dos Procedimentos!',
+				// 		html: true,
+				// 		type: "error",
+				// 		confirmButtonColor: "#424242"
+				// 	});
 			} else {
 				let valorTotal = 0;
 				let cont = 0;
 				let qtdItensDesconto = 0;
 				let valorItens = []
 				let percItens = []
-				if (tipoDesconto != "dinheiro") {
-					desconto = $(`.aside-plano-desconto .js-input-desconto`).val();
-					desconto = ((parseFloat(desconto.replace('%', ""))) / 100) * valorOriginal;
-				}
+
 				procedimentos.forEach(x => {
 					if (x.situacao == "aprovado") {
 						if ($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked') === true) {
@@ -818,6 +816,17 @@ if (isset($_POST['ajax'])) {
 						if (x.situacao == "aprovado") {
 							if ($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked') === true) {
 								let descontoAplicar = desconto * percItens[cont]
+								if (descontoAplicar > (x.valor - x.desconto)) {
+									descontoAplicar =  0;
+									desconto = 0;
+									swal({
+										title: "Erro",
+										text: 'O Descontos Não Pode Ser maior que o Valor total do Procedimento!',
+										html: true,
+										type: "error",
+										confirmButtonColor: "#424242"
+									});
+								}
 								let desc = 0;
 								if (x.desconto > 0) {
 									//valorProc=procedimentos[contProcedimento].valorCorrigido;

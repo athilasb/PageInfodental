@@ -25,7 +25,7 @@ if (isset($_POST['ajax'])) {
 
 	if ($_POST['ajax'] == 'pagamentoBaixa') {
 		if (is_object($pagamento)) {
-			$formaDePagamento = '';
+			$formaDePagamento;
 			if (isset($_POST['id_formapagamento'])) {
 				$sql->consult($_p . "parametros_formasdepagamento", "*", "where id='" . $_POST['id_formapagamento'] . "'");
 				if ($sql->rows) {
@@ -57,7 +57,7 @@ if (isset($_POST['ajax'])) {
 								id_origem=1,
 								id_registro=$pagamento->id,
 								pagamento_id_colaborador=" . $usr->id . ",
-								id_formapagamento=$formaDePagamento?->id,
+								id_formapagamento=$formaDePagamento->id,
 								id_operadora='" . $id_operadora . "',
 								id_bandeira='" . $creditoBandeira . "',
 								taxa_cartao='" . $taxa . "',
@@ -332,6 +332,42 @@ if (isset($_POST['ajax'])) {
 			}
 		} else {
 			$rtn = array('success' => false, 'error' => 'Baixa não encontrada!');
+		}
+	} else if ($_POST['ajax'] == "buscarUsuarios") {
+		$usuarios = [];
+		try {
+			if (isset($_POST['tipo_beneficiario'])) {
+				$tipo_beneficiario = $_POST['tipo_beneficiario'];
+				if ($tipo_beneficiario === 'fornecedor') {
+					$sql->consult($_p . "parametros_fornecedores", "*", "WHERE lixo=0");
+					while ($x = mysqli_fetch_object($sql->mysqry)) {
+						$usuarios[$x->id]['id'] = $x->id;
+						$usuarios[$x->id]['nome'] = $x->nome_fantasia;
+						$usuarios[$x->id]['cpf'] = $x->cpf;
+					}
+				} else if ($tipo_beneficiario === 'paciente1') {
+					$sql->consult($_p . "pacientes", "*", "where lixo=0");
+					while ($x = mysqli_fetch_object($sql->mysqry)) {
+						$usuarios[$x->id]['id'] = $x->id;
+						$usuarios[$x->id]['nome'] = $x->nome;
+						$usuarios[$x->id]['cpf'] = $x->cpf;
+					}
+				} else if ($tipo_beneficiario === 'colaborador1') {
+					$sql->consult($_p . "colaboradores", "*", "where lixo=0");
+					while ($x = mysqli_fetch_object($sql->mysqry)) {
+						$usuarios[$x->id]['id'] = $x->id;
+						$usuarios[$x->id]['nome'] = $x->nome;
+						$usuarios[$x->id]['cpf'] = $x->cpf;
+					}
+				}
+				if (count($usuarios) > 0) {
+					$rtn = array('success' => true, 'usuarios' => $usuarios);
+				} else {
+					$rtn = array('error' => 'Nenhum Usuario Encontrado');
+				}
+			}
+		} catch (Exception $err) {
+			$rtn = array('error' =>'Erro: ' . $err->getMessage());
 		}
 	}
 
@@ -952,7 +988,7 @@ if (isset($_POST['ajax'])) {
 							</td>
 							<td>${btnReceber}</td>
 							<td>${btnEstorno}</td>
-						</tr>`;
+							</tr>`;
 								$('.js-tr .js-recibo, .js-tr .js-estorno').tooltipster({
 									theme: "borderless"
 								});
@@ -973,6 +1009,7 @@ if (isset($_POST['ajax'])) {
 							confirmButtonColor: "#424242"
 						});
 					} else {
+
 						swal({
 							title: "Erro!",
 							text: "Algum erro ocorreu durante a baixa deste pagamento!",
@@ -1083,7 +1120,6 @@ if (isset($_POST['ajax'])) {
 			$('#js-aside-asFinanceiro .js-baixas').on('click', '.js-estornoPagamento', function() {
 				let pagamentoIndex = $('#js-aside-asFinanceiro .js-index').val();
 				let baixaIndex = $(this).attr('data-index');
-
 				if (_pagamentos[pagamentoIndex]) {
 					let pagamento = _pagamentos[pagamentoIndex];
 					if (pagamento.baixas[baixaIndex]) {
@@ -1606,7 +1642,7 @@ if (isset($_POST['ajax'])) {
 									} else {
 										swal({
 											title: "Erro!",
-											text: "Algum erro ocorreu durante a baixa deste pagamento!",
+											text: "Algum erro desconhecido ocorreu durante a baixa deste pagamento!",
 											html: true,
 											type: "error",
 											confirmButtonColor: "#424242"
@@ -1614,6 +1650,7 @@ if (isset($_POST['ajax'])) {
 									}
 								},
 								error: function(error) {
+									console.log(error)
 									swal({
 										title: "Erro!",
 										text: "Algum erro ocorreu durante a baixa deste pagamento",
@@ -1741,9 +1778,7 @@ if (isset($_POST['ajax'])) {
 			});
 		})
 	</script>
-<?php } ?>
-
-<?php if (isset($apiConfig['AddPagamento'])) { ?>
+<?php } else if (isset($apiConfig['AddPagamento'])) { ?>
 	<section class="aside aside-form" id="js-aside-asFinanceiro">
 		<div class="aside__inner1">
 			<input type="hidden" name="alteracao" value="0">
@@ -1773,7 +1808,7 @@ if (isset($_POST['ajax'])) {
 							<dl class="dl2">
 								<dt>Fornecedor</dt>
 								<dd class="form-comp">
-									<select name="fornecedor_ident" class="">
+									<select name="lista_beneficiarios" class="">
 										<option value="">-</option>
 									</select><span>+</span>
 								</dd>
@@ -1789,7 +1824,7 @@ if (isset($_POST['ajax'])) {
 								<dd><input type="text" class="js-obs-desconto" /></dd>
 							</dl>
 						</div>
-						<div class="colunas5">
+						<div class="colunas5" style="display:none">
 							<dl>
 								<dt>Split de Pagamento</dt>
 								<label><input type="checkbox" class="input-switch split-pagamento" /></label>
@@ -1803,8 +1838,7 @@ if (isset($_POST['ajax'])) {
 								<dd><input type="text" class="" /></dd>
 							</dl>
 						</div>
-						<hr>
-						<div class="colunas3">
+						<div class="colunas3" style="display:none">
 							<dl class="form-comp">
 								<dt>Porcentagem</dt>
 								<label><input type="text" name="" value="0"><span>%</span></label>
@@ -1818,7 +1852,7 @@ if (isset($_POST['ajax'])) {
 								<label><input type="text" name="" value=""></label>
 							</dl>
 						</div>
-						<div class="colunas3" style="font-size:11px">
+						<div class="colunas3" style="display:none;font-size:11px">
 							<dl>
 								<label><input type="radio" name="tipo_pagamento" value="horas_clinicas">Calcular Gasto como Horas Clínicas</label>
 							</dl>
@@ -1829,7 +1863,7 @@ if (isset($_POST['ajax'])) {
 								<label><input type="radio" name="tipo_pagamento" value="investimentos_outros">Investimentos e Outros</label>
 							</dl>
 						</div>
-						<div class="colunas3">
+						<div class="colunas3" style="display:none">
 							<dl class="form-comp">
 								<dt>Porcentagem</dt>
 								<label><input type="text" name="" value="0"><span>%</span></label>
@@ -1843,7 +1877,7 @@ if (isset($_POST['ajax'])) {
 								<label><input type="text" name="" value=""></label>
 							</dl>
 						</div>
-						<div class="colunas3" style="font-size:11px">
+						<div class="colunas3" style="display:none;font-size:11px">
 							<dl>
 								<label><input type="radio" name="tipo_pagamento" value="horas_clinicas">Calcular Gasto como Horas Clínicas</label>
 							</dl>
@@ -1854,20 +1888,7 @@ if (isset($_POST['ajax'])) {
 								<label><input type="radio" name="tipo_pagamento" value="investimentos_outros">Investimentos e Outros</label>
 							</dl>
 						</div>
-						<hr>
-
-						<div class="colunas3" style="font-size:11px">
-							<dl>
-								<label><input type="radio" name="tipo_pagamento" value="horas_clinicas">Calcular Gasto como Horas Clínicas</label>
-							</dl>
-							<dl>
-								<label><input type="radio" name="tipo_pagamento" value="gasto_paciente">Controlar gasto por Paciente</label>
-							</dl>
-							<dl>
-								<label><input type="radio" name="tipo_pagamento" value="investimentos_outros">Investimentos e Outros</label>
-							</dl>
-						</div>
-						<div class="">
+						<div class="" style="display:none">
 							<p>É um custo recorrente? se sim qual a recorrência e quando acaba?</p>
 							<div class="colunas3">
 								<dl>
@@ -1948,6 +1969,52 @@ if (isset($_POST['ajax'])) {
 				decimal: ',',
 				symbolStay: true
 			});
+			$('[name="tipo_beneficiario"]').click(function() {
+				let tipo_beneficiario = $(this).val()
+				let data = `ajax=buscarUsuarios&tipo_beneficiario=${tipo_beneficiario}`;
+				$.ajax({
+					type: "POST",
+					url: baseURLApiAsidePagamentos,
+					data: data,
+					success: function(rtn) {
+						console.log(rtn)
+						if (rtn.success) {
+							$('[name="lista_beneficiarios"]').html("<option value='0'>-</option>")
+							for (let x in rtn.usuarios) {
+								let user = rtn.usuarios[x]
+								$('[name="lista_beneficiarios"]').append(`<option value='${user.id}'>${user.nome}</option>`)
+							}
+						} else if (rtn.error) {
+							swal({
+								title: "Erro!",
+								text: rtn.error,
+								html: true,
+								type: "error",
+								confirmButtonColor: "#424242"
+							});
+						} else {
+							swal({
+								title: "Erro!",
+								text: "Algum erro ocorreu durante a busca pela lista de Usuarios!",
+								html: true,
+								type: "error",
+								confirmButtonColor: "#424242"
+							});
+						}
+					},
+					error: function(err) {
+						console.log(err)
+						swal({
+							title: "Erro!",
+							text: "Algum erro ocorreu durante a busca pela lista de Usuarios!",
+							html: true,
+							type: "error",
+							confirmButtonColor: "#424242"
+						});
+					}
+				})
+
+			})
 		})
 	</script>
 <?php } ?>

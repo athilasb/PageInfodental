@@ -85,6 +85,9 @@ function getValores($data_inicial, $data_final)
 
 	$dados = [];
 	foreach ($_baixas as $baixa) {
+		$titulo = (isset($_registros[$baixa->id_registro]) && isset($_registros[$baixa->id_registro]->id_tratamento) && isset($_tratamentos[$_registros[$baixa->id_registro]->id_tratamento])) ? utf8_encode($_tratamentos[$_registros[$baixa->id_registro]->id_tratamento]->titulo) : "";
+		$pagante  = (isset($_registros[$baixa->id_registro]) && isset($_registros[$baixa->id_registro]->id_pagante) && isset($_pagantes[$_registros[$baixa->id_registro]->id_pagante])) ? $_pagantes[$_registros[$baixa->id_registro]->id_pagante]->nome : '';
+
 		$dados[$baixa->id]['id_baixa'] = $baixa->id;
 		$dados[$baixa->id]['data_vencimento'] = $baixa->data_vencimento;
 		$dados[$baixa->id]['id_registro'] = $baixa->id_registro;
@@ -98,8 +101,8 @@ function getValores($data_inicial, $data_final)
 		$dados[$baixa->id]['valor_juros'] = $baixa->valor_juros;
 		$dados[$baixa->id]['desconto'] = $baixa->desconto;
 		$dados[$baixa->id]['valorTotalPagamento'] = $_registros[$baixa->id_registro]->valor;
-		$dados[$baixa->id]['titulo'] = $_tratamentos[$_registros[$baixa->id_registro]->id_tratamento]->titulo;
-		$dados[$baixa->id]['nome_pagante'] = $_pagantes[$_registros[$baixa->id_registro]->id_pagante]->nome;
+		$dados[$baixa->id]['titulo'] = $titulo;
+		$dados[$baixa->id]['nome_pagante'] = $pagante;
 		$dados[$baixa->id]['status'] = '';
 		$valor['valorTotal'] += $baixa->valor;
 		if ($baixa->pagamento == 1) {
@@ -134,6 +137,8 @@ function getValores($data_inicial, $data_final)
 		} else {
 			$faltam = ($pag->valor - $soma->$key);
 			//echo "AINDA FALTA UM VALOR DE: $faltam<br>";
+			$titulo = (isset($_registros[$pag->id]) && isset($_registros[$pag->id]->id_tratamento) && isset($_tratamentos[$_registros[$pag->id]->id_tratamento])) ? utf8_decode($_tratamentos[$_registros[$pag->id]->id_tratamento]->titulo) : "";
+			$pagante  = (isset($_registros[$pag->id]) && isset($_registros[$pag->id]->id_pagante) && isset($_pagantes[$_registros[$pag->id]->id_pagante])) ? $_pagantes[$_registros[$pag->id]->id_pagante]->nome : '';
 			$valor['definirPagamento'] += $faltam;
 			$dados[$baixa->id]['id_baixa'] = $pag->id;
 			$dados[$baixa->id]['data_vencimento'] = $pag->data_vencimento;
@@ -148,8 +153,8 @@ function getValores($data_inicial, $data_final)
 			$dados[$baixa->id]['valor_juros'] = 0;
 			$dados[$baixa->id]['desconto'] = 0;
 			$dados[$baixa->id]['valorTotalPagamento'] = $_registros[$pag->id]->valor;
-			$dados[$baixa->id]['titulo'] = $_tratamentos[$_registros[$pag->id]->id_tratamento]->titulo;
-			$dados[$baixa->id]['nome_pagante'] = $_pagantes[$_registros[$pag->id]->id_pagante]->nome;
+			$dados[$baixa->id]['titulo'] = $titulo;
+			$dados[$baixa->id]['nome_pagante'] = $pagante;
 			$dados[$baixa->id]['status'] = 'DEFINIR PAGAMENTO';
 			$valor['valorTotal'] += $baixa->valor;
 		}
@@ -163,9 +168,9 @@ function getValores($data_inicial, $data_final)
 
 [$dados, $_registros, $valor] = getValores($data_inicial_filtro, $data_final_filtro);
 
-// // echo "<pre>";
-// // print_r($_registros);
-// // die();
+// echo "<pre>";
+// print_r($dados);
+// die();
 ?>
 <header class="header">
 	<div class="header__content content">
@@ -203,7 +208,7 @@ function getValores($data_inicial, $data_final)
 				<div class="button-group">
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 7 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 7) ? 'active' : '' ?>" data-dias='7'>7 dias</a>
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 30 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 30) ? 'active' : '' ?>" data-dias='30'>30 dias</a>
-					] <a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 60 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 60) ? 'active' : '' ?>" data-dias='60'>60 dias</a>
+					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 60 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 60) ? 'active' : '' ?>" data-dias='60'>60 dias</a>
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 90 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 90) ? 'active' : '' ?>" data-dias='90'>90 dias</a>
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 365 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 365) ? 'active' : '' ?>" data-dias='365'>ano</a>
 				</div>
