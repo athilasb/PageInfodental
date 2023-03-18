@@ -131,9 +131,7 @@
 								}
 
 
-
-								$rtn=array('success'=>true);
-							
+								$rtn=generatePDF($id_evolucao);
 
 							} else {
 								$rtn=array('success'=>false,'error'=>'Anamnese sem formulário configurado!');
@@ -301,9 +299,7 @@
 							$sql->update($_p."pacientes_evolucoes_atestados",$vSQLAtestado,"where id=$atestado->id");
 						}
 
-						$rtn=array('success'=>true);
-
-
+						$rtn = generatePDF($id_evolucao);
 					}
 
 				} else {
@@ -336,7 +332,6 @@
 						}
 					}
 				}
-
 
 				if(empty($erro)) {
 					if(is_object($paciente)) {
@@ -373,9 +368,6 @@
 									$id_evolucao=$sql->ulid;
 								}
 							}
-
-
-							
 
 							foreach($examesSolicitados as $obj) {
 								$obj=(object)$obj;
@@ -414,15 +406,9 @@
 								} else {
 									$sql->update($_p."pacientes_evolucoes_pedidosdeexames",$vSQLExame,"where id=$evProc->id");
 								}
-
-
-								
-
-								
-
 							}	
 
-							$rtn=array('success'=>true);
+							$rtn = generatePDF($id_evolucao);
 						} else {
 							$rtn=array('success'=>false,'error'=>'Adicione pelo menos um exame!');
 						}
@@ -620,43 +606,7 @@
 							
 						}
 
-						# gera PDF
-							$endpoint="https://".$_SERVER['HTTP_HOST']."/services/api.php";
-
-							$params = [];
-							$params['token']='ee7a1554b556f657e8659a56d1a19c315684c39d';
-							$params['method']='generatePDF';
-							$params['infoConta']=$_ENV['NAME'];
-							$params['id_evolucao']=$id_evolucao;
-							$params['enviaWhatsapp']=0;
-
-								
-							$curl = curl_init();
-							curl_setopt_array($curl, [
-							  CURLOPT_URL => $endpoint,
-							  CURLOPT_RETURNTRANSFER => true,
-							  CURLOPT_ENCODING => "",
-							  CURLOPT_MAXREDIRS => 10,
-							  CURLOPT_TIMEOUT => 30,
-							  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-							  CURLOPT_CUSTOMREQUEST => "GET",
-							  CURLOPT_POSTFIELDS => json_encode($params),
-							  CURLOPT_HTTPHEADER => ["Content-Type: application/json"]
-							]);
-
-							$response = curl_exec($curl);
-							$err = curl_error($curl);
-
-							curl_close($curl);
-							if ($err) {
-								var_dump($err);
-							  $rtn=array('success'=>false,
-							  				'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
-							} else {
-								$rtn=array('success'=>true);
-							}
-
-
+						$rtn = generatePDF($id_evolucao);
 
 					} else {
 						$rtn=array('success'=>false,'error'=>$erro);
@@ -920,9 +870,7 @@
 						$sql->add($_p."pacientes_evolucoes_documentos",$vSQLGeral);
 					}
 
-					$rtn=array('success'=>true);
-
-
+					$rtn=generatePDF($id_evolucao);
 
 				} else {
 					$rtn=array('success'=>false,'error'=>$erro);
@@ -2792,14 +2740,16 @@
 										url:baseURLApiAsidePaciente,
 										success:function(rtn) {
 											if(rtn.success) {
-
+												console.log(rtn);
 												$('.aside-prontuario-atestado .js-asideAtestado-inputs').val('');
 												CKEDITOR.instances['asideAtestado-texto'].setData('');
 												$('.aside-close').click();
 												document.location.reload();
 											} else if(rtn.error) {
+												console.log(rtn);
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 											} else {
+												console.log(rtn);
 												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
 											}
 											

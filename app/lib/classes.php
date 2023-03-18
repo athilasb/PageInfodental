@@ -540,6 +540,50 @@
 		if(substr($str,strlen($str)-1,1)=="-") $str=substr($str,0,strlen($str)-1);
 		return strtolower(@ereg_replace("[^a-zA-Z0-9_.-]", "", $str));
 	}
+
+	/**
+	 * generatePDF
+	 * @param int $id_evolucao
+	 * @return mixed mensagem de sucesso ou erro ao assinar o documento
+	 */
+	function generatePDF($id_evolucao){
+		$endpoint="http://".$_SERVER['HTTP_HOST']."/services/api.php";
+
+		$params = [];
+		$params['token']='ee7a1554b556f657e8659a56d1a19c315684c39d';
+		$params['method']='generatePDF';
+		$params['infoConta']=$_ENV['NAME'];
+		$params['id_evolucao']=$id_evolucao;
+		$params['enviaWhatsapp']=0;
+			
+		$curl = curl_init();
+		curl_setopt_array($curl, [
+			CURLOPT_URL => $endpoint,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => "",
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 30,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => "GET",
+			CURLOPT_POSTFIELDS => json_encode($params),
+			CURLOPT_HTTPHEADER => ["Content-Type: application/json"]
+		]);
+
+	    curl_exec($curl);
+		$err = curl_error($curl);
+
+		curl_close($curl);
+		if ($err) {
+			var_dump($err);
+			$rtn=array('success'=>false,
+							'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
+		} else {
+			$rtn=array('success'=>true);
+		}
+
+		return $rtn;
+	}
+	
 	
 	function __autoload($class_name) {
 		$classSFTP=array('S3Client');
