@@ -40,7 +40,7 @@
 					if($sql->rows) $whatsappMessage=mysqli_fetch_object($sql->mysqry);
 				}
 
-						echo base64_encode(file_get_contents("https://testes.infodental.dental/img/ilustra-usuario.jpg"));;die();
+					
 				if(is_object($whatsappMessage)) {
 
 					if(!empty($rabbitmqFila)) {
@@ -80,8 +80,12 @@
 							// ident_whatsapp_mensagens_tipos.id=1 -> Envio de arquivo
 
 							if($whatsappMessage->id_tipo=="10") { 
-								$arquivo = file_get_contents("../img/ilustra-usuario.jpg");//$whatsappMessage->arquivo); 
+								$arquivo = file_get_contents($whatsappMessage->arquivo); 
 								$arquivo64 = "data:application/pdf;base64,".base64_encode($arquivo); 
+
+								//echo $whatsappMessage->arquivo;die();
+								$arquivo64 = "data:image/jpg;base64,".base64_encode(file_get_contents("https://testes.infodental.dental/img/ilustra-usuario.jpg"));
+								//echo $arquivo64;die();
 
 								$message=json_encode(array('type'=>'sendFileMessage',
 																   'data'=>array('number' =>  $this->wtsNumero($whatsappMessage->numero),
@@ -102,6 +106,8 @@
 							
 							if($rabbitmq->sendMessageToQueueWts($message,$_rabbitmqFila)) {
 								$sql->update($_p."whatsapp_mensagens","enviado=1,data_enviado=now()","where id=$whatsappMessage->id");
+
+								return true;
 								
 								
 							} else {
@@ -365,8 +371,6 @@
 
 											$id_whatsapp_fila=$sqlWts->ulid;
 
-											// cadastra no rabbitmq
-											$this->wtsRabbitmq($id_whatsapp_fila);
 
 											// Alteração de horario da agenda (id_tipo=5)
 											if($tipo->id==5) {
@@ -379,7 +383,7 @@
 
 
 
-											return true;
+											return $this->wtsRabbitmq($id_whatsapp_fila);
 
 										} else {
 											$this->erro="Esta mensagem já foi cadastrada nos últimos 60 minutos";
@@ -453,10 +457,10 @@
 
 												$id_whatsapp=$sqlWts->ulid;
 												
-												// cadastra no rabbitmq
-												$this->wtsRabbitmq($id_whatsapp_fila);
+												
 
-												return true;
+												// cadastra no rabbitmq
+												return $this->wtsRabbitmq($id_whatsapp_fila);
 
 											} else {
 												$x=mysqli_fetch_object($sql->mysqry);
@@ -545,9 +549,8 @@
 										$id_whatsapp_fila=$sqlWts->ulid;
 
 										// cadastra no rabbitmq
-										$this->wtsRabbitmq($id_whatsapp_fila);
+										return $this->wtsRabbitmq($id_whatsapp_fila);
 
-										return true;
 									} else {
 										$this->erro="Este paciente já foi notificado nas últimas 48 horas";
 									}
@@ -1174,7 +1177,7 @@
 
 
 					// cadastra no rabbitmq
-					$this->wtsRabbitmq($id_whatsapp_fila);
+					return $this->wtsRabbitmq($id_whatsapp_fila);
 				}
 
 			}
