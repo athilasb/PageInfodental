@@ -547,7 +547,7 @@
 	 * @return mixed mensagem de sucesso ou erro ao assinar o documento
 	 */
 	function generatePDF($id_evolucao){
-		$endpoint="http://".$_SERVER['HTTP_HOST']."/services/api.php";
+		$endpoint="https://".$_SERVER['HTTP_HOST']."/services/api.php";
 
 		$params = [];
 		$params['token']='ee7a1554b556f657e8659a56d1a19c315684c39d';
