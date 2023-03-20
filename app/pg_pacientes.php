@@ -109,6 +109,9 @@
 			
 			$attr=array('prefixo'=>$_p,'usr'=>$usr);
 			$wts = new Whatsapp($attr);
+			$wts->infosWasabi=array('_wasabiPathRoot'=>$_wasabiPathRoot,
+									'wasabiS3'=>$wasabiS3,
+									'_wasabiBucket'=>$_wasabiBucket);
 
 			if($wts->atualizaFoto($id_reg)) {
 				//echo "ok";

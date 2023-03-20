@@ -726,13 +726,6 @@ if (isset($request->token) and $request->token == $token) {
 
 						$numero = $paciente->telefone1;
 
-						// teste
-						/*$attr=array('numero'=>$numero,
-						'mensagem'=>'oi',
-						'id_conexao'=>$conexao->id);
-						echo $infozap->enviaMensagem($attr)?1:$infozap->erro;
-						die();*/
-
 						// envia whatsapp
 						$attr = array(
 							'numero' => $numero,
@@ -821,7 +814,9 @@ if (isset($request->token) and $request->token == $token) {
 						);
 
 						if (!$infozap->enviaArquivo($attr)) {
-							$erro = 'Algum erro ocorreu durante o envio do Receituário via Whatsapp. Entre em contato com nossa equipe de suporte!';
+
+							$erro = isset($infozap->erro) ? $infozap->erro : 'Algum erro ocorreu durante o envio do Receituário via Whatsapp. Entre em contato com nossa equipe de suporte!';
+						
 						}
 					}
 				}
