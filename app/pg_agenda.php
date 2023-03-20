@@ -36,6 +36,9 @@
 
 	$attr=array('prefixo'=>$_p,'usr'=>$usr);
 	$infozap = new Whatsapp($attr);
+	$infozap->infosWasabi=array('_wasabiPathRoot'=>$_wasabiPathRoot,
+							'wasabiS3'=>$wasabiS3,
+							'_wasabiBucket'=>$_wasabiBucket);
 
 	if(isset($_POST['ajax'])) {
 
@@ -378,7 +381,7 @@
 				if($infozap->atualizaFoto($id_paciente)) {
 					$rtn=array('success'=>true);
 				} else {
-					$rtn=array('success'=>false,'erro'=>$infozap->erro);
+					$rtn=array('success'=>false,'erro'=>isset($infozap->erro)?$infozap->erro:'Algum erro ocorreu durante o getprofile');
 				}
 			} else {
 				$rtn=array('success'=>false,'Paciente não passado!');

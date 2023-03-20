@@ -12,6 +12,10 @@
 	$attr=array('prefixo'=>$_p,'usr'=>$usr);
 	$wts = new Whatsapp($attr);
 
+	$wts->infosWasabi=array('_wasabiPathRoot'=>$_wasabiPathRoot,
+							'wasabiS3'=>$wasabiS3,
+							'_wasabiBucket'=>$_wasabiBucket);
+
 	if(isset($_GET['dispara'])) {
 		if($wts->dispara()) echo "Disparado!";
 		else echo "Erro: $wts->erro";
@@ -44,7 +48,8 @@
 					echo $x->data." - $dif - -> ".$x->agenda_data." -> <BR> -> $x->id";
 					$attr=array('id_tipo'=>1,
 								'id_paciente'=>$x->id_paciente,
-								'id_agenda'=>$x->id);
+								'id_agenda'=>$x->id,
+								'cronjob'=>1);
 					if($wts->adicionaNaFila($attr)) echo "<BR>Sucesso!";
 					else echo "<BR>Erro: ".$wts->erro;
 					echo "<hr>";
@@ -76,7 +81,8 @@
 					echo $x->data." - $dif - -> ".$x->agenda_data." -> <BR> -> $x->id";
 					$attr=array('id_tipo'=>1,
 								'id_paciente'=>$x->id_paciente,
-								'id_agenda'=>$x->id);
+								'id_agenda'=>$x->id,
+								'cronjob'=>1);
 					if($wts->adicionaNaFila($attr)) echo "<BR>Sucesso!";
 					else echo "<BR>Erro: ".$wts->erro;
 					echo "<hr>";
@@ -99,7 +105,8 @@
 			
 				$attr=array('id_tipo'=>2,
 							'id_paciente'=>$x->id_paciente,
-							'id_agenda'=>$x->id);
+							'id_agenda'=>$x->id,
+							'cronjob'=>1);
 				//var_dump($attr);
 				if($wts->adicionaNaFila($attr)) echo "ok";
 				else echo "erro: ".$wts->erro;
@@ -178,7 +185,8 @@
 
 				$attr=array('id_tipo'=>5,
 							'id_paciente'=>$x->id_paciente,
-							'id_agenda'=>$x->id);
+							'id_agenda'=>$x->id,
+							'cronjob'=>1);
 				
 				if($wts->adicionaNaFila($attr)) {
 					echo "ok";
@@ -189,8 +197,9 @@
 		}
 
 	# Dispara
-		if($wts->dispara()) echo "Disparado!";
-		else echo "Erro: $wts->erro";
+		// 2023-03-20: removido pois nao precisa mais disparar pois ja cadastra na fila do rabbitmq
+		//if($wts->dispara()) echo "Disparado!";
+		//else echo "Erro: $wts->erro";
 
 		
 ?>

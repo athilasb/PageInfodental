@@ -424,14 +424,11 @@
 											<?php
 											if($eTipo->id==7) {
 												if($e->receita_assinada=="0000-00-00 00:00:00") {
-												?>
-												<a href="javascript:;" class="button tooltip" data-id_evolucao="<?php echo $e->id;?>" data-loading="0" style="opacity: 0.3;" title="Faça a assinatura digital para enviar"><i class="iconify" data-icon="fa:whatsapp"></i></a>
-												<?php
-												} else {
+												}
+
 												?>
 												<a href="javascript:;" class="button js-btn-whatsapp" data-id_evolucao="<?php echo $e->id;?>" data-loading="0"><i class="iconify" data-icon="fa:whatsapp"></i></a>
 												<?php
-												}
 											} else {
 											?>
 											<a href="javascript:;" class="button js-btn-whatsapp" data-id_evolucao="<?php echo $e->id;?>" data-loading="0"><i class="iconify" data-icon="fa:whatsapp"></i></a>
