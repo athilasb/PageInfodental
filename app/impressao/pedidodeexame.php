@@ -96,7 +96,7 @@
 		</tr>
 		<tr>
 			<td><?php echo $idade>1?"$idade anos":"$idade ano";?></td>
-			<td><?php echo $paciente->sexo=="M"?"Masculino":"Feminino";?></td>
+			<td><?php echo ($paciente->sexo=="M")?"Masculino":($paciente->sexo=="F"?"Feminino":'');?></td>
 			<td style="text-align:right;"><span class="iconify" data-icon="bxs:phone" data-inline="true"></span> <?php echo maskTelefone($paciente->telefone1);?></td>
 		</tr>
 	</table>
