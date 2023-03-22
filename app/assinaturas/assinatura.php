@@ -315,6 +315,11 @@ if (isset($_POST['conf']) && $_POST['conf'] == true) {
 									   confirmButtonColor: "#424242" });
 						return;
 					}
+
+					swal({ title: "Atenção!", 
+									   text: "Aguarde enquanto processamos a assinatura", 
+									   type: "warning", 
+									   confirmButtonColor: "#424242" });
 					navigator.geolocation.getCurrentPosition(
 						(pos) => {
 							$.ajax({
@@ -337,6 +342,7 @@ if (isset($_POST['conf']) && $_POST['conf'] == true) {
 									if (rtn.status == "success") {
 										swal({ title: "Sucesso!", text: rtn.message, type: "success", confirmButtonColor: "#424242" });
 										btn.attr('data-loading', 2);
+										location.reload();
 
 									} else {
 										swal({ title: "Erro!", text: rtn.message, type: "error", confirmButtonColor: "#424242" });
