@@ -34,7 +34,8 @@
 		// agendamentos nas proximas 23h-24h
 		$sql->consult($_p."agenda","*","where agenda_data >= '$dataInicio' and 
 												agenda_data <= '$dataFim' and id_status=1 and lixo=0 order by agenda_data asc");
-		//echo $dataInicio."<br />".$dataFim."<BR>Resultado: $sql->rows<BR><BR>";die();
+		echo $dataInicio."<br />".$dataFim."<BR>Resultado: $sql->rows<BR><BR>";
+		//die();
 	
 
 		if($sql->rows) {
@@ -43,15 +44,16 @@
 				$dif = strtotime(date('Y-m-d H:i:s')) - strtotime($x->data);
 				$dif /= 60 * 60 *24;
 				$dif= round($dif);
-				echo $x->id." ".$dif."<BR>";
+				echo "<b>#".$x->id."</b> ";
+				echo "(agendado ha $dif dias) <br />";
 				if($dif<=7) { 
-					echo $x->data." - $dif - -> ".$x->agenda_data." -> <BR> -> $x->id";
+					echo "Data Criação: <b>".$x->data."</b><br />Data do agendamento: <b>".$x->agenda_data."</b><BR>Enviando... ";
 					$attr=array('id_tipo'=>1,
 								'id_paciente'=>$x->id_paciente,
 								'id_agenda'=>$x->id,
 								'cronjob'=>1);
-					if($wts->adicionaNaFila($attr)) echo "<BR>Sucesso!";
-					else echo "<BR>Erro: ".$wts->erro;
+					if($wts->adicionaNaFila($attr)) echo "Sucesso!";
+					else echo "Erro: ".$wts->erro;
 					echo "<hr>";
 				}
 			}
