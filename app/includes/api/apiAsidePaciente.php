@@ -130,9 +130,12 @@
 									}
 								}
 
-
-								$rtn=generatePDF($id_evolucao);
-
+								if(generatePDF($id_evolucao)) {
+									$rtn=array('success'=>true);
+								} else {
+									$rtn=array('success'=>false,'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
+								}
+		
 							} else {
 								$rtn=array('success'=>false,'error'=>'Anamnese sem formulário configurado!');
 							}
@@ -299,7 +302,11 @@
 							$sql->update($_p."pacientes_evolucoes_atestados",$vSQLAtestado,"where id=$atestado->id");
 						}
 
-						$rtn = generatePDF($id_evolucao);
+						if(generatePDF($id_evolucao)) {
+							$rtn=array('success'=>true);
+						} else {
+							$rtn=array('success'=>false,'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
+						}
 					}
 
 				} else {
@@ -408,7 +415,11 @@
 								}
 							}	
 
-							$rtn = generatePDF($id_evolucao);
+							if(generatePDF($id_evolucao)) {
+								$rtn=array('success'=>true);
+							} else {
+								$rtn=array('success'=>false,'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
+							}	
 						} else {
 							$rtn=array('success'=>false,'error'=>'Adicione pelo menos um exame!');
 						}
@@ -606,7 +617,6 @@
 							
 						}
 
-						$erro='';
 						if(generatePDF($id_evolucao)) {
 							$rtn=array('success'=>true);
 						} else {
@@ -875,8 +885,11 @@
 						$sql->add($_p."pacientes_evolucoes_documentos",$vSQLGeral);
 					}
 
-					$rtn=generatePDF($id_evolucao);
-
+					if(generatePDF($id_evolucao)) {
+						$rtn=array('success'=>true);
+					} else {
+						$rtn=array('success'=>false,'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
+					}
 				} else {
 					$rtn=array('success'=>false,'error'=>$erro);
 				}

@@ -122,6 +122,15 @@
 	include "includes/header.php";
 	include "includes/nav.php";
 
+
+	//esse tipo de operação vai ser bem lenta ao momento que tivermos mutas assinaturas no sistema.
+	//limitar a lista de acordo com o número de evoluções mostradas?
+	$lstAssinP = array();
+	$sql->consult($_p."pacientes_assinaturas", "id_evolucao", "");
+	while(($x = mysqli_fetch_object($sql->mysqry))){
+		$lstAssinP[] = $x->id_evolucao; 
+	}
+
 	$_table=$_p."pacientes_prontuarios";
 	require_once("includes/header/headerPacientes.php");
 	
@@ -307,7 +316,6 @@
 				}
 			}
 		}
-
 ?>
 
 
@@ -315,9 +323,6 @@
 		id_paciente = <?php echo $paciente->id;?>; 
 		var pagina = <?php echo (isset($_GET['pagina']) and is_numeric($_GET['pagina']))?$_GET['pagina']:0;?>; 
 	</script>
-
-
-
 
 	<main class="main">
 		<div class="main__content content">
@@ -419,8 +424,30 @@
 											}
 										}
 										?>
-										<div class="list-toggle-buttons">									
+						<!--				<div class="list-toggle-alert">
+											<div>
+											<i class="iconify" data-icon="quill:signature"></i>
+											</div>
+											<div>
+											<i class="iconify" data-icon="fa6-solid:file-signature"  <?php echo ($e->receita_assinada != "0000-00-00 00:00:00")?("style=\"color: red;\""):'';?>></i>
+											</div>
+											<div>
+											<i class="iconify" data-icon="quill:signature" <?php echo in_array($e->id, $lstAssinP)?("style=\"color: yellow;\""):'';?> ></i>
+											</div>
+										</div>
+									-->
+
+
+										<div class="list-toggle-buttons">		
+
+											
+
+
 											<a href="<?php echo $pdf;?>" target="_blank" class="button"><i class="iconify" data-icon="ant-design:file-pdf-outlined"></i></a>
+											
+											<!--Qual o sentido dessa verificação?
+										
+																					<span class="iconify"  ?>"></span>-->
 											<?php
 											if($eTipo->id==7) {
 												if($e->receita_assinada=="0000-00-00 00:00:00") {
@@ -431,7 +458,7 @@
 												<?php
 											} else {
 											?>
-											<a href="javascript:;" class="button js-btn-whatsapp" data-id_evolucao="<?php echo $e->id;?>" data-loading="0"><i class="iconify" data-icon="fa:whatsapp"></i></a>
+												<a href="javascript:;" class="button js-btn-whatsapp" data-id_evolucao="<?php echo $e->id;?>" data-loading="0"><i class="iconify" data-icon="fa:whatsapp"></i></a>
 											<?php
 											}
 											?>
