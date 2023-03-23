@@ -427,11 +427,20 @@
 										
 											if($sql->rows==0) {
 
+												// verifica a conexao ativa
+												$id_conexao=0;
+												$sql->consult("infodentalADM.infod_contas_onlines","id","where instancia='".$_ENV['NAME']."' and lixo=0 order by id desc limit 1");
+												if($sql->rows) {
+													$conexao=mysqli_fetch_object($sql->mysqry);
+													$id_conexao=$conexao->id;
+												}
+
 												$vSQL="data=now(),
 														id_tipo=$tipo->id,
 														id_paciente=$paciente->id,
 														id_agenda=$agenda->id,
 														numero='$numero',
+														id_conexao='$id_conexao',
 														mensagem='$msg'";
 
 
@@ -454,7 +463,7 @@
 												$wtsEnviada=mysqli_fetch_object($sql->mysqry);
 												$id_whatsapp=$wtsEnviada->id;
 
-												if($wtsEnviada->enviado==0 or 1==1) {
+												if($wtsEnviada->enviado==0) {
 													$this->wtsRabbitmq($id_whatsapp);
 												} else {
 													$this->erro="Esta mensagem já foi enviada!";
@@ -908,7 +917,7 @@
 
 
 				// se enviou essa mensagem
-				if(is_object($whatsappMessage)\) {
+				if(is_object($whatsappMessage)) {
 
 				} else {
 					$vSQL="data=now(),

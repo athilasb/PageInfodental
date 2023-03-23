@@ -465,6 +465,7 @@
 
 							$attr = array('plan_identifier'=>$plan_identifier,
 											'customer_id'=>$infoConta->iugu_customer_id,
+											'only_charge_on_due_date'=>true,
 											'expires_at'=>date('Y-m-d H:i:s',strtotime(" + 7 days")));
 
 							if($iugu->assinaturaCriar($attr)) {
@@ -747,6 +748,8 @@
 								subdescriptionDetail(<?php echo empty($infoConta->iugu_subscription_id)?false:true;?>);
 
 								$('.js-btn-assinar').click(function(){
+
+
 									let erro='';
 
 									if($('input[name=tipo]:checked').val()=="PF") {
@@ -963,7 +966,7 @@
 					?>
 						
 
-						<form method="post" class="form js-form-assinatura js-form-adicionar-cartao" action="<?php echo $_page;?>">
+						<form method="post" class="form js-form-assinatura js-form-adicionar-cartao" action="<?php echo $_page;?>" data-loading="0">
 							<input type="hidden" name="acao" value="assinatura" />
 							<input type="hidden" name="iugu_plano" value="<?php echo $planoUnico->iugu_identifier;?>" />
 
