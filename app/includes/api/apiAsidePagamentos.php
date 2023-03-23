@@ -1,4 +1,5 @@
 <?php
+
 if (isset($_POST['ajax'])) {
 	$dir = "../../";
 	require_once("../../lib/conf.php");
@@ -341,23 +342,22 @@ if (isset($_POST['ajax'])) {
 				if ($tipo_beneficiario === 'fornecedor') {
 					$sql->consult($_p . "parametros_fornecedores", "*", "WHERE lixo=0");
 					while ($x = mysqli_fetch_object($sql->mysqry)) {
-						$usuarios[$x->id]['id'] = $x->id;
-						$usuarios[$x->id]['nome'] = $x->nome_fantasia;
-						$usuarios[$x->id]['cpf'] = $x->cpf;
+						$usuarios[$x->id] = utf8_encode($x->razao_social);
+						// $usuarios[$x->id]['id'] = "$x->id";
+						// $usuarios[$x->id]['nome'] = utf8_encode($x->nome);
+						// $usuarios[$x->id]['razao_social'] = utf8_encode($x->razao_social);
+						// $usuarios[$x->id]['nome_fantasia'] = utf8_encode($x->nome_fantasia);
+						// $usuarios[$x->id]['cpf'] = "$x->cpf";
 					}
-				} else if ($tipo_beneficiario === 'paciente1') {
+				} else if ($tipo_beneficiario === 'paciente') {
 					$sql->consult($_p . "pacientes", "*", "where lixo=0");
 					while ($x = mysqli_fetch_object($sql->mysqry)) {
-						$usuarios[$x->id]['id'] = $x->id;
-						$usuarios[$x->id]['nome'] = $x->nome;
-						$usuarios[$x->id]['cpf'] = $x->cpf;
+						$usuarios[$x->id] = utf8_encode($x->nome);
 					}
-				} else if ($tipo_beneficiario === 'colaborador1') {
+				} else if ($tipo_beneficiario === 'colaborador') {
 					$sql->consult($_p . "colaboradores", "*", "where lixo=0");
 					while ($x = mysqli_fetch_object($sql->mysqry)) {
-						$usuarios[$x->id]['id'] = $x->id;
-						$usuarios[$x->id]['nome'] = $x->nome;
-						$usuarios[$x->id]['cpf'] = $x->cpf;
+						$usuarios[$x->id] = utf8_encode($x->nome);
 					}
 				}
 				if (count($usuarios) > 0) {
@@ -367,7 +367,7 @@ if (isset($_POST['ajax'])) {
 				}
 			}
 		} catch (Exception $err) {
-			$rtn = array('error' =>'Erro: ' . $err->getMessage());
+			$rtn = array('error' => 'Erro: ' . $err->getMessage());
 		}
 	}
 
@@ -375,6 +375,7 @@ if (isset($_POST['ajax'])) {
 	echo json_encode($rtn);
 	die();
 }
+
 ?>
 <script type="text/javascript" src="js/aside.funcoes.js"></script>
 <?php if (isset($apiConfig['Pagamentos'])) { ?>
@@ -1779,6 +1780,16 @@ if (isset($_POST['ajax'])) {
 		})
 	</script>
 <?php } else if (isset($apiConfig['AddPagamento'])) { ?>
+	<?php
+
+	$_formasDePagamento = array();
+	$optionFormasDePagamento = '';
+	$sql->consult($_p . "parametros_formasdepagamento", "*", "order by titulo asc");
+	while ($x = mysqli_fetch_object($sql->mysqry)) {
+		$_formasDePagamento[$x->id] = $x;
+		$optionFormasDePagamento .= '<option value="' . $x->id . '" data-tipo="' . $x->tipo . '">' . utf8_encode($x->titulo) . '</option>';
+	}
+	?>
 	<section class="aside aside-form" id="js-aside-asFinanceiro">
 		<div class="aside__inner1">
 			<input type="hidden" name="alteracao" value="0">
@@ -1817,11 +1828,11 @@ if (isset($_POST['ajax'])) {
 						<div class="colunas5">
 							<dl>
 								<dt>Data Emissão</dt>
-								<dd><input type="text" class="js-vencimento js-tipoPagamento data" value="<?= date('d/m/Y'); ?>" /></dd>
+								<dd><input type="text" class="js-vencimento js-tipoPagamento data" value="<?= date('d/m/Y'); ?>" name="data_emissao" /></dd>
 							</dl>
 							<dl class="dl3">
 								<dt>Descrição</dt>
-								<dd><input type="text" class="js-obs-desconto" /></dd>
+								<dd><input type="text" class="js-obs-desconto" name="descricao" /></dd>
 							</dl>
 						</div>
 						<div class="colunas5" style="display:none">
@@ -1910,36 +1921,36 @@ if (isset($_POST['ajax'])) {
 								<dl>
 									<dt>Valor Total</dt>
 									<dd class="form-comp"><span>R$</span>
-										<input type="text" class="js-valor money" />
+										<input type="text" class="js-valor money" name="valor_pagamento" />
 									</dd>
 								</dl>
 								<dl class="dl3">
 									<dt>Qual a Quantidade de Pagamentos?</dt>
-									<dd><input type="text" class="" value="1" /></dd>
+									<dd><input type="text" class="" value="1" name="qtd_pagamento" /></dd>
 								</dl>
 							</div>
 						</section>
 						<section>
-							<aside>0</aside>
+							<aside></aside>
 							<article>
 								<div class="colunas3">
 									<dl>
-										<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data js-vencimento" data-ordem="" value="${x.vencimento}" ${disabledData} /></dd>
+										<dt>Data de vencimento</dt>
+										<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" class="data js-vencimento" data-ordem="" value="" name="data_pagamento" /></dd>
 									</dl>
 									<dl>
-										<dd class="form-comp"><span>R$</i></span><input type="tel" name="" data-ordem="" class="valor js-valor" value="" /></dd>
-									</dl>
-									<dl>
+										<dt>Forma de Pagamento</dt>
 										<dd>
-											<select class="js-id_formadepagamento js-tipoPagamento">
+											<select class="js-id_formadepagamento js-tipoPagamento" name="forma_pagamento">
 												<option value="">Forma de Pagamento...</option>
+												<?= $optionFormasDePagamento; ?>
 											</select>
 										</dd>
 									</dl>
 								</div>
 						</section>
 						<dl style="margin-top:1.5rem;">
-							<dd><button href="javascript:;" class="button button_main js-btn-addBaixa" type="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar</span></button></dd>
+							<dd><button href="javascript:;" class="button button_main js-btn-addPagamento" type="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar</span></button></dd>
 						</dl>
 					</fieldset>
 				</div>
@@ -1953,15 +1964,15 @@ if (isset($_POST['ajax'])) {
 			});
 		}
 		$(function() {
-			$('.js-pagamento-item .js-vencimento:last').inputmask('99/99/9999');
-			$('.js-pagamento-item .js-vencimento:last').datetimepicker({
+			$('.js-vencimento:last').inputmask('99/99/9999');
+			$('.js-vencimento:last').datetimepicker({
 				timepicker: false,
 				format: 'd/m/Y',
 				scrollMonth: false,
 				scrollTime: false,
 				scrollInput: false
 			});
-			$('.js-pagamento-item .js-valor:last').maskMoney({
+			$('.js-valor:last').maskMoney({
 				symbol: '',
 				allowZero: true,
 				showSymbol: true,
@@ -1982,7 +1993,7 @@ if (isset($_POST['ajax'])) {
 							$('[name="lista_beneficiarios"]').html("<option value='0'>-</option>")
 							for (let x in rtn.usuarios) {
 								let user = rtn.usuarios[x]
-								$('[name="lista_beneficiarios"]').append(`<option value='${user.id}'>${user.nome}</option>`)
+								$('[name="lista_beneficiarios"]').append(`<option value='${x}'>${user}</option>`)
 							}
 						} else if (rtn.error) {
 							swal({
@@ -2014,6 +2025,34 @@ if (isset($_POST['ajax'])) {
 					}
 				})
 
+			})
+			$('.js-btn-addPagamento').click(function() {
+				let tipo_beneficiario = $('[name="tipo_beneficiario"]:checked').val();
+				let id_beneficiario = $('[name="lista_beneficiarios"]').val();
+				let data_emissao = $('[name="data_emissao"]').val();
+				let descricao = $('[name="descricao"]').val();
+				let valor_pagamento = $('[name="valor_pagamento"]').val();
+				let qtd_pagamento = $('[name="qtd_pagamento"]').val();
+				let data_pagamento = $('[name="data_pagamento"]').val();
+				let forma_pagamento = $('[name="forma_pagamento"]').val();
+				let erro = ""
+				if(!id_beneficiario || id_beneficiario<=0){
+					erro = " Voce precisa selecionar um beneficiario."
+				}else if(!data_emissao || data_emissao){
+					erro = " Selecione a data De emissão."
+				}else if(!descricao || descricao){
+					erro = "Voce precisa adicionar uma descricao."
+				}
+
+
+				console.log(tipo_beneficiario)
+				console.log(id_beneficiario)
+				console.log(data_emissao)
+				console.log(descricao)
+				console.log(valor_pagamento)
+				console.log(qtd_pagamento)
+				console.log(data_pagamento)
+				console.log(forma_pagamento)
 			})
 		})
 	</script>
