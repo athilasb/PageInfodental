@@ -739,8 +739,6 @@ if (isset($_POST['ajax'])) {
 				desconto = $(`.aside-plano-desconto .js-input-desconto`).val();
 				desconto = ((parseFloat(desconto.replace('%', ""))) / 100) * valorOriginal;
 			}
-			console.log(DescontosJaAplicados)
-			console.log(desconto)
 			if (quantidadeDesconto == 0) {
 				swal({
 					title: "Erro",
@@ -779,7 +777,6 @@ if (isset($_POST['ajax'])) {
 							qtdItensDesconto++;
 							valorItens[cont] = x.valor;
 							percItens[cont] = unMoney(x.valor / valorOriginal)
-
 							if (x.quantitativo > 0) {
 								valorItens[cont] = unMoney(x.quantidade * x.valor);
 								percItens[cont] = unMoney((x.quantidade * x.valor) / valorOriginal)
@@ -816,12 +813,12 @@ if (isset($_POST['ajax'])) {
 						if (x.situacao == "aprovado") {
 							if ($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked') === true) {
 								let descontoAplicar = desconto * percItens[cont]
-								if (descontoAplicar > (x.valor - x.desconto)) {
-									descontoAplicar =  0;
+								if (descontoAplicar > (x.valorCorrigido - x.desconto)) {
+									descontoAplicar = 0;
 									desconto = 0;
 									swal({
 										title: "Erro",
-										text: 'O Descontos Não Pode Ser maior que o Valor total do Procedimento!',
+										text: 'Os Descontos Não Podem Ser maior que o Valor total do Procedimento!',
 										html: true,
 										type: "error",
 										confirmButtonColor: "#424242"
@@ -853,7 +850,20 @@ if (isset($_POST['ajax'])) {
 				atualizaValor(true);
 			}
 		})
-
+		// clica para marcar Todos
+		$('.js-btn-marcarTodos').click(function() {
+			let cont = 0;
+			procedimentos.forEach(x => {
+				if (x.situacao == "aprovado") {
+					if ($(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked') === true) {
+						$(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked', false);
+					} else {
+						$(`.aside-plano-desconto .js-desconto-procedimento:eq(${cont})`).prop('checked', true);
+					}
+				}
+				cont++;
+			})
+		})
 		// abre janela de desconto
 		$('.js-btn-desconto').click(function() {
 			$(".aside-plano-desconto").fadeIn(100, function() {
@@ -1728,6 +1738,12 @@ if (isset($_POST['ajax'])) {
 						<dt>Total com descontos</dt>
 						<dd><input type="text" class="js-total-procedimentosdescontos" disabled /></dd>
 					</dl>
+					<!-- <dl>
+						<dt></dt>
+						<dd>
+							<a href="javascript:;" class="button js-btn-marcarTodos">Marcar Todos</a>
+						</dd>
+					</dl> -->
 				</div>
 			</fieldset>
 		</form>
