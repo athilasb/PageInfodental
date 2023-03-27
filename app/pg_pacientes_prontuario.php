@@ -123,13 +123,12 @@
 	include "includes/nav.php";
 
 
-	//esse tipo de operação vai ser bem lenta ao momento que tivermos mutas assinaturas no sistema.
-	//limitar a lista de acordo com o número de evoluções mostradas?
 	$lstAssinP = array();
 	$sql->consult($_p."pacientes_assinaturas", "id_evolucao", "");
 	while(($x = mysqli_fetch_object($sql->mysqry))){
 		$lstAssinP[] = $x->id_evolucao; 
 	}
+
 
 	$_table=$_p."pacientes_prontuarios";
 	require_once("includes/header/headerPacientes.php");
@@ -316,6 +315,7 @@
 				}
 			}
 		}
+
 ?>
 
 
@@ -323,6 +323,9 @@
 		id_paciente = <?php echo $paciente->id;?>; 
 		var pagina = <?php echo (isset($_GET['pagina']) and is_numeric($_GET['pagina']))?$_GET['pagina']:0;?>; 
 	</script>
+
+
+
 
 	<main class="main">
 		<div class="main__content content">
@@ -362,8 +365,6 @@
 
 						<div class="box">
 							<div class="list-toggle">
-
-								
 								<?php
 								foreach($evolucoes as $e) {
 									if(isset($evolucoesTipos[$e->id_tipo])) {
@@ -394,7 +395,8 @@
 										}
 								?>
 								<div class="list-toggle-item">
-									<header>
+
+									<header>													
 										<div class="list-toggle-cat">
 											<i class="iconify" data-icon="<?php echo $eTipo->icone;?>"></i>
 											<div>
@@ -413,7 +415,7 @@
 												</p>
 											</div>
 										</div>
-										<p><?php echo isset($_profissionais[$e->id_profissional])?utf8_encode($_profissionais[$e->id_profissional]->nome):"";?></p>
+										<p class="toggle-tamanho"><?php echo isset($_profissionais[$e->id_profissional])?utf8_encode($_profissionais[$e->id_profissional]->nome):"";?></p>
 										<?php
 										if($eTipo->id==10 and isset($_documentos[$e->id])) {
 											$d=$_documentos[$e->id];
@@ -424,30 +426,25 @@
 											}
 										}
 										?>
-						<!--				<div class="list-toggle-alert">
+										<div class="list-toggle-alert">
 											<div>
-											<i class="iconify" data-icon="quill:signature"></i>
+												<p>Dentista</p>
+												<div class="list-toggle-alert-icones">
+												<i class="iconify" data-icon="quill:signature"></i>
+												<i class="iconify" data-icon="fa6-solid:file-signature"  <?php echo ($e->receita_assinada != "0000-00-00 00:00:00")?("style=\"color: red;\""):'';?> ></i>
+												</div>
 											</div>
+
+
 											<div>
-											<i class="iconify" data-icon="fa6-solid:file-signature"  <?php echo ($e->receita_assinada != "0000-00-00 00:00:00")?("style=\"color: red;\""):'';?>></i>
+												<p>Paciente</p>
+												<i class="iconify" data-icon="quill:signature" <?php echo in_array($e->id, $lstAssinP)?("style=\"color: yellow;\""):'';?> ></i>
 											</div>
-											<div>
-											<i class="iconify" data-icon="quill:signature" <?php echo in_array($e->id, $lstAssinP)?("style=\"color: yellow;\""):'';?> ></i>
-											</div>
+											
 										</div>
-									-->
-
-
 										<div class="list-toggle-buttons">		
-
 											
-
-
 											<a href="<?php echo $pdf;?>" target="_blank" class="button"><i class="iconify" data-icon="ant-design:file-pdf-outlined"></i></a>
-											
-											<!--Qual o sentido dessa verificação?
-										
-																					<span class="iconify"  ?>"></span>-->
 											<?php
 											if($eTipo->id==7) {
 												if($e->receita_assinada=="0000-00-00 00:00:00") {
@@ -458,14 +455,15 @@
 												<?php
 											} else {
 											?>
-												<a href="javascript:;" class="button js-btn-whatsapp" data-id_evolucao="<?php echo $e->id;?>" data-loading="0"><i class="iconify" data-icon="fa:whatsapp"></i></a>
+											<a href="javascript:;" class="button js-btn-whatsapp" data-id_evolucao="<?php echo $e->id;?>" data-loading="0"><i class="iconify" data-icon="fa:whatsapp"></i></a>
 											<?php
 											}
 											?>
 											<a href="<?php echo $_page."?deleta=".$e->id."&pagina=".((isset($_GET['pagina']) and is_numeric($_GET['pagina']))?$_GET['pagina']:'')."&$url";?>" class="button js-confirmarDeletar"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 											<a href="javascript:;" class="button button_main js-expande js-expande-<?php echo $e->id;?>"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i></a>
-										</div>							
+										</div>																
 									</header>
+
 									<article<?php echo (isset($_GET['id_evolucao']) and $_GET['id_evolucao']==$e->id)?' class="active"':'';?>>
 										<?php
 											$correcoes='';
