@@ -620,6 +620,10 @@
 							$sql->add($_p."pacientes_historico",$vSQLHistorico);
 
 
+							// atualiza data do agendamento
+							$sql->update($_p."whatsapp_mensagens","fila_agenda_data='$agendaAlterado'","where id_agenda=$agenda->id");
+
+
 							// altera campo agenda_alteracao_data para enviar a notificacao de alteração de horário
 							$sql->update($_p."agenda","agenda_alteracao_data=now(),agenda_alteracao_id_whatsapp=0","where id=$agenda->id");
 						}

@@ -69,6 +69,8 @@
 						else if(getcwd()=="/var/www/html/vucafood") $dir="../retaguarda/";*/
 						
 						$dir="../";
+						if(getcwd()=="/root") $dir="../var/www/html/";
+
 						require_once $dir.'vendor/autoload.php';
 						require_once $dir.'lib/class/classRabbitMQ.php';
 
@@ -381,7 +383,117 @@
 						// Cancelamento (id_tipo=3)
 						// Alteração de horario da agenda (id_tipo=5)
 						$this->erro='';
-						if($tipo->id==1 or $tipo->id==2 or $tipo->id==3 or $tipo->id==5) {
+						if($tipo->id==1) {
+							if(is_object($paciente)) {
+
+								if(is_object($agenda)) {
+
+									if($agenda->id_paciente == $paciente->id) {
+
+										$msg = $tipo->texto;
+										$numero = telefone($paciente->telefone1);
+
+										if(!empty($numero) and !empty($msg)) {
+
+											if(in_array($numero,$this->block)) {
+												$this->erro="Numero bloqueado ($numero)";
+												return false;
+											}
+
+											$attr=array('paciente'=>$paciente,
+														'agenda'=>$agenda,
+														'profissionais'=>$profissionais,
+														'cadeira'=>$cadeira,
+														'msg'=>$msg);
+
+											$msg = $this->mensagemAtalhos($attr);
+											//echo "<br />=> ".$msg."<BR>";die();
+
+											// verifica se ja enviou
+											$where="where id_agenda=$agenda->id and 
+															id_paciente=$paciente->id and 
+															id_tipo=$tipo->id  and 
+															numero='".addslashes($numero)."' and 
+															data > NOW() - INTERVAL 48 HOUR";
+
+											$sql->consult($_p."whatsapp_mensagens","*",$where);
+
+										
+											if($sql->rows==0) {
+
+												// verifica a conexao ativa
+												$id_conexao=0;
+												$sql->consult("infodentalADM.infod_contas_onlines","id","where instancia='".$_ENV['NAME']."' and lixo=0 order by id desc limit 1");
+												if($sql->rows) {
+													$conexao=mysqli_fetch_object($sql->mysqry);
+													$id_conexao=$conexao->id;
+												}
+
+												$webhookExpiracao = date('Y-m-d H:i:s',strtotime(' + 3 hours'));
+
+												$vSQL="data=now(),
+														id_tipo=$tipo->id,
+														id_paciente=$paciente->id,
+														fila_agenda_data='$agenda->agenda_data',
+														id_agenda=$agenda->id,
+														numero='$numero',
+														id_conexao='$id_conexao',
+														mensagem='$msg',
+														webhook_expiracao='".$webhookExpiracao."'";
+
+												// verifica se possui alguma mensagem de confirmacao para o mesmo celular e que webhook/escuta nao foi expirado ou finalizado
+												$sql->consult($_p."whatsapp_mensagens","*","where numero='$numero' and webhook_desativado=0 and webhook_expiracao>now()");
+											
+
+												// se possui confirmacao com escuta para o mesmo numero, entra para fila
+												if($sql->rows) {
+													$vSQL.=",fila_data=now(),
+															webhook_desativado=1,
+															fila_numero='$numero'";
+													$sqlWts->add($_p."whatsapp_mensagens",$vSQL);
+													$id_whatsapp=$sqlWts->ulid;
+												} 
+												// se nao possui, envia mensagem
+												else {
+													$sqlWts->add($_p."whatsapp_mensagens",$vSQL);
+													$id_whatsapp=$sqlWts->ulid;
+													$this->wtsRabbitmq($id_whatsapp);
+												}
+
+											} else {
+												$wtsEnviada=mysqli_fetch_object($sql->mysqry);
+												$id_whatsapp=$wtsEnviada->id;
+
+												// se nao foi enviado)
+												if($wtsEnviada->enviado==0) {
+
+													// se nao tiver na fila de numero (quando possui 2 ou mais agendamentos para ser confirmado no mesmo numero)
+													if(empty($wtsEnviada->fila_numero)) {
+														$this->wtsRabbitmq($id_whatsapp);
+													} else {
+														$this->erro='Esta mensagem está na fila ('.$wtsEnviada->fila_numero.') desde '.$wtsEnviada->fila_data;
+													}
+												} else {
+													$this->erro="Esta mensagem já foi enviada!";
+												}
+											}
+										} else {
+											$this->erro="Paciente #$paciente->id não possui número de whatsapp";
+										}
+
+									} else {
+										$this->erro="Agendamento #$agenda->id não é do paciente #$paciente->id";
+									}
+
+								} else {
+									$this->erro="Agendamento não encontrado!";
+								}
+
+							} else {
+								$this->erro="Paciente não encontrado!";
+							}
+						}
+						else if($tipo->id==2 or $tipo->id==3 or $tipo->id==5) {
 
 							if(is_object($paciente)) {
 

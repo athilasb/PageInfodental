@@ -2,7 +2,7 @@
 	//require_once("../lib/conf.php");
 	//require_once("../lib/classes.php");
 
-
+	echo getcwd()."\n\n";
 	require_once("/var/www/html/lib/conf.php");
 	require_once("/var/www/html/lib/classes.php");
 
