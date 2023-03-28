@@ -1,8 +1,6 @@
 <?php
 use Aws\Common\Facade\ElasticLoadBalancing;
 	require_once("../../lib/classes.php");
-	$sql = new Mysql();
-	$_p="ident_";
 ?>
 
 <!DOCTYPE html>
@@ -24,14 +22,13 @@ $sql = new Mysql();
 $cont = 0;
 #$merge_mensagens = array();
 
+    echo "dd";
 
 $pacientes = file("relatorio_total_pacientes_cadastrados_modificado.csv");
 
 
 // apaga pacientes e agendamentos
 $sql->del($_p."pacientes","");
-//$sql->del($_p."pacientes_historico","");
-//$sql->del($_p."agenda","");
 
 //pegando os pacientes da lista
 $telefone;
@@ -96,7 +93,7 @@ $Workplace,
 $Zip,
 $_AccessPath,
 $fatherName,
-$id,
+        $id,
 $insurancePlanName,
 $insurancePlanNumber,
 $motherName,
@@ -122,32 +119,33 @@ $z_TransactionId
     }
     
     $_pacientes[$index] = [ 
+      'id' => $id,
     'data' => $CreatedAt,
     'lixo' => $Active,
     'nome' => $Name,
     'sexo' => $Sex,
     'cpf' => $OtherDocumentId,
-    'data_nascimento' => $BirthDate ,
-    'profissao' => $Profession ,
-    'estado_civil' => $CivilStatus ,
-    'telefone1' => $MobilePhone ,
+    'data_nascimento' => $BirthDate,
+    'profissao' => $Profession,
+    'estado_civil' => $CivilStatus,
+    'telefone1' => $MobilePhone,
     'telefone1_whatsapp' => 0,
     'telefone2' => $OtherPhones ,
-    'email' => $Email ,
+    'email' => $Email,
     'indicacao' => $IndicationSource ,
     'cep' => $CEP ,
-    'endereco' => $Address ,
-    'numero' => $AddressNumber ,
+    'endereco' => $Address,
+    'numero' => $AddressNumber,
     'complemento' => $AddressComplement ,
-    'bairro' => $Neighborhood ,
-    'estado' => $State ,
-    'cidade' => $City ,
+    'bairro' => $Neighborhood,
+    'estado' => $State,
+    'cidade' => $City,
     'responsavel_possui' => isset($PersonInCharge)?1:0,
-    'responsavel_nome' => $PersonInCharge ,
+    'responsavel_nome' => $PersonInCharge,
     'responsavel_cpf' => $PersonInChargeOtherDocument];
 
 
-
+    print_r ($_pacientes[$index]);
 
 
   /*  $_vsql = " 
