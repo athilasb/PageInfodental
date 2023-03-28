@@ -1,6 +1,10 @@
 <?php
 use Aws\Common\Facade\ElasticLoadBalancing;
-	require_once("../../lib/classes.php");
+require_once("../../lib/conf.php");
+require_once("../../lib/classes.php");
+
+setcookie("infoName", $_GET['instancia'], time() + 3600*24, "/");
+
 ?>
 
 <!DOCTYPE html>
@@ -14,26 +18,34 @@ use Aws\Common\Facade\ElasticLoadBalancing;
 
 <?php
 
-$_p = ".ident_";
 $sql = new Mysql();
 
-#$mensagens_enviadasV2 = array();
-#$pacientesV2 = array();
-$cont = 0;
-#$merge_mensagens = array();
-
-    echo "dd";
-
-$pacientes = file("relatorio_total_pacientes_cadastrados_modificado.csv");
-
+$pacientes = file("patient_modificado.csv");
 
 // apaga pacientes e agendamentos
-$sql->del($_p."pacientes","");
+//$sql->del($_p."pacientes","");
+
+if(1==1){
+        echo "migração do drjoao </br>";
+        echo "trabalha apenas com a tabela ident_pacientes </br>";
+        echo "nenhum dado será apagado";
+        die();
+}
 
 //pegando os pacientes da lista
 $telefone;
 $celular;
+
+
 $id = 0;
+// apaga pacientes e agendamentos
+//$sql->del($_p."pacientes","");
+$sql->consult($_p."pacientes", "MAX(id) as id", "");
+if($sql->rows){
+  $tmp = mysqli_fetch_object($sql->mysqry);
+  $id = $tmp-> id;
+  ++$id;
+}
 
 foreach($pacientes as $linha){
     list(
@@ -93,7 +105,7 @@ $Workplace,
 $Zip,
 $_AccessPath,
 $fatherName,
-        $id,
+        $id_lixo,
 $insurancePlanName,
 $insurancePlanNumber,
 $motherName,
@@ -108,21 +120,17 @@ $z_LastChange_Server_Tool,
 $z_LastChange_UserId,
 $z_Server_Tool,
 $z_TransactionId
-    ) = explode(',', str_replace("\"", "", $linha));                            
-
-                                    //todos os telefones sempre tem um espaço depois do )
-    $index = strtolowerWLIB(str_replace(" ", "", tirarAcentos($Name)));
-    //verificando por nomes repetidos
-    if (isset($_pacientes[$index])) {
-        var_dump($datas_existentes);
-        die();
-    }
+    ) = explode(';', str_replace(["{", "}", "*", "(", ")"], "", $linha));          
     
+    if($id == "")
+        continue;
+
+ /*   
     $_pacientes[$index] = [ 
       'id' => $id,
-    'data' => $CreatedAt,
-    'lixo' => $Active,
-    'nome' => $Name,
+    'data' => addslashes($CreatedAt),
+    'lixo' => addslashes($Active),
+    'nome' => addslashes(utf8_encode($Name)),
     'sexo' => $Sex,
     'cpf' => $OtherDocumentId,
     'data_nascimento' => $BirthDate,
@@ -134,85 +142,49 @@ $z_TransactionId
     'email' => $Email,
     'indicacao' => $IndicationSource ,
     'cep' => $CEP ,
-    'endereco' => $Address,
+    'endereco' => addslashes(utf8_encode($Address)),
     'numero' => $AddressNumber,
-    'complemento' => $AddressComplement ,
-    'bairro' => $Neighborhood,
+    'complemento' => addslashes(utf8_encode($AddressComplement)) ,
+    'bairro' => addslashes(utf8_encode($Neighborhood)),
     'estado' => $State,
     'cidade' => $City,
     'responsavel_possui' => isset($PersonInCharge)?1:0,
-    'responsavel_nome' => $PersonInCharge,
+    'responsavel_nome' => addslashes(utf8_encode($PersonInCharge)),
     'responsavel_cpf' => $PersonInChargeOtherDocument];
+*/
 
+        if($CreatedAt == ''){
+                $CreatedAt = "now()";
+        }
+        $PersonInCharge = $PersonInCharge?"1":"0";
+        $Active = ($Active == "X"?"1":0);
+        
+    $_vsql = " id = '". $id . "',
+        data = '". $CreatedAt ."', 
+        lixo = '". $Active ."', 
+        nome = '". addslashes(utf8_encode($Name)) ."', 
+        sexo = '". $Sex ."', 
+        cpf = '" . str_replace(["-", "."], "", $OtherDocumentId) ."', 
+        data_nascimento = '". $BirthDate ."', 
+        profissao = '". $Profession ."', 
+        estado_civil = '". $CivilStatus ."', 
+        telefone1 = '". $MobilePhone ."',    
+        telefone2 = '". $OtherPhones ."',                                  
+        email = '". $Email ."',                                                    
+        indicacao = '". $IndicationSource ."',                               
+        cep = '". str_replace(["-", "."], "", $CEP) ."',                        
+        endereco = '". addslashes(utf8_encode($Address)) ."',               
+        numero = '". $AddressNumber ."',                                 
+        complemento = '". addslashes(utf8_encode($AddressComplement)) ."', 
+        bairro = '". addslashes(utf8_encode($Neighborhood)) ."', 
+        estado = '". $State ."',                                                
+        cidade = '". $City ."',                                      
+        responsavel_possui = '". $PersonInCharge ."'";
 
-    print_r ($_pacientes[$index]);
-
-
-  /*  $_vsql = " 
-    id  = '". ."',
-    data  = '". ."',
-    lixo  = '". ."',
-    nome = '". ."',
-    pacient = '". ."',
-    situaca = '". ."',
-    sexo = '". ."',
-    cpf = '". ."',
-    data_nasciment = '". ."',
-    rg = '". ."',
-    rg_uf = '". ."',
-    profissao = '". ."',
-    estado_civil = '". ."',
-    telefone1 = '". ."',
-    telefone1_whatsapp = '". ."',
-    telefone2 = '". ."',
-    email = '". ."',
-    mysica = '". ."',
-    indicacao_tipo = '". ."',
-    indicacao = '". ."',
-    cep = '". ."',
-    endereco = '". ."',
-    numero = '". ."',
-    complemento = '". ."',
-    bairro = '". ."',
-    estado = '". ."',
-    cidade = '". ."',
-    responsavel_possui = '". ."',
-    responsavel_nome = '". ."',
-    responsavel_sexo = '". ."',
-    responsavel_datanascimento = '". ."',
+        $id++;
     
-    ";*/
-
-    
-    
-    
-    
-    
-    
-    
-    /*id = '".  $id ."',                
-               data = '". invDate($data_cadastro) ."',      
-               nome = '". addslashes($nome) ."',                                          
-               sexo = '". ($sexo=="Masculino"?"M":"F") ."',                                                         
-               data_nascimento = '". invDate($data_nascimento) ."',                             
-               estado_civil = '". $estado_civil ."',                             
-               telefone2 = '". $telefones ."',                             
-               telefone1 = '". $celular ."',                             
-               email = '". addslashes($email) ."',                             
-               endereco = '". addslashes($endereco) ."',                             
-               numero = '". $numero."',                             
-               complemento = '". addslashes( utf8_encode($complemento)) ."',                             
-               bairro = '". addslashes(utf8_encode($bairro)) ."',                             
-               cidade = '". addslashes(utf8_encode($cidade)) ."',                             
-               estado = '". addslashes(utf8_encode($estado)) ."',                             
-               cep = '". str_replace([".", "-"], "", $cep)."',                             
-               cpf = '". str_replace([".", "-"], "", $cpf)."',                             
-               rg = '".  str_replace([".", "-"], "", $rg)."',                             
-               indicacao = '". $indicacao."'";*/
-
-  // echo $_vsql . "</br>";
- //  $sql->add($_p."pacientes", $_vsql);
- echo ".";
+        echo "+= ". $_vsql . "</br>";
+        $sql->add($_p."pacientes", $_vsql);
 }
 echo "terminado";
 ?>

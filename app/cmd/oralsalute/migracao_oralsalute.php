@@ -1,8 +1,9 @@
 <?php
 use Aws\Common\Facade\ElasticLoadBalancing;
+    require_once("../../lib/conf.php");
 	require_once("../../lib/classes.php");
-	$sql = new Mysql();
-	$_p="ident_";
+
+    setcookie("infoName", $_GET['instancia'], time() + 3600*24, "/");
 ?>
 
 <!DOCTYPE html>
@@ -16,22 +17,26 @@ use Aws\Common\Facade\ElasticLoadBalancing;
 
 <?php
 
-$_p = "oralsalute.ident_";
+
+if(1==1){
+    echo "migração da oralsalute </br>";
+    echo "trabalha apenas com a tabela ident_pacientes </br>";
+    echo "nenhum dado será apagado";
+    die();
+}
+
 $sql = new Mysql();
-
-#$mensagens_enviadasV2 = array();
-#$pacientesV2 = array();
-$cont = 0;
-#$merge_mensagens = array();
-
 
 $pacientes = file("relatorio_total_pacientes_cadastrados_modificado.csv");
 
-
+$id = 0;
 // apaga pacientes e agendamentos
-$sql->del($_p."pacientes","");
-//$sql->del($_p."pacientes_historico","");
-//$sql->del($_p."agenda","");
+$sql->consult($_p."pacientes", "MAX(id) as id", "");
+if($sql->rows){
+  $tmp = mysqli_fetch_object($sql->mysqry);
+  $id = $tmp->id;
+  ++$id;
+}
 
 
 //nome,???,cpf,???,Data-cadastro,Data-nascimento,endenreco,bairro ,cidade,uf,cep,telefones,e-mail,status
@@ -39,11 +44,10 @@ $sql->del($_p."pacientes","");
 //pegando os pacientes da lista
 $telefone;
 $celular;
-$id = 0;
 
 foreach($pacientes as $linha){
     list(
-        $id,               
+        $id_lixo,               
         $data_cadastro,     
         $nome,                                         
         $observacoes,                            
@@ -80,13 +84,10 @@ foreach($pacientes as $linha){
 
     $datanascimento = invDate(utf8_encode($data_nascimento));
     $datacadastro   = invDate($data_cadastro);
-
-    
-    
-    $celular = str_replace(["(", ")", "-", " "], "", $celular);
-                                    //todos os telefones sempre tem um espaço depois do )
+    $celular = str_replace(["(", ")", "-", " "], "", $celular);//todos os telefones sempre tem um espaço depois do )
     $telefones =str_replace(["(", ") ", "-"], "", $telefone . ", " . $telefone_comercial);
     $index = strtolowerWLIB(str_replace(" ", "", tirarAcentos($nome)));
+
     //verificando por nomes repetidos
     if (isset($_pacientes[$index])) {
         $escolhido = 0; //1 mais recente, -1 já cadastrado;
@@ -121,7 +122,6 @@ foreach($pacientes as $linha){
                     break;
             }
         }
-
        // echo "<br>='" . $index . "' '$nome' " . ': ' . $escolhido;
 
     }
@@ -168,9 +168,11 @@ foreach($pacientes as $linha){
                rg = '".  str_replace([".", "-"], "", $rg)."',                             
                indicacao = '". $indicacao."'";
 
+   $id++;
    echo $_vsql . "</br>";
    $sql->add($_p."pacientes", $_vsql);
 }
 echo "terminado";
+
 ?>
 

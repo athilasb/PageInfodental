@@ -1,7 +1,8 @@
 <?php
+    require_once("../../lib/conf.php");
 	require_once("../../lib/classes.php");
-	$sql = new Mysql();
-	$_p="ident_";
+
+    setcookie("infoName", $_GET['instancia'], time() + 3600*24, "/");
 ?>
 
 <!DOCTYPE html>
@@ -15,34 +16,40 @@
 
 <?php
 
-$_p = "rbprevencao.ident_";
+
+if(1==1){
+    echo "migração da rbprevencao </br>";
+    echo "trabalha apenas com a tabela ident_pacientes </br>";
+    echo "nenhum dado será apagado";
+    die();
+}
+
 $sql = new Mysql();
-$usr = (object) array('id' => 0); //array de usuarios
-#$mensagens_enviadasV2 = array();
-#$pacientesV2 = array();
-$cont = 0;
-#$merge_mensagens = array();
-
-
 $pacientes = file("arqs/lista_pacientes_modificado.csv");
-
-
-// apaga pacientes e agendamentos
-$sql->del($_p."pacientes","");
-//$sql->del($_p."pacientes_historico","");
-//$sql->del($_p."agenda","");
 
 
 //nome,???,cpf,???,Data-cadastro,Data-nascimento,endenreco,bairro ,cidade,uf,cep,telefones,e-mail,status
 
+$id = 0;
+// apaga pacientes e agendamentos
+$sql->consult($_p."pacientes", "MAX(id) as id", "");
+if($sql->rows){
+  $tmp = mysqli_fetch_object($sql->mysqry);
+  var_dump($tmp);
+  $id = $tmp->id;
+  if($id == NULL || $id == 0){
+    $id = 0;
+  }else{ 
+    ++$id;
+  }
+}
+
 //pegando os pacientes da lista
 $telefone;
 $celular;
-$id = 0;
 
 foreach($pacientes as $linha){
     list(
-        $id,
         $nome, 
         $desconhecido,
         $cpf,
@@ -83,14 +90,14 @@ foreach($pacientes as $linha){
             }
         }
     }
-    $index = strtolowerWLIB(str_replace(" ", "", tirarAcentos($nome)));
+    $index = strtolowerWLIB(str_replace(" ","",tirarAcentos($nome)));
     //verificando por nomes repetidos
     if (isset($_pacientes[$index])) {
         echo "='" . $index . "' '$nome'<BR>";
         die();
     }
     
-    $_pacientes[$index] = array(
+   /*  $_pacientes[$index] = array(
         'id_paciente' => $id,
         'lixo' => (trim($status)) == 'ativo' ? 1 : 0,
         'data' => $datacadastro,
@@ -105,10 +112,10 @@ foreach($pacientes as $linha){
         'uf' => $uf,
         'cep' => str_replace([".", "-"], "", $cep),
         'cpf' => str_replace([".", "-"], "", $cpf)
-    );
-    var_dump($pacientes);
-    die();
-/*
+    );*/
+  //  var_dump($pacientes);
+  //  die();
+
     $_vsql = "lixo = '".     ((trim($status)) == 'Ativo' ? 0 : 1) ."',
               data = '".     $datacadastro . "',
               nome = '".     addslashes(utf8_encode($nome))."',
@@ -124,7 +131,6 @@ foreach($pacientes as $linha){
               cpf = '".      str_replace([".", "-"], "", $cpf) ."'";
 
         echo $_vsql . "</br>";
-        */
     $sql->add($_p."pacientes", $_vsql);
     echo '.';
 }
