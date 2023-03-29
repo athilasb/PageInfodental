@@ -370,6 +370,15 @@ if (isset($_POST['ajax'])) {
 			$rtn = array('error' => 'Erro: ' . $err->getMessage());
 		}
 	} else if ($_POST['ajax'] == 'addPagamento') {
+		$data_emissao = $_POST['data_emissao'];
+		$data_pagamento = $_POST['data_pagamento'];
+		$descricao = $_POST['descricao'];
+		$forma_pagamento = $_POST['forma_pagamento'];
+		$id_beneficiario = $_POST['id_beneficiario'];
+		$qtd_pagamento = $_POST['qtd_pagamento'];
+		$tipo_beneficiario = $_POST['tipo_beneficiario'];
+		$valor_pagamento = $_POST['valor_pagamento'];
+
 		$rtn = ["sucess" => true, 'post' => $_POST];
 	}
 
@@ -2069,14 +2078,7 @@ if (isset($_POST['ajax'])) {
 						});
 					}
 				})
-				console.log(tipo_beneficiario)
-				console.log(id_beneficiario)
-				console.log(data_emissao)
-				console.log(descricao)
-				console.log(valor_pagamento)
-				console.log(qtd_pagamento)
-				console.log(data_pagamento)
-				console.log(forma_pagamento)
+				console.log(data)
 			})
 		})
 	</script>
