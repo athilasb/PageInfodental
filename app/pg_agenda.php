@@ -201,6 +201,9 @@
 
 				$sql->update($_p."agenda",$vSQL,"where id=$agenda->id");
 
+				// atualiza data do agendamento
+				$sql->update($_p."whatsapp_mensagens","fila_agenda_data='$novaData'","where id_agenda=$agenda->id");
+
 				$agendaAlterado=$novaData;
 				if(strtotime($agenda->agenda_data)!=strtotime($agendaAlterado)) {
 					$vSQLHistorico="data=now(),

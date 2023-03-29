@@ -369,6 +369,17 @@ if (isset($_POST['ajax'])) {
 		} catch (Exception $err) {
 			$rtn = array('error' => 'Erro: ' . $err->getMessage());
 		}
+	} else if ($_POST['ajax'] == 'addPagamento') {
+		$data_emissao = $_POST['data_emissao'];
+		$data_pagamento = $_POST['data_pagamento'];
+		$descricao = $_POST['descricao'];
+		$forma_pagamento = $_POST['forma_pagamento'];
+		$id_beneficiario = $_POST['id_beneficiario'];
+		$qtd_pagamento = $_POST['qtd_pagamento'];
+		$tipo_beneficiario = $_POST['tipo_beneficiario'];
+		$valor_pagamento = $_POST['valor_pagamento'];
+
+		$rtn = ["sucess" => true, 'post' => $_POST];
 	}
 
 	header("Content-type: application/json");
@@ -1980,6 +1991,7 @@ if (isset($_POST['ajax'])) {
 				decimal: ',',
 				symbolStay: true
 			});
+			// quando seleciona o tipo de beneficiario ele vai popular a lista no select
 			$('[name="tipo_beneficiario"]').click(function() {
 				let tipo_beneficiario = $(this).val()
 				let data = `ajax=buscarUsuarios&tipo_beneficiario=${tipo_beneficiario}`;
@@ -2026,6 +2038,7 @@ if (isset($_POST['ajax'])) {
 				})
 
 			})
+			// botao para adicionar pagamento 
 			$('.js-btn-addPagamento').click(function() {
 				let tipo_beneficiario = $('[name="tipo_beneficiario"]:checked').val();
 				let id_beneficiario = $('[name="lista_beneficiarios"]').val();
@@ -2036,23 +2049,36 @@ if (isset($_POST['ajax'])) {
 				let data_pagamento = $('[name="data_pagamento"]').val();
 				let forma_pagamento = $('[name="forma_pagamento"]').val();
 				let erro = ""
-				if(!id_beneficiario || id_beneficiario<=0){
+				if (!id_beneficiario || id_beneficiario <= 0) {
 					erro = " Voce precisa selecionar um beneficiario."
-				}else if(!data_emissao || data_emissao){
+				} else if (!data_emissao || data_emissao) {
 					erro = " Selecione a data De emissão."
-				}else if(!descricao || descricao){
+				} else if (!descricao || descricao) {
 					erro = "Voce precisa adicionar uma descricao."
 				}
 
+				let data = `ajax=addPagamento&tipo_beneficiario=${tipo_beneficiario}&id_beneficiario=${id_beneficiario}&data_emissao=${data_emissao}&descricao=${descricao}&valor_pagamento=${valor_pagamento}&qtd_pagamento=${qtd_pagamento}&data_pagamento=${data_pagamento}&forma_pagamento=${forma_pagamento}`;
+				$.ajax({
+					type: "POST",
+					url: baseURLApiAsidePagamentos,
+					data: data,
+					success: function(rtn) {
+						console.log(rtn)
+						if (rtn.success) {
 
-				console.log(tipo_beneficiario)
-				console.log(id_beneficiario)
-				console.log(data_emissao)
-				console.log(descricao)
-				console.log(valor_pagamento)
-				console.log(qtd_pagamento)
-				console.log(data_pagamento)
-				console.log(forma_pagamento)
+						}
+					},
+					error: function(err) {
+						swal({
+							title: "Erro!",
+							text: "Algum erro ocorreu ao tentar adicionar este pagamento!",
+							html: true,
+							type: "error",
+							confirmButtonColor: "#424242"
+						});
+					}
+				})
+				console.log(data)
 			})
 		})
 	</script>
