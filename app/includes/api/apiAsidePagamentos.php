@@ -342,22 +342,26 @@ if (isset($_POST['ajax'])) {
 				if ($tipo_beneficiario === 'fornecedor') {
 					$sql->consult($_p . "parametros_fornecedores", "*", "WHERE lixo=0");
 					while ($x = mysqli_fetch_object($sql->mysqry)) {
-						$usuarios[$x->id] = utf8_encode($x->razao_social);
-						// $usuarios[$x->id]['id'] = "$x->id";
-						// $usuarios[$x->id]['nome'] = utf8_encode($x->nome);
-						// $usuarios[$x->id]['razao_social'] = utf8_encode($x->razao_social);
+						//$usuarios[$x->id] = utf8_encode($x->razao_social);
+						$usuarios[$x->id]['id'] = "$x->id";
+						$usuarios[$x->id]['nome'] = utf8_encode($x->razao_social);
+						//$usuarios[$x->id]['razao_social'] = utf8_encode($x->razao_social);
 						// $usuarios[$x->id]['nome_fantasia'] = utf8_encode($x->nome_fantasia);
 						// $usuarios[$x->id]['cpf'] = "$x->cpf";
 					}
 				} else if ($tipo_beneficiario === 'paciente') {
 					$sql->consult($_p . "pacientes", "*", "where lixo=0");
 					while ($x = mysqli_fetch_object($sql->mysqry)) {
-						$usuarios[$x->id] = utf8_encode($x->nome);
+						// $usuarios[$x->id] = utf8_encode($x->nome);
+						$usuarios[$x->id]['id'] = "$x->id";
+						$usuarios[$x->id]['nome'] = utf8_encode($x->nome);
 					}
 				} else if ($tipo_beneficiario === 'colaborador') {
 					$sql->consult($_p . "colaboradores", "*", "where lixo=0");
 					while ($x = mysqli_fetch_object($sql->mysqry)) {
-						$usuarios[$x->id] = utf8_encode($x->nome);
+						// $usuarios[$x->id] = utf8_encode($x->nome);
+						$usuarios[$x->id]['id'] = "$x->id";
+						$usuarios[$x->id]['nome'] = utf8_encode($x->nome);
 					}
 				}
 				if (count($usuarios) > 0) {
@@ -371,15 +375,27 @@ if (isset($_POST['ajax'])) {
 		}
 	} else if ($_POST['ajax'] == 'addPagamento') {
 		$data_emissao = $_POST['data_emissao'];
-		$data_pagamento = $_POST['data_pagamento'];
+		$data_vencimento = $_POST['data_vencimento'];
 		$descricao = $_POST['descricao'];
-		$forma_pagamento = $_POST['forma_pagamento'];
+		$id_forma_pagamento = $_POST['id_forma_pagamento'];
 		$id_beneficiario = $_POST['id_beneficiario'];
 		$qtd_pagamento = $_POST['qtd_pagamento'];
 		$tipo_beneficiario = $_POST['tipo_beneficiario'];
-		$valor_pagamento = $_POST['valor_pagamento'];
+		$valor_pagamento = floatval($_POST['valor_pagamento']) * (-1);
+		$vSQL = "data=NOW()";
+		$vSQL .= ",lixo=0";
+		$vSQL .= ",id_origem=2";
+		$vSQL .= ",data_vencimento='$data_vencimento'";
+		$vSQL .= ",id_formapagamento='$id_forma_pagamento'";
+		$vSQL .= ",tipo='$tipo_beneficiario'";
+		$vSQL .= ",id_pagante_beneficiario='$id_beneficiario'";
+		$vSQL .= ",valor='$valor_pagamento'";
+		$vSQL .= ",descricao='$descricao'";
+		$sql->add($_p . "financeiro_fluxo", "$vSQL");
+		$idAdd = $sql->ulid;
+		$sql->update($_p . "financeiro_fluxo", "id_registro='$idAdd'", "WHERE id=$idAdd");
 
-		$rtn = ["sucess" => true, 'post' => $_POST];
+		$rtn = ["sucess" => true, 'post' => $_POST, 'sql' => $vSQL];
 	}
 
 	header("Content-type: application/json");
@@ -1839,7 +1855,7 @@ if (isset($_POST['ajax'])) {
 						<div class="colunas5">
 							<dl>
 								<dt>Data Emissão</dt>
-								<dd><input type="text" class="js-vencimento js-tipoPagamento data" value="<?= date('d/m/Y'); ?>" name="data_emissao" /></dd>
+								<dd><input type="text" class="js-vencimento js-tipoPagamento data" value="<?= date('d/m/Y'); ?>" name="data_emissao" disabled /></dd>
 							</dl>
 							<dl class="dl3">
 								<dt>Descrição</dt>
@@ -1947,7 +1963,7 @@ if (isset($_POST['ajax'])) {
 								<div class="colunas3">
 									<dl>
 										<dt>Data de vencimento</dt>
-										<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" class="data js-vencimento" data-ordem="" value="" name="data_pagamento" /></dd>
+										<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" class="data js-vencimento" data-ordem="" value="" name="data_vencimento" /></dd>
 									</dl>
 									<dl>
 										<dt>Forma de Pagamento</dt>
@@ -2000,12 +2016,20 @@ if (isset($_POST['ajax'])) {
 					url: baseURLApiAsidePagamentos,
 					data: data,
 					success: function(rtn) {
-						console.log(rtn)
 						if (rtn.success) {
 							$('[name="lista_beneficiarios"]').html("<option value='0'>-</option>")
-							for (let x in rtn.usuarios) {
-								let user = rtn.usuarios[x]
-								$('[name="lista_beneficiarios"]').append(`<option value='${x}'>${user}</option>`)
+							let lista_usuarios = rtn.usuarios
+							// Transforma o objeto em um array de objetos
+							let array = Object.values(lista_usuarios);
+							// Ordena o array pelo atributo nome
+							array.sort((a, b) => a.nome.localeCompare(b.nome));
+
+							for (let x in array) {
+								let user = array[x]
+								// user.nome = user.nome.replace(' ', "")
+								if (user?.nome?.length > 0) {
+									$('[name="lista_beneficiarios"]').append(`<option value='${user.id}'>${user.nome}</option>`)
+								}
 							}
 						} else if (rtn.error) {
 							swal({
@@ -2044,10 +2068,12 @@ if (isset($_POST['ajax'])) {
 				let id_beneficiario = $('[name="lista_beneficiarios"]').val();
 				let data_emissao = $('[name="data_emissao"]').val();
 				let descricao = $('[name="descricao"]').val();
-				let valor_pagamento = $('[name="valor_pagamento"]').val();
+				let valor_pagamento = unMoney($('[name="valor_pagamento"]').val());
 				let qtd_pagamento = $('[name="qtd_pagamento"]').val();
-				let data_pagamento = $('[name="data_pagamento"]').val();
-				let forma_pagamento = $('[name="forma_pagamento"]').val();
+				let data_vencimento = $('[name="data_vencimento"]').val();
+				let partes = data_vencimento.split("/"); // dividir a data em três partes
+				data_vencimento = partes[2] + "-" + partes[1] + "-" + partes[0];
+				let id_forma_pagamento = $('[name="forma_pagamento"]').val();
 				let erro = ""
 				if (!id_beneficiario || id_beneficiario <= 0) {
 					erro = " Voce precisa selecionar um beneficiario."
@@ -2057,15 +2083,24 @@ if (isset($_POST['ajax'])) {
 					erro = "Voce precisa adicionar uma descricao."
 				}
 
-				let data = `ajax=addPagamento&tipo_beneficiario=${tipo_beneficiario}&id_beneficiario=${id_beneficiario}&data_emissao=${data_emissao}&descricao=${descricao}&valor_pagamento=${valor_pagamento}&qtd_pagamento=${qtd_pagamento}&data_pagamento=${data_pagamento}&forma_pagamento=${forma_pagamento}`;
+				let data = `ajax=addPagamento&tipo_beneficiario=${tipo_beneficiario}&id_beneficiario=${id_beneficiario}&data_emissao=${data_emissao}&descricao=${descricao}&valor_pagamento=${valor_pagamento}&qtd_pagamento=${qtd_pagamento}&data_vencimento=${data_vencimento}&id_forma_pagamento=${id_forma_pagamento}`;
 				$.ajax({
 					type: "POST",
 					url: baseURLApiAsidePagamentos,
 					data: data,
 					success: function(rtn) {
 						console.log(rtn)
-						if (rtn.success) {
-
+						if (rtn.sucess) {
+							swal({
+								title: "Sucesso!",
+								text: "Pagamento Adicionado com Sucesso!",
+								html: true,
+								type: "success",
+								confirmButtonColor: "#424242"
+							})
+							setTimeout(() => {
+								window.location.href = window.location.href
+							}, 5000)
 						}
 					},
 					error: function(err) {

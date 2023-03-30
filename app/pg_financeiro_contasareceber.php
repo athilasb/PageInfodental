@@ -48,7 +48,7 @@ function getValores($data_inicial, $data_final)
 	}
 	// aqui eu busco as baixas que foram dadas
 	$_baixas = array();
-	$sql->consult($_p . "financeiro_fluxo", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 AND desconto=0 order by data_vencimento asc");
+	$sql->consult($_p . "financeiro_fluxo", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 AND desconto=0  AND valor>0 order by data_vencimento asc");
 	if ($sql->rows) {
 		while ($x = mysqli_fetch_object($sql->mysqry)) {
 			$_baixas[$x->id] = $x;
@@ -100,7 +100,7 @@ function getValores($data_inicial, $data_final)
 		$dados[$baixa->id]['valor_desconto'] = $baixa->valor_desconto;
 		$dados[$baixa->id]['valor_juros'] = $baixa->valor_juros;
 		$dados[$baixa->id]['desconto'] = $baixa->desconto;
-		$dados[$baixa->id]['valorTotalPagamento'] = $_registros[$baixa->id_registro]->valor;
+		$dados[$baixa->id]['valorTotalPagamento'] = $_registros[$baixa->id_registro]->valor ?? 0;
 		$dados[$baixa->id]['titulo'] = $titulo;
 		$dados[$baixa->id]['nome_pagante'] = $pagante;
 		$dados[$baixa->id]['status'] = '';
