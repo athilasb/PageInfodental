@@ -16,22 +16,39 @@
 
 <?php
 
+if($_GET['instancia'] != "rbprevencao"){
+    ?>
+    
+    <script> 
+        alert("ATENÇÃO, INSTANCIA NÃO CONFIGURADA");
+    </script>
+
+    <h1>ATENÇÃO, INSTANCIA NÃO CONFIGURADA</h1>
+    
+    <?php
+}
+
+print_r($_ENV['MYSQL_DB'] . "<br>");
+
+echo "migração da rbprevencao </br>";
+echo "trabalha apenas com a tabela ident_pacientes </br>";
+echo "nenhum dado será apagado <br>";
 
 if(1==1){
-    echo "migração da rbprevencao </br>";
-    echo "trabalha apenas com a tabela ident_pacientes </br>";
-    echo "nenhum dado será apagado";
     die();
 }
 
 $sql = new Mysql();
-$pacientes = file("arqs/lista_pacientes_modificado.csv");
+$pacientes = file("arqs/final.csv");
 
 
 //nome,???,cpf,???,Data-cadastro,Data-nascimento,endenreco,bairro ,cidade,uf,cep,telefones,e-mail,status
 
 $id = 0;
 // apaga pacientes e agendamentos
+$sql->del("rbprevencao.ident_pacientes", "");
+
+/*
 $sql->consult($_p."pacientes", "MAX(id) as id", "");
 if($sql->rows){
   $tmp = mysqli_fetch_object($sql->mysqry);
@@ -43,11 +60,12 @@ if($sql->rows){
     ++$id;
   }
 }
+*/
 
 //pegando os pacientes da lista
 $telefone;
 $celular;
-
+$id = 0;
 foreach($pacientes as $linha){
     list(
         $nome, 
@@ -64,7 +82,10 @@ foreach($pacientes as $linha){
         $telefones,
         $email,
         $status
-    ) = explode(',', str_replace("\"", "", $linha));
+    ) = explode('",', $linha);
+
+
+
 
 
     if(!empty($bairro))
@@ -74,14 +95,16 @@ foreach($pacientes as $linha){
     if(!empty($uf))
         $endereco .= ", $uf";
 
-    $datanascimento = invDate(utf8_encode($data_nascimento));
-    $datacadastro   = invDate($data_cadastro);
+    $endereco = str_replace(["\""],"", $endereco);
 
-    $nome = trim($nome);
+    $datanascimento = invDate(utf8_encode(str_replace(["\""],"", $data_nascimento)));
+    $datacadastro   = invDate(str_replace(["\""],"", $data_cadastro));
+
+    $nome = str_replace(["\""],"", trim($nome));
     if(empty($telefones))
         $celular = $telefone = 0;
     else{
-        $celulares = explode(',',str_replace(["(", ")", "-"], "", $telefones));
+        $celulares = explode(',',str_replace(["(", ")", "\"","-"], "", $telefones));
         for($i = 0; $i < sizeof($celulares); $i++){
             if(strlen($celulares[$i]) == 9 || strlen($celulares[$i]) == 11 ){
                 $celular = $celulares[$i];
@@ -90,7 +113,7 @@ foreach($pacientes as $linha){
             }
         }
     }
-    $index = strtolowerWLIB(str_replace(" ","",tirarAcentos($nome)));
+    $index = strtolowerWLIB(str_replace([" ", "\""] ,"",tirarAcentos($nome)));
     //verificando por nomes repetidos
     if (isset($_pacientes[$index])) {
         echo "='" . $index . "' '$nome'<BR>";
@@ -116,22 +139,25 @@ foreach($pacientes as $linha){
   //  var_dump($pacientes);
   //  die();
 
-    $_vsql = "lixo = '".     ((trim($status)) == 'Ativo' ? 0 : 1) ."',
+    $_vsql = "
+              lixo = '".     ((trim(str_replace(['"'],"", $status))) == 'Ativo' ? 0 : 1) ."',
               data = '".     $datacadastro . "',
-              nome = '".     addslashes(utf8_encode($nome))."',
+              nome = '".     addslashes(utf8_decode($nome))."',
               telefone2 = '". $telefone ."',
               telefone1 = '".  $celular ."',
-              email = '".    addslashes($email) ."',
-              data_nascimento = '".       $datanascimento ."',
-              endereco = '". addslashes(utf8_encode($endereco)) ."',
-              bairro = '".   addslashes(utf8_encode($bairro)) ."',
-              cidade = '".   addslashes(utf8_encode($cidade)) ."',
-              estado = '".       addslashes($uf) ."',
-              cep = '".      str_replace([".", "-"], "", $cep) ."',
-              cpf = '".      str_replace([".", "-"], "", $cpf) ."'";
+              email = '".    addslashes(str_replace(["\""],"", $email)) ."',
+              data_nascimento = '".       str_replace(["\""],"", $datanascimento) ."',
+              endereco = '". addslashes(utf8_decode($endereco)) ."',
+              bairro = '".   addslashes(utf8_decode(str_replace(["\""],"", $bairro))) ."',
+              cidade = '".   addslashes(utf8_decode(str_replace(["\""],"", $cidade))) ."',
+              estado = '".       addslashes(str_replace(['"'],"", $uf)) ."',
+              cep = '".      str_replace([".", "-", "\""], "", $cep) ."',
+              cpf = '".      str_replace([".", "-", "\""], "", $cpf) ."'";
 
-        echo $_vsql . "</br>";
-    $sql->add($_p."pacientes", $_vsql);
+        echo $_vsql . "</br>";    
+
+    $sql->add("rbprevencao.ident_pacientes", $_vsql);    ++$id;
+
     echo '.';
 }
 echo "terminado";

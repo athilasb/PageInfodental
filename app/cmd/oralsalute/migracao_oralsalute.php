@@ -31,12 +31,14 @@ $pacientes = file("relatorio_total_pacientes_cadastrados_modificado.csv");
 
 $id = 0;
 // apaga pacientes e agendamentos
-$sql->consult($_p."pacientes", "MAX(id) as id", "");
+//$sql->del("oralsalute.ident_pacientes", "");
+
+/*$sql->consult($_p."pacientes", "MAX(id) as id", "");
 if($sql->rows){
   $tmp = mysqli_fetch_object($sql->mysqry);
   $id = $tmp->id;
   ++$id;
-}
+}*/
 
 
 //nome,???,cpf,???,Data-cadastro,Data-nascimento,endenreco,bairro ,cidade,uf,cep,telefones,e-mail,status
@@ -79,10 +81,10 @@ foreach($pacientes as $linha){
         $endereco .= ", $bairro";
     if(!empty($cidade))
         $endereco .= ", $cidade";
-    if(!empty($uf))
-        $endereco .= ", $uf";
+    if(!empty($estado))
+        $endereco .= ", $estado";
 
-    $datanascimento = invDate(utf8_encode($data_nascimento));
+    $datanascimento = invDate($data_nascimento);
     $datacadastro   = invDate($data_cadastro);
     $celular = str_replace(["(", ")", "-", " "], "", $celular);//todos os telefones sempre tem um espaço depois do )
     $telefones =str_replace(["(", ") ", "-"], "", $telefone . ", " . $telefone_comercial);
@@ -150,19 +152,19 @@ foreach($pacientes as $linha){
 
     $_vsql = " id = '".  $id ."',                
                data = '". invDate($data_cadastro) ."',      
-               nome = '". addslashes($nome) ."',                                          
+               nome = '". (utf8_decode($nome)) ."',                                          
                sexo = '". ($sexo=="Masculino"?"M":"F") ."',                                                         
                data_nascimento = '". invDate($data_nascimento) ."',                             
                estado_civil = '". $estado_civil ."',                             
                telefone2 = '". $telefones ."',                             
                telefone1 = '". $celular ."',                             
                email = '". addslashes($email) ."',                             
-               endereco = '". addslashes($endereco) ."',                             
+               endereco = '". addslashes(utf8_decode($endereco)) ."',                             
                numero = '". $numero."',                             
-               complemento = '". addslashes( utf8_encode($complemento)) ."',                             
-               bairro = '". addslashes(utf8_encode($bairro)) ."',                             
-               cidade = '". addslashes(utf8_encode($cidade)) ."',                             
-               estado = '". addslashes(utf8_encode($estado)) ."',                             
+               complemento = '". addslashes( utf8_decode($complemento)) ."',                             
+               bairro = '". addslashes(utf8_decode($bairro)) ."',                             
+               cidade = '". addslashes(utf8_decode($cidade)) ."',                             
+               estado = '". addslashes(utf8_decode($estado)) ."',                             
                cep = '". str_replace([".", "-"], "", $cep)."',                             
                cpf = '". str_replace([".", "-"], "", $cpf)."',                             
                rg = '".  str_replace([".", "-"], "", $rg)."',                             
@@ -170,9 +172,7 @@ foreach($pacientes as $linha){
 
    $id++;
    echo $_vsql . "</br>";
-   $sql->add($_p."pacientes", $_vsql);
+   $sql->add("oralsalute.ident_pacientes", $_vsql);
 }
-echo "terminado";
-
 ?>
 

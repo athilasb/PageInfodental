@@ -1,9 +1,11 @@
 <?php
+//migração terminada em 29/03/2023; walker;
+//bug corrigido,
 use Aws\Common\Facade\ElasticLoadBalancing;
     require_once("../../lib/conf.php");
 	require_once("../../lib/classes.php");
 
- //   setcookie("infoName", $_GET['instancia'], time() + 3600*24, "/");
+    setcookie("infoName", $_GET['instancia'], time() + 3600*24, "/");
 ?>
 
 <!DOCTYPE html>
@@ -17,27 +19,37 @@ use Aws\Common\Facade\ElasticLoadBalancing;
 <?php
 
 
-if(1==0){
-    echo "migração da ortocire </br>";
-    echo "trabalha apenas com a tabela ident_pacientes </br>";
-    echo "nenhum dado será apagado";
-    //die();
-}$sql = new Mysql();
+if($_GET['instancia'] != "ortocire"){
+    ?>
+    
+    <script> 
+        alert("ATENÇÃO, INSTANCIA NÃO CONFIGURADA");
+    </script>
 
-//DELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETAR
-$sql->del("ortocire.ident_pacientes","");
-//DELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETARDELETAR
-
-
-$arquivo = fopen("pacientes_27-03-2023.csv", "r");
-
-while(($row = fgetcsv($arquivo)) !== false){
-    $pacientes[] = $row;
+    <h1>ATENÇÃO, INSTANCIA NÃO CONFIGURADA</h1>
+    
+    <?php
 }
 
+print_r($_ENV['MYSQL_DB'] . "<br>");
+
+echo "migração da ortocire </br>";
+echo "trabalha apenas com a tabela ident_pacientes </br>";
+echo "todos os pacientes serão apagados <br>";
+
+
+if(1==1){
+    die();
+}
+$sql = new Mysql();
+
+$sql->del("ortocire.ident_pacientes", "");
+
+
+$pacientes = file("pacientes_27-03-2023.csv");
+
 foreach($pacientes as $linha){
-    echo "<hr> <br>";
-print_r( $linha);
+
     list(
         $ID, 
         $Numero_Paciente,
@@ -62,7 +74,7 @@ print_r( $linha);
         $Carteirinha_Plano,
         $Nome_plano,
         $Observacao
-    ) = explode(";", $linha);
+    ) = explode(",", $linha);
 
     if(!empty($Bairro))
         $Endereco .= ", " . $Bairro;
@@ -71,38 +83,31 @@ print_r( $linha);
     if(!empty($UF))
         $Endereco .= ", " . $UF;
 
-        $responsavel_possui = ($Responsavel != "")?1:0 ;
+    $responsavel_possui = ($Responsavel != "")?1:0 ;
+    print_r( $linha);
 
-
-        $_vsql = " id = '".  $Numero_Paciente ."',                
-        data = 'now()',      
-        nome = '". addslashes($Nome) ."',                                          
-        sexo = '". $Sexo ."',                                                         
-        data_nascimento = '". $Data_Nascimento ."',                             
-        telefone1 = '". $Celular ."',                             
-        email = '". addslashes($Email) ."',                             
-        endereco = '". addslashes($Endereco) ."',                             
-        bairro = '". addslashes(utf8_encode($Bairro)) ."',                             
-        cidade = '". addslashes(utf8_encode($Cidade)) ."',                             
-        estado = '". addslashes(utf8_encode($UF)) ."',                             
-        cep = '". str_replace([".", "-"], "", $CEP)."',                             
-        cpf = '". str_replace([".", "-"], "", $CPF)."',                             
-        rg = '".  str_replace([".", "-"], "", $RG)."', 
-responsavel_possui = '". $responsavel_possui ."', 
-responsavel_nome = '". $Responsavel ."',
-responsavel_datanascimento = '". $Data_Nascimento_Responsavel ."',
-responsavel_cpf = '". $CPF_Responsavel ."'";        
-        
-
+    $_vsql = " id = '".  $Numero_Paciente ."',                
+               data = now(),      
+               nome = '". addslashes(utf8_decode($Nome)) ."',                                          
+               sexo = '". $Sexo ."',                                                         
+               data_nascimento = '". $Data_Nascimento ."',                             
+               telefone1 = '". $Celular ."',                             
+               email = '". addslashes($Email) ."',                             
+               endereco = '". addslashes(utf8_decode($Endereco)) ."',                             
+               bairro = '". addslashes(utf8_decode($Bairro)) ."',                             
+               cidade = '". addslashes(utf8_decode($Cidade)) ."',                             
+               estado = '". addslashes(utf8_decode($UF)) ."',                             
+               cep = '". str_replace([".", "-"], "", $CEP)."',                             
+               cpf = '". str_replace([".", "-"], "", $CPF)."',                             
+               rg = '".  str_replace([".", "-"], "", $RG)."', 
+               responsavel_possui = '". $responsavel_possui ."', 
+               responsavel_nome = '". $Responsavel ."',
+               responsavel_datanascimento = '". $Data_Nascimento_Responsavel ."',
+               responsavel_cpf = '". $CPF_Responsavel ."'";        
     
-        $sql->add("ortocire.ident_pacientes", $_vsql);
-
+    $sql->add("ortocire.ident_pacientes", $_vsql);
+    echo "<hr>";
 }
-
-
-
-//ID, Numero Paciente	Nome	CPF	RG	Sexo	CEP	Endereco	Bairro	Cidade	UF	Celular	Telefone	E-mail	Data de Nascimento	Numero do Prontuario	Responsavel	CPF Responsavel	Data de Nascimento Responsavel	Titular do Plano	CPF do Titular do Plano	Carteirinha do Plano	Nome do plano	Observacao
-
-
+echo "<br>terminado"
 
 ?>
