@@ -18,11 +18,12 @@
 			while($x=mysqli_fetch_object($sql->mysqry)) $tipos[$x->id]=$x;
 
 			$this->tipos=$tipos;
+
 		}
 
 		// cadastra na fila do rabbitmq
 		function wtsRabbitmq($id_whatsapp,$complemento=false) {
-			$sql=new Mysql();
+			$sql=new Mysql(true);
 			$_p=$this->prefixo;
 
 
@@ -47,7 +48,6 @@
 					}
 				}
 
-					
 				if(is_object($whatsappMessage)) {
 
 					if(!empty($rabbitmqFila)) {
@@ -148,7 +148,7 @@
 								} else {
 									$message=json_encode(array('type'=>'sendTextMessage',
 																   'data'=>array('number'=>$this->wtsNumero($whatsappMessage->numero),
-																		         'text'=>utf8_encode($whatsappMessage->mensagem))));
+																		         'text'=>($whatsappMessage->mensagem))));
 								}
 							}
 						
@@ -244,6 +244,7 @@
 			$ultimoAgendamento = (isset($attr['ultimoAgendamento']) and is_object($attr['ultimoAgendamento']))?$attr['ultimoAgendamento']:'';
 			$cadeira = (isset($attr['cadeira']) and is_object($attr['cadeira']))?$attr['cadeira']:'';
 			$profissionais = (isset($attr['profissionais']) and !empty($attr['profissionais']))?$attr['profissionais']:'';
+			$agenda_profissionais = (isset($attr['agenda_profissionais']) and !empty($attr['agenda_profissionais']))?$attr['agenda_profissionais']:'';
 			$msg = (isset($attr['msg']) and !empty($attr['msg']))?$attr['msg']:'';
 
 			if(is_object($paciente)) {
@@ -269,6 +270,7 @@
 				$msg = str_replace("[agenda_antiga_hora]",date('H:i',strtotime($agenda->agenda_data_original)), $msg);
 
 				$msg = str_replace("[profissionais]",($profissionais), $msg);
+				$msg = str_replace("[agenda_profissionais]",($agenda_profissionais), $msg);
 				$msg = str_replace("[duracao]",($agenda->agenda_duracao)." minutos", $msg);
 
 				if(is_object($clinica)) {
@@ -338,7 +340,7 @@
 							}
 						}
 
-						$agenda = $cadeira = $profissionais = '';
+						$agenda = $cadeira = $profissionais = $agenda_profissionais = '';
 						if(isset($attr['id_agenda']) and is_numeric($attr['id_agenda'])) {
 							$whereAg="where id=".$attr['id_agenda']." and lixo=0";
 							//echo $whereAg."<BR>";
@@ -367,9 +369,11 @@
 										if($sql->rows) {
 											while($x=mysqli_fetch_object($sql->mysqry)) {
 												$profissionais.=utf8_encode($x->nome)." e ";
+												$agenda_profissionais.=utf8_encode($x->nome)."; ";
 											}
 
 											$profissionais=substr($profissionais,0,strlen($profissionais)-3);
+											$agenda_profissionais=substr($agenda_profissionais,0,strlen($agenda_profissionais)-2);
 										}
 									}
 								}
@@ -403,6 +407,7 @@
 											$attr=array('paciente'=>$paciente,
 														'agenda'=>$agenda,
 														'profissionais'=>$profissionais,
+														'agenda_profissionais'=>$agenda_profissionais,
 														'cadeira'=>$cadeira,
 														'msg'=>$msg);
 
