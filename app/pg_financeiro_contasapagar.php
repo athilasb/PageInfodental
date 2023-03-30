@@ -9,8 +9,119 @@ $data_inicial_filtro = isset($_GET['data_inicio']) ? $_GET['data_inicio'] : date
 $data_final_filtro =  isset($_GET['data_final']) ? $_GET['data_final'] : date('Y-m-d', strtotime("+7 days"));
 $dias_filtro = (strtotime($data_final_filtro) - strtotime($data_inicial_filtro)) / (60 * 60 * 24);
 
+function getPagamentos($data_inicial_filtro, $data_final_filtro)
+{
+	global $sql;
+	global $_p;
+	$_origens = array();
+	$_pagamentos = array();
+	$_pagantes = array();
+	$idPagantes = array();
+	$valor = array(
+		'aPagar' => 0,
+		'valorPago' => 0,
+		'valorVencido' => 0,
+		'valorTotal' => 0,
+		'valorJuros' => 0,
+		'valorMulta' => 0,
+	);
+	// pegando as oriugens
+	$sql->consult($_p . "financeiro_fluxo_origens", "*", "WHERE 1");
+	if ($sql->rows) {
+		while ($x = mysqli_fetch_object($sql->mysqry)) {
+			$_origens[$x->id] = $x->tabela;
+		}
+	}
+	// aqui eu busco as baixas que foram dadas
+	$sql->consult($_p . "financeiro_fluxo", "*", "WHERE (data_vencimento>='$data_inicial_filtro' AND data_vencimento<='$data_final_filtro') AND lixo=0 AND valor<0 order by data_vencimento asc");
+	if ($sql->rows) {
+		while ($x = mysqli_fetch_object($sql->mysqry)) {
+			$_pagamentos[$x->id] = $x;
+			$origem = $_origens[$x->id_origem];
+			$idRegistros[$x->id_registro] = $x->id_registro;
+			$idPagantes[$x->id_pagante_beneficiario] = $x->tipo;
+		}
+	}
+	//pegando os pagantes
+	if (count($idPagantes) > 0) {
+		foreach ($idPagantes as $id => $tipo) {
+			if ($tipo == 'paciente') {
+				$sql->consult($_p . "pacientes", "*", " WHERE id =$id");
+				if ($sql->rows) {
+					while ($x = mysqli_fetch_object($sql->mysqry)) {
+						// $_pagantes[$x->id] = $x;
+						$_pagantes[$x->id]['nome'] = utf8_encode($x->nome);
+					}
+				}
+			} else if ($tipo == 'colaborador') {
+				$sql->consult($_p . "colaboradores", "*", " WHERE id =$id");
+				if ($sql->rows) {
+					while ($x = mysqli_fetch_object($sql->mysqry)) {
+						// $_pagantes[$x->id] = $x;
+						$_pagantes[$x->id]['nome'] = utf8_encode($x->nome);
+					}
+				}
+			} else if ($tipo == 'fornecedor') {
+				$sql->consult($_p . "parametros_fornecedores", "*", " WHERE id =$id");
+				if ($sql->rows) {
+					while ($x = mysqli_fetch_object($sql->mysqry)) {
+						// $_pagantes[$x->id] = $x;
+						$_pagantes[$x->id]['nome'] = utf8_encode($x->razao_social);
+					}
+				}
+			}
+		}
+	}
+	// montando o objeto
+
+	$dados = [];
+	foreach ($_pagamentos as $baixa) {
+		$titulo = (isset($_registros[$baixa->id_registro]) && isset($_registros[$baixa->id_registro]->id_tratamento) && isset($_tratamentos[$_registros[$baixa->id_registro]->id_tratamento])) ? utf8_encode($_tratamentos[$_registros[$baixa->id_registro]->id_tratamento]->titulo) : "";
+		$pagante  = $_pagantes[$baixa->id_pagante_beneficiario]['nome'] ?? 'Nao Econtrado';
+
+		$dados[$baixa->id]['id_baixa'] = $baixa->id;
+		$dados[$baixa->id]['data_vencimento'] = $baixa->data_vencimento;
+		$dados[$baixa->id]['id_registro'] = $baixa->id_registro;
+		$dados[$baixa->id]['pagamento'] = $baixa->pagamento;
+		$dados[$baixa->id]['data_efetivado'] = $baixa->data_efetivado;
+		$dados[$baixa->id]['tipo'] = 'fluxo';
+		$dados[$baixa->id]['valor'] = $baixa->valor;
+		$dados[$baixa->id]['valor_multa'] = $baixa->valor_multa;
+		$dados[$baixa->id]['valor_taxa'] = $baixa->valor_taxa;
+		$dados[$baixa->id]['valor_desconto'] = $baixa->valor_desconto;
+		$dados[$baixa->id]['valor_juros'] = $baixa->valor_juros;
+		$dados[$baixa->id]['desconto'] = $baixa->desconto;
+		$dados[$baixa->id]['titulo'] = $baixa->descricao;
+		$dados[$baixa->id]['nome_pagante'] = $pagante;
+		$dados[$baixa->id]['status'] = '';
+		$valor['valorTotal'] += $baixa->valor;
+		if ($baixa->pagamento == 1) {
+			$valor['valorPago'] += $baixa->valor;
+			$dados[$baixa->id]['status'] = 'Pago';
+		} else {
+			$atraso = (strtotime($baixa->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
+			if ($atraso < 0) {
+				$valor['valorVencido'] += $baixa->valor;
+				$dados[$baixa->id]['status'] = 'Vencido';
+			} else {
+				$valor['aPagar'] += $baixa->valor;
+				$dados[$baixa->id]['status'] = 'a Pagar';
+			}
+		}
+	}
+	$dados = json_decode(json_encode($dados));
+	return [$dados, $valor];
+}
+[$dados, $valor] = getPagamentos($data_inicial_filtro, $data_final_filtro);
+
+// echo "<pre>";
+// print_r($dados);
+// die();
+
 ?>
 <header class="header">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 	<div class="header__content content">
 		<div class="header__inner1">
 			<section class="header-title">
@@ -37,7 +148,9 @@ $dias_filtro = (strtotime($data_final_filtro) - strtotime($data_inicial_filtro))
 			<div class="filter-group">
 				<div class="filter-title">
 					<dl>
-						<dd><a class="button button_main js-btn-abrir-aside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Novo Pagamento</span></a></dd>
+						<dd>
+							<a class="button button_main js-btn-abrir-aside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Novo Pagamento</span></a>
+						</dd>
 					</dl>
 				</div>
 			</div>
@@ -45,6 +158,7 @@ $dias_filtro = (strtotime($data_final_filtro) - strtotime($data_inicial_filtro))
 				<a href="javascript:;" class="button js-calendario">
 					<span class="iconify" data-icon="bi:calendar-week"></span>
 				</a>
+				<div id="calendario"></div>
 				<div class="button-group">
 					<a href="/pg_financeiro_contasapagar.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 7 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 7) ? 'active' : '' ?>" data-dias='7'>7 dias</a>
 					<a href="/pg_financeiro_contasapagar.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 30 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 30) ? 'active' : '' ?>" data-dias='30'>30 dias</a>
@@ -60,19 +174,19 @@ $dias_filtro = (strtotime($data_final_filtro) - strtotime($data_inicial_filtro))
 					<div class="filter-group">
 						<div class="filter-title">
 							<p>Total</p>
-							<h2><strong id='valor-valorTotal'>R$ <?= number_format(0, 2, ',', '.') ?></strong></h2>
+							<h2><strong id='valor-valorTotal'>R$ <?= number_format($valor['valorTotal'], 2, ',', '.') ?></strong></h2>
 						</div>
 						<div class="filter-title">
-							<p>A receber</p>
-							<h2 style="color:var(--cinza4)" id='valor-aReceber'>R$ <?= number_format(0, 2, ',', '.') ?></h2>
+							<p>A Pagar</p>
+							<h2 style="color:var(--cinza4)" id='valor-aReceber'>R$ <?= number_format($valor['aPagar'], 2, ',', '.') ?></h2>
 						</div>
 						<div class="filter-title">
-							<p>Recebido</p>
-							<h2 style="color:var(--verde)" id='valor-valorRecebido'>R$ <?= number_format(0, 2, ',', '.') ?></h2>
+							<p>Pago</p>
+							<h2 style="color:var(--verde)" id='valor-valorRecebido'>R$ <?= number_format($valor['valorPago'], 2, ',', '.') ?></h2>
 						</div>
 						<div class="filter-title">
 							<p>Vencido</p>
-							<h2 style="color:var(--vermelho)" id='valor-valoresVencido'>R$ <?= number_format(0, 2, ',', '.') ?></h2>
+							<h2 style="color:var(--vermelho)" id='valor-valoresVencido'>R$ <?= number_format($valor['valorVencido'], 2, ',', '.') ?></h2>
 						</div>
 					</div>
 					<div class="filter-group">
@@ -95,15 +209,23 @@ $dias_filtro = (strtotime($data_final_filtro) - strtotime($data_inicial_filtro))
 							</tr>
 						</thead>
 						<tbody>
-							<tr>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-							</tr>
+							<?php foreach ($dados as $x) { ?>
+								<tr>
+									<td><?= date('d/m/Y', strtotime($x->data_vencimento)) ?></td>
+									<td><?= $x->status ?></td>
+									<td><strong><?= $x->nome_pagante ?></strong><br /><?= $x->titulo ?></td>
+									<td><strong>R$ <?= number_format($x->valor, 2, ',', '.') ?></strong></td>
+									<td style="font-size:0.813em; line-height:1.2;">Multa: R$ <?= number_format($x->valor_multa, 2, ',', '.') ?><br />Juros: R$ <?= number_format($x->valor_juros, 2, ',', '.') ?></td>
+									<td style="font-size:1.75rem;">
+										<span style="color:var(--cinza3)" title="Contrato assinado" class="tooltip"><i class="iconify" data-icon="fluent:signature-20-regular"></i></span>
+										<span style="color:var(--cinza3)" title="Nota fiscal emitida" class="tooltip"><i class="iconify" data-icon="heroicons:receipt-percent"></i></span>
+										<span style="color:var(--cinza3)" title="Não conciliado" class="tooltip"><i class="iconify" data-icon="fluent:checkbox-checked-sync-20-regular"></i></span>
+										<span style="color:var(--cinza3)" title="Regua não executada" class="tooltip"><i class="iconify" data-icon="fluent:task-list-ltr-20-filled"></i></span>
+									</td>
+									<td><a href="javascript:;" class="button js-pagamento-item" style="width:120px" data-idRegistro='<?= $x->id_registro ?>'><i class="iconify" data-icon="ph:currency-circle-dollar"></i> <span>Pagar</span></a></td>
+								</tr>
+							<?php } ?>
+						</tbody>
 						</tbody>
 					</table>
 				</div>
