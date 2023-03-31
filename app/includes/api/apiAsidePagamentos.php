@@ -396,6 +396,46 @@ if (isset($_POST['ajax'])) {
 		$sql->update($_p . "financeiro_fluxo", "id_registro='$idAdd'", "WHERE id=$idAdd");
 
 		$rtn = ["sucess" => true, 'post' => $_POST, 'sql' => $vSQL];
+	} else if ($_GET['ajax'] == "buscaPaciente") {
+		$where = "WHERE 1=2";
+		if (isset($_GET['search']) and !empty($_GET['search'])) {
+			$aux = explode(" ", $_GET['search']);
+
+			$wh = "";
+			$primeiraLetra = '';
+			foreach ($aux as $v) {
+				if (empty($v)) continue;
+
+				if (empty($primeiraLetra)) $primeiraLetra = substr($v, 0, 1);
+				$wh .= "nome REGEXP '$v' and ";
+			}
+			$wh = substr($wh, 0, strlen($wh) - 5);
+			$where = "where (($wh) or nome like '%" . $_GET['search'] . "%' or telefone1 like '%" . $_GET['search'] . "%' or cpf like '%" . $_GET['search'] . "%') and lixo=0";
+			//$where="where nome like '%".$_GET['search']."%' or telefone1 like '%".$_GET['search']."%' or cpf like '%".$_GET['search']."%' and lixo=0";
+		}
+		if (!empty($primeiraLetra)) $where .= " ORDER BY CASE WHEN nome >= '$primeiraLetra' THEN 1 ELSE 0 END DESC, nome ASC";
+		else $where .= " order by nome asc";
+
+		$sql->consult($_p . "pacientes", "nome,id,telefone1,cpf,foto_cn,foto", $where);
+		//echo $where;
+		while ($x = mysqli_fetch_object($sql->mysqry)) {
+
+			$ft = 'img/ilustra-perfil.png';
+			if (!empty($x->foto_cn)) {
+				$ft = $_cloudinaryURL . 'c_thumb,w_100,h_100/' . $x->foto_cn;
+			} else if (!empty($x->foto)) {
+				$ft = $_wasabiURL . "arqs/clientes/" . $x->id . ".jpg";
+			}
+
+			$rtn['items'][] = array(
+				'id' => $x->id,
+				'text' => utf8_encode($x->nome),
+				'nome' => utf8_encode($x->nome),
+				'telefone' => utf8_encode($x->telefone1),
+				'ft' => $ft,
+				'cpf' => utf8_encode($x->cpf)
+			);
+		}
 	}
 
 	header("Content-type: application/json");
@@ -1845,11 +1885,20 @@ if (isset($_POST['ajax'])) {
 							</dl>
 							<dl class="dl2">
 								<dt>Fornecedor</dt>
-								<dd class="form-comp">
+								<!-- <dd class="form-comp">
 									<select name="lista_beneficiarios" class="">
 										<option value="">-</option>
 									</select><span>+</span>
-								</dd>
+								</dd> -->
+								<dl>
+									<dd>
+										<select name="id_paciente" class="select2 obg-0 ajax-id_paciente">
+											<option value="">Buscar paciente...</option>
+										</select>
+										<a href="javascript:;" class="js-btn-aside button" data-aside="paciente" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
+										<?php /*<a href="javascript:;" class="js-btn-aside button" data-aside="profissao" data-aside-sub><i class="iconify" data-icon="fluent:add-24-regular"></i></a>*/ ?>
+									</dd>
+								</dl>
 							</dl>
 						</div>
 						<div class="colunas5">
@@ -1990,6 +2039,26 @@ if (isset($_POST['ajax'])) {
 				$("#js-aside-asFinanceiro .aside__inner1").addClass("active");
 			});
 		}
+		const formatTemplateSelection = (state) => {
+			if (!state.id) return state.text;
+			var baseUrl = "/user/pages/images/flags";
+			infoComplementar = ``;
+			infoComplementar += !!state.cpf ? ` - CPF: ${state.cpf}` : '';
+			infoComplementar += !!state.telefone ? ` - Tel.: ${state.telefone}` : '';
+			var $state = $('<span><img src="img/ilustra-perfil.png" style="width:30px;height:30px;border-radius:50px;" /> ' + state.text + infoComplementar + '</span>');
+			return $state;
+		}
+		const formatTemplate = (state) => {
+			if (!state.id) return state.text;
+			var baseUrl = "/user/pages/images/flags";
+			infoComplementar = ``;
+			infoComplementar += !!state.cpf ? ` - CPF: ${state.cpf}` : '';
+			infoComplementar += !!state.telefone ? ` - Tel.: ${state.telefone}` : '';
+			var $state = $('<span style="display:flex; align-items:center; gap:.5rem;"><img src="' + state.ft + '" style="width:40px;height:40px;border-radius:100%;" /> ' + state.text + infoComplementar + '</span>');
+			return $state;
+		}
+
+
 		$(function() {
 			$('.js-vencimento:last').inputmask('99/99/9999');
 			$('.js-vencimento:last').datetimepicker({
@@ -2008,9 +2077,33 @@ if (isset($_POST['ajax'])) {
 				symbolStay: true
 			});
 			// quando seleciona o tipo de beneficiario ele vai popular a lista no select
+			$('select[name=id_paciente]').select2({
+				ajax: {
+					url: baseURLApiAsidePagamentos,
+					data: function(params) {
+						var query = {
+							search: params.term,
+							type: 'public'
+						}
+
+						return query;
+					},
+					processResults: function(data) {
+						// Transforms the top-level key of the response object from 'items' to 'results'
+						return {
+							results: data.items
+						};
+					}
+
+				},
+				templateResult: formatTemplate,
+				//	templateSelection:formatTemplateSelection,
+				dropdownParent: $(".modal")
+			});
 			$('[name="tipo_beneficiario"]').click(function() {
 				let tipo_beneficiario = $(this).val()
 				let data = `ajax=buscarUsuarios&tipo_beneficiario=${tipo_beneficiario}`;
+				return
 				$.ajax({
 					type: "POST",
 					url: baseURLApiAsidePagamentos,
@@ -2117,4 +2210,125 @@ if (isset($_POST['ajax'])) {
 			})
 		})
 	</script>
+	<!-- STYLE  -->
+	<style>
+		body {
+			background: #fff;
+		}
+
+		/*the container must be positioned relative:*/
+		.custom-select {
+			position: relative;
+			font-family: Arial;
+		}
+
+		.custom-select select {
+			display: none;
+			/*hide original SELECT element:*/
+		}
+
+		.select-selected {
+			background-color: DodgerBlue;
+		}
+
+		/*style the arrow inside the select element:*/
+		.select-selected:after {
+			position: absolute;
+			content: "";
+			top: 14px;
+			right: 10px;
+			width: 0;
+			height: 0;
+			border: 6px solid transparent;
+			border-color: #fff transparent transparent transparent;
+		}
+
+		/*point the arrow upwards when the select box is open (active):*/
+		.select-selected.select-arrow-active:after {
+			border-color: transparent transparent #fff transparent;
+			top: 7px;
+		}
+
+		/*style the items (options), including the selected item:*/
+		.select-items div,
+		.select-selected {
+			color: #ffffff;
+			padding: 8px 16px;
+			border: 1px solid transparent;
+			border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
+			cursor: pointer;
+			user-select: none;
+		}
+
+		/*style items (options):*/
+		.select-items {
+			position: absolute;
+			background-color: DodgerBlue;
+			top: 100%;
+			left: 0;
+			right: 0;
+			z-index: 99;
+		}
+
+		/*hide the items when the select box is closed:*/
+		.select-hide {
+			display: none;
+		}
+
+		.select-items div:hover,
+		.same-as-selected {
+			background-color: rgba(0, 0, 0, 0.1);
+		}
+
+		.fc .fc-timegrid-col.fc-day-today {
+			background: #fff !important;
+		}
+
+		.fc-theme-standard th {
+			border-right: transparent !important;
+			border-left: transparent !important;
+		}
+
+		.fc-scroller {
+			overflow: visible !important;
+		}
+
+		.fc-row.fc-rigid,
+		.fc .fc-scroller-harness {
+			overflow: visible !important;
+		}
+
+		.fc-scroller,
+		fc.day.grid.containet {
+			overflow: none !important;
+		}
+
+		.fc-timegrid-slot {
+			height: 60px !important;
+		}
+
+		.fc-scrollgrid-sync-inner {
+			height: 90px;
+		}
+
+		.fc-scrollgrid {
+			border: none !important;
+		}
+
+		.fc-scrollgrid-liquid {
+			border: none !important;
+		}
+
+		.fc-timegrid-now-indicator-line {
+			border-color: var(--cinza5) !important;
+		}
+
+		.fc-timegrid-now-indicator-arrow {
+			border: 0 !important;
+			width: 12px;
+			height: 12px;
+			background: #344848;
+			border-radius: 100%;
+		}
+	</style>
 <?php } ?>
