@@ -130,6 +130,12 @@
 			} else return "0000-00-00";
 		} else return "0000-00-00";
 	}
+
+	/**
+	 * Pega uma data no formato dd/mm/yyy HH:MM e formata para o padrão mysql
+	 * @param string $data
+	 * @return string data no formato "yyyy-mm-dd"
+	 */
 	function invDateTime($data) {
 		if(!empty($data)) {
 			list($dt,$hr)=explode(" ",$data);

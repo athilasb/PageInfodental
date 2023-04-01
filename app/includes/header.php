@@ -88,10 +88,10 @@
                 $infoConta=mysqli_fetch_object($sql->mysqry);
 
                 if(basename($_SERVER['PHP_SELF'])!="pg_configuracoes_assinatura.php") {
-                    // Verifica se possui assinatura
+             /*       // Verifica se possui assinatura
                     if(empty($infoConta->iugu_subscription_id)) {
                         header("Location: pg_configuracoes_assinatura.php");
-                    }
+                    }*/
                 }
 
 

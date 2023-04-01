@@ -165,7 +165,7 @@
 	<table>
 		<tr>
 			<td colspan="2"><strong><?php echo utf8_encode($paciente->nome);?></strong></td>
-			<td><?php echo $paciente->sexo=="M"?"Masculino":"Feminino";?></td>
+			<td><?php echo ($paciente->sexo=="M")?"Masculino":"Feminino";?></td>			
 		</tr>
 		<tr>
 			<td><?php echo $idade>1?"$idade anos":"$idade ano";?></td>

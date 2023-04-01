@@ -15,7 +15,7 @@ function uploader($instancia, $_dirEvolucao, $id_evolucao, $html)
 {
 	global $dompdf, $s3, $_scalewayBucket, $sql, $_p;
 	$erro = '';
-	
+
 	$dompdf->loadHtml($html);
 	$dompdf->setPaper('A4', 'portrait');
 	$dompdf->render();
@@ -25,7 +25,6 @@ function uploader($instancia, $_dirEvolucao, $id_evolucao, $html)
 	file_put_contents('arqs/temp.pdf', $output);
 
 	$uploadPathFile = $instancia . "/" . $_dirEvolucao . sha1($id_evolucao) . ".pdf";
-
 	try {
 		$s3->putObject(
 			array(
@@ -38,6 +37,40 @@ function uploader($instancia, $_dirEvolucao, $id_evolucao, $html)
 		$sql->update($_p . "pacientes_evolucoes", "s3=1", "where id=$id_evolucao");
 	} catch (S3Exception $e) {
 		$erro = 'Algum erro ocorreu durante a persistência do PDF em nosso cloud de armazenamento. Favor contate o suporte.';
+	}
+	return $erro;
+}
+
+/**
+ * Function enviaWhatsapp - envia um pdf qualquer por whatsapp
+ * @param string $pdf - caminho para o pdf dos servidores da scaleway. Tecnicamente aceita qualquer tipo de caminho
+ * @param mixed $evolucao
+ * @param mixed $paciente
+ * @param mixed $conexao - um array que contem uma linha da tabela infodentalADM.infod_contas_onlines, checa a conexão com o whatsapp
+ * @param mixed $evolucaoTipo
+ * @return string - retorna um erro do infozap ou uma mensagem fixa.
+ */
+function enviaWhatsapp(&$pdf, &$evolucao, &$paciente, &$conexao, &$evolucaoTipo){
+	global $infozap; 
+	$erro = '';
+	// verifica se foi assinado
+	if ($evolucao->receita_assinada == "0000-00-00 00:00:00") {
+		$pdf .= sha1($evolucao->id) . ".pdf";
+	} else {
+		$pdf .= "assinados/" . sha1($evolucao->id) . ".pdf";
+	}
+
+	// envia whatsapp
+	$attr = array(
+		'numero' => $paciente->telefone1,
+		'arq' => $pdf,
+		'id_paciente' => $paciente->id,
+		'documentName' => utf8_encode($evolucaoTipo->titulo) . " " . date('d/m/Y', strtotime($evolucao->data)) . " - " . utf8_encode($paciente->nome) . ".pdf",
+		'id_conexao' => $conexao->id
+	);
+
+	if (!$infozap->enviaArquivo($attr)) {
+		$erro = isset($infozap->erro) ? $infozap->erro : 'Algum erro ocorreu durante o envio do Receituário via Whatsapp. Entre em contato com nossa equipe de suporte!';
 	}
 	return $erro;
 }
@@ -96,6 +129,8 @@ if (isset($request->token) and $request->token == $token) {
 		$_p = $infoConta->instancia . ".ident_";
 
 		if (isset($request->method)) {
+			
+			// necessita apenas do id da evolução e da instância onde ela está
 			if ($request->method == 'generatePDF') {
 
 				$erro = '';
@@ -113,7 +148,7 @@ if (isset($request->token) and $request->token == $token) {
 						if ($sql->rows)
 							$evolucaoTipo = mysqli_fetch_object($sql->mysqry);
 
-						$sql->consult($_p . "pacientes", "id,telefone1,nome", "where id=$evolucao->id_paciente");
+						$sql->consult($_p . "pacientes", "*", "where id=$evolucao->id_paciente");
 						if ($sql->rows)
 							$paciente = mysqli_fetch_object($sql->mysqry);
 					}
@@ -140,12 +175,12 @@ if (isset($request->token) and $request->token == $token) {
 					$erro = 'Versão do Infozap não suporta envio de arquivos. Favor atualize seu Infozap!';
 
 				if (empty($erro)) {
-					//var_dump($evolucao);
 
 					// Print-header
 					$sql->consult($_p . "clinica", "*", "where id=1");
 					$unidade = mysqli_fetch_object($sql->mysqry);
-
+					$unidadeTitulo = utf8_encode($unidade->clinica_nome);
+					$unidadeLogo = $_cloudinaryURL.'c_thumb,w_600/'.$unidade->cn_logo;
 					$unidadeTelefones = '';
 					if (!empty($unidade->whatsapp) or !empty($unidade->telefone)) {
 						$unidadeTelefones = '<tr><td>';
@@ -155,6 +190,29 @@ if (isset($request->token) and $request->token == $token) {
 							$unidadeTelefones .= mask($unidade->telefone);
 						$unidadeTelefones .= '</td></tr>';
 					}
+					if(!empty($fornecedor->lat) && !empty($fornecedor->lng)){
+						$forLat = $clinica->lat;
+						$forLng = $clinica->lng;
+						$clinicaComoChegar = '<small>Como Chegar</small><br /><a href="https://www.google.com/maps/search/' . $forLat . ',' . $forLng . '">Google Maps</a> &nbsp;&nbsp;
+												<a href="https://www.waze.com/pt-BR/live-map/directions?locale=pt_BR&utm_source=waze_app&to=ll.' . $forLat . '%2C' . $forLng . ';">Waze</a>';
+					}
+
+/*
+					$clinicaTitulo = $clinicaTelefone = $clinicaEndereco = $clinicaComoChegar = '';
+					$clinica = array();                                                                 
+					$sql->consult($_p. "clinica", "*", "");
+					if($sql->rows){
+						$clinica = mysqli_fetch_object($sql->mysqry);
+						$clinicaTitulo = '<small>Nome</small><br />' . utf8_encode($clinica->clinica_nome);
+						$clinicaTelefone =  (($fornecedor->telefone1)!=''? mask($fornecedor->telefone1):'') ;
+						$clinicaEndereco = utf8_encode($fornecedor->endereco);
+						if(!empty($fornecedor->lat) && !empty($fornecedor->lng)){
+							$forLat = $clinica->lat;
+							$forLng = $clinica->lng;
+							$clinicaComoChegar = '<small>Como Chegar</small><br /><a href="https://www.google.com/maps/search/' . $forLat . ',' . $forLng . '">Google Maps</a> &nbsp;&nbsp;
+													<a href="https://www.waze.com/pt-BR/live-map/directions?locale=pt_BR&utm_source=waze_app&to=ll.' . $forLat . '%2C' . $forLng . ';">Waze</a>';
+						}
+					}*/
 
 					$unidadeEndereco = !empty($unidade->endereco) ? '<tr><td>' . utf8_encode($unidade->endereco) . '</td></tr>' : '';
 
@@ -165,11 +223,11 @@ if (isset($request->token) and $request->token == $token) {
 						if (!empty($unidade->site))
 							$unidadeDigital .= $unidade->site . "&nbsp;&nbsp;&nbsp;&nbsp;";
 						if (!empty($unidade->instagram))
-							$unidadeDigital .= "@" . $unidade->instagram . "&nbsp;&nbsp;&nbsp;&nbsp;";
+							$unidadeDigital .= $unidade->instagram . "&nbsp;&nbsp;&nbsp;&nbsp;";
 						$unidadeDigital .= '</td></tr>';
 					}
 
-					$sql->consult($_p . "colaboradores", "id,nome", "where id=$evolucao->id_profissional");
+					$sql->consult($_p . "colaboradores", "*", "where id=$evolucao->id_profissional");
 					if ($sql->rows) {
 						$solicitante = mysqli_fetch_object($sql->mysqry);
 					}
@@ -184,31 +242,41 @@ if (isset($request->token) and $request->token == $token) {
 						$celular = mask($paciente->telefone1);
 					}
 
-					#pegando e formatando dados da clinica
-					$clinicaTitulo = $clinicaTelefone = $clinicaEndereco = $clinicaComoChegar = '';
-					$sql->consult($_p . "parametros_fornecedores", "*", "where id=$evolucao->id_clinica and lixo=0");
-					if ($sql->rows) {
-						$clinica = mysqli_fetch_object($sql->mysqry);
-
-						if ($clinica->tipo_pessoa == 'PF') {
-							$clinicaTitulo = '<small>Nome</small><br />' . utf8_encode($clinica->nome);
-						} else {
-							$clinicaTitulo = '<small>Razão Social</small><br />' . utf8_encode($clinica->razao_social);
-						}
-
-						$clinicaTelefone = mask($clinica->telefone1);
-						$clinicaEndereco = utf8_encode($clinica->endereco);
-
-						if (!empty($clinica->lat) and !empty($clinica->lng)) {
-							$lat = $clinica->lat;
-							$lng = $clinica->lng;
-							$clinicaComoChegar = '<small>Como Chegar</small><br /><a href="https://www.google.com/maps/search/' . $lat . ',' . $lng . '">Google Maps</a> &nbsp;&nbsp;
-														<a href="https://www.waze.com/pt-BR/live-map/directions?locale=pt_BR&utm_source=waze_app&to=ll.' . $lat . '%2C' . $lng . ';">Waze</a>';
-						}
-					}
+					$divDadosClinica = '					
+						<div style="margin-top:2.5rem; style="text-align: left"">
+						<table>
+							<tr>
+								<th style="text-align: left"><small>Nome</small></th>
+								<th style="text-align: left"><small>Telefone</small></th>
+								<th style="text-align: left"><small>Whatsapp</small></th>
+							</tr>
+							<tr>
+								<td>' . $unidadeTitulo . '&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td>' . (!empty($unidade->telefone) ? maskTelefone($unidade->telefone) : "-") . '&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td>' . (!empty($unidade->whatsapp) ? $unidade->whatsapp : "-") . '&nbsp;&nbsp;&nbsp;&nbsp;</td>
+							</tr>
+							<tr>
+								<th style="text-align: left"><small>Nome do profissional</small></th>
+								<th style="text-align: left"><small>CRO</small></th>
+								<th style="text-align: left"><small>UF</small></th>
+							</tr>
+							<tr>
+								<td>' . (!empty($solicitante->nome) ? utf8_encode($solicitante->nome) : "-") . '&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td>' . (!empty($solicitante->cro) ? utf8_encode($solicitante->cro) : "-") . '&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td>' . (!empty($solicitante->uf_cro) ? utf8_encode($solicitante->uf_cro) : "-") . '&nbsp;&nbsp;&nbsp;&nbsp;</td>
+							</tr>
+							<tr>
+								<th style="text-align: left"><small>Endereço</small></th>
+							</tr>
+							<tr>
+								<td colspan="3">'.(!(empty($unidade->endereco)) ?  utf8_encode($unidade->endereco) : "-").'</td>
+							</tr>
+						</table>
+						</div>'
+					;
 
 					#ANAMNESE
-   				    if ($evolucao->id_tipo == 1) {
+					if ($evolucao->id_tipo == 1) {
 
 						$form = '';
 						$resp = '';
@@ -231,16 +299,16 @@ if (isset($request->token) and $request->token == $token) {
 									<tr>
 										<td>
 											<p><strong>' . utf8_encode($p->pergunta) . '</strong></p>
-												<p>'. $resp . '</p>
-												'.
-												(!empty($p->resposta_texto)?"<p>Resposta: ".utf8_encode($p->resposta_texto)."</p>":"")
-												.'
+												<p>' . $resp . '</p>
+												' .
+									(!empty($p->resposta_texto) ? "<p>Resposta: " . utf8_encode($p->resposta_texto) . "</p>" : "")
+									. '
 										</td>
 									</tr>
 								';
 							}
 						}
-					
+
 						$html = '	
 						<html>
 							<head>
@@ -250,7 +318,7 @@ if (isset($request->token) and $request->token == $token) {
 							</head>
 							<body>
 								<header>
-									<img src="http://163.172.187.183:5000/img/logo-cliente.png" />
+									<img src="'.$unidadeLogo.'" />
 								</header>
 
 								<footer>
@@ -272,34 +340,16 @@ if (isset($request->token) and $request->token == $token) {
 												<tr>
 													<td>' . ($idade > 1 ? "$idade" : "$idade") . '</td>
 													<td>' . ($paciente->sexo == "M" ? "Masculino" : $paciente->sexo == "F" ? "Feminino" : '.') . '</td>
-			                                        <td style="text-align:right;">'. maskTelefone($paciente->telefone1) .'</td>
+			                                        <td style="text-align:right;">' . maskTelefone($paciente->telefone1) . '</td>
 												</tr>
 											</table>
 										</div>
 
-										<table>'.
-											$form
-										.'</table>
-
-										<div style="margin-top:2.5rem;">
-											<table>
-												<tr>
-													<td>' . $clinicaTitulo . '</td>
-													<td><small>Telefone</small><br />' . (!empty($clinicaTelefone) ? ($clinicaTelefone) : "-") . '</td>
-													<td><small>Nome do profissional</small><br />' . (!empty($solicitante->nome) ? utf8_encode($solicitante->nome) : "-") . '</td>
-													<td><small>CRO</small><br />' . (!empty($solicitante->cro) ? utf8_encode($solicitante->uf_cro) : "-") . '</td>
-													<td><small>UF</small><br />' . (!empty($solicitante->uf_cro) ? utf8_encode($solicitante->uf_cro) : "-") . '</td>
-												</tr>
-												<tr>
-													<td colspan="3">
-														<small>Endereço</small><br />
-														'. (!(empty($clinicaEndereco))?$clinicaEndereco:"-") .'
-													</td>
-												</tr>
-											</table>
-										</div>
+										<table>' .
+							$form
+							. '</table>
+									'.$divDadosClinica.'
 								</main>
-								
 							</body>
 						</html>
 					';
@@ -307,6 +357,7 @@ if (isset($request->token) and $request->token == $token) {
 						$erro = uploader($infoConta->instancia, "arqs/pacientes/anamneses/", $evolucao->id, $html);
 					}
 
+					#ATESTADO
 					if ($evolucao->id_tipo == 4) {
 						$sql->consult($_p . "pacientes_evolucoes_atestados", "*", "where id_evolucao=$evolucao->id");
 						if ($sql->rows) {
@@ -322,7 +373,7 @@ if (isset($request->token) and $request->token == $token) {
 							</head>
 							<body>
 								<header>
-									<img src="http://163.172.187.183:5000/img/logo-cliente.png" />
+									<img src="'.$unidadeLogo.'" />
 								</header>
 
 								<footer>
@@ -343,23 +394,7 @@ if (isset($request->token) and $request->token == $token) {
 											Conforme artigo 9° da Resolução CFO-118/2012 - É dever do profissional de odontologia resguardar o sigilo profissional do paciente, e, quando necessário, a depender do caso, não expor o procedimento realizado, bem como a CID correspondente.
 										</p>
 
-										<div style="margin-top:2.5rem;">
-											<table>
-											<tr>
-												<td>' . $clinicaTitulo . '</td>
-												<td><small>Telefone</small><br />' . (!empty($clinicaTelefone) ? ($clinicaTelefone) : "-") . '</td>
-												<td><small>Nome do profissional</small><br />' . (!empty($solicitante->nome) ? utf8_encode($solicitante->nome) : "-") . '</td>
-												<td><small>CRO</small><br />' . (!empty($solicitante->cro) ? utf8_encode($solicitante->uf_cro) : "-") . '</td>
-												<td><small>UF</small><br />' . (!empty($solicitante->uf_cro) ? utf8_encode($solicitante->uf_cro) : "-") . '</td>
-											</tr>
-											<tr>
-												<td colspan="3">
-													<small>Endereço</small><br />
-													' . (!(empty($clinicaEndereco))?$clinicaEndereco:"-") . '
-												</td>
-											</tr>
-										</table>
-											</div>
+										'.$divDadosClinica.'
 								</main>
 								
 							</body>
@@ -371,6 +406,29 @@ if (isset($request->token) and $request->token == $token) {
 					# PEDIDO DE EXAME
 					if ($evolucao->id_tipo == 6) {
 
+						#pegando e formatando dados do fornecedor
+						$fornecedorTitulo = $fornecedorTelefone = $fornecedorEndereco = $fornecedorComoChegar = '';
+						$fornecedor = array();
+						$sql->consult($_p . "parametros_fornecedores", "*", "where id=$evolucao->id_clinica and lixo=0");
+						if ($sql->rows) {
+							$fornecedor = mysqli_fetch_object($sql->mysqry);
+
+							if ($fornecedor->tipo_pessoa == 'PF') {
+								$fornecedorTitulo = '<small>Nome</small><br />' . utf8_encode($fornecedor->nome);
+							} else {
+								$fornecedorTitulo = '<small>Razão Social</small><br />' . utf8_encode($fornecedor->razao_social);
+							}
+
+							$fornecedorTelefone = mask($fornecedor->telefone1);
+							$fornecedorEndereco = utf8_encode($fornecedor->endereco);
+
+							if (!empty($fornecedor->lat) and !empty($fornecedor->lng)) {
+								$lat = $fornecedor->lat;
+								$lng = $fornecedor->lng;
+								$fornecedorComoChegar = '<small>Como Chegar</small><br /><a href="https://www.google.com/maps/search/' . $lat . ',' . $lng . '">Google Maps</a> &nbsp;&nbsp;
+														<a href="https://www.waze.com/pt-BR/live-map/directions?locale=pt_BR&utm_source=waze_app&to=ll.' . $lat . '%2C' . $lng . ';">Waze</a>';
+							}
+						}
 						$examesIds = array(0);
 						$sql->consult($_p . "pacientes_evolucoes_pedidosdeexames", "*", "where id_evolucao=$evolucao->id and lixo=0");
 
@@ -416,7 +474,7 @@ if (isset($request->token) and $request->token == $token) {
 									</head>
 									<body>							
 										<header>
-											<img src="http://163.172.187.183:5000/img/logo-cliente.png" />
+											<img src="'.$unidadeLogo.'" />
 										</header>
 										<footer>
 											<table>
@@ -442,19 +500,19 @@ if (isset($request->token) and $request->token == $token) {
 
 											<table>
 												<tr>
-													<td>' . $clinicaTitulo . '</td>
-													<td><small>Telefone</small><br />' . $clinicaTelefone . '</td>
+													<td>' . $fornecedorTitulo . '</td>
+													<td><small>Telefone</small><br />' . $fornecedorTelefone . '</td>
 													<td><small>Solicitado por</small><br />' . utf8_encode($solicitante->nome) . '</td>
 												</tr>
 												<tr>
 													<td colspan="3">
 														<small>Endereço</small><br />
-														' . (!(empty($clinicaEndereco))?$clinicaEndereco:"-") . '
+														' . (!(empty($fornecedorEndereco)) ? $fornecedorEndereco : "-") . '
 													</td>
 												</tr>
 												<tr>
 													<td colspan="3">
-														' . $clinicaComoChegar . '
+														' . $fornecedorComoChegar . '
 													</td>
 												</tr>
 											</table>
@@ -474,11 +532,6 @@ if (isset($request->token) and $request->token == $token) {
 
 					# RECEITUARIO
 					else if ($evolucao->id_tipo == 7) {
-
-						$sql->consult($_p . "clinica", "endereco", "");
-						if ($sql->rows) {
-							$clinica = mysqli_fetch_object($sql->mysqry);
-						}
 
 						$idade = $sexo = $celular = '';
 						$sql->consult($_p . "pacientes", "*", "where id=$evolucao->id_paciente");
@@ -564,7 +617,7 @@ if (isset($request->token) and $request->token == $token) {
 									</head>
 									<body>							
 										<header>
-											<img src="http://163.172.187.183:5000/img/logo-cliente.png" />
+											<img src="'.$unidadeLogo.'" />
 										</header>
 										<footer>
 											<table>
@@ -597,7 +650,7 @@ if (isset($request->token) and $request->token == $token) {
 													<td><small>UF</small><br /><span style="font-weght:normal;font-size:0.85em">' . utf8_encode($solicitante->uf_cro) . '</span></td>
 												</tr>
 												<tr>
-													<td style="max-width:300px;"><b>Local de Atendimento</b><br /><span style="font-weght:normal;font-size:0.85em">' . utf8_encode($clinica->endereco) . '</span></td>
+													<td style="max-width:300px;"><b>Local de Atendimento</b><br /><span style="font-weght:normal;font-size:0.85em">' . utf8_encode($unidade->endereco) . '</span></td>
 													<td><b>Data de Emissão</b><br /><span style="font-weght:normal;font-size:0.85em">' . date('d/m/Y', strtotime($evolucao->data)) . '</span></td>
 												</tr>
 											</table>
@@ -609,63 +662,61 @@ if (isset($request->token) and $request->token == $token) {
 								';
 
 						$erro = uploader($infoConta->instancia, "arqs/pacientes/receituarios/", $evolucao->id, $html);
-					}else if($evolucao->id_tipo == 10){
-						
-						$sql->consult($_p."pacientes_evolucoes_documentos","*","where id_evolucao=$evolucao->id and lixo=0");
-						if($sql->rows) {
-							$documento=mysqli_fetch_object($sql->mysqry);
-			
-							$sql->consult($_p."parametros_documentos","*","where id=$documento->id_documento") ;
-							if($sql->rows) {
-								$documentoModelo=mysqli_fetch_object($sql->mysqry);
+
+						//documentos
+					} else if ($evolucao->id_tipo == 10) {
+
+						$sql->consult($_p . "pacientes_evolucoes_documentos", "*", "where id_evolucao=$evolucao->id and lixo=0");
+						if ($sql->rows) {
+							$documento = mysqli_fetch_object($sql->mysqry);
+
+							$sql->consult($_p . "parametros_documentos", "*", "where id=$documento->id_documento");
+							if ($sql->rows) {
+								$documentoModelo = mysqli_fetch_object($sql->mysqry);
 							}
 						}
 
 						$html = '
 						<html>
-						<head>
-							<style>		
-								@import url("http://163.172.187.183:5000/css/pdf.css");
-								.fck {font-weight:300;}
-								.fck hr {border:0; border-bottom:1px solid var(--cinza2); margin:2rem 0;}
-								.fck > *:first-child, .titulo1:first-child, .titulo2:first-child, .titulo3:first-child {margin-top:0;}
-								.fck p {margin:1.25rem 0; font-size:1.125em; line-height:1.6;}
-								.fck h1, .titulo1 {margin:2rem 0; line-height:1.1; font-size:2.5em; font-weight:300; color:var(--cor1);}
-								.fck h2, .titulo2 {margin:2rem 0; line-height:1.1; font-size:2em; font-weight:300; letter-spacing:-0.02em; color:var(--cor1);}
-								.fck h3, .titulo3 {margin:2rem 0; line-height:1.1; font-size:1.5em; font-weight:300;}
-								.fck ul {list-style:disc outside; margin:0 0 1rem 30px;}
-								.fck ol {list-style:decimal outside; margin:0 0 1rem 30px;}
-								.fck li {margin-bottom:.3rem;}
-								.fck table {width:100%; margin:2rem 0;}
-								.fck table p {margin:0;}
-								.fck table th {color:var(--cor2); padding:.5rem; border-bottom:2px solid var(--cor2); text-align:left;}
-								.fck table td {padding:.5rem; border-bottom:1px solid var(--cinza2);}
-								.fck a {text-decoration:underline; color:var(--cor1);}
-								.fck img {max-width:100%; height:auto;}
-							</style>
-
-							
-						</head>
-						<body>							
-							<header>
-								<img src="http://163.172.187.183:5000/img/logo-cliente.png" />
-							</header>
-							<footer>
-								<table>
-								' . $unidadeTelefones . $unidadeEndereco . $unidadeDigital . '
-								</table>
-							</footer>
-							<main>									
-								'. utf8_encode($documento->texto) .'
-							</main>
-						</body>
-						</html>
-							
+							<head>
+								<style>		
+									@import url("http://163.172.187.183:5000/css/pdf.css");
+									.fck {font-weight:300;}
+									.fck hr {border:0; border-bottom:1px solid var(--cinza2); margin:2rem 0;}
+									.fck > *:first-child, .titulo1:first-child, .titulo2:first-child, .titulo3:first-child {margin-top:0;}
+									.fck p {margin:1.25rem 0; font-size:1.125em; line-height:1.6;}
+									.fck h1, .titulo1 {margin:2rem 0; line-height:1.1; font-size:2.5em; font-weight:300; color:var(--cor1);}
+									.fck h2, .titulo2 {margin:2rem 0; line-height:1.1; font-size:2em; font-weight:300; letter-spacing:-0.02em; color:var(--cor1);}
+									.fck h3, .titulo3 {margin:2rem 0; line-height:1.1; font-size:1.5em; font-weight:300;}
+									.fck ul {list-style:disc outside; margin:0 0 1rem 30px;}
+									.fck ol {list-style:decimal outside; margin:0 0 1rem 30px;}
+									.fck li {margin-bottom:.3rem;}
+									.fck table {width:100%; margin:2rem 0;}
+									.fck table p {margin:0;}
+									.fck table th {color:var(--cor2); padding:.5rem; border-bottom:2px solid var(--cor2); text-align:left;}
+									.fck table td {padding:.5rem; border-bottom:1px solid var(--cinza2);}
+									.fck a {text-decoration:underline; color:var(--cor1);}
+									.fck img {max-width:100%; height:auto;}
+								</style>
+							</head>
+							<body>							
+								<header>
+									<img src="'.$unidadeLogo.'" />
+								</header>
+								<footer>
+									<table>
+									'. $unidadeTelefones . $unidadeEndereco . $unidadeDigital .'
+									</table>
+								</footer>
+								<main>			
+								<div class="page">
+									'. utf8_encode($documento->texto) .'
+								</div>
+								</main>
+							</body>
+						</html>		
 					';
-
-					$erro = uploader($infoConta->instancia, "arqs/pacientes/documentos/", $evolucao->id, $html);
-
-
+						$erro = uploader($infoConta->instancia, "arqs/pacientes/documentos/", $evolucao->id, $html);
 					}
 
 
@@ -708,11 +759,12 @@ if (isset($request->token) and $request->token == $token) {
 
 
 				}
+				
+		    // necessita do id da evolução e da instãncia apenas
 			} else if ($request->method == "sendWhatsapp") {
 				$evolucao = $evolucaoTipo = $paciente = '';
 				if (isset($request->id_evolucao) and is_numeric($request->id_evolucao)) {
 					$sql->consult($_p . "pacientes_evolucoes", "*", "where id=$request->id_evolucao");
-
 					if ($sql->rows) {
 						$evolucao = mysqli_fetch_object($sql->mysqry);
 
@@ -726,13 +778,11 @@ if (isset($request->token) and $request->token == $token) {
 					}
 				}
 
-
 				// verifica se possui conexao
 				$conexao = '';
 				$sql->consult("infodentalADM.infod_contas_onlines", "*", "where instancia='" . $_ENV['NAME'] . "' and lixo=0");
 				if ($sql->rows)
 					$conexao = mysqli_fetch_object($sql->mysqry);
-
 				if (empty($evolucao))
 					$erro = 'Evolução não encontrada!';
 				else if (empty($evolucaoTipo))
@@ -745,36 +795,32 @@ if (isset($request->token) and $request->token == $token) {
 					$erro = 'Infozap não conectado';
 				else if (is_object($conexao) and $conexao->versao != 2)
 					$erro = 'Versão do Infozap não suporta envio de arquivos. Favor atualize seu Infozap!';
-				
+
+
 				if (empty($erro)) {
-
-					// Se Receituario
-					if ($evolucao->id_tipo == 7) {
-
-
-						$pdf = "$_scalewayS3endpoint/" . $infoConta->instancia . "/arqs/pacientes/receituarios/";
-
-						// verifica se foi assinado
-						if ($evolucao->receita_assinada == "0000-00-00 00:00:00") {
-							$pdf .= sha1($evolucao->id) . ".pdf";
-						} else {
-							$pdf .= "assinados/" . sha1($evolucao->id) . ".pdf";
-						}
-
-						// envia whatsapp
-						$attr = array(
-							'numero' => $paciente->telefone1,
-							'arq' => $pdf,
-							'id_paciente'=>$paciente->id,
-							'documentName' => utf8_encode($evolucaoTipo->titulo) . " " . date('d/m/Y', strtotime($evolucao->data)) . " - " . utf8_encode($paciente->nome) . ".pdf",
-							'id_conexao' => $conexao->id
-						);
-
-						if (!$infozap->enviaArquivo($attr)) {
-
-							$erro = isset($infozap->erro) ? $infozap->erro : 'Algum erro ocorreu durante o envio do Receituário via Whatsapp. Entre em contato com nossa equipe de suporte!';
-						
-						}
+					switch ($evolucao->id_tipo){
+						case 1:  //anamnese
+							$pdf = "$_scalewayS3endpoint/" . $infoConta->instancia . "/arqs/pacientes/anamneses/";
+							break;
+						case 4:  //atestado
+							$pdf = "$_scalewayS3endpoint/" . $infoConta->instancia . "/arqs/pacientes/atestados/";
+							break;
+						case 6:  //pedido de exame
+							$pdf = "$_scalewayS3endpoint/" . $infoConta->instancia . "/arqs/pacientes/pedidoExames/";
+							break;
+						case 7:  // receituario
+							$pdf = "$_scalewayS3endpoint/" . $infoConta->instancia . "/arqs/pacientes/receituarios/";
+							break;
+						case 10: //documentos
+							//$pdf = "$_scalewayS3endpoint/" . $infoConta->instancia . "/arqs/pacientes/documentos/";
+							$erro = "esse tipo de evolução ainda não foi implementada para o envio de whatsapp";
+							break;
+						default:
+							$erro = "evolução com id ".$evolucao->id_tipo." de tipo inválido ou não implentado";
+							break;
+					}
+					if(empty($erro)){
+						$erro = enviaWhatsapp($pdf, $evolucao, $paciente, $conexao, $evolucaoTipo );
 					}
 				}
 				if (empty($erro)) {

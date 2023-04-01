@@ -122,6 +122,14 @@
 	include "includes/header.php";
 	include "includes/nav.php";
 
+
+	$lstAssinP = array();
+	$sql->consult($_p."pacientes_assinaturas", "id_evolucao", "");
+	while(($x = mysqli_fetch_object($sql->mysqry))){
+		$lstAssinP[] = $x->id_evolucao; 
+	}
+
+
 	$_table=$_p."pacientes_prontuarios";
 	require_once("includes/header/headerPacientes.php");
 	
@@ -357,8 +365,6 @@
 
 						<div class="box">
 							<div class="list-toggle">
-
-								
 								<?php
 								foreach($evolucoes as $e) {
 									if(isset($evolucoesTipos[$e->id_tipo])) {
@@ -389,7 +395,8 @@
 										}
 								?>
 								<div class="list-toggle-item">
-									<header>
+
+									<header>													
 										<div class="list-toggle-cat">
 											<i class="iconify" data-icon="<?php echo $eTipo->icone;?>"></i>
 											<div>
@@ -408,7 +415,7 @@
 												</p>
 											</div>
 										</div>
-										<p><?php echo isset($_profissionais[$e->id_profissional])?utf8_encode($_profissionais[$e->id_profissional]->nome):"";?></p>
+										<p class="toggle-tamanho"><?php echo isset($_profissionais[$e->id_profissional])?utf8_encode($_profissionais[$e->id_profissional]->nome):"";?></p>
 										<?php
 										if($eTipo->id==10 and isset($_documentos[$e->id])) {
 											$d=$_documentos[$e->id];
@@ -419,7 +426,24 @@
 											}
 										}
 										?>
-										<div class="list-toggle-buttons">									
+										<div class="list-toggle-alert">
+											<div>
+												<p>Dentista</p>
+												<div class="list-toggle-alert-icones">
+												<i class="iconify" data-icon="quill:signature"></i>
+												<i class="iconify" data-icon="fa6-solid:file-signature"  <?php echo ($e->receita_assinada != "0000-00-00 00:00:00")?("style=\"color: red;\""):'';?> ></i>
+												</div>
+											</div>
+
+
+											<div>
+												<p>Paciente</p>
+												<i class="iconify" data-icon="quill:signature" <?php echo in_array($e->id, $lstAssinP)?("style=\"color: yellow;\""):'';?> ></i>
+											</div>
+											
+										</div>
+										<div class="list-toggle-buttons">		
+											
 											<a href="<?php echo $pdf;?>" target="_blank" class="button"><i class="iconify" data-icon="ant-design:file-pdf-outlined"></i></a>
 											<?php
 											if($eTipo->id==7) {
@@ -437,8 +461,9 @@
 											?>
 											<a href="<?php echo $_page."?deleta=".$e->id."&pagina=".((isset($_GET['pagina']) and is_numeric($_GET['pagina']))?$_GET['pagina']:'')."&$url";?>" class="button js-confirmarDeletar"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 											<a href="javascript:;" class="button button_main js-expande js-expande-<?php echo $e->id;?>"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i></a>
-										</div>							
+										</div>																
 									</header>
+
 									<article<?php echo (isset($_GET['id_evolucao']) and $_GET['id_evolucao']==$e->id)?' class="active"':'';?>>
 										<?php
 											$correcoes='';

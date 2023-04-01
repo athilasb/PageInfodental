@@ -24,9 +24,6 @@
 					$_anamnesePerguntas[]=$x;
 				}
 			}
-			
-
-			
 		}
 	}
 
@@ -56,7 +53,7 @@
 
 
 ?>
-			
+
 <header class="titulo1">
 	<h1>Ficha do Paciente</h1>
 	<p><?php echo date('d/m/Y',strtotime($evolucao->data));?></p>

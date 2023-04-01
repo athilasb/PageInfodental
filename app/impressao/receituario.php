@@ -100,7 +100,7 @@
 			</td>
 			<td>
 				<h1>SEXO</h1>
-				<p><?php echo $paciente->sexo=="M"?"Masculino":"Feminino";?></p>
+				<td><?php echo ($paciente->sexo=="M")?"Masculino":"Feminino";?></td>
 			</td>
 		</tr>
 	</table>
