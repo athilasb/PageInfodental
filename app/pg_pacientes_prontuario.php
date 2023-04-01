@@ -122,14 +122,6 @@
 	include "includes/header.php";
 	include "includes/nav.php";
 
-
-	$lstAssinP = array();
-	$sql->consult($_p."pacientes_assinaturas", "id_evolucao", "");
-	while(($x = mysqli_fetch_object($sql->mysqry))){
-		$lstAssinP[] = $x->id_evolucao; 
-	}
-
-
 	$_table=$_p."pacientes_prontuarios";
 	require_once("includes/header/headerPacientes.php");
 	
@@ -421,7 +413,7 @@
 											$d=$_documentos[$e->id];
 											if(isset($_documentosTipos[$d->id_documento])) {
 										?>
-										<p><?php echo utf8_encode($_documentosTipos[$d->id_documento]->titulo);?></p>
+										<p class="toggle-tamanho"><?php echo utf8_encode($_documentosTipos[$d->id_documento]->titulo);?></p>
 										<?php
 											}
 										}
@@ -434,13 +426,11 @@
 												<i class="iconify" data-icon="fa6-solid:file-signature"  <?php echo ($e->receita_assinada != "0000-00-00 00:00:00")?("style=\"color: red;\""):'';?> ></i>
 												</div>
 											</div>
-
-
 											<div>
 												<p>Paciente</p>
 												<i class="iconify" data-icon="quill:signature" <?php echo in_array($e->id, $lstAssinP)?("style=\"color: yellow;\""):'';?> ></i>
 											</div>
-											
+
 										</div>
 										<div class="list-toggle-buttons">		
 											

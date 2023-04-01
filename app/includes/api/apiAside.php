@@ -136,7 +136,6 @@
 					} else {
 
 						$agendamentosFuturos=array();
-
 						if($paciente->data_nascimento!="0000-00-00") {
 							$dob = new DateTime($paciente->data_nascimento);
 							$now = new DateTime();
@@ -772,15 +771,18 @@
 
 			else if($_POST['ajax']=="tagsListar") {
 
+				
 				$_tags=array();
 				$sql->consult($_p."parametros_tags","*","WHERE lixo=0");
-				while($x=mysqli_fetch_object($sql->mysqry)) { 
+				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$x->titulo = utf8_encode($x->titulo);  
 					$x->cor = utf8_encode($x->cor);
 					$_tags[]=$x;
 				}
-				
+
+
 				$rtn=array('success'=>true,'regs'=>$_tags);
+				
 			}
 
 			else if($_POST['ajax']=="tagsRemover") {
@@ -2861,6 +2863,9 @@
 						$_tags[]=$x;
 					}
 
+					
+					
+				
 					$rtn=array('success'=>true,
 								'tags'=>$_tags);
 				}
@@ -2945,7 +2950,6 @@
 
 
 		header("Content-type: application/json");
-
 		echo json_encode($rtn);
 		die();
 	}
@@ -4161,7 +4165,9 @@
 										data:data,
 										success:function(rtn) {
 											if(rtn.success) {
+
 												if(rtn.regs.length>0) {
+
 													rtn.regs.forEach(x=>{
 														$(`.js-tags-table tbody`).append(`<tr>
 																<td>
@@ -4179,7 +4185,7 @@
 											}
 										},
 										error:function (rtn) {
-											console.log("erro: "+rtn);						
+											console.log("erro: "+rtn);	
 										}
 									})
 								}
