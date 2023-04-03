@@ -139,7 +139,7 @@
 	$evolucoesIds=array();
 	$evolucoesTodosIds=array();
 	//$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id order by data desc");
-	$sql->consultPagMto2($_p."pacientes_evolucoes","*",10,"where id_paciente=$paciente->id and lixo=0 and receita_assinada>'0000-00-00 00:00:00' order by data desc","",15,"pagina",$_page."?".$url."&pagina=");
+	$sql->consultPagMto2($_p."pacientes_evolucoes","*",10,"where id_paciente=$paciente->id and lixo=0 order by data desc","",15,"pagina",$_page."?".$url."&pagina=");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$evolucoes[]=$x;
 		$evolucoesIds[$x->id_tipo][]=$x->id;
@@ -392,7 +392,7 @@
 										<div class="list-toggle-cat">
 											<i class="iconify" data-icon="<?php echo $eTipo->icone;?>"></i>
 											<div>
-												<h1><?php echo utf8_encode($eTipo->titulo);?></h1>
+												<h1><?php echo utf8_encode($eTipo->titulo);?> <?php echo $e->enviarLink==1?' <i class="iconify" data-icon="la:whatsapp" data-height="17" data-inline="true"></i>':'';?></h1>
 												<p>
 													<?php 
 													// se geral (prontuario), usa a data definida no cadastro

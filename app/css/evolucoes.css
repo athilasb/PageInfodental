@@ -1,14 +1,34 @@
 /* reset */
 html, button, input, textarea, select, figure, article, section, aside, header, footer, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, ins, kbd, q, s, samp, small, strike, strong, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend {margin: 0; padding: 0; border: 0; outline: 0; font-size: 100%; vertical-align: baseline; background: transparent; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box;}select {background:url(../img/select-icon.png) no-repeat right center; -webkit-appearance:none; -moz-appearance:none; appearance:none; border-radius:0;}a {color:inherit; text-decoration:none;}img {border:0;}ol, ul {list-style: none;}blockquote, q {quotes: none;}blockquote:before, blockquote:after, q:before, q:after {content: ''; content: none;}:focus {outline: 0;}ins {text-decoration: none;}del {text-decoration: line-through;}table {border-collapse: collapse; border-spacing: 0;}html, body {height:100%;}
 
-body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font-smoothing:antialiased; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; font-size:14px; color:var(--cinza5); background:var(--cinza1);}
+body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font-smoothing:antialiased; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; font-size:14px;}
+
+:root {
+	--cinza1:#F4F4F4;
+	--cinza2:#EBEBEB;
+	--cinza3:#CDCDCD;
+	--cinza4:#848484;
+	--cinza5:#344848;
+	--cor1:#FECEA2;
+	--cor1hover:#DFAE81;
+	--border-radius1:12px;
+	--border-radius2:8px;
+	--box-shadow1:0 0 20px rgba(0,0,0,0.1);
+	--padding1:1.5rem;
+	--margin1:1.5rem;
+
+	--verde:darkseagreen;
+	--vermelho: red;
+	--laranja: orange;
+}
 
 .print-table {width:19cm; margin:0 auto;}
 .print-table-header {height:1.8cm;}
 .print-table-footer {height:2.5cm;}
 .print-header {position:fixed; top:0; left:50%; width:19cm; margin-left:-9.5cm; height:1.8cm; text-align:center; background:#fff;}
 .print-header__logo {width:8cm; height:auto;}
-.print-footer {position:fixed; bottom:0; left:50%; width:19cm; margin-left:-9.5cm; height:2.5cm; text-align:center; padding-top:.5cm; background:#fff;}
+/* .print-footer {position:fixed; bottom:0; left:50%; width:19cm; margin-left:-9.5cm; height:2.5cm; text-align:center; padding-top:.5cm; background:#fff;} */
+.print-footer {  width:19cm;height:2.5cm; text-align:center; background:#fff;} 
 .print-footer p {margin-bottom:8px;}
 .print-footer p span {margin-right:1rem;}
 .print-footer p span:last-child {margin-right:0;}
@@ -66,10 +86,7 @@ body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font
 .fck a {text-decoration:underline; color:var(--cor1);}
 .fck img {max-width:100%; height:auto;}
 
-textarea {
-	width:100%;
-	border:solid 1px #CCC;
-	border-radius: 5px;
-	margin-top:5px;
-	height: 80px;
-}
+textarea {	width:100%;border:solid 1px #CCC;border-radius: 5px;margin-top:5px;height: 80px;}
+.button {font-family:inherit; display:inline-flex; gap:.5rem; align-items:center; justify-content:center; transition:all 150ms; text-align:center; background:#fff; color:var(--cinza4); padding:0.5em .75em; border:1px solid var(--cinza3); border-radius:8px;}
+
+

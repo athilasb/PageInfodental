@@ -2,4 +2,5 @@ RewriteEngine On
 
 RewriteRule ^imprimir/tratamento/?$ impressao/planodetratamento.php?id=$1
 RewriteRule ^download/([a-zA-Z\-0-9.#]+)/?$ lib/download.php?arq=https://infodental.s3.fr-par.scw.cloud/studiodental/arqs/pacientes/arquivos/c4ca4238a0b923820dcc509a6f75849b.jpg&nome=$1
+RewriteRule ^anamnese/([a-zA-Z\-0-9#]+)/?$ evolucoes/anamnese.php?id_evolucao=$1
 RewriteRule ^([a-zA-Z\-0-9#]+)/?$ lp/landingpage.php?code=$1

@@ -1,5 +1,4 @@
 <?php
-
 if (isset($_POST['ajax'])) {
 	$dir = "../../";
 	require_once("../../lib/conf.php");
@@ -396,45 +395,125 @@ if (isset($_POST['ajax'])) {
 		$sql->update($_p . "financeiro_fluxo", "id_registro='$idAdd'", "WHERE id=$idAdd");
 
 		$rtn = ["sucess" => true, 'post' => $_POST, 'sql' => $vSQL];
-	} else if ($_GET['ajax'] == "buscaPaciente") {
+	}
+	header("Content-type: application/json");
+	echo json_encode($rtn);
+	die();
+} else if (isset($_GET['ajax'])) {
+	$dir = "../../";
+	require_once("../../lib/conf.php");
+	require_once("../../usuarios/checa.php");
+	$attr = array('prefixo' => $_p, 'usr' => $usr);
+	$infozap = new Whatsapp($attr);
+	$rtn = array('vazio');
+	$_tableEspecialidades = $_p . "parametros_especialidades";
+	$_tablePlanos = $_p . "parametros_planos";
+	$_tableMarcas = $_p . "produtos_marcas";
+	$_tablePacientes = $_p . "pacientes";
+	$_tableProfissoes = $_p . "parametros_profissoes";
+	$_tableListaPersonalizada = $_p . "parametros_indicacoes";
+	$_tableTags = $_p . "parametros_tags";
+	$_tableChecklist = $_p . "agenda_checklist";
+	$pagamento;
+	if ($_GET['ajax'] == "buscaPaciente") {
 		$where = "WHERE 1=2";
-		if (isset($_GET['search']) and !empty($_GET['search'])) {
-			$aux = explode(" ", $_GET['search']);
-
-			$wh = "";
-			$primeiraLetra = '';
-			foreach ($aux as $v) {
-				if (empty($v)) continue;
-
-				if (empty($primeiraLetra)) $primeiraLetra = substr($v, 0, 1);
-				$wh .= "nome REGEXP '$v' and ";
+		$tipo_beneficiario = $_GET['tipo_beneficiario'] ?? 'fornecedor';
+		if ($tipo_beneficiario == 'paciente') {
+			if (isset($_GET['search']) and !empty($_GET['search'])) {
+				$aux = explode(" ", $_GET['search']);
+				$wh = "";
+				$primeiraLetra = '';
+				foreach ($aux as $v) {
+					if (empty($v)) continue;
+					if (empty($primeiraLetra)) $primeiraLetra = substr($v, 0, 1);
+					$wh .= "nome REGEXP '$v' and ";
+				}
+				$wh = substr($wh, 0, strlen($wh) - 5);
+				$where = "where (($wh) or nome like '%" . $_GET['search'] . "%' or telefone1 like '%" . $_GET['search'] . "%' or cpf like '%" . $_GET['search'] . "%') and lixo=0";
 			}
-			$wh = substr($wh, 0, strlen($wh) - 5);
-			$where = "where (($wh) or nome like '%" . $_GET['search'] . "%' or telefone1 like '%" . $_GET['search'] . "%' or cpf like '%" . $_GET['search'] . "%') and lixo=0";
-			//$where="where nome like '%".$_GET['search']."%' or telefone1 like '%".$_GET['search']."%' or cpf like '%".$_GET['search']."%' and lixo=0";
-		}
-		if (!empty($primeiraLetra)) $where .= " ORDER BY CASE WHEN nome >= '$primeiraLetra' THEN 1 ELSE 0 END DESC, nome ASC";
-		else $where .= " order by nome asc";
+			if (!empty($primeiraLetra)) $where .= " ORDER BY CASE WHEN nome >= '$primeiraLetra' THEN 1 ELSE 0 END DESC, nome ASC";
+			else $where .= " order by nome asc";
 
-		$sql->consult($_p . "pacientes", "nome,id,telefone1,cpf,foto_cn,foto", $where);
-		//echo $where;
-		while ($x = mysqli_fetch_object($sql->mysqry)) {
+			$sql->consult($_p . "pacientes", "nome,id,telefone1,cpf,foto_cn,foto", $where);
+			while ($x = mysqli_fetch_object($sql->mysqry)) {
 
-			$ft = 'img/ilustra-perfil.png';
-			if (!empty($x->foto_cn)) {
-				$ft = $_cloudinaryURL . 'c_thumb,w_100,h_100/' . $x->foto_cn;
-			} else if (!empty($x->foto)) {
-				$ft = $_wasabiURL . "arqs/clientes/" . $x->id . ".jpg";
+				$ft = 'img/ilustra-perfil.png';
+				if (!empty($x->foto_cn)) {
+					$ft = $_cloudinaryURL . 'c_thumb,w_100,h_100/' . $x->foto_cn;
+				} else if (!empty($x->foto)) {
+					$ft = $_wasabiURL . "arqs/clientes/" . $x->id . ".jpg";
+				}
+
+				$rtn['items'][] = array(
+					'id' => $x->id,
+					'text' => utf8_encode($x->nome),
+					'nome' => utf8_encode($x->nome),
+					'telefone' => utf8_encode($x->telefone1),
+					'ft' => $ft,
+					'cpf' => utf8_encode($x->cpf)
+				);
 			}
+		} else if ($tipo_beneficiario == 'fornecedor') {
+			if (isset($_GET['search']) and !empty($_GET['search'])) {
+				$aux = explode(" ", $_GET['search']);
+				$wh = "";
+				$primeiraLetra = '';
+				foreach ($aux as $v) {
+					if (empty($v)) continue;
+					if (empty($primeiraLetra)) $primeiraLetra = substr($v, 0, 1);
+					$wh .= "razao_social REGEXP '$v' and ";
+				}
+				$wh = substr($wh, 0, strlen($wh) - 5);
+				$where = "where (($wh) or razao_social like '%" . $_GET['search'] . "%' or nome like '%" . $_GET['search'] . "%' or cpf like '%" . $_GET['search'] . "%') and lixo=0";
+			}
+			if (!empty($primeiraLetra)) $where .= " ORDER BY CASE WHEN razao_social >= '$primeiraLetra' THEN 1 ELSE 0 END DESC, razao_social ASC";
+			else $where .= " order by razao_social asc";
 
-			$rtn['items'][] = array(
-				'id' => $x->id,
-				'text' => utf8_encode($x->nome),
-				'nome' => utf8_encode($x->nome),
-				'telefone' => utf8_encode($x->telefone1),
-				'ft' => $ft,
-				'cpf' => utf8_encode($x->cpf)
-			);
+			$sql->consult($_p . "parametros_fornecedores", "razao_social,id,telefone1,cpf,cnpj", $where);
+			while ($x = mysqli_fetch_object($sql->mysqry)) {
+				$ft = 'img/ilustra-perfil.png';
+				$rtn['items'][] = array(
+					'id' => $x->id,
+					'text' => utf8_encode($x->razao_social),
+					'nome' => utf8_encode($x->razao_social),
+					'telefone' => utf8_encode($x->telefone1),
+					'ft' => $ft,
+					'cpf' => utf8_encode($x->cpf)
+				);
+			}
+		} else if ($tipo_beneficiario == 'colaborador') {
+			if (isset($_GET['search']) and !empty($_GET['search'])) {
+				$aux = explode(" ", $_GET['search']);
+				$wh = "";
+				$primeiraLetra = '';
+				foreach ($aux as $v) {
+					if (empty($v)) continue;
+					if (empty($primeiraLetra)) $primeiraLetra = substr($v, 0, 1);
+					$wh .= "nome REGEXP '$v' and ";
+				}
+				$wh = substr($wh, 0, strlen($wh) - 5);
+				$where = "where (($wh) or nome like '%" . $_GET['search'] . "%' or telefone1 like '%" . $_GET['search'] . "%' or cpf like '%" . $_GET['search'] . "%') and lixo=0";
+			}
+			if (!empty($primeiraLetra)) $where .= " ORDER BY CASE WHEN nome >= '$primeiraLetra' THEN 1 ELSE 0 END DESC, nome ASC";
+			else $where .= " order by nome asc";
+
+			$sql->consult($_p . "pacientes", "nome,id,telefone1,cpf,foto", $where);
+			while ($x = mysqli_fetch_object($sql->mysqry)) {
+
+				$ft = 'img/ilustra-perfil.png';
+				if (!empty($x->foto)) {
+					$ft = $_wasabiURL . "arqs/clientes/" . $x->id . ".jpg";
+				}
+
+				$rtn['items'][] = array(
+					'id' => $x->id,
+					'text' => utf8_encode($x->nome),
+					'nome' => utf8_encode($x->nome),
+					'telefone' => utf8_encode($x->telefone1),
+					'ft' => $ft,
+					'cpf' => utf8_encode($x->cpf)
+				);
+			}
 		}
 	}
 
@@ -1850,12 +1929,39 @@ if (isset($_POST['ajax'])) {
 	<?php
 
 	$_formasDePagamento = array();
+	$categorias = array();
+	$centrodecustos = array();
 	$optionFormasDePagamento = '';
+	//pegando as formas de pagamentos
 	$sql->consult($_p . "parametros_formasdepagamento", "*", "order by titulo asc");
 	while ($x = mysqli_fetch_object($sql->mysqry)) {
 		$_formasDePagamento[$x->id] = $x;
 		$optionFormasDePagamento .= '<option value="' . $x->id . '" data-tipo="' . $x->tipo . '">' . utf8_encode($x->titulo) . '</option>';
 	}
+	// pegando os centros de custo
+	$sql->consult($_p . "financeiro_fluxo_splits_centrodecusto", "*", " WHERE lixo=0 order by titulo asc");
+	while ($x = mysqli_fetch_object($sql->mysqry)) {
+		$centrodecustos[$x->id]['id'] = $x->id;
+		$centrodecustos[$x->id]['titulo'] = utf8_encode($x->titulo);
+	}
+	// pegando as categorias
+	$sql->consult($_p . "financeiro_fluxo_categorias", "*", " WHERE lixo=0 order by titulo asc");
+	while ($x = mysqli_fetch_object($sql->mysqry)) {
+		//$categorias[$x->id] = $x;
+		if ($x->tipo == 'categoria') {
+			$categorias[$x->id]['id'] = $x->id;
+			$categorias[$x->id]['titulo'] = $x->titulo;
+			$categorias[$x->id]['tipo'] = $x->tipo;
+			$categorias[$x->id]['subcategorias'] = array();
+		} else if ($x->tipo == 'subcategoria') {
+			$categorias[$x->id_categoria]['subcategorias'][$x->id] = [
+				"id" => $x->id,
+				"titulo" => $x->titulo,
+				"tipo" => $x->tipo
+			];
+		}
+	}
+
 	?>
 	<section class="aside aside-form" id="js-aside-asFinanceiro">
 		<div class="aside__inner1">
@@ -1868,12 +1974,13 @@ if (isset($_POST['ajax'])) {
 			<form method="post" class="aside-content form">
 				<input type="hidden" class="js-id_pagamento" value="0" />
 				<input type="hidden" class="js-index" />
+				<textarea id='splits-pagamentos' style='display:none'></textarea>
 				<!-- Programacao de pagamento -->
 				<div class="js-fin js-fin-programacao">
 					<fieldset style="padding:.75rem 1.5rem;">
 						<legend>Informações</legend>
 						<p>Beneficiário</p>
-						<div class="colunas5">
+						<div class="colunas3">
 							<dl>
 								<label><input type="radio" name="tipo_beneficiario" value="fornecedor">Fornecedor</label>
 							</dl>
@@ -1883,20 +1990,15 @@ if (isset($_POST['ajax'])) {
 							<dl>
 								<label><input type="radio" name="tipo_beneficiario" value="colaborador">Colaborador</label>
 							</dl>
+						</div>
+						<div class="colunas1">
 							<dl class="dl2">
-								<dt>Fornecedor</dt>
-								<!-- <dd class="form-comp">
-									<select name="lista_beneficiarios" class="">
-										<option value="">-</option>
-									</select><span>+</span>
-								</dd> -->
 								<dl>
 									<dd>
-										<select name="id_paciente" class="select2 obg-0 ajax-id_paciente">
-											<option value="">Buscar paciente...</option>
+										<select name="id_beneficiario" class="select2 obg-0 ajax-id_paciente" disabled>
+											<option value="">Buscar Beneficiario...</option>
 										</select>
 										<a href="javascript:;" class="js-btn-aside button" data-aside="paciente" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
-										<?php /*<a href="javascript:;" class="js-btn-aside button" data-aside="profissao" data-aside-sub><i class="iconify" data-icon="fluent:add-24-regular"></i></a>*/ ?>
 									</dd>
 								</dl>
 							</dl>
@@ -1906,107 +2008,103 @@ if (isset($_POST['ajax'])) {
 								<dt>Data Emissão</dt>
 								<dd><input type="text" class="js-vencimento js-tipoPagamento data" value="<?= date('d/m/Y'); ?>" name="data_emissao" disabled /></dd>
 							</dl>
+							<dl>
+								<dt>Valor Total</dt>
+								<dd class="form-comp"><span>R$</span>
+									<input type="text" class="js-valor" name="valor_pagamento" value="0" />
+								</dd>
+							</dl>
 							<dl class="dl3">
 								<dt>Descrição</dt>
 								<dd><input type="text" class="js-obs-desconto" name="descricao" /></dd>
 							</dl>
+
 						</div>
-						<div class="colunas5" style="display:none">
+						<div class="colunas5">
 							<dl>
 								<dt>Split de Pagamento</dt>
 								<label><input type="checkbox" class="input-switch split-pagamento" /></label>
 							</dl>
-							<dl class="dl2">
-								<dt>Centro de Custo</dt>
-								<dd><input type="text" class="" /></dd>
-							</dl>
-							<dl class="dl2">
-								<dt>Categoria</dt>
-								<dd><input type="text" class="" /></dd>
-							</dl>
-						</div>
-						<div class="colunas3" style="display:none">
-							<dl class="form-comp">
-								<dt>Porcentagem</dt>
-								<label><input type="text" name="" value="0"><span>%</span></label>
-							</dl>
-							<dl>
-								<dt>Centro de Custo</dt>
-								<label><input type="text" name="" value=""></label>
-							</dl>
-							<dl>
-								<dt>Categoria</dt>
-								<label><input type="text" name="" value=""></label>
-							</dl>
-						</div>
-						<div class="colunas3" style="display:none;font-size:11px">
-							<dl>
-								<label><input type="radio" name="tipo_pagamento" value="horas_clinicas">Calcular Gasto como Horas Clínicas</label>
-							</dl>
-							<dl>
-								<label><input type="radio" name="tipo_pagamento" value="gasto_paciente">Controlar gasto por Paciente</label>
-							</dl>
-							<dl>
-								<label><input type="radio" name="tipo_pagamento" value="investimentos_outros">Investimentos e Outros</label>
-							</dl>
-						</div>
-						<div class="colunas3" style="display:none">
-							<dl class="form-comp">
-								<dt>Porcentagem</dt>
-								<label><input type="text" name="" value="0"><span>%</span></label>
-							</dl>
-							<dl>
-								<dt>Centro de Custo</dt>
-								<label><input type="text" name="" value=""></label>
-							</dl>
-							<dl>
-								<dt>Categoria</dt>
-								<label><input type="text" name="" value=""></label>
-							</dl>
-						</div>
-						<div class="colunas3" style="display:none;font-size:11px">
-							<dl>
-								<label><input type="radio" name="tipo_pagamento" value="horas_clinicas">Calcular Gasto como Horas Clínicas</label>
-							</dl>
-							<dl>
-								<label><input type="radio" name="tipo_pagamento" value="gasto_paciente">Controlar gasto por Paciente</label>
-							</dl>
-							<dl>
-								<label><input type="radio" name="tipo_pagamento" value="investimentos_outros">Investimentos e Outros</label>
-							</dl>
-						</div>
-						<div class="" style="display:none">
-							<p>É um custo recorrente? se sim qual a recorrência e quando acaba?</p>
-							<div class="colunas3">
+							<section class="colunas3" id='split-false-splits-qtd' style='display:none'>
 								<dl>
-									<label><input type="checkbox" class="input-switch split-pagamento" /></label>
+									<dt>Quantidade</dt>
+									<dd>
+										<label><input class="js-splits-quantidade" type="number" name="parcelas" value="1" style="width:80px;" /></label>
+									</dd>
 								</dl>
-								<dl class="form-comp">
-									<label>a Cada 30 Dias<input type="text" class="input-switch" value="30" /><span>Dias</span></label>
+								<dl style="font-size: 11px;">
+									<dt></dt>
+									<dd>
+										<label><input type="radio" name="modo_divisao" value="porcentagem" checked>Porcentagem</label>
+									</dd>
 								</dl>
-								<dl class="form-comp">
-									<label>Por <input type="text" class="input-switch" value="12" /><span>meses</span></label>
+								<dl style="font-size: 11px;">
+									<dt></dt>
+									<dd>
+										<label><input type="radio" name="modo_divisao" value="valor_absoluto">Valor Absoluto</label>
+									</dd>
 								</dl>
-							</div>
+							</section>
+							<dl class="dl2" id='split-false-centro-custo'>
+								<dt>Centro de Custo</dt>
+								<select name="id_centro_de_custo" class="select2">
+									<option value="0">-</option>
+									<?php foreach ($centrodecustos as $id => $c) : ?>
+										<option value="<?= $id ?>"><?= $c['titulo'] ?></option>
+									<?php endforeach; ?>
+								</select>
+							</dl>
+							<dl class="dl2" id='split-false-categorias'>
+								<dt>Categoria</dt>
+								<select name="id_categoria" class="select2">
+									<option value="0">-</option>
+									<?php foreach ($categorias as $id => $cat) : ?>
+										<optgroup label="<?= $cat['titulo'] ?>">
+											<?php foreach ($cat['subcategorias'] as $id_sub => $sub) : ?>
+												<option value="<?= $id_sub ?>"><?= $sub['titulo'] ?></option>
+											<?php endforeach; ?>
+										</optgroup>
+									<?php endforeach; ?>
+								</select>
+							</dl>
 						</div>
+						<fieldset class="js-fieldset-pagamentos-splits" style="display:none">
+							<legend>Splits</legend>
+							<section>
+
+							</section>
+						</fieldset>
+						<div class="">
+							<p>É um custo recorrente? se sim qual a recorrência e quando acaba?</p>
+							<div class="row">
+								<div class="colunas1">
+									<dl>
+										<label><input type="checkbox" class="input-switch split-custo-recorrente" /></label>
+									</dl>
+								</div>
+								<div class="colunas2" style="display:none" id='area-custo-recorrente'>
+									<dl class="form-comp">
+										<label>a Cada <span>Dias</span><input type="text" class="input-switch" value="30" /></label>
+									</dl>
+									<dl class="form-comp">
+										<label>Por <span>meses</span><input type="text" class="input-switch" value="12" /></label>
+									</dl>
+
+								</div>
+							</div>
 					</fieldset>
 					<fieldset class="js-fieldset-pagamentos">
 						<legend>Pagamentos</legend>
-						<section class="js-pagamento">
+						<section class="js-pagamento" style="display:none">
 							<div class="colunas4">
-								<dl>
-									<dt>Valor Total</dt>
-									<dd class="form-comp"><span>R$</span>
-										<input type="text" class="js-valor money" name="valor_pagamento" />
-									</dd>
-								</dl>
+
 								<dl class="dl3">
 									<dt>Qual a Quantidade de Pagamentos?</dt>
 									<dd><input type="text" class="" value="1" name="qtd_pagamento" /></dd>
 								</dl>
 							</div>
 						</section>
-						<section>
+						<section  style="display:none">
 							<aside></aside>
 							<article>
 								<div class="colunas3">
@@ -2018,13 +2116,21 @@ if (isset($_POST['ajax'])) {
 										<dt>Forma de Pagamento</dt>
 										<dd>
 											<select class="js-id_formadepagamento js-tipoPagamento" name="forma_pagamento">
-												<option value="">Forma de Pagamento...</option>
+												<option value="0">Forma de Pagamento...</option>
 												<?= $optionFormasDePagamento; ?>
 											</select>
 										</dd>
 									</dl>
 								</div>
 						</section>
+						<section class="js-tipo js-tipo-manual">
+								<dl>
+									<dt>Parcelas</dt>
+									<dd>
+										<label><input class="js-pagamentos-quantidade" type="number" name="parcelas" value="<?= isset($values['parcelas']) ? $values['parcelas'] : '0'; ?>" style="width:80px;" /></label>
+									</dd>
+								</dl>
+							</section>
 						<dl style="margin-top:1.5rem;">
 							<dd><button href="javascript:;" class="button button_main js-btn-addPagamento" type="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar</span></button></dd>
 						</dl>
@@ -2034,6 +2140,8 @@ if (isset($_POST['ajax'])) {
 		</div>
 	</section>
 	<script>
+		const categorias = <?= json_encode($categorias) ?>;
+		const centrodecustos = <?= json_encode($centrodecustos) ?>;
 		const abrirAside1 = (tipo, index) => {
 			$("#js-aside-asFinanceiro").fadeIn(100, function() {
 				$("#js-aside-asFinanceiro .aside__inner1").addClass("active");
@@ -2057,18 +2165,100 @@ if (isset($_POST['ajax'])) {
 			var $state = $('<span style="display:flex; align-items:center; gap:.5rem;"><img src="' + state.ft + '" style="width:40px;height:40px;border-radius:100%;" /> ' + state.text + infoComplementar + '</span>');
 			return $state;
 		}
+		const atualizaQtdSplits = () => {
+			let modo_divisao = $('[name="modo_divisao"]:checked').val()
+			let quantidade = $('.js-splits-quantidade').val();
+			let valor_total = unMoney($('[name="valor_pagamento"]').val())
+			let splits = [];
+			if (quantidade < 1) {
+				$(this).val(1)
+				quantidade = 1
+			}
+			let valor_split = 0
+			if (modo_divisao == 'porcentagem') {
+				valor_split = (100 / quantidade).toFixed(2)
+			} else {
+				valor_split = unMoney(valor_total / quantidade)
+			}
+			for (let i = 0; i < quantidade; i++) {
+				let item = {
+					id: i + 1,
+					valor_split,
+					centrodecusto: 0,
+					categoria: 0,
+					calcular_como: '',
+					modo_divisao
+				}
+				splits.push(item)
+			}
+			$('#splits-pagamentos').text(JSON.stringify(splits))
+			listarSplits()
+		}
+		const listarSplits = () => {
+			let modo_divisao = $('[name="modo_divisao"]:checked').val();
+			let splits = JSON.parse($('#splits-pagamentos').text()) ?? [];
+			let simbolo = (modo_divisao == 'porcentagem') ? '%' : 'R$';
+			let classValor = (modo_divisao == 'porcentagem') ? '' : 'js-valor money';
+			$('.js-fieldset-pagamentos-splits').find('section').html("")
+			splits.forEach((item) => {
+				let valor_split = item.valor_split
+				if (modo_divisao == 'porcentagem') {
+					valor_split
+				} else {
+					valor_split = number_format(valor_split, 2, ',', '.')
+				}
+				$('.js-fieldset-pagamentos-splits').find('section').append(`
+						<div class="fpag-item js-pagamento-item" data-id="${item.id}" style="margin-bottom: 10px;">
+						<input type="hidden" name="id-split" value="${item.id}">
+							<aside>${item.id}</aside>
+							<article>
+								<div class="colunas3">
+									<dl class="form-comp">
+										<dt>Porcentagem / Valor</dt>
+										<label><span>${simbolo}</span><input type="text" class="${classValor}" name="porcentagem-splits" value="${valor_split}"></label>
+									</dl>
+									<dl>
+										<dt>Centro de Custo</dt>
+										<select name="id_centro_de_custo" class="">
+											<option value="0">-</option>
+										</select>
+									</dl>
+									<dl>
+										<dt>Categoria</dt>
+										<select name="id_categoria" class="">
+											<option value="0">-</option>
+										</select>
+									</dl>
+								</div>
 
+								<div class="colunas3" style="font-size:11px">
+									<dl>
+										<label><input type="radio" name="calcular_como_${item.id}" value="horas_clinicas">Calcular Gasto como Horas Clínicas</label>
+									</dl>
+									<dl>
+										<label><input type="radio" name="calcular_como_${item.id}" value="gasto_paciente">Controlar gasto por Paciente</label>
+									</dl>
+									<dl>
+										<label><input type="radio" name="calcular_como_${item.id}" value="investimentos_outros">Investimentos e Outros</label>
+									</dl>
 
-		$(function() {
-			$('.js-vencimento:last').inputmask('99/99/9999');
-			$('.js-vencimento:last').datetimepicker({
-				timepicker: false,
-				format: 'd/m/Y',
-				scrollMonth: false,
-				scrollTime: false,
-				scrollInput: false
-			});
-			$('.js-valor:last').maskMoney({
+								</div>
+							</article>
+						</div>
+					`)
+
+				for (let x in centrodecustos) {
+					$('.js-fieldset-pagamentos-splits').find('section').find(`[data-id="${item.id}"]`).find('[name="id_centro_de_custo"]').append(`<option value="${x}">${centrodecustos[x].titulo}</option>`)
+				}
+				for (let x in categorias) {
+					$('.js-fieldset-pagamentos-splits').find('section').find(`[data-id="${item.id}"]`).find('[name="id_categoria"]').append(`<optgroup data-id-categoria="${x}" label="${categorias[x].titulo}"></optgroup>`)
+					for (let sub in categorias[x].subcategorias) {
+						$('.js-fieldset-pagamentos-splits').find('section').find(`[data-id="${item.id}"]`).find('[name="id_categoria"]').find(`[data-id-categoria="${x}"]`).append(`<option value="${sub}">${categorias[x].subcategorias[sub].titulo}</option>`)
+					}
+				}
+
+			})
+			$('.js-valor').maskMoney({
 				symbol: '',
 				allowZero: true,
 				showSymbol: true,
@@ -2076,107 +2266,83 @@ if (isset($_POST['ajax'])) {
 				decimal: ',',
 				symbolStay: true
 			});
-			// quando seleciona o tipo de beneficiario ele vai popular a lista no select
-			$('select[name=id_paciente]').select2({
+
+		}
+
+
+		$(function() {
+
+			// conforme vai escrevendo no campo de busca do select ele vai fazendo ajax para buscar no bd 
+			$('select[name=id_beneficiario]').select2({
 				ajax: {
-					url: baseURLApiAsidePagamentos,
+					url: `${baseURLApiAsidePagamentos}`,
 					data: function(params) {
 						var query = {
+							ajax: 'buscaPaciente',
+							tipo_beneficiario: $('[name="tipo_beneficiario"]:checked').val(),
 							search: params.term,
 							type: 'public'
 						}
-
 						return query;
 					},
 					processResults: function(data) {
-						// Transforms the top-level key of the response object from 'items' to 'results'
 						return {
 							results: data.items
 						};
 					}
 
 				},
-				templateResult: formatTemplate,
-				//	templateSelection:formatTemplateSelection,
-				dropdownParent: $(".modal")
+				//templateResult: formatTemplate,
+				//dropdownParent: $(".modal")
 			});
+			// quando seleciona o tipo de beneficiario ele vai popular a lista no select
 			$('[name="tipo_beneficiario"]').click(function() {
 				let tipo_beneficiario = $(this).val()
 				let data = `ajax=buscarUsuarios&tipo_beneficiario=${tipo_beneficiario}`;
+				$('select[name=id_beneficiario]').attr('disabled', false)
 				return
-				$.ajax({
-					type: "POST",
-					url: baseURLApiAsidePagamentos,
-					data: data,
-					success: function(rtn) {
-						if (rtn.success) {
-							$('[name="lista_beneficiarios"]').html("<option value='0'>-</option>")
-							let lista_usuarios = rtn.usuarios
-							// Transforma o objeto em um array de objetos
-							let array = Object.values(lista_usuarios);
-							// Ordena o array pelo atributo nome
-							array.sort((a, b) => a.nome.localeCompare(b.nome));
-
-							for (let x in array) {
-								let user = array[x]
-								// user.nome = user.nome.replace(' ', "")
-								if (user?.nome?.length > 0) {
-									$('[name="lista_beneficiarios"]').append(`<option value='${user.id}'>${user.nome}</option>`)
-								}
-							}
-						} else if (rtn.error) {
-							swal({
-								title: "Erro!",
-								text: rtn.error,
-								html: true,
-								type: "error",
-								confirmButtonColor: "#424242"
-							});
-						} else {
-							swal({
-								title: "Erro!",
-								text: "Algum erro ocorreu durante a busca pela lista de Usuarios!",
-								html: true,
-								type: "error",
-								confirmButtonColor: "#424242"
-							});
-						}
-					},
-					error: function(err) {
-						console.log(err)
-						swal({
-							title: "Erro!",
-							text: "Algum erro ocorreu durante a busca pela lista de Usuarios!",
-							html: true,
-							type: "error",
-							confirmButtonColor: "#424242"
-						});
-					}
-				})
-
 			})
 			// botao para adicionar pagamento 
 			$('.js-btn-addPagamento').click(function() {
 				let tipo_beneficiario = $('[name="tipo_beneficiario"]:checked').val();
-				let id_beneficiario = $('[name="lista_beneficiarios"]').val();
-				let data_emissao = $('[name="data_emissao"]').val();
+				let id_beneficiario = $('[name="id_beneficiario"]').val();
+				let data_emissao = $('[name="data_emissao"]').val().split("/");
 				let descricao = $('[name="descricao"]').val();
 				let valor_pagamento = unMoney($('[name="valor_pagamento"]').val());
 				let qtd_pagamento = $('[name="qtd_pagamento"]').val();
-				let data_vencimento = $('[name="data_vencimento"]').val();
-				let partes = data_vencimento.split("/"); // dividir a data em três partes
-				data_vencimento = partes[2] + "-" + partes[1] + "-" + partes[0];
+				let data_vencimento = $('[name="data_vencimento"]').val().split("/");
 				let id_forma_pagamento = $('[name="forma_pagamento"]').val();
 				let erro = ""
 				if (!id_beneficiario || id_beneficiario <= 0) {
 					erro = " Voce precisa selecionar um beneficiario."
-				} else if (!data_emissao || data_emissao) {
+				} else if (!tipo_beneficiario || tipo_beneficiario == undefined) {
+					erro = " Selecione o Tipo de Beneficiario."
+				} else if (!data_emissao || data_emissao == undefined) {
 					erro = " Selecione a data De emissão."
-				} else if (!descricao || descricao) {
-					erro = "Voce precisa adicionar uma descricao."
+				} else if (!descricao || descricao == undefined || descricao.length <= 3) {
+					erro = "Voce precisa adicionar uma descricao válida."
+				} else if (!valor_pagamento || valor_pagamento <= 0 || valor_pagamento == undefined) {
+					erro = "Voce precisa adicionar um Valor para Este pagamento."
+				} else if (!data_vencimento || data_vencimento == undefined) {
+					erro = " Selecione a data de Vencimento."
+				} else if (!id_forma_pagamento || id_forma_pagamento == undefined || id_forma_pagamento <= 0) {
+					erro = " Selecione a Forma de Pagamento!"
 				}
+				data_emissao = data_emissao[2] + "-" + data_emissao[1] + "-" + data_emissao[0];
+				data_vencimento = data_vencimento[2] + "-" + data_vencimento[1] + "-" + data_vencimento[0];
 
+				if (erro.length > 0) {
+					swal({
+						title: "Erro!",
+						text: erro,
+						type: "error",
+						confirmButtonColor: "#424242"
+					});
+				}
 				let data = `ajax=addPagamento&tipo_beneficiario=${tipo_beneficiario}&id_beneficiario=${id_beneficiario}&data_emissao=${data_emissao}&descricao=${descricao}&valor_pagamento=${valor_pagamento}&qtd_pagamento=${qtd_pagamento}&data_vencimento=${data_vencimento}&id_forma_pagamento=${id_forma_pagamento}`;
+				console.log(data)
+
+				return
 				$.ajax({
 					type: "POST",
 					url: baseURLApiAsidePagamentos,
@@ -2206,8 +2372,159 @@ if (isset($_POST['ajax'])) {
 						});
 					}
 				})
-				console.log(data)
 			})
+			//habilitar o split de pagamento
+			$('.split-pagamento').click(function() {
+				let valor = $(this).prop('checked')
+				if (valor == true) {
+					$('.js-fieldset-pagamentos-splits').show();
+					$('#split-false-centro-custo').hide();
+					$('#split-false-categorias').hide();
+					$('#split-false-splits-qtd').show();
+					if ($('.js-splits-quantidade').val() <= 1) {
+						let splits = [];
+						let item = {
+							id: 1,
+							porcentagem: 0,
+							centrodecusto: 0,
+							categoria: 0,
+							calcular_como: '',
+							modo_divisao: 'porcentagem'
+						}
+						splits.push(item)
+						$('#splits-pagamentos').text(JSON.stringify(splits))
+
+					}
+					atualizaQtdSplits()
+					$('.split-custo-recorrente').prop('checked', false)
+					$('#area-custo-recorrente').hide();
+				} else {
+					$('.js-fieldset-pagamentos-splits').hide();
+					$('#split-false-categorias').show();
+					$('#split-false-centro-custo').show();
+					$('#split-false-splits-qtd').hide();
+					$('#splits-pagamentos').val("")
+				}
+			})
+			// modificando modo_divisao
+			$('[name="modo_divisao"]').click(function() {
+				let modo_divisao = $(this).val()
+				atualizaQtdSplits()
+			})
+			//habilitar pagamento recorrente
+			$('.split-custo-recorrente').click(function() {
+				let valor = $(this).prop('checked')
+				if (valor == true) {
+					$('#area-custo-recorrente').show();
+					$('.split-pagamento').prop('checked', false)
+					$('.js-fieldset-pagamentos-splits').hide();
+					$('#split-false-categorias').show();
+					$('#split-false-centro-custo').show();
+					$('#split-false-splits-qtd').hide();
+					$('#splits-pagamentos').val("")
+				} else {
+					$('#area-custo-recorrente').hide();
+				}
+			})
+			// modifica quantidade  de splits
+			$('.js-splits-quantidade').change(function() {
+				atualizaQtdSplits()
+			})
+			// ajusta valores de porcentagens de splits 
+			$('.js-fieldset-pagamentos-splits').on('keyup', '[name="porcentagem-splits"]', async function() {
+				let modo_divisao = $('[name="modo_divisao"]:checked').val();
+				let splits = JSON.parse($('#splits-pagamentos').text()) ?? [];
+				let porc = $(this).val()
+				if (modo_divisao == 'porcentagem') {
+					porc = parseInt(porc)
+					if (isNaN(porc)) {
+						porc = 0
+					}
+					$(this).val(porc)
+					let allSplits = $('.fpag-item');
+					let porcTotal = 0
+					allSplits.each((i, item) => {
+						let id_split = $(item).find('[name="id-split"]').val()
+						let valorPorc = parseFloat($(item).find('[name="porcentagem-splits"]').val())
+						let centrodecusto = $(item).find('[name="id_centro_de_custo"]').val()
+						let categoria = $(item).find('[name="id_categoria"]').val()
+						let calcular_como = $(item).find('[name="calcular_como"]:checked').val()
+						porcTotal += valorPorc
+						if (porcTotal > 100) {
+							porcTotal = porcTotal - valorPorc;
+							valorPorc = (100 - porcTotal);
+							porcTotal += valorPorc
+						} else if (porcTotal < 100) {
+							if ((i + 1) == splits.length) {
+								let valorPorc1 = valorPorc + (100 - porcTotal);
+								porcTotal -= valorPorc
+								porcTotal = porcTotal + valorPorc1
+								valorPorc = valorPorc1
+								// console.log(`o VALOR TOTA ERA: ${}`)
+							}
+						}
+						splits[parseInt(id_split) - 1].valor_split = valorPorc
+						splits[parseInt(id_split) - 1].categoria = categoria
+						splits[parseInt(id_split) - 1].centrodecusto = centrodecusto
+						splits[parseInt(id_split) - 1].modo_divisao = modo_divisao
+						splits[parseInt(id_split) - 1].calcular_como = calcular_como
+						$(item).find('[name="porcentagem-splits"]').val(valorPorc)
+					});
+					$('#splits-pagamentos').text(JSON.stringify(splits));
+
+					// listarSplits();
+					$(this).focus()
+				} else {
+					let allSplits = $('.fpag-item');
+					let valorTotalInformado = unMoney($('[name="valor_pagamento"]').val());
+					let porcTotal = 0
+					allSplits.each((i, item) => {
+						let id_split = $(item).find('[name="id-split"]').val()
+						let valorPorc = unMoney($(item).find('[name="porcentagem-splits"]').val())
+						let centrodecusto = $(item).find('[name="id_centro_de_custo"]').val()
+						let categoria = $(item).find('[name="id_categoria"]').val()
+						let calcular_como = $(item).find('[name="calcular_como"]:checked').val()
+						porcTotal += valorPorc
+						if (porcTotal > valorTotalInformado) {
+							porcTotal = porcTotal - valorPorc;
+							valorPorc = (valorTotalInformado - porcTotal);
+							porcTotal += valorPorc
+						} else if (porcTotal < valorTotalInformado) {
+							if ((i + 1) == splits.length) {
+								let valorPorc1 = valorPorc + (valorTotalInformado - porcTotal);
+								porcTotal -= valorPorc
+								porcTotal = porcTotal + valorPorc1
+								valorPorc = valorPorc1
+							}
+						}
+						splits[parseInt(id_split) - 1].valor_split = valorPorc
+						splits[parseInt(id_split) - 1].categoria = categoria
+						splits[parseInt(id_split) - 1].centrodecusto = centrodecusto
+						splits[parseInt(id_split) - 1].modo_divisao = modo_divisao
+						splits[parseInt(id_split) - 1].calcular_como = calcular_como
+						$(item).find('[name="porcentagem-splits"]').val( number_format(valorPorc, 2, ',', '.'))
+					});
+					$('#splits-pagamentos').text(JSON.stringify(splits))
+					//listarSplits();
+				}
+			})
+			// Mascaras
+			$('.js-vencimento:last').inputmask('99/99/9999');
+			$('.js-vencimento:last').datetimepicker({
+				timepicker: false,
+				format: 'd/m/Y',
+				scrollMonth: false,
+				scrollTime: false,
+				scrollInput: false
+			});
+			$('.js-valor').maskMoney({
+				symbol: '',
+				allowZero: true,
+				showSymbol: true,
+				thousands: '.',
+				decimal: ',',
+				symbolStay: true
+			});
 		})
 	</script>
 	<!-- STYLE  -->

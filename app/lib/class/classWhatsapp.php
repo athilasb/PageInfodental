@@ -58,18 +58,11 @@
 						$_rabbitMQPassword='zapInf0@#';
 						$_rabbitmqFila=$rabbitmqFila;
 
-						/*$dir="";
-						if(getcwd()=="/var/www/html/frentedeloja/endpoint") $dir="../../retaguarda/";
-						else if(getcwd()=="/var/www/html/frentedeloja") $dir="../retaguarda/";
-						else if(getcwd()=="/var/www/html/retaguarda/integracoes/ifood") $dir="../../";
-						else if(getcwd()=="/var/www/html/retaguarda/integracoes/ubereats") $dir="../../";
-						else if(getcwd()=="/var/www/html") $dir="retaguarda/";
-						else if(getcwd()=="/var/www/html/retaguarda/cronjob") $dir="../";
-						else if(getcwd()=="/root") $dir="../var/www/html/retaguarda/";
-						else if(getcwd()=="/var/www/html/vucafood") $dir="../retaguarda/";*/
+						//echo getcwd();die();
 						
 						$dir="../";
 						if(getcwd()=="/root") $dir="../var/www/html/";
+						else if(getcwd()=="/var/www/html/includes/api") $dir="../../";
 
 						require_once $dir.'vendor/autoload.php';
 						require_once $dir.'lib/class/classRabbitMQ.php';
@@ -246,6 +239,7 @@
 			$profissionais = (isset($attr['profissionais']) and !empty($attr['profissionais']))?$attr['profissionais']:'';
 			$agenda_profissionais = (isset($attr['agenda_profissionais']) and !empty($attr['agenda_profissionais']))?$attr['agenda_profissionais']:'';
 			$msg = (isset($attr['msg']) and !empty($attr['msg']))?$attr['msg']:'';
+			$evolucao = (isset($attr['evolucao']) and is_object($attr['evolucao']))?$attr['evolucao']:'';
 
 			if(is_object($paciente)) {
 				$msg = str_replace("[nome]",utf8_encode($paciente->nome), $msg);
@@ -302,6 +296,10 @@
 				$msg = str_replace("[consultorio]",is_object($cadeira)?utf8_encode($cadeira->titulo):"Consultório", $msg);
 			}
 
+			if(is_object($evolucao)) {
+				$msg = str_replace("[linkAnamnese]","https://".$_ENV['NAME'].".infodental.dental/anamnese/".md5($evolucao->id), $msg);
+			}
+
 			return $msg;
 		}
 
@@ -315,6 +313,7 @@
 			if(isset($attr['id_tipo']) and is_numeric($attr['id_tipo']) and isset($this->tipos[$attr['id_tipo']])) {
 				$tipo=$this->tipos[$attr['id_tipo']];
 			}
+
 
 			$cronjob = isset($attr['cronjob']) ? 1 : 0;
 
@@ -379,6 +378,20 @@
 								}
 							}
 						} 
+
+						$evolucao = '';
+						if(isset($attr['id_evolucao']) and is_numeric($attr['id_evolucao'])) {
+							// id_tipo=1: anamnese
+							$sql->consult($_p."pacientes_evolucoes","*","where id=".$attr['id_evolucao']." and id_tipo=1");
+							if($sql->rows) {
+								$evolucao=mysqli_fetch_object($sql->mysqry);
+
+								$sql->consult($_p."pacientes","id,nome,foto_wts,foto,telefone1","where id=$evolucao->id_paciente and lixo=0");
+								if($sql->rows) {
+									$paciente=mysqli_fetch_object($sql->mysqry);
+								}
+							}
+						}
 
 
 					# Envia mensagens (cadastra rabbitmq)
@@ -776,6 +789,82 @@
 								$this->erro="Paciente não encontrado!";
 							}
 						} 
+
+						// Envio de Formulario de Preenchimento da Anamnese
+						else if($tipo->id==11) {
+
+							if(is_object($evolucao)) {
+								if(is_object($paciente)) {
+
+									$msg = $tipo->texto;
+									$numero = telefone($paciente->telefone1);
+
+									if(!empty($numero) and !empty($msg)) {
+
+										// verifica se numero esta na blacklist
+										if(in_array($numero,$this->block)) {
+											$this->erro="Numero bloqueado ($numero)";
+											return false;
+										}
+
+										$attr=array('paciente'=>$paciente,
+													'evolucao'=>$evolucao,
+													'msg'=>$msg);
+										$msg = $this->mensagemAtalhos($attr);	
+										$this->msg=$msg;
+
+										$this->celular=$numero;
+
+										// verifica se ja enviou
+										/*$where="where id_evolucao=$evolucao->id and 
+														id_paciente=$paciente->id and 
+														id_tipo=$tipo->id  and 
+														numero='".addslashes($numero)."' and 
+														data > NOW() - INTERVAL 4 HOUR and lixo=0";
+
+										$sql->consult($_p."whatsapp_mensagens","*",$where);
+
+									
+										if($sql->rows==0) {*/
+											$vSQL="data=now(),
+													id_tipo=$tipo->id,
+													id_paciente=$paciente->id,
+													id_evolucao=$evolucao->id,
+													numero='$numero',
+													mensagem='$msg'";
+
+											$sqlWts->add($_p."whatsapp_mensagens",$vSQL);
+											$id_whatsapp=$sqlWts->ulid;
+
+											// cadastra no rabbitmq
+											$this->wtsRabbitmq($id_whatsapp);
+
+										/*} else {
+											$wtsEnviada=mysqli_fetch_object($sql->mysqry);
+											$id_whatsapp=$wtsEnviada->id;
+
+											if($wtsEnviada->enviado==0) {
+												$this->wtsRabbitmq($id_whatsapp);
+											} else {
+												$this->erro="Esta mensagem já foi enviada!";
+											}
+										}*/
+
+									} else {
+										$this->erro="Paciente #$paciente->id não possui número de whatsapp";
+									}
+
+								} else {
+									$this->erro="Paciente não encontrado";
+								}
+
+
+							} else {
+								$this->erro="Evolução de Anamnese não encontrada";
+							}
+
+
+						}
 
 						else {
 							$this->erro="Nenhum tipo encontrado";
