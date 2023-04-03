@@ -400,7 +400,7 @@
 										<div class="list-toggle-cat">
 											<i class="iconify" data-icon="<?php echo $eTipo->icone;?>"></i>
 											<div>
-												<h1><?php echo utf8_encode($eTipo->titulo);?></h1>
+												<h1><?php echo utf8_encode($eTipo->titulo);?> <?php echo $e->enviarLink==1?' <i class="iconify" data-icon="la:whatsapp" data-height="17" data-inline="true"></i>':'';?></h1>
 												<p>
 													<?php 
 													// se geral (prontuario), usa a data definida no cadastro

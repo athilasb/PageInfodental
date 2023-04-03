@@ -2825,7 +2825,6 @@
 
 		# Tags
 			else if($_POST['ajax']=="asTagPersistir") {
-
 				$tag='';
 				if(isset($_POST['id']) and is_numeric($_POST['id']) and $_POST['id']>0) {
 					$sql->consult($_tableTags,"*","where id='".addslashes($_POST['id'])."'");
@@ -2858,10 +2857,30 @@
 					$_tags=array();
 					$sql->consult($_p."parametros_tags","*","WHERE lixo=0 order by titulo asc");
 					while($x=mysqli_fetch_object($sql->mysqry)) {
-						$_tags[]=$x;
+						$_tags[]=array('id'=>$x->id,'titulo'=>utf8_encode($x->titulo));
 					}
 
+					$tags_selected=[];
+					$tags_selected[]=$id_tag;
+
+
+					if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
+						$sql->consult($_p."agenda","tags","where id=".$_POST['id_agenda']);
+						if($sql->rows) {
+							$agenda=mysqli_fetch_object($sql->mysqry);
+
+							if(!empty($agenda->tags)) {
+								$aux=explode(",",$agenda->tags);
+								foreach($aux as $idTag) {
+									if(is_numeric($idTag)) $tags_selected[]=(int)$idTag;
+								}
+							}
+						}
+					}
+
+
 					$rtn=array('success'=>true,
+								'tags_selected'=>$tags_selected,
 								'tags'=>$_tags);
 				}
 
@@ -3013,6 +3032,13 @@
 
 		// Agenda
 			if(isset($apiConfig['agenda'])) {
+
+				$_tags=array();
+				$sql->consult($_p."parametros_tags","*","WHERE lixo=0 order by titulo asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_tags[]=$x;
+				}
+
 
 				?>
 				<!-- Aside Novo Agendamento -->
@@ -4190,7 +4216,7 @@
 										$(this).addClass("active");							
 									});
 
-									$(".js-btn-aside").click(function() {
+									$(".js-btn-aside-tag").click(function() {
 										$(".aside-tag").fadeIn(100,function() {
 											$(".aside-tag .aside__inner1").addClass("active");
 											tagsListar();
@@ -4372,6 +4398,11 @@
 										<dd>
 											<select class="js-tags" multiple>
 												<option value=""></option>
+												<?php
+												foreach ($_tags as $x) {
+													echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
+												}
+												?>
 											</select>
 
 											<a  href="javascript:;" class="js-btn-aside-tag button" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
@@ -5335,7 +5366,7 @@
 									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 									obj.attr('data-loading',1);
 
-									let data = `ajax=asTagPersistir&titulo=${titulo}&cor=${cor}&id=${id}`;
+									let data = `ajax=asTagPersistir&titulo=${titulo}&cor=${cor}&id=${id}&id_agenda=${id_agenda}`;
 
 									$.ajax({
 										type:'POST',
@@ -5349,11 +5380,24 @@
 
 												if(rtn.tags.length>0) {
 													rtn.tags.forEach(x=>{
-														$('.js-tags').append(`<option value="${x.id}" selected>${x.titulo}</option>`);
+														$('.js-tags').append(`<option value="${x.id}">${x.titulo}</option>`);
 													});
 												}
+
+												if(rtn.tags_selected.length>0) {
+													let cont = 0;
+													rtn.tags_selected.forEach(idTag=>{
+														$('.js-tags').find('option[value='+idTag+']').prop('selected',true);
+
+														cont++;
+														if(cont==rtn.tags_selected.length) {
+															$('.js-tags').trigger('chosen:updated');
+														}
+													})
+												} else {
+													$('.js-tags').trigger('chosen:updated');
+												}
 												
-												$('.js-tags').trigger('chosen:updated');
 												tagsListar();
 												//$('.aside-tag .aside-close').click();
 

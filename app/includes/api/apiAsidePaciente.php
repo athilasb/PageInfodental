@@ -59,7 +59,15 @@
 					if($sql->rows) $profissional=mysqli_fetch_object($sql->mysqry);
 				}
 
+				$enviarLink = (isset($_POST['enviarLink']) and $_POST['enviarLink']==1) ? $_POST['enviarLink'] : 0;
+
 				$evolucao='';
+				if(is_object($paciente) and is_object($anamnese) and is_object($profissional) and $enviarLink==1) {
+					$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id and id_anamnese=$anamnese->id and id_profissional=$profissional->id and enviarLink=1 and id_assinatura=0");
+					if($sql->rows) {
+						$evolucao=mysqli_fetch_object($sql->mysqry);
+					}
+				}
 
 				if(is_object($paciente)) {
 
@@ -86,6 +94,8 @@
 																			id_anamnese=$anamnese->id,
 																			id_paciente=$paciente->id,
 																			id_usuario=$usr->id,
+																			enviarLink=$enviarLink,
+																			id_assinatura=0,
 																			id_profissional=$profissional->id");
 									$id_evolucao=$sql->ulid;
 									
@@ -128,9 +138,21 @@
 										$sql->add($_p."pacientes_evolucoes_anamnese",$vsqlResposta.",data=now(),id_usuario=$usr->id");
 
 									}
-								}
+								}	
 
-								if(generatePDF($id_evolucao)) {
+								if($enviarLink==1) {
+
+									$attr=array('id_tipo'=>11,
+												'id_evolucao'=>$id_evolucao);
+						
+									if($wts->adicionaNaFila($attr)) {
+										$rtn=array('success'=>true,'celular'=>mask($wts->celular));
+									} else {
+										$rtn=array('success'=>false,'error'=>$wts->erro);
+									}
+
+
+								} else if(generatePDF($id_evolucao)) {
 									$rtn=array('success'=>true);
 								} else {
 									$rtn=array('success'=>false,'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
@@ -2401,6 +2423,85 @@
 						anamnese($(this).val());
 					}).trigger('change');
 
+					$('.aside-prontuario-anamnese .js-enviarAnamnese').click(function(){
+						let erro = '';
+						let id_profissional = $('.aside-prontuario-anamnese .js-asideAnamnese-id_profissional').val();
+						let id_anamnese = $('.aside-prontuario-anamnese .js-asideAnamnese-anamnese').val();
+
+						if(id_profissional.length==0) erro='Selecione o Profissional';
+						else if(id_anamnese.length==0) erro='Selecione a Anamnese';
+
+						if(erro.length>0) {
+							swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+						} else {
+
+							let obj = $(this);
+							let obHTMLAntigo = $(this).html();
+
+							if(obj.attr('data-loading')==0) {
+								
+								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+								obj.attr('data-loading',1);
+
+								let data = `ajax=asPAnamnesePersistir&id_profissional=${id_profissional}&id_anamnese=${id_anamnese}&id_paciente=${id_paciente}&enviarLink=1`;
+
+								let campos = {};
+								$('.aside-prontuario-anamnese .js-form-anamnese').find('input,textarea').each(function(index,el){
+
+									let inputType = $(el).attr('type');
+									let name = $(el).attr('name');
+									let tag = $(el).prop('tagName');
+									let val = $(el).val();
+
+									
+
+									if(tag=="TEXTAREA") {
+										campos[name]=val;
+									} else if (tag=="INPUT") {
+										if(inputType=='radio') {
+											if($(el).prop('checked')===true) {
+												campos[name]=val;
+											}
+										}
+									}
+
+
+								});
+								data+=`&${serialize(campos)}`;
+
+
+								$.ajax({
+										type:'POST',
+										data:data,
+										url:baseURLApiAsidePaciente,
+										success:function(rtn) {
+											if(rtn.success) {
+												$('.aside-close').click();
+												
+												swal({title: "Sucesso!", html:true, text: 'Link enviado para o número <b>'+rtn.celular+'</b> com sucesso', type:"success", confirmButtonColor: "#424242"},function(){
+														document.location.reload();
+												});
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+											}
+											
+										},
+										error:function() {
+											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										} 
+								}).done(function(){
+									obj.html(obHTMLAntigo);
+									obj.attr('data-loading',0);
+								});
+
+							}
+
+						}
+
+					});
+
 					$('.aside-prontuario-anamnese .js-salvarAnamnese').click(function(){
 			
 						let erro = '';
@@ -2515,8 +2616,6 @@
 
 							}
 
-
-
 						}
 					})
 				});
@@ -2537,7 +2636,7 @@
 							<div class="filter-group">
 								<div class="filter-form form">
 									<dl>
-										<dd><button type="button" class="button button_main js-salvarAnamnese" data-loading="0"><i class="iconify" data-icon="la:whatsapp"></i> <span>Enviar para paciente</span></button></dd>
+										<dd><button type="button" class="button button_main js-enviarAnamnese" data-loading="0"><i class="iconify" data-icon="la:whatsapp"></i> <span>Enviar para paciente</span></button></dd>
 									</dl>
 									<dl>
 										<dd><button type="button" class="button button_main js-salvarAnamnese" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
