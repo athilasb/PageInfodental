@@ -147,7 +147,7 @@
 	$evolucoesIds=array();
 	$evolucoesTodosIds=array();
 	//$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id order by data desc");
-	$sql->consultPagMto2($_p."pacientes_evolucoes","*",10,"where id_paciente=$paciente->id and lixo=0 and receita_assinada>'0000-00-00 00:00:00' order by data desc","",15,"pagina",$_page."?".$url."&pagina=");
+	$sql->consultPagMto2($_p."pacientes_evolucoes","*",10,"where id_paciente=$paciente->id and lixo=0 order by data desc","",15,"pagina",$_page."?".$url."&pagina=");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$evolucoes[]=$x;
 		$evolucoesIds[$x->id_tipo][]=$x->id;

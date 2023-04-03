@@ -2537,6 +2537,9 @@
 							<div class="filter-group">
 								<div class="filter-form form">
 									<dl>
+										<dd><button type="button" class="button button_main js-salvarAnamnese" data-loading="0"><i class="iconify" data-icon="la:whatsapp"></i> <span>Enviar para paciente</span></button></dd>
+									</dl>
+									<dl>
 										<dd><button type="button" class="button button_main js-salvarAnamnese" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
 									</dl>
 								</div>								
