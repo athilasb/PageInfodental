@@ -4713,13 +4713,8 @@
 
 	# PROCEDIMENTOS
 		if(isset($apiConfig['procedimentos'])) {	
-
-			
-
-				
 			?>
 			<script type="text/javascript">
-
 				var procedimentos = [];
 				var id_procedimento_aevoluir = 0;
 
@@ -5188,7 +5183,7 @@
 				
 				<div class="aside__inner1">
 					<header class="aside-header">
-						<h1>Procedimentos</h1>
+						<h1>Procedimentos </h1>
 						<a href="javascript:;" class="aside-header__fechar aside-close-procedimentos"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 					</header>
 
