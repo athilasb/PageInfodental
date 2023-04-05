@@ -1,4 +1,3 @@
-
 # envia mensagens
 #0 7,8,9,10,11,12,13,14,15,16,17,18,19,20 * * * /usr/local/bin/php /var/www/html/cronjob/cronWhatsapp.php > /tmp/cronwhatsapp
 0,30 * * * * /usr/local/bin/php /var/www/html/cronjob/cronWhatsapp.php > /tmp/cronwhatsapp
