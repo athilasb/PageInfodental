@@ -105,7 +105,8 @@
 				}
 			}
 		}
-
+        echo "yes";
+        die();
 	}
 
 	include_once("../includes/assinaturas/assinatura-head.php");
@@ -123,22 +124,6 @@
 		<script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
 		<script src="../js/jquery.js"></script>
 	</head>
-	
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-	<script defer type="text/javascript" src="../js/jquery.slick.js"></script>
-	<script defer type="text/javascript" src="../js/jquery.datetimepicker.js"></script>
-	<script defer type="text/javascript" src="../js/jquery.chosen.js"></script>
-	<script defer type="text/javascript" src="../js/jquery.fancybox.js"></script>
-	<script defer type="text/javascript" src="../js/jquery.inputmask.js"></script>
-	<script defer type="text/javascript" src="../js/jquery.tablesorter.js"></script>
-	<script defer type="text/javascript" src="../js/jquery.chart.js"></script>
-	<script defer type="text/javascript" src="../js/jquery.chart-utils.js"></script>
-	<script type="text/javascript" src="../js/jquery.sweetalert.js"></script>
-	<script type="text/javascript" src="../js/jquery.validacao.js"></script>
-	<script type="text/javascript" src="../js/jquery.funcoes.js"></script>
-	<script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
-
-
 
 	<body>
 

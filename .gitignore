@@ -4,3 +4,4 @@
 # arquivo de configuração do Sublime
 sftp-config.json
 docker-compose.yml
+app/migracao/
