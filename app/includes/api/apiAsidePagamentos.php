@@ -904,7 +904,7 @@ if (isset($_POST['ajax'])) {
 						} else {
 							swal({
 								title: "Erro!",
-								text: "Algum erro ocorreu durante a busca por este pagamento",
+								text: "Algum erro ocorreu durante a busca deste pagamento",
 								html: true,
 								type: "error",
 								confirmButtonColor: "#424242"
