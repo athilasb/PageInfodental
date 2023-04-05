@@ -1,5 +1,4 @@
 <?php
-$dir = "../";
 $doc_status = "0";
 
 require_once("../lib/conf.php");

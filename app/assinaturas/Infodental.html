@@ -1,0 +1,250 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:og="http://ogp.me/ns#"
+      xmlns:fb="http://www.facebook.com/2008/fbml">
+
+<head>
+<meta charset="utf-8">
+
+<title>Infodental</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="description" content="Infodental">
+<meta name="author" content="WLIB Soluções Web - www.wlib.com.br">
+
+<meta property="og:title" content="" />
+<meta property="og:description" content="Infodental" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="http://aws.wlib.com.br/studiodental.dental/html/novo_html/assinatura-eletronica.php" />
+<meta property="og:image" content="http://aws.wlib.com.br/img/facebook.png" />
+<meta property="og:image:width" content="1300" />
+<meta property="og:image:height" content="700" />
+<meta property="og:site_name" content="Infodental" />
+<meta property="fb:admins" content="1066108721" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<link rel="stylesheet" type="text/css" href="css/apps.css" />
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script defer type="text/javascript" src="js/jquery.slick.js"></script>
+<script defer type="text/javascript" src="js/jquery.datetimepicker.js"></script>
+<script defer type="text/javascript" src="js/jquery.chosen.js"></script>
+<script defer type="text/javascript" src="js/jquery.fancybox.js"></script>
+<script defer type="text/javascript" src="js/jquery.inputmask.js"></script>
+<script defer type="text/javascript" src="js/jquery.tablesorter.js"></script>
+<script defer type="text/javascript" src="js/jquery.chart.js"></script>
+<script defer type="text/javascript" src="js/jquery.chart-utils.js"></script>
+<script type="text/javascript" src="js/jquery.sweetalert.js"></script>
+<script type="text/javascript" src="js/jquery.validacao.js"></script>
+<script type="text/javascript" src="js/jquery.funcoes.js"></script>
+<script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
+
+</head>
+
+<body>
+
+<section class="wrapper">
+<section class="sign">
+
+	<header class="sign-header">
+		<img src="img/logo-cliente.png" alt="" width="484" height="68" />
+	</header>
+
+	<article class="sign-article">
+		<div class="sign-info">
+			<h1>Assinatura Eletrônica</h1>
+			<p>Data: <strong>25/12/2023</strong></p>
+			<p>Clínica: <strong>Studio Dental</strong></p>
+			<p>Tipo de Documento: <strong>Receituário</strong></p>
+			<p>Profissional: <strong>Kroner Costa</strong></p>
+			<p>Paciente: <strong>Pedro Henrique Saddi de Azevedo</strong></p>
+		</div>
+		<div class="sign-doc">
+			<h1>Documento</h1>
+			<object data='teste.pdf#view=fit&toolbar=0' toolbar="0">			    
+			    <p><a href="teste.pdf" class="button"><i class="iconify" data-icon="fluent:document-24-regular"></i><span>Baixar documento</span></a></p>
+			</object>
+		</div>
+	</article>
+
+	<footer class="sign-footer">
+		<form method="post" class="sign-form">
+			<div class="sign-form-status">
+				<h1 style="background:var(--laranja)">Status: <strong>Aguardando assinatura</strong></h1>
+			</div>
+			<div class="form js-passo1">
+				<p>Para aceitar este documento, siga os passos a seguir:</p>
+				<div class="colunas">
+					<dl>
+						<dt>CPF</dt>
+						<dd><input type="tel" name="" class="cpf" /></dd>
+					</dl>
+					<dl>
+						<dt>Data de Nascimento</dt>
+						<dd><input type="tel" name="" class="data" /></dd>
+					</dl>
+				</div>
+				<a href="javascript:;" class="button button_lg button_main" onclick="$('.js-passo1').hide(); $('.js-passo2').show();">Avançar</a>
+			</div>
+			
+			<div class="form sign-form-canva js-passo2" style="display:none;">
+				<p>Desenhe sua assinatura com o mouse ou o dedo nesta caixa:</p>
+	            <canvas id="canvas" style="width: 100%;">
+	                <p> painel de assinatura </p>
+	            </canvas>
+	            <a href="javascript:;" class="button button_lg button_full" id="canvas-clear"><i class="iconify" data-icon="fluent:eraser-24-regular"></i><span>Apagar assinatura</span></a>
+	            <a href="javascript:;" class="button button_lg button_main">Concluir</a>
+	        </div>
+	        
+		</form>
+	</footer>
+
+</section>
+
+<script>
+    const canvas = $('#canvas')[0];
+    const container = $(".canvas_container")[0];
+    const ctx = canvas.getContext('2d');
+    let pressed = false;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+
+    //calculando a posição do mouse relativo ao bitmap do canvas
+    //https://stackoverflow.com/questions/17130395/real-mouse-position-in-canvas/17130415#17130415
+    function getmouse(evt) {
+        var rect = canvas.getBoundingClientRect();
+        var scalex = canvas.width / rect.width;
+        var scaley = canvas.height / rect.height;
+        return {
+            x: (evt.clientX - rect.left) * scalex,
+            y: (evt.clientY - rect.top) * scaley
+        };
+    }
+
+    function draw(e) {
+        if (!pressed) { return; }
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        var positions = getmouse(e);
+        ctx.lineTo(positions.x, positions.y);
+        ctx.stroke();
+    }
+    
+    //para mobile
+    canvas.addEventListener("touchmove", (e)=>{
+        e.preventDefault();
+        console.log(`e.touches[0].clientX: ${e.touches[0].clientX}
+        e.touches[0].clientY: ${e.touches[0].clientY}`);
+        draw(e.touches[0]);
+    });
+    canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault(); //impedir o envento de scrool 
+        ctx.beginPath();
+        pressed = true;
+    });
+    canvas.addEventListener("touchend", (e) => {
+        pressed = false;
+        ctx.stroke();
+    });
+
+    //encontar uma forma de parar de desenhar quando o usuário inicia o desenho mas sai da area do canvas (enquanto o botão ainda está pressionado);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mousedown", () => {
+        ctx.beginPath();
+        pressed = true;
+    });
+    canvas.addEventListener("mouseup", (e) => {
+        pressed = false;
+        ctx.stroke();
+    });
+    document.getElementById("canvas-clear").addEventListener("click", () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+</script>
+<script>
+    if($(".button.button_main").attr('data-loading')==2){
+        alert("Esse documento já foi assinado");
+    }
+    
+    function enviar() {
+        if( $(".button.button_main").attr('data-loading')==0){
+
+            let cpf;
+            let data;
+            let aux =  $('#data')[0].value;
+            $(".button.button_main").attr('data-loading', 1);
+
+            aux = aux.split('/');     
+            if( aux.length != 3){
+                alert("campo data está vazio ou incompleto");
+                alert(aux.length);
+            }
+
+            cpf = $('#cpf')[0].value.replaceAll('.', '').replace('-', '');
+            data = aux[2] + '-' + aux[1] + '-' + aux[0];
+
+            if(cpf == ''){
+                alert('campo cpf vazio');
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    $.ajax({
+                        type: "POST",
+                        data:{
+                            'conf': true,
+                            'cpf_ent': cpf,
+                            'data': data,
+                            'canvas-url': canvas.toDataURL('image/png'),
+                            'latitude': pos.coords.latitude,
+                            'longitude': pos.coords.longitude,
+                            'aprox': pos.coords.accuracy,
+                            'user_agent': navigator.userAgent
+                        },
+                        async: true,
+                        dataType: 'JSON',
+                        success: function (rnt) {
+                            
+                            console.log(rnt);
+                            if(rnt.status=="success")   {
+                                Swal.fire({title: "Sucesso!", text: rnt.message, type:"success", confirmButtonColor: "#424242"});
+                                $(".button.button_main").attr('data-loading', 2);
+
+                            }else{
+                                Swal.fire({title: "Erro!", text: rnt.message, type:"error", confirmButtonColor: "#424242"});
+                            }
+                        },
+                    });
+                },
+                (err) => {
+                // swal();
+                console.log(`ERROR(${err.code}): ${err.message}`);
+                if(err.code ==1){
+                    alert("Atenção; Você precisa concordar com a coleta da localização");
+                }else{
+                    alert("Erro; Algum erro desconhecido foi encontrado");
+                }
+                },
+                {
+                    enableHighAccuracy: true, 
+                    timeout: Infinity,
+                    maximumAge: 0 
+                }
+            );
+        }else if($(".button.button_main").attr('data-loading')==2){
+            alert("Esse documento já foi assinado");
+        }else{
+            alert("Assinatura está sendo processada");
+        }
+    }
+
+</script>
+
+</section>
+
+</body>
+</html>
