@@ -29,8 +29,6 @@
 			$val = isset($_POST['val']) ? $_POST['val'] : '';
 			$tipo = isset($_POST['tipo']) ? $_POST['tipo'] : '';
 
-
-
 			$erro='';
 			if(empty($evolucao)) $erro='Evolução não encontrada!';
 			else if(empty($paciente)) $erro='Paciente não encontrado!';
@@ -60,8 +58,6 @@
 		echo json_encode($rtn);
 		die();
 	}
-
-
 
 	# dados da clinica
 		$clinica = $logo = '';
@@ -105,11 +101,9 @@
 				}
 			}
 		}
-
 	}
 
-	include_once("../includes/assinaturas/assinatura-head.php");
-
+	require_once("../includes/assinaturas/assinatura-head.php");
 ?>
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -137,8 +131,6 @@
 	<script type="text/javascript" src="../js/jquery.validacao.js"></script>
 	<script type="text/javascript" src="../js/jquery.funcoes.js"></script>
 	<script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
-
-
 
 	<body>
 
@@ -272,7 +264,7 @@
 									</table>
 								</div>
 									<?php 
-										include_once("../includes/assinaturas/assinatura-canvas.php");
+										require_once("../includes/assinaturas/assinatura-canvas.php");
 									?>
 								</form>
 						</section>

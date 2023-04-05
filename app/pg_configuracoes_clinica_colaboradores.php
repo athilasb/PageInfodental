@@ -287,6 +287,8 @@
 			$rtn=array('success'=>true);
 			
 
+		} else if($_POST['ajax' == "rubrica"]){
+			
 		}
 
 		header("Content-type: application/json");
@@ -927,6 +929,65 @@
 									<input type="hidden" name="lat" id="lat" style="display:none;" />
 								</fieldset>
 
+
+								<!--Rúbrica/assinatura -->
+								<fieldset>
+									<section class="sign">
+										<footer class="sign-footer">
+											<form method="post" class="signature">
+												<div class="form sign-form-canva">	
+													<canvas id="canvas" style="width: 100%;">
+														<p> painel de assinatura </p>
+													</canvas>
+													<p>Desenhe sua assinatura nesta caixa:</p>
+
+													<a href="javascript:;" class="button button_lg button_full" id="canvas-clear"><i class="iconify"
+															data-icon="fluent:eraser-24-regular"></i><span>Apagar assinatura</span></a>
+													<a href="javascript:;" class="button button_lg button_main concluir">Concluir</a>
+												</div>
+											</form>
+										</footer>
+									</section>
+
+									<!--adicionando a funcionalidade de assinatura-->
+									<script type="text/javascript" src="../includes/assinaturas/canvas.js"></script>
+									<script>
+										$(".button.concluir").onClick(() => {
+											$.ajax({
+												type: "POST",
+												data: {		
+													'ajax' = "rubrica",
+													'canvas-url': canvas.toDataURL('image/png')
+												},
+												success: (rtn) => {
+													console.log(rtn);
+													if (rtn.status == "success") {
+														swal({ title: "Sucesso!", text: rtn.message, type: "success", confirmButtonColor: "#424242" });
+														btn.attr('data-loading', 2);
+														location.reload();
+													} else {
+														swal({ title: "Erro!", text: rtn.message, type: "error", confirmButtonColor: "#424242" });
+													}
+												},
+
+												error: (rtn) => {
+													console.log(`ERROR(${err.code}): ${err.message}`);
+													if (err.code == 1) {
+														swal({ title: "Erro!", 
+															text: "Você precisa concordar com a coleta da localização", 
+															type: "error", 
+															confirmButtonColor: "#424242" });
+													} else {
+														swal({ title: "Erro!", 
+															text: "Algum erro desconhecido foi encontrado", 
+															type: "error", 
+															confirmButtonColor: "#424242" });
+													}	
+												}
+											});
+										});
+									</script>
+								</fieldset>
 								<?php /*<fieldset>
 									<legend>Certificação Digital</legend>
 
