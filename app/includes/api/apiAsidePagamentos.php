@@ -103,6 +103,7 @@ if (isset($_POST['ajax'])) {
 			$rtn = array('success' => false, 'error' => 'Pagamento não encontrado!');
 		}
 	} else if ($_POST['ajax'] == "getPagamentosBaixas") {
+
 		if (is_object($pagamento)) {
 			// formas de pagamento
 			$_formasDePagamento = array();
@@ -151,7 +152,7 @@ if (isset($_POST['ajax'])) {
 				"valor_taxa" => $pagamento->valor_taxa,
 				"taxa_cartao" => $pagamento->taxa_cartao,
 				"pago" => $pagamento->pago,
-				"titulo" => $tratamento->titulo,
+				"titulo" => utf8_encode($tratamento->titulo),
 				"saldoApagar" => $saldoApagar,
 				"baixas" => $baixas,
 			);
@@ -904,7 +905,7 @@ if (isset($_POST['ajax'])) {
 						} else {
 							swal({
 								title: "Erro!",
-								text: "Algum erro ocorreu durante a busca deste pagamento",
+								text: "Algum erro ocorreu durante a busca por este pagamento",
 								html: true,
 								type: "error",
 								confirmButtonColor: "#424242"

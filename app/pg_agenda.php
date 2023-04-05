@@ -1076,15 +1076,20 @@
 			let dia = d2(date.getDate());
 			let mes = d2(date.getMonth()+1);
 			let ano = date.getFullYear();
-			data = `${dia}/${mes}/${ano}`;
 
 			let agendaHora='';
 			if(dataHora.length>0) {
 				let dt = new Date(dataHora);
 				let dtHora = d2(dt.getHours());
 				let dtMin = d2(dt.getMinutes());
+				dia = d2(dt.getDate());
+				mes = d2(dt.getMonth()+1);
+				ano = d2(dt.getFullYear());
 				agendaHora = `${dtHora}:${dtMin}`;
 			}
+			data = `${dia}/${mes}/${ano}`;
+
+			//console.log(dataHora+'-> '+data+' '+agendaHora);
 			
 			
 			$('#js-aside-add select[name=id_status]').val(1);
@@ -1619,6 +1624,11 @@
 									let id_cadeira = info.resource ? info.resource._resource.id : 0;
 									let data = info.dateStr;
 									novoAgendamento(id_cadeira,data);
+								} else {
+
+									let data = info.dateStr;
+									novoAgendamento(0,data);
+
 								}
 								
 							},
