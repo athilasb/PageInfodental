@@ -1,4 +1,5 @@
 <?php
+// teste
 	if(isset($_GET['instancia'])) {
 		setcookie("infoName", $_GET['instancia'], time() + 3600*24, "/");
 		header("Location: ./");
