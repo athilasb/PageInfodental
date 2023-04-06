@@ -955,6 +955,36 @@
 			$initDate=$ano."-".$mes."-".$dia;
 		}
 	}
+
+	$data_inicio=date('Y-m-d 00:00:00');
+	$data_fim=date('Y-m-t 23:59:59');
+
+	$where = "where agenda_data>='$data_inicio' and agenda_data<='$data_fim' and lixo=0";
+
+	$registros=$pacientesIds=$cadeirasIds=[];
+	$sql->consult($_p."agenda","*",$where);
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$registros[date('Ymd',strtotime($x->agenda_data))][]=$x;
+		$pacientesIds[]=$x->id_paciente;
+		$cadeirasIds[]=$x->id_cadeira;
+	}
+
+
+	$_pacientes=[];
+	if(count($pacientesIds)>0) {
+		$sql->consult($_p."pacientes","id,nome","where id in (".implode(",",$pacientesIds).")");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$_pacientes[$x->id]=$x;
+		}
+	}
+
+	$_cadeiras=[];
+	if(count($cadeirasIds)>0) {
+		$sql->consult($_p."parametros_cadeiras","id,titulo","where id in (".implode(",",$cadeirasIds).")");
+		while($x=mysqli_fetch_object($sql->mysqry)) {
+			$_cadeiras[$x->id]=$x;
+		}
+	}
 ?> 
 
 	<div class="cal-date-floater">
@@ -963,490 +993,7 @@
 	<h2 class="js-cal-titulo-dia"></h2>
 	</div>
 
-	<script>
-		var calendarView = 'resourceTimeGridOneDay';
-
-		var filtroStatus=``;
-		var filtroProfissional = <?php echo (isset($_GET['id_profissional']) and is_numeric($_GET['id_profissional']))?$_GET['id_profissional']:0;?>;
-		var filtroCadeira = <?php echo (isset($_GET['id_cadeira']) and is_numeric($_GET['id_cadeira']))?$_GET['id_cadeira']:0;?>;
-		
-		const verificaAgendamento = () => {
-			let profissionais = $('.js-form-agendamento select.js-profissionais').val();
-			let id_cadeira = $('.js-form-agendamento select[name=id_cadeira]').val();
-			let id_paciente = $('.js-form-agendamento select[name=id_paciente]').val();
-			let agenda_data = $('.js-form-agendamento input[name=agenda_data]').val();
-			let agenda_hora = $('.js-form-agendamento input[name=agenda_hora]').val();
-
-			let data = `ajax=agendamentoVerificarDisponibilidade&profissionais=${profissionais}&id_cadeira=${id_cadeira}&agenda_data=${agenda_data}&agenda_hora=${agenda_hora}&id_paciente=${id_paciente}`;
-			
-
-			$.ajax({
-				type:'POST',
-				url:'box/boxAgendamento.php',
-				data:data,
-				success:function(rtn) {
-					if(rtn.success) {
-						$('#box-validacoes dd').remove();
-						rtn.validacao.forEach(x=> {
-							let item = ``;
-							if(x.atende==1) {
-								item = `<dd style="color:green"><i class="iconify" data-icon="bx-bx-check"></i> ${x.profissional} atende neste dia/horário</dd>`;
-							} else {
-								item = `<dd style="color:red"><span class="iconify" data-icon="ion:alert-circle-sharp"></span> ${x.profissional} não atende neste dia/horário</dd>`;
-							}
-							$('#box-validacoes').append(item);
-						})
-					} else {
-						$('#box-validacoes dd').remove();
-					}
-				},
-				error:function() {
-					$('#box-validacoes dd').remove();
-				}
-			})
-		}
-
-		const calendarioVisualizacaoData = () => { 
-			
-			let date = calendar.getDate();
-
-			let mesString='';
-
-			if(date.getMonth()==0) mesString='jan'; 
-			else if(date.getMonth()==1) mesString='fev'; 
-			else if(date.getMonth()==2) mesString='mar'; 
-			else if(date.getMonth()==3) mesString='abr'; 
-			else if(date.getMonth()==4) mesString='mai'; 
-			else if(date.getMonth()==5) mesString='jun'; 
-			else if(date.getMonth()==6) mesString='jul'; 
-			else if(date.getMonth()==7) mesString='ago'; 
-			else if(date.getMonth()==8) mesString='set'; 
-			else if(date.getMonth()==9) mesString='out'; 
-			else if(date.getMonth()==10) mesString='nov'; 
-			else if(date.getMonth()==11) mesString='dez'; 
-
-			if(date.getUTCDay()==0) diaString='domingo';
-			else if(date.getUTCDay()==1) diaString='segunda-feira';
-			else if(date.getUTCDay()==2) diaString='terça-feira';
-			else if(date.getUTCDay()==3) diaString='quarta-feira';
-			else if(date.getUTCDay()==4) diaString='quinta-feira';
-			else if(date.getUTCDay()==5) diaString='sexta-feira';
-			else if(date.getUTCDay()==6) diaString='sábado';
-
-			let dateString = date.getDate()+" "+mesString+" "+date.getFullYear();
-
-			//console.log(date.getUTCDay()+' => '+dateString+' => '+calendar.view.title);
-			//console.log(date.getTimezoneOffset());
-
-			$('.js-cal-titulo-diames').html(date.getDate()>=9?date.getDate():`0${date.getDate()}`);
-			$('.js-cal-titulo-mes').html(mesString);
-			$('.js-cal-titulo-dia').html(diaString);
-		}
-
-		const dia = (d) => {
-			if(d==0) return "dom.";
-			else if(d==1) return "seg.";
-			else if(d==2) return "ter.";
-			else if(d==3) return "qua.";
-			else if(d==4) return "qui.";
-			else if(d==5) return "sex.";
-			else if(d==6) return "sáb.";
-		}
-
-		const unMes = (m) => {
-			m = m.toUpperCase();
-			if(m=="JANEIRO") return "0";
-			else if(m=="FEVEREIRO") return "1";
-			else if(m=="MARÇO") return "2";
-			else if(m=="ABRIL") return "3";
-			else if(m=="MAIO") return "4";
-			else if(m=="JUNHO") return "5";
-			else if(m=="JULHO") return "6";
-			else if(m=="AGOSTO") return "7";
-			else if(m=="SETEMBRO") return "8";
-			else if(m=="OUTUBRO") return "9";
-			else if(m=="NOVEMBRO") return "10";
-			else if(m=="DEZEMBRO") return "11";
-		}
-
-		const novoAgendamento = (id_cadeira,dataHora) => {
-
-		
-			let date = calendar.getDate();
-			let dia = d2(date.getDate());
-			let mes = d2(date.getMonth()+1);
-			let ano = date.getFullYear();
-
-			let agendaHora='';
-			if(dataHora.length>0) {
-				let dt = new Date(dataHora);
-				let dtHora = d2(dt.getHours());
-				let dtMin = d2(dt.getMinutes());
-				dia = d2(dt.getDate());
-				mes = d2(dt.getMonth()+1);
-				ano = d2(dt.getFullYear());
-				agendaHora = `${dtHora}:${dtMin}`;
-			}
-			data = `${dia}/${mes}/${ano}`;
-
-			//console.log(dataHora+'-> '+data+' '+agendaHora);
-			
-			
-			$('#js-aside-add select[name=id_status]').val(1);
-			$('#js-aside-add select[name=duracao]').val(``);
-			$('#js-aside-add input[name=telefone1]').val(``);
-			$('#js-aside-add input[name=agenda_duracao]').val(30);
-			$('#js-aside-add textarea[name=obs]').val(``);
-			$('#js-aside-add select[name=profissionais] option:checked').prop('checked',false).trigger('chosen:updated');
-			$('#js-aside-add input[name=agenda_data]').val(data);
-			$('#js-aside-add input[name=agenda_hora]').val(agendaHora);
-			$('#js-aside-add select[name=id_cadeira]').val(id_cadeira);
-			$('#js-aside-add select[name=id_paciente]').val(null).trigger('change');
-			$('#js-aside-add input[name=alteracao]').val(0);
-
-
-			$("#js-aside-add").fadeIn(100,function() {
-				$("#js-aside-add .aside__inner1").addClass("active");
-				$("#js-aside-add .js-tab a:eq(0)").click();
-			});
-
-			$('#js-aside-add .js-profissionais').chosen('destroy');
-			$('#js-aside-add .js-profissionais').chosen();
-			$('#js-aside-add .js-profissionais').trigger('chosen:updated');
-
-			$('#js-aside-add .js-tags').chosen('destroy');
-			$('#js-aside-add .js-tags').chosen();
-			$('#js-aside-add .js-tags').trigger('chosen:updated');
-			agendamentosProfissionais(`add`);
-			checklistItens();
-		}
-		
-		const formatTemplate = (state) => {
-			if (!state.id) return state.text;
-			var baseUrl = "/user/pages/images/flags";
-			infoComplementar=``;
-			infoComplementar+= !! state.cpf ? ` - CPF: ${state.cpf}` : '';
-			infoComplementar+= !! state.telefone ? ` - Tel.: ${state.telefone}` : '';
-			var $state = $('<span style="display:flex; align-items:center; gap:.5rem;"><img src="'+state.ft+'" style="width:40px;height:40px;border-radius:100%;" /> ' + state.text + infoComplementar + '</span>');
-			return $state;
-		}
-
-		const formatTemplateSelection = (state) => {
-			if (!state.id) return state.text;
-			var baseUrl = "/user/pages/images/flags";
-			infoComplementar=``;
-			infoComplementar+= !! state.cpf ? ` - CPF: ${state.cpf}` : '';
-			infoComplementar+= !! state.telefone ? ` - Tel.: ${state.telefone}` : '';
-			var $state = $('<span><img src="img/ilustra-perfil.png" style="width:30px;height:30px;border-radius:50px;" /> ' + state.text + infoComplementar + '</span>');
-			return $state;
-		}
-
-		const checklistItens = () => {
-			$('#js-aside-add .js-checklist-itens').html('');
-			let data = `ajax=checklistItens`;
-			$.ajax({
-				type:"POST",
-				data:data,
-				success:function(rtn){ 
-					if(rtn.success) {
-						rtn.regs.forEach(x=>{
-							$(`#js-aside-add .js-checklist-itens`).append(`<div class="colunas3">
-								<dl>	
-									<dd><label><input type="checkbox" name="checklist-${x.id}" class="input-switch" />${x.titulo}</label></dd>
-								</dl>
-								<dl class="dl2">
-									<dd><input type="text" name="checklist_descricao-${x.id}" placeholder="descrição" /></dd>
-								</dl>
-							</div>`);
-						});
-					}
-				}
-			});
-		}
-
-		$(function(){
-			$('#js-aside-add input[name=agenda_data]').datetimepicker({
-												timepicker:false,
-												format:'d/m/Y',
-												scrollMonth:false,
-												scrollTime:false,
-												scrollInput:false,
-											});
-
-			$('#js-aside-add input[name=agenda_hora]').datetimepicker({
-				  datepicker:false,
-			      format:'H:i',
-			      pickDate:false
-			});
-
-			$('input[name=telefone1],.js-asPaciente-telefone1').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
-												let countryOut = country || '  ';
-												$(this).parent().parent().find('.js-country').html(countryOut);
-											}).trigger('keyup');
-
-			$('#js-aside-add select[name=id_paciente]').select2({
-				ajax: {
-					url: 'pg_agenda.php?ajax=buscaPaciente',
-					data: function (params) {
-							var query = {
-							search: params.term,
-							type: 'public'
-						}
-						// ?search=[term]&type=public
-						return query;
-					},
-					processResults: function (data) {
-						// Transforms the top-level key of the response object from 'items' to 'results'
-						return {
-							results: data.items
-						};
-					}
-
-				},
-				templateResult:formatTemplate,
-				//	templateSelection:formatTemplateSelection,
-				//dropdownParent: $(".modal")
-			});
-
-			$('#js-aside-add select[name=id_paciente]').on('select2:select',function(e){
-				 var telefone = e.params.data.telefone ? e.params.data.telefone : '';
-				 $('#js-aside-add input[name=telefone1]').val(telefone).trigger('change');
-    			
-			});
-
-			$('input[name=agenda_data]').change(function(){
-				let val = $(this).val().split('/');
-				let valAno = val[2];
-				let valMes = val[1];
-				let valDia = val[0];
-				let valDate = `${valAno}, ${valMes}, ${valDia}`;
-
-				let dataAgenda = new Date(`${valAno}, ${valMes}, ${valDia}`);
-				let dataHoje = new Date();
-
-				//console.log(dataAgenda+' '+dataHoje);
-				if(dataAgenda>dataHoje) {
-					$(this).parent().parent().parent().parent().find('select[name=id_status]').find('option[value=7],option[value=6],option[value=5],option[value=3]').prop('disabled',true);
-				} else {
-					$(this).parent().parent().parent().parent().find('select[name=id_status]').find('option[value=7],option[value=6],option[value=5],option[value=3]').prop('disabled',false);
-				}
-			});
-
-			$('.m-produtos').next().show();	
-
-			$('.js-calendario').datetimepicker({
-				timepicker:false,
-				format:'d F Y',
-				scrollMonth:false,
-				scrollTime:false,
-				scrollInput:false,
-				onChangeDateTime:function(dp,dt) {
-					let val = dt.val();
-					let aux = val.split(' ');
-					aux[1]=unMes(aux[1]);
-					let data = `${aux[2]}-${(aux[1])}-${aux[0]}`;
-					//console.log('->'+data);
-					let dtJS = new Date(aux[2],aux[1],aux[0]);
-					let newDt = new Date(aux[2],aux[1],aux[0]);
-					if(calendarView=="resourceTimeGridOneDay" || calendarView=="dayGridMonth") {
-
-					} else {
-						newDt.setDate(newDt.getDate() - (dtJS.getDay()-1));
-					}
-					//console.log(newDt);
-					calendar.gotoDate(newDt);
-					calendarioVisualizacaoData();
-				}
-			});
-
-			$('.js-view-a').click(function() {
-				let dtJS = new Date(calendar.getDate());
-				let newDt = new Date(calendar.getDate());
-				newDt.setDate(newDt.getDate() - (dtJS.getDay()-1));
-
-				let view = $(this).attr('data-view');
-				calendar.changeView(view);
-				calendarioVisualizacaoData();
-
-
-				$('.js-view-a').removeClass('active');
-				$(this).addClass('active');
-				calendarView=view;
-
-				if(view=='resourceTimeGridOneDay') {
-					//console.log('today');
-					calendar.refetchEvents();
-					calendar.today();
-					calendarioVisualizacaoData();
-
-					$('#js-agendamentosDesmarcados').parent().parent().show();
-				} else {
-					$('#js-agendamentosDesmarcados').parent().parent().hide();
-					calendar.gotoDate(newDt);
-				}
-
-				$('.js-calendario').val(calendar.view.title)
-			});
-
-			$('select.js-view').change(function(){
-
-				let dtJS = new Date(calendar.getDate());
-				let newDt = new Date(calendar.getDate());
-				newDt.setDate(newDt.getDate() - (dtJS.getDay()-1));
-
-				let view = $(this).val();
-				calendar.changeView(view);
-				calendarioVisualizacaoData();
-
-
-				
-				if(view=='resourceTimeGridOneDay') {
-					
-					calendar.today();
-					calendarioVisualizacaoData();
-				} else {
-					calendar.gotoDate(newDt);
-				}
-
-			});
-
-			$('a.js-right').click(function(){
-				if(calendar.view.type=="resourceTimeGridFiveDay") {
-					let dtJS = new Date(calendar.getDate());
-					dtJS.setDate(dtJS.getDate() + 7);
-					let view = $(this).val();
-					//calendar.changeView(view);
-					//calendarioVisualizacaoData();
-					calendar.gotoDate(dtJS);
-				} else {
-					calendar.next();
-				}
-
-				calendarioVisualizacaoData();
-			});
-
-			$('a.js-left').click(function(){ 
-				if(calendar.view.type=="resourceTimeGridFiveDay") {
-					let dtJS = new Date(calendar.getDate());
-					dtJS.setDate(dtJS.getDate() - 7);
-					let view = $(this).val();
-					//calendar.changeView(view);
-					//calendarioVisualizacaoData();
-					calendar.gotoDate(dtJS);
-				} else {
-					calendar.prev();
-				}
-
-				calendarioVisualizacaoData();
-			});
-
-			$('a.js-today').click(function(){
-				calendar.today();
-				calendarioVisualizacaoData();
-			});
-
-			$('.js-status').change(function(){
-				filtroStatus=$(this).val();
-				calendar.refetchEvents();
-			});
-
-			$('.filter .js-cadeira').change(function(){
-				filtroCadeira=$(this).val();
-				id_cadeira=$(this).val();
-				calendar.refetchEvents();
-			});
-
-			$('.js-filter-agenda .js-profissionais').change(function(){
-				id_profissional=$(this).val();
-				filtroProfissional=$(this).val();
-				calendar.refetchEvents();
-			});
-
-			$('.js-btn-fechar').click(function(){
-				$('.cal-popup').hide();
-			});
-
-			$('.js-novoAgendamento').click(function(){
-				novoAgendamento(0,'');
-			})
-		});
-	</script>
-
- 	<!-- STYLE  -->
-	<style>
-		body {background:#fff;}
-		/*the container must be positioned relative:*/
-		.custom-select {
-		  position: relative;
-		  font-family: Arial;
-		}
-
-		.custom-select select {
-		  display: none; /*hide original SELECT element:*/
-		}
-
-		.select-selected {
-		  background-color: DodgerBlue;
-		}
-
-		/*style the arrow inside the select element:*/
-		.select-selected:after {
-		  position: absolute;
-		  content: "";
-		  top: 14px;
-		  right: 10px;
-		  width: 0;
-		  height: 0;
-		  border: 6px solid transparent;
-		  border-color: #fff transparent transparent transparent;
-		}
-
-		/*point the arrow upwards when the select box is open (active):*/
-		.select-selected.select-arrow-active:after {
-		  border-color: transparent transparent #fff transparent;
-		  top: 7px;
-		}
-
-		/*style the items (options), including the selected item:*/
-		.select-items div,.select-selected {
-		  color: #ffffff;
-		  padding: 8px 16px;
-		  border: 1px solid transparent;
-		  border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
-		  cursor: pointer;
-		  user-select: none;
-		}
-
-		/*style items (options):*/
-		.select-items {
-		  position: absolute;
-		  background-color: DodgerBlue;
-		  top: 100%;
-		  left: 0;
-		  right: 0;
-		  z-index: 99;
-		}
-
-		/*hide the items when the select box is closed:*/
-		.select-hide {
-		  display: none;
-		}
-
-		.select-items div:hover, .same-as-selected {
-		  background-color: rgba(0, 0, 0, 0.1);
-		}
-		.fc .fc-timegrid-col.fc-day-today {background:#fff !important;}
-		.fc-theme-standard th {border-right:transparent !important; border-left:transparent !important;}
-		.fc-scroller {overflow:visible !important;}
-		.fc-row.fc-rigid, .fc .fc-scroller-harness {overflow:visible !important;} 
-		.fc-scroller, fc.day.grid.containet {overflow:none !important;}
-		.fc-timegrid-slot { height: 60px !important; // 1.5em by default }
-		.fc-scrollgrid-sync-inner { height:90px; }
-		.fc-scrollgrid  { border:none !important; }
-		.fc-scrollgrid-liquid{ border:none !important; }
-		.fc-timegrid-now-indicator-line { border-color: var(--cinza5) !important;  }
-		.fc-timegrid-now-indicator-arrow {border:0 !important; width:12px; height:12px; background:#344848; border-radius:100%;}
-	</style>
+	
 
 	<header class="header">
 		<div class="header__content content">
@@ -1477,383 +1024,70 @@
 
 	<main class="main">
 		<div class="main__content content">
-			
-			<?php
-				require_once("includes/filter/filterAgenda.php");
 
-				$filtro='';
-
-				if(isset($values['id_status']) and isset($_status[$values['id_status']])) $filtro.="&id_status=".$values['id_status'];
-				//if(isset($values['id_profissional']) and isset($_profissionais[$values['id_profissional']])) $filtro.="&id_profissional=".$values['id_profissional'];
-				//if(isset($values['id_cadeira']) and isset($_cadeiras[$values['id_cadeira']])) $filtro.="&id_cadeira=".$values['id_cadeira'];
-				if(isset($values['busca']) and !empty($values['busca'])) $filtro.="&busca=".$values['busca'];
-			?>
-
-			<section class="grid">
-
-				<link href='https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.3.0/main.min.css' rel='stylesheet' />
-				<script src='https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.3.0/main.min.js'></script>
-
-				<script>
-					var calendar = '';
-					var calpopID = 0;
-					var desmarcados = [];
-					var slickDesmarcados = false;
-					
-					
-
-					const agendamentosDesmarcados = () => {
-						
-						//console.log($('#js-agendamentosDesmarcados').parent().parent().is(':visible'));
-						if($('#js-agendamentosDesmarcados').parent().parent().is(':visible')==true) {
-
-							if(desmarcados.length==0) {
-								$('#js-agendamentosDesmarcados').html(`<center>Nenhum agendamento desmarcado</center>`);
-							} else {
-								if(slickDesmarcados===true) {
-									$('.cal-lost-slick').slick('destroy');
-								}
-
-								$('#js-agendamentosDesmarcados').html(``);
-
-								//console.log(desmarcados)
-
-								let processados=0;
-								desmarcados.forEach(x=> {
-
-									profissionais = ``;
-									if(x.profissionais.length>0) {
-										cont=0;
-										x.profissionais.forEach(p=> {
-											if(cont>1 && (x.profissionais.length-2)>0) {
-												profissionais+=`<div class="cal-item-foto"><span>+${(x.profissionais.length-2)}</span></div>`;
-											} else {
-												profissionais+=`<div class="cal-item-foto"><span  style="background:${p.cor}">${p.iniciais}</span></div>`;
-											}
-											cont++;
-										})
-									}
-
-									let item = `<a href="javascript:;" class="cal-lost-item" style="border-color:${x.color};" onclick="popView(${x.id});">
-													<div>
-														<p>${x.hora}-${x.horaFinal} - ${x.cadeira}</p>
-														<h1 style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;">${x.nome}</h1>
-													</div>
-													${profissionais}
-												</a>`;
-
-									$(`#js-agendamentosDesmarcados`).append(item);
-									processados++;
-									if(processados==desmarcados.length) {
-									
-										$('.cal-lost-slick').slick({
-											dots:false,
-											arrows:true,
-											slidesToShow:4,											
-											infinite:false
-										});
-										slickDesmarcados = true;
-										
-									}
-								});
-
-								
-							}
-						}
-					}
-
-					$(function(){
-
-						$('.js-aba-calendario').click(function(){
-							data =  new Date(calendar.getDate());;
-							let dtObj = `${d2(data.getDate())}/${d2(data.getMonth()+1)}/${data.getFullYear()}`;
-							
-							document.location.href='pg_agenda_kanban.php?data='+dtObj;
-						})
-
-						var calendarEl = document.getElementById('calendar'); 
-						calendar = new FullCalendar.Calendar(calendarEl, {
-						  	schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-							locale: 'pt-br',
-							contentHeight: 'auto',
-						    headerToolbar: {
-						      left: '',
-						      center:'',
-						      right:''
-						    },
-						    stickyHeaderDates:true,
-						    nowIndicator:true,
-						 	slotDuration:'00:30:00',
-							allDaySlot:false,
-							slotMinTime:'07:00:00',
-							slotMaxTime:'22:00:00',
-							firstDay:1,
-							editable:true,
-							initialView:'resourceTimeGridOneDay',
-	    					eventResizableFromStart: true,
-						    views: {
-						      dayGridMonth:{
-						      	dayMaxEventRows:1,
-						      	buttonText:'MÊS',					      	
-						      },
-						      resourceTimeGridOneDay: {
-						      	titleFormat: { weekday: 'long', month:'short', day: '2-digit', year:'numeric'},
-						        type: 'resourceTimeGrid',
-						        duration: { days: 1 },
-						        buttonText: '1 DIA',
-
-						      },
-						      resourceTimeGridFiveDay: {
-						      	titleFormat: { weekday: 'short', month:'short', day: '2-digit', year:'numeric'},
-						        type: 'timeGridWeek',
-						        duration: { days: 5 },
-						        buttonText: '5 DIAS',
-
-						      },
-						      resourceTimeGridSevenDay: {
-						      	titleFormat: { weekday: 'short', month:'short', day: '2-digit', year:'numeric'},
-						        type: 'timeGridWeek',
-						        duration: { days: 7 },
-						        buttonText: '7 DIAS'
-						      }
-						    },
-						    resources: <?php echo json_encode($_cadeirasJSON);?>,
-						    resourceOrder: 'ordem,titulo',
-							dateClick: function(info) {
-								if(info.resource) {
-									let id_cadeira = info.resource ? info.resource._resource.id : 0;
-									let data = info.dateStr;
-									novoAgendamento(id_cadeira,data);
-								} else {
-
-									let data = info.dateStr;
-									novoAgendamento(0,data);
-
-								}
-								
-							},
-							eventResize:function(e) {
-								let id = e.event.id;
-								let start = e.event.startStr;
-								let end = e.event.endStr;
-								let data=`ajax=persistirNovoHorario&id_agenda=${id}&start=${start}&end=${end}`;
-								$.ajax({
-									type:"POST",
-									data:data,
-									success:function(rtn) {
-										if(rtn.success) {
-											calendar.refetchEvents(); 
-										} else if(rtn.error) {
-											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-										} else {
-											swal({title: "Erro!", text: 'Algum erro ocorreu durante a alteração de data deste agendamento!', type:"error", confirmButtonColor: "#424242"});
-										}
-									}
-								});
-							},
-							eventDrop: function(ev) {
-								swal({   title: "Atenção",   text: 'Tem certeza que deseja alterar o horário deste agendamento',   type: "warning",   showCancelButton: true,   confirmButtonColor: "#DD6B55",   confirmButtonText: "Sim!",   cancelButtonText: "Não",   closeOnConfirm: false,   closeOnCancel: false }, function(isConfirm){   
-									if (isConfirm) {    
-										let id = ev.event.id;
-										let novaData=ev.event.startStr;
-										let id_cadeira = (ev.newResource)?ev.newResource.id:'';
-										let data=`ajax=persistirNovoAgendamento&id_agenda=${id}&novaData=${novaData}&id_cadeira=${id_cadeira}`;
-										$.ajax({
-											type:"POST",
-											data:data,
-											success:function(rtn) {
-												if(rtn.success) {
-													calendar.refetchEvents();
-												} else if(rtn.error) {
-													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-												} else {
-													swal({title: "Erro!", text: 'Algum erro ocorreu durante a alteração de data deste agendamento!', type:"error", confirmButtonColor: "#424242"});
-												}
-											}
-										});
-										swal.close();
-									 } else {  
-										calendar.refetchEvents();
-										swal.close();   
-									} 
-								});
-		
-								
-						    },
-							resourcesSet:function(arg) {
-								setTimeout(function(){$('.fc-scrollgrid-sync-inner ').css('height','30px');},10);
-							},
-							datesSet:function(dateInfo) {
-								
-							},
-						    events: function(info, successCallback, failure) {
-								$.getJSON(`<?php echo $_page;?>?ajax=agenda&start=${info.start.valueOf()}&end=${info.end.valueOf()}&<?php echo $filtro;?>&id_status=${filtroStatus}&id_cadeira=${filtroCadeira}&id_profissional=${filtroProfissional}`,
-											function (data) {
-												if(data.success) {
-												 	successCallback(data.agendamentos);
-												 	desmarcados = data.desmarcados;
-												 	agendamentosDesmarcados();
-												}
-											});
-							},
-
-							eventContent: function (arg) { 
-								var view = calendar.view.type;
-								let nome = arg.event.title;
-								let id = arg.event.id;
-								let inicio = arg.event.extendedProps.hora;
-								let fim = arg.event.extendedProps.horaFinal;
-								let hora = `${inicio}-${fim}`;
-								let cadeira = arg.event.extendedProps.cadeira;
-								let id_paciente = arg.event.extendedProps.id_paciente;
-
-								let situacao = arg.event.extendedProps.situacao;
-								let agendaPessoal = arg.event.extendedProps.agendaPessoal;
-
-								let id_status = arg.event.extendedProps.id_status;
-								let telefone1 = arg.event.extendedProps.telefone1;
-								let agendadoHa = arg.event.extendedProps.agendadoHa;
-								let agendadoPor = arg.event.extendedProps.agendadoPor;
-								let statusColor = arg.event.extendedProps.statusColor;
-								let profissionais = arg.event.extendedProps.profissionais;
-								let tags = arg.event.extendedProps.tags;
-								let id_agenda = arg.event.id;
-								let wts = arg.event.extendedProps.wts;
-								let duracao = arg.event.extendedProps.duracao;
-
-								let wtsIcon = ``;
-								/*if(wts !== undefined && wts == 1) {
-								
-									wtsIcon=`<span class="iconify" data-icon="akar-icons:whatsapp-fill"></span>`;
-								}*/
-
-								profissionaisHTML = ``;
-								if(profissionais && profissionais.length>0) {
-									cont=0;
-									profissionais.forEach(p=> {
-										if(cont>1 && (profissionais.length-2)>0) {
-											profissionaisHTML+=`<div class="cal-item-foto"><span>+${(profissionais.length-2)}</span></div>`;
-										} else {
-											profissionaisHTML+=`<div class="cal-item-foto"><span  style="background:${p.cor}">${p.iniciais}</span></div>`;
-										}
-										cont++;
-									})
-								}
-
-								tagsHTML = ``;
-								if(tags && tags.length>0) {
-									tagsHTML+=`<div class="cal-item-tags">`;
-									tags.forEach(p=> {
-										tagsHTML+=`<p style="color:${p.cor}"><span>${p.titulo}</span></p>`;
-									})
-									tagsHTML+=`</div>`;
-								}
-	   							
-								if(profissionaisHTML.length!=0) profissionaisHTML = `<div class="cal-item__fotos">${profissionaisHTML}</div>`; 
-								
-							    if(view=="dayGridMonth") {
-							    	eventHTML=`<section class="cal-item" style="height:100%;border-left:6px solid ${statusColor};" >
-													
-													<section onclick="popView(${id_agenda});">
-														 <h1 class="cal-item__titulo">${nome}</h1>
-														 <p>${hora}</p>														 
-													</section>
-													${wtsIcon}
-												</section>`
-							    } else {
-							    	if(duracao<30) {
-							    		eventHTML=`<section class="cal-item" style="height:20px;border-left:6px solid ${statusColor};padding:0;padding-left:0.5em;" >
-													<section class="cal-item__inner1" style="height:100%"  onclick="popView(${id_agenda});">
-														<div class="cal-item-dados">
-															<h2 style="margin-top:0">${nome}</h2>
-															<h1>${hora} - ${cadeira}</h1>															
-														</div>
-													</section>
-												</section>`;
-							    	} else {
-
-							    		agendaOpacity = '';
-
-							    		// se status for reserva de horario
-							    		if(id_status==8) agendaOpacity='opacity:0.5;';
-
-							    		eventHTML=`<section class="cal-item" style="height:100%;border-left:6px solid ${statusColor};${agendaOpacity}">
-													<section class="cal-item__inner1" style="height:100%"  onclick="popView(${id_agenda});">
-														<div class="cal-item-dados">
-															<h2 style="margin-top:0">${nome}</h2>
-															<h1>${hora} - ${cadeira}</h1>
-															${tagsHTML}
-														</div>
-														${wtsIcon}
-														${profissionaisHTML}
-													</section>
-												</section>`;
-									}
-							    }
-							    //console.log(agendaPessoal);
-							    if(agendaPessoal==2) {
-							    	eventHTML=`<div style="background:red"></div>`;
-							    }
-								return { html: eventHTML }
-							},
-							dayHeaderContent: function (arg) {
-								//console.log(calendar.view.type);
-								let dt = arg.date;
-								let html = ``;
-								if(calendar.view.type=="dayGridMonth") {
-									setTimeout(function(){$('.fc-scrollgrid-sync-inner ').css('height','30px');},10);
-									//return { html: html, arg: arg }
-								} else {
-									html = `<div class="agenda-fc__dia"><h1>${dia(dt.getDay())}</h1><h2>${dt.getDate()}</h2></div>`;
-									setTimeout(function(){
-										$('.fc-scrollgrid-sync-inner ').css('height','90px');},10);
-										$('.fc-scrollgrid-sync-inner ').css('height','90px');
-									return { html: html }
-								}
-							}
-						  });
-						calendar.render();
-
-						setTimeout(function(){calendarioVisualizacaoData();},100);
-
-						<?php
-						if(!empty($initDate)) {
-							list($ano,$mes,$dia)=explode("-",$initDate);
-
-						?>
-						let initDay='<?php echo $dia;?>';
-						let initMonth='<?php echo und2($mes-1);?>';
-						let initYear='<?php echo $ano;?>';
-						let newDt = new Date(initYear,initMonth,initDay);
-						calendar.gotoDate(newDt);
-			
-						//console.log(newDt);
-						<?php
-						}
-						?>
-
-					});
-				</script>
-
-				<div id='calendar'></div>
-			</section>
-
-			<section class="box" style="overflow:hidden; width:calc(100vw - 210px);">
-				<div class="cal-lost">
-					
-					<div class="cal-lost-slick" id="js-agendamentosDesmarcados">
-						<a href="" class="cal-lost-item" style="border-color:var(--verde);">
-							<div>
-								<p>08:30-09:00 - CONSULTÓRIO 3</p>
-								<h1>Lidiane Vanessa Silva Bastos</h1>
-							</div>
-							<span class="badge-prof">SH</span>
-						</a>
-						
+			<section class="filter filter--sticky">
+				<div class="filter-group" style="width:100%;">
+					<div class="filter-form form" style="width:100%;">
+						<dl style="flex:0;">
+							<dd><a href="javascript:;" class="button button_main" data-aside="add"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a></dd>
+						</dl>
+						<dl style="flex:0;">
+							<dd><a href="javascript:;" class="button js-calendario"><span class="iconify" data-icon="bi:calendar-week" data-inline="false" data-width="20"></span></a></dd>
+						</dl>
+						<dl style="flex:1">
+							<dd><select name=""><option value="">Consultório...</option></select></dd>
+						</dl>
+						<dl style="flex:1;">
+							<dd><select name=""><option value="">Profissional...</option></select></dd>
+						</dl>					
 					</div>
 				</div>
 			</section>
 
+			<section class="mcal">
+				<?php
+				foreach($registros as $data=>$regs) {
+
+					$ano=substr($data,0,4);
+					$mes=substr($data,4,2);
+					$dia=substr($data,6,2);
+
+					$diaSemana=date('w',strtotime($ano."-".$mes."-".$dia));
+					$diaSemana=isset($_dias[$diaSemana]) ? substr(strtolowerWLIB($_dias[$diaSemana]),0,3) : '';
+				?>
+				<div class="mcal-item">
+					<aside class="mcal-date">
+						<p class="mcal-date__week"><?php echo $diaSemana;?></p>
+						<p class="mcal-date__day"><?php echo $dia;?></p>
+						<p class="mcal-date__month"><?php echo strtolower(substr(mes($mes),0,3));?></p>
+					</aside>
+					<article class="mcal-events">
+						<?php
+						foreach($regs as $x) {
+							$paciente = isset($_pacientes[$x->id_paciente]) ? $_pacientes[$x->id_paciente] : '';
+							$cadeira = isset($_cadeiras[$x->id_cadeira]) ? $_cadeiras[$x->id_cadeira] : '';
+							$horaInicio = date('H:i',strtotime($x->agenda_data));
+							$horaFinal = date('H:i',strtotime($x->agenda_data." + $x->agenda_duracao minutes"));
+						?>
+						<section class="cal-item" style="border-left:6px solid #1182ea;">
+							<section class="cal-item__inner1">
+								<div class="cal-item-dados">
+									<h2 style="margin-top:0"><?php echo utf8_encode($paciente->nome);?></h2>
+									<h1><?php echo $horaInicio."-".$horaFinal;?> - <?php echo utf8_encode($cadeira->titulo);?></h1>
+								</div>
+								<div class="cal-item__fotos"><div class="cal-item-foto"><span style="background:#0066ff">KF</span></div></div>
+							</section>
+						</section>
+						<?php
+						}
+						?>
+					</article>
+				</div>
+				<?php
+				}
+				?>
+
+			</section>
 		</div>
 	</main>
 
