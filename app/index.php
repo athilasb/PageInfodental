@@ -1,6 +1,4 @@
-
 <?php
-// teste
 	if(isset($_GET['instancia'])) {
 		setcookie("infoName", $_GET['instancia'], time() + 3600*24, "/");
 		header("Location: ./");
@@ -8,6 +6,7 @@
 		setcookie("infoName", "studiodental", time() + 3600*24, "/");
 	}
 	include "includes/header.php";
+
 ?>
 <!-- Teste v4 -->
 <section class="login">
