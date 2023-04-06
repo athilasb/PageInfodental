@@ -3,7 +3,15 @@
 	$_p="ident_";
 
 	if(isset($_SERVER['HTTP_HOST'])) {
-		if($_SERVER['HTTP_HOST']=="163.172.187.183:5000" or $_SERVER['HTTP_HOST']=="testes.infodental.dental") {
+		if($_SERVER['HTTP_HOST']=="163.172.187.183:5000" or 
+			$_SERVER['HTTP_HOST']=="163.172.187.183:5001" or 
+			$_SERVER['HTTP_HOST']=="163.172.187.183:5002" or 
+			$_SERVER['HTTP_HOST']=="163.172.187.183:5003" or 
+			$_SERVER['HTTP_HOST']=="web.infodental.dental" or 
+			$_SERVER['HTTP_HOST']=="web-luciano.infodental.dental" or 
+			$_SERVER['HTTP_HOST']=="web-walker.infodental.dental" or 
+			$_SERVER['HTTP_HOST']=="web-rafael.infodental.dental" or 
+			$_SERVER['HTTP_HOST']=="testes.infodental.dental") {
 			$_ENV['MYSQL_HOST']='51.159.74.70:23821';
 
 
@@ -46,7 +54,9 @@
 	$wasabiS3 = new S3($_wasabiAccessKey,$_wasabiSecretKey,false,$_wasabiS3endpoint,$_wasabiS3Region);
 
 	$_cloudinaryURL='https://res.cloudinary.com/infodental/image/upload/';
-	$_cloudinaryPath="storage.infodental.dental/".$_ENV['NAME']."/";	$_cloudinaryUploadPresent="ir9b4eem";
+
+	$_cloudinaryPath="storage.infodental.dental/".$_ENV['NAME']."/";
+	$_cloudinaryUploadPresent="ir9b4eem";
 	$_cloudinaryCloudName="infodental";
 	$_cloudinaryText=array('pt'=>array('local'=>array('browse'=>'Carregar',
 														'main_title'=>'Enviar',
