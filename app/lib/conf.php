@@ -46,7 +46,7 @@
 	$wasabiS3 = new S3($_wasabiAccessKey,$_wasabiSecretKey,false,$_wasabiS3endpoint,$_wasabiS3Region);
 
 	$_cloudinaryURL='https://res.cloudinary.com/infodental/image/upload/';
-	$_cloudinaryPath=$_ENV['S3_BUCKET']."/".$_ENV['NAME']."/";
+	$_cloudinaryPath="storage.infodental.dental/".$_ENV['NAME']."/";
 	$_cloudinaryUploadPresent="ir9b4eem";
 	$_cloudinaryCloudName="infodental";
 	$_cloudinaryText=array('pt'=>array('local'=>array('browse'=>'Carregar',
