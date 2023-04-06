@@ -8,7 +8,7 @@
 	}
 	include "includes/header.php";
 ?>
-<!-- Teste-->
+<!-- Teste v3 -->
 <section class="login">
 
 	<div class="login-bg">
