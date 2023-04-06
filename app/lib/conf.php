@@ -21,8 +21,7 @@
 			} else {
 				$_ENV['NAME']=$_ENV['MYSQL_DB']='studiodental';
 			}
-
-
+			
 			if(isset($_COOKIE['infoName'])) $_ENV['NAME']=$_ENV['MYSQL_DB']=$_COOKIE['infoName'];
 				
 			$_ENV['MYSQL_USER']="dentalinfo";

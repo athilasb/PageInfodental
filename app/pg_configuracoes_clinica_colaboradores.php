@@ -317,8 +317,8 @@
 	while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
 
 	$_rubrica = "";
-	$sql->consult($_p."colaboradores_rubricas", "rubrica_png", "where id_dentista='".$_GET['edita']."'");
-	if($sql->rows){$_rubrica = (mysqli_fetch_object($sql->mysqry)->rubrica_png);}
+	//$sql->consult($_p."colaboradores_rubricas", "rubrica_png", "where id_dentista='".$_GET['edita']."'");
+	//if($sql->rows){$_rubrica = (mysqli_fetch_object($sql->mysqry)->rubrica_png);}
 	
 ?>
 
@@ -386,7 +386,6 @@
 						$vSQL=$adm->vSQL($campos,$_POST);
 
 						if(isset($_POST['senha']) and !empty($_POST['senha'])) $vSQL.="senha='".sha1($_POST['senha'])."',";
-				
 
 						// popula $values para persistir nos cmapos
 						$values=$adm->values;

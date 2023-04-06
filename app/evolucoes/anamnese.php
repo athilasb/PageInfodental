@@ -117,6 +117,80 @@
 		<script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
 		<script src="../js/jquery.js"></script>
 	</head>
+
+	<style>
+
+input[type=datetime-local], input[type=text], input[type=number], input[type=tel], input[type=date], input[type=password], input[type=email], input[type=password], input[type=file],
+select, textarea {-webkit-appearance:none; -moz-appearance:none; appearance:none; font-family:inherit; width:100%; line-height:20px; transition:all 150ms; border:1px solid var(--cinza3); background-color:var(--cinza1); height:38px; padding:0 8px; border-radius:8px;}
+
+.sign {position:static; width:100%; max-width:800px; display:flex; flex-direction:column; margin:0 auto;}
+.sign-header {height:80px; display:flex; align-items:center; justify-content:center; border-bottom:2px solid var(--cinza2);}
+.sign-header img {width:40%; height:90%; object-fit:contain;}
+.sign-article {flex:1; display:flex; flex-direction:column;}
+.sign-article h1 {font-size:1.5em; text-align:center; margin-bottom:1.5rem;}
+.sign-info {padding:1.5rem;}
+.sign-doc {padding:1.5rem; background:var(--cinza1); border-radius:8px;}
+.sign-doc object {width:100%; aspect-ratio:0.7; background:#fff; text-align:center;}
+.sign-form {padding:1.5rem;}
+.sign-form-status {text-align:center; margin-bottom:2rem;}
+.sign-form-status h1 {display:inline-block; background:var(--cinza4); color:#fff; padding:.75rem 1.5rem; border-radius:100px; font-weight:normal;}
+.sign-form p {text-align:center;}
+.sign-form .button {padding:1.5rem 0;}
+.sign-form-canva {display:flex; flex-direction:column; gap:.5rem;}
+.sign-form-canva canvas {border:1px solid var(--cinza4); border-radius:8px;}
+.sign-form-canva p {max-width:80%; margin:0 auto;}
+@media screen and (max-width: 667px) {
+	.sign-header {height:60px;}
+	.sign-form input {font-size:1.5em; height:54px; padding:1rem;}
+}
+
+.form [class^=colunas] {display:grid; grid-template-columns:1fr 1fr; grid-gap:0 1rem;}
+.form .colunas3 {grid-template-columns:repeat(3,1fr);}
+.form .colunas4 {grid-template-columns:repeat(4,1fr);}
+.form .colunas5 {grid-template-columns:repeat(5,1fr);}
+.form .colunas6 {grid-template-columns:repeat(6,1fr);}
+.form .colunas7 {grid-template-columns:repeat(7,1fr);}
+.form .colunas8 {grid-template-columns:repeat(8,1fr);}
+.form [class^=colunas] .dl2 {grid-column:span 2;}
+.form [class^=colunas] .dl3 {grid-column:span 3;}
+.form [class^=colunas] .dl4 {grid-column:span 4;}
+.form label, .form-row label {display:flex; align-items:center; margin-right:1rem; min-height:38px;}
+.form label input, .form-row label input {margin-right:.5rem;}
+.aside .form label {margin-right:.5rem;}
+.aside .form label input {margin-right:.25rem;}
+
+	
+.form label, .form-row label {display:flex; align-items:center; margin-right:1rem; min-height:38px;}
+.form label input, .form-row label input {margin-right:.5rem;}
+.aside .form label {margin-right:.5rem;}
+.aside .form label input {margin-right:.25rem;}
+
+.form .form-comp {gap:0;}
+.form-comp *:not(span,a) {border-radius:0 8px 8px 0;} 
+.form-comp_pos *:not(span,a) {border-radius:8px 0 0 8px;}
+.form-comp span, .form-comp a {background:var(--cinza1); height:38px; display:flex; align-items:center; justify-content:center; padding:0 12px; border:1px solid var(--cinza3); color:var(--cinza4); margin:0 -1px; border-radius:8px 0 0 8px;}
+.form-comp_pos span, .form-comp_pos a {border-radius:0 8px 8px 0;}
+.form-comp a {background:#fff;}
+
+.form-alert {position:absolute !important; z-index:99; top:0; right:0; color:red; font-size:14px;}
+
+.form-image {border:1px dashed var(--cinza4); border-radius:var(--border-radius1); display:flex; align-items:center; justify-content:center; height:212px; background:#fff; margin-bottom:1rem;}
+.form-image img {width:auto; height:auto; max-width:70%; max-height:70%;}
+
+.form-row dl {display:flex; align-items: center; margin-bottom:1rem;}
+.form-row dt {flex:0 0 170px;}
+.form-row dd {display:flex; align-items:center; width:100%;}
+.form-row dd > * {margin-right:1rem;}
+.form-row dd > *:last-child {margin-right:0;}
+@media screen and (max-width: 896px) {
+	.form [class^=colunas] {display:flex; flex-direction: column; grid-gap:0;}
+	.form dt:empty {display:none;}
+	.form-row dl {flex-direction:column; align-items:flex-start;}
+	.form-row dt {flex:1; margin-bottom:.375em;}	
+}
+
+
+	</style>
 	
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<script defer type="text/javascript" src="../js/jquery.slick.js"></script>

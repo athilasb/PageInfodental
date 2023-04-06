@@ -41,11 +41,13 @@
 					</canvas>
 					<a href="javascript:;" class="button button_lg button_full" id="canvas-clear"><i class="iconify"
 							data-icon="fluent:eraser-24-regular"></i><span>Apagar assinatura</span></a>
-					<a href="javascript:;" data-loading="<?php echo $doc_status; ?>"
-						class="button button_lg button_main concluir">Concluir</a>
+					<a href="javascript:;" data-loading="<?php echo $doc_status; ?>" class="button button_lg button_main concluir"> <i class="iconify" 
+							data-icon="fluent:checkbox-checked-24-regular"></i><span>Concluir</span></a>
 
-					<a href="javascript:;" class="button button_lg button_main"
-						onclick="$('.js-passo1').show(); $('.js-passo2').hide();">Voltar</a>
+					<a href="javascript:;" class="button button_lg button_main" onclick="$('.js-passo1').show(); $('.js-passo2').hide();">
+						<i class="iconify" data-icon="ic:outline-subdirectory-arrow-left"></i>
+						<span>Voltar</span></a>
+						
 
 				</div>
 			</form>

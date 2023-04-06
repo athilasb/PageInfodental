@@ -90,3 +90,23 @@ textarea {	width:100%;border:solid 1px #CCC;border-radius: 5px;margin-top:5px;he
 .button {font-family:inherit; display:inline-flex; gap:.5rem; align-items:center; justify-content:center; transition:all 150ms; text-align:center; background:#fff; color:var(--cinza4); padding:0.5em .75em; border:1px solid var(--cinza3); border-radius:8px;}
 
 
+.sign {position:static; width:100%; max-width:800px; display:flex; flex-direction:column; margin:0 auto;}
+.sign-header {height:80px; display:flex; align-items:center; justify-content:center; border-bottom:2px solid var(--cinza2);}
+.sign-header img {width:40%; height:90%; object-fit:contain;}
+.sign-article {flex:1; display:flex; flex-direction:column;}
+.sign-article h1 {font-size:1.5em; text-align:center; margin-bottom:1.5rem;}
+.sign-info {padding:1.5rem;}
+.sign-doc {padding:1.5rem; background:var(--cinza1); border-radius:8px;}
+.sign-doc object {width:100%; aspect-ratio:0.7; background:#fff; text-align:center;}
+.sign-form {padding:1.5rem;}
+.sign-form-status {text-align:center; margin-bottom:2rem;}
+.sign-form-status h1 {display:inline-block; background:var(--cinza4); color:#fff; padding:.75rem 1.5rem; border-radius:100px; font-weight:normal;}
+.sign-form p {text-align:center;}
+.sign-form .button {padding:1.5rem 0;}
+.sign-form-canva {display:flex; flex-direction:column; gap:.5rem;}
+.sign-form-canva canvas {border:1px solid var(--cinza4); border-radius:8px;}
+.sign-form-canva p {max-width:80%; margin:0 auto;}
+@media screen and (max-width: 667px) {
+	.sign-header {height:60px;}
+	.sign-form input {font-size:1.5em; height:54px; padding:1rem;}
+}
