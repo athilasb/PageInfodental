@@ -953,7 +953,6 @@ if (isset($_POST['ajax'])) {
 							_pagamentos[dados.id] = dados
 							id_pagamento = dados.id
 							// preenche o HEADER
-							console.log(dados)
 							$('#js-aside-asFinanceiro .js-index').val(dados.id);
 							$('#js-aside-asFinanceiro .js-id_pagamento').val(dados.id);
 							$('#js-aside-asFinanceiro .js-titulo').html(dados.titulo);
@@ -1279,6 +1278,7 @@ if (isset($_POST['ajax'])) {
 				id_pagamento = $('#js-aside-asFinanceiro .js-id_pagamento').val();
 				let id_baixa = $(this).attr('data-id_baixa')
 				let data = `ajax=baixaEstornar&id_baixa=${id_baixa}&id_pagamento=${id_pagamento}`;
+				let baixa = _pagamentos[id_pagamento].baixas.find(element => element.id_baixa == id_baixa)
 				let obj = $(this);
 				let objHTMLAntigo = obj.html();
 				swal({
@@ -1302,6 +1302,7 @@ if (isset($_POST['ajax'])) {
 								if (rtn.success) {
 									baixasAtualizar();
 									$('[name="alteracao"]').val("1")
+									_pagamentos[id_pagamento].saldoApagar += baixa.valor
 								} else if (rtn.error) {
 									swal({
 										title: "Erro!",
@@ -1580,7 +1581,9 @@ if (isset($_POST['ajax'])) {
 					$(this).val(0);
 					ValorDigitado = pagamento.saldoApagar
 				}
-				let data = new Date(`${pagamento.data_vencimento.split('-')[2]}/${pagamento.data_vencimento.split('-')[1]}/${pagamento.data_vencimento.split('-')[0]}`);
+				
+				//let data = new Date(`${pagamento.data_vencimento.split('-')[2]}/${pagamento.data_vencimento.split('-')[1]}/${pagamento.data_vencimento.split('-')[0]}`);
+				let data = new Date(pagamento.data_vencimento);
 				let hoje = new Date();
 				let diferenca = (hoje.getTime() - data.getTime()) / (1000 * 60 * 60 * 24);
 				if (diferenca >= 1) {
@@ -1626,7 +1629,8 @@ if (isset($_POST['ajax'])) {
 				let pagamento = _pagamentos.filter((item) => {
 					return item.id_parcela == idPagamento
 				})[0]
-				let data = new Date(`${pagamento.data_vencimento.split('-')[2]}/${pagamento.data_vencimento.split('-')[1]}/${pagamento.data_vencimento.split('-')[0]}`);
+				// let data = new Date(`${pagamento.data_vencimento.split('-')[2]}/${pagamento.data_vencimento.split('-')[1]}/${pagamento.data_vencimento.split('-')[0]}`);
+				let data = new Date(pagamento.data_vencimento);
 				let hoje = new Date();
 				let diferenca = (hoje.getTime() - data.getTime()) / (1000 * 60 * 60 * 24);
 				if (diferenca >= 1) {
@@ -1743,6 +1747,7 @@ if (isset($_POST['ajax'])) {
 					$('.js-obs').parent().parent().show();
 				}
 			});
+
 			// se clicar em adicionar baixa
 			$('.js-btn-addBaixa').click(function() {
 				let obj = $(this);
@@ -2616,7 +2621,6 @@ if (isset($_POST['ajax'])) {
 					url: baseURLApiAsidePagamentos,
 					data: data,
 					success: function(rtn) {
-						console.log(rtn)
 						if (rtn.sucess) {
 							swal({
 								title: "Sucesso!",
@@ -2732,7 +2736,7 @@ if (isset($_POST['ajax'])) {
 					$('#split-false-centro-custo').show();
 					$('#split-false-splits-qtd').hide();
 					$('#splits-pagamentos').val("");
-				//	$('.js-pagamentos-quantidade').attr('max', 1);
+					//	$('.js-pagamentos-quantidade').attr('max', 1);
 					$('.js-pagamentos-quantidade').val("1");
 				} else {
 					$('#area-custo-recorrente').hide();
