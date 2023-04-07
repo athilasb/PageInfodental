@@ -33,14 +33,44 @@ function getPagamentos($data_inicial_filtro, $data_final_filtro)
 		}
 	}
 	// aqui eu busco as baixas que foram dadas
-	$sql->consult($_p . "financeiro_fluxo", "*", "WHERE (data_vencimento>='$data_inicial_filtro' AND data_vencimento<='$data_final_filtro') AND lixo=0 AND valor<0 order by data_vencimento asc");
+	$sql->consult($_p . "financeiro_fluxo", "*", "WHERE (data_vencimento>='$data_inicial_filtro' AND data_vencimento<='$data_final_filtro') AND lixo=0 AND valor<0 AND id_dividido=0 order by data_vencimento asc");
 	if ($sql->rows) {
 		while ($x = mysqli_fetch_object($sql->mysqry)) {
-			$_pagamentos[$x->id] = $x;
+			$_pagamentos[$x->id]['id'] = $x->id;
+			$_pagamentos[$x->id]['data'] = $x->data;
+			$_pagamentos[$x->id]['lixo'] = $x->lixo;
+			$_pagamentos[$x->id]['id_origem'] = $x->id_origem;
+			$_pagamentos[$x->id]['id_registro'] = $x->id_registro;
+			$_pagamentos[$x->id]['data_vencimento'] = $x->data_vencimento;
+			$_pagamentos[$x->id]['pagamento'] = $x->pagamento;
+			$_pagamentos[$x->id]['pagamento_id_colaborador'] = $x->pagamento_id_colaborador;
+			$_pagamentos[$x->id]['data_efetivado'] = $x->data_efetivado;
+			$_pagamentos[$x->id]['id_formapagamento'] = $x->id_formapagamento;
+			$_pagamentos[$x->id]['id_operadora'] = $x->id_operadora;
+			$_pagamentos[$x->id]['id_bandeira'] = $x->id_bandeira;
+			$_pagamentos[$x->id]['taxa_cartao'] = $x->taxa_cartao;
+			$_pagamentos[$x->id]['tipo'] = $x->tipo;
+			$_pagamentos[$x->id]['id_pagante_beneficiario'] = $x->id_pagante_beneficiario;
+			$_pagamentos[$x->id]['valor'] = $x->valor;
+			$_pagamentos[$x->id]['valor_multa'] = $x->valor_multa;
+			$_pagamentos[$x->id]['valor_taxa'] = $x->valor_taxa;
+			$_pagamentos[$x->id]['valor_desconto'] = $x->valor_desconto;
+			$_pagamentos[$x->id]['valor_juros'] = $x->valor_juros;
+			$_pagamentos[$x->id]['obs'] = $x->obs;
+			$_pagamentos[$x->id]['id_banco'] = $x->id_banco;
+			$_pagamentos[$x->id]['lixo_data'] = $x->lixo_data;
+			$_pagamentos[$x->id]['lixo_id_colaborador'] = $x->lixo_id_colaborador;
+			$_pagamentos[$x->id]['desconto'] = $x->desconto;
+			$_pagamentos[$x->id]['descricao'] = utf8_encode($x->descricao);
+			$_pagamentos[$x->id]['id_categoria'] = $x->id_categoria;
+			$_pagamentos[$x->id]['id_centro_custo'] = $x->id_centro_custo;
+			$_pagamentos[$x->id]['dividido'] = $x->dividido;
+			$_pagamentos[$x->id]['id_dividido'] = $x->id_dividido;
 			$origem = $_origens[$x->id_origem];
 			$idRegistros[$x->id_registro] = $x->id_registro;
 			$idPagantes[$x->id_pagante_beneficiario] = $x->tipo;
 		}
+		$_pagamentos = json_decode(json_encode($_pagamentos));
 	}
 	//pegando os pagantes
 	if (count($idPagantes) > 0) {
@@ -235,7 +265,6 @@ function getPagamentos($data_inicial_filtro, $data_final_filtro)
 </main>
 <script>
 	$('.js-btn-abrir-aside').on('click', (function() {
-		console.log('ABRIU ')
 		abrirAside1()
 	}));
 </script>
