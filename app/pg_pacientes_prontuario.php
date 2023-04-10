@@ -337,7 +337,6 @@
 					<?php 
 					require_once("includes/submenus/subPacientesFichaDoPaciente.php");
 					?>
-
 					<div class="box-col__inner1">
 				
 						<section class="filter">

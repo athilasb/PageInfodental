@@ -947,22 +947,26 @@
 
 	$initDate='';
 
-	if(isset($_GET['data']) and !empty($_GET['data'])) $_GET['initDate']=$_GET['data'];
-
-	if(isset($_GET['initDate']) and !empty($_GET['initDate']) and strpos($_GET['initDate'], '/')!==false) {
-		list($dia,$mes,$ano)=explode("/",$_GET['initDate']);
-		if(checkdate($mes, $dia, $ano)) {
-			$initDate=$ano."-".$mes."-".$dia;
-		}
+	$data_inicio=date('Y-m-d 00:00:00');
+	if(isset($_GET['data']) and !empty($_GET['data'])) {
+		$data_inicio=invDate($_GET['data'])." 00:00:00";
 	}
 
-	$data_inicio=date('Y-m-d 00:00:00');
-	$data_fim=date('Y-m-t 23:59:59');
+	$data_fim=date('Y-m-d 23:59:59',strtotime(date($data_inicio)." + 7 days"));
+
+
+	$dataDia=date('d',strtotime($data_inicio));
+	$dataMes=substr(strtolower(mes(date('m',strtotime($data_inicio)))),0,3);
+	$dataDiaNome=strtolower($_dias[date('w',strtotime($data_inicio))]);
 
 	$where = "where agenda_data>='$data_inicio' and agenda_data<='$data_fim' and lixo=0";
 
-	$registros=$pacientesIds=$cadeirasIds=[];
+	if(isset($values['id_profissional']) and is_numeric($values['id_profissional'])) $where.=" and profissionais like '%,".$values['id_profissional'].",%'";
+	if(isset($values['id_cadeira']) and is_numeric($values['id_cadeira'])) $where.=" and id_cadeira = '".$values['id_cadeira']."'";
+
+	$registros=$pacientesIds=[];
 	$sql->consult($_p."agenda","*",$where);
+	//echo $where.$sql->rows;
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$registros[date('Ymd',strtotime($x->agenda_data))][]=$x;
 		$pacientesIds[]=$x->id_paciente;
@@ -979,18 +983,23 @@
 	}
 
 	$_cadeiras=[];
-	if(count($cadeirasIds)>0) {
-		$sql->consult($_p."parametros_cadeiras","id,titulo","where id in (".implode(",",$cadeirasIds).")");
-		while($x=mysqli_fetch_object($sql->mysqry)) {
-			$_cadeiras[$x->id]=$x;
-		}
+	$sql->consult($_p."parametros_cadeiras","id,titulo,lixo","order by titulo asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_cadeiras[$x->id]=$x;
+	}
+	
+
+	$_profissionais=[];
+	$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,calendario_cor,lixo,check_agendamento","order by nome asc");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_profissionais[$x->id]=$x;
 	}
 ?> 
 
 	<div class="cal-date-floater">
-		<h1 class="js-cal-titulo-diames"></h1>
-		<h1 class="js-cal-titulo-mes" style="font-weight:bold"></h1>
-	<h2 class="js-cal-titulo-dia"></h2>
+		<h1 class="js-cal-titulo-diames"><?php echo $dataDia;?></h1>
+		<h1 class="js-cal-titulo-mes" style="font-weight:bold"><?php echo $dataMes;?></h1>
+		<h2 class="js-cal-titulo-dia"><?php echo $dataDiaNome;?></h2>
 	</div>
 
 	
@@ -1012,9 +1021,9 @@
 				<section class="header-date">
 					<div class="header-date-buttons"></div>
 					<div class="header-date-now">
-						<h1 class="js-cal-titulo-diames"></h1>
-						<h2 class="js-cal-titulo-mes"></h2>
-						<h3 class="js-cal-titulo-dia"></h3>
+						<h1 class="js-cal-titulo-diames"><?php echo $dataDia;?></h1>
+						<h2 class="js-cal-titulo-mes"><?php echo $dataMes;?></h2>
+						<h3 class="js-cal-titulo-dia"><?php echo $dataDiaNome;?></h3>
 					</div>
 				</section>
 			</div>
@@ -1022,23 +1031,76 @@
 		</div>
 	</header>
 
+
+	<script type="text/javascript">
+		var agendaMobile=1;
+		$(function(){
+			$('.js-filtro').change(function(){
+				let id_profissional = $('select[name=id_profissional]').val();
+				let id_cadeira = $('select[name=id_cadeira]').val();
+				let data = $('input[name=data]').val();
+				$.fancybox.open({src:"#loading",modal:true});
+				document.location.href=`<?php echo basename($_SERVER['PHP_SELF']);?>?data=${data}&id_profissional=${id_profissional}&id_cadeira=${id_cadeira}`;
+			});
+			$('.js-calendario').datetimepicker({
+				timepicker:false,
+				format:'d F Y',
+				scrollMonth:false,
+				scrollTime:false,
+				scrollInput:false,
+				onChangeDateTime:function(dp,dt) {
+					let val = dt.val();
+					let aux = val.split(' ');
+					aux[1]=eval(unMes(aux[1]));
+					aux[1]++;
+					aux[1]=d2(aux[1]);
+					let data = `${aux[0]}/${(aux[1])}/${aux[2]}`;
+					$('input[name=data]').val(`${data}`).trigger('change');
+				}
+			});
+			$('.js-agenda').click(function(){
+				let id_agenda = $(this).attr('data-id_agenda');	
+				popView(id_agenda);
+			})
+		})
+	</script>
 	<main class="main">
 		<div class="main__content content">
-
+			<input type="hidden" name="data" class="js-filtro" value="<?php echo date('d/m/Y',strtotime($data_inicio));?>" />
 			<section class="filter filter--sticky">
 				<div class="filter-group" style="width:100%;">
 					<div class="filter-form form" style="width:100%;">
 						<dl style="flex:0;">
-							<dd><a href="javascript:;" class="button button_main" data-aside="add"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a></dd>
+							<dd><a href="javascript:;" class="button button_main js-novoAgendamento"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a></dd>
 						</dl>
 						<dl style="flex:0;">
 							<dd><a href="javascript:;" class="button js-calendario"><span class="iconify" data-icon="bi:calendar-week" data-inline="false" data-width="20"></span></a></dd>
 						</dl>
 						<dl style="flex:1">
-							<dd><select name=""><option value="">Consultório...</option></select></dd>
+							<dd>
+								<select name="id_cadeira" class="chosen js-filtro" data-placeholder="Todos consultórios">
+									<option value=""></option>
+									<?php
+									foreach($_cadeiras as $c) {
+										if($c->lixo==1) continue;
+										echo '<option value="'.$c->id.'"'.((isset($values['id_cadeira']) and $values['id_cadeira']==$c->id)?' selected':'').'>'.utf8_encode($c->titulo).'</option>';
+									}
+									?>
+								</select>
+							</dd>
 						</dl>
 						<dl style="flex:1;">
-							<dd><select name=""><option value="">Profissional...</option></select></dd>
+							<dd>
+								<select name="id_profissional" class="chosen js-filtro" data-placeholder="Todos Profissionais">
+									<option value=""></option>
+									<?php
+									foreach($_profissionais as $p) {
+										if($p->lixo==1 or $p->check_agendamento==0) continue;
+										echo '<option value="'.$p->id.'"'.((isset($values['id_profissional']) and $values['id_profissional']==$p->id)?' selected':'').'>'.utf8_encode($p->nome).'</option>';
+									}
+									?>
+								</select>
+							</dd>
 						</dl>					
 					</div>
 				</div>
@@ -1046,44 +1108,80 @@
 
 			<section class="mcal">
 				<?php
-				foreach($registros as $data=>$regs) {
+				if(count($registros)>0) {
+					foreach($registros as $data=>$regs) {
 
-					$ano=substr($data,0,4);
-					$mes=substr($data,4,2);
-					$dia=substr($data,6,2);
+						$ano=substr($data,0,4);
+						$mes=substr($data,4,2);
+						$dia=substr($data,6,2);
 
-					$diaSemana=date('w',strtotime($ano."-".$mes."-".$dia));
-					$diaSemana=isset($_dias[$diaSemana]) ? substr(strtolowerWLIB($_dias[$diaSemana]),0,3) : '';
-				?>
-				<div class="mcal-item">
-					<aside class="mcal-date">
-						<p class="mcal-date__week"><?php echo $diaSemana;?></p>
-						<p class="mcal-date__day"><?php echo $dia;?></p>
-						<p class="mcal-date__month"><?php echo strtolower(substr(mes($mes),0,3));?></p>
-					</aside>
-					<article class="mcal-events">
-						<?php
-						foreach($regs as $x) {
-							$paciente = isset($_pacientes[$x->id_paciente]) ? $_pacientes[$x->id_paciente] : '';
-							$cadeira = isset($_cadeiras[$x->id_cadeira]) ? $_cadeiras[$x->id_cadeira] : '';
-							$horaInicio = date('H:i',strtotime($x->agenda_data));
-							$horaFinal = date('H:i',strtotime($x->agenda_data." + $x->agenda_duracao minutes"));
+						$diaSemana=date('w',strtotime($ano."-".$mes."-".$dia));
+						$diaSemana=isset($_dias[$diaSemana]) ? substr(strtolowerWLIB($_dias[$diaSemana]),0,3) : '';
 						?>
-						<section class="cal-item" style="border-left:6px solid #1182ea;">
-							<section class="cal-item__inner1">
-								<div class="cal-item-dados">
-									<h2 style="margin-top:0"><?php echo utf8_encode($paciente->nome);?></h2>
-									<h1><?php echo $horaInicio."-".$horaFinal;?> - <?php echo utf8_encode($cadeira->titulo);?></h1>
-								</div>
-								<div class="cal-item__fotos"><div class="cal-item-foto"><span style="background:#0066ff">KF</span></div></div>
-							</section>
-						</section>
+						<div class="mcal-item">
+							<aside class="mcal-date">
+								<p class="mcal-date__week"><?php echo $diaSemana;?></p>
+								<p class="mcal-date__day"><?php echo $dia;?></p>
+								<p class="mcal-date__month"><?php echo strtolower(substr(mes($mes),0,3));?></p>
+							</aside>
+							<article class="mcal-events">
+								<?php
+								foreach($regs as $x) {
+									
+									$cadeira = isset($_cadeiras[$x->id_cadeira]) ? $_cadeiras[$x->id_cadeira] : '';
+									$horaInicio = date('H:i',strtotime($x->agenda_data));
+									$horaFinal = date('H:i',strtotime($x->agenda_data." + $x->agenda_duracao minutes"));
+
+									$profissionaisIniciais='';
+									if(!empty($x->profissionais)) {
+										$auxProfissionais=explode(",",$x->profissionais);
+										foreach($auxProfissionais as $idProfissional) {
+											if(!empty($idProfissional) and isset($_profissionais[$idProfissional])) {
+												$profissional = $_profissionais[$idProfissional];
+
+												$profissionaisIniciais .= '<span style="background:'.$profissional->calendario_cor.'">'.$profissional->calendario_iniciais.'</span>';
+											}
+										}
+									}
+
+
+									if($x->agendaPessoal==1) {
+									?>
+									<section class="cal-item js-agenda" data-id_agenda="<?php echo $x->id;?>" style="border-left:6px solid var(--cinza2);">
+										<section class="cal-item__inner1">
+											<div class="cal-item-dados">
+												<h2 style="margin-top:0">Agendamento Pessoal</h2>
+												<h1><?php echo $horaInicio."-".$horaFinal;?> - <?php echo utf8_encode($cadeira->titulo);?></h1>
+											</div>
+											<div class="cal-item__fotos"><div class="cal-item-foto"><?php echo $profissionaisIniciais;?></div></div>
+										</section>
+									</section>
+									<?php
+									} else {
+										$paciente = isset($_pacientes[$x->id_paciente]) ? $_pacientes[$x->id_paciente] : '';
+
+									?>
+									<section class="cal-item js-agenda" data-id_agenda="<?php echo $x->id;?>" style="border-left:6px solid #1182ea;">
+										<section class="cal-item__inner1">
+											<div class="cal-item-dados">
+												<h2 style="margin-top:0"><?php echo utf8_encode($paciente->nome);?></h2>
+												<h1><?php echo $horaInicio."-".$horaFinal;?> - <?php echo utf8_encode($cadeira->titulo);?></h1>
+											</div>
+											<div class="cal-item__fotos"><div class="cal-item-foto"><?php echo $profissionaisIniciais;?></div></div>
+										</section>
+									</section>
+									<?php
+									}
+								}
+								?>
+							</article>
+						</div>
 						<?php
-						}
-						?>
-					</article>
-				</div>
-				<?php
+					}
+				} else {
+					?>
+					<p style="color:var(--cinza4);text-align: center;"><span class="iconify" data-icon="fe:cry" data-height="40"></span><br />Nenhum agendamento registrado.</p>
+					<?php
 				}
 				?>
 

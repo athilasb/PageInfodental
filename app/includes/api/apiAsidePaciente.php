@@ -578,9 +578,13 @@
 						foreach($medicamentosJSON as $v) {
 							$v=(object)$v;
 
-							$sql->consult($_p."medicamentos","*","where id=$v->id_medicamento");
-							if($sql->rows==0) {
-								$erro='Exame '.$v->titulo.' não foi encontrado!';
+							if(!empty($v->id_medicamento)) {
+
+								$where="where id=$v->id_medicamento";
+								$sql->consult($_p."medicamentos","*",$where);
+								if($sql->rows==0) {
+									$erro='Exame '.$v->titulo.' não foi encontrado!';
+								}
 							}
 						}
 					}
@@ -588,6 +592,7 @@
 					if(empty($medicamentosJSON) or !is_array($medicamentosJSON) or count($medicamentosJSON)==0) $erro='Nenhum medicamento foi adicionado ao receituário';
 
 					if(empty($erro)) {
+
 
 						// id_tipo = 7 -> receituario
 						/*$sql->consult($_p."pacientes_evolucoes","*","WHERE data > NOW() - INTERVAL 1 MINUTE and 
@@ -3540,7 +3545,7 @@
 												medicamentos=[];
 												receituarioMedicamentosListar();
 												$('.aside-close').click();
-												document.location.reload();
+												//document.location.reload();
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
 											} else {
