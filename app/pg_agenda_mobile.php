@@ -996,11 +996,11 @@
 	}
 ?> 
 
-	<div class="cal-date-floater">
+	<?php /*<div class="cal-date-floater">
 		<h1 class="js-cal-titulo-diames"><?php echo $dataDia;?></h1>
 		<h1 class="js-cal-titulo-mes" style="font-weight:bold"><?php echo $dataMes;?></h1>
 		<h2 class="js-cal-titulo-dia"><?php echo $dataDiaNome;?></h2>
-	</div>
+	</div>*/ ?>
 
 	
 

@@ -3186,13 +3186,18 @@
 							$("#js-aside-add .js-tab a:eq(0)").click();
 						});
 
-						$('#js-aside-add .js-profissionais').chosen('destroy');
+						/*$('#js-aside-add .js-profissionais').chosen('destroy');
 						$('#js-aside-add .js-profissionais').chosen();
-						$('#js-aside-add .js-profissionais').trigger('chosen:updated');
+						$('#js-aside-add .js-profissionais').trigger('chosen:updated');*/
+						if($('#js-aside-add .js-profissionais').data('select2')) $('#js-aside-add .js-profissionais').select2('destroy');
+						$('#js-aside-add .js-profissionais').select2();
 
-						$('#js-aside-add .js-tags').chosen('destroy');
+						/*$('#js-aside-add .js-tags').chosen('destroy');
 						$('#js-aside-add .js-tags').chosen();
-						$('#js-aside-add .js-tags').trigger('chosen:updated');
+						$('#js-aside-add .js-tags').trigger('chosen:updated');*/
+						if($('#js-aside-add .js-tags').data('select2')) $('#js-aside-add .js-tags').select2('destroy');
+						$('#js-aside-add .js-tags').select2();
+
 						agendamentosProfissionais(`add`);
 						checklistItens();
 					}
@@ -3343,8 +3348,11 @@
 												$('#js-aside-edit input[name=telefone1]').val(rtn.data.telefone1);
 												$('#js-aside-edit textarea[name=obs]').val(rtn.data.obs);
 												$('#js-aside-edit select[name=id_status]').val(rtn.data.id_status)
-												$('#js-aside-edit .js-profissionais').trigger('chosen:updated'); 
-												$('#js-aside-edit .js-tags').trigger('chosen:updated'); 
+
+												//$('#js-aside-edit .js-profissionais').trigger('chosen:updated'); 
+												//$('#js-aside-edit .js-tags').trigger('chosen:updated'); 
+
+
 												if(rtn.data.agendou_dias>1) $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou há ${rtn.data.agendou_dias} dia(s)`);
 												else $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou hoje`);
 
@@ -3426,11 +3434,21 @@
 
 
 												$("#js-aside-edit").fadeIn(100,function() {
-													$('#js-aside-edit .js-profissionais').chosen('destroy');
-													setTimeout(function(){$('#js-aside-edit .js-profissionais').chosen();},100);
 
-													$('#js-aside-edit .js-tags').chosen('destroy');
-													setTimeout(function(){$('#js-aside-edit .js-tags').chosen();},100);
+													if($('#js-aside-edit .js-profissionais').data('select2')) $('#js-aside-edit .js-profissionais').select2('destroy');
+													$('#js-aside-edit .js-profissionais').select2();
+
+													/*$('#js-aside-add .js-tags').chosen('destroy');
+													$('#js-aside-add .js-tags').chosen();
+													$('#js-aside-add .js-tags').trigger('chosen:updated');*/
+													if($('#js-aside-edit .js-tags').data('select2')) $('#js-aside-edit .js-tags').select2('destroy');
+													$('#js-aside-edit .js-tags').select2();
+
+													//$('#js-aside-edit .js-profissionais').chosen('destroy');
+													//setTimeout(function(){$('#js-aside-edit .js-profissionais').chosen();},100);
+
+													//$('#js-aside-edit .js-tags').chosen('destroy');
+													//setTimeout(function(){$('#js-aside-edit .js-tags').chosen();},100);
 
 													$("#js-aside-edit .aside__inner1").addClass("active");
 													$("#js-aside-edit .js-tab a:eq(0)").click();
@@ -3527,7 +3545,7 @@
 									success:function(rtn) {
 										if(rtn.success) {
 											if(rtn.listaProfissionais || rtn.listaProfissionaisDestaque) {
-												aside.find('.js-profissionais option').remove();
+												aside.find('.js-profissionais').find('optgroup, option').remove();
 												//aside.find('.js-profissionais').append(`<option value=""></option>`);
 												if(rtn.listaProfissionaisDestaque && rtn.listaProfissionaisDestaque.length>0) {
 
@@ -3544,6 +3562,7 @@
 
 														if(itens == rtn.listaProfissionaisDestaque.length) {
 															aside.find('.js-profissionais').append(`<optgroup label="Atende nesse horário">${options}</optgroup>`);
+															//aside.find('.js-profissionais').append(`${options}`);
 														}
 													})
 
@@ -3563,6 +3582,8 @@
 														itens++;
 														if(itens == rtn.listaProfissionais.length) {
 															aside.find('.js-profissionais').append(`<optgroup label="Não atende nesse horário">${options}</optgroup>`);
+															//aside.find('.js-profissionais').append(`${options}`);
+
 														}
 													});
 												
@@ -3614,6 +3635,7 @@
 																let countryOut = country || '  ';
 																$(this).parent().parent().find('.js-country').html(countryOut);
 															}).trigger('keyup');
+
 							$('#js-aside-add select[name=id_paciente]').select2({
 								ajax: {
 									url: 'pg_agenda.php?ajax=buscaPaciente',
@@ -3643,6 +3665,7 @@
 								 $('#js-aside-add input[name=telefone1]').val(telefone).trigger('change');
 				    			
 							});
+
 							$('#js-aside-add .js-salvar').click(function(){
 								let obj = $(this);
 
@@ -3858,7 +3881,7 @@
 								<dl>
 									<dt>Profissionais</dt>
 									<dd>
-										<select class="js-profissionais" multiple >
+										<select class="js-profissionais" multiple>
 											<option value=""></option>
 											<?php
 											foreach($_profissionais as $p) {
@@ -3887,7 +3910,6 @@
 								<dt>Tags</dt>
 								<dd>
 									<select class="js-tags" multiple>
-										<option value=""></option>
 										<?php
 											foreach($_tags as $p) {
 												echo '<option value="'.$p->id.'">'.utf8_encode($p->titulo).'</option>';

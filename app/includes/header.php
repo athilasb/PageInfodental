@@ -102,6 +102,10 @@
 
     $_page=basename($_SERVER['PHP_SELF']);
     $link_landingpage="https://".$_ENV['NAME'].".infodental.dental/";
+
+
+    $mobileDetect=new MobileDetect();
+    $mobile=(!$mobileDetect->isMobile() and !$mobileDetect->isTablet())?0:1;
       
 ?>
 <!doctype html>
@@ -140,8 +144,9 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <?php /*<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />*/ ?>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<?php /*<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>*/ ?>
 
+<script type="text/javascript" src="js/jquery.js?v3.6.4"></script>
 <script defer type="text/javascript" src="js/jquery.select2.js"></script>
 <?php /*<script defer type="text/javascript" src="js/jquery-ui.js"></script>*/?>
 <script defer type="text/javascript" src="js/jquery.slick.js"></script>
@@ -167,6 +172,7 @@
 <script type="text/javascript" src="js/jquery.daterangepicker.js"></script>
 
 <script type="text/javascript">
+    var isMobile = <?php echo $mobile;?>;
     var id_paciente = 0;
     var id_agenda = 0;
     var calendar = '';
