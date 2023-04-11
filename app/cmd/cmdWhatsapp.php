@@ -27,6 +27,7 @@
 					'id_agenda'=>10348);//29507);
 
 		if($wts->adicionaNaFila($attr)) $wts=1;
+		echo "aki o";
 	}
 
 	die();
