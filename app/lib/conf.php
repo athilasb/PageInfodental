@@ -14,7 +14,6 @@
 			$_SERVER['HTTP_HOST']=="testes.infodental.dental") {
 			$_ENV['MYSQL_HOST']='51.159.74.70:23821';
 
-
 			if(basename($_SERVER['PHP_SELF'])=="migracaoDentalOffice.php") {
 				$_ENV['NAME']=$_ENV['MYSQL_DB']='';
 

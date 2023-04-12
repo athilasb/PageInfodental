@@ -471,7 +471,6 @@
 
 			$registros=$registrosDesmarcados=array();
 			$pacientesIds=$agendaIds=array();
-			
 			$sql->consult($_p."agenda","*",$where);
 			if($sql->rows) {
 
@@ -965,7 +964,7 @@
 	if(isset($values['id_cadeira']) and is_numeric($values['id_cadeira'])) $where.=" and id_cadeira = '".$values['id_cadeira']."'";
 
 	$registros=$pacientesIds=[];
-	$sql->consult($_p."agenda","*",$where);
+	$sql->consult($_p."agenda","*",$where." order by agenda_data asc");
 	//echo $where.$sql->rows;
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$registros[date('Ymd',strtotime($x->agenda_data))][]=$x;
