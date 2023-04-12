@@ -144,9 +144,6 @@ function getPagamentos($data_inicial_filtro, $data_final_filtro)
 }
 [$dados, $valor] = getPagamentos($data_inicial_filtro, $data_final_filtro);
 
-// echo "<pre>";
-// print_r($dados);
-// die();
 
 ?>
 <header class="header">
@@ -187,8 +184,8 @@ function getPagamentos($data_inicial_filtro, $data_final_filtro)
 			<div class="filter-group">
 				<a href="javascript:;" class="button js-calendario">
 					<span class="iconify" data-icon="bi:calendar-week"></span>
+					<!-- <input type="text" id="calendario" /> -->
 				</a>
-				<div id="calendario"></div>
 				<div class="button-group">
 					<a href="/pg_financeiro_contasapagar.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 7 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 7) ? 'active' : '' ?>" data-dias='7'>7 dias</a>
 					<a href="/pg_financeiro_contasapagar.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 30 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 30) ? 'active' : '' ?>" data-dias='30'>30 dias</a>
@@ -263,10 +260,41 @@ function getPagamentos($data_inicial_filtro, $data_final_filtro)
 		</section>
 	</div>
 </main>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css" />
+<script src="http://code.jquery.com/jquery-1.8.2.js"></script>
+<script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
 <script>
+	function minhaFuncao(data1, data2) {
+		console.log(`DATA 1: ${data1} DATA2: ${data2}`)
+		// faz alguma coisa com as duas datas selecionadas
+	}
+
 	$('.js-btn-abrir-aside').on('click', (function() {
 		abrirAside1()
 	}));
+	$(function() {
+		// add calendario no botao de filtro
+		$("#calendario").datepicker({
+			onSelect: function(dataSelecionada) {
+				console.log(dataSelecionada)
+				return
+				// verifica se já foram selecionadas duas datas
+				if (calendario.data('datas-selecionadas') == 2) {
+					// chama a função passando as duas datas selecionadas
+					minhaFuncao(calendario.data('data-1'), calendario.data('data-2'));
+				} else {
+					// armazena a data selecionada
+					calendario.data('datas-selecionadas', calendario.data('datas-selecionadas') + 1);
+					if (calendario.data('datas-selecionadas') == 1) {
+						calendario.data('data-1', dataSelecionada);
+					} else {
+						calendario.data('data-2', dataSelecionada);
+					}
+				}
+
+			}
+		});
+	});
 </script>
 
 <?php

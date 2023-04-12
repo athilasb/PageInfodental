@@ -400,14 +400,14 @@ if (isset($_POST['ajax'])) {
 						$meses = intVal($objeto->split_recorrente->meses);
 						$data_vencimento_inicial = $objeto->pagamentos[0]->data_vencimento;
 						$id_formapagamento = $objeto->pagamentos[0]->id_formapagamento;
-						$id_centro_de_custo = $x->id_centro_de_custo;
-						$id_categoria_split = $x->id_categoria_split;
+						$id_centro_de_custo = $objeto->split_pagamento->id_centro_de_custo;
+						$id_categoria_split = $objeto->split_pagamento->id_categoria_split;
 
 						$vSQL .= ",valor='$valor_pagamento'";
 						$vSQL .= ",id_formapagamento='$id_formapagamento'";
 						while ($meses > 0) {
 							$meses--;
-							$sql->add($_p . "financeiro_fluxo", "$vSQL,data_vencimento='$data_vencimento_inicial',id_centro_custo='$id_centro_de_custo',id_categoria_split='$id_categoria_split'");
+							$sql->add($_p . "financeiro_fluxo", "$vSQL,data_vencimento='$data_vencimento_inicial',id_centro_custo='$id_centro_de_custo',id_categoria='$id_categoria_split'");
 							$idAdd = $sql->ulid;
 							$sql->update($_p . "financeiro_fluxo", "id_registro='$idAdd'", "WHERE id=$idAdd");
 							$data_vencimento_inicial = date('Y-m-d', strtotime("+ $acada days", strtotime($data_vencimento_inicial)));
@@ -448,11 +448,11 @@ if (isset($_POST['ajax'])) {
 					// aqui é se nao for split e nao for recorrente
 					foreach ($objeto->pagamentos as $x) {
 						$data_vencimento_inicial = $x->data_vencimento;
-						$valor = $x->valor;
+						$valor = ($x->valor)*(-1);
 						$id_formapagamento = $x->id_formapagamento;
-						$id_centro_de_custo = $x->id_centro_de_custo;
-						$id_categoria_split = $x->id_categoria_split;
-						$sql->add($_p . "financeiro_fluxo", "$vSQL,data_vencimento='$data_vencimento_inicial',valor='$valor',id_formapagamento='$id_formapagamento',id_centro_custo='$id_centro_de_custo',id_categoria_split='$id_categoria_split'");
+						$id_centro_de_custo = $objeto->split_pagamento->id_centro_de_custo;
+						$id_categoria_split = $objeto->split_pagamento->id_categoria_split;
+						$sql->add($_p . "financeiro_fluxo", "$vSQL,data_vencimento='$data_vencimento_inicial',valor='$valor',id_formapagamento='$id_formapagamento',id_centro_custo='$id_centro_de_custo',id_categoria='$id_categoria_split'");
 						$idAdd = $sql->ulid;
 						$sql->update($_p . "financeiro_fluxo", "id_registro='$idAdd'", "WHERE id=$idAdd");
 					}
@@ -2615,7 +2615,6 @@ if (isset($_POST['ajax'])) {
 				}
 
 				let data = `ajax=addPagamento&tipo_beneficiario=${tipo_beneficiario}&id_beneficiario=${id_beneficiario}&data_emissao=${data_emissao}&descricao=${descricao}&valor_pagamento=${valor_pagamento}&objeto=${JSON.stringify(objetoPagamento)}`;
-
 				$.ajax({
 					type: "POST",
 					url: baseURLApiAsidePagamentos,
@@ -2630,8 +2629,8 @@ if (isset($_POST['ajax'])) {
 								confirmButtonColor: "#424242"
 							})
 							setTimeout(() => {
-								//window.location.href = window.location.href
-							}, 5000)
+								window.location.href = window.location.href
+							}, 2000)
 						} else if (rtn.error) {
 							swal({
 								title: "Erro!",
@@ -2640,6 +2639,9 @@ if (isset($_POST['ajax'])) {
 								type: "error",
 								confirmButtonColor: "#424242"
 							});
+						}else{
+							console.log('erro desconhecido')
+							console.log(rtn)
 						}
 					},
 					error: function(err) {
@@ -2911,6 +2913,7 @@ if (isset($_POST['ajax'])) {
 					// }
 				});
 			});
+			
 			AdicionaMaskaras()
 		})
 	</script>
