@@ -3038,13 +3038,224 @@
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					$_tags[]=$x;
 				}
-
-
 				?>
+
+				<!-- Js Geral -->
+				<script type="text/javascript">
+					const verificaAgendamento = () => {
+						let profissionais = $('.js-form-agendamento select.js-profissionais').val();
+						let id_cadeira = $('.js-form-agendamento select[name=id_cadeira]').val();
+						let id_paciente = $('.js-form-agendamento select[name=id_paciente]').val();
+						let agenda_data = $('.js-form-agendamento input[name=agenda_data]').val();
+						let agenda_hora = $('.js-form-agendamento input[name=agenda_hora]').val();
+
+						let data = `ajax=agendamentoVerificarDisponibilidade&profissionais=${profissionais}&id_cadeira=${id_cadeira}&agenda_data=${agenda_data}&agenda_hora=${agenda_hora}&id_paciente=${id_paciente}`;
+						
+
+						$.ajax({
+							type:'POST',
+							url:'box/boxAgendamento.php',
+							data:data,
+							success:function(rtn) {
+								if(rtn.success) {
+									$('#box-validacoes dd').remove();
+									rtn.validacao.forEach(x=> {
+										let item = ``;
+										if(x.atende==1) {
+											item = `<dd style="color:green"><i class="iconify" data-icon="bx-bx-check"></i> ${x.profissional} atende neste dia/horário</dd>`;
+										} else {
+											item = `<dd style="color:red"><span class="iconify" data-icon="ion:alert-circle-sharp"></span> ${x.profissional} não atende neste dia/horário</dd>`;
+										}
+										$('#box-validacoes').append(item);
+									})
+								} else {
+									$('#box-validacoes dd').remove();
+								}
+							},
+							error:function() {
+								$('#box-validacoes dd').remove();
+							}
+						})
+					}
+
+					const calendarioVisualizacaoData = () => { 
+						
+						let date = calendar.getDate();
+
+						let mesString='';
+
+						if(date.getMonth()==0) mesString='jan'; 
+						else if(date.getMonth()==1) mesString='fev'; 
+						else if(date.getMonth()==2) mesString='mar'; 
+						else if(date.getMonth()==3) mesString='abr'; 
+						else if(date.getMonth()==4) mesString='mai'; 
+						else if(date.getMonth()==5) mesString='jun'; 
+						else if(date.getMonth()==6) mesString='jul'; 
+						else if(date.getMonth()==7) mesString='ago'; 
+						else if(date.getMonth()==8) mesString='set'; 
+						else if(date.getMonth()==9) mesString='out'; 
+						else if(date.getMonth()==10) mesString='nov'; 
+						else if(date.getMonth()==11) mesString='dez'; 
+
+						if(date.getUTCDay()==0) diaString='domingo';
+						else if(date.getUTCDay()==1) diaString='segunda-feira';
+						else if(date.getUTCDay()==2) diaString='terça-feira';
+						else if(date.getUTCDay()==3) diaString='quarta-feira';
+						else if(date.getUTCDay()==4) diaString='quinta-feira';
+						else if(date.getUTCDay()==5) diaString='sexta-feira';
+						else if(date.getUTCDay()==6) diaString='sábado';
+
+						let dateString = date.getDate()+" "+mesString+" "+date.getFullYear();
+
+						//console.log(date.getUTCDay()+' => '+dateString+' => '+calendar.view.title);
+						//console.log(date.getTimezoneOffset());
+
+						$('.js-cal-titulo-diames').html(date.getDate()>=9?date.getDate():`0${date.getDate()}`);
+						$('.js-cal-titulo-mes').html(mesString);
+						$('.js-cal-titulo-dia').html(diaString);
+					}
+
+					const dia = (d) => {
+						if(d==0) return "dom.";
+						else if(d==1) return "seg.";
+						else if(d==2) return "ter.";
+						else if(d==3) return "qua.";
+						else if(d==4) return "qui.";
+						else if(d==5) return "sex.";
+						else if(d==6) return "sáb.";
+					}
+
+					const unMes = (m) => {
+						m = m.toUpperCase();
+						if(m=="JANEIRO") return "0";
+						else if(m=="FEVEREIRO") return "1";
+						else if(m=="MARÇO") return "2";
+						else if(m=="ABRIL") return "3";
+						else if(m=="MAIO") return "4";
+						else if(m=="JUNHO") return "5";
+						else if(m=="JULHO") return "6";
+						else if(m=="AGOSTO") return "7";
+						else if(m=="SETEMBRO") return "8";
+						else if(m=="OUTUBRO") return "9";
+						else if(m=="NOVEMBRO") return "10";
+						else if(m=="DEZEMBRO") return "11";
+					}
+
+					const novoAgendamento = (id_cadeira,dataHora) => {
+						
+						let date = '';
+						if(agendaMobile==1) {
+							date = new Date();
+						} else {
+							date = calendar.getDate();
+						}
+						let dia = d2(date.getDate());
+						let mes = d2(date.getMonth()+1);
+						let ano = date.getFullYear();
+
+						let agendaHora='';
+						if(dataHora.length>0) {
+							let dt = new Date(dataHora);
+							let dtHora = d2(dt.getHours());
+							let dtMin = d2(dt.getMinutes());
+							dia = d2(dt.getDate());
+							mes = d2(dt.getMonth()+1);
+							ano = d2(dt.getFullYear());
+							agendaHora = `${dtHora}:${dtMin}`;
+						}
+						data = `${dia}/${mes}/${ano}`;
+
+						//console.log(dataHora+'-> '+data+' '+agendaHora);
+						
+						
+						$('#js-aside-add select[name=id_status]').val(1);
+						$('#js-aside-add select[name=duracao]').val(``);
+						$('#js-aside-add input[name=telefone1]').val(``);
+						$('#js-aside-add input[name=agenda_duracao]').val(30);
+						$('#js-aside-add textarea[name=obs]').val(``);
+						$('#js-aside-add select[name=profissionais] option:checked').prop('checked',false).trigger('chosen:updated');
+						$('#js-aside-add input[name=agenda_data]').val(data);
+						$('#js-aside-add input[name=agenda_hora]').val(agendaHora);
+						$('#js-aside-add select[name=id_cadeira]').val(id_cadeira);
+						$('#js-aside-add select[name=id_paciente]').val(null).trigger('change');
+						$('#js-aside-add input[name=alteracao]').val(0);
+
+
+						$("#js-aside-add").fadeIn(100,function() {
+							$("#js-aside-add .aside__inner1").addClass("active");
+							$("#js-aside-add .js-tab a:eq(0)").click();
+						});
+
+						/*$('#js-aside-add .js-profissionais').chosen('destroy');
+						$('#js-aside-add .js-profissionais').chosen();
+						$('#js-aside-add .js-profissionais').trigger('chosen:updated');*/
+						if($('#js-aside-add .js-profissionais').data('select2')) $('#js-aside-add .js-profissionais').select2('destroy');
+						$('#js-aside-add .js-profissionais').select2();
+
+						/*$('#js-aside-add .js-tags').chosen('destroy');
+						$('#js-aside-add .js-tags').chosen();
+						$('#js-aside-add .js-tags').trigger('chosen:updated');*/
+						if($('#js-aside-add .js-tags').data('select2')) $('#js-aside-add .js-tags').select2('destroy');
+						$('#js-aside-add .js-tags').select2();
+
+						agendamentosProfissionais(`add`);
+						checklistItens();
+					}
+					
+					const checklistItens = () => {
+						$('#js-aside-add .js-checklist-itens').html('');
+						let data = `ajax=checklistItens`;
+						$.ajax({
+							type:"POST",
+							data:data,
+							success:function(rtn){ 
+								if(rtn.success) {
+									rtn.regs.forEach(x=>{
+										$(`#js-aside-add .js-checklist-itens`).append(`<div class="colunas3">
+											<dl>	
+												<dd><label><input type="checkbox" name="checklist-${x.id}" class="input-switch" />${x.titulo}</label></dd>
+											</dl>
+											<dl class="dl2">
+												<dd><input type="text" name="checklist_descricao-${x.id}" placeholder="descrição" /></dd>
+											</dl>
+										</div>`);
+									});
+								}
+							}
+						});
+					}
+
+					const formatTemplate = (state) => {
+						if (!state.id) return state.text;
+						var baseUrl = "/user/pages/images/flags";
+						infoComplementar=``;
+						infoComplementar+= !! state.cpf ? ` - CPF: ${state.cpf}` : '';
+						infoComplementar+= !! state.telefone ? ` - Tel.: ${state.telefone}` : '';
+						var $state = $('<span style="display:flex; align-items:center; gap:.5rem;"><img src="'+state.ft+'" style="width:40px;height:40px;border-radius:100%;" /> ' + state.text + infoComplementar + '</span>');
+						return $state;
+					}
+
+					const formatTemplateSelection = (state) => {
+						if (!state.id) return state.text;
+						var baseUrl = "/user/pages/images/flags";
+						infoComplementar=``;
+						infoComplementar+= !! state.cpf ? ` - CPF: ${state.cpf}` : '';
+						infoComplementar+= !! state.telefone ? ` - Tel.: ${state.telefone}` : '';
+						var $state = $('<span><img src="img/ilustra-perfil.png" style="width:30px;height:30px;border-radius:50px;" /> ' + state.text + infoComplementar + '</span>');
+						return $state;
+					}
+
+					$(function(){
+						$('.js-novoAgendamento').click(function(){
+							novoAgendamento(0,'');
+						})
+					})
+				</script>
+
 				<!-- Aside Novo Agendamento -->
 				<section class="aside aside-add" id="js-aside-add">
 					<script type="text/javascript">
-
+						
 						const popView = (id_agenda) => {
 							$('#js-aside-edit .js-foto').attr('src','img/ilustra-usuario.jpg');
 							
@@ -3137,8 +3348,11 @@
 												$('#js-aside-edit input[name=telefone1]').val(rtn.data.telefone1);
 												$('#js-aside-edit textarea[name=obs]').val(rtn.data.obs);
 												$('#js-aside-edit select[name=id_status]').val(rtn.data.id_status)
-												$('#js-aside-edit .js-profissionais').trigger('chosen:updated'); 
-												$('#js-aside-edit .js-tags').trigger('chosen:updated'); 
+
+												//$('#js-aside-edit .js-profissionais').trigger('chosen:updated'); 
+												//$('#js-aside-edit .js-tags').trigger('chosen:updated'); 
+
+
 												if(rtn.data.agendou_dias>1) $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou há ${rtn.data.agendou_dias} dia(s)`);
 												else $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou hoje`);
 
@@ -3220,11 +3434,21 @@
 
 
 												$("#js-aside-edit").fadeIn(100,function() {
-													$('#js-aside-edit .js-profissionais').chosen('destroy');
-													setTimeout(function(){$('#js-aside-edit .js-profissionais').chosen();},100);
 
-													$('#js-aside-edit .js-tags').chosen('destroy');
-													setTimeout(function(){$('#js-aside-edit .js-tags').chosen();},100);
+													if($('#js-aside-edit .js-profissionais').data('select2')) $('#js-aside-edit .js-profissionais').select2('destroy');
+													$('#js-aside-edit .js-profissionais').select2();
+
+													/*$('#js-aside-add .js-tags').chosen('destroy');
+													$('#js-aside-add .js-tags').chosen();
+													$('#js-aside-add .js-tags').trigger('chosen:updated');*/
+													if($('#js-aside-edit .js-tags').data('select2')) $('#js-aside-edit .js-tags').select2('destroy');
+													$('#js-aside-edit .js-tags').select2();
+
+													//$('#js-aside-edit .js-profissionais').chosen('destroy');
+													//setTimeout(function(){$('#js-aside-edit .js-profissionais').chosen();},100);
+
+													//$('#js-aside-edit .js-tags').chosen('destroy');
+													//setTimeout(function(){$('#js-aside-edit .js-tags').chosen();},100);
 
 													$("#js-aside-edit .aside__inner1").addClass("active");
 													$("#js-aside-edit .js-tab a:eq(0)").click();
@@ -3321,7 +3545,7 @@
 									success:function(rtn) {
 										if(rtn.success) {
 											if(rtn.listaProfissionais || rtn.listaProfissionaisDestaque) {
-												aside.find('.js-profissionais option').remove();
+												aside.find('.js-profissionais').find('optgroup, option').remove();
 												//aside.find('.js-profissionais').append(`<option value=""></option>`);
 												if(rtn.listaProfissionaisDestaque && rtn.listaProfissionaisDestaque.length>0) {
 
@@ -3338,6 +3562,7 @@
 
 														if(itens == rtn.listaProfissionaisDestaque.length) {
 															aside.find('.js-profissionais').append(`<optgroup label="Atende nesse horário">${options}</optgroup>`);
+															//aside.find('.js-profissionais').append(`${options}`);
 														}
 													})
 
@@ -3357,6 +3582,8 @@
 														itens++;
 														if(itens == rtn.listaProfissionais.length) {
 															aside.find('.js-profissionais').append(`<optgroup label="Não atende nesse horário">${options}</optgroup>`);
+															//aside.find('.js-profissionais').append(`${options}`);
+
 														}
 													});
 												
@@ -3389,6 +3616,56 @@
 						}
 
 						$(function(){
+
+							$('#js-aside-add input[name=agenda_data]').datetimepicker({
+												timepicker:false,
+												format:'d/m/Y',
+												scrollMonth:false,
+												scrollTime:false,
+												scrollInput:false,
+											});
+
+							$('#js-aside-add input[name=agenda_hora]').datetimepicker({
+								  datepicker:false,
+							      format:'H:i',
+							      pickDate:false
+							});
+
+							$('input[name=telefone1],.js-asPaciente-telefone1').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
+																let countryOut = country || '  ';
+																$(this).parent().parent().find('.js-country').html(countryOut);
+															}).trigger('keyup');
+
+							$('#js-aside-add select[name=id_paciente]').select2({
+								ajax: {
+									url: 'pg_agenda.php?ajax=buscaPaciente',
+									data: function (params) {
+											var query = {
+											search: params.term,
+											type: 'public'
+										}
+										// ?search=[term]&type=public
+										return query;
+									},
+									processResults: function (data) {
+										// Transforms the top-level key of the response object from 'items' to 'results'
+										return {
+											results: data.items
+										};
+									}
+
+								},
+								templateResult:formatTemplate,
+								//	templateSelection:formatTemplateSelection,
+								//dropdownParent: $(".modal")
+							});
+
+							$('#js-aside-add select[name=id_paciente]').on('select2:select',function(e){
+								 var telefone = e.params.data.telefone ? e.params.data.telefone : '';
+								 $('#js-aside-add input[name=telefone1]').val(telefone).trigger('change');
+				    			
+							});
+
 							$('#js-aside-add .js-salvar').click(function(){
 								let obj = $(this);
 
@@ -3604,7 +3881,7 @@
 								<dl>
 									<dt>Profissionais</dt>
 									<dd>
-										<select class="js-profissionais" multiple >
+										<select class="js-profissionais" multiple>
 											<option value=""></option>
 											<?php
 											foreach($_profissionais as $p) {
@@ -3633,7 +3910,6 @@
 								<dt>Tags</dt>
 								<dd>
 									<select class="js-tags" multiple>
-										<option value=""></option>
 										<?php
 											foreach($_tags as $p) {
 												echo '<option value="'.$p->id.'">'.utf8_encode($p->titulo).'</option>';

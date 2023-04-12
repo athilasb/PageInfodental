@@ -46,6 +46,7 @@ function getValores($data_inicial, $data_final)
 			$origens[$x->id] = $x->tabela;
 		}
 	}
+
 	// aqui eu busco as baixas que foram dadas
 	$_baixas = array();
 	$sql->consult($_p . "financeiro_fluxo", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 AND desconto=0  AND valor>0 order by data_vencimento asc");
@@ -56,6 +57,17 @@ function getValores($data_inicial, $data_final)
 			$idRegistros[$x->id_registro] = $x->id_registro;
 		}
 	}
+	//pegando os recebimentos totais
+	$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 order by data_vencimento asc");
+	if ($sql->rows) {
+		while ($x = mysqli_fetch_object($sql->mysqry)) {
+			$_registros[$x->id] = $x;
+			$idsPagamentos[$x->id] = $x->id;
+			$idTratamentos[$x->id_tratamento] = $x->id_tratamento;
+			$idPagantes[$x->id_pagante] = $x->id_pagante;
+		}
+	}
+	// pegandos os IDS pagantes e tratamentos
 	if (count($idRegistros) > 0) {
 		$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", " WHERE id IN (" . IMPLODE(',', $idRegistros) . ")");
 		if ($sql->rows) {
@@ -66,6 +78,7 @@ function getValores($data_inicial, $data_final)
 			}
 		}
 	}
+	// pegando os tratamentos 
 	if (count($idTratamentos) > 0) {
 		$sql->consult($_p . "pacientes_tratamentos ", "*", " WHERE id IN (" . IMPLODE(',', $idTratamentos) . ")");
 		if ($sql->rows) {
@@ -74,6 +87,7 @@ function getValores($data_inicial, $data_final)
 			}
 		}
 	}
+	// pegando os pagantes
 	if (count($idPagantes) > 0) {
 		$sql->consult($_p . "pacientes", "*", " WHERE id IN (" . IMPLODE(',', $idPagantes) . ")");
 		if ($sql->rows) {
@@ -87,7 +101,6 @@ function getValores($data_inicial, $data_final)
 	foreach ($_baixas as $baixa) {
 		$titulo = (isset($_registros[$baixa->id_registro]) && isset($_registros[$baixa->id_registro]->id_tratamento) && isset($_tratamentos[$_registros[$baixa->id_registro]->id_tratamento])) ? utf8_encode($_tratamentos[$_registros[$baixa->id_registro]->id_tratamento]->titulo) : "";
 		$pagante  = (isset($_registros[$baixa->id_registro]) && isset($_registros[$baixa->id_registro]->id_pagante) && isset($_pagantes[$_registros[$baixa->id_registro]->id_pagante])) ? $_pagantes[$_registros[$baixa->id_registro]->id_pagante]->nome : '';
-
 		$dados[$baixa->id]['id_baixa'] = $baixa->id;
 		$dados[$baixa->id]['data_vencimento'] = $baixa->data_vencimento;
 		$dados[$baixa->id]['id_registro'] = $baixa->id_registro;
@@ -119,17 +132,12 @@ function getValores($data_inicial, $data_final)
 			}
 		}
 	}
-	$_registros = array();
-	$idsPagamentos = array();
-	$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 order by data_vencimento asc");
-	if ($sql->rows) {
-		while ($x = mysqli_fetch_object($sql->mysqry)) {
-			$_registros[$x->id] = $x;
-			$idsPagamentos[$x->id] = $x->id;
-		}
-	}
+
+
+
+
 	foreach ($_registros as $id => $pag) {
-		$sql->consult($_p . "financeiro_fluxo", "SUM(valor)", "WHERE id_registro='$id' AND id_origem=1");
+		$sql->consult($_p . "financeiro_fluxo", "SUM(valor)", "WHERE id_registro='$id' AND id_origem=1 AND lixo=0");
 		$key = "SUM(valor)";
 		$soma = mysqli_fetch_object($sql->mysqry);
 		if ($soma->$key >= $pag->valor) {
@@ -137,40 +145,34 @@ function getValores($data_inicial, $data_final)
 		} else {
 			$faltam = ($pag->valor - $soma->$key);
 			//echo "AINDA FALTA UM VALOR DE: $faltam<br>";
-			$titulo = (isset($_registros[$pag->id]) && isset($_registros[$pag->id]->id_tratamento) && isset($_tratamentos[$_registros[$pag->id]->id_tratamento])) ? utf8_decode($_tratamentos[$_registros[$pag->id]->id_tratamento]->titulo) : "";
-			$pagante  = (isset($_registros[$pag->id]) && isset($_registros[$pag->id]->id_pagante) && isset($_pagantes[$_registros[$pag->id]->id_pagante])) ? $_pagantes[$_registros[$pag->id]->id_pagante]->nome : '';
+			$titulo = (isset($_tratamentos[$pag->id_tratamento]->titulo)) ? utf8_decode($_tratamentos[$pag->id_tratamento]->titulo) : "-";
+			$pagante  = (isset($_pagantes[$pag->id_pagante]->nome)) ? $_pagantes[$pag->id_pagante]->nome : '-';
 			$valor['definirPagamento'] += $faltam;
-			$dados[$baixa->id]['id_baixa'] = $pag->id;
-			$dados[$baixa->id]['data_vencimento'] = $pag->data_vencimento;
-			$dados[$baixa->id]['id_registro'] = $pag->id;
-			$dados[$baixa->id]['pagamento'] = 0;
-			$dados[$baixa->id]['data_efetivado'] = null;
-			$dados[$baixa->id]['tipo'] = 'recebimento';
-			$dados[$baixa->id]['valor'] = $faltam;
-			$dados[$baixa->id]['valor_multa'] = $pag->valor_multa;
-			$dados[$baixa->id]['valor_taxa'] = $pag->valor_taxa;
-			$dados[$baixa->id]['valor_desconto'] = $pag->valor_desconto;
-			$dados[$baixa->id]['valor_juros'] = 0;
-			$dados[$baixa->id]['desconto'] = 0;
-			$dados[$baixa->id]['valorTotalPagamento'] = $_registros[$pag->id]->valor;
-			$dados[$baixa->id]['titulo'] = $titulo;
-			$dados[$baixa->id]['nome_pagante'] = $pagante;
-			$dados[$baixa->id]['status'] = 'DEFINIR PAGAMENTO';
-			$valor['valorTotal'] += $baixa->valor;
+			$dados[$id]['id_baixa'] = $pag->id;
+			$dados[$id]['data_vencimento'] = $pag->data_vencimento;
+			$dados[$id]['id_registro'] = $pag->id;
+			$dados[$id]['pagamento'] = 0;
+			$dados[$id]['data_efetivado'] = null;
+			$dados[$id]['tipo'] = 'recebimento';
+			$dados[$id]['valor'] = $faltam;
+			$dados[$id]['valor_multa'] = $pag->valor_multa;
+			$dados[$id]['valor_taxa'] = $pag->valor_taxa;
+			$dados[$id]['valor_desconto'] = $pag->valor_desconto;
+			$dados[$id]['valor_juros'] = 0;
+			$dados[$id]['desconto'] = 0;
+			$dados[$id]['valorTotalPagamento'] = $_registros[$pag->id]->valor;
+			$dados[$id]['titulo'] = $titulo;
+			$dados[$id]['nome_pagante'] = $pagante;
+			$dados[$id]['status'] = 'DEFINIR PAGAMENTO';
+			$valor['valorTotal'] += $pag->valor;
 		}
 	}
-
-
 	$dados = json_decode(json_encode($dados));
 	return [$dados, $_registros, $valor];
 }
 
-
 [$dados, $_registros, $valor] = getValores($data_inicial_filtro, $data_final_filtro);
 
-// echo "<pre>";
-// print_r($dados);
-// die();
 ?>
 <header class="header">
 	<div class="header__content content">

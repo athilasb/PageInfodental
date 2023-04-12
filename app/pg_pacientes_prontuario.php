@@ -337,7 +337,6 @@
 					<?php 
 					require_once("includes/submenus/subPacientesFichaDoPaciente.php");
 					?>
-
 					<div class="box-col__inner1">
 				
 						<section class="filter">
@@ -418,7 +417,7 @@
 											}
 										}
 										?>
-										<div class="list-toggle-alert">
+										<?php /*<div class="list-toggle-alert">
 											<div>
 												<p>Dentista</p>
 												<div class="list-toggle-alert-icones">
@@ -431,7 +430,7 @@
 												<i class="iconify" data-icon="quill:signature" <?php echo in_array($e->id, $lstAssinP)?("style=\"color: yellow;\""):'';?> ></i>
 											</div>
 
-										</div>
+										</div>*/ ?>
 										<div class="list-toggle-buttons">		
 											
 											<a href="<?php echo $pdf;?>" target="_blank" class="button"><i class="iconify" data-icon="ant-design:file-pdf-outlined"></i></a>

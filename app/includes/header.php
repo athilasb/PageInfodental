@@ -102,6 +102,10 @@
 
     $_page=basename($_SERVER['PHP_SELF']);
     $link_landingpage="https://".$_ENV['NAME'].".infodental.dental/";
+
+
+    $mobileDetect=new MobileDetect();
+    $mobile=(!$mobileDetect->isMobile() and !$mobileDetect->isTablet())?0:1;
       
 ?>
 <!doctype html>
@@ -134,16 +138,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="css/style.css?<?php echo date('YmdHis');?>" />
-<link rel="stylesheet" type="text/css" href="css/calendario.css" />
+<link rel="stylesheet" type="text/css" href="css/style.css?v3" />
+<link rel="stylesheet" type="text/css" href="css/calendario.css?v3" />
 <link rel="stylesheet" type="text/css" href="css/apps.css?v2" />
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <?php /*<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />*/ ?>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<?php /*<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>*/ ?>
 
+<script type="text/javascript" src="js/jquery.js?v3.6.4"></script>
 <script defer type="text/javascript" src="js/jquery.select2.js"></script>
-<script defer type="text/javascript" src="js/jquery-ui.js"></script>
+<?php /*<script defer type="text/javascript" src="js/jquery-ui.js"></script>*/?>
 <script defer type="text/javascript" src="js/jquery.slick.js"></script>
 <script defer type="text/javascript" src="js/jquery.datetimepicker.js"></script>
 <script defer type="text/javascript" src="js/jquery.chosen.js"></script>
@@ -161,12 +166,13 @@
 <script type="text/javascript" src="js/jquery.sweetalert.js"></script>
 <script type="text/javascript" src="js/jquery.validacao.js"></script>
 <script type="text/javascript" src="js/jquery.funcoes.js?v1"></script>
-<script type="text/javascript" src="ckeditor/ckeditor.js?<?php echo date('YmdHis');?>"></script>
+<script type="text/javascript" src="ckeditor/ckeditor.js"></script>
 <script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
 <script type="text/javascript" src="js/moment.js"></script>
 <script type="text/javascript" src="js/jquery.daterangepicker.js"></script>
 
 <script type="text/javascript">
+    var isMobile = <?php echo $mobile;?>;
     var id_paciente = 0;
     var id_agenda = 0;
     var calendar = '';
@@ -175,6 +181,13 @@
 </head>
 
 <body>
+
+    <div id="loading" style="display: none;border-radius: 10px;font-size: 0.89em;color:var(--cinza4)">
+        <center>
+            <span class="iconify" data-icon="eos-icons:loading" data-height="30" style="color:var(--cinza5)"></span><br />
+            <span>Carregando...</span>
+        </center>
+    </div>
 <?php
     // verifica situação da conta infodental
     if(basename($_SERVER['PHP_SELF'])!="index.php" and basename($_SERVER['PHP_SELF'])!="pg_configuracoes_assinatura2.php") {
