@@ -1,3 +1,4 @@
+
 <?php
 	include "print-header.php";
 
@@ -135,7 +136,7 @@
 					'naoAprovado'=>'Não Aprovado',
 					'aguardandoAprovacao'=>'Aguardando Aprovação',
 					'observado'=>'Observado');
-
+// debug($procedimentos,true);
 ?>
 			
 <header class="titulo1">
@@ -257,7 +258,7 @@
 				<h1>Valor</h1>
 				<p>
 				<?php
-				$proc->valor = $proc->quantidade>1?$proc->valor*$proc->quantidade:$proc->valor;
+			//	$proc->valor = $proc->quantidade>1?$proc->valor*$proc->quantidade:$proc->valor; //  removido by Rafael (tava Multiplicando 2x na tela do tratamento e na impressão)
 				if($proc->desconto>0) {
 					echo "<strike>".number_format($proc->valor,2,",",".")."</strike>";
 				} else {
