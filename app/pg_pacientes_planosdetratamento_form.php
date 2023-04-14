@@ -1592,77 +1592,8 @@ if (isset($_POST['acao'])) {
 			$('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento').chosen();
 
 		})
-		// verifica se ha alteracao na primeira data de pagamento 
-		$('.js-listar-parcelas').on('change', '.js-vencimento:eq(0)', function() {
-			if (tipoFinaneiroPadrao == 'politica') {
-				return
-			}
-			let CamposDatas = $('.js-listar-parcelas').find('.js-vencimento');
-			if (CamposDatas.length > 1) {
-				let numeroParcelas = CamposDatas.length
-				let aux = $('.js-vencimento:eq(0)').val().split("/")
-				var startDate = new Date();
-				startDate.setDate(aux[0]);
-				startDate.setMonth(eval(aux[1]) - 1);
-				startDate.setFullYear(aux[2]);
-				CamposDatas.each(function(index, input) {
-					let newDAte = startDate
-					let mes = startDate.getMonth() + 1;
-					let dia = startDate.getDate();
-					mes = mes <= 9 ? `0${mes}` : mes;
-					dia = dia <= 9 ? `0${dia}` : dia;
-					pagamentos[index].vencimento = `${dia}/${mes}/${startDate.getFullYear()}`;
-					newDate = startDate;
-					newDate.setMonth(newDate.getMonth() + 1);
-					//$(this).val(newData)
-				})
-				pagamentosListar();
-				return
-			}
-		});
-		//verifica se ha alteracao no valor de cada parcela 
-		$('.js-listar-parcelas').on('keyup', '.js-valor', function() {
-			let valorEmCurso = valorOriginalProcedimentos - valorDescontos
-			let indexInicial = $(this).attr('data-ordem');
-			let CamposValor = $('.js-listar-parcelas').find('.js-valor');
-			let valorDigitado = unMoney($(this).val());
-			let numeroParcelas = CamposValor.length;
-			let dataOrdem = ($(this).attr('data-ordem') - 1)
-			let erro = "";
-			if (valorDigitado > valorEmCurso) {
-				swal({
-					title: "Erro!",
-					text: 'Os valores das parcelas não podem superar o valor total',
-					html: true,
-					type: "error",
-					confirmButtonColor: "#424242"
-				});
-				let valor = 0
-				CamposValor.each(function(index, input) {
-					if ($(input).attr('data-ordem') < indexInicial) {
-						valor += unMoney($(input).val())
-					}
-				})
-				$(this).val(number_format(valorEmCurso - valor, 2, ",", "."))
-				// $(this).val(number_format(valorOriginalProcedimentos/numeroParcelas,2,",","."))
-				return;
-			}
-			let valor = 0
-			let valorAteInput = valorDigitado
-			let valorFinal = 0
-			let valorRestante = (valorEmCurso - valorDigitado)
-
-			CamposValor.each(function(index, input) {
-				valorFinal += valorRestante - unMoney($(input).val())
-				if ((index + 1) < dataOrdem) {
-					valorRestante = valorRestante - unMoney($(input).val())
-				}
-				if ((index + 1) > dataOrdem) {
-					$('.js-listar-parcelas').find(`.js-valor:eq(${index})`).val(number_format(valorRestante / ((numeroParcelas - dataOrdem)), 2, ",", "."))
-				}
-
-			});
-		});
+	
+	
 	});
 </script>
 
