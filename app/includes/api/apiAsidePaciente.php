@@ -2334,7 +2334,12 @@
 				
 				const anamnese = (id_anamnese) => {
 
-					if(id_anamnese>0) {
+					let preenchimento = $('.aside-prontuario-anamnese .js-asideAnamnese-preenchimento:checked').val();
+
+					if(id_anamnese>0 && preenchimento=="profissional") {
+
+
+
 						$('.aside-prontuario-anamnese .js-formulario-anamnese').html('');
 						$('.aside-prontuario-anamnese .js-fieldset-formularioAnamnese').show();
 						$('.aside-prontuario-anamnese .js-loading-anamnese').show();
@@ -2424,6 +2429,25 @@
 				}
 
 				$(function(){
+
+					$('.aside-prontuario-anamnese .js-asideAnamnese-preenchimento').change(function(){
+
+						if($(this).val()=="paciente") {
+							$('.aside-prontuario-anamnese .js-enviarAnamnese').parent().parent().show();
+							$('.aside-prontuario-anamnese .js-salvarAnamnese').parent().parent().hide();
+							$('.aside-prontuario-anamnese .js-formulario-anamnese').hide();
+						} else {
+							$('.aside-prontuario-anamnese .js-enviarAnamnese').parent().parent().hide();
+							$('.aside-prontuario-anamnese .js-salvarAnamnese').parent().parent().show();
+							$('.aside-prontuario-anamnese .js-formulario-anamnese').show();
+							$('.aside-prontuario-anamnese .js-asideAnamnese-anamnese').trigger('change')
+						}
+
+						$('.aside-prontuario-anamnese .js-asideAnamnese-dl-anamnese').show();
+						$('.aside-prontuario-anamnese .js-asideAnamnese-dl-id_profissional').show();
+						
+					})
+
 					$('.aside-prontuario-anamnese .js-asideAnamnese-anamnese').change(function(){
 						anamnese($(this).val());
 					}).trigger('change');
@@ -2640,17 +2664,25 @@
 							<div class="filter-group"></div>
 							<div class="filter-group">
 								<div class="filter-form form">
-									<dl>
-										<dd><button type="button" class="button button_main js-enviarAnamnese" data-loading="0"><i class="iconify" data-icon="la:whatsapp"></i> <span>Enviar para paciente</span></button></dd>
+									<dl style="display: none;">
+										<dd><button type="button" class="button button_main js-enviarAnamnese" data-loading="0" ><i class="iconify" data-icon="la:whatsapp"></i> <span>Enviar para paciente</span></button></dd>
 									</dl>
-									<dl>
+									<dl style="display: none;">
 										<dd><button type="button" class="button button_main js-salvarAnamnese" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
 									</dl>
 								</div>								
 							</div>
 						</section>
 
+
 						<dl>
+							<dt>Quem irá preencher a Anamnese?</dt>
+							<dd>
+								<label><input type="radio" name="preenchimentoPelo" class="js-asideAnamnese-preenchimento" value="paciente" /> Paciente</label>
+								<label><input type="radio" name="preenchimentoPelo" class="js-asideAnamnese-preenchimento" value="profissional" /> Profissional</label>
+							</dd>
+						</dl>
+						<dl class="js-asideAnamnese-dl-id_profissional" style="display: none;">
 							<dt>Profissional</dt>
 							<dd>
 								<select class="js-asideAnamnese-id_profissional">
@@ -2665,7 +2697,7 @@
 							</dd>
 						</dl>
 
-						<dl>
+						<dl class="js-asideAnamnese-dl-anamnese" style="display: none;">
 							<dt>Tipo de Anamnese</dt>
 							<dd>
 								<select class="js-asideAnamnese-anamnese">

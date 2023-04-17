@@ -404,7 +404,7 @@
 
 		header("Content-type: application/json");
 		echo json_encode($rtn);
-		die();
+		die(); 
 	}
 
 	if(isset($_GET['ajax'])) {
@@ -1143,6 +1143,8 @@
 										}
 									}
 
+									$cor = isset($_status[$x->id_status])?$_status[$x->id_status]->cor:'';
+
 
 									if($x->agendaPessoal==1) {
 									?>
@@ -1160,7 +1162,7 @@
 										$paciente = isset($_pacientes[$x->id_paciente]) ? $_pacientes[$x->id_paciente] : '';
 
 									?>
-									<section class="cal-item js-agenda" data-id_agenda="<?php echo $x->id;?>" style="border-left:6px solid #1182ea;">
+									<section class="cal-item js-agenda" data-id_agenda="<?php echo $x->id;?>" style="border-left:6px solid <?php echo $cor;?>">
 										<section class="cal-item__inner1">
 											<div class="cal-item-dados">
 												<h2 style="margin-top:0"><?php echo utf8_encode($paciente->nome);?></h2>
