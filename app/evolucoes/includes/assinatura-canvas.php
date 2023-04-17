@@ -147,7 +147,9 @@
 					data: data,
 					success:function(rtn) {
 						if(rtn.success) {
-
+							swal({title: "Sucesso!", text: 'Assinatura realizada com sucesso!', html:true, type:"success", confirmButtonColor: "#424242"},function(){
+								document.location.reload();
+							});
 						} else {
 
 							if(rtn.error) erro=rtn.error;
