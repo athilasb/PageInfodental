@@ -153,6 +153,14 @@
 
 
 								} else if(generatePDF($id_evolucao)) {
+
+									$sql->update($_p."pacientes_evolucoes","enviarLinkFinalizado=now()","where id=$id_evolucao");
+
+									$attr=array('id_tipo'=>11,
+												'id_evolucao'=>$id_evolucao);
+						
+									$wts->adicionaNaFila($attr);
+
 									$rtn=array('success'=>true);
 								} else {
 									$rtn=array('success'=>false,'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
