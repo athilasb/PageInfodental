@@ -699,14 +699,21 @@ function generatePDF($id_evolucao)
 		CURLOPT_HTTPHEADER => ["Content-Type: application/json"]
 	]);
 
-	curl_exec($curl);
+	$response = curl_exec($curl);
 	$err = curl_error($curl);
+	
 
 	curl_close($curl);
 	if ($err) {
 		return false;
 	} else {
-		return true;
+		$response = json_decode($response);
+
+		if(isset($response->success) and $response->success===true) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
 function debug($data, $die = false)

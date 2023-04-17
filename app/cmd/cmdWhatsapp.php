@@ -9,6 +9,10 @@
 	$attr=array('prefixo'=>$_p,'usr'=>$usr);
 	$wts = new Whatsapp($attr);
 
+	echo $_ENV['NAME']."<BR>";
+
+	$wts->wtsRabbitmq(1250);
+	die();
 
 	if(isset($_GET['dispara'])) {
 
