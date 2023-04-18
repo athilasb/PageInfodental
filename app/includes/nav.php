@@ -12,7 +12,7 @@
 		),
 		'agenda' => array(
 			'page' => 'pg_agenda.php',
-			'pages' => explode(",", "pg_agenda.php,pg_agenda_kanban.php"),
+			'pages' => explode(",", "pg_agenda.php,pg_agenda_kanban.php,pg_agenda_mobile.php"),
 			'title' => 'Agenda',
 			'icon' => '<i class="iconify" data-icon="fluent:calendar-ltr-20-regular"></i>'
 		),
@@ -73,6 +73,8 @@
 					if (is_object($_wts)) $spanWts = '<span class="nav-buttons__indicator" style="background-color:var(--verde);"></span><span class="nav-buttons__legenda">WhatsApp (conectado)</span>';
 					else $spanWts = '<span class="nav-buttons__indicator" style="background-color:var(--vermelho);"></span><span class="nav-buttons__legenda">WhatsApp (desconectado)</span>';
 				}
+
+				if($session=="agenda" and $mobile==1) $params['page']="pg_agenda_mobile.php";
 			?>
 				<a href="<?php echo $params['page']; ?>" class="<?php echo in_array(basename($_SERVER['PHP_SELF']), isset($params['pages']) ? $params['pages'] : array()) ? " active" : ""; ?>"><?php echo $params['icon']; ?><span class="nav-buttons__legenda"><?php echo $params['title']; ?></span><?php echo $spanWts; ?></a>
 			<?php

@@ -9,6 +9,10 @@
 	$attr=array('prefixo'=>$_p,'usr'=>$usr);
 	$wts = new Whatsapp($attr);
 
+	echo $_ENV['NAME']."<BR>";
+
+	$wts->wtsRabbitmq(1250);
+	die();
 
 	if(isset($_GET['dispara'])) {
 
@@ -27,6 +31,7 @@
 					'id_agenda'=>10348);//29507);
 
 		if($wts->adicionaNaFila($attr)) $wts=1;
+		echo "aki o";
 	}
 
 	die();

@@ -14,7 +14,6 @@
 			$_SERVER['HTTP_HOST']=="testes.infodental.dental") {
 			$_ENV['MYSQL_HOST']='51.159.74.70:23821';
 
-
 			if(basename($_SERVER['PHP_SELF'])=="migracaoDentalOffice.php") {
 				$_ENV['NAME']=$_ENV['MYSQL_DB']='';
 
@@ -28,81 +27,95 @@
 			$_ENV['MYSQL_PASS']="d3ntaL@inf0"; 
 		} 
 	}
-	require_once("classes.php"); 
-	
+	require_once("classes.php");
+
 
 	// Whatsapp Suporte
-	$_whatsappSuporte="6299181775";
+	$_whatsappSuporte = "6299181775";
 
 	// S3 Scaleway
-	$_scalewayBucket='infodental';
-	$_scalewayAccessKey='SCW20D80FP948XW2RZ28';
-	$_scalewaySecretKey='98d766ca-941c-4a61-85aa-0b41ff878773';
+	$_scalewayBucket = 'infodental';
+	$_scalewayAccessKey = 'SCW20D80FP948XW2RZ28';
+	$_scalewaySecretKey = '98d766ca-941c-4a61-85aa-0b41ff878773';
 	$_scalewayS3endpoint = "https://infodental.s3.fr-par.scw.cloud";
 	$_scalewayS3Region = "fr-par";
 
 	// S3 Wasabi
-	$_wasabiBucket="storage.infodental.dental"; 
-	$_wasabiPathRoot= $_ENV['NAME'] . "/";
+	$_wasabiBucket = "storage.infodental.dental";
+	$_wasabiPathRoot = $_ENV['NAME'] . "/";
 	$_wasabiS3endpoint = "s3.us-west-1.wasabisys.com";
 	$_wasabiS3Region = "us-west-1";
-	$_wasabiURL="https://$_wasabiS3endpoint/$_wasabiBucket/$_wasabiPathRoot";
-	$_wasabiAccessKey="LAGIJRFHMRFXMH6NMTEJ";
-	$_wasabiSecretKey="fnyL7tFloprpYpke3UKSV1JDPk2b4jzOzRmc2O7q";
-	$_wasabiURLBase="https://$_wasabiS3endpoint/$_wasabiBucket/";
-	$wasabiS3 = new S3($_wasabiAccessKey,$_wasabiSecretKey,false,$_wasabiS3endpoint,$_wasabiS3Region);
+	$_wasabiURL = "https://$_wasabiS3endpoint/$_wasabiBucket/$_wasabiPathRoot";
+	$_wasabiAccessKey = "LAGIJRFHMRFXMH6NMTEJ";
+	$_wasabiSecretKey = "fnyL7tFloprpYpke3UKSV1JDPk2b4jzOzRmc2O7q";
+	$_wasabiURLBase = "https://$_wasabiS3endpoint/$_wasabiBucket/";
+	$wasabiS3 = new S3($_wasabiAccessKey, $_wasabiSecretKey, false, $_wasabiS3endpoint, $_wasabiS3Region);
 
-	$_cloudinaryURL='https://res.cloudinary.com/infodental/image/upload/';
 
-	$_cloudinaryPath="storage.infodental.dental/".$_ENV['NAME']."/";
-	$_cloudinaryUploadPresent="ir9b4eem";
-	$_cloudinaryCloudName="infodental";
-	$_cloudinaryText=array('pt'=>array('local'=>array('browse'=>'Carregar',
-														'main_title'=>'Enviar',
-														'dd_title_single'=>'Carregue e solte a imagem aqui',
-														'dd_title_multi'=>'Carregue e solte as imagens aqui',
-														'drop_title_single'=>'Solte a imagem para carrega',
-														'drop_title_multiple'=>'Solte as imagems para carregar',
-														'upload-queue-title'=>'Enviando'
-														)
-										));
- 
-	$_pacientesPeriodicidade = array(1=>'1 mês',
-										3=>'3 meses',
-										4=>'4 meses',
-										6=>'6 meses',
-										12=>'12 meses');
+	$_cloudinaryURL = 'https://res.cloudinary.com/infodental/image/upload/';
+	$_cloudinaryPath = "storage.infodental.dental/" . $_ENV['NAME'] . "/";
+	$_cloudinaryUploadPresent = "ir9b4eem";
+	$_cloudinaryCloudName = "infodental";
+	$_cloudinaryText = array('pt' => array(
+		'local' => array(
+			'browse' => 'Carregar',
+			'main_title' => 'Enviar',
+			'dd_title_single' => 'Carregue e solte a imagem aqui',
+			'dd_title_multi' => 'Carregue e solte as imagens aqui',
+			'drop_title_single' => 'Solte a imagem para carrega',
+			'drop_title_multiple' => 'Solte as imagems para carregar',
+			'upload-queue-title' => 'Enviando'
+		)
+	));
 
-	$_usuariosTipos=array('admin'=>'Administrador',
-						  'moderador'=>'Moderador');
+	$_pacientesPeriodicidade = array(
+		1 => '1 mês',
+		3 => '3 meses',
+		4 => '4 meses',
+		6 => '6 meses',
+		12 => '12 meses'
+	);
+
+	$_usuariosTipos = array(
+		'admin' => 'Administrador',
+		'moderador' => 'Moderador'
+	);
 
 	ksort($_usuariosTipos);
 
-	$_googleMapsKey="AIzaSyDgOJkDVcG7dfYCZoAi2BXoaDs7QnSKhcQ";//AIzaSyDsahBPe1gVi2BGiTwo1I9EU9rvu4Z_0LQ";
+	$_googleMapsKey = "AIzaSyDgOJkDVcG7dfYCZoAi2BXoaDs7QnSKhcQ"; //AIzaSyDsahBPe1gVi2BGiTwo1I9EU9rvu4Z_0LQ";
 
-	$_dias=explode(",","Domingo,Segunda-Feira,Terça-Feira,Quarta-Feira,Quinta-Feira,Sexta-Feira,Sábado");
-	
-	$_pacienteSituacao=array('BI'=>'INTELIGÊNCIA ARTIFICIAL','EXCLUIDO'=>'DESATIVADO');
+	$_dias = explode(",", "Domingo,Segunda-Feira,Terça-Feira,Quarta-Feira,Quinta-Feira,Sexta-Feira,Sábado");
 
-	$_pacienteEstadoCivil=array('SOLTEIRO'=>'SOLTEIRO','CASADO'=>'CASADO','DIVORCIADO'=>'DIVORCIADO','CASADO'=>'CASADO','VIÚVO'=>'VIÚVO','UNIÃO ESTÁVEL'=>'UNIÃO ESTÁVEL');
+	$_pacienteSituacao = array('BI' => 'INTELIGÊNCIA ARTIFICIAL', 'EXCLUIDO' => 'DESATIVADO');
 
-	$_preferenciaContato=array('LIGACAO'=>'LIGAÇÃO',
-								'WHATSAPP'=>'WHATSAPP');
+	$_pacienteEstadoCivil = array('SOLTEIRO' => 'SOLTEIRO', 'CASADO' => 'CASADO', 'DIVORCIADO' => 'DIVORCIADO', 'CASADO' => 'CASADO', 'VIÚVO' => 'VIÚVO', 'UNIÃO ESTÁVEL' => 'UNIÃO ESTÁVEL');
 
-	$_parametrosIndicacoesTipo=array('LISTA'=>'LISTA PERSONALIZADA','PACIENTE'=>'LISTA DE PACIENTES');
+	$_preferenciaContato = array(
+		'LIGACAO' => 'LIGAÇÃO',
+		'WHATSAPP' => 'WHATSAPP'
+	);
 
-	$_formasDePagamentos=array('Dinheiro','Crédito','Débito','Desconto');
+	$_parametrosIndicacoesTipo = array('LISTA' => 'LISTA PERSONALIZADA', 'PACIENTE' => 'LISTA DE PACIENTES');
 
-	$optTipoIndicacao=array('PACIENTE'=>'PACIENTE',
-							'PROFISSIONAL'=>'COLABORADOR',
-							'INDICACAO'=>'LISTA PERSONALIZADA');
+	$_formasDePagamentos = array('Dinheiro', 'Crédito', 'Débito', 'Desconto');
 
-	$_tipoBaixa=array('pagamento'=>'PAGAMENTO',
-						'despesa'=>'DESPESA',
-						'desconto'=>'DESCONTO');
+	$optTipoIndicacao = array(
+		'PACIENTE' => 'PACIENTE',
+		'PROFISSIONAL' => 'COLABORADOR',
+		'INDICACAO' => 'LISTA PERSONALIZADA'
+	);
 
-	$_bancosEContasTipos=array('contacorrente'=>'CONTA CORRENTE',
-								'dinheiro'=>'DINHEIRO');
+	$_tipoBaixa = array(
+		'pagamento' => 'PAGAMENTO',
+		'despesa' => 'DESPESA',
+		'desconto' => 'DESCONTO'
+	);
+
+	$_bancosEContasTipos = array(
+		'contacorrente' => 'CONTA CORRENTE',
+		'dinheiro' => 'DINHEIRO'
+	);
 
 	$_regimes = array(
 		'CLT' => 'CLT',
@@ -112,7 +125,7 @@
 		'PROLABORE' => 'Prolabore'
 	);
 	ksort($_regimes);
-	
+
 	$_tipoCRO = array(
 		'CD'  => 'CD',
 		'ASB' => 'ASB',
@@ -133,7 +146,7 @@
 		'APD' => 'APD',
 		'CD'  => 'Cirurgião Dentista',
 		'AF'  => 'Administrador Financeiro',
-		'R'   => 'Recepcionista', 
+		'R'   => 'Recepcionista',
 		'GR'  => 'Gerente Geral'
 	);
 
@@ -141,18 +154,18 @@
 		"AC" => "Acre",
 		"AL" => "Alagoas",
 		"AP" => "Amapá",
-	    "AM" => "Amazonas",
+		"AM" => "Amazonas",
 		"BA" => "Bahia",
 		"CE" => "Ceará",
 		"DF" => "Distrito Federal",
 		"ES" => "Espírito Santo",
 		"GO" => "Goiás",
 		"MA" => "Maranhão",
-		"MT" => "Mato Grosso",					    
+		"MT" => "Mato Grosso",
 		"MS" => "Mato Grosso do Sul",
-		"MG" => "Minas Gerais",					    
-		"PA" =>"Pará",
-		"PB" =>"Paraíba",
+		"MG" => "Minas Gerais",
+		"PA" => "Pará",
+		"PB" => "Paraíba",
 		"PR" => "Paraná",
 		"PE" => "Pernambuco",
 		"PI" => "Piauí",
@@ -164,81 +177,93 @@
 		"SC" => "Santa Catarina",
 		"SP" => "São Paulo",
 		"SE" => "Sergipe",
-		"TO" => "Tocantins"				    					    					   		    
+		"TO" => "Tocantins"
 	);
 
-	$_bancos=array(1=>'Itaú',
-					2=>'Bradesco',
-					3=>'Sicoob',
-					4=>'Nubank');
+	$_bancos = array(
+		1 => 'Itaú',
+		2 => 'Bradesco',
+		3 => 'Sicoob',
+		4 => 'Nubank'
+	);
 
 	asort($_bancos);
 
-	$_tiposReceitas=array('interno'=>'USO INTERNO',
-							'externo'=>'USO EXTERNO');
+	$_tiposReceitas = array(
+		'interno' => 'USO INTERNO',
+		'externo' => 'USO EXTERNO'
+	);
 
-	$optAgendaDuracao=array(10,30,60,90,120);
+	$optAgendaDuracao = array(10, 30, 60, 90, 120);
 
-	
-	$_tiposFornecedores=array('FORNECEDOR'=>'FORNECEDOR',
-								'LABORATORIO'=>'LABORATÓRIO',
-								'CLINICA'=>'CLÍNICA RADIOLÓGICA');
+
+	$_tiposFornecedores = array(
+		'FORNECEDOR' => 'FORNECEDOR',
+		'LABORATORIO' => 'LABORATÓRIO',
+		'CLINICA' => 'CLÍNICA RADIOLÓGICA'
+	);
 
 	/*$_codigoBI=array(1=>'Paciente Novo',
-						6=>'Paciente Antigo',
-						2=>'Prospect',
-						3=>'Tratamento',
-						4=>'Contenção',
-						5=>'Desativado',);*/
+							6=>'Paciente Antigo',
+							2=>'Prospect',
+							3=>'Tratamento',
+							4=>'Contenção',
+							5=>'Desativado',);*/
 
-	$_codigoBI=array(1=>'Novo',
-					2=>'Paciente Ativo',//Antigo',
-						3=>'Alto Potencial',
-						4=>'Em Tratamento',
-						5=>'Em Acompanhamento',
-						6=>'Baixo Potencial',
-						7=>'Desativado');
+	$_codigoBI = array(
+		1 => 'Novo',
+		2 => 'Paciente Ativo', //Antigo',
+		3 => 'Alto Potencial',
+		4 => 'Em Tratamento',
+		5 => 'Em Acompanhamento',
+		6 => 'Baixo Potencial',
+		7 => 'Desativado'
+	);
 
-	$_codigoBICores=array(1=>'#24e6c4',
-							2=>'#0b4946',
-							3=>'#fc7e09',
-							4=>'#55d429',
-							5=>'#0f8efe',
-							6=>'#fd4b3e',
-							7=>'#e7000e');
+	$_codigoBICores = array(
+		1 => '#24e6c4',
+		2 => '#0b4946',
+		3 => '#fc7e09',
+		4 => '#55d429',
+		5 => '#0f8efe',
+		6 => '#fd4b3e',
+		7 => '#e7000e'
+	);
 
-	$_selectSituacaoOptions=array('iniciar'=>array('titulo'=>'NÃO INICIADO','cor'=>'orange'),
-											'iniciado'=>array('titulo'=>'EM TRATAMENTO','cor'=>'blue'),
-											'finalizado'=>array('titulo'=>'FINALIZADO','cor'=>'green'),
-											'cancelado'=>array('titulo'=>'CANCELADO','cor'=>'red'),
-											//'cancelado'=>array('titulo'=>'CANCELADO');
-										);
+	$_selectSituacaoOptions = array(
+		'iniciar' => array('titulo' => 'NÃO INICIADO', 'cor' => 'orange'),
+		'iniciado' => array('titulo' => 'EM TRATAMENTO', 'cor' => 'blue'),
+		'finalizado' => array('titulo' => 'FINALIZADO', 'cor' => 'green'),
+		'cancelado' => array('titulo' => 'CANCELADO', 'cor' => 'red'),
+		//'cancelado'=>array('titulo'=>'CANCELADO');
+	);
 
 	//$selectSituacaoOptions='<select class="js-situacao">';
-	$selectSituacaoOptions='';
-	foreach($_selectSituacaoOptions as $key=>$value) {
-		$selectSituacaoOptions.='<option value="'.$key.'" data-cor="'.$value['cor'].'">'.$value['titulo'].'</option>';
+	$selectSituacaoOptions = '';
+	foreach ($_selectSituacaoOptions as $key => $value) {
+		$selectSituacaoOptions .= '<option value="' . $key . '" data-cor="' . $value['cor'] . '">' . $value['titulo'] . '</option>';
 	}
 
-	$_pixTipos=array('cpfcnpj'=>'CPF/CNPJ',
-						'telefone'=>'Telefone',
-						'email'=>'E-mail',
-						'chave'=>'Chave Aletória'
-					);
+	$_pixTipos = array(
+		'cpfcnpj' => 'CPF/CNPJ',
+		'telefone' => 'Telefone',
+		'email' => 'E-mail',
+		'chave' => 'Chave Aletória'
+	);
 
-	$_medicamentosTipos=array('ampola'=>'Ampola(s)',
-							 'caixa'=>'Caixa(s)',
-							 'comprimido'=>'Comprimido(s)',
-							 'frasco'=>'Frasco(s)',
-							 'pacote'=>'Pacote(s)',
-							 'tubo'=>'Tubo(s)',
-							 'capsula'=>'Capsula(s)');
-	
-	$_selectSituacaoOptions=array('aguardando'=>array('titulo'=>'AGUARDANDO EXAME','cor'=>'blue'),
-											'concluido'=>array('titulo'=>'CONCLUÍDO','cor'=>'green'),
-											'naoRealizado'=>array('titulo'=>'CANCELADO','cor'=>'red')
-											//'cancelado'=>array('titulo'=>'CANCELADO');
-										);
+	$_medicamentosTipos = array(
+		'ampola' => 'Ampola(s)',
+		'caixa' => 'Caixa(s)',
+		'comprimido' => 'Comprimido(s)',
+		'frasco' => 'Frasco(s)',
+		'pacote' => 'Pacote(s)',
+		'tubo' => 'Tubo(s)',
+		'capsula' => 'Capsula(s)'
+	);
 
-	
-?>
+	$_selectSituacaoOptions = array(
+		'aguardando' => array('titulo' => 'AGUARDANDO EXAME', 'cor' => 'blue'),
+		'concluido' => array('titulo' => 'CONCLUÍDO', 'cor' => 'green'),
+		'naoRealizado' => array('titulo' => 'CANCELADO', 'cor' => 'red')
+		//'cancelado'=>array('titulo'=>'CANCELADO');
+	);

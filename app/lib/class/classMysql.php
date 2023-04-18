@@ -70,7 +70,7 @@ class Mysql {
 
 	/**
 	 * adiciona os valores $ms_values na tabela $ms_table.
-	 * grava o id da linha na variavel ulid
+	 * grava o id da linha inserida no banco na variavel ulid
 	 * 
 	 * @param string $ms_table	nome da tabela
 	 * @param string $ms_values nome das colunas e valores a serem inseridos 

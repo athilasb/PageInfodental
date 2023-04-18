@@ -553,7 +553,7 @@
 															data > NOW() - INTERVAL 48 HOUR";
 
 											$sql->consult($_p."whatsapp_mensagens","*",$where);
-
+											//echo $sql->rows;
 										
 											if($sql->rows==0) {
 

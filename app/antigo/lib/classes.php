@@ -218,6 +218,9 @@
 		$tel=str_replace("_","",$tel);
 		return $tel;
 	}
+	/**
+	 * Substitui os símbolos '.', '_', '-', '(', ')', ' ' 
+	 */
 	function telefone($tel) {
 		$tel=str_replace(".","",str_replace("_","",str_replace("-","",str_replace("(","",str_replace(")","",str_replace(" ","",$tel))))));
 		return $tel;
