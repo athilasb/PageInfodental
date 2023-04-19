@@ -161,7 +161,7 @@
 						
 									$wts->adicionaNaFila($attr);
 
-									$rtn=array('success'=>true);
+									$rtn=array('success'=>true,'celular'=>mask($wts->celular));
 								} else {
 									$rtn=array('success'=>false,'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
 								}
@@ -2634,7 +2634,9 @@
 										success:function(rtn) {
 											if(rtn.success) {
 												$('.aside-close').click();
-												document.location.reload();
+												swal({title: "Sucesso!", html:true, text: 'Link para assinatura digital enviado para o número <b>'+rtn.celular+'</b> com sucesso', type:"success", confirmButtonColor: "#424242"},function(){
+														document.location.reload();
+												});
 
 											} else if(rtn.error) {
 												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
