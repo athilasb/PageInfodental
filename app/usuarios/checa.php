@@ -21,6 +21,12 @@
 			$sql->consult("infodentalADM.infod_contas_onlines","*","where instancia='".$_ENV['NAME']."' and lixo=0 and keepalive > NOW() - INTERVAL 5 MINUTE");
 			$_wts=$sql->rows?mysqli_fetch_object($sql->mysqry):'';
 
+
+			$infoParametros='';
+			$sql->consult($_p."configuracoes_parametros","*","");
+			if($sql->rows) $infoParametros=mysqli_fetch_object($sql->mysqry);
+
+
 			
 		}
 
