@@ -232,6 +232,21 @@
 							
 						}
 
+						$_whatsappTipos=[];
+						$sql->consult($_p."whatsapp_mensagens_tipos","*","");
+						while($x=mysqli_fetch_object($sql->mysqry)) $_whatsappTipos[$x->id]=$x;
+
+						$_whatsappHistorico=[];
+						$sql->consult($_p."whatsapp_mensagens","*","where id_agenda=$cnt->id and lixo=0 order by data desc");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_whatsappHistorico[]=array('id'=>$x->id,
+														'data'=>date('d/m/Y H:i',strtotime($x->data)),
+														'numero'=>$x->numero,
+														'tipo'=>isset($_whatsappTipos[$x->id_tipo])?utf8_encode($_whatsappTipos[$x->id_tipo]->titulo):"-",
+														'enviado'=>$x->enviado,
+														'mensagem'=>utf8_encode(nl2br($x->mensagem)));
+						}
+
 
 						$dias=strtotime(date('Y-m-d H:i:s'))-strtotime($cnt->data);
 						$dias/=60*60*24;
@@ -268,8 +283,10 @@
 										'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):"",
 										'obs'=>addslashes(utf8_encode($cnt->obs)),
 										'agendamentosFuturos'=>$agendamentosFuturos,
-										'historico'=>$_historico);
+										'historico'=>$_historico,
+										'whatsapp'=>$_whatsappHistorico);
 					}
+
 					$rtn=array('success'=>true,'data'=>$data);
 
 				}
@@ -3431,6 +3448,34 @@
 														}
 
 													})
+												} 
+
+												$('.js-ag-whatsapp .history div').remove();
+
+												if(rtn.data.historico) {
+													rtn.data.whatsapp.forEach(x=>{
+														
+
+															cor = x.enviado==1 ? '--verde':'--vermelho';
+															$('.js-ag-whatsapp .history').append(`<div class="history-item">
+																										<h1>${x.tipo} <span style="color:var(${cor})">${x.enviado==1?`<span class="iconify" data-icon="bi:send-check-fill"></span>`:`<span class="iconify" data-icon="bi:send-exclamation-fill"></span> `}</span></h1>
+																										
+																										<div class="infozap-chat">
+
+																											<div class="infozap-chat-text infozap-chat-text--author">
+																												<article>
+																													<p class="infozap-chat-text__msg">
+																														${x.mensagem}
+																													</p>
+																													<p class="infozap-chat-text__date">${x.data}</p>
+																												</article>
+																											</div>
+																										</div>
+																									</div>`);
+
+														
+
+													})
 												} else {
 
 												}
@@ -4775,7 +4820,7 @@
 
 							<div class="js-ag js-ag-whatsapp" style="display:none;">
 								<div class="history">
-									Em breve... Em desenvolvimento.
+									
 								</div>
 							</div>
 
