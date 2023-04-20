@@ -345,7 +345,7 @@
 			# Formulario de Adição/Edição
 			if(isset($_GET['form'])) {
 
-				$campos=explode(",","nome,sexo,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,estado_civil,telefone1,telefone2,nome_pai,nome_mae,email,instagram,linkedin,facebook,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,escolaridade,cro,uf_cro,tipo_cro,calendario_cor,calendario_iniciais,id_cargo,regime_contrato,salario,contratacao_obs,carga_horaria,comissionamento_tipo,permitir_acesso,lng,lat,check_agendamento,contratacaoAtiva,whatsapp_notificacoes");
+				$campos=explode(",","nome,sexo,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,estado_civil,telefone1,telefone2,nome_pai,nome_mae,email,instagram,linkedin,facebook,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,escolaridade,cro,uf_cro,tipo_cro,calendario_cor,calendario_iniciais,id_cargo,regime_contrato,salario,contratacao_obs,carga_horaria,comissionamento_tipo,permitir_acesso,lng,lat,check_agendamento,contratacaoAtiva,whatsapp_notificacoes,acesso_tipo,acesso_permissoes");
 
 				foreach($campos as $v) $values[$v]='';
 				$values['calendario_cor']="#c18c6a";
@@ -388,6 +388,7 @@
 
 						// monta sql de insert/update
 						$vSQL=$adm->vSQL($campos,$_POST);
+						//echo $vSQL;die();
 
 						if(isset($_POST['senha']) and !empty($_POST['senha'])) $vSQL.="senha='".sha1($_POST['senha'])."',";
 				
@@ -519,7 +520,7 @@
 
 						<section class="header-profile">
 							<?php
-							$ft="img/logo-user.png";
+							$ft="img/ilustra-perfil.png";
 							if(is_object($cnt) and !empty($cnt->foto)) {
 								$ft=$_cloudinaryURL.',w_100/'.$cnt->foto;
 							}
@@ -1788,7 +1789,52 @@
 										<?php /*<label><input type="checkbox" name="" class="input-switch"> Ativo</label>*/?>
 									</dd>
 								</dl>
+
+
+								<dl>
+									<dt>Tipo de Usuário</dt>
+									<dd>
+										<label><input type="radio" name="acesso_tipo" value="admin"<?php echo $values['acesso_tipo']=="admin"?" checked":"";?> /> Administrador</label>
+										<label><input type="radio" name="acesso_tipo" value="moderador"<?php echo $values['acesso_tipo']=="moderador"?" checked":"";?> /> Moderador</label>
+									</dd>
+								</dl>
+
+								<script>
+									const acessoTipo = () => {
+										if($('input[name=acesso_tipo]:checked').val()=="moderador") {
+											$('.js-moderador').show();
+										} else {
+											$('.js-moderador').hide();
+										}
+									}
+									$(function(){
+										$('input[name=acesso_tipo]').click(acessoTipo);
+										acessoTipo();
+										$('.select2').select2();
+									})
+								</script>
+								<?php
+								$_permissoes=[];
+								foreach($_menu as $k=>$v) {
+									if($k=="dashboard") continue;
+									$_permissoes[$k]=$v['title'];
+								}
+								?>
+								<dl class="js-moderador">
+									<dt>Permissões</dt>
+									<dd>
+										<select class="select2" name="acesso_permissoes[]" multiple>
+											<?php
+											foreach($_permissoes as $k=>$v) {
+												echo '<option value="'.$k.'"'.(in_array($k,$values['acesso_permissoes'])?' selected':'').'>'.$v.'</option>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
 							</div>
+
+
 							<?php
 							}
 							?>

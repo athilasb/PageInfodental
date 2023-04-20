@@ -11,7 +11,7 @@
 			$datahora=array('data','data_cirurgia'),
 			$checkbox=array('pub','destaque','face','quantitativo','dia_inteiro','responsavel_possui','atendimentopersonalizado','permitir_acesso','estrangeiro','custo_recorrente','custo_fuxo','check_agendamento','contratacaoAtiva','embalagemComMais','whatsapp_notificacoes'),
 			$noupper=array('email','instagram','tipo','legenda','codigo_conversao','codigo_head','codigo_body','instagram'),
-			$multi=array('permissoes','unidade','camposEvolucao','profissional_multiple','bi_multiple'),
+			$multi=array('permissoes','unidade','camposEvolucao','profissional_multiple','bi_multiple','acesso_permissoes'),
 			$telefones=array('telefone','telefone1','telefone2','telefone3'),
 			$unmask=array('cpf','cnpj'),
 			$datas=array('data_nascimento','data_modelo','data_noticia','data_versao','data_reg','data_catalogo','vencimento','efetivado_data','responsavel_datanascimento','data_vencimento','data_emissao','data_extrato');
