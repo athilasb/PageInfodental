@@ -67,14 +67,9 @@
 		</div>
 		<div class="nav-buttons">
 			<?php
-
-			if($usr->acesso_tipo=="moderador") {
-				$permissoes=explode(",",$usr->acesso_permissoes);
-			}
-
 			foreach ($_menu as $session => $params) {
 
-				if($usr->acesso_tipo=="moderador" and !in_array($session,$permissoes)) continue;
+				if($usr->tipo=="moderador" and !in_array($session,$_usuariosPermissoes)) continue;
 				$spanWts = '';
 				if ($session == "whatsapp") {
 					if (is_object($_wts)) $spanWts = '<span class="nav-buttons__indicator" style="background-color:var(--verde);"></span><span class="nav-buttons__legenda">WhatsApp (conectado)</span>';
