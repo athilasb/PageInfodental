@@ -1,15 +1,19 @@
 <?php
-if (isset($_POST['ajax'])) {
-	require_once("lib/conf.php");
-	require_once("usuarios/checa.php");
-	$rtn  = array();
+	if (isset($_POST['ajax'])) {
+		require_once("lib/conf.php");
+		require_once("usuarios/checa.php");
+		$rtn  = array();
 
-	header("Content-type: application/json");
-	echo json_encode($rtn);
-	die();
-}
-include "includes/header.php";
-include "includes/nav.php";
+		header("Content-type: application/json");
+		echo json_encode($rtn);
+		die();
+	}
+	include "includes/header.php";
+	include "includes/nav.php";
+	if($usr->tipo!="admin" and !in_array("financeiro",$_usuariosPermissoes)) {
+		$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
+		die();
+	}
 ?>
 <header class="header">
 

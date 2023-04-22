@@ -300,6 +300,10 @@
 	}
 	include "includes/header.php";
 	include "includes/nav.php";
+	if($usr->tipo!="admin" and !in_array("configuracoes",$_usuariosPermissoes)) {
+		$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
+		die();
+	}
 
 	$_table=$_p."colaboradores";
 
@@ -345,7 +349,7 @@
 			# Formulario de Adição/Edição
 			if(isset($_GET['form'])) {
 
-				$campos=explode(",","nome,sexo,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,estado_civil,telefone1,telefone2,nome_pai,nome_mae,email,instagram,linkedin,facebook,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,escolaridade,cro,uf_cro,tipo_cro,calendario_cor,calendario_iniciais,id_cargo,regime_contrato,salario,contratacao_obs,carga_horaria,comissionamento_tipo,permitir_acesso,lng,lat,check_agendamento,contratacaoAtiva,whatsapp_notificacoes,acesso_tipo,acesso_permissoes");
+				$campos=explode(",","nome,sexo,rg,rg_orgaoemissor,rg_estado,cpf,data_nascimento,estado_civil,telefone1,telefone2,nome_pai,nome_mae,email,instagram,linkedin,facebook,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,escolaridade,cro,uf_cro,tipo_cro,calendario_cor,calendario_iniciais,id_cargo,regime_contrato,salario,contratacao_obs,carga_horaria,comissionamento_tipo,permitir_acesso,lng,lat,check_agendamento,contratacaoAtiva,whatsapp_notificacoes,tipo,acesso_permissoes");
 
 				foreach($campos as $v) $values[$v]='';
 				$values['calendario_cor']="#c18c6a";
@@ -1794,21 +1798,21 @@
 								<dl>
 									<dt>Tipo de Usuário</dt>
 									<dd>
-										<label><input type="radio" name="acesso_tipo" value="admin"<?php echo $values['acesso_tipo']=="admin"?" checked":"";?> /> Administrador</label>
-										<label><input type="radio" name="acesso_tipo" value="moderador"<?php echo $values['acesso_tipo']=="moderador"?" checked":"";?> /> Moderador</label>
+										<label><input type="radio" name="tipo" value="admin"<?php echo $values['tipo']=="admin"?" checked":"";?> /> Administrador</label>
+										<label><input type="radio" name="tipo" value="moderador"<?php echo $values['tipo']=="moderador"?" checked":"";?> /> Moderador</label>
 									</dd>
 								</dl>
 
 								<script>
 									const acessoTipo = () => {
-										if($('input[name=acesso_tipo]:checked').val()=="moderador") {
+										if($('input[name=tipo]:checked').val()=="moderador") {
 											$('.js-moderador').show();
 										} else {
 											$('.js-moderador').hide();
 										}
 									}
 									$(function(){
-										$('input[name=acesso_tipo]').click(acessoTipo);
+										$('input[name=tipo]').click(acessoTipo);
 										acessoTipo();
 										$('.select2').select2();
 									})
