@@ -1,4 +1,5 @@
 <?php
+
     # API Geral
         if(isset($_POST['ajaxHeader'])) {
               require_once("lib/conf.php");
@@ -70,7 +71,7 @@
 
     # Header das demais páginas
         else {
-              
+
             require_once("lib/conf.php");
             require_once("usuarios/checa.php");
 
@@ -83,6 +84,7 @@
 
 
             // Verifica se possui conta
+
             $sql->consult("infodentalADM.infod_contas","*","where instancia='".$_ENV['NAME']."'");
             if($sql->rows) {
                 $infoConta=mysqli_fetch_object($sql->mysqry);
@@ -106,7 +108,7 @@
 
     $mobileDetect=new MobileDetect();
     $mobile=(!$mobileDetect->isMobile() and !$mobileDetect->isTablet())?0:1;
-      
+
 ?>
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml"
