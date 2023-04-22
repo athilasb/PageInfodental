@@ -138,7 +138,7 @@
 		$endereco = utf8_encode($clinica->endereco);
 
 	# dados evolucao
-		$evolucao=$paciente=$anamnese='';
+		$evolucao=$paciente=$anamnese=$assinatura='';
 		if(isset($_GET['id_evolucao']) and !empty($_GET['id_evolucao'])) {
 
 			// id_tipo=1 -> anamnese
@@ -166,7 +166,7 @@
 					$paciente=mysqli_fetch_object($sql->mysqry);
 					if($paciente->data_nascimento !="0000-00-00"){
 						$idade=idade($paciente->data_nascimento);	
-					}else{
+					} else{
 						$idade = "";
 					}
 				}
@@ -176,6 +176,13 @@
 				if($sql->rows) {
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						$_anamnesePerguntas[]=$x;
+					}
+				}
+
+				if($anamneseFinalizada==1) {
+					$sql->consult($_p."pacientes_evolucoes_assinaturas","*","where id_evolucao=$evolucao->id and lixo=0");
+					if($sql->rows) {
+						$assinatura=mysqli_fetch_object($sql->mysqry);
 					}
 				}
 			}
@@ -444,6 +451,8 @@ select, textarea {-webkit-appearance:none; -moz-appearance:none; appearance:none
 										</span>
 									</header>
 									<?php
+
+									// Anamnese nao finalizada
 									if($anamneseFinalizada==0) {
 										?>
 										<script type="text/javascript">
@@ -661,9 +670,16 @@ select, textarea {-webkit-appearance:none; -moz-appearance:none; appearance:none
 										<?php
 									}
 
+									// Anamnese finalizada
 									else {
 
-										$pdfAnamnese = $_scalewayS3endpoint."/".$infoConta->instancia."/arqs/pacientes/anamneses/".sha1($evolucao->id).".pdf";
+										if(is_object($assinatura)) {
+											$pdfAnamnese = $_scalewayS3endpoint."/".$infoConta->instancia."/arqs/pacientes/anamneses/assinados/".sha1($evolucao->id).".pdf";
+										} else {
+											$pdfAnamnese = $_scalewayS3endpoint."/".$infoConta->instancia."/arqs/pacientes/anamneses/".sha1($evolucao->id).".pdf";
+										}
+
+
 										
 									?>
 									<object data='<?php echo $pdfAnamnese;?>#view=fit&toolbar=0' style="width:100%;height:700px;" toolbar="0">			    

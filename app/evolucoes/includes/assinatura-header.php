@@ -38,9 +38,7 @@
 				$lng = (isset($_POST['lng']) and is_numeric($_POST['lng'])) ? $_POST['lng'] : '';
 				$dispositivo = (isset($_POST['dispositivo']) and !empty($_POST['dispositivo'])) ? addslashes($_POST['dispositivo']) : '';
 				$assinatura = (isset($_POST['assinatura']) and !empty($_POST['assinatura'])) ? addslashes($_POST['assinatura']) : '';
-
-						
-					
+	
 			// validacao
 				$erro='';
 				if(empty($paciente)) $erro='Paciente não encontrado';
@@ -49,6 +47,8 @@
 				else if(!verificaCpf($cpf)) $erro='CPF inválido';
 				else if(empty($dn)) $erro='Preencha o campo Data de Nascimento com dados válidos';
 				else if(empty($assinatura)) $erro='Faça sua assinatura digital para assinar este documento';
+				else if($paciente->cpf != $cpf) $erro='CPF e/ou Data de Nascimento inválidos';
+				else if(strtotime($paciente->data_nascimento) != strtotime($dn)) $erro='CPF e/ou Data de Nascimento inválidos.';
 
 			// assinatura
 				if(empty($erro)) {
@@ -78,7 +78,15 @@
 					}
 
 					$sql->update($_p."pacientes_evolucoes","id_assinatura=$id_assinatura","where id=$evolucao->id");
+
+					// realiza a geracao do pdf anexando a assinatura
+					if(!generatePDF($evolucao->id,$id_assinatura)) {
+						$erro='Algum erro ocorreu durante a Assinatura Digital. Favor tentar novamente!';
+					}
 				}
+
+			
+
 
 			// retorno
 				if(!empty($erro)) {
