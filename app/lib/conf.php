@@ -11,6 +11,8 @@
 			$_SERVER['HTTP_HOST']=="web-luciano.infodental.dental" or 
 			$_SERVER['HTTP_HOST']=="web-walker.infodental.dental" or 
 			$_SERVER['HTTP_HOST']=="web-rafael.infodental.dental" or 
+			$_SERVER['HTTP_HOST']=="web-victor.infodental.dental" or 
+			$_SERVER['HTTP_HOST']=="web-athila.infodental.dental" or 
 			$_SERVER['HTTP_HOST']=="testes.infodental.dental") {
 			$_ENV['MYSQL_HOST']='51.159.74.70:23821';
 
