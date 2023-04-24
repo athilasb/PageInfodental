@@ -24,7 +24,12 @@
 
 			$infoParametros='';
 			$sql->consult($_p."configuracoes_parametros","*","");
-			if($sql->rows) $infoParametros=mysqli_fetch_object($sql->mysqry);
+			if($sql->rows==0) {
+				$sql->add($_p."configuracoes_parametros","check_agendaDesativarRegrasStatus=0");
+				$sql->consult($_p."configuracoes_parametros","*","");
+			} 
+
+			$infoParametros=mysqli_fetch_object($sql->mysqry);
 
 
 			

@@ -499,7 +499,6 @@
 
 				// Agendamentos não desmarcados
 				foreach($registros as $x) {
-
 					if($infoParametros->check_agendaTamanhoMinimoAltura==1 && $x->agenda_duracao<30) {
 						$x->agenda_duracao=30;
 					}
