@@ -606,6 +606,13 @@ if (isset($_POST['ajax'])) {
 <!-- ASIDE PAGAMENTO AVULSO  -->
 <?php if (isset($apiConfig['Avulso'])){?>
 <script> 
+
+$(".js-valor-pagamento-avulso").ready(function() {
+  $('.js-valor-pagamento-avulso').maskMoney({
+    thousands: '.',
+    decimal: '.'});
+});
+
 	$("#pagamento_avulso").click(() => {
 		//alert("teste");
 		//$(".default").show();
@@ -613,6 +620,10 @@ if (isset($_POST['ajax'])) {
 			$("#Pagamento-avulso .aside__inner9").addClass("active");
 		});
 	});	
+
+	$(".aside-header__fechar").click(()=>{
+		location.reload();
+	})
 </script>
 	<section class="aside aside-form" id="Pagamento-avulso">	
 		<div class="aside__inner1 aside__inner9">
@@ -625,26 +636,21 @@ if (isset($_POST['ajax'])) {
 					<fieldset style="padding:.75rem 1.5rem;">
 						<legend>Informações</legend>
 					<form class="form" action="">
-					<div class="colunas3 style="display: grid; grid-template-columns: repeat(4, 1fr); grid-gap: 0 1rem;">
-					<dl>
-							<dt>Parcelas</dt>
-							<input type="number" class="js-parcelas-Avulso" name="parcelas" value="0" />
-							</dd>
-						</dl>
-					<dl>
+					<div class="colunas3" >
+				
+						<dl>
 							<dt style="">Valor Total</dt>
 							<dd class="form-comp"><span>R$</span>
-							<input type="number" class="js-valor-pagamento-avulso" name="valor_pagamento" value="0" />
+							<input type="text" class="js-valor-pagamento-avulso" name="valor_pagamento" value="0" />
 							</dd>
 						</dl>
 						<dl>
-							<dt style="">forma de Pagamento</dt>
-
-							<select name="" id=""><<?php echo($optionFormasDePagamento) ?></select>
+							<dt>Parcelas</dt>
+							<input type="number" class="js-parcelas-Avulso" name="parcelas"  maxlength="2" value="0" />
 							</dd>
 						</dl>
 					</div>
-					<div>						<dl>
+					<div><dl>
 							<dt style="">Descrição</dt>
 							<textarea  class="js-valor"  name="descrição" id="" cols="30" rows="10"></textarea>
 							</dd>
@@ -675,7 +681,7 @@ $('.js-parcelas-Avulso , .js-valor-pagamento-avulso').on('change', () => {
     // Seu código aqui
 	
 	parcelar = Number($('.js-parcelas-Avulso').val());
-	valor = Number($('.js-valor-pagamento-avulso').val());
+	valor = Number($('.js-valor-pagamento-avulso').maskMoney('unmasked')[0]);
 	ValorParcelas = valor / parcelar
 
 	if (parcelar < 0) {
@@ -733,8 +739,33 @@ if (parcelar <= 24) {
 								<dl>
 									<dd class="form-comp"><span>R$</span><input type="tel" name="" data-ordem="1" class="valor js-valor" value="${ValorParcelas.toFixed(2)}"></dd>
 								</dl>
+								<dl>
+								<select name="" id=""><?php echo($optionFormasDePagamento) ?></select>
+								</dl>
+								<dl>
+								<dt>Bandeira</dt>
+								<select class="js-creditoBandeira js-tipoPagamento">
+																	<option value="">selecione</option>
+																	<optgroup label="nova_operadora"></optgroup><optgroup label="PAG SEGURO">
+																	<option value="1" data-parcelas="10" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="21">MASTERCARD</option>
+																	<option value="2" data-parcelas="12" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="22">VISA</option>
+																	<option value="3" data-parcelas="10" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="23">ELO</option>
+																	<option value="4" data-parcelas="10" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="24">HIPERCARD</option>
+																	<option value="5" data-parcelas="1" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="25">AMEX</option>
+																	<option value="6" data-parcelas="1" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="26">CABAL</option>
+																	<option value="7" data-parcelas="1" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="27">DINERSCLUB</option>
+																	<option value="8" data-parcelas="10" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="28">UNIONPLAY</option></optgroup>	
+																	</select>
+								</dl>
+								<dl>
+								<dt>Identificador</dt>
+								<dd><input type="text" class="js-identificador js-tipoPagamento"></dd>
+								</dl>
+								
+								
 							</div>
 
+							
 						</article>
 					</div>`;	
 
