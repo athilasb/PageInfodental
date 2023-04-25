@@ -386,7 +386,7 @@
 							<fieldset>
 								<legend>LEMBRETE de Agendamento</legend>
 
-								 <div class="grid grid_3" style="margin-bottom:0;">
+								 <div class="grid grid_3" style="margin-bottom:0;" >
 									<form method="post" class="form">
 										<dl>
 											<dd>
