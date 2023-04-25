@@ -144,7 +144,6 @@
 																		         'text'=>($whatsappMessage->mensagem))));
 								}
 							}
-						
 
 							# cadastra na fila e atualiza tabela
 								if(!empty($message) and $rabbitmq->sendMessageToQueueWts($message,$_rabbitmqFila)) {
@@ -409,6 +408,9 @@
 
 										$msg = $tipo->texto;
 										$numero = telefone($paciente->telefone1);
+
+										$this->celular=$numero;
+
 
 										if(!empty($numero) and !empty($msg)) {
 

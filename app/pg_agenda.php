@@ -499,7 +499,6 @@
 
 				// Agendamentos não desmarcados
 				foreach($registros as $x) {
-
 					if($infoParametros->check_agendaTamanhoMinimoAltura==1 && $x->agenda_duracao<30) {
 						$x->agenda_duracao=30;
 					}
@@ -932,8 +931,7 @@
 
 	include "includes/header.php";
 	include "includes/nav.php";
-
-	if($usr->tipo!="admin" and !in_array("produtos",$_usuariosPermissoes)) {
+	if($usr->tipo!="admin" and !in_array("agenda",$_usuariosPermissoes)) {
 		$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
 		die();
 	}

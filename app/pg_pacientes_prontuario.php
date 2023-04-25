@@ -121,6 +121,10 @@
 	}
 	include "includes/header.php";
 	include "includes/nav.php";
+	if($usr->tipo!="admin" and !in_array("pacientes",$_usuariosPermissoes)) {
+		$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
+		die();
+	}
 
 	$_table=$_p."pacientes_prontuarios";
 	require_once("includes/header/headerPacientes.php");

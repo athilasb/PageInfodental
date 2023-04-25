@@ -927,6 +927,10 @@
 
 	include "includes/header.php";
 	include "includes/nav.php";
+	if($usr->tipo!="admin" and !in_array("agenda",$_usuariosPermissoes)) {
+		$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
+		die();
+	}
 
 	if($usr->tipo!="admin" and !in_array("produtos",$_usuariosPermissoes)) {
 		$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");

@@ -201,6 +201,10 @@
 	}
 	include "includes/header.php";
 	include "includes/nav.php";
+	if($usr->tipo!="admin" and !in_array("configuracoes",$_usuariosPermissoes)) {
+		$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
+		die();
+	}
 
 	$values=$adm->get($_GET);
 	$campos=explode(",","tipo_pessoa,tipo,nome,cpf,razao_social,nome_fantasia,responsavel,cnpj,telefone1,telefone2,email,endereco,lat,lng,complemento,pix_tipo,pix_chave,pix_beneficiario");
