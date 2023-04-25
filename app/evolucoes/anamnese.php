@@ -210,8 +210,8 @@
 		<meta charset="utf-8">
 		<title><?php echo $title;?></title>
 		<link rel="stylesheet" type="text/css" href="../css/evolucoes.css" />
-		<link rel="stylesheet" type="text/css" href="../css/annamnese.css" />
 		<link rel="stylesheet" type="text/css" href="../css/apps.css" />
+		<link rel="stylesheet" type="text/css" href="../css/annamnese.css" />
 		<script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
 		<script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
 		<script src="../js/jquery.js"></script>
@@ -229,9 +229,6 @@
 		<div class="print-header" style="padding-top: 20px;">
 			<?php
 			if(!empty($logo)) {
-			?>
-			<img src="<?php echo $logo;?>" class="print-header__logo" style="width: auto;height: 30px;" />
-			<?php
 			} else {
 			?>
 			<img src="../img/logo-info.svg"  class="print-header__logo" style="width: auto;height: 25px;" />
