@@ -590,7 +590,6 @@
 										</form>
 										<?php
 									}
-
 									// Anamnese finalizada
 									else {
 
