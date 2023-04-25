@@ -598,6 +598,184 @@ if (isset($_POST['ajax'])) {
 }
 
 ?>
+
+
+
+
+
+<!-- ASIDE PAGAMENTO AVULSO  -->
+<?php if (isset($apiConfig['Avulso'])){?>
+<script> 
+	$("#pagamento_avulso").click(() => {
+		//alert("teste");
+		//$(".default").show();
+		$("#Pagamento-avulso").fadeIn(100, function() {
+			$("#Pagamento-avulso .aside__inner9").addClass("active");
+		});
+	});	
+</script>
+	<section class="aside aside-form" id="Pagamento-avulso">	
+		<div class="aside__inner1 aside__inner9">
+			<input type="hidden" name="alteracao" value="0">
+			<header class="aside-header">
+				<h1 class="js-titulo"> Pagamento Avulso</h1>
+				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+			</header>
+			<div class="js-fin js-fin-programacao" style="margin: 20px;">
+					<fieldset style="padding:.75rem 1.5rem;">
+						<legend>Informações</legend>
+					<form class="form" action="">
+					<div class="colunas3 style="display: grid; grid-template-columns: repeat(4, 1fr); grid-gap: 0 1rem;">
+					<dl>
+							<dt>Parcelas</dt>
+							<input type="number" class="js-parcelas-Avulso" name="parcelas" value="0" />
+							</dd>
+						</dl>
+					<dl>
+							<dt style="">Valor Total</dt>
+							<dd class="form-comp"><span>R$</span>
+							<input type="number" class="js-valor-pagamento-avulso" name="valor_pagamento" value="0" />
+							</dd>
+						</dl>
+						<dl>
+							<dt style="">forma de Pagamento</dt>
+
+							<select name="" id=""><<?php echo($optionFormasDePagamento) ?></select>
+							</dd>
+						</dl>
+					</div>
+					<div>						<dl>
+							<dt style="">Descrição</dt>
+							<textarea  class="js-valor"  name="descrição" id="" cols="30" rows="10"></textarea>
+							</dd>
+						</dl></div>
+
+						<div  class="parcelamentos-avulsos">
+						
+						</div>
+						<dl style="margin-top:1.5rem;">
+							<dd><button href="javascript:;" class="button button_main" type="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar</span></button></dd>
+						</dl>
+		
+					</form>
+						
+					</fieldset>
+					
+				</div>
+
+	</section>
+<?php
+}?>
+
+
+<script>
+
+
+$('.js-parcelas-Avulso , .js-valor-pagamento-avulso').on('change', () => {
+    // Seu código aqui
+	
+	parcelar = Number($('.js-parcelas-Avulso').val());
+	valor = Number($('.js-valor-pagamento-avulso').val());
+	ValorParcelas = valor / parcelar
+
+	if (parcelar < 0) {
+	$('.js-parcelas-Avulso').val(0);
+	$('.parcelamentos-avulsos').append(html);
+		
+	}
+if (parcelar <= 24) {
+	html = ""
+	dataAtual = new Date();
+	dia = ("0" + dataAtual.getDate()).slice(-2);
+	mes = Number(("0" + (dataAtual.getMonth() + 1)).slice(-2));
+	ano = Number(dataAtual.getFullYear());
+	dataFormatada = dia + '/' + mes + '/' + ano;
+	$('.parcelamentos-avulsos').empty();
+	for (let index = 1; index <= parcelar; index++) {
+
+		if (mes >= 12) {
+			if (mes < 9) {
+				dataFormatada = dia + '/' + 0 + (mes = 1) + '/' + ( ano = ano + 1) ;
+				
+				
+			} else {
+				dataFormatada = dia + '/' + (mes = 1) + '/' + ( ano = ano + 1) ;
+			}
+				
+				
+
+			} else {
+
+				if (mes < 9) {
+					dataFormatada = dia + '/'+ 0 + (mes = mes + 1) + '/' + ( ano) ;
+				} else {
+					dataFormatada = dia + '/' + (mes = mes + 1) + '/' + ( ano) ;
+					
+					
+				}
+				
+			
+			}
+
+			if (mes == 1) {
+
+				dataFormatada = dia + '/' + 0 + (mes = 1) + '/' + ( ano) ;
+				
+			} 
+
+		html = html +  `<div class="fpag-item js-pagamento-item" style="margin-top: 20px;">
+						<aside>${index}</aside>
+						<article>
+							<div class="colunas3">
+								<dl>
+									<dd class="form-comp"><span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="1em" height="1em" style="vertical-align: -0.125em;-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24" class="iconify" data-icon="fluent:calendar-ltr-24-regular"><path fill="currentColor" d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3h11.5Zm1.75 5.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75V8.5Zm-11.75 6a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm4.25 0a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm-4.25-4a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm4.25 0a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm4.25 0a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm1.5-6H6.25A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75Z"></path></svg></span><input type="tel" name="" class="data js-vencimento" data-ordem="1" value="${dataFormatada}"></dd>
+								</dl>
+								<dl>
+									<dd class="form-comp"><span>R$</span><input type="tel" name="" data-ordem="1" class="valor js-valor" value="${ValorParcelas.toFixed(2)}"></dd>
+								</dl>
+							</div>
+
+						</article>
+					</div>`;	
+
+
+					
+	 									}
+	$('.parcelamentos-avulsos').empty();
+$('.parcelamentos-avulsos').append(html);
+}
+
+
+else{
+	$('.js-parcelas-Avulso').val(24);
+	$('.parcelamentos-avulsos').append(html);
+
+};
+
+
+if (parcelar > 4) {
+	$('.parcelamentos-avulsos').css( { 'height': '40vh',
+		'overflow-y': 'auto',
+	 } );
+
+} else {
+
+	$('.parcelamentos-avulsos').css( "" );
+	
+}
+
+
+  });
+
+
+</script>
+
+
+
+
+
+
+
 <script type="text/javascript" src="js/aside.funcoes.js"></script>
 <?php if (isset($apiConfig['Pagamentos'])) { ?>
 	<?php
