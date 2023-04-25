@@ -232,6 +232,21 @@
 							
 						}
 
+						$_whatsappTipos=[];
+						$sql->consult($_p."whatsapp_mensagens_tipos","*","");
+						while($x=mysqli_fetch_object($sql->mysqry)) $_whatsappTipos[$x->id]=$x;
+
+						$_whatsappHistorico=[];
+						$sql->consult($_p."whatsapp_mensagens","*","where id_agenda=$cnt->id and lixo=0 order by data desc");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_whatsappHistorico[]=array('id'=>$x->id,
+														'data'=>date('d/m/Y H:i',strtotime($x->data)),
+														'numero'=>$x->numero,
+														'tipo'=>isset($_whatsappTipos[$x->id_tipo])?utf8_encode($_whatsappTipos[$x->id_tipo]->titulo):"-",
+														'enviado'=>$x->enviado,
+														'mensagem'=>utf8_encode(nl2br($x->mensagem)));
+						}
+
 
 						$dias=strtotime(date('Y-m-d H:i:s'))-strtotime($cnt->data);
 						$dias/=60*60*24;
@@ -268,8 +283,10 @@
 										'statusBI'=>isset($_codigoBI[$paciente->codigo_bi])?utf8_encode($_codigoBI[$paciente->codigo_bi]):"",
 										'obs'=>addslashes(utf8_encode($cnt->obs)),
 										'agendamentosFuturos'=>$agendamentosFuturos,
-										'historico'=>$_historico);
+										'historico'=>$_historico,
+										'whatsapp'=>$_whatsappHistorico);
 					}
+
 					$rtn=array('success'=>true,'data'=>$data);
 
 				}
@@ -807,6 +824,49 @@
 					}
 
 					$rtn=array('success'=>true,'regs'=>$_tags);
+				}
+			}
+
+			else if($_POST['ajax']=="enviarWhatsapp") {
+				
+				$agenda = $paciente = '';
+				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
+					$sql->consult($_p."agenda","id,id_paciente","where id=".$_POST['id_agenda']);
+					if($sql->rows) {
+						$agenda = mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$tipo='';
+				if(isset($_POST['id_tipo']) and is_numeric($_POST['id_tipo'])) {
+					$sql->consult($_p."whatsapp_mensagens_tipos","*","where id=".$_POST['id_tipo']);
+					if($sql->rows) {
+						$tipo = mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$erro='';
+
+				if(empty($agenda)) $erro='Agendamento não encontrado!';
+				else if(empty($tipo)) $erro='Tipo não encontrado!';
+
+				if(empty($erro)) {
+
+					$attr=array('id_tipo'=>$tipo->id,
+								'id_paciente'=>$agenda->id_paciente,
+								'id_agenda'=>$agenda->id);
+
+					if($infozap->adicionaNaFila($attr)) {
+						$celular=$infozap->celular;
+					} else {
+						$erro=isset($infozap->erro)?$infozap->erro:'Algum erro ocorreu no envio. Tente novamente!';
+					}
+				}
+
+				if(empty($erro)) {
+					$rtn=array('success'=>true,'celular'=>mask($celular));
+				} else {
+					$rtn=array('success'=>false,'error'=>$erro);
 				}
 			}
 		 
@@ -3042,6 +3102,8 @@
 
 				<!-- Js Geral -->
 				<script type="text/javascript">
+					var check_agendaDesativarRegrasStatus = eval('<?php echo is_object($infoParametros)?$infoParametros->check_agendaDesativarRegrasStatus:0;?>');
+
 					const verificaAgendamento = () => {
 						let profissionais = $('.js-form-agendamento select.js-profissionais').val();
 						let id_cadeira = $('.js-form-agendamento select[name=id_cadeira]').val();
@@ -3346,6 +3408,7 @@
 
 												$('#js-aside-edit select[name=id_cadeira]').val(rtn.data.id_cadeira);
 												$('#js-aside-edit input[name=telefone1]').val(rtn.data.telefone1);
+												$('#js-aside-edit .js-webwhatsapp').attr({'href':'https://wa.me/55'+rtn.data.telefone1})
 												$('#js-aside-edit textarea[name=obs]').val(rtn.data.obs);
 												$('#js-aside-edit select[name=id_status]').val(rtn.data.id_status)
 
@@ -3428,8 +3491,37 @@
 														}
 
 													})
-												} else {
+												} 
 
+												$('.js-ag-whatsapp .history div').remove();
+												if(rtn.data.whatsapp && rtn.data.whatsapp.length>0) {
+													rtn.data.whatsapp.forEach(x=>{
+														
+
+															cor = x.enviado==1 ? '--verde':'--vermelho';
+															$('.js-ag-whatsapp .history').append(`<div class="history-item">
+																										<h1>${x.tipo} <span style="color:var(${cor})">${x.enviado==1?`<span class="iconify" data-icon="bi:send-check-fill"></span>`:`<span class="iconify" data-icon="bi:send-exclamation-fill"></span> `}</span></h1>
+																										
+																										<div class="infozap-chat">
+
+																											<div class="infozap-chat-text infozap-chat-text--author">
+																												<article>
+																													<p class="infozap-chat-text__msg">
+																														${x.mensagem}
+																													</p>
+																													<p class="infozap-chat-text__date">${x.data}</p>
+																												</article>
+																											</div>
+																										</div>
+																									</div>`);
+
+														
+
+													})
+												} else {
+													$('.js-ag-whatsapp .history').append(`<div class="history-item">
+																								<center>Nenhuma mensagem foi enviada</center>
+																							</div>`);
 												}
 
 
@@ -3467,7 +3559,7 @@
 												$('#js-aside-edit select').prop('disabled',false).css('background','').trigger('chosen:updated');
 												$('#js-aside-edit input[name=id_status_antigo]').val(rtn.data.id_status);
 												// se confirmado
-												if(rtn.data.id_status=="2") {
+												if(check_agendaDesativarRegrasStatus==0 && rtn.data.id_status=="2") {
 													$('#js-aside-edit select[name=id_status]').find('option[value=1],option[value=8]').prop('disabled',true);
 
 													$('#js-aside-edit input[name=agenda_data]').prop('readonly',true).datetimepicker('destroy').css('background','var(--cinza3)');
@@ -3476,7 +3568,7 @@
 
 												}  
 												// se desmarcado
-												else if(rtn.data.id_status=="4") {
+												else if(check_agendaDesativarRegrasStatus==0 && rtn.data.id_status=="4") {
 
 													$('#js-aside-edit .js-salvar').hide();
 
@@ -3489,7 +3581,7 @@
 													$('#js-aside-edit select').prop('disabled',true).css('background','var(--cinza3)').trigger('chosen:updated');
 
 
-												} else {
+												} else if(check_agendaDesativarRegrasStatus==0) {
 
 
 													$('#js-aside-edit select[name=id_status]').find('option[value=1]').prop('disabled',false)
@@ -4565,14 +4657,53 @@
 										}
 									});
 
+									$('.js-ag-whatsapp .js-btn-wtsEnviar').click(function(){
+										let id_tipo = $('.js-ag-whatsapp select[name=id_tipo]').val();
+										if(id_tipo.length>0) {
 
+
+											let obj = $(this);
+											let objHTMLAntigo = $(this).html();
+											let idAgenda = $('#js-aside-edit input[name=id]').val();
+
+											if(obj.attr('data-loading')==0) {
+												let data = `ajax=enviarWhatsapp&id_tipo=${id_tipo}&id_agenda=${idAgenda}`;
+
+												obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span> Enviando...`);
+
+												$.ajax({
+													type:"POST",
+													url:baseURLApiAside,
+													data:data,
+													success:function(rtn) {
+														if(rtn.success) {
+															swal({title: "Sucesso!", text: 'Mensagem enviada com sucesso para o numero <b>'+rtn.celular+'</b>!', type:"success", html:true,confirmButtonColor: "#424242"},function(){
+																popView(idAgenda);
+																setTimeout(function(){$('#js-aside-edit .js-btn-whatsapp').click();},500);
+															});
+														} else {
+															let erro = rtn.error ?rtn.error : 'Algum erro ocorreu. Tente novamente';
+															swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+														}
+													}
+												}).done(function(){
+													obj.attr('data-loading',0);
+													obj.html(objHTMLAntigo);
+												})
+											}
+										
+										} else {
+											swal({title: "Erro!", text: 'Selecione o tipo de mensagem que deseja enviar', type:"error", confirmButtonColor: "#424242"});
+										}
+									})
 								});
 							</script>
 							<section class="tab tab_alt js-tab">
 								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agenda').show();" class="active">Agenda</a>
 								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-checklist').show();">Checklist</a>					
 								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-futuro').show();">Agendamentos Futuros</a>
-								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>					
+								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>		
+								<a href="javascript:;" class="js-btn-whatsapp" onclick="$('.js-ag').hide(); $('.js-ag-whatsapp').show();">Whatsapp</a>					
 								
 							</section>
 						
@@ -4587,6 +4718,9 @@
 										<div class="filter-form form">
 											<dl>
 												<dd><a href="javascript:;" class="button js-excluir" data-loading="0"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
+											</dl>
+											<dl>
+												<dd><a href="javascript:;" class="button js-webwhatsapp" target="_blank"><span class="iconify" data-icon="ic:outline-whatsapp"></span> Web Whatsapp</a></dd>
 											</dl>
 											<dl>
 												<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
@@ -4636,7 +4770,9 @@
 								<div class="colunas">
 									<dl>
 										<dt>Telefone</dt>
-										<dd class="form-comp"><span class="js-country">BR</span><input type="tel" name="telefone1" class="" /></dd>
+										<dd class="form-comp">
+											<span class="js-country">BR</span><input type="tel" name="telefone1" class="" />
+										</dd>
 									</dl>
 									<dl>
 										<dt>Consultório</dt>
@@ -4761,6 +4897,43 @@
 										<h1>Simone agendou para 10/02/2022 17:30</h1>
 										<h2>Status alterado para <em style="background:red;">CANCELADO</em></h2>
 									</div>
+								</div>
+							</div>	
+
+							<?php
+							$wtsTipos=[];
+							$sql->consult($_p."whatsapp_mensagens_tipos","id,titulo","where id IN (1,2) order by titulo asc");
+							while($x=mysqli_fetch_object($sql->mysqry)) $wtsTipos[]=$x;
+							?>
+
+							<div class="js-ag js-ag-whatsapp" style="display:none;">
+
+								<section class="filter">
+									<div class="filter-group">
+										<dl>
+											<dt>Tipo</dt>
+											<dd>
+												<select name="id_tipo">
+													<option value="">-</option>
+													<?php
+													foreach($wtsTipos as $x) {
+														echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
+													}
+													?>
+												</select>
+											</dd>
+										</dl>
+										<dl>
+											<dt>&nbsp;</dt>
+											<dd><a href="javascript:;" class="button js-btn-wtsEnviar" data-loading="0"><span class="iconify" data-icon="ic:outline-whatsapp"></span> Enviar</a></dd>
+										</dl>
+									</div>
+									
+								</section>
+
+
+								<div class="history">
+									
 								</div>
 							</div>
 

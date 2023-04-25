@@ -5,6 +5,7 @@
 	$exames = $_exames = array();
 	if(isset($_GET['id'])) {
 		$sql->consult($_p."pacientes_evolucoes","*","where md5(id)='".addslashes($_GET['id'])."' and id_tipo=1");
+		
 		if($sql->rows) {
 			$evolucao=mysqli_fetch_object($sql->mysqry);
 

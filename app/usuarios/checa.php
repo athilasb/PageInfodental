@@ -9,7 +9,7 @@
 															
 		if($sql->rows) {
 			$usr = mysqli_fetch_object($sql->mysqry);
-			//$_usuariosPermissoes=explode(",",$usr->permissoes);
+			$_usuariosPermissoes=explode(",",$usr->acesso_permissoes);
 			
 			$localIP = '';//getHostByName(getHostName());
 			$sql->add($_p."log_sessoes","data=now(),id_usuario='".$usr->id."',ip='".$_SERVER['REMOTE_ADDR']."',ip_lan='".$localIP."',pagina='".$_SERVER['REQUEST_URI']."'");
@@ -20,6 +20,17 @@
 
 			$sql->consult("infodentalADM.infod_contas_onlines","*","where instancia='".$_ENV['NAME']."' and lixo=0 and keepalive > NOW() - INTERVAL 5 MINUTE");
 			$_wts=$sql->rows?mysqli_fetch_object($sql->mysqry):'';
+
+
+			$infoParametros='';
+			$sql->consult($_p."configuracoes_parametros","*","");
+			if($sql->rows==0) {
+				$sql->add($_p."configuracoes_parametros","check_agendaDesativarRegrasStatus=0");
+				$sql->consult($_p."configuracoes_parametros","*","");
+			} 
+
+			$infoParametros=mysqli_fetch_object($sql->mysqry);
+
 
 			
 		}

@@ -1,10 +1,14 @@
 <?php
 
-require_once("lib/conf.php");
-require_once("usuarios/checa.php");
+    require_once("lib/conf.php");
+    require_once("usuarios/checa.php");
 
-include "includes/header.php";
-include "includes/nav.php";
+    include "includes/header.php";
+    include "includes/nav.php";
+    if($usr->tipo!="admin" and !in_array("estoque",$_usuariosPermissoes)) {
+        $jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
+        die();
+    }
 
 
 ?>

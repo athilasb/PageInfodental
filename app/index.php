@@ -1,12 +1,13 @@
 <?php 
-	// teste
+
 	if(isset($_GET['instancia'])) {
 		setcookie("infoName", $_GET['instancia'], time() + 3600*24, "/");
 		header("Location: ./");
 	} else if(!isset($_COOKIE['infoName'])) {
 		setcookie("infoName", "studiodental", time() + 3600*24, "/");
 	}
-	include "includes/header.php"
+	include "includes/header.php";
+
 ?>
 
 <section class="login">

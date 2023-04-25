@@ -121,6 +121,10 @@
 	}
 	include "includes/header.php";
 	include "includes/nav.php";
+	if($usr->tipo!="admin" and !in_array("pacientes",$_usuariosPermissoes)) {
+		$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
+		die();
+	}
 
 	$_table=$_p."pacientes_prontuarios";
 	require_once("includes/header/headerPacientes.php");
@@ -459,43 +463,51 @@
 
 											// anamnese
 											if($eTipo->id==1) {
-												$correcoes=1;
-												if(isset($_anamnesePerguntas[$e->id])) {
-													$perguntas=$_anamnesePerguntas[$e->id];
 
-
-												?>
-												<div class="list-toggle-topics">
-												<?php
-													foreach($perguntas as $p) {
-														$pergunta=json_decode($p->json_pergunta);
-
-
-												?>
-													<div class="list-toggle-topic">
-														<h1><?php echo ($pergunta->pergunta);?></h1>
-														<p>
-															<?php 
-															if($pergunta->tipo=="simnao" or $pergunta->tipo=="simnaotexto") {
-																if($p->resposta=="SIM") echo "Sim";
-																else echo "Não";
-															} else if($pergunta->tipo=="nota") {
-																echo "Nota: ".$p->resposta;
-															} 
-															?>	
-														</p>
-														<?php
-														if(!empty($p->resposta_texto)) {
-															echo "<p>Resposta: ".utf8_encode($p->resposta_texto)."</p>";
-														}
-														?>
+												if($e->enviarLink==1) {
+													?>
+													<div style="display:flex;width:100%;justify-content: space-between;">
+														<input type="text" readonly value="<?php echo $_SERVER['HTTP_HOST'];?>/anamnese/<?php echo md5($e->id);?>" style="width: 90%;"  />
+														<button type="button" class="button" style="width: 8%;" onclick="$(this).parent().find('input').select();"><span class="iconify" data-icon="material-symbols:content-copy-outline-rounded"></span></button>
 													</div>
-												<?php
+													<?php
+												} else {
+													$correcoes=1;
+													if(isset($_anamnesePerguntas[$e->id])) {
+														$perguntas=$_anamnesePerguntas[$e->id];
+
+
+													?>
+													<div class="list-toggle-topics">
+														<?php
+														foreach($perguntas as $p) {
+															$pergunta=json_decode($p->json_pergunta);
+															?>
+															<div class="list-toggle-topic">
+																<h1><?php echo ($pergunta->pergunta);?></h1>
+																<p>
+																	<?php 
+																	if($pergunta->tipo=="simnao" or $pergunta->tipo=="simnaotexto") {
+																		if($p->resposta=="SIM") echo "Sim";
+																		else echo "Não";
+																	} else if($pergunta->tipo=="nota") {
+																		echo "Nota: ".$p->resposta;
+																	} 
+																	?>	
+																</p>
+																<?php
+																if(!empty($p->resposta_texto)) {
+																	echo "<p>Resposta: ".utf8_encode($p->resposta_texto)."</p>";
+																}
+																?>
+															</div>
+															<?php
+														}
+													?>
+													
+													</div>		
+													<?php
 													}
-												?>
-												
-												</div>		
-												<?php
 												}
 											}
 
@@ -836,6 +848,7 @@
 							let data = {'token':'ee7a1554b556f657e8659a56d1a19c315684c39d',
 										'method':'sendWhatsapp',
 										'infoConta':'<?php echo $_ENV['NAME'];?>',
+										'id_colaborador': '<?php echo $usr->id;?>',
 										'id_evolucao':id_evolucao};
 
 							$.ajax({

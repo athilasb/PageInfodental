@@ -11,7 +11,7 @@
 			$datahora=array('data','data_cirurgia'),
 			$checkbox=array('pub','destaque','face','quantitativo','dia_inteiro','responsavel_possui','atendimentopersonalizado','permitir_acesso','estrangeiro','custo_recorrente','custo_fuxo','check_agendamento','contratacaoAtiva','embalagemComMais','whatsapp_notificacoes'),
 			$noupper=array('email','instagram','tipo','legenda','codigo_conversao','codigo_head','codigo_body','instagram'),
-			$multi=array('permissoes','unidade','camposEvolucao','profissional_multiple','bi_multiple'),
+			$multi=array('permissoes','unidade','camposEvolucao','profissional_multiple','bi_multiple','acesso_permissoes'),
 			$telefones=array('telefone','telefone1','telefone2','telefone3'),
 			$unmask=array('cpf','cnpj'),
 			$datas=array('data_nascimento','data_modelo','data_noticia','data_versao','data_reg','data_catalogo','vencimento','efetivado_data','responsavel_datanascimento','data_vencimento','data_emissao','data_extrato');
@@ -101,6 +101,7 @@
 			if(is_array($campos)) {
 				foreach($campos as $v) {
 					if(isset($post[$v])) $values[$v]=$post[$v];
+
 					
 					if(in_array($v,$_checkbox)) { 
 						$rtn.=$v."='".((isset($post[$v]) and $post[$v]==1)?1:0)."',";
@@ -109,6 +110,9 @@
 						else $rtn.=$v."=NULL,";
 					} else if($v=="active") {
 						$rtn.=$v."='".((isset($post[$v]) and $post[$v]=='Y')?'Y':'N')."',";
+					} else if(in_array($v,$_multi)) { 
+						if(isset($post[$v]) and is_array($post[$v])) $rtn.=$v."=',".implode(",",$post[$v]).",',";
+						else $rtn.=$v."='',";
 					} else if(isset($post[$v])) { 
 						if(in_array($v,$_data)) {
 							if(!empty($post[$v]) and strpos($post[$v],"/")>0) {
@@ -142,10 +146,7 @@
 							$rtn.=$v."='".telefone($post[$v])."',"; 
 						} else if(in_array($v,$_unmask)) { 
 							$rtn.=$v."='".str_replace(".","",str_replace("-","",str_replace("/","",str_replace("_","",$post[$v]))))."',";
-						} else if(in_array($v,$_multi)) { 
-							if(is_array($post[$v])) $rtn.=$v."=',".implode(",",$post[$v]).",',";
-							else $rtn.=$v."='',";
-						} else {
+						}  else {
 							
 							$rtn.=$v."='".addslashes(utf8_decode(($post[$v])))."',";
 						}

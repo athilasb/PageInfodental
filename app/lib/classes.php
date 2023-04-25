@@ -675,7 +675,7 @@ function outUrl($str)
  * @param int $id_evolucao
  * @return mixed mensagem de sucesso ou erro ao assinar o documento
  */
-function generatePDF($id_evolucao)
+function generatePDF($id_evolucao,$id_assinatura=0)
 {
 	$endpoint = "https://" . $_SERVER['HTTP_HOST'] . "/services/api.php";
 
@@ -684,6 +684,7 @@ function generatePDF($id_evolucao)
 	$params['method'] = 'generatePDF';
 	$params['infoConta'] = $_ENV['NAME'];
 	$params['id_evolucao'] = $id_evolucao;
+	$params['id_assinatura'] = $id_assinatura;
 	$params['enviaWhatsapp'] = 0;
 
 	$curl = curl_init();
@@ -699,14 +700,21 @@ function generatePDF($id_evolucao)
 		CURLOPT_HTTPHEADER => ["Content-Type: application/json"]
 	]);
 
-	curl_exec($curl);
+	$response = curl_exec($curl);
 	$err = curl_error($curl);
+	
 
 	curl_close($curl);
 	if ($err) {
 		return false;
 	} else {
-		return true;
+		$response = json_decode($response);
+
+		if(isset($response->success) and $response->success===true) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
 function debug($data, $die = false)

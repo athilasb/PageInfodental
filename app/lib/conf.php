@@ -1,24 +1,34 @@
 <?php
+	$_title="Info Dental";
+	$_p="ident_";
 
-	$_title = "Info Dental";
-	$_p = "ident_";
-	if (isset($_SERVER['HTTP_HOST'])) {
-		if (
-			$_SERVER['HTTP_HOST'] == "163.172.187.183:5000" or
-			$_SERVER['HTTP_HOST'] == "163.172.187.183:5001" or
-			$_SERVER['HTTP_HOST'] == "163.172.187.183:5002" or
-			$_SERVER['HTTP_HOST'] == "163.172.187.183:5003" or
-			$_SERVER['HTTP_HOST'] == "web.infodental.dental" or
-			$_SERVER['HTTP_HOST'] == "web-luciano.infodental.dental" or
-			$_SERVER['HTTP_HOST'] == "web-walker.infodental.dental" or
-			$_SERVER['HTTP_HOST'] == "web-rafael.infodental.dental" or
-			$_SERVER['HTTP_HOST'] == "testes.infodental.dental"
-		) {
-			$_ENV['MYSQL_HOST'] = '51.159.74.70:23821';
-			if (isset($_COOKIE['infoName'])) $_ENV['NAME'] = $_ENV['MYSQL_DB'] = $_COOKIE['infoName'];
-			$_ENV['MYSQL_USER'] = "dentalinfo";
-			$_ENV['MYSQL_PASS'] = "d3ntaL@inf0";
-		}
+	if(isset($_SERVER['HTTP_HOST'])) {
+		if($_SERVER['HTTP_HOST']=="163.172.187.183:5000" or 
+			$_SERVER['HTTP_HOST']=="163.172.187.183:5001" or 
+			$_SERVER['HTTP_HOST']=="163.172.187.183:5002" or 
+			$_SERVER['HTTP_HOST']=="163.172.187.183:5003" or 
+			$_SERVER['HTTP_HOST']=="web.infodental.dental" or 
+			$_SERVER['HTTP_HOST']=="web-luciano.infodental.dental" or 
+			$_SERVER['HTTP_HOST']=="web-walker.infodental.dental" or 
+			$_SERVER['HTTP_HOST']=="web-rafael.infodental.dental" or 
+			$_SERVER['HTTP_HOST']=="web-victor.infodental.dental" or 
+			$_SERVER['HTTP_HOST']=="web-athila.infodental.dental" or 
+			$_SERVER['HTTP_HOST']=="testes.infodental.dental") {
+			$_ENV['MYSQL_HOST']='51.159.74.70:23821';
+
+			if(basename($_SERVER['PHP_SELF'])=="migracaoDentalOffice.php") {
+				$_ENV['NAME']=$_ENV['MYSQL_DB']='';
+
+			} else {
+				$_ENV['NAME']=$_ENV['MYSQL_DB']='studiodental';
+			}
+
+
+			if(isset($_COOKIE['infoName'])) $_ENV['NAME']=$_ENV['MYSQL_DB']=$_COOKIE['infoName'];
+				
+			$_ENV['MYSQL_USER']="dentalinfo";
+			$_ENV['MYSQL_PASS']="d3ntaL@inf0"; 
+		} 
 	}
 	require_once("classes.php");
 

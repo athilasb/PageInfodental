@@ -152,6 +152,7 @@
 
 							const data = new FormData();
 							data.append("act", "upload");
+							data.append("token","ZDNudDRsaW5mMDo4ZTMwM2I1ZDVjMTJkNjg0ZjBjN2VhZGZmNjVkMDg5Yzk3OTM4YWZj");
 							data.append("instancia", "<?php echo $infoConta->instancia;?>");
 							data.append("file", file);
 							data.append("id_paciente", "<?php echo $paciente->id;?>");
@@ -186,9 +187,6 @@
 							// jQuery
 								$.ajax({
 									type:"POST",
-									headers: {
-									    "Authorization": "Basic ZDNudDRsaW5mMDo4ZTMwM2I1ZDVjMTJkNjg0ZjBjN2VhZGZmNjVkMDg5Yzk3OTM4YWZj"
-									 },
 									url:"https://upload.infodental.dental/api/",
 									data:data,
 									contentType:false,

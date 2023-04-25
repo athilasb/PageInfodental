@@ -404,7 +404,7 @@
 
 		header("Content-type: application/json");
 		echo json_encode($rtn);
-		die();
+		die(); 
 	}
 
 	if(isset($_GET['ajax'])) {
@@ -471,7 +471,6 @@
 
 			$registros=$registrosDesmarcados=array();
 			$pacientesIds=$agendaIds=array();
-			
 			$sql->consult($_p."agenda","*",$where);
 			if($sql->rows) {
 
@@ -928,6 +927,10 @@
 
 	include "includes/header.php";
 	include "includes/nav.php";
+	if($usr->tipo!="admin" and !in_array("agenda",$_usuariosPermissoes)) {
+		$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
+		die();
+	}
 
 	if($usr->tipo!="admin" and !in_array("produtos",$_usuariosPermissoes)) {
 		$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
@@ -965,7 +968,7 @@
 	if(isset($values['id_cadeira']) and is_numeric($values['id_cadeira'])) $where.=" and id_cadeira = '".$values['id_cadeira']."'";
 
 	$registros=$pacientesIds=[];
-	$sql->consult($_p."agenda","*",$where);
+	$sql->consult($_p."agenda","*",$where." order by agenda_data asc");
 	//echo $where.$sql->rows;
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$registros[date('Ymd',strtotime($x->agenda_data))][]=$x;
@@ -1144,6 +1147,8 @@
 										}
 									}
 
+									$cor = isset($_status[$x->id_status])?$_status[$x->id_status]->cor:'';
+
 
 									if($x->agendaPessoal==1) {
 									?>
@@ -1161,7 +1166,7 @@
 										$paciente = isset($_pacientes[$x->id_paciente]) ? $_pacientes[$x->id_paciente] : '';
 
 									?>
-									<section class="cal-item js-agenda" data-id_agenda="<?php echo $x->id;?>" style="border-left:6px solid #1182ea;">
+									<section class="cal-item js-agenda" data-id_agenda="<?php echo $x->id;?>" style="border-left:6px solid <?php echo $cor;?>">
 										<section class="cal-item__inner1">
 											<div class="cal-item-dados">
 												<h2 style="margin-top:0"><?php echo utf8_encode($paciente->nome);?></h2>
