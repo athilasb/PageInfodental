@@ -210,7 +210,9 @@
 		<meta charset="utf-8">
 		<title><?php echo $title;?></title>
 		<link rel="stylesheet" type="text/css" href="../css/evolucoes.css" />
+		<link rel="stylesheet" type="text/css" href="../css/annamnese.css" />
 		<link rel="stylesheet" type="text/css" href="../css/apps.css" />
+		<script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
 		<script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
 		<script src="../js/jquery.js"></script>
 	</head>
@@ -321,19 +323,39 @@
 						})
 					})
 				</script>
-				<div style="text-align: center;margin-top:200px;">
-					<form>
-						<dl>
-							<dt>CPF</dt>
-							<dd><input type="text" class="js-cpf" /></dd>
-						</dl>
-						<dl>
-							<dt>Data Nascimento</dt>
-							<dd><input type="text" class="js-dn" /></dd>
-						</dl>
-						<button type="button" class="button js-auth" data-loading="0">Autenticar</button>
-					</form>
-				</div>
+
+
+	<main class="centralizacao">
+      <div class="imagem-sorriso">
+        <img src="../img/Sorriso.png" alt="Ícone de sorriso" />
+      </div>
+
+      <form class="formulario" action="" method="post">
+        <label class="input_icon" for="cpf">
+          <div class="border-icon">
+		  <iconify-icon icon="mdi:file-document-outline"></iconify-icon>
+          </div>
+          <input type="text" class="js-cpf" name="cpf" id="cpf"  maxlength="14"  pattern="[0-9]*" placeholder="CPF" />
+        </label>
+        <span id="cpf-error" style="color: rgb(175, 175, 175); display: none">CPF inválido</span
+        >
+        <label class="input_icon" for="data">
+          <div class="border-icon">
+            <img class="icon_input" src="../img/Calendario.svg" alt="Ícone de data"/>
+          </div>
+          <input type="text" name="data_nascimento" class="js-dn" id="data_nascimento" maxlength="10" pattern="[0-9]*"placeholder="Data de nascimento" onkeypress="return onlyNumbers(event)"oninput="maskCpf(); validateCpf()"/>
+        </label>
+
+
+        <button type="submit" class="autenticar">Autenticar</button>
+      </form>
+    </main>
+
+
+
+
+
+				
 				<?php
 			} 
 
