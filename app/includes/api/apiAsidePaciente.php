@@ -156,12 +156,12 @@
 
 									$sql->update($_p."pacientes_evolucoes","enviarLinkFinalizado=now()","where id=$id_evolucao");
 
-									$attr=array('id_tipo'=>11,
+									/*$attr=array('id_tipo'=>11,
 												'id_evolucao'=>$id_evolucao);
 						
-									$wts->adicionaNaFila($attr);
+									$wts->adicionaNaFila($attr);*/
 
-									$rtn=array('success'=>true,'celular'=>mask($wts->celular));
+									$rtn=array('success'=>true);//,'celular'=>mask($wts->celular));
 								} else {
 									$rtn=array('success'=>false,'error'=>'Algum erro ocorreu durante a geração do PDF! Favor contate nossa equipe de suporte.');
 								}
@@ -2634,7 +2634,7 @@
 										success:function(rtn) {
 											if(rtn.success) {
 												$('.aside-close').click();
-												swal({title: "Sucesso!", html:true, text: 'Link para assinatura digital enviado para o número <b>'+rtn.celular+'</b> com sucesso', type:"success", confirmButtonColor: "#424242"},function(){
+												swal({title: "Sucesso!", html:true, text: 'Anamnese salva com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
 														document.location.reload();
 												});
 
