@@ -211,7 +211,11 @@
 		<title><?php echo $title;?></title>
 
 		<base href="//<?php echo $_SERVER['HTTP_HOST'];?>/evolucoes/" />
+<<<<<<< HEAD
 		<link rel="stylesheet" type="text/css" href="../css/evolucoes.css?v068" />
+=======
+		<link rel="stylesheet" type="text/css" href="css/evolucoes.css" />
+>>>>>>> 7a6624f93cdcc1869fabdec33982b06f51922d99
 		<link rel="stylesheet" type="text/css" href="../css/apps.css" />
 		<script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
 		<script defer src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
@@ -250,7 +254,11 @@
 		if(empty($evolucao) or empty($anamnese)) {
 
 			?>
+<<<<<<< HEAD
 			<table class="print-table ">
+=======
+			<table class="print-table">
+>>>>>>> 7a6624f93cdcc1869fabdec33982b06f51922d99
 
 				<thead><tr><td><div class="print-table-header">&nbsp;</div></td></tr></thead>
 				<tbody>
@@ -327,6 +335,7 @@
 					})
 				</script>
 
+<<<<<<< HEAD
 				<div class="form-unico-centro">
 					<form class="form Autentificar">
 					<div class="block">
@@ -343,6 +352,20 @@
 						</dl>
 						</div>
 						<button type="button" class="button js-auth .cor-base" data-loading="0">Autenticar</button>
+=======
+
+				<div style="text-align: center;margin-top:200px;">
+					<form>
+						<dl>
+							<dt>CPF</dt>
+							<dd><input type="text" class="js-cpf" /></dd>
+						</dl>
+						<dl>
+							<dt>Data Nascimento</dt>
+							<dd><input type="text" class="js-dn" /></dd>
+						</dl>
+						<button type="button" class="button js-auth" data-loading="0">Autenticar</button>
+>>>>>>> 7a6624f93cdcc1869fabdec33982b06f51922d99
 					</form>
 				</div>
 				<?php
