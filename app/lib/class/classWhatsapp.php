@@ -437,7 +437,7 @@
 															data > NOW() - INTERVAL 48 HOUR";
 
 											$sql->consult($_p."whatsapp_mensagens","*",$where);
-
+											
 										
 											if($sql->rows==0) {
 
@@ -494,7 +494,7 @@
 														$this->erro='Esta mensagem está na fila ('.$wtsEnviada->fila_numero.') desde '.$wtsEnviada->fila_data;
 													}
 												} else {
-													$this->erro="Esta mensagem já foi enviada!";
+													$this->erro="Esta mensagem já foi enviada nas últimas 48 horas!";
 												}
 											}
 										} else {
@@ -530,6 +530,8 @@
 										$msg = $tipo->texto;
 										$numero = telefone($paciente->telefone1);
 
+										$this->celular=$numero;
+
 										if(!empty($numero) and !empty($msg)) {
 
 											if(in_array($numero,$this->block)) {
@@ -555,8 +557,8 @@
 															data > NOW() - INTERVAL 48 HOUR";
 
 											$sql->consult($_p."whatsapp_mensagens","*",$where);
-											//echo $sql->rows;
 										
+											
 											if($sql->rows==0) {
 
 												// verifica a conexao ativa
@@ -598,7 +600,7 @@
 												if($wtsEnviada->enviado==0) {
 													$this->wtsRabbitmq($id_whatsapp);
 												} else {
-													$this->erro="Esta mensagem já foi enviada!";
+													$this->erro="Esta mensagem já foi enviada nas últimas 48 horas!";
 												}
 											}
 										} else {

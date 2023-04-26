@@ -870,7 +870,6 @@
 				}
 			}
 		 
-
 		# Especialidades
 			else if($_POST['ajax']=="asEspecialidadesListar") {
 
