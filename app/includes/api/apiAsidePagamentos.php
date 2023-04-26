@@ -598,6 +598,440 @@ if (isset($_POST['ajax'])) {
 }
 
 ?>
+
+
+
+
+<?php if (isset($apiConfig['Avulso-a-Receber'])){?> 
+	
+<script> 
+
+$(".js-valor-pagamento-avulso").ready(function() {
+  $('.js-valor-pagamento-avulso').maskMoney({
+    thousands: '.',
+    decimal: '.'});
+});
+
+	$("#pagamento_avulso-receber").click(() => {
+		//alert("teste");
+		//$(".default").show();
+		$("#Pagamento-avulso").fadeIn(100, function() {
+			$("#Pagamento-avulso .aside__inner9").addClass("active");
+		});
+	});	
+
+	$(".aside-header__fechar").click(()=>{
+		location.reload();
+	})
+</script>
+	<section class="aside aside-form" id="Pagamento-avulso">	
+		<div class="aside__inner1 aside__inner9">
+			<input type="hidden" name="alteracao" value="0">
+			<header class="aside-header">
+				<h1 class="js-titulo"> Pagamento Avulso</h1>
+				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+			</header>
+			<div class="js-fin js-fin-programacao" style="margin: 20px;">
+					<fieldset style="padding:.75rem 1.5rem;">
+						<legend>Informações</legend>
+					<form class="form" action="">
+					<p>Beneficiário</p>
+					<div class="colunas3">
+							<dl>
+								<label><input type="radio" name="tipo_beneficiario" value="fornecedor">Fornecedor</label>
+							</dl>
+							<dl>
+								<label><input type="radio" name="tipo_beneficiario" value="paciente">Paciente</label>
+							</dl>
+							<dl>
+								<label><input type="radio" name="tipo_beneficiario" value="colaborador">Colaborador</label>
+							</dl>
+					</div>
+					<div class="colunas1">
+							<dl class="dl2">
+								<dl data-select2-id="select2-data-6-t6vw">
+									<dd data-select2-id="select2-data-5-bdxs">
+										<select name="id_beneficiario" class="select2 obg-0 ajax-id_paciente select2-hidden-accessible" data-select2-id="select2-data-1-ld9e" tabindex="-1" aria-hidden="true">
+											<option value="" data-select2-id="select2-data-3-256t">Buscar Beneficiario...</option>
+										</select><span class="select2 select2-container select2-container--default select2-container--below" dir="ltr" data-select2-id="select2-data-2-n7js" style="width: 100px;"><span class="selection"><span class="select2-selection select2-selection--single" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-disabled="false" aria-labelledby="select2-id_beneficiario-8s-container" aria-controls="select2-id_beneficiario-8s-container"><span class="select2-selection__rendered" id="select2-id_beneficiario-8s-container" role="textbox" aria-readonly="true" title="Buscar Beneficiario...">Buscar Beneficiario...</span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+										<a href="javascript:;" class="js-btn-aside button" data-aside="paciente" data-aside-sub=""><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="1em" height="1em" style="vertical-align: -0.125em;-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24" class="iconify" data-icon="fluent:add-circle-24-regular"><path fill="currentColor" d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2Zm0 1.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 0 0 0-17ZM12 7a.75.75 0 0 1 .75.75v3.5h3.5a.75.75 0 0 1 0 1.5h-3.5v3.5a.75.75 0 0 1-1.5 0v-3.5h-3.5a.75.75 0 0 1 0-1.5h3.5v-3.5A.75.75 0 0 1 12 7Z"></path></svg></a>
+									</dd>
+								</dl>
+							</dl>
+						</div>
+					<div class="colunas3" >
+				
+						<dl>
+							<dt style="">Valor Total</dt>
+							<dd class="form-comp"><span>R$</span>
+							<input type="text" class="js-valor-pagamento-avulso" name="valor_pagamento" value="0" />
+							</dd>
+						</dl>
+						<dl>
+							<dt>Parcelas</dt>
+							<input type="number" class="js-parcelas-Avulso" name="parcelas"  maxlength="2" value="0" />
+							</dd>
+						</dl>
+					</div>
+					<div><dl>
+							<dt style="">Descrição</dt>
+							<textarea style="padding: 10px;" class="js-valor"  name="descrição" id="" cols="30" rows="10"></textarea>
+							</dd>
+						</dl></div>
+
+						<div  class="parcelamentos-avulsos">
+						
+						</div>
+						<dl style="margin-top:1.5rem;">
+							<dd><button href="javascript:;" class="button button_main" type="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar</span></button></dd>
+						</dl>
+		
+					</form>
+						
+					</fieldset>
+					
+				</div>
+
+	</section>
+<?php
+}?>
+
+
+<script>
+
+
+$('.js-parcelas-Avulso , .js-valor-pagamento-avulso').on('change', () => {
+    // Seu código aqui
+	
+	parcelar = Number($('.js-parcelas-Avulso').val());
+	valor = Number($('.js-valor-pagamento-avulso').maskMoney('unmasked')[0]);
+	ValorParcelas = valor / parcelar
+
+	if (parcelar < 0) {
+	$('.js-parcelas-Avulso').val(0);
+	$('.parcelamentos-avulsos').append(html);
+		
+	}
+if (parcelar <= 24) {
+	html = ""
+	dataAtual = new Date();
+	dia = ("0" + dataAtual.getDate()).slice(-2);
+	mes = Number(("0" + (dataAtual.getMonth() + 1)).slice(-2));
+	ano = Number(dataAtual.getFullYear());
+	dataFormatada = dia + '/' + mes + '/' + ano;
+	$('.parcelamentos-avulsos').empty();
+	for (let index = 1; index <= parcelar; index++) {
+
+		if (mes >= 12) {
+			if (mes < 9) {
+				dataFormatada = dia + '/' + 0 + (mes = 1) + '/' + ( ano = ano + 1) ;
+				
+				
+			} else {
+				dataFormatada = dia + '/' + (mes = 1) + '/' + ( ano = ano + 1) ;
+			}
+				
+				
+
+			} else {
+
+				if (mes < 9) {
+					dataFormatada = dia + '/'+ 0 + (mes = mes + 1) + '/' + ( ano) ;
+				} else {
+					dataFormatada = dia + '/' + (mes = mes + 1) + '/' + ( ano) ;
+					
+					
+				}
+				
+			
+			}
+
+			if (mes == 1) {
+
+				dataFormatada = dia + '/' + 0 + (mes = 1) + '/' + ( ano) ;
+				
+			} 
+
+		html = html +  `<div class="fpag-item js-pagamento-item" style="margin-top: 20px;">
+						<aside>${index}</aside>
+						<article>
+							<div class="colunas3">
+								<dl>
+									<dd class="form-comp"><span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="1em" height="1em" style="vertical-align: -0.125em;-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24" class="iconify" data-icon="fluent:calendar-ltr-24-regular"><path fill="currentColor" d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3h11.5Zm1.75 5.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75V8.5Zm-11.75 6a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm4.25 0a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm-4.25-4a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm4.25 0a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm4.25 0a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm1.5-6H6.25A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75Z"></path></svg></span><input type="tel" name="" class="data js-vencimento" data-ordem="1" value="${dataFormatada}"></dd>
+								</dl>
+								<dl>
+									<dd class="form-comp"><span>R$</span><input type="tel" name="" data-ordem="1" class="valor js-valor" value="${ValorParcelas.toFixed(2)}"></dd>
+								</dl>
+								<dl>
+								<select name="" id=""><?php echo($optionFormasDePagamento) ?></select>
+								</dl>
+								<dl>
+								<dt>Bandeira</dt>
+								<select class="js-creditoBandeira js-tipoPagamento">
+																	<option value="">selecione</option>
+																	<optgroup label="nova_operadora"></optgroup><optgroup label="PAG SEGURO">
+																	<option value="1" data-parcelas="10" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="21">MASTERCARD</option>
+																	<option value="2" data-parcelas="12" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="22">VISA</option>
+																	<option value="3" data-parcelas="10" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="23">ELO</option>
+																	<option value="4" data-parcelas="10" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="24">HIPERCARD</option>
+																	<option value="5" data-parcelas="1" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="25">AMEX</option>
+																	<option value="6" data-parcelas="1" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="26">CABAL</option>
+																	<option value="7" data-parcelas="1" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="27">DINERSCLUB</option>
+																	<option value="8" data-parcelas="10" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="28">UNIONPLAY</option></optgroup>	
+																	</select>
+								</dl>
+								<dl>
+								<dt>Identificador</dt>
+								<dd><input type="text" class="js-identificador js-tipoPagamento"></dd>
+								</dl>
+								
+								
+							</div>
+
+							
+						</article>
+					</div>`;	
+
+
+					
+	 									}
+	$('.parcelamentos-avulsos').empty();
+$('.parcelamentos-avulsos').append(html);
+}
+
+
+else{
+	$('.js-parcelas-Avulso').val(24);
+	$('.parcelamentos-avulsos').append(html);
+
+};
+
+
+if (parcelar > 4) {
+	$('.parcelamentos-avulsos').css( { 'height': '40vh',
+		'overflow-y': 'auto',
+	 } );
+
+} else {
+
+	$('.parcelamentos-avulsos').css( "" );
+	
+}
+
+
+  });
+
+
+</script>
+
+
+
+
+
+<!-- ASIDE PAGAMENTO AVULSO  -->
+<?php if (isset($apiConfig['Avulso'])){?>
+<script> 
+
+$(".js-valor-pagamento-avulso").ready(function() {
+  $('.js-valor-pagamento-avulso').maskMoney({
+    thousands: '.',
+    decimal: '.'});
+});
+
+	$("#pagamento_avulso").click(() => {
+		//alert("teste");
+		//$(".default").show();
+		$("#Pagamento-avulso").fadeIn(100, function() {
+			$("#Pagamento-avulso .aside__inner9").addClass("active");
+		});
+	});	
+
+	$(".aside-header__fechar").click(()=>{
+		location.reload();
+	})
+</script>
+	<section class="aside aside-form" id="Pagamento-avulso">	
+		<div class="aside__inner1 aside__inner9">
+			<input type="hidden" name="alteracao" value="0">
+			<header class="aside-header">
+				<h1 class="js-titulo"> Pagamento Avulso</h1>
+				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+			</header>
+			<div class="js-fin js-fin-programacao" style="margin: 20px;">
+					<fieldset style="padding:.75rem 1.5rem;">
+						<legend>Informações</legend>
+					<form class="form" action="">
+					<div class="colunas3" >
+				
+						<dl>
+							<dt style="">Valor Total</dt>
+							<dd class="form-comp"><span>R$</span>
+							<input type="text" class="js-valor-pagamento-avulso" name="valor_pagamento" value="0" />
+							</dd>
+						</dl>
+						<dl>
+							<dt>Parcelas</dt>
+							<input type="number" class="js-parcelas-Avulso" name="parcelas"  maxlength="2" value="0" />
+							</dd>
+						</dl>
+					</div>
+					<div><dl>
+							<dt style="">Descrição</dt>
+							<textarea  style="padding: 10px;" class="js-valor"  name="descrição" id="" cols="30" rows="10"></textarea>
+							</dd>
+						</dl></div>
+
+						<div  class="parcelamentos-avulsos">
+						
+						</div>
+						<dl style="margin-top:1.5rem;">
+							<dd><button href="javascript:;" class="button button_main" type="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar</span></button></dd>
+						</dl>
+		
+					</form>
+						
+					</fieldset>
+					
+				</div>
+
+	</section>
+<?php
+}?>
+
+
+<script>
+
+
+$('.js-parcelas-Avulso , .js-valor-pagamento-avulso').on('change', () => {
+    // Seu código aqui
+	
+	parcelar = Number($('.js-parcelas-Avulso').val());
+	valor = Number($('.js-valor-pagamento-avulso').maskMoney('unmasked')[0]);
+	ValorParcelas = valor / parcelar
+
+	if (parcelar < 0) {
+	$('.js-parcelas-Avulso').val(0);
+	$('.parcelamentos-avulsos').append(html);
+		
+	}
+if (parcelar <= 24) {
+	html = ""
+	dataAtual = new Date();
+	dia = ("0" + dataAtual.getDate()).slice(-2);
+	mes = Number(("0" + (dataAtual.getMonth() + 1)).slice(-2));
+	ano = Number(dataAtual.getFullYear());
+	dataFormatada = dia + '/' + mes + '/' + ano;
+	$('.parcelamentos-avulsos').empty();
+	for (let index = 1; index <= parcelar; index++) {
+
+		if (mes >= 12) {
+			if (mes < 9) {
+				dataFormatada = dia + '/' + 0 + (mes = 1) + '/' + ( ano = ano + 1) ;
+				
+				
+			} else {
+				dataFormatada = dia + '/' + (mes = 1) + '/' + ( ano = ano + 1) ;
+			}
+				
+				
+
+			} else {
+
+				if (mes < 9) {
+					dataFormatada = dia + '/'+ 0 + (mes = mes + 1) + '/' + ( ano) ;
+				} else {
+					dataFormatada = dia + '/' + (mes = mes + 1) + '/' + ( ano) ;
+					
+					
+				}
+				
+			
+			}
+
+			if (mes == 1) {
+
+				dataFormatada = dia + '/' + 0 + (mes = 1) + '/' + ( ano) ;
+				
+			} 
+
+		html = html +  `<div class="fpag-item js-pagamento-item" style="margin-top: 20px;">
+						<aside>${index}</aside>
+						<article>
+							<div class="colunas3">
+								<dl>
+									<dd class="form-comp"><span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="1em" height="1em" style="vertical-align: -0.125em;-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24" class="iconify" data-icon="fluent:calendar-ltr-24-regular"><path fill="currentColor" d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3h11.5Zm1.75 5.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75V8.5Zm-11.75 6a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm4.25 0a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm-4.25-4a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm4.25 0a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm4.25 0a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5Zm1.5-6H6.25A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75Z"></path></svg></span><input type="tel" name="" class="data js-vencimento" data-ordem="1" value="${dataFormatada}"></dd>
+								</dl>
+								<dl>
+									<dd class="form-comp"><span>R$</span><input type="tel" name="" data-ordem="1" class="valor js-valor" value="${ValorParcelas.toFixed(2)}"></dd>
+								</dl>
+								<dl>
+								<select name="" id=""><?php echo($optionFormasDePagamento) ?></select>
+								</dl>
+								<dl>
+								<dt>Bandeira</dt>
+								<select class="js-creditoBandeira js-tipoPagamento">
+																	<option value="">selecione</option>
+																	<optgroup label="nova_operadora"></optgroup><optgroup label="PAG SEGURO">
+																	<option value="1" data-parcelas="10" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="21">MASTERCARD</option>
+																	<option value="2" data-parcelas="12" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="22">VISA</option>
+																	<option value="3" data-parcelas="10" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="23">ELO</option>
+																	<option value="4" data-parcelas="10" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="24">HIPERCARD</option>
+																	<option value="5" data-parcelas="1" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="25">AMEX</option>
+																	<option value="6" data-parcelas="1" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="26">CABAL</option>
+																	<option value="7" data-parcelas="1" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="27">DINERSCLUB</option>
+																	<option value="8" data-parcelas="10" data-parcelas-semjuros="0" data-id_operadora="2" data-id_operadorabandeira="28">UNIONPLAY</option></optgroup>	
+																	</select>
+								</dl>
+								<dl>
+								<dt>Identificador</dt>
+								<dd><input type="text" class="js-identificador js-tipoPagamento"></dd>
+								</dl>
+								
+								
+							</div>
+
+							
+						</article>
+					</div>`;	
+
+
+					
+	 									}
+	$('.parcelamentos-avulsos').empty();
+$('.parcelamentos-avulsos').append(html);
+}
+
+
+else{
+	$('.js-parcelas-Avulso').val(24);
+	$('.parcelamentos-avulsos').append(html);
+
+};
+
+
+if (parcelar > 4) {
+	$('.parcelamentos-avulsos').css( { 'height': '40vh',
+		'overflow-y': 'auto',
+	 } );
+
+} else {
+
+	$('.parcelamentos-avulsos').css( "" );
+	
+}
+
+
+  });
+
+
+</script>
+
+
+
+
+
+
+
 <script type="text/javascript" src="js/aside.funcoes.js"></script>
 <?php if (isset($apiConfig['Pagamentos'])) { ?>
 	<?php

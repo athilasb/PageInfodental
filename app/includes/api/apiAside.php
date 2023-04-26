@@ -3031,9 +3031,9 @@
 
 	# JS All Asides
 ?>
-	<script type="text/javascript" src="js/aside.funcoes.js"></script>
-	<script type="text/javascript">
-			/*const horarioDisponivel = (id_agenda,obj) => {
+<script type="text/javascript" src="js/aside.funcoes.js"></script>
+<script type="text/javascript">
+/*const horarioDisponivel = (id_agenda,obj) => {
 				let agenda_data = obj.find('input[name=agenda_data]').val();
 				let agenda_duracao = obj.find('select[name=agenda_duracao]').val();
 				let id_cadeira = obj.find('select[name=id_cadeira]').val();
@@ -3085,7 +3085,7 @@
 					agenda_horaObj.append(`<option value="">Complete os campos</option>`);
 				}
 			}*/
-	</script>
+</script>
 <?php
 
 	# Asides
@@ -3100,180 +3100,185 @@
 				}
 				?>
 
-				<!-- Js Geral -->
-				<script type="text/javascript">
-					var check_agendaDesativarRegrasStatus = eval('<?php echo is_object($infoParametros)?$infoParametros->check_agendaDesativarRegrasStatus:0;?>');
+<!-- Js Geral -->
+<script type="text/javascript">
+var check_agendaDesativarRegrasStatus = eval(
+    '<?php echo is_object($infoParametros)?$infoParametros->check_agendaDesativarRegrasStatus:0;?>');
 
-					const verificaAgendamento = () => {
-						let profissionais = $('.js-form-agendamento select.js-profissionais').val();
-						let id_cadeira = $('.js-form-agendamento select[name=id_cadeira]').val();
-						let id_paciente = $('.js-form-agendamento select[name=id_paciente]').val();
-						let agenda_data = $('.js-form-agendamento input[name=agenda_data]').val();
-						let agenda_hora = $('.js-form-agendamento input[name=agenda_hora]').val();
+const verificaAgendamento = () => {
+    let profissionais = $('.js-form-agendamento select.js-profissionais').val();
+    let id_cadeira = $('.js-form-agendamento select[name=id_cadeira]').val();
+    let id_paciente = $('.js-form-agendamento select[name=id_paciente]').val();
+    let agenda_data = $('.js-form-agendamento input[name=agenda_data]').val();
+    let agenda_hora = $('.js-form-agendamento input[name=agenda_hora]').val();
 
-						let data = `ajax=agendamentoVerificarDisponibilidade&profissionais=${profissionais}&id_cadeira=${id_cadeira}&agenda_data=${agenda_data}&agenda_hora=${agenda_hora}&id_paciente=${id_paciente}`;
-						
-
-						$.ajax({
-							type:'POST',
-							url:'box/boxAgendamento.php',
-							data:data,
-							success:function(rtn) {
-								if(rtn.success) {
-									$('#box-validacoes dd').remove();
-									rtn.validacao.forEach(x=> {
-										let item = ``;
-										if(x.atende==1) {
-											item = `<dd style="color:green"><i class="iconify" data-icon="bx-bx-check"></i> ${x.profissional} atende neste dia/horário</dd>`;
-										} else {
-											item = `<dd style="color:red"><span class="iconify" data-icon="ion:alert-circle-sharp"></span> ${x.profissional} não atende neste dia/horário</dd>`;
-										}
-										$('#box-validacoes').append(item);
-									})
-								} else {
-									$('#box-validacoes dd').remove();
-								}
-							},
-							error:function() {
-								$('#box-validacoes dd').remove();
-							}
-						})
-					}
-
-					const calendarioVisualizacaoData = () => { 
-						
-						let date = calendar.getDate();
-
-						let mesString='';
-
-						if(date.getMonth()==0) mesString='jan'; 
-						else if(date.getMonth()==1) mesString='fev'; 
-						else if(date.getMonth()==2) mesString='mar'; 
-						else if(date.getMonth()==3) mesString='abr'; 
-						else if(date.getMonth()==4) mesString='mai'; 
-						else if(date.getMonth()==5) mesString='jun'; 
-						else if(date.getMonth()==6) mesString='jul'; 
-						else if(date.getMonth()==7) mesString='ago'; 
-						else if(date.getMonth()==8) mesString='set'; 
-						else if(date.getMonth()==9) mesString='out'; 
-						else if(date.getMonth()==10) mesString='nov'; 
-						else if(date.getMonth()==11) mesString='dez'; 
-
-						if(date.getUTCDay()==0) diaString='domingo';
-						else if(date.getUTCDay()==1) diaString='segunda-feira';
-						else if(date.getUTCDay()==2) diaString='terça-feira';
-						else if(date.getUTCDay()==3) diaString='quarta-feira';
-						else if(date.getUTCDay()==4) diaString='quinta-feira';
-						else if(date.getUTCDay()==5) diaString='sexta-feira';
-						else if(date.getUTCDay()==6) diaString='sábado';
-
-						let dateString = date.getDate()+" "+mesString+" "+date.getFullYear();
-
-						//console.log(date.getUTCDay()+' => '+dateString+' => '+calendar.view.title);
-						//console.log(date.getTimezoneOffset());
-
-						$('.js-cal-titulo-diames').html(date.getDate()>=9?date.getDate():`0${date.getDate()}`);
-						$('.js-cal-titulo-mes').html(mesString);
-						$('.js-cal-titulo-dia').html(diaString);
-					}
-
-					const dia = (d) => {
-						if(d==0) return "dom.";
-						else if(d==1) return "seg.";
-						else if(d==2) return "ter.";
-						else if(d==3) return "qua.";
-						else if(d==4) return "qui.";
-						else if(d==5) return "sex.";
-						else if(d==6) return "sáb.";
-					}
-
-					const unMes = (m) => {
-						m = m.toUpperCase();
-						if(m=="JANEIRO") return "0";
-						else if(m=="FEVEREIRO") return "1";
-						else if(m=="MARÇO") return "2";
-						else if(m=="ABRIL") return "3";
-						else if(m=="MAIO") return "4";
-						else if(m=="JUNHO") return "5";
-						else if(m=="JULHO") return "6";
-						else if(m=="AGOSTO") return "7";
-						else if(m=="SETEMBRO") return "8";
-						else if(m=="OUTUBRO") return "9";
-						else if(m=="NOVEMBRO") return "10";
-						else if(m=="DEZEMBRO") return "11";
-					}
-
-					const novoAgendamento = (id_cadeira,dataHora) => {
-						
-						let date = '';
-						if(agendaMobile==1) {
-							date = new Date();
-						} else {
-							date = calendar.getDate();
-						}
-						let dia = d2(date.getDate());
-						let mes = d2(date.getMonth()+1);
-						let ano = date.getFullYear();
-
-						let agendaHora='';
-						if(dataHora.length>0) {
-							let dt = new Date(dataHora);
-							let dtHora = d2(dt.getHours());
-							let dtMin = d2(dt.getMinutes());
-							dia = d2(dt.getDate());
-							mes = d2(dt.getMonth()+1);
-							ano = d2(dt.getFullYear());
-							agendaHora = `${dtHora}:${dtMin}`;
-						}
-						data = `${dia}/${mes}/${ano}`;
-
-						//console.log(dataHora+'-> '+data+' '+agendaHora);
-						
-						
-						$('#js-aside-add select[name=id_status]').val(1);
-						$('#js-aside-add select[name=duracao]').val(``);
-						$('#js-aside-add input[name=telefone1]').val(``);
-						$('#js-aside-add input[name=agenda_duracao]').val(30);
-						$('#js-aside-add textarea[name=obs]').val(``);
-						$('#js-aside-add select[name=profissionais] option:checked').prop('checked',false).trigger('chosen:updated');
-						$('#js-aside-add input[name=agenda_data]').val(data);
-						$('#js-aside-add input[name=agenda_hora]').val(agendaHora);
-						$('#js-aside-add select[name=id_cadeira]').val(id_cadeira);
-						$('#js-aside-add select[name=id_paciente]').val(null).trigger('change');
-						$('#js-aside-add input[name=alteracao]').val(0);
+    let data =
+        `ajax=agendamentoVerificarDisponibilidade&profissionais=${profissionais}&id_cadeira=${id_cadeira}&agenda_data=${agenda_data}&agenda_hora=${agenda_hora}&id_paciente=${id_paciente}`;
 
 
-						$("#js-aside-add").fadeIn(100,function() {
-							$("#js-aside-add .aside__inner1").addClass("active");
-							$("#js-aside-add .js-tab a:eq(0)").click();
-						});
+    $.ajax({
+        type: 'POST',
+        url: 'box/boxAgendamento.php',
+        data: data,
+        success: function(rtn) {
+            if (rtn.success) {
+                $('#box-validacoes dd').remove();
+                rtn.validacao.forEach(x => {
+                    let item = ``;
+                    if (x.atende == 1) {
+                        item =
+                            `<dd style="color:green"><i class="iconify" data-icon="bx-bx-check"></i> ${x.profissional} atende neste dia/horário</dd>`;
+                    } else {
+                        item =
+                            `<dd style="color:red"><span class="iconify" data-icon="ion:alert-circle-sharp"></span> ${x.profissional} não atende neste dia/horário</dd>`;
+                    }
+                    $('#box-validacoes').append(item);
+                })
+            } else {
+                $('#box-validacoes dd').remove();
+            }
+        },
+        error: function() {
+            $('#box-validacoes dd').remove();
+        }
+    })
+}
 
-						/*$('#js-aside-add .js-profissionais').chosen('destroy');
-						$('#js-aside-add .js-profissionais').chosen();
-						$('#js-aside-add .js-profissionais').trigger('chosen:updated');*/
-						if($('#js-aside-add .js-profissionais').data('select2')) $('#js-aside-add .js-profissionais').select2('destroy');
-						$('#js-aside-add .js-profissionais').select2();
+const calendarioVisualizacaoData = () => {
 
-						/*$('#js-aside-add .js-tags').chosen('destroy');
-						$('#js-aside-add .js-tags').chosen();
-						$('#js-aside-add .js-tags').trigger('chosen:updated');*/
-						if($('#js-aside-add .js-tags').data('select2')) $('#js-aside-add .js-tags').select2('destroy');
-						$('#js-aside-add .js-tags').select2();
+    let date = calendar.getDate();
 
-						agendamentosProfissionais(`add`);
-						checklistItens();
-					}
-					
-					const checklistItens = () => {
-						$('#js-aside-add .js-checklist-itens').html('');
-						let data = `ajax=checklistItens`;
-						$.ajax({
-							type:"POST",
-							data:data,
-							success:function(rtn){ 
-								if(rtn.success) {
-									rtn.regs.forEach(x=>{
-										$(`#js-aside-add .js-checklist-itens`).append(`<div class="colunas3">
+    let mesString = '';
+
+    if (date.getMonth() == 0) mesString = 'jan';
+    else if (date.getMonth() == 1) mesString = 'fev';
+    else if (date.getMonth() == 2) mesString = 'mar';
+    else if (date.getMonth() == 3) mesString = 'abr';
+    else if (date.getMonth() == 4) mesString = 'mai';
+    else if (date.getMonth() == 5) mesString = 'jun';
+    else if (date.getMonth() == 6) mesString = 'jul';
+    else if (date.getMonth() == 7) mesString = 'ago';
+    else if (date.getMonth() == 8) mesString = 'set';
+    else if (date.getMonth() == 9) mesString = 'out';
+    else if (date.getMonth() == 10) mesString = 'nov';
+    else if (date.getMonth() == 11) mesString = 'dez';
+
+    if (date.getUTCDay() == 0) diaString = 'domingo';
+    else if (date.getUTCDay() == 1) diaString = 'segunda-feira';
+    else if (date.getUTCDay() == 2) diaString = 'terça-feira';
+    else if (date.getUTCDay() == 3) diaString = 'quarta-feira';
+    else if (date.getUTCDay() == 4) diaString = 'quinta-feira';
+    else if (date.getUTCDay() == 5) diaString = 'sexta-feira';
+    else if (date.getUTCDay() == 6) diaString = 'sábado';
+
+    let dateString = date.getDate() + " " + mesString + " " + date.getFullYear();
+
+    //console.log(date.getUTCDay()+' => '+dateString+' => '+calendar.view.title);
+    //console.log(date.getTimezoneOffset());
+
+    $('.js-cal-titulo-diames').html(date.getDate() >= 9 ? date.getDate() : `0${date.getDate()}`);
+    $('.js-cal-titulo-mes').html(mesString);
+    $('.js-cal-titulo-dia').html(diaString);
+}
+
+const dia = (d) => {
+    if (d == 0) return "dom.";
+    else if (d == 1) return "seg.";
+    else if (d == 2) return "ter.";
+    else if (d == 3) return "qua.";
+    else if (d == 4) return "qui.";
+    else if (d == 5) return "sex.";
+    else if (d == 6) return "sáb.";
+}
+
+const unMes = (m) => {
+    m = m.toUpperCase();
+    if (m == "JANEIRO") return "0";
+    else if (m == "FEVEREIRO") return "1";
+    else if (m == "MARÇO") return "2";
+    else if (m == "ABRIL") return "3";
+    else if (m == "MAIO") return "4";
+    else if (m == "JUNHO") return "5";
+    else if (m == "JULHO") return "6";
+    else if (m == "AGOSTO") return "7";
+    else if (m == "SETEMBRO") return "8";
+    else if (m == "OUTUBRO") return "9";
+    else if (m == "NOVEMBRO") return "10";
+    else if (m == "DEZEMBRO") return "11";
+}
+
+const novoAgendamento = (id_cadeira, dataHora) => {
+
+    let date = '';
+    if (agendaMobile == 1) {
+        date = new Date();
+    } else {
+        date = calendar.getDate();
+    }
+    let dia = d2(date.getDate());
+    let mes = d2(date.getMonth() + 1);
+    let ano = date.getFullYear();
+
+    let agendaHora = '';
+    if (dataHora.length > 0) {
+        let dt = new Date(dataHora);
+        let dtHora = d2(dt.getHours());
+        let dtMin = d2(dt.getMinutes());
+        dia = d2(dt.getDate());
+        mes = d2(dt.getMonth() + 1);
+        ano = d2(dt.getFullYear());
+        agendaHora = `${dtHora}:${dtMin}`;
+    }
+    data = `${dia}/${mes}/${ano}`;
+
+    //console.log(dataHora+'-> '+data+' '+agendaHora);
+
+
+    $('#js-aside-add select[name=id_status]').val(1);
+    $('#js-aside-add select[name=duracao]').val(``);
+    $('#js-aside-add input[name=telefone1]').val(``);
+    $('#js-aside-add input[name=agenda_duracao]').val(30);
+    $('#js-aside-add textarea[name=obs]').val(``);
+    $('#js-aside-add select[name=profissionais] option:checked').prop('checked', false).trigger('chosen:updated');
+    $('#js-aside-add input[name=agenda_data]').val(data);
+    $('#js-aside-add input[name=agenda_hora]').val(agendaHora);
+    $('#js-aside-add select[name=id_cadeira]').val(id_cadeira);
+    $('#js-aside-add select[name=id_paciente]').val(null).trigger('change');
+    $('#js-aside-add input[name=alteracao]').val(0);
+
+
+    $("#js-aside-add").fadeIn(100, function() {
+        $("#js-aside-add .aside__inner1").addClass("active");
+        $("#js-aside-add .js-tab a:eq(0)").click();
+    });
+
+    /*$('#js-aside-add .js-profissionais').chosen('destroy');
+    $('#js-aside-add .js-profissionais').chosen();
+    $('#js-aside-add .js-profissionais').trigger('chosen:updated');*/
+    if ($('#js-aside-add .js-profissionais').data('select2')) $('#js-aside-add .js-profissionais').select2(
+        'destroy');
+    $('#js-aside-add .js-profissionais').select2();
+
+    /*$('#js-aside-add .js-tags').chosen('destroy');
+    $('#js-aside-add .js-tags').chosen();
+    $('#js-aside-add .js-tags').trigger('chosen:updated');*/
+    if ($('#js-aside-add .js-tags').data('select2')) $('#js-aside-add .js-tags').select2('destroy');
+    $('#js-aside-add .js-tags').select2();
+
+    agendamentosProfissionais(`add`);
+    checklistItens();
+}
+
+const checklistItens = () => {
+    $('#js-aside-add .js-checklist-itens').html('');
+    let data = `ajax=checklistItens`;
+    $.ajax({
+        type: "POST",
+        data: data,
+        success: function(rtn) {
+            if (rtn.success) {
+                rtn.regs.forEach(x => {
+                    $(`#js-aside-add .js-checklist-itens`).append(`<div class="colunas3">
 											<dl>	
 												<dd><label><input type="checkbox" name="checklist-${x.id}" class="input-switch" />${x.titulo}</label></dd>
 											</dl>
@@ -3281,179 +3286,212 @@
 												<dd><input type="text" name="checklist_descricao-${x.id}" placeholder="descrição" /></dd>
 											</dl>
 										</div>`);
-									});
-								}
-							}
-						});
-					}
+                });
+            }
+        }
+    });
+}
 
-					const formatTemplate = (state) => {
-						if (!state.id) return state.text;
-						var baseUrl = "/user/pages/images/flags";
-						infoComplementar=``;
-						infoComplementar+= !! state.cpf ? ` - CPF: ${state.cpf}` : '';
-						infoComplementar+= !! state.telefone ? ` - Tel.: ${state.telefone}` : '';
-						var $state = $('<span style="display:flex; align-items:center; gap:.5rem;"><img src="'+state.ft+'" style="width:40px;height:40px;border-radius:100%;" /> ' + state.text + infoComplementar + '</span>');
-						return $state;
-					}
+const formatTemplate = (state) => {
+    if (!state.id) return state.text;
+    var baseUrl = "/user/pages/images/flags";
+    infoComplementar = ``;
+    infoComplementar += !!state.cpf ? ` - CPF: ${state.cpf}` : '';
+    infoComplementar += !!state.telefone ? ` - Tel.: ${state.telefone}` : '';
+    var $state = $('<span style="display:flex; align-items:center; gap:.5rem;"><img src="' + state.ft +
+        '" style="width:40px;height:40px;border-radius:100%;" /> ' + state.text + infoComplementar + '</span>');
+    return $state;
+}
 
-					const formatTemplateSelection = (state) => {
-						if (!state.id) return state.text;
-						var baseUrl = "/user/pages/images/flags";
-						infoComplementar=``;
-						infoComplementar+= !! state.cpf ? ` - CPF: ${state.cpf}` : '';
-						infoComplementar+= !! state.telefone ? ` - Tel.: ${state.telefone}` : '';
-						var $state = $('<span><img src="img/ilustra-perfil.png" style="width:30px;height:30px;border-radius:50px;" /> ' + state.text + infoComplementar + '</span>');
-						return $state;
-					}
+const formatTemplateSelection = (state) => {
+    if (!state.id) return state.text;
+    var baseUrl = "/user/pages/images/flags";
+    infoComplementar = ``;
+    infoComplementar += !!state.cpf ? ` - CPF: ${state.cpf}` : '';
+    infoComplementar += !!state.telefone ? ` - Tel.: ${state.telefone}` : '';
+    var $state = $(
+        '<span><img src="img/ilustra-perfil.png" style="width:30px;height:30px;border-radius:50px;" /> ' + state
+        .text + infoComplementar + '</span>');
+    return $state;
+}
 
-					$(function(){
-						$('.js-novoAgendamento').click(function(){
-							novoAgendamento(0,'');
-						})
-					})
-				</script>
+$(function() {
+    $('.js-novoAgendamento').click(function() {
+        novoAgendamento(0, '');
+    })
+})
+</script>
 
-				<!-- Aside Novo Agendamento -->
-				<section class="aside aside-add" id="js-aside-add">
-					<script type="text/javascript">
-						
-						const popView = (id_agenda) => {
-							$('#js-aside-edit .js-foto').attr('src','img/ilustra-usuario.jpg');
-							
-							let data = `ajax=editar&id=${id_agenda}`;
-							$.ajax({
-									type:"POST",
-									url:baseURLApiAside,
-									data:data,
-									success:function(rtn){ 
-										if(rtn.success) {
-											$.ajax({
-												type:"POST",
-												data:`ajax=atualizaFoto&id_paciente=${rtn.data.id_paciente}`
-											});
-											//$('html, body').animate({scrollTop: 0},'fast');
-											if(rtn.data.agendaPessoal>0) {
-												//alert($('#js-aside-edit select[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length);
-												$('#js-aside-edit-agendaPessoal input[name=id]').val(rtn.data.id);
-												$('#js-aside-edit-agendaPessoal input[name=agenda_data]').val(rtn.data.agenda_data);
-												$('#js-aside-edit-agendaPessoal input[name=agenda_hora]').val(rtn.data.agenda_hora);
-												
-												$('#js-aside-edit-agendaPessoal input[name=agenda_duracao] option.js-duracaoAdicional').remove();
-												if($('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length==0) {
-													$('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').append(`<option class="js-duracaoAdicional" value="${rtn.data.agenda_duracao}">${rtn.data.agenda_duracao}</option>`);
-												}
-												$('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').val(rtn.data.agenda_duracao);
+<!-- Aside Novo Agendamento -->
+<section class="aside aside-add" id="js-aside-add">
+    <script type="text/javascript">
+    const popView = (id_agenda) => {
+        $('#js-aside-edit .js-foto').attr('src', 'img/ilustra-usuario.jpg');
 
-												$('#js-aside-edit-agendaPessoal textarea[name=obs]').val(rtn.data.obs);
-												$('#js-aside-edit-agendaPessoal select[name=id_cadeira]').val(rtn.data.id_cadeira);
-												$('#js-aside-edit select[name=id_profissional]').find(':selected').prop('selected',false);
-												if(rtn.data.profissionais) {
-													rtn.data.profissionais.forEach(idProfissional=> {
-														$('#js-aside-edit-agendaPessoal select[name=id_profissional]').find(`[value=${idProfissional}]`).prop('selected',true);
-													})
-												}
+        let data = `ajax=editar&id=${id_agenda}`;
+        $.ajax({
+            type: "POST",
+            url: baseURLApiAside,
+            data: data,
+            success: function(rtn) {
+                if (rtn.success) {
+                    $.ajax({
+                        type: "POST",
+                        data: `ajax=atualizaFoto&id_paciente=${rtn.data.id_paciente}`
+                    });
+                    //$('html, body').animate({scrollTop: 0},'fast');
+                    if (rtn.data.agendaPessoal > 0) {
+                        //alert($('#js-aside-edit select[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length);
+                        $('#js-aside-edit-agendaPessoal input[name=id]').val(rtn.data.id);
+                        $('#js-aside-edit-agendaPessoal input[name=agenda_data]').val(rtn.data
+                            .agenda_data);
+                        $('#js-aside-edit-agendaPessoal input[name=agenda_hora]').val(rtn.data
+                            .agenda_hora);
 
+                        $('#js-aside-edit-agendaPessoal input[name=agenda_duracao] option.js-duracaoAdicional')
+                            .remove();
+                        if ($('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').find(
+                                `option[value=${rtn.data.agenda_duracao}]`).length == 0) {
+                            $('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').append(
+                                `<option class="js-duracaoAdicional" value="${rtn.data.agenda_duracao}">${rtn.data.agenda_duracao}</option>`
+                                );
+                        }
+                        $('#js-aside-edit-agendaPessoal input[name=agenda_duracao]').val(rtn.data
+                            .agenda_duracao);
 
-												$("#js-aside-edit-agendaPessoal").fadeIn(100,function() {
-													$('#js-aside-edit-agendaPessoal select[name=id_profissional]').chosen();
-													$("#js-aside-edit-agendaPessoal .aside__inner1").addClass("active");
-													$("#js-aside-edit-agendaPessoal .js-tab a:eq(0)").click();
-												});
-												$('#js-aside-edit-agendaPessoal select[name=id_profissional]').chosen();
-												$('#js-aside-edit-agendaPessoal select[name=id_profissional]').trigger('chosen:updated'); 
-											} else {
-												$('#js-aside-edit input[name=id]').val(rtn.data.id);
-
-												$('#js-aside-edit .js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
-
-												if(rtn.data.ft && rtn.data.ft.length>0) {
-													$('#js-aside-edit .js-foto').attr('src',rtn.data.ft);
-												} else {
-													$('#js-aside-edit .js-foto').attr('src','img/ilustra-usuario.jpg');
-												}
-
-												if(rtn.data.idade && rtn.data.idade>0) {
-													$('#js-aside-edit .js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
-												} else {
-													$('#js-aside-edit .js-idade').html(``);
-												}
-
-												if(rtn.data.plano_odontologico && rtn.data.plano_odontologico.length>0) {
-													$('#js-aside-edit .js-planoOdontologico').html(`Plano Odontológico: ${rtn.data.plano_odontologico}`);
-												} else {
-													$('#js-aside-edit .js-planoOdontologico').html(`Plano Odontológico: -`);
-												}
-
-												if(rtn.data.periodicidade && rtn.data.periodicidade.length>0) {
-													
-													$('#js-aside-edit .js-periodicidade').html(`Periodicidade: ${rtn.data.periodicidade}`);
-												} else {
-													$('#js-aside-edit .js-periodicidade').html(`Periodicidade: -`);
-												}
-
-												if(rtn.data.musica && rtn.data.musica.length>0) {
-													$('#js-aside-edit .js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
-												} else {
-													$('#js-aside-edit .js-musica').html(``);
-												}
-												$('#js-aside-edit input[name=agenda_data]').val(rtn.data.agenda_data);
-												$('#js-aside-edit input[name=agenda_hora]').val(rtn.data.agenda_hora);
-
-												$('#js-aside-edit input[name=agenda_duracao] option.js-duracaoAdicional').remove();
-												if($('#js-aside-edit input[name=agenda_duracao]').find(`option[value=${rtn.data.agenda_duracao}]`).length==0) {
-													$('#js-aside-edit input[name=agenda_duracao]').append(`<option class="js-duracaoAdicional" value="${rtn.data.agenda_duracao}">${rtn.data.agenda_duracao}</option>`);
-												}
-												$('#js-aside-edit input[name=agenda_duracao]').val(rtn.data.agenda_duracao);
-
-												$('#js-aside-edit select[name=id_cadeira]').val(rtn.data.id_cadeira);
-												$('#js-aside-edit input[name=telefone1]').val(rtn.data.telefone1);
-												$('#js-aside-edit .js-webwhatsapp').attr({'href':'https://wa.me/55'+rtn.data.telefone1})
-												$('#js-aside-edit textarea[name=obs]').val(rtn.data.obs);
-												$('#js-aside-edit select[name=id_status]').val(rtn.data.id_status)
-
-												//$('#js-aside-edit .js-profissionais').trigger('chosen:updated'); 
-												//$('#js-aside-edit .js-tags').trigger('chosen:updated'); 
+                        $('#js-aside-edit-agendaPessoal textarea[name=obs]').val(rtn.data.obs);
+                        $('#js-aside-edit-agendaPessoal select[name=id_cadeira]').val(rtn.data
+                            .id_cadeira);
+                        $('#js-aside-edit select[name=id_profissional]').find(':selected').prop(
+                            'selected', false);
+                        if (rtn.data.profissionais) {
+                            rtn.data.profissionais.forEach(idProfissional => {
+                                $('#js-aside-edit-agendaPessoal select[name=id_profissional]')
+                                    .find(`[value=${idProfissional}]`).prop('selected', true);
+                            })
+                        }
 
 
-												if(rtn.data.agendou_dias>1) $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou há ${rtn.data.agendou_dias} dia(s)`);
-												else $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou hoje`);
+                        $("#js-aside-edit-agendaPessoal").fadeIn(100, function() {
+                            $('#js-aside-edit-agendaPessoal select[name=id_profissional]')
+                                .chosen();
+                            $("#js-aside-edit-agendaPessoal .aside__inner1").addClass("active");
+                            $("#js-aside-edit-agendaPessoal .js-tab a:eq(0)").click();
+                        });
+                        $('#js-aside-edit-agendaPessoal select[name=id_profissional]').chosen();
+                        $('#js-aside-edit-agendaPessoal select[name=id_profissional]').trigger(
+                            'chosen:updated');
+                    } else {
+                        $('#js-aside-edit input[name=id]').val(rtn.data.id);
 
-												$('.js-fieldset-horarios,.js-btn-remover').show();
-												
+                        $('#js-aside-edit .js-nome').html(
+                            `${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`
+                            ).attr('href',
+                            `pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
 
-												if(rtn.data.statusBI && rtn.data.statusBI.length==0) {
-													$('#js-aside-edit .js-statusBI').html(``).hide();
-												} else {
-													$('#js-aside-edit .js-statusBI').html(`${rtn.data.statusBI}`).show();
-												}
+                        if (rtn.data.ft && rtn.data.ft.length > 0) {
+                            $('#js-aside-edit .js-foto').attr('src', rtn.data.ft);
+                        } else {
+                            $('#js-aside-edit .js-foto').attr('src', 'img/ilustra-usuario.jpg');
+                        }
 
-												$('#js-aside-edit .js-profissionais').find(':selected').prop('selected',false);
-												$('#js-aside-edit .js-tags').find(':selected').prop('selected',false);
+                        if (rtn.data.idade && rtn.data.idade > 0) {
+                            $('#js-aside-edit .js-idade').html(rtn.data.idade + (rtn.data.idade >= 2 ?
+                                ' anos' : ' ano'));
+                        } else {
+                            $('#js-aside-edit .js-idade').html(``);
+                        }
 
-												if(rtn.data.profissionais) {
-													rtn.data.profissionais.forEach(idProfissional=> {
-														$('#js-aside-edit .js-profissionais').find(`[value=${idProfissional}]`).prop('selected',true);
-													})
-												}
+                        if (rtn.data.plano_odontologico && rtn.data.plano_odontologico.length > 0) {
+                            $('#js-aside-edit .js-planoOdontologico').html(
+                                `Plano Odontológico: ${rtn.data.plano_odontologico}`);
+                        } else {
+                            $('#js-aside-edit .js-planoOdontologico').html(`Plano Odontológico: -`);
+                        }
 
-												if(rtn.data.tags) {
-													rtn.data.tags.forEach(idTag=> {
-														$('#js-aside-edit .js-tags').find(`[value=${idTag}]`).prop('selected',true);
-													})
-												}
+                        if (rtn.data.periodicidade && rtn.data.periodicidade.length > 0) {
 
-												$('.js-ag-futuro table tr').remove();
-												if(rtn.data.agendamentosFuturos && rtn.data.agendamentosFuturos.length>0) {
-													rtn.data.agendamentosFuturos.forEach(x=>{
+                            $('#js-aside-edit .js-periodicidade').html(
+                                `Periodicidade: ${rtn.data.periodicidade}`);
+                        } else {
+                            $('#js-aside-edit .js-periodicidade').html(`Periodicidade: -`);
+                        }
+
+                        if (rtn.data.musica && rtn.data.musica.length > 0) {
+                            $('#js-aside-edit .js-musica').html(
+                                `<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
+                        } else {
+                            $('#js-aside-edit .js-musica').html(``);
+                        }
+                        $('#js-aside-edit input[name=agenda_data]').val(rtn.data.agenda_data);
+                        $('#js-aside-edit input[name=agenda_hora]').val(rtn.data.agenda_hora);
+
+                        $('#js-aside-edit input[name=agenda_duracao] option.js-duracaoAdicional')
+                            .remove();
+                        if ($('#js-aside-edit input[name=agenda_duracao]').find(
+                                `option[value=${rtn.data.agenda_duracao}]`).length == 0) {
+                            $('#js-aside-edit input[name=agenda_duracao]').append(
+                                `<option class="js-duracaoAdicional" value="${rtn.data.agenda_duracao}">${rtn.data.agenda_duracao}</option>`
+                                );
+                        }
+                        $('#js-aside-edit input[name=agenda_duracao]').val(rtn.data.agenda_duracao);
+
+                        $('#js-aside-edit select[name=id_cadeira]').val(rtn.data.id_cadeira);
+                        $('#js-aside-edit input[name=telefone1]').val(rtn.data.telefone1);
+                        $('#js-aside-edit .js-webwhatsapp').attr({
+                            'href': 'https://wa.me/55' + rtn.data.telefone1
+                        })
+                        $('#js-aside-edit textarea[name=obs]').val(rtn.data.obs);
+                        $('#js-aside-edit select[name=id_status]').val(rtn.data.id_status)
+
+                        //$('#js-aside-edit .js-profissionais').trigger('chosen:updated'); 
+                        //$('#js-aside-edit .js-tags').trigger('chosen:updated'); 
 
 
-														let profissionalIniciais=``;
+                        if (rtn.data.agendou_dias > 1) $('#js-aside-edit .js-agendou').html(
+                            `${rtn.data.agendou_profissional} agendou há ${rtn.data.agendou_dias} dia(s)`
+                            );
+                        else $('#js-aside-edit .js-agendou').html(
+                            `${rtn.data.agendou_profissional} agendou hoje`);
 
-														x.profissionais.forEach(p=>{
-															profissionalIniciais+=`<div class="badge-prof" title="${p.iniciais}" style="background:${p.cor}">${p.iniciais}</div>`;
-														})
-														$('.js-ag-futuro table').append(`<tr>
+                        $('.js-fieldset-horarios,.js-btn-remover').show();
+
+
+                        if (rtn.data.statusBI && rtn.data.statusBI.length == 0) {
+                            $('#js-aside-edit .js-statusBI').html(``).hide();
+                        } else {
+                            $('#js-aside-edit .js-statusBI').html(`${rtn.data.statusBI}`).show();
+                        }
+
+                        $('#js-aside-edit .js-profissionais').find(':selected').prop('selected', false);
+                        $('#js-aside-edit .js-tags').find(':selected').prop('selected', false);
+
+                        if (rtn.data.profissionais) {
+                            rtn.data.profissionais.forEach(idProfissional => {
+                                $('#js-aside-edit .js-profissionais').find(
+                                    `[value=${idProfissional}]`).prop('selected', true);
+                            })
+                        }
+
+                        if (rtn.data.tags) {
+                            rtn.data.tags.forEach(idTag => {
+                                $('#js-aside-edit .js-tags').find(`[value=${idTag}]`).prop(
+                                    'selected', true);
+                            })
+                        }
+
+                        $('.js-ag-futuro table tr').remove();
+                        if (rtn.data.agendamentosFuturos && rtn.data.agendamentosFuturos.length > 0) {
+                            rtn.data.agendamentosFuturos.forEach(x => {
+
+
+                                let profissionalIniciais = ``;
+
+                                x.profissionais.forEach(p => {
+                                    profissionalIniciais +=
+                                        `<div class="badge-prof" title="${p.iniciais}" style="background:${p.cor}">${p.iniciais}</div>`;
+                                })
+                                $('.js-ag-futuro table').append(`<tr>
 																								<td>
 																									<h1>${x.data}</h1>									
 																								</td>
@@ -3463,43 +3501,44 @@
 																									${profissionalIniciais}
 																								</td>
 																							</tr>`);
-													});
+                            });
 
-												} else {
-													$('.js-ag-futuro table').append(`<tr><td><center>Nenhum agendamento futuro</center></td></tr>`);
-												}
+                        } else {
+                            $('.js-ag-futuro table').append(
+                                `<tr><td><center>Nenhum agendamento futuro</center></td></tr>`);
+                        }
 
-												$('.js-ag-historico .history div').remove();
+                        $('.js-ag-historico .history div').remove();
 
-												if(rtn.data.historico) {
-													rtn.data.historico.forEach(x=>{
-														if(x.ev=="horario") {
+                        if (rtn.data.historico) {
+                            rtn.data.historico.forEach(x => {
+                                if (x.ev == "horario") {
 
-															$('.js-ag-historico .history').append(`<div class="history-item">
+                                    $('.js-ag-historico .history').append(`<div class="history-item">
 																								<h1>${x.usr} em ${x.dt}</h1>
 																								<h2>horário alterado de <strong style="background:var(--cor1);">${x.antDt}</strong> para <strong style="background:var(--cor1);">${x.nvDt}</strong></h2>
 																							</div>`);
 
-														} else {
+                                } else {
 
-															$('.js-ag-historico .history').append(`<div class="history-item">
+                                    $('.js-ag-historico .history').append(`<div class="history-item">
 																								<h1>${x.usr} em ${x.dt}</h1>
 																								<p>${x.desc}</p>
 																								<h2>${x.novo==1?'agendamento criado com status':'status alterado para'} <em style="background:${x.cor};">${x.sts}</em></h2>
 																							</div>`);
 
-														}
+                                }
 
-													})
-												} 
+                            })
+                        }
 
-												$('.js-ag-whatsapp .history div').remove();
-												if(rtn.data.whatsapp && rtn.data.whatsapp.length>0) {
-													rtn.data.whatsapp.forEach(x=>{
-														
+                        $('.js-ag-whatsapp .history div').remove();
+                        if (rtn.data.whatsapp && rtn.data.whatsapp.length > 0) {
+                            rtn.data.whatsapp.forEach(x => {
 
-															cor = x.enviado==1 ? '--verde':'--vermelho';
-															$('.js-ag-whatsapp .history').append(`<div class="history-item">
+
+                                cor = x.enviado == 1 ? '--verde' : '--vermelho';
+                                $('.js-ag-whatsapp .history').append(`<div class="history-item">
 																										<h1>${x.tipo} <span style="color:var(${cor})">${x.enviado==1?`<span class="iconify" data-icon="bi:send-check-fill"></span>`:`<span class="iconify" data-icon="bi:send-exclamation-fill"></span> `}</span></h1>
 																										
 																										<div class="infozap-chat">
@@ -3515,414 +3554,487 @@
 																										</div>
 																									</div>`);
 
-														
 
-													})
-												} else {
-													$('.js-ag-whatsapp .history').append(`<div class="history-item">
+
+                            })
+                        } else {
+                            $('.js-ag-whatsapp .history').append(`<div class="history-item">
 																								<center>Nenhuma mensagem foi enviada</center>
 																							</div>`);
-												}
+                        }
 
 
-												$("#js-aside-edit").fadeIn(100,function() {
+                        $("#js-aside-edit").fadeIn(100, function() {
 
-													if($('#js-aside-edit .js-profissionais').data('select2')) $('#js-aside-edit .js-profissionais').select2('destroy');
-													$('#js-aside-edit .js-profissionais').select2();
+                            if ($('#js-aside-edit .js-profissionais').data('select2')) $(
+                                '#js-aside-edit .js-profissionais').select2('destroy');
+                            $('#js-aside-edit .js-profissionais').select2();
 
-													/*$('#js-aside-add .js-tags').chosen('destroy');
-													$('#js-aside-add .js-tags').chosen();
-													$('#js-aside-add .js-tags').trigger('chosen:updated');*/
-													if($('#js-aside-edit .js-tags').data('select2')) $('#js-aside-edit .js-tags').select2('destroy');
-													$('#js-aside-edit .js-tags').select2();
+                            /*$('#js-aside-add .js-tags').chosen('destroy');
+                            $('#js-aside-add .js-tags').chosen();
+                            $('#js-aside-add .js-tags').trigger('chosen:updated');*/
+                            if ($('#js-aside-edit .js-tags').data('select2')) $(
+                                '#js-aside-edit .js-tags').select2('destroy');
+                            $('#js-aside-edit .js-tags').select2();
 
-													//$('#js-aside-edit .js-profissionais').chosen('destroy');
-													//setTimeout(function(){$('#js-aside-edit .js-profissionais').chosen();},100);
+                            //$('#js-aside-edit .js-profissionais').chosen('destroy');
+                            //setTimeout(function(){$('#js-aside-edit .js-profissionais').chosen();},100);
 
-													//$('#js-aside-edit .js-tags').chosen('destroy');
-													//setTimeout(function(){$('#js-aside-edit .js-tags').chosen();},100);
+                            //$('#js-aside-edit .js-tags').chosen('destroy');
+                            //setTimeout(function(){$('#js-aside-edit .js-tags').chosen();},100);
 
-													$("#js-aside-edit .aside__inner1").addClass("active");
-													$("#js-aside-edit .js-tab a:eq(0)").click();
-												});
+                            $("#js-aside-edit .aside__inner1").addClass("active");
+                            $("#js-aside-edit .js-tab a:eq(0)").click();
+                        });
 
-												
-												$('#js-aside-edit input[name=agenda_data]').trigger('change');
 
-												$('#js-aside-edit .js-profissionais').trigger('chosen:updated');
-												$('#js-aside-edit .js-tags').trigger('chosen:updated');
+                        $('#js-aside-edit input[name=agenda_data]').trigger('change');
 
-												$('#js-aside-edit .js-salvar').show();
+                        $('#js-aside-edit .js-profissionais').trigger('chosen:updated');
+                        $('#js-aside-edit .js-tags').trigger('chosen:updated');
 
-												$('#js-aside-edit input, #js-aside-edit textarea').prop('readonly',false).css('background','');
+                        $('#js-aside-edit .js-salvar').show();
+
+                        $('#js-aside-edit input, #js-aside-edit textarea').prop('readonly', false).css(
+                            'background', '');
 
-												$('#js-aside-edit select').prop('disabled',false).css('background','').trigger('chosen:updated');
-												$('#js-aside-edit input[name=id_status_antigo]').val(rtn.data.id_status);
-												// se confirmado
-												if(check_agendaDesativarRegrasStatus==0 && rtn.data.id_status=="2") {
-													$('#js-aside-edit select[name=id_status]').find('option[value=1],option[value=8]').prop('disabled',true);
+                        $('#js-aside-edit select').prop('disabled', false).css('background', '')
+                            .trigger('chosen:updated');
+                        $('#js-aside-edit input[name=id_status_antigo]').val(rtn.data.id_status);
+                        // se confirmado
+                        if (check_agendaDesativarRegrasStatus == 0 && rtn.data.id_status == "2") {
+                            $('#js-aside-edit select[name=id_status]').find(
+                                'option[value=1],option[value=8]').prop('disabled', true);
+
+                            $('#js-aside-edit input[name=agenda_data]').prop('readonly', true)
+                                .datetimepicker('destroy').css('background', 'var(--cinza3)');
+
+                            $('#js-aside-edit input[name=agenda_hora]').prop('readonly', true)
+                                .datetimepicker('destroy').css('background', 'var(--cinza3)');
+
+                        }
+                        // se desmarcado
+                        else if (check_agendaDesativarRegrasStatus == 0 && rtn.data.id_status == "4") {
+
+                            $('#js-aside-edit .js-salvar').hide();
+
+                            $('#js-aside-edit select[name=id_status]').prop('disabled', true);
+
+                            $('#js-aside-edit input[name=agenda_data],#js-aside-edit input[name=agenda_hora]')
+                                .datetimepicker('destroy')
+
+                            $('#js-aside-edit input, #js-aside-edit textarea').prop('readonly', true)
+                                .css('background', 'var(--cinza3)');
+
+                            $('#js-aside-edit select').prop('disabled', true).css('background',
+                                'var(--cinza3)').trigger('chosen:updated');
+
+
+                        } else if (check_agendaDesativarRegrasStatus == 0) {
+
+
+                            $('#js-aside-edit select[name=id_status]').find('option[value=1]').prop(
+                                'disabled', false)
+
+                            $('#js-aside-edit input[name=agenda_data]').datetimepicker({
+                                timepicker: false,
+                                format: 'd/m/Y',
+                                scrollMonth: false,
+                                scrollTime: false,
+                                scrollInput: false,
+                            }).css('background', '');
+
+                            $('#js-aside-edit input[name=agenda_hora]').datetimepicker({
+                                datepicker: false,
+                                format: 'H:i',
+                                pickDate: false
+                            }).css('background', '');
+                        }
+                    }
+
+                    $('#js-aside-edit input[name=alteracao]').val(0);
+                    $('#js-aside-edit-agendaPessoal input[name=alteracao]').val(0);
+                    agendamentosProfissionais(`edit`);
 
-													$('#js-aside-edit input[name=agenda_data]').prop('readonly',true).datetimepicker('destroy').css('background','var(--cinza3)');
 
-													$('#js-aside-edit input[name=agenda_hora]').prop('readonly',true).datetimepicker('destroy').css('background','var(--cinza3)');
 
-												}  
-												// se desmarcado
-												else if(check_agendaDesativarRegrasStatus==0 && rtn.data.id_status=="4") {
-
-													$('#js-aside-edit .js-salvar').hide();
-
-													$('#js-aside-edit select[name=id_status]').prop('disabled',true);
-
-													$('#js-aside-edit input[name=agenda_data],#js-aside-edit input[name=agenda_hora]').datetimepicker('destroy')
-
-													$('#js-aside-edit input, #js-aside-edit textarea').prop('readonly',true).css('background','var(--cinza3)');
-
-													$('#js-aside-edit select').prop('disabled',true).css('background','var(--cinza3)').trigger('chosen:updated');
-
-
-												} else if(check_agendaDesativarRegrasStatus==0) {
-
-
-													$('#js-aside-edit select[name=id_status]').find('option[value=1]').prop('disabled',false)
-
-													$('#js-aside-edit input[name=agenda_data]').datetimepicker({
-														timepicker:false,
-														format:'d/m/Y',
-														scrollMonth:false,
-														scrollTime:false,
-														scrollInput:false,
-													}).css('background','');
-
-													$('#js-aside-edit input[name=agenda_hora]').datetimepicker({
-														  datepicker:false,
-													      format:'H:i',
-													      pickDate:false
-													}).css('background','');
-												}
-											}
-
-											$('#js-aside-edit input[name=alteracao]').val(0);
-											$('#js-aside-edit-agendaPessoal input[name=alteracao]').val(0);
-											agendamentosProfissionais(`edit`);
-
-
-
-										} else if(rtn.error) {
-											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-										} else {
-											swal({title: "Erro!", text: 'Algum erro ocorreu durante a abertura deste agendamento.', type:"error", confirmButtonColor: "#424242"});
-										}
-									},
-									error:function(){
-										swal({title: "Erro!", text: 'Algum erro ocorreu durante a abertura deste agendamento', type:"error", confirmButtonColor: "#424242"});
-									}
-							});
-						}
-
-						const agendamentosProfissionais = (tipo) => {
-
-							if(tipo=="add" || tipo=="edit") {
-								let aside = $(`#js-aside-${tipo}`);
-								let profissionaisSelecionados = aside.find('.js-profissionais option:selected').length>0 ? aside.find('.js-profissionais').val() : [];
-								let aData = aside.find('input[name=agenda_data]').val();
-								let aHora = aside.find('input[name=agenda_hora]').val();
-								let id_cadeira = $(`#js-aside-${tipo} select[name=id_cadeira] option:selected`).val();
-
-								let data = `ajax=agendamentosProfissionais&data=${aData}&hora=${aHora}&id_cadeira=${id_cadeira}`;
-								$.ajax({
-									type:"POST",
-									url:baseURLApiAside,
-									data:data,
-									success:function(rtn) {
-										if(rtn.success) {
-											if(rtn.listaProfissionais || rtn.listaProfissionaisDestaque) {
-												aside.find('.js-profissionais').find('optgroup, option').remove();
-												//aside.find('.js-profissionais').append(`<option value=""></option>`);
-												if(rtn.listaProfissionaisDestaque && rtn.listaProfissionaisDestaque.length>0) {
-
-													itens = 0;
-													options = ``;
-													rtn.listaProfissionaisDestaque.forEach(x=>{
-														let nome = x.nome;
-
-														sel = $.inArray(x.id,profissionaisSelecionados)>=0?' selected':'';
-														
-														options+=`<option value="${x.id}"${sel}>${nome}</option>`;
-														
-														itens++;
-
-														if(itens == rtn.listaProfissionaisDestaque.length) {
-															aside.find('.js-profissionais').append(`<optgroup label="Atende nesse horário">${options}</optgroup>`);
-															//aside.find('.js-profissionais').append(`${options}`);
-														}
-													})
-
-												}
-
-												if(rtn.listaProfissionais && rtn.listaProfissionais.length>0) {
-													
-													itens = 0;
-													options = ``;
-													rtn.listaProfissionais.forEach(x=>{
-														let nome = x.nome;
-
-														sel = $.inArray(x.id,profissionaisSelecionados)>=0?' selected':'';
-														
-														options+=`<option value="${x.id}"${sel}>${nome}</option>`;
-														
-														itens++;
-														if(itens == rtn.listaProfissionais.length) {
-															aside.find('.js-profissionais').append(`<optgroup label="Não atende nesse horário">${options}</optgroup>`);
-															//aside.find('.js-profissionais').append(`${options}`);
-
-														}
-													});
-												
-
-												}
-
-												aside.find('.js-profissionais').trigger('chosen:updated');
-											}
-
-											if(rtn.tags && rtn.tags.length>0) {
-												aside.find('.js-tags option').remove();
-
-												options = ``;
-												rtn.tags.forEach(x=>{
-													let titulo = x.titulo;
-
-													sel = $.inArray(x.id,tags)>=0?' selected':'';
-													
-													options+=`<option value="${x.id}"${sel}>${titulo}</option>`;
-													aside.find('.js-tags').append(`<optgroup label="">${options}</optgroup>`);
-													
-												})
-												aside.find('.js-tags').trigger('chosen:updated');
-											}
-										}
-									}
-								})
-							}
-
-						}
-
-						$(function(){
-
-							$('#js-aside-add input[name=agenda_data]').datetimepicker({
-												timepicker:false,
-												format:'d/m/Y',
-												scrollMonth:false,
-												scrollTime:false,
-												scrollInput:false,
-											});
-
-							$('#js-aside-add input[name=agenda_hora]').datetimepicker({
-								  datepicker:false,
-							      format:'H:i',
-							      pickDate:false
-							});
-
-							$('input[name=telefone1],.js-asPaciente-telefone1').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
-																let countryOut = country || '  ';
-																$(this).parent().parent().find('.js-country').html(countryOut);
-															}).trigger('keyup');
-
-							$('#js-aside-add select[name=id_paciente]').select2({
-								ajax: {
-									url: 'pg_agenda.php?ajax=buscaPaciente',
-									data: function (params) {
-											var query = {
-											search: params.term,
-											type: 'public'
-										}
-										// ?search=[term]&type=public
-										return query;
-									},
-									processResults: function (data) {
-										// Transforms the top-level key of the response object from 'items' to 'results'
-										return {
-											results: data.items
-										};
-									}
-
-								},
-								templateResult:formatTemplate,
-								//	templateSelection:formatTemplateSelection,
-								//dropdownParent: $(".modal")
-							});
-
-							$('#js-aside-add select[name=id_paciente]').on('select2:select',function(e){
-								 var telefone = e.params.data.telefone ? e.params.data.telefone : '';
-								 $('#js-aside-add input[name=telefone1]').val(telefone).trigger('change');
-				    			
-							});
-
-							$('#js-aside-add .js-salvar').click(function(){
-								let obj = $(this);
-
-								let agendaPessoal = $('#js-aside-add input[name=agendaPessoal]').val();
-
-
-								if(obj.attr('data-loading')==0) {
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
-
-									let erro=false;
-									$(`#js-aside-add form .obg-${agendaPessoal}`).each(function(index,elem){
-										if($(this).attr('name')!==undefined && $(this).val()  && $(this).val().length==0) {
-											$(elem).addClass('erro');
-											erro=true;
-										}
-									});
-
-									if(erro===true) {
-										swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
-										obj.html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
-										obj.attr('data-loading',0);
-									} else {
-										
-										
-										let campos = $('#js-aside-add form').serialize();
-										let profissionais = $('#js-aside-add .js-profissionais').val();
-										let tags = $('#js-aside-add .js-tags').val();
-
-										let data = `ajax=novoAgendamento&profissionais=${profissionais}&tags=${tags}&${campos}`;
-
-										$.ajax({
-											type:'POST',
-											url:baseURLApiAside,
-											data:data,
-											success:function(rtn) {
-												if(rtn.success) {
-
-													if(rtn.id_paciente) {
-														$.ajax({
-															type:"POST",
-															data:`ajax=atualizaFoto&id_paciente=${rtn.id_paciente}`
-														});
-													}
-
-													$('#js-aside-add select[name=id_paciente]').val('').trigger('change.select2');
-
-													$('#js-aside-add select.js-profissionais').val('').trigger('chosen:updated');
-													$('#js-aside-add select.js-tags').val('').trigger('chosen:updated');
-													$('#js-aside-add input,#js-aside-add textarea').val('');
-													$('#js-aside-add input[name=agenda_duracao]').val('');
-
-													$.fancybox.close();
-													if(calendar) calendar.refetchEvents();
-													$('#js-aside-add input[name=alteracao]').val(0);
-													$('#js-aside-add .aside-close-novoAgendamento').click();
-
-
-													//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
-												} else if(rtn.error) {
-													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-
-												} else {
-													swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
-												}
-											},
-											error:function(){
-												swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
-											}
-										}).done(function(){
-											obj.html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span>`);
-											obj.attr('data-loading',0);
-										})
-
-									}
-								}
-								return false;
-							});
-
-							$('#js-aside-add').find('input,select,textarea').change(function(x){
-								$('#js-aside-add input[name=alteracao]').val(1);
-							});
-
-							$('#js-aside-add .aside-close-novoAgendamento').click(function(){
-								let obj = $(this);
-								if($('#js-aside-add input[name=alteracao]').val()=="1") {
-									swal({   
-											title: "Atenção",   
-											text: "Tem certeza que deseja fechar sem salvar as informações?",
-											type: "warning",   
-											showCancelButton: true,   
-											confirmButtonColor: "#DD6B55",   
-											confirmButtonText: "Sim!",   
-											cancelButtonText: "Não",   
-											closeOnConfirm: false,   
-											closeOnCancel: false 
-										}, function(isConfirm){   
-											if (isConfirm) {   
-												$(obj).parent().parent().removeClass("active");
-												$(obj).parent().parent().parent().fadeOut(); 
-												swal.close();
-									  		 } else {   
-									  		 	swal.close();   
-									  		 } 
-									  	});
-					
-								} else {
-									$(obj).parent().parent().removeClass("active");
-									$(obj).parent().parent().parent().fadeOut();
-								}
-							});
-
-							$('#js-aside-add').find('input[name=agenda_data],input[name=agenda_hora]').change(function(){
-								agendamentosProfissionais(`add`);
-							});
-						})
-					</script>
-					<div class="aside__inner1">
-
-						<header class="aside-header">
-							<h1>Novo Agendamento</h1>
-							<a href="javascript:;" class="aside-header__fechar aside-close-novoAgendamento"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-						</header>
-						<form method="post" class="aside-content form" onsubmit="return false">
-							<input type="hidden" name="agendaPessoal" value="0" />
-							<input type="hidden" name="alteracao" value="0" />
-							<script>
-								$(function() {
-									$('.js-tab a').click(function() {
-										$(".js-tab a").removeClass("active");
-										$(this).addClass("active");							
-									});
-									
-								});
-							</script>
-							<section class="tab tab_alt js-tab">
-								<a href="javascript:;" onclick="$('.js-paciente').show();$('#js-aside-add input[name=agendaPessoal]').val(0);" class="active">Paciente</a>
-								<a href="javascript:;" onclick="$('.js-paciente').hide();$('#js-aside-add input[name=agendaPessoal]').val(1);">Compromisso Pessoal</a>				
-							</section>
-						
-							<section class="filter" style="overflow-x: visible">
-								<div class="filter-group">
-								</div>
-								<div class="filter-group">
-									<div class="filter-form form">
-										<dl>
-											<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
-										</dl>
-									</div>								
-								</div>
-							</section>
-
-							<div class="colunas3">
-								<dl>
-									<dt>Data</dt>
-									<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data obg-0" /></dd>
-								</dl>
-								<dl>
-									<dt>Hora</dt>
-									<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="tel" name="agenda_hora" class="hora obg-0" /></dd>
-								</dl>
-								<dl>
-									<dt>Duração</dt>
-									<dd class="form-comp form-comp_pos">
-										<?php /*<select name="agenda_duracao" class="obg-0">
+                } else if (rtn.error) {
+                    swal({
+                        title: "Erro!",
+                        text: rtn.error,
+                        type: "error",
+                        confirmButtonColor: "#424242"
+                    });
+                } else {
+                    swal({
+                        title: "Erro!",
+                        text: 'Algum erro ocorreu durante a abertura deste agendamento.',
+                        type: "error",
+                        confirmButtonColor: "#424242"
+                    });
+                }
+            },
+            error: function() {
+                swal({
+                    title: "Erro!",
+                    text: 'Algum erro ocorreu durante a abertura deste agendamento',
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            }
+        });
+    }
+
+    const agendamentosProfissionais = (tipo) => {
+
+        if (tipo == "add" || tipo == "edit") {
+            let aside = $(`#js-aside-${tipo}`);
+            let profissionaisSelecionados = aside.find('.js-profissionais option:selected').length > 0 ? aside.find(
+                '.js-profissionais').val() : [];
+            let aData = aside.find('input[name=agenda_data]').val();
+            let aHora = aside.find('input[name=agenda_hora]').val();
+            let id_cadeira = $(`#js-aside-${tipo} select[name=id_cadeira] option:selected`).val();
+
+            let data = `ajax=agendamentosProfissionais&data=${aData}&hora=${aHora}&id_cadeira=${id_cadeira}`;
+            $.ajax({
+                type: "POST",
+                url: baseURLApiAside,
+                data: data,
+                success: function(rtn) {
+                    if (rtn.success) {
+                        if (rtn.listaProfissionais || rtn.listaProfissionaisDestaque) {
+                            aside.find('.js-profissionais').find('optgroup, option').remove();
+                            //aside.find('.js-profissionais').append(`<option value=""></option>`);
+                            if (rtn.listaProfissionaisDestaque && rtn.listaProfissionaisDestaque
+                                .length > 0) {
+
+                                itens = 0;
+                                options = ``;
+                                rtn.listaProfissionaisDestaque.forEach(x => {
+                                    let nome = x.nome;
+
+                                    sel = $.inArray(x.id, profissionaisSelecionados) >= 0 ?
+                                        ' selected' : '';
+
+                                    options += `<option value="${x.id}"${sel}>${nome}</option>`;
+
+                                    itens++;
+
+                                    if (itens == rtn.listaProfissionaisDestaque.length) {
+                                        aside.find('.js-profissionais').append(
+                                            `<optgroup label="Atende nesse horário">${options}</optgroup>`
+                                            );
+                                        //aside.find('.js-profissionais').append(`${options}`);
+                                    }
+                                })
+
+                            }
+
+                            if (rtn.listaProfissionais && rtn.listaProfissionais.length > 0) {
+
+                                itens = 0;
+                                options = ``;
+                                rtn.listaProfissionais.forEach(x => {
+                                    let nome = x.nome;
+
+                                    sel = $.inArray(x.id, profissionaisSelecionados) >= 0 ?
+                                        ' selected' : '';
+
+                                    options += `<option value="${x.id}"${sel}>${nome}</option>`;
+
+                                    itens++;
+                                    if (itens == rtn.listaProfissionais.length) {
+                                        aside.find('.js-profissionais').append(
+                                            `<optgroup label="Não atende nesse horário">${options}</optgroup>`
+                                            );
+                                        //aside.find('.js-profissionais').append(`${options}`);
+
+                                    }
+                                });
+
+
+                            }
+
+                            aside.find('.js-profissionais').trigger('chosen:updated');
+                        }
+
+                        if (rtn.tags && rtn.tags.length > 0) {
+                            aside.find('.js-tags option').remove();
+
+                            options = ``;
+                            rtn.tags.forEach(x => {
+                                let titulo = x.titulo;
+
+                                sel = $.inArray(x.id, tags) >= 0 ? ' selected' : '';
+
+                                options += `<option value="${x.id}"${sel}>${titulo}</option>`;
+                                aside.find('.js-tags').append(
+                                    `<optgroup label="">${options}</optgroup>`);
+
+                            })
+                            aside.find('.js-tags').trigger('chosen:updated');
+                        }
+                    }
+                }
+            })
+        }
+
+    }
+
+    $(function() {
+
+        $('#js-aside-add input[name=agenda_data]').datetimepicker({
+            timepicker: false,
+            format: 'd/m/Y',
+            scrollMonth: false,
+            scrollTime: false,
+            scrollInput: false,
+        });
+
+        $('#js-aside-add input[name=agenda_hora]').datetimepicker({
+            datepicker: false,
+            format: 'H:i',
+            pickDate: false
+        });
+
+        $('input[name=telefone1],.js-asPaciente-telefone1').mobilePhoneNumber({
+            allowPhoneWithoutPrefix: '+55'
+        }).bind('country.mobilePhoneNumber', function(echo, country) {
+            let countryOut = country || '  ';
+            $(this).parent().parent().find('.js-country').html(countryOut);
+        }).trigger('keyup');
+
+        $('#js-aside-add select[name=id_paciente]').select2({
+            ajax: {
+                url: 'pg_agenda.php?ajax=buscaPaciente',
+                data: function(params) {
+                    var query = {
+                        search: params.term,
+                        type: 'public'
+                    }
+                    // ?search=[term]&type=public
+                    return query;
+                },
+                processResults: function(data) {
+                    // Transforms the top-level key of the response object from 'items' to 'results'
+                    return {
+                        results: data.items
+                    };
+                }
+
+            },
+            templateResult: formatTemplate,
+            //	templateSelection:formatTemplateSelection,
+            //dropdownParent: $(".modal")
+        });
+
+        $('#js-aside-add select[name=id_paciente]').on('select2:select', function(e) {
+            var telefone = e.params.data.telefone ? e.params.data.telefone : '';
+            $('#js-aside-add input[name=telefone1]').val(telefone).trigger('change');
+
+        });
+
+        $('#js-aside-add .js-salvar').click(function() {
+            let obj = $(this);
+
+            let agendaPessoal = $('#js-aside-add input[name=agendaPessoal]').val();
+
+
+            if (obj.attr('data-loading') == 0) {
+                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                obj.attr('data-loading', 1);
+
+                let erro = false;
+                $(`#js-aside-add form .obg-${agendaPessoal}`).each(function(index, elem) {
+                    if ($(this).attr('name') !== undefined && $(this).val() && $(this).val()
+                        .length == 0) {
+                        $(elem).addClass('erro');
+                        erro = true;
+                    }
+                });
+
+                if (erro === true) {
+                    swal({
+                        title: "Erro!",
+                        text: "Complete os campos destacados",
+                        type: "error",
+                        confirmButtonColor: "#424242"
+                    });
+                    obj.html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
+                    obj.attr('data-loading', 0);
+                } else {
+
+
+                    let campos = $('#js-aside-add form').serialize();
+                    let profissionais = $('#js-aside-add .js-profissionais').val();
+                    let tags = $('#js-aside-add .js-tags').val();
+
+                    let data =
+                        `ajax=novoAgendamento&profissionais=${profissionais}&tags=${tags}&${campos}`;
+
+                    $.ajax({
+                        type: 'POST',
+                        url: baseURLApiAside,
+                        data: data,
+                        success: function(rtn) {
+                            if (rtn.success) {
+
+                                if (rtn.id_paciente) {
+                                    $.ajax({
+                                        type: "POST",
+                                        data: `ajax=atualizaFoto&id_paciente=${rtn.id_paciente}`
+                                    });
+                                }
+
+                                $('#js-aside-add select[name=id_paciente]').val('').trigger(
+                                    'change.select2');
+
+                                $('#js-aside-add select.js-profissionais').val('').trigger(
+                                    'chosen:updated');
+                                $('#js-aside-add select.js-tags').val('').trigger(
+                                    'chosen:updated');
+                                $('#js-aside-add input,#js-aside-add textarea').val('');
+                                $('#js-aside-add input[name=agenda_duracao]').val('');
+
+                                $.fancybox.close();
+                                if (calendar) calendar.refetchEvents();
+                                $('#js-aside-add input[name=alteracao]').val(0);
+                                $('#js-aside-add .aside-close-novoAgendamento').click();
+
+
+                                //swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
+                            } else if (rtn.error) {
+                                swal({
+                                    title: "Erro!",
+                                    text: rtn.error,
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+
+                            } else {
+                                swal({
+                                    title: "Erro!",
+                                    text: "Agendamento não efetuado. Por favor tente novamente!",
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            }
+                        },
+                        error: function() {
+                            swal({
+                                title: "Erro!",
+                                text: "Agendamento não efetuado. Por favor tente novamente!",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
+                    }).done(function() {
+                        obj.html(
+                            `<i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span>`
+                            );
+                        obj.attr('data-loading', 0);
+                    })
+
+                }
+            }
+            return false;
+        });
+
+        $('#js-aside-add').find('input,select,textarea').change(function(x) {
+            $('#js-aside-add input[name=alteracao]').val(1);
+        });
+
+        $('#js-aside-add .aside-close-novoAgendamento').click(function() {
+            let obj = $(this);
+            if ($('#js-aside-add input[name=alteracao]').val() == "1") {
+                swal({
+                    title: "Atenção",
+                    text: "Tem certeza que deseja fechar sem salvar as informações?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Sim!",
+                    cancelButtonText: "Não",
+                    closeOnConfirm: false,
+                    closeOnCancel: false
+                }, function(isConfirm) {
+                    if (isConfirm) {
+                        $(obj).parent().parent().removeClass("active");
+                        $(obj).parent().parent().parent().fadeOut();
+                        swal.close();
+                    } else {
+                        swal.close();
+                    }
+                });
+
+            } else {
+                $(obj).parent().parent().removeClass("active");
+                $(obj).parent().parent().parent().fadeOut();
+            }
+        });
+
+        $('#js-aside-add').find('input[name=agenda_data],input[name=agenda_hora]').change(function() {
+            agendamentosProfissionais(`add`);
+        });
+    })
+    </script>
+    <div class="aside__inner1">
+
+        <header class="aside-header">
+            <h1>Novo Agendamento</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close-novoAgendamento"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
+        <form method="post" class="aside-content form" onsubmit="return false">
+            <input type="hidden" name="agendaPessoal" value="0" />
+            <input type="hidden" name="alteracao" value="0" />
+            <script>
+            $(function() {
+                $('.js-tab a').click(function() {
+                    $(".js-tab a").removeClass("active");
+                    $(this).addClass("active");
+                });
+
+            });
+            </script>
+            <section class="tab tab_alt js-tab">
+                <a href="javascript:;"
+                    onclick="$('.js-paciente').show();$('#js-aside-add input[name=agendaPessoal]').val(0);"
+                    class="active">Paciente</a>
+                <a href="javascript:;"
+                    onclick="$('.js-paciente').hide();$('#js-aside-add input[name=agendaPessoal]').val(1);">Compromisso
+                    Pessoal</a>
+            </section>
+
+            <section class="filter" style="overflow-x: visible">
+                <div class="filter-group">
+                </div>
+                <div class="filter-group">
+                    <div class="filter-form form">
+                        <dl>
+                            <dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify"
+                                        data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+                        </dl>
+                    </div>
+                </div>
+            </section>
+
+            <div class="colunas3">
+                <dl>
+                    <dt>Data</dt>
+                    <dd class="form-comp"><span><i class="iconify"
+                                data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel"
+                            name="agenda_data" class="data obg-0" /></dd>
+                </dl>
+                <dl>
+                    <dt>Hora</dt>
+                    <dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input
+                            type="tel" name="agenda_hora" class="hora obg-0" /></dd>
+                </dl>
+                <dl>
+                    <dt>Duração</dt>
+                    <dd class="form-comp form-comp_pos">
+                        <?php /*<select name="agenda_duracao" class="obg-0">
 											<option value="">-</option>
 											<?php
 											foreach($optAgendaDuracao as $v) {
@@ -3930,634 +4042,733 @@
 												echo '<option value="'.$v.'">'.$v.'</option>';
 											}
 											?>
-										</select>*/?>
-										<input type="number" name="agenda_duracao" class="obg-0" value="30" />
+                        </select>*/?>
+                        <input type="number" name="agenda_duracao" class="obg-0" value="30" />
 
-										<span>min</span>
-									</dd>
-								</dl>
-							</div>
-							<div class="js-paciente">
-								<dl>
-									<dt>Status do Agendamento</dt>
-									<dd>
-										<select name="id_status" class="obg-0">
-											<option value="">-</option>
-											<?php
+                        <span>min</span>
+                    </dd>
+                </dl>
+            </div>
+            <div class="js-paciente">
+                <dl>
+                    <dt>Status do Agendamento</dt>
+                    <dd>
+                        <select name="id_status" class="obg-0">
+                            <option value="">-</option>
+                            <?php
 											foreach($_status as $p) {
 												echo '<option value="'.$p->id.'">'.utf8_encode($p->titulo).'</option>';
 											}
 											?>
-										</select>
-									</dd>
-								</dl>
-								<div class="colunas">
-									<dl>
-										<dt>Paciente</dt>
-										<dd>
-											<select name="id_paciente" class="select2 obg-0 ajax-id_paciente">
-												<option value="">Buscar paciente...</option>
-											</select>
-											<a  href="javascript:;" class="js-btn-aside button" data-aside="paciente" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a> 
+                        </select>
+                    </dd>
+                </dl>
+                <div class="colunas">
+                    <dl>
+                        <dt>Paciente</dt>
+                        <dd>
+                            <select name="id_paciente" class="select2 obg-0 ajax-id_paciente">
+                                <option value="">Buscar paciente...</option>
+                            </select>
+                            <a href="javascript:;" class="js-btn-aside button" data-aside="paciente" data-aside-sub><i
+                                    class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
 
-											<?php /*<a href="javascript:;" class="js-btn-aside button" data-aside="profissao" data-aside-sub><i class="iconify" data-icon="fluent:add-24-regular"></i></a>*/?>
-										</dd>
-									</dl>
-									<dl>
-										<dt>Whatsapp</dt>
-										<dd class="form-comp"><span class="js-country">BR</span><input type="tel" name="telefone1" class="" attern="\d*" x-autocompletetype="tel" /></dd>
-									</dl>
-								</div>
-							</div>
-							<div class="colunas">
-								<dl>
-									<dt>Profissionais</dt>
-									<dd>
-										<select class="js-profissionais" multiple>
-											<option value=""></option>
-											<?php
+                            <?php /*<a href="javascript:;" class="js-btn-aside button" data-aside="profissao" data-aside-sub><i class="iconify" data-icon="fluent:add-24-regular"></i></a>*/?>
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>Whatsapp</dt>
+                        <dd class="form-comp"><span class="js-country">BR</span><input type="tel" name="telefone1"
+                                class="" attern="\d*" x-autocompletetype="tel" /></dd>
+                    </dl>
+                </div>
+            </div>
+            <div class="colunas">
+                <dl>
+                    <dt>Profissionais</dt>
+                    <dd>
+                        <select class="js-profissionais" multiple>
+                            <option value=""></option>
+                            <?php
 											foreach($_profissionais as $p) {
 												if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
 												echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
 											}
 											?>
-										</select>
-									</dd>
-								</dl>
-								<dl>
-									<dt>Consultório</dt>
-									<dd>
-										<select name="id_cadeira" class="obg-0">
-											<option value="">-</option>
-											<?php
+                        </select>
+                    </dd>
+                </dl>
+                <dl>
+                    <dt>Consultório</dt>
+                    <dd>
+                        <select name="id_cadeira" class="obg-0">
+                            <option value="">-</option>
+                            <?php
 											foreach($_cadeiras as $p) {
 												echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
 											}
 											?>
-										</select>
-									</dd>
-								</dl>
-							</div>
-							<dl>
-								<dt>Tags</dt>
-								<dd>
-									<select class="js-tags" multiple>
-										<?php
+                        </select>
+                    </dd>
+                </dl>
+            </div>
+            <dl>
+                <dt>Tags</dt>
+                <dd>
+                    <select class="js-tags" multiple>
+                        <?php
 											foreach($_tags as $p) {
 												echo '<option value="'.$p->id.'">'.utf8_encode($p->titulo).'</option>';
 											}
 											?>
-									</select>
+                    </select>
 
-									<a  href="javascript:;" class="js-btn-aside button" data-aside="tag" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a> 
-								</dd>
-							</dl>
-							<dl>
-								<dt>Informações</dt>
-								<dd><textarea name="obs" style="height:100px;"></textarea></dd>
-							</dl>
+                    <a href="javascript:;" class="js-btn-aside button" data-aside="tag" data-aside-sub><i
+                            class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
+                </dd>
+            </dl>
+            <dl>
+                <dt>Informações</dt>
+                <dd><textarea name="obs" style="height:100px;"></textarea></dd>
+            </dl>
 
-							<fieldset style="margin-top:2rem;">
-								<legend>Itens do checklist</legend>
-								
-								<div class="js-checklist-itens">
-									
-								</div>
-								
-							</fieldset>
-						</form>
-					</div>
-				</section><!-- .aside -->
+            <fieldset style="margin-top:2rem;">
+                <legend>Itens do checklist</legend>
 
+                <div class="js-checklist-itens">
 
-				<!-- Aside Edição Agenda Pessoal -->
-				<section class="aside aside-edit-agendaPessoal" id="js-aside-edit-agendaPessoal">
-					<script type="text/javascript">
-						$(function(){
+                </div>
 
-							$('#js-aside-edit-agendaPessoal .js-excluir').click(function(){
-
-								let obj = $(this);
-
-								swal({   
-									title: "Atenção",   
-									text: "Tem certeza que deseja remover este agendamento pessoal?",
-									type: "warning",   
-									showCancelButton: true,   
-									confirmButtonColor: "#DD6B55",   
-									confirmButtonText: "Sim!",   
-									cancelButtonText: "Não",   
-									closeOnConfirm: false,   
-									closeOnCancel: false }, 
-									function(isConfirm){   
-										if (isConfirm) {    
-											if(obj.attr('data-loading')==0) {
-												obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-												obj.attr('data-loading',1);
-												let id = $('#js-aside-edit-agendaPessoal input[name=id]').val();
-
-												let data = `ajax=agendamentoRemover&id=${id}`;   
-												$.ajax({
-													type:"POST",
-													data:data,
-													url:baseURLApiAside,
-													success:function(rtn){
-														swal.close();  
-														if(rtn.success) {
-															$.fancybox.close();
-															if(calendar) calendar.refetchEvents();
-															$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click();
-															//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
-														} else if(rtn.error) {
-															swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-														} else {
-															swal({title: "Erro!", text: "Agendamento não removido. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
-														}
-													},
-													error:function(){
-														swal.close();  
-														swal({title: "Erro!", text: "Agendamento não removido. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
-													}
-												}).done(function(){
-													obj.html(`<i class="iconify" data-icon="fluent:delete-24-regular"></i>`);
-													obj.attr('data-loading',0);
-												});
-											} 
-										} 
-										else {   
-											swal.close();   
-										} 
-									});
-							})
-
-							$('#js-aside-edit-agendaPessoal .js-salvar').click(function(){
-								let obj = $(this);
-
-								if(obj.attr('data-loading')==0) {
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
-
-									let erro=false;
-									$('#js-aside-edit-agendaPessoal form .obg').each(function(index,elem){
-										if($(this).attr('name')!==undefined && $(this).val().length==0) {
-											$(elem).addClass('erro');
-											erro=true;
-										}
-									});
-
-									if(erro===true) {
-										swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
-										obj.html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
-										obj.attr('data-loading',0);
-									} else {
-										
-										let campos = $('#js-aside-edit-agendaPessoal form').serialize();
-
-										let data = `ajax=agendamentoPessoalPersistir&${campos}`;
-										
-
-										$.ajax({
-											type:'POST',
-											data:data,
-											success:function(rtn) {
-												if(rtn.success) {
-													$.fancybox.close();
-													if(calendar) calendar.refetchEvents();
-													//$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click();
-
-													$('.aside-close-edicaoAgendamentoPessoal').parent().parent().removeClass("active");
-													$('.aside-close-edicaoAgendamentoPessoal').parent().parent().parent().fadeOut();
+            </fieldset>
+        </form>
+    </div>
+</section><!-- .aside -->
 
 
-													//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
-												} else if(rtn.error) {
-													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+<!-- Aside Edição Agenda Pessoal -->
+<section class="aside aside-edit-agendaPessoal" id="js-aside-edit-agendaPessoal">
+    <script type="text/javascript">
+    $(function() {
 
-												} else {
-													swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
-												}
-											},
-											error:function(){
-												swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
-											}
-										}).done(function(){
-											obj.html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span>`);
-											obj.attr('data-loading',0);
-										})
+        $('#js-aside-edit-agendaPessoal .js-excluir').click(function() {
 
-									}
-								}
-								return false;
-							});
+            let obj = $(this);
 
-							$('#js-aside-edit-agendaPessoal').find('input,select,textarea').change(function(x){
-								$('#js-aside-edit-agendaPessoal input[name=alteracao]').val(1);
-							});
+            swal({
+                    title: "Atenção",
+                    text: "Tem certeza que deseja remover este agendamento pessoal?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Sim!",
+                    cancelButtonText: "Não",
+                    closeOnConfirm: false,
+                    closeOnCancel: false
+                },
+                function(isConfirm) {
+                    if (isConfirm) {
+                        if (obj.attr('data-loading') == 0) {
+                            obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                            obj.attr('data-loading', 1);
+                            let id = $('#js-aside-edit-agendaPessoal input[name=id]').val();
 
-							$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click(function(){
-								let obj = $(this);
-								if($('#js-aside-edit-agendaPessoal input[name=alteracao]').val()=="1") {
-									swal({   
-											title: "Atenção",   
-											text: "Tem certeza que deseja fechar sem salvar as informações?",
-											type: "warning",   
-											showCancelButton: true,   
-											confirmButtonColor: "#DD6B55",   
-											confirmButtonText: "Sim!",   
-											cancelButtonText: "Não",   
-											closeOnConfirm: false,   
-											closeOnCancel: false 
-										}, function(isConfirm){   
-											if (isConfirm) {   
-												$(obj).parent().parent().removeClass("active");
-												$(obj).parent().parent().parent().fadeOut(); 
-												swal.close();
-									  		 } else {   
-									  		 	swal.close();   
-									  		 } 
-									  	});
-					
-								} else {
-									$(obj).parent().parent().removeClass("active");
-									$(obj).parent().parent().parent().fadeOut();
-								}
+                            let data = `ajax=agendamentoRemover&id=${id}`;
+                            $.ajax({
+                                type: "POST",
+                                data: data,
+                                url: baseURLApiAside,
+                                success: function(rtn) {
+                                    swal.close();
+                                    if (rtn.success) {
+                                        $.fancybox.close();
+                                        if (calendar) calendar.refetchEvents();
+                                        $('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal')
+                                            .click();
+                                        //swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
+                                    } else if (rtn.error) {
+                                        swal({
+                                            title: "Erro!",
+                                            text: rtn.error,
+                                            type: "error",
+                                            confirmButtonColor: "#424242"
+                                        });
+                                    } else {
+                                        swal({
+                                            title: "Erro!",
+                                            text: "Agendamento não removido. Por favor tente novamente!",
+                                            type: "error",
+                                            confirmButtonColor: "#424242"
+                                        });
+                                    }
+                                },
+                                error: function() {
+                                    swal.close();
+                                    swal({
+                                        title: "Erro!",
+                                        text: "Agendamento não removido. Por favor tente novamente!",
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                }
+                            }).done(function() {
+                                obj.html(
+                                    `<i class="iconify" data-icon="fluent:delete-24-regular"></i>`
+                                    );
+                                obj.attr('data-loading', 0);
+                            });
+                        }
+                    } else {
+                        swal.close();
+                    }
+                });
+        })
 
-							});
+        $('#js-aside-edit-agendaPessoal .js-salvar').click(function() {
+            let obj = $(this);
+
+            if (obj.attr('data-loading') == 0) {
+                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                obj.attr('data-loading', 1);
+
+                let erro = false;
+                $('#js-aside-edit-agendaPessoal form .obg').each(function(index, elem) {
+                    if ($(this).attr('name') !== undefined && $(this).val().length == 0) {
+                        $(elem).addClass('erro');
+                        erro = true;
+                    }
+                });
+
+                if (erro === true) {
+                    swal({
+                        title: "Erro!",
+                        text: "Complete os campos destacados",
+                        type: "error",
+                        confirmButtonColor: "#424242"
+                    });
+                    obj.html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
+                    obj.attr('data-loading', 0);
+                } else {
+
+                    let campos = $('#js-aside-edit-agendaPessoal form').serialize();
+
+                    let data = `ajax=agendamentoPessoalPersistir&${campos}`;
 
 
-						})
-					</script>
-					<div class="aside__inner1">
+                    $.ajax({
+                        type: 'POST',
+                        data: data,
+                        success: function(rtn) {
+                            if (rtn.success) {
+                                $.fancybox.close();
+                                if (calendar) calendar.refetchEvents();
+                                //$('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click();
 
-						<header class="aside-header">
-							<h1>Agenda Pessoal</h1>
-							<a href="javascript:;" class="aside-header__fechar aside-close-edicaoAgendamentoPessoal"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-						</header>
+                                $('.aside-close-edicaoAgendamentoPessoal').parent().parent()
+                                    .removeClass("active");
+                                $('.aside-close-edicaoAgendamentoPessoal').parent().parent()
+                                    .parent().fadeOut();
 
-						<form method="post" class="aside-content form" onsubmit="return false">
-							<input type="hidden" name="id" />
-							<input type="hidden" name="alteracao" value="0" />
 
-							<script>
-								$(function() {
-									$('.js-tab a').click(function() {
-										$(".js-tab a").removeClass("active");
-										$(this).addClass("active");							
-									});
-								});
-							</script>
-							
-						
-							<section class="filter">
-								<div class="filter-group">
-								</div>
-								<div class="filter-group">
-									<div class="filter-form form">
-										<dl>
-											<dd><a href="javascript:;" class="button js-excluir" data-loading="0"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
-										</dl>
-										<dl>
-											<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
-										</dl>
-									</div>								
-								</div>
-							</section>
+                                //swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
+                            } else if (rtn.error) {
+                                swal({
+                                    title: "Erro!",
+                                    text: rtn.error,
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
 
-							<div class="colunas3">
-								<dl>
-									<dt>Data</dt>
-									<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data" /></dd>
-								</dl>
-								<dl>
-									<dt>Hora</dt>
-									<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="tel" name="agenda_hora" class="hora" /></dd>
-								</dl>
-								<dl>
-									<dt>Duração</dt>
-									<dd class="form-comp form-comp_pos">
-										<?php /*<select name="agenda_duracao">
+                            } else {
+                                swal({
+                                    title: "Erro!",
+                                    text: "Agendamento não efetuado. Por favor tente novamente!",
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            }
+                        },
+                        error: function() {
+                            swal({
+                                title: "Erro!",
+                                text: "Agendamento não efetuado. Por favor tente novamente!",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
+                    }).done(function() {
+                        obj.html(
+                            `<i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span>`
+                            );
+                        obj.attr('data-loading', 0);
+                    })
+
+                }
+            }
+            return false;
+        });
+
+        $('#js-aside-edit-agendaPessoal').find('input,select,textarea').change(function(x) {
+            $('#js-aside-edit-agendaPessoal input[name=alteracao]').val(1);
+        });
+
+        $('#js-aside-edit-agendaPessoal .aside-close-edicaoAgendamentoPessoal').click(function() {
+            let obj = $(this);
+            if ($('#js-aside-edit-agendaPessoal input[name=alteracao]').val() == "1") {
+                swal({
+                    title: "Atenção",
+                    text: "Tem certeza que deseja fechar sem salvar as informações?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Sim!",
+                    cancelButtonText: "Não",
+                    closeOnConfirm: false,
+                    closeOnCancel: false
+                }, function(isConfirm) {
+                    if (isConfirm) {
+                        $(obj).parent().parent().removeClass("active");
+                        $(obj).parent().parent().parent().fadeOut();
+                        swal.close();
+                    } else {
+                        swal.close();
+                    }
+                });
+
+            } else {
+                $(obj).parent().parent().removeClass("active");
+                $(obj).parent().parent().parent().fadeOut();
+            }
+
+        });
+
+
+    })
+    </script>
+    <div class="aside__inner1">
+
+        <header class="aside-header">
+            <h1>Agenda Pessoal</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close-edicaoAgendamentoPessoal"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
+
+        <form method="post" class="aside-content form" onsubmit="return false">
+            <input type="hidden" name="id" />
+            <input type="hidden" name="alteracao" value="0" />
+
+            <script>
+            $(function() {
+                $('.js-tab a').click(function() {
+                    $(".js-tab a").removeClass("active");
+                    $(this).addClass("active");
+                });
+            });
+            </script>
+
+
+            <section class="filter">
+                <div class="filter-group">
+                </div>
+                <div class="filter-group">
+                    <div class="filter-form form">
+                        <dl>
+                            <dd><a href="javascript:;" class="button js-excluir" data-loading="0"><i class="iconify"
+                                        data-icon="fluent:delete-24-regular"></i></a></dd>
+                        </dl>
+                        <dl>
+                            <dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify"
+                                        data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+                        </dl>
+                    </div>
+                </div>
+            </section>
+
+            <div class="colunas3">
+                <dl>
+                    <dt>Data</dt>
+                    <dd class="form-comp"><span><i class="iconify"
+                                data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel"
+                            name="agenda_data" class="data" /></dd>
+                </dl>
+                <dl>
+                    <dt>Hora</dt>
+                    <dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input
+                            type="tel" name="agenda_hora" class="hora" /></dd>
+                </dl>
+                <dl>
+                    <dt>Duração</dt>
+                    <dd class="form-comp form-comp_pos">
+                        <?php /*<select name="agenda_duracao">
 											<?php
 											foreach($optAgendaDuracao as $v) {
 												if($values['agenda_duracao']==$v) $possuiDuracao=true;
 												echo '<option value="'.$v.'"'.($values['agenda_duracao']==$v?' selected':'').'>'.$v.'</option>';
 											}
 											?>
-										</select>*/?>
-										<input type="number" name="agenda_duracao" value="<?php echo isset($values['agenda_duracao'])?$values['agenda_duracao']:'';?>" />
-										<span>min</span>
-									</dd>
-								</dl>
-							</div>
-							<div class="colunas">
-								<dl>
-									<dt>Profissionais</dt>
-									<dd>
-										<select name="id_profissional"  class="">
-											<option value=""></option>
-											<?php
+                        </select>*/?>
+                        <input type="number" name="agenda_duracao"
+                            value="<?php echo isset($values['agenda_duracao'])?$values['agenda_duracao']:'';?>" />
+                        <span>min</span>
+                    </dd>
+                </dl>
+            </div>
+            <div class="colunas">
+                <dl>
+                    <dt>Profissionais</dt>
+                    <dd>
+                        <select name="id_profissional" class="">
+                            <option value=""></option>
+                            <?php
 											foreach($_profissionais as $p) {
 												if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
 												echo '<option value="'.$p->id.'"'.(in_array($p->id, $values['profissionais'])?' selected':'').'>'.utf8_encode($p->nome).'</option>';
 											}
 											?>
-										</select>
-									</dd>
-								</dl>
-								<dl>
-									<dt>Consultório</dt>
-									<dd>
-										<select name="id_cadeira">
-											<option value=""></option>
-											<?php
+                        </select>
+                    </dd>
+                </dl>
+                <dl>
+                    <dt>Consultório</dt>
+                    <dd>
+                        <select name="id_cadeira">
+                            <option value=""></option>
+                            <?php
 											foreach($_cadeiras as $p) {
 												echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
 											}
 											?>
-										</select>
-									</dd>
-								</dl>
-							</div>
-							<dl>
-								<dt>Informações</dt>
-								<dd><textarea name="obs" style="height:100px;"></textarea></dd>
-							</dl>
-						</div>
+                        </select>
+                    </dd>
+                </dl>
+            </div>
+            <dl>
+                <dt>Informações</dt>
+                <dd><textarea name="obs" style="height:100px;"></textarea></dd>
+            </dl>
+    </div>
 
-					</form>
-				</section><!-- .aside -->
+    </form>
+</section><!-- .aside -->
 
 
-				<!-- Aside Edição Agendamento -->
-				<section class="aside aside-edit" id="js-aside-edit">
-					<script type="text/javascript">
-						$(function(){
+<!-- Aside Edição Agendamento -->
+<section class="aside aside-edit" id="js-aside-edit">
+    <script type="text/javascript">
+    $(function() {
 
-							const agendaChecklistListar = () => {
+        const agendaChecklistListar = () => {
 
-								let id_agenda = $('#js-aside-edit input[name=id]').val();
-								$('.js-agenda-checklist-table tbody').html('');
+            let id_agenda = $('#js-aside-edit input[name=id]').val();
+            $('.js-agenda-checklist-table tbody').html('');
 
-								let data = `ajax=checklistListar&id_agenda=${id_agenda}`;
-								$.ajax({
-									type:"POST",
-									url:baseURLApiAside,
-									data:data,
-									success:function(rtn){ 
-										if(rtn.success) {
-											checklist=rtn.regs;
+            let data = `ajax=checklistListar&id_agenda=${id_agenda}`;
+            $.ajax({
+                type: "POST",
+                url: baseURLApiAside,
+                data: data,
+                success: function(rtn) {
+                    if (rtn.success) {
+                        checklist = rtn.regs;
 
-											if(checklist.length>0) {
-												checklist.forEach(x=>{
-											
-													$(`.js-agenda-checklist-table tbody`).append(`<tr>
+                        if (checklist.length > 0) {
+                            checklist.forEach(x => {
+
+                                $(`.js-agenda-checklist-table tbody`).append(`<tr>
 															<td>
 																<h1>${x.titulo}</h1>
 															</td>
 															<td>${x.descricao}</td>
 															<td><input type="checkbox" class="input-switch js-checklist" data-id_agendachecklist="${x.id}" ${x.checado==1?"checked":""} /></td>
 														</tr>`);
-												});
-											} else {
-												$('.js-agenda-checklist-table').append(`<tr><td><center>Nenhum checklist criado</center></td></tr>`);
-											}
-											
-										}
-									}
-								});
-							}
+                            });
+                        } else {
+                            $('.js-agenda-checklist-table').append(
+                                `<tr><td><center>Nenhum checklist criado</center></td></tr>`
+                                );
+                        }
 
-							$('#js-aside-edit .js-excluir').click(function(){
+                    }
+                }
+            });
+        }
 
-								let obj = $(this);
+        $('#js-aside-edit .js-excluir').click(function() {
 
-								swal({   
-									title: "Atenção",   
-									text: "Tem certeza que deseja remover este agendamento?",
-									type: "warning",   
-									showCancelButton: true,   
-									confirmButtonColor: "#DD6B55",   
-									confirmButtonText: "Sim!",   
-									cancelButtonText: "Não",   
-									closeOnConfirm: false,   
-									closeOnCancel: false }, 
-									function(isConfirm){   
-										if (isConfirm) {    
-											if(obj.attr('data-loading')==0) {
-												obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-												obj.attr('data-loading',1);
-												let id = $('#js-aside-edit input[name=id]').val();
+            let obj = $(this);
 
-												let data = `ajax=agendamentoRemover&id=${id}`;   
-												$.ajax({
-													type:"POST",
-													data:data,
-													url:baseURLApiAside,
-													success:function(rtn){
-														swal.close();  
-														if(rtn.success) {
-															$.fancybox.close();
-															if(calendar) calendar.refetchEvents();
-															$('#js-aside-edit .aside-close-edicaoAgendamento').click();
-															//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
-														} else if(rtn.error) {
-															swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-														} else {
-															swal({title: "Erro!", text: "Agendamento não removido. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
-														}
-													},
-													error:function(){
-														swal.close();  
-														swal({title: "Erro!", text: "Agendamento não removido. Por favor tente novamente!", type:"error", confirmButtonColor: "#424242"});
-													}
-												}).done(function(){
-													obj.html(`<i class="iconify" data-icon="fluent:delete-24-regular"></i>`);
-													obj.attr('data-loading',0);
-												});
-											} 
-										} 
-										else {   
-											swal.close();   
-										} 
-									});
-							});
+            swal({
+                    title: "Atenção",
+                    text: "Tem certeza que deseja remover este agendamento?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Sim!",
+                    cancelButtonText: "Não",
+                    closeOnConfirm: false,
+                    closeOnCancel: false
+                },
+                function(isConfirm) {
+                    if (isConfirm) {
+                        if (obj.attr('data-loading') == 0) {
+                            obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                            obj.attr('data-loading', 1);
+                            let id = $('#js-aside-edit input[name=id]').val();
 
-							$('#js-aside-edit .js-salvar').click(function(){
-								let obj = $(this);
+                            let data = `ajax=agendamentoRemover&id=${id}`;
+                            $.ajax({
+                                type: "POST",
+                                data: data,
+                                url: baseURLApiAside,
+                                success: function(rtn) {
+                                    swal.close();
+                                    if (rtn.success) {
+                                        $.fancybox.close();
+                                        if (calendar) calendar.refetchEvents();
+                                        $('#js-aside-edit .aside-close-edicaoAgendamento')
+                                            .click();
+                                        //swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
+                                    } else if (rtn.error) {
+                                        swal({
+                                            title: "Erro!",
+                                            text: rtn.error,
+                                            type: "error",
+                                            confirmButtonColor: "#424242"
+                                        });
+                                    } else {
+                                        swal({
+                                            title: "Erro!",
+                                            text: "Agendamento não removido. Por favor tente novamente!",
+                                            type: "error",
+                                            confirmButtonColor: "#424242"
+                                        });
+                                    }
+                                },
+                                error: function() {
+                                    swal.close();
+                                    swal({
+                                        title: "Erro!",
+                                        text: "Agendamento não removido. Por favor tente novamente!",
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                }
+                            }).done(function() {
+                                obj.html(
+                                    `<i class="iconify" data-icon="fluent:delete-24-regular"></i>`
+                                    );
+                                obj.attr('data-loading', 0);
+                            });
+                        }
+                    } else {
+                        swal.close();
+                    }
+                });
+        });
 
-								if(obj.attr('data-loading')==0) {
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
+        $('#js-aside-edit .js-salvar').click(function() {
+            let obj = $(this);
 
-									let erro=false;
-									$('#js-aside-edit form .obg').each(function(index,elem){
-										if($(this).attr('name')!==undefined && $(this).val().length==0) {
-											$(elem).addClass('erro');
-											erro=true;
-										}
-									});
+            if (obj.attr('data-loading') == 0) {
+                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                obj.attr('data-loading', 1);
 
-									if(erro===true) {
-										swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
-										obj.html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
-										obj.attr('data-loading',0);
-									} else {
-										
-										let campos = $('#js-aside-edit form').serialize();
-										let profissionais = $('#js-aside-edit .js-profissionais').val();
-										let tags = $('#js-aside-edit .js-tags').val();
+                let erro = false;
+                $('#js-aside-edit form .obg').each(function(index, elem) {
+                    if ($(this).attr('name') !== undefined && $(this).val().length == 0) {
+                        $(elem).addClass('erro');
+                        erro = true;
+                    }
+                });
 
-										let data = `ajax=agendamentoPersistir&profissionais=${profissionais}&tags=${tags}&${campos}`;
-										
-										let abrirProximaConsulta = 0;
-										if($('#js-aside-edit input[name=id_status_antigo]').val()!=$('#js-aside-edit select[name=id_status]').val() && $('#js-aside-edit select[name=id_status]').val()==5) {
-											abrirProximaConsulta=$('#js-aside-edit input[name=id]').val();
-										}
+                if (erro === true) {
+                    swal({
+                        title: "Erro!",
+                        text: "Complete os campos destacados",
+                        type: "error",
+                        confirmButtonColor: "#424242"
+                    });
+                    obj.html(`<i class="iconify" data-icon="bx-bx-check"></i><span>salvar</span>`);
+                    obj.attr('data-loading', 0);
+                } else {
 
-										$.ajax({
-											type:'POST',
-											data:data,
-											url:baseURLApiAside,
-											success:function(rtn) {
-												if(rtn.success) {
-													$.fancybox.close();
-													if(calendar) calendar.refetchEvents();
-													$('#js-aside-edit input[name=alteracao]').val(0);
-													$('#js-aside-edit .aside-close-edicaoAgendamento').click();
+                    let campos = $('#js-aside-edit form').serialize();
+                    let profissionais = $('#js-aside-edit .js-profissionais').val();
+                    let tags = $('#js-aside-edit .js-tags').val();
 
-													if(rtn.wts && rtn.wts==1) {
-														let data = `ajax=whatsappDisparar`;
-														$.ajax({
-															type:"POST",
-															data:data
-														})
-													}
-													//alert(abrirProximaConsulta);
-													if(abrirProximaConsulta>0) asideProximaConsulta(abrirProximaConsulta);
+                    let data =
+                        `ajax=agendamentoPersistir&profissionais=${profissionais}&tags=${tags}&${campos}`;
 
+                    let abrirProximaConsulta = 0;
+                    if ($('#js-aside-edit input[name=id_status_antigo]').val() != $(
+                            '#js-aside-edit select[name=id_status]').val() && $(
+                            '#js-aside-edit select[name=id_status]').val() == 5) {
+                        abrirProximaConsulta = $('#js-aside-edit input[name=id]').val();
+                    }
 
-													//swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
-												} else if(rtn.error) {
-													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+                    $.ajax({
+                        type: 'POST',
+                        data: data,
+                        url: baseURLApiAside,
+                        success: function(rtn) {
+                            if (rtn.success) {
+                                $.fancybox.close();
+                                if (calendar) calendar.refetchEvents();
+                                $('#js-aside-edit input[name=alteracao]').val(0);
+                                $('#js-aside-edit .aside-close-edicaoAgendamento').click();
 
-												} else {
-													swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente! Error:001", type:"error", confirmButtonColor: "#424242"});
-												}
-											},
-											error:function(rtn){
-												swal({title: "Erro!", text: "Agendamento não efetuado. Por favor tente novamente! Error:002", type:"error", confirmButtonColor: "#424242"});
-											}
-										}).done(function(){
-											obj.html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span>`);
-											obj.attr('data-loading',0);
-										})
-
-									}
-								}
-								return false;
-							});
-
-							$('#js-aside-edit').find('input,select,textarea').change(function(x){
-								$('#js-aside-edit input[name=alteracao]').val(1);
-							});
-
-							$('#js-aside-edit .aside-close-edicaoAgendamento').click(function(){
-								let obj = $(this);
-								if($('#js-aside-edit input[name=alteracao]').val()=="1") {
-									swal({   
-											title: "Atenção",   
-											text: "Tem certeza que deseja fechar sem salvar as informações?",
-											type: "warning",   
-											showCancelButton: true,   
-											confirmButtonColor: "#DD6B55",   
-											confirmButtonText: "Sim!",   
-											cancelButtonText: "Não",   
-											closeOnConfirm: false,   
-											closeOnCancel: false 
-										}, function(isConfirm){   
-											if (isConfirm) {   
-												$(obj).parent().parent().removeClass("active");
-												$(obj).parent().parent().parent().fadeOut(); 
-												swal.close();
-									  		 } else {   
-									  		 	swal.close();   
-									  		 } 
-									  	});
-					
-								} else {
-									$(obj).parent().parent().removeClass("active");
-									$(obj).parent().parent().parent().fadeOut();
-								}
-							});
-
-							$('#js-aside-edit').find('input[name=agenda_data],input[name=agenda_hora]').change(function(){
-								agendamentosProfissionais(`edit`);
-								agendaChecklistListar();
-							});
-
-							$('#js-aside-edit .js-agenda-checklist-table').on('click','.js-checklist',function(){
-								let id_agenda = $('#js-aside-edit input[name=id]').val();
-								let id_agenda_checklist = $(this).attr('data-id_agendachecklist');
-								let checado = $(this).prop('checked')===true?1:0;
-
-								let data = `ajax=checklistChecado&id_agenda=${id_agenda}&id_agenda_checklist=${id_agenda_checklist}&checado=${checado}`;
-								$.ajax({
-									type:"POST",
-									url:baseURLApiAside,
-									data:data,
-									success:function(rtn){ 
-										if(rtn.success) {
-										}
-									}
-								});
+                                if (rtn.wts && rtn.wts == 1) {
+                                    let data = `ajax=whatsappDisparar`;
+                                    $.ajax({
+                                        type: "POST",
+                                        data: data
+                                    })
+                                }
+                                //alert(abrirProximaConsulta);
+                                if (abrirProximaConsulta > 0) asideProximaConsulta(
+                                    abrirProximaConsulta);
 
 
-							});
-						})
-					</script>
-					<div class="aside__inner1">
+                                //swal({title: "Sucesso!", text: "Agendamento salvo com sucesso!", type:"success", confirmButtonColor: "#424242"});
+                            } else if (rtn.error) {
+                                swal({
+                                    title: "Erro!",
+                                    text: rtn.error,
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
 
-						<header class="aside-header">
-							<h1>Detalhes do Agendamento</h1>
-							<a href="javascript:;" class="aside-header__fechar aside-close-edicaoAgendamento"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-						</header>
+                            } else {
+                                swal({
+                                    title: "Erro!",
+                                    text: "Agendamento não efetuado. Por favor tente novamente! Error:001",
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            }
+                        },
+                        error: function(rtn) {
+                            swal({
+                                title: "Erro!",
+                                text: "Agendamento não efetuado. Por favor tente novamente! Error:002",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
+                    }).done(function() {
+                        obj.html(
+                            `<i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span>`
+                            );
+                        obj.attr('data-loading', 0);
+                    })
 
-						<form method="post" class="aside-content form" onsubmit="return false">
-							<input type="hidden" name="id_status_antigo" />
-							<input type="hidden" name="id" />
-							<input type="hidden" name="alteracao" value="0" />
-							<section class="header-profile">
-								<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
-								<div class="header-profile__inner1">
-									<h1><a href="" target="_blank" class="js-nome"></a></h1>
-									<div>
-										<p class="js-statusBI"></p>
-										<p class="js-idade"></p>
-										<p class="js-periodicidade">Periodicidade: 6 meses</p>
-										<p class="js-musica"></p>
-										<p class="js-planoOdontologico"></p>
-									</div>
-								</div>
-							</section>
+                }
+            }
+            return false;
+        });
 
-							<script>
-								const tagsListar = () => {
-									let id_agenda = $('#js-aside-edit input[name=id]').val();
-									$('.js-tags-table tbody').html('');
-									$('.js-asTag-titulo').val('');
-									$('.js-asTag-cor').val("#c18c6a");
-									$('input[name=id_tag]').val(0);
+        $('#js-aside-edit').find('input,select,textarea').change(function(x) {
+            $('#js-aside-edit input[name=alteracao]').val(1);
+        });
 
-									let data = `ajax=tagsListar&id_agenda=${id_agenda}`;
+        $('#js-aside-edit .aside-close-edicaoAgendamento').click(function() {
+            let obj = $(this);
+            if ($('#js-aside-edit input[name=alteracao]').val() == "1") {
+                swal({
+                    title: "Atenção",
+                    text: "Tem certeza que deseja fechar sem salvar as informações?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Sim!",
+                    cancelButtonText: "Não",
+                    closeOnConfirm: false,
+                    closeOnCancel: false
+                }, function(isConfirm) {
+                    if (isConfirm) {
+                        $(obj).parent().parent().removeClass("active");
+                        $(obj).parent().parent().parent().fadeOut();
+                        swal.close();
+                    } else {
+                        swal.close();
+                    }
+                });
 
-									$.ajax({
-										type:"POST",
-										url:baseURLApiAside,
-										data:data,
-										success:function(rtn) {
-											if(rtn.success) {
-												if(rtn.regs.length>0) {
-													rtn.regs.forEach(x=>{
-														$(`.js-tags-table tbody`).append(`<tr>
+            } else {
+                $(obj).parent().parent().removeClass("active");
+                $(obj).parent().parent().parent().fadeOut();
+            }
+        });
+
+        $('#js-aside-edit').find('input[name=agenda_data],input[name=agenda_hora]').change(function() {
+            agendamentosProfissionais(`edit`);
+            agendaChecklistListar();
+        });
+
+        $('#js-aside-edit .js-agenda-checklist-table').on('click', '.js-checklist', function() {
+            let id_agenda = $('#js-aside-edit input[name=id]').val();
+            let id_agenda_checklist = $(this).attr('data-id_agendachecklist');
+            let checado = $(this).prop('checked') === true ? 1 : 0;
+
+            let data =
+                `ajax=checklistChecado&id_agenda=${id_agenda}&id_agenda_checklist=${id_agenda_checklist}&checado=${checado}`;
+            $.ajax({
+                type: "POST",
+                url: baseURLApiAside,
+                data: data,
+                success: function(rtn) {
+                    if (rtn.success) {}
+                }
+            });
+
+
+        });
+    })
+    </script>
+    <div class="aside__inner1">
+
+        <header class="aside-header">
+            <h1>Detalhes do Agendamento</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close-edicaoAgendamento"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
+
+        <form method="post" class="aside-content form" onsubmit="return false">
+            <input type="hidden" name="id_status_antigo" />
+            <input type="hidden" name="id" />
+            <input type="hidden" name="alteracao" value="0" />
+            <section class="header-profile">
+                <img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
+                <div class="header-profile__inner1">
+                    <h1><a href="" target="_blank" class="js-nome"></a></h1>
+                    <div>
+                        <p class="js-statusBI"></p>
+                        <p class="js-idade"></p>
+                        <p class="js-periodicidade">Periodicidade: 6 meses</p>
+                        <p class="js-musica"></p>
+                        <p class="js-planoOdontologico"></p>
+                    </div>
+                </div>
+            </section>
+
+            <script>
+            const tagsListar = () => {
+                let id_agenda = $('#js-aside-edit input[name=id]').val();
+                $('.js-tags-table tbody').html('');
+                $('.js-asTag-titulo').val('');
+                $('.js-asTag-cor').val("#c18c6a");
+                $('input[name=id_tag]').val(0);
+
+                let data = `ajax=tagsListar&id_agenda=${id_agenda}`;
+
+                $.ajax({
+                    type: "POST",
+                    url: baseURLApiAside,
+                    data: data,
+                    success: function(rtn) {
+                        if (rtn.success) {
+                            if (rtn.regs.length > 0) {
+                                rtn.regs.forEach(x => {
+                                    $(`.js-tags-table tbody`).append(`<tr>
 																<td>
 																	${x.titulo}
 																</td>
@@ -4568,272 +4779,324 @@
 																	<a href="javascript:;" class="button js-remover" data-id="${x.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 																</td>
 															</tr>`);
-													});
-												}
-											}
-										},
-										error:function (rtn) {
-											console.log("erro: "+rtn);						
-										}
-									})
-								}
+                                });
+                            }
+                        }
+                    },
+                    error: function(rtn) {
+                        console.log("erro: " + rtn);
+                    }
+                })
+            }
 
-								$(function() {
-									$('.js-tab a').click(function() {
-										$(".js-tab a").removeClass("active");
-										$(this).addClass("active");							
-									});
+            $(function() {
+                $('.js-tab a').click(function() {
+                    $(".js-tab a").removeClass("active");
+                    $(this).addClass("active");
+                });
 
-									$(".js-btn-aside-tag").click(function() {
-										$(".aside-tag").fadeIn(100,function() {
-											$(".aside-tag .aside__inner1").addClass("active");
-											tagsListar();
-										});
-									});
+                $(".js-btn-aside-tag").click(function() {
+                    $(".aside-tag").fadeIn(100, function() {
+                        $(".aside-tag .aside__inner1").addClass("active");
+                        tagsListar();
+                    });
+                });
 
-									$('.js-tags-table').on('click','.js-editar',function(){
-										let id = $(this).attr('data-id');
-										let titulo = $(this).attr('data-titulo');
-										let cor = $(this).attr('data-cor');
+                $('.js-tags-table').on('click', '.js-editar', function() {
+                    let id = $(this).attr('data-id');
+                    let titulo = $(this).attr('data-titulo');
+                    let cor = $(this).attr('data-cor');
 
-										if(id) {
-											$('input[name=id_tag]').val(id);
-											$('.js-asTag-titulo').val(titulo);
-											$('.js-asTag-cor').val(cor);
-										}
-									});
+                    if (id) {
+                        $('input[name=id_tag]').val(id);
+                        $('.js-asTag-titulo').val(titulo);
+                        $('.js-asTag-cor').val(cor);
+                    }
+                });
 
-									$('.js-tags-table').on('click','.js-remover',function(){
+                $('.js-tags-table').on('click', '.js-remover', function() {
 
-										let id = $(this).attr('data-id');
-										if($.isNumeric(id) && id>0) {
-										
-										swal({   
-												title: "Atenção",   
-												text: "Você tem certeza que deseja remover este registro?",   
-												type: "warning",   
-												showCancelButton: true,   
-												confirmButtonColor: "#DD6B55",   
-												confirmButtonText: "Sim!",   
-												cancelButtonText: "Não",   
-												closeOnConfirm: false,   
-												closeOnCancel: false 
-											}, function(isConfirm){   
-												if (isConfirm) {    
+                    let id = $(this).attr('data-id');
+                    if ($.isNumeric(id) && id > 0) {
 
-													let data = `ajax=tagsRemover&id=${id}&id_agenda=${id_agenda}`;
-													$.ajax({
-														type:"POST",
-														url:baseURLApiAside,
-														data:data,
-														success:function(rtn) {
-															if(rtn.success) {
-																$('.js-tags').empty();
+                        swal({
+                            title: "Atenção",
+                            text: "Você tem certeza que deseja remover este registro?",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#DD6B55",
+                            confirmButtonText: "Sim!",
+                            cancelButtonText: "Não",
+                            closeOnConfirm: false,
+                            closeOnCancel: false
+                        }, function(isConfirm) {
+                            if (isConfirm) {
 
-																if(rtn.regs.length>0) {
-																	rtn.regs.forEach(x=>{
-																		$('.js-tags').append(`<option value="${x.id}" selected>${x.titulo}</option>`);
-																	});
-																}
+                                let data = `ajax=tagsRemover&id=${id}&id_agenda=${id_agenda}`;
+                                $.ajax({
+                                    type: "POST",
+                                    url: baseURLApiAside,
+                                    data: data,
+                                    success: function(rtn) {
+                                        if (rtn.success) {
+                                            $('.js-tags').empty();
 
-																$('.js-tags').trigger('chosen:updated');
-																tagsListar();
-																swal.close();
-																
-															} else if(rtn.error) {
-																swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-															} else {
-																swal({title: "Erro!", text: 'Algum erro ocorreu durante a remoção deste registro', type:"error", confirmButtonColor: "#424242"});
-															}
-														},
-														error:function(){
-															swal({title: "Erro!", text: 'Algum erro ocorreu durante a remoção deste registro.', type:"error", confirmButtonColor: "#424242"});
-														}
-													}) 
-												} else {   
-													swal.close();   
-												} 
-											});
-										}
-									});
+                                            if (rtn.regs.length > 0) {
+                                                rtn.regs.forEach(x => {
+                                                    $('.js-tags').append(
+                                                        `<option value="${x.id}" selected>${x.titulo}</option>`
+                                                        );
+                                                });
+                                            }
 
-									$('.js-ag-whatsapp .js-btn-wtsEnviar').click(function(){
-										let id_tipo = $('.js-ag-whatsapp select[name=id_tipo]').val();
-										if(id_tipo.length>0) {
+                                            $('.js-tags').trigger('chosen:updated');
+                                            tagsListar();
+                                            swal.close();
+
+                                        } else if (rtn.error) {
+                                            swal({
+                                                title: "Erro!",
+                                                text: rtn.error,
+                                                type: "error",
+                                                confirmButtonColor: "#424242"
+                                            });
+                                        } else {
+                                            swal({
+                                                title: "Erro!",
+                                                text: 'Algum erro ocorreu durante a remoção deste registro',
+                                                type: "error",
+                                                confirmButtonColor: "#424242"
+                                            });
+                                        }
+                                    },
+                                    error: function() {
+                                        swal({
+                                            title: "Erro!",
+                                            text: 'Algum erro ocorreu durante a remoção deste registro.',
+                                            type: "error",
+                                            confirmButtonColor: "#424242"
+                                        });
+                                    }
+                                })
+                            } else {
+                                swal.close();
+                            }
+                        });
+                    }
+                });
+
+                $('.js-ag-whatsapp .js-btn-wtsEnviar').click(function() {
+                    let id_tipo = $('.js-ag-whatsapp select[name=id_tipo]').val();
+                    if (id_tipo.length > 0) {
 
 
-											let obj = $(this);
-											let objHTMLAntigo = $(this).html();
-											let idAgenda = $('#js-aside-edit input[name=id]').val();
+                        let obj = $(this);
+                        let objHTMLAntigo = $(this).html();
+                        let idAgenda = $('#js-aside-edit input[name=id]').val();
 
-											if(obj.attr('data-loading')==0) {
-												let data = `ajax=enviarWhatsapp&id_tipo=${id_tipo}&id_agenda=${idAgenda}`;
+                        if (obj.attr('data-loading') == 0) {
+                            let data = `ajax=enviarWhatsapp&id_tipo=${id_tipo}&id_agenda=${idAgenda}`;
 
-												obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span> Enviando...`);
+                            obj.html(
+                                `<span class="iconify" data-icon="eos-icons:loading"></span> Enviando...`
+                                );
 
-												$.ajax({
-													type:"POST",
-													url:baseURLApiAside,
-													data:data,
-													success:function(rtn) {
-														if(rtn.success) {
-															swal({title: "Sucesso!", text: 'Mensagem enviada com sucesso para o numero <b>'+rtn.celular+'</b>!', type:"success", html:true,confirmButtonColor: "#424242"},function(){
-																popView(idAgenda);
-																setTimeout(function(){$('#js-aside-edit .js-btn-whatsapp').click();},500);
-															});
-														} else {
-															let erro = rtn.error ?rtn.error : 'Algum erro ocorreu. Tente novamente';
-															swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-														}
-													}
-												}).done(function(){
-													obj.attr('data-loading',0);
-													obj.html(objHTMLAntigo);
-												})
-											}
-										
-										} else {
-											swal({title: "Erro!", text: 'Selecione o tipo de mensagem que deseja enviar', type:"error", confirmButtonColor: "#424242"});
-										}
-									})
-								});
-							</script>
-							<section class="tab tab_alt js-tab">
-								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agenda').show();" class="active">Agenda</a>
-								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-checklist').show();">Checklist</a>					
-								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-futuro').show();">Agendamentos Futuros</a>
-								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>		
-								<a href="javascript:;" class="js-btn-whatsapp" onclick="$('.js-ag').hide(); $('.js-ag-whatsapp').show();">Whatsapp</a>					
-								
-							</section>
-						
-							<div class="js-ag js-ag-agenda">
-								<section class="filter">
-									<div class="filter-group">
-										<div class="filter-title">
-											<p class="js-agendou">Simone agendou há 29 dias</p>
-										</div>
-									</div>
-									<div class="filter-group">
-										<div class="filter-form form">
-											<dl>
-												<dd><a href="javascript:;" class="button js-excluir" data-loading="0"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
-											</dl>
-											<dl>
-												<dd><a href="javascript:;" class="button js-webwhatsapp" target="_blank"><span class="iconify" data-icon="ic:outline-whatsapp"></span> Web Whatsapp</a></dd>
-											</dl>
-											<dl>
-												<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
-											</dl>
-										</div>								
-									</div>
-								</section>
+                            $.ajax({
+                                type: "POST",
+                                url: baseURLApiAside,
+                                data: data,
+                                success: function(rtn) {
+                                    if (rtn.success) {
+                                        swal({
+                                            title: "Sucesso!",
+                                            text: 'Mensagem enviada com sucesso para o numero <b>' +
+                                                rtn.celular + '</b>!',
+                                            type: "success",
+                                            html: true,
+                                            confirmButtonColor: "#424242"
+                                        }, function() {
+                                            popView(idAgenda);
+                                            setTimeout(function() {
+                                                $('#js-aside-edit .js-btn-whatsapp')
+                                                    .click();
+                                            }, 500);
+                                        });
+                                    } else {
+                                        let erro = rtn.error ? rtn.error :
+                                            'Algum erro ocorreu. Tente novamente';
+                                        swal({
+                                            title: "Erro!",
+                                            text: rtn.error,
+                                            type: "error",
+                                            confirmButtonColor: "#424242"
+                                        });
+                                    }
+                                }
+                            }).done(function() {
+                                obj.attr('data-loading', 0);
+                                obj.html(objHTMLAntigo);
+                            })
+                        }
 
-								<div class="colunas3">
-									<dl>
-										<dt>Data</dt>
-										<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data" /></dd>
-									</dl>
-									<dl>
-										<dt>Hora</dt>
-										<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="tel" name="agenda_hora" class="hora" /></dd>
-									</dl>
-									<dl>
-										<dt>Duração</dt>
-										<dd class="form-comp form-comp_pos">
-											<?php /*<input type="tel" name="agenda_duracao" class="" />
+                    } else {
+                        swal({
+                            title: "Erro!",
+                            text: 'Selecione o tipo de mensagem que deseja enviar',
+                            type: "error",
+                            confirmButtonColor: "#424242"
+                        });
+                    }
+                })
+            });
+            </script>
+            <section class="tab tab_alt js-tab">
+                <a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agenda').show();"
+                    class="active">Agenda</a>
+                <a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-checklist').show();">Checklist</a>
+                <a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-futuro').show();">Agendamentos Futuros</a>
+                <a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>
+                <a href="javascript:;" class="js-btn-whatsapp"
+                    onclick="$('.js-ag').hide(); $('.js-ag-whatsapp').show();">Whatsapp</a>
+
+            </section>
+
+            <div class="js-ag js-ag-agenda">
+                <section class="filter">
+                    <div class="filter-group">
+                        <div class="filter-title">
+                            <p class="js-agendou">Simone agendou há 29 dias</p>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-form form">
+                            <dl>
+                                <dd><a href="javascript:;" class="button js-excluir" data-loading="0"><i class="iconify"
+                                            data-icon="fluent:delete-24-regular"></i></a></dd>
+                            </dl>
+                            <dl>
+                                <dd><a href="javascript:;" class="button js-webwhatsapp" target="_blank"><span
+                                            class="iconify" data-icon="ic:outline-whatsapp"></span> Web Whatsapp</a>
+                                </dd>
+                            </dl>
+                            <dl>
+                                <dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify"
+                                            data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="colunas3">
+                    <dl>
+                        <dt>Data</dt>
+                        <dd class="form-comp"><span><i class="iconify"
+                                    data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel"
+                                name="agenda_data" class="data" /></dd>
+                    </dl>
+                    <dl>
+                        <dt>Hora</dt>
+                        <dd class="form-comp"><span><i class="iconify"
+                                    data-icon="fluent:clock-24-regular"></i></span><input type="tel" name="agenda_hora"
+                                class="hora" /></dd>
+                    </dl>
+                    <dl>
+                        <dt>Duração</dt>
+                        <dd class="form-comp form-comp_pos">
+                            <?php /*<input type="tel" name="agenda_duracao" class="" />
 											<select name="agenda_duracao">
 												<?php
 												foreach($optAgendaDuracao as $v) {
 													echo '<option value="'.$v.'"'.($values['agenda_duracao']==$v?' selected':'').'>'.$v.'</option>';
 												}
 												?>
-											</select>*/?>
-											<input type="text" name="agenda_duracao" value="" />
-											<span>min</span>
-										</dd>
-									</dl>
-								</div>
-								<dl>
-									<dt>Status do Agendamento</dt>
-									<dd>
-										<select name="id_status" class="obg">
-											<option value="">-</option>
-											<?php
+                            </select>*/?>
+                            <input type="text" name="agenda_duracao" value="" />
+                            <span>min</span>
+                        </dd>
+                    </dl>
+                </div>
+                <dl>
+                    <dt>Status do Agendamento</dt>
+                    <dd>
+                        <select name="id_status" class="obg">
+                            <option value="">-</option>
+                            <?php
 											foreach($_status as $p) {
 												echo '<option value="'.$p->id.'">'.utf8_encode($p->titulo).'</option>';
 											}
 											?>
-										</select>
-									</dd>
-								</dl>
-								<div class="colunas">
-									<dl>
-										<dt>Telefone</dt>
-										<dd class="form-comp">
-											<span class="js-country">BR</span><input type="tel" name="telefone1" class="" />
-										</dd>
-									</dl>
-									<dl>
-										<dt>Consultório</dt>
-										<dd>
-											<select name="id_cadeira">
-												<option value=""></option>
-												<?php
+                        </select>
+                    </dd>
+                </dl>
+                <div class="colunas">
+                    <dl>
+                        <dt>Telefone</dt>
+                        <dd class="form-comp">
+                            <span class="js-country">BR</span><input type="tel" name="telefone1" class="" />
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>Consultório</dt>
+                        <dd>
+                            <select name="id_cadeira">
+                                <option value=""></option>
+                                <?php
 												foreach($_cadeiras as $p) {
 													echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
 												}
 												?>
-											</select>
-										</dd>
-									</dl>
-								</div>
-								<div class="colunas">
-									<dl class="dl2">
-										<dt>Profissionais</dt>
-										<dd>
-											<select class="js-profissionais" multiple>
-												<option value=""></option>
-												<?php
+                            </select>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="colunas">
+                    <dl class="dl2">
+                        <dt>Profissionais</dt>
+                        <dd>
+                            <select class="js-profissionais" multiple>
+                                <option value=""></option>
+                                <?php
 												foreach($_profissionais as $p) {
 													if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
 													echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
 												}
 												?>
-											</select>
-										</dd>
-									</dl>
-								</div>
-								<div>
-									<dl>
-										<dt>Tags</dt>
-										<dd>
-											<select class="js-tags" multiple>
-												<option value=""></option>
-												<?php
+                            </select>
+                        </dd>
+                    </dl>
+                </div>
+                <div>
+                    <dl>
+                        <dt>Tags</dt>
+                        <dd>
+                            <select class="js-tags" multiple>
+                                <option value=""></option>
+                                <?php
 												foreach ($_tags as $x) {
 													echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
 												}
 												?>
-											</select>
+                            </select>
 
-											<a  href="javascript:;" class="js-btn-aside-tag button" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
-										</dd>
-									</dl>
-								</div>
-								<dl>
-									<dt>Informações</dt>
-									<dd><textarea name="obs" style="height:100px;"></textarea></dd>
-								</dl>
-							</div>
+                            <a href="javascript:;" class="js-btn-aside-tag button" data-aside-sub><i class="iconify"
+                                    data-icon="fluent:add-circle-24-regular"></i></a>
+                        </dd>
+                    </dl>
+                </div>
+                <dl>
+                    <dt>Informações</dt>
+                    <dd><textarea name="obs" style="height:100px;"></textarea></dd>
+                </dl>
+            </div>
 
-							<div class="js-ag js-ag-checklist">
-								<section class="filter">
-									<div class="filter-group">
-									</div>
-									<div class="filter-group">
-										<div class="filter-form form">
-											<?php /*
+            <div class="js-ag js-ag-checklist">
+                <section class="filter">
+                    <div class="filter-group">
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-form form">
+                            <?php /*
 											<dl>									
 												<dd><button class="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Adicionar</span></button></dd>
 											</dl>
@@ -4841,15 +5104,15 @@
 											<dl>									
 												<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-24-filled"></i> <span>Salvar</span></button></dd>
 											</dl>*/ ?>
-										</div>								
-									</div>
-								</section>
+                        </div>
+                    </div>
+                </section>
 
-								<div class="list1">
-									<table class="js-agenda-checklist-table">
-										<tbody>
-										</tbody>
-										<?php 
+                <div class="list1">
+                    <table class="js-agenda-checklist-table">
+                        <tbody>
+                        </tbody>
+                        <?php 
 											/*
 										<tr>								
 											<td>
@@ -4879,1172 +5142,1427 @@
 											<td></td>
 											<td><button class="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Adicionar</span></button></td>
 										</tr> */ ?>
-									</table>
-								</div>
-								
-							</div>
+                    </table>
+                </div>
 
-							<div class="js-ag js-ag-futuro" style="display:none;">
-								<div class="list1">
-									<table>
-									</table>
-								</div>
-							</div>
+            </div>
 
-							<div class="js-ag js-ag-historico" style="display:none;">
-								<div class="history">
-									<div class="history-item">
-										<h1>Simone agendou para 10/02/2022 17:30</h1>
-										<h2>Status alterado para <em style="background:red;">CANCELADO</em></h2>
-									</div>
-								</div>
-							</div>	
+            <div class="js-ag js-ag-futuro" style="display:none;">
+                <div class="list1">
+                    <table>
+                    </table>
+                </div>
+            </div>
 
-							<?php
+            <div class="js-ag js-ag-historico" style="display:none;">
+                <div class="history">
+                    <div class="history-item">
+                        <h1>Simone agendou para 10/02/2022 17:30</h1>
+                        <h2>Status alterado para <em style="background:red;">CANCELADO</em></h2>
+                    </div>
+                </div>
+            </div>
+
+            <?php
 							$wtsTipos=[];
 							$sql->consult($_p."whatsapp_mensagens_tipos","id,titulo","where id IN (1,2) order by titulo asc");
 							while($x=mysqli_fetch_object($sql->mysqry)) $wtsTipos[]=$x;
 							?>
 
-							<div class="js-ag js-ag-whatsapp" style="display:none;">
+            <div class="js-ag js-ag-whatsapp" style="display:none;">
 
-								<section class="filter">
-									<div class="filter-group">
-										<dl>
-											<dt>Tipo</dt>
-											<dd>
-												<select name="id_tipo">
-													<option value="">-</option>
-													<?php
+                <section class="filter">
+                    <div class="filter-group">
+                        <dl>
+                            <dt>Tipo</dt>
+                            <dd>
+                                <select name="id_tipo">
+                                    <option value="">-</option>
+                                    <?php
 													foreach($wtsTipos as $x) {
 														echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
 													}
 													?>
-												</select>
-											</dd>
-										</dl>
-										<dl>
-											<dt>&nbsp;</dt>
-											<dd><a href="javascript:;" class="button js-btn-wtsEnviar" data-loading="0"><span class="iconify" data-icon="ic:outline-whatsapp"></span> Enviar</a></dd>
-										</dl>
-									</div>
-									
-								</section>
+                                </select>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>&nbsp;</dt>
+                            <dd><a href="javascript:;" class="button js-btn-wtsEnviar" data-loading="0"><span
+                                        class="iconify" data-icon="ic:outline-whatsapp"></span> Enviar</a></dd>
+                        </dl>
+                    </div>
+
+                </section>
 
 
-								<div class="history">
-									
-								</div>
-							</div>
+                <div class="history">
 
-						</form>
+                </div>
+            </div>
 
-					</div>
-				</section><!-- .aside -->	
-				<?php
+        </form>
+
+    </div>
+</section><!-- .aside -->
+<?php
 			}
 
 		// Especialidades
 			if(isset($apiConfig['especialidade'])) {
 				?>
-				<script type="text/javascript">
-					var asEspecialidades = [];
+<script type="text/javascript">
+var asEspecialidades = [];
 
-					const asEspecialidadesListar = (openAside) => {
-						
-						if(asEspecialidades) {
-							$('.js-asEspecialidades-table tbody').html('');
+const asEspecialidadesListar = (openAside) => {
 
-							//$(`.js-id_plano option`).prop('disabled',false);
+    if (asEspecialidades) {
+        $('.js-asEspecialidades-table tbody').html('');
+
+        //$(`.js-id_plano option`).prop('disabled',false);
 
 
-							let atualizaEspecialidade = $('select.ajax-id_especialidade')?1:0;
-							let atualizaEspecialidadeId = 0;
-							if(atualizaEspecialidade==1) {
-								atualizaEspecialidadeId=$('select.ajax-id_especialidade').val();
-								$('select.ajax-id_especialidade').find('option').remove();
-								$('select.ajax-id_especialidade').append('<option value="">-</option>');
-							}
+        let atualizaEspecialidade = $('select.ajax-id_especialidade') ? 1 : 0;
+        let atualizaEspecialidadeId = 0;
+        if (atualizaEspecialidade == 1) {
+            atualizaEspecialidadeId = $('select.ajax-id_especialidade').val();
+            $('select.ajax-id_especialidade').find('option').remove();
+            $('select.ajax-id_especialidade').append('<option value="">-</option>');
+        }
 
-							asEspecialidades.forEach(x=>{
+        asEspecialidades.forEach(x => {
 
-								$(`.js-asEspecialidades-table tbody`).append(`<tr class="aside-open">
+            $(`.js-asEspecialidades-table tbody`).append(`<tr class="aside-open">
 																	<td><h1>${x.titulo}</h1></td>
 																	<td style="text-align:right;"><a href="javascript:;" class="button js-asEspecialidades-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
 																</tr>`);
 
-								if(atualizaEspecialidade==1) {
-									sel=(atualizaEspecialidadeId==x.id)?' selected':'';
-									$('select.ajax-id_especialidade').append(`<option value="${x.id}"${sel}>${x.titulo}</option>`);
-								}
-							});
-							
-							if(openAside===true) {
-								$("#js-aside-asEspecialidades").fadeIn(100,function() {
-									$("#js-aside-asEspecialidades .aside__inner1").addClass("active");
-								});
-							}
+            if (atualizaEspecialidade == 1) {
+                sel = (atualizaEspecialidadeId == x.id) ? ' selected' : '';
+                $('select.ajax-id_especialidade').append(
+                    `<option value="${x.id}"${sel}>${x.titulo}</option>`);
+            }
+        });
 
-						} else {
-							if(openAside===true) {
-								$(".aside").fadeIn(100,function() {
-										$(".aside .aside__inner1").addClass("active");
-								});
-							}
-						}
-					}
+        if (openAside === true) {
+            $("#js-aside-asEspecialidades").fadeIn(100, function() {
+                $("#js-aside-asEspecialidades .aside__inner1").addClass("active");
+            });
+        }
 
-					const asEspecialidadesAtualizar = (openAside) => {	
-						let data = `ajax=asEspecialidadesListar`;
+    } else {
+        if (openAside === true) {
+            $(".aside").fadeIn(100, function() {
+                $(".aside .aside__inner1").addClass("active");
+            });
+        }
+    }
+}
 
-						$.ajax({
-							type:"POST",
-							url:baseURLApiAside,
-							data:data,
-							success:function(rtn) {
-								if(rtn.success) {
-									asEspecialidades=rtn.regs;
-									asEspecialidadesListar(openAside);
-								}
-							}
-						})
-					}
-					
-					const asEspecialidadesEditar = (id) => {
-						let data = `ajax=asEspecialidadesEditar&id=${id}`;
-						$.ajax({
-							type:"POST",
-							url:baseURLApiAside,
-							data:data,
-							success:function(rtn) {
-								if(rtn.success) {
-									reg=rtn.cnt
+const asEspecialidadesAtualizar = (openAside) => {
+    let data = `ajax=asEspecialidadesListar`;
 
-									$(`.js-asEspecialidades-id`).val(reg.id);
-									$(`.js-asEspecialidades-titulo`).val(reg.titulo);
+    $.ajax({
+        type: "POST",
+        url: baseURLApiAside,
+        data: data,
+        success: function(rtn) {
+            if (rtn.success) {
+                asEspecialidades = rtn.regs;
+                asEspecialidadesListar(openAside);
+            }
+        }
+    })
+}
 
-									
-									$('.js-asEspecialidades-form').animate({scrollTop: 0},'fast');
-									$('.js-asEspecialidades-submit').html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
-									$('.js-asEspecialidades-remover').show();
+const asEspecialidadesEditar = (id) => {
+    let data = `ajax=asEspecialidadesEditar&id=${id}`;
+    $.ajax({
+        type: "POST",
+        url: baseURLApiAside,
+        data: data,
+        success: function(rtn) {
+            if (rtn.success) {
+                reg = rtn.cnt
 
-								} else if(rtn.error) {
-									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-								} else {
-									swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
-								}
-							},
-							error:function(){
-								swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
-							}
-						});
-					}
+                $(`.js-asEspecialidades-id`).val(reg.id);
+                $(`.js-asEspecialidades-titulo`).val(reg.titulo);
 
-					
-					$(function(){
 
-						asEspecialidadesAtualizar();
+                $('.js-asEspecialidades-form').animate({
+                    scrollTop: 0
+                }, 'fast');
+                $('.js-asEspecialidades-submit').html(
+                    `<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
+                $('.js-asEspecialidades-remover').show();
 
-						$('.js-asEspecialidades-submit').click(function(){
-							let obj = $(this);
-							if(obj.attr('data-loading')==0) {
+            } else if (rtn.error) {
+                swal({
+                    title: "Erro!",
+                    text: rtn.error,
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            } else {
+                swal({
+                    title: "Erro!",
+                    text: "Algum erro ocorreu durante a edição deste registro!",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            }
+        },
+        error: function() {
+            swal({
+                title: "Erro!",
+                text: "Algum erro ocorreu durante a edição deste registro!",
+                type: "error",
+                confirmButtonColor: "#424242"
+            });
+        }
+    });
+}
 
-								let id = $(`.js-asEspecialidades-id`).val();
-								let titulo = $(`.js-asEspecialidades-titulo`).val();
 
-							
+$(function() {
 
-								if(titulo.length==0) {
-									swal({title: "Erro!", text: "Digite a Especialidade", type:"error", confirmButtonColor: "#424242"});
-								}  else {
+    asEspecialidadesAtualizar();
 
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
+    $('.js-asEspecialidades-submit').click(function() {
+        let obj = $(this);
+        if (obj.attr('data-loading') == 0) {
 
-									let data = `ajax=asEspecialidadesPersistir&id=${id}&titulo=${titulo}`;
-									
-									$.ajax({
-										type:'POST',
-										data:data,
-										url:baseURLApiAside,
-										success:function(rtn) {
-											if(rtn.success) {
-												asEspecialidadesAtualizar();	
+            let id = $(`.js-asEspecialidades-id`).val();
+            let titulo = $(`.js-asEspecialidades-titulo`).val();
 
-												$(`.js-asEspecialidades-id`).val(0);
-												$(`.js-asEspecialidades-titulo`).val(``);
 
-											} else if(rtn.error) {
-												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-											} else {
-												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-											}
-											
-										},
-										error:function() {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										}
-									}).done(function(){
-										$('.js-asEspecialidades-remover').hide();
-										obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-										obj.attr('data-loading',0);
-									});
 
-								}
-							}
-						})
+            if (titulo.length == 0) {
+                swal({
+                    title: "Erro!",
+                    text: "Digite a Especialidade",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            } else {
 
-						$('.js-asEspecialidades-table').on('click','.js-asEspecialidades-editar',function(){
-							let id = $(this).attr('data-id');
-							asEspecialidadesEditar(id);
-						});
+                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                obj.attr('data-loading', 1);
 
-						$('.aside-especialidade').on('click','.js-asEspecialidades-remover',function(){
-							let obj = $(this);
+                let data = `ajax=asEspecialidadesPersistir&id=${id}&titulo=${titulo}`;
 
-							if(obj.attr('data-loading')==0) {
+                $.ajax({
+                    type: 'POST',
+                    data: data,
+                    url: baseURLApiAside,
+                    success: function(rtn) {
+                        if (rtn.success) {
+                            asEspecialidadesAtualizar();
 
-								let id = $('.js-asEspecialidades-id').val();
-								swal({
-									title: "Atenção",
-									text: "Você tem certeza que deseja remover este registro?",
-									type: "warning",
-									showCancelButton: true,
-									confirmButtonColor: "#DD6B55",
-									confirmButtonText: "Sim!",
-									cancelButtonText: "Não",
-									closeOnConfirm:false,
-									closeOnCancel: false }, 
-									function(isConfirm){   
-										if (isConfirm) {   
+                            $(`.js-asEspecialidades-id`).val(0);
+                            $(`.js-asEspecialidades-titulo`).val(``);
 
-											obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-											obj.attr('data-loading',1);
-											let data = `ajax=asEspecialidadesRemover&id=${id}`; 
-											$.ajax({
-												type:"POST",
-												data:data,
-												url:baseURLApiAside,
-												success:function(rtn) {
-													if(rtn.success) {
-														$(`.js-asEspecialidades-id`).val(0);
-														$(`.js-asEspecialidades-titulo`).val('');
-														asEspecialidadesAtualizar();
-														swal.close();   
-													} else if(rtn.error) {
-														swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-													} else {
-														swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção deste horário!", type:"error", confirmButtonColor: "#424242"});
-													}
-												},
-												error:function(){
-													swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção deste horário!", type:"error", confirmButtonColor: "#424242"});
-												}
-											}).done(function(){
-												$('.js-asEspecialidades-remover').hide();
-												obj.html('<i class="iconify" data-icon="fluent:delete-24-regular"></i>');
-												obj.attr('data-loading',0);
-												$(`.js-asEspecialidades-submit`).html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-											});
-										} else {   
-											swal.close();   
-										} 
-									});
-							}
-						});
+                        } else if (rtn.error) {
+                            swal({
+                                title: "Erro!",
+                                text: rtn.error,
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        } else {
+                            swal({
+                                title: "Erro!",
+                                text: "Algum erro ocorreu! Tente novamente.",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
 
-					});
-				</script>
+                    },
+                    error: function() {
+                        swal({
+                            title: "Erro!",
+                            text: "Algum erro ocorreu! Tente novamente.",
+                            type: "error",
+                            confirmButtonColor: "#424242"
+                        });
+                    }
+                }).done(function() {
+                    $('.js-asEspecialidades-remover').hide();
+                    obj.html(
+                    `<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+                    obj.attr('data-loading', 0);
+                });
 
-				<section class="aside aside-especialidade">
-					<div class="aside__inner1">
+            }
+        }
+    })
 
-						<header class="aside-header">
-							<h1>Especialidade</h1>
-							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-						</header>
+    $('.js-asEspecialidades-table').on('click', '.js-asEspecialidades-editar', function() {
+        let id = $(this).attr('data-id');
+        asEspecialidadesEditar(id);
+    });
 
-						<form method="post" class="aside-content form js-asEspecialidades-form">
-							<input type="hidden" class="js-asEspecialidades-id" />
-							
-							<dl>
-								<dt>Título da Especialidade</dt>
-								<dd>
-									<input type="text" class="js-asEspecialidades-titulo" />
-									<button type="button" class="js-asEspecialidades-submit button button_main" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
-									<a href="javascript:;" class="button js-asEspecialidades-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-								</dd>
-							</dl>
+    $('.aside-especialidade').on('click', '.js-asEspecialidades-remover', function() {
+        let obj = $(this);
 
-							<div class="list2" style="margin-top:2rem;">
-								<table class="js-asEspecialidades-table">
-									<thead>
-										<tr>									
-											<th>ESPECIALIDADE</th>
-											<th></th>
-										</tr>
-									</thead>
-									<tbody>
-										<tr>
-											<td><h1>Título da Especialidade</h1></td>
-											<td style="text-align:right;"><a href="javascript:;" class="js-edit button" data-loading="0"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
-										</tr>								
-									</tbody>
-								</table>
-							</div>
-							
-						</form>
-					</div>
-				</section>
-				<?php
+        if (obj.attr('data-loading') == 0) {
+
+            let id = $('.js-asEspecialidades-id').val();
+            swal({
+                    title: "Atenção",
+                    text: "Você tem certeza que deseja remover este registro?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Sim!",
+                    cancelButtonText: "Não",
+                    closeOnConfirm: false,
+                    closeOnCancel: false
+                },
+                function(isConfirm) {
+                    if (isConfirm) {
+
+                        obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                        obj.attr('data-loading', 1);
+                        let data = `ajax=asEspecialidadesRemover&id=${id}`;
+                        $.ajax({
+                            type: "POST",
+                            data: data,
+                            url: baseURLApiAside,
+                            success: function(rtn) {
+                                if (rtn.success) {
+                                    $(`.js-asEspecialidades-id`).val(0);
+                                    $(`.js-asEspecialidades-titulo`).val('');
+                                    asEspecialidadesAtualizar();
+                                    swal.close();
+                                } else if (rtn.error) {
+                                    swal({
+                                        title: "Erro!",
+                                        text: rtn.error,
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                } else {
+                                    swal({
+                                        title: "Erro!",
+                                        text: "Algum erro ocorreu durante a remoção deste horário!",
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                }
+                            },
+                            error: function() {
+                                swal({
+                                    title: "Erro!",
+                                    text: "Algum erro ocorreu durante a remoção deste horário!",
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            }
+                        }).done(function() {
+                            $('.js-asEspecialidades-remover').hide();
+                            obj.html(
+                                '<i class="iconify" data-icon="fluent:delete-24-regular"></i>'
+                                );
+                            obj.attr('data-loading', 0);
+                            $(`.js-asEspecialidades-submit`).html(
+                                `<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`
+                                );
+                        });
+                    } else {
+                        swal.close();
+                    }
+                });
+        }
+    });
+
+});
+</script>
+
+<section class="aside aside-especialidade">
+    <div class="aside__inner1">
+
+        <header class="aside-header">
+            <h1>Especialidade</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
+
+        <form method="post" class="aside-content form js-asEspecialidades-form">
+            <input type="hidden" class="js-asEspecialidades-id" />
+
+            <dl>
+                <dt>Título da Especialidade</dt>
+                <dd>
+                    <input type="text" class="js-asEspecialidades-titulo" />
+                    <button type="button" class="js-asEspecialidades-submit button button_main" data-loading="0"><i
+                            class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
+                    <a href="javascript:;" class="button js-asEspecialidades-remover" data-loading="0"
+                        style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+                </dd>
+            </dl>
+
+            <div class="list2" style="margin-top:2rem;">
+                <table class="js-asEspecialidades-table">
+                    <thead>
+                        <tr>
+                            <th>ESPECIALIDADE</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <h1>Título da Especialidade</h1>
+                            </td>
+                            <td style="text-align:right;"><a href="javascript:;" class="js-edit button"
+                                    data-loading="0"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </form>
+    </div>
+</section>
+<?php
 			}
 
 		// Plano
 			if(isset($apiConfig['plano'])) {
 				?>
-				<script type="text/javascript">
-					var asPlanos = [];
+<script type="text/javascript">
+var asPlanos = [];
 
-					const asPlanosListar = (openAside) => {
-						
-						if(asPlanos) {
-							$('.js-asPlanos-table tbody').html('');
+const asPlanosListar = (openAside) => {
 
-							let atualizaPlano = $('select.ajax-id_plano')?1:0;
-							let atualizaPlanoId = 0;
-							let planosDisabledIds = [];
-							if(atualizaPlano==1) {
+    if (asPlanos) {
+        $('.js-asPlanos-table tbody').html('');
 
-								$('select.ajax-id_plano option').each(function(index,el){
-									if($(el).prop('disabled')===true) {
-										planosDisabledIds.push($(el).val());
-									}
-								})
-								atualizaPlanoId=$('select.ajax-id_plano').val();
-								$('select.ajax-id_plano').find('option').remove();
-								$('select.ajax-id_plano').append('<option value="">-</option>');
-							}
+        let atualizaPlano = $('select.ajax-id_plano') ? 1 : 0;
+        let atualizaPlanoId = 0;
+        let planosDisabledIds = [];
+        if (atualizaPlano == 1) {
 
-							asPlanos.forEach(x=>{
+            $('select.ajax-id_plano option').each(function(index, el) {
+                if ($(el).prop('disabled') === true) {
+                    planosDisabledIds.push($(el).val());
+                }
+            })
+            atualizaPlanoId = $('select.ajax-id_plano').val();
+            $('select.ajax-id_plano').find('option').remove();
+            $('select.ajax-id_plano').append('<option value="">-</option>');
+        }
 
-								$(`.js-asPlanos-table tbody`).append(`<tr class="aside-open">
+        asPlanos.forEach(x => {
+
+            $(`.js-asPlanos-table tbody`).append(`<tr class="aside-open">
 																	<td><h1>${x.titulo}</h1></td>
 																	<td style="text-align:right;"><a href="javascript:;" class="button js-asPlanos-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
 																</tr>`);
 
-								if(atualizaPlano==1) {
-									dis=planosDisabledIds.includes(x.id)?' disabled':'';
-									sel=(atualizaPlanoId==x.id)?' selected':'';
-									$('select.ajax-id_plano').append(`<option value="${x.id}"${sel}${dis}>${x.titulo}</option>`);
-								}
+            if (atualizaPlano == 1) {
+                dis = planosDisabledIds.includes(x.id) ? ' disabled' : '';
+                sel = (atualizaPlanoId == x.id) ? ' selected' : '';
+                $('select.ajax-id_plano').append(
+                `<option value="${x.id}"${sel}${dis}>${x.titulo}</option>`);
+            }
 
-							});
-							
-							if(openAside===true) {
-								$("#js-aside-asPlano").fadeIn(100,function() {
-									$("#js-aside-asPlano .aside__inner1").addClass("active");
-								});
-							}
+        });
 
-						} else {
-							if(openAside===true) {
-								$(".aside").fadeIn(100,function() {
-										$(".aside .aside__inner1").addClass("active");
-								});
-							}
-						}
-					}
+        if (openAside === true) {
+            $("#js-aside-asPlano").fadeIn(100, function() {
+                $("#js-aside-asPlano .aside__inner1").addClass("active");
+            });
+        }
 
-					const asPlanosAtualizar = (openAside) => {	
-						let data = `ajax=asPlanosListar`;
+    } else {
+        if (openAside === true) {
+            $(".aside").fadeIn(100, function() {
+                $(".aside .aside__inner1").addClass("active");
+            });
+        }
+    }
+}
 
-						$.ajax({
-							type:"POST",
-							url:baseURLApiAside,
-							data:data,
-							success:function(rtn) {
-								if(rtn.success) {
-									asPlanos=rtn.regs;
-									asPlanosListar(openAside);
-								}
-							}
-						})
-					}
-					
-					const asPlanosEditar = (id) => {
-						let data = `ajax=asPlanosEditar&id=${id}`;
-						$.ajax({
-							type:"POST",
-							url:baseURLApiAside,
-							data:data,
-							success:function(rtn) {
-								if(rtn.success) {
-									reg=rtn.cnt
+const asPlanosAtualizar = (openAside) => {
+    let data = `ajax=asPlanosListar`;
 
-									$(`.js-asPlanos-id`).val(reg.id);
-									$(`.js-asPlanos-titulo`).val(reg.titulo);
+    $.ajax({
+        type: "POST",
+        url: baseURLApiAside,
+        data: data,
+        success: function(rtn) {
+            if (rtn.success) {
+                asPlanos = rtn.regs;
+                asPlanosListar(openAside);
+            }
+        }
+    })
+}
 
-									
-									$('.js-asPlanos-form').animate({scrollTop: 0},'fast');
-									$('.js-asPlanos-submit').html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
-									if(rtn.fixo==1) {
-										$('.js-asPlanos-remover').hide();
-									} else {
-										$('.js-asPlanos-remover').show();
-									}
+const asPlanosEditar = (id) => {
+    let data = `ajax=asPlanosEditar&id=${id}`;
+    $.ajax({
+        type: "POST",
+        url: baseURLApiAside,
+        data: data,
+        success: function(rtn) {
+            if (rtn.success) {
+                reg = rtn.cnt
 
-								} else if(rtn.error) {
-									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-								} else {
-									swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
-								}
-							},
-							error:function(){
-								swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
-							}
-						});
-					}
+                $(`.js-asPlanos-id`).val(reg.id);
+                $(`.js-asPlanos-titulo`).val(reg.titulo);
 
-					
-					$(function(){
 
-						asPlanosAtualizar();
+                $('.js-asPlanos-form').animate({
+                    scrollTop: 0
+                }, 'fast');
+                $('.js-asPlanos-submit').html(
+                    `<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
+                if (rtn.fixo == 1) {
+                    $('.js-asPlanos-remover').hide();
+                } else {
+                    $('.js-asPlanos-remover').show();
+                }
 
-						$('.js-asPlanos-submit').click(function(){
-							let obj = $(this);
-							if(obj.attr('data-loading')==0) {
+            } else if (rtn.error) {
+                swal({
+                    title: "Erro!",
+                    text: rtn.error,
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            } else {
+                swal({
+                    title: "Erro!",
+                    text: "Algum erro ocorreu durante a edição deste registro!",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            }
+        },
+        error: function() {
+            swal({
+                title: "Erro!",
+                text: "Algum erro ocorreu durante a edição deste registro!",
+                type: "error",
+                confirmButtonColor: "#424242"
+            });
+        }
+    });
+}
 
-								let id = $(`.js-asPlanos-id`).val();
-								let titulo = $(`.js-asPlanos-titulo`).val();
 
-							
+$(function() {
 
-								if(titulo.length==0) {
-									swal({title: "Erro!", text: "Digite a Especialidade", type:"error", confirmButtonColor: "#424242"});
-								}  else {
+    asPlanosAtualizar();
 
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
+    $('.js-asPlanos-submit').click(function() {
+        let obj = $(this);
+        if (obj.attr('data-loading') == 0) {
 
-									let data = `ajax=asPlanosPersistir&id=${id}&titulo=${titulo}`;
-									
-									$.ajax({
-										type:'POST',
-										data:data,
-										url:baseURLApiAside,
-										success:function(rtn) {
-											if(rtn.success) {
-												asPlanosAtualizar();	
+            let id = $(`.js-asPlanos-id`).val();
+            let titulo = $(`.js-asPlanos-titulo`).val();
 
-												$(`.js-asPlanos-id`).val(0);
-												$(`.js-asPlanos-titulo`).val(``);
 
-											} else if(rtn.error) {
-												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-											} else {
-												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-											}
-											
-										},
-										error:function() {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										}
-									}).done(function(){
-										$('.js-asPlanos-remover').hide();
-										obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-										obj.attr('data-loading',0);
-									});
 
-								}
-							}
-						})
+            if (titulo.length == 0) {
+                swal({
+                    title: "Erro!",
+                    text: "Digite a Especialidade",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            } else {
 
-						$('.js-asPlanos-table').on('click','.js-asPlanos-editar',function(){
-							let id = $(this).attr('data-id');
-							asPlanosEditar(id);
-						});
+                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                obj.attr('data-loading', 1);
 
-						$('.aside-plano').on('click','.js-asPlanos-remover',function(){
-							let obj = $(this);
+                let data = `ajax=asPlanosPersistir&id=${id}&titulo=${titulo}`;
 
-							if(obj.attr('data-loading')==0) {
+                $.ajax({
+                    type: 'POST',
+                    data: data,
+                    url: baseURLApiAside,
+                    success: function(rtn) {
+                        if (rtn.success) {
+                            asPlanosAtualizar();
 
-								let id = $('.js-asPlanos-id').val();
-								swal({
-									title: "Atenção",
-									text: "Você tem certeza que deseja remover este registro?",
-									type: "warning",
-									showCancelButton: true,
-									confirmButtonColor: "#DD6B55",
-									confirmButtonText: "Sim!",
-									cancelButtonText: "Não",
-									closeOnConfirm:false,
-									closeOnCancel: false }, 
-									function(isConfirm){   
-										if (isConfirm) {   
+                            $(`.js-asPlanos-id`).val(0);
+                            $(`.js-asPlanos-titulo`).val(``);
 
-											obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-											obj.attr('data-loading',1);
-											let data = `ajax=asPlanosRemover&id=${id}`; 
-											$.ajax({
-												type:"POST",
-												data:data,
-												url:baseURLApiAside,
-												success:function(rtn) {
-													if(rtn.success) {
-														$(`.js-asPlanos-id`).val(0);
-														$(`.js-asPlanos-titulo`).val('');
-														asPlanosAtualizar();
-														swal.close();   
-													} else if(rtn.error) {
-														swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-													} else {
-														swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção deste horário!", type:"error", confirmButtonColor: "#424242"});
-													}
-												},
-												error:function(){
-													swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção deste horário!", type:"error", confirmButtonColor: "#424242"});
-												}
-											}).done(function(){
-												$('.js-asPlanos-remover').hide();
-												obj.html('<i class="iconify" data-icon="fluent:delete-24-regular"></i>');
-												obj.attr('data-loading',0);
-												$(`.js-asPlanos-submit`).html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-											});
-										} else {   
-											swal.close();   
-										} 
-									});
-							}
-						});
+                        } else if (rtn.error) {
+                            swal({
+                                title: "Erro!",
+                                text: rtn.error,
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        } else {
+                            swal({
+                                title: "Erro!",
+                                text: "Algum erro ocorreu! Tente novamente.",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
 
-					});
-				</script>
+                    },
+                    error: function() {
+                        swal({
+                            title: "Erro!",
+                            text: "Algum erro ocorreu! Tente novamente.",
+                            type: "error",
+                            confirmButtonColor: "#424242"
+                        });
+                    }
+                }).done(function() {
+                    $('.js-asPlanos-remover').hide();
+                    obj.html(
+                    `<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+                    obj.attr('data-loading', 0);
+                });
 
-				<section class="aside aside-plano">
-					<div class="aside__inner1">
+            }
+        }
+    })
 
-						<header class="aside-header">
-							<h1>Plano</h1>
-							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-						</header>
+    $('.js-asPlanos-table').on('click', '.js-asPlanos-editar', function() {
+        let id = $(this).attr('data-id');
+        asPlanosEditar(id);
+    });
 
-						<form method="post" class="aside-content form">
-							<input type="hidden" class="js-asPlanos-id" />
-							
-							<dl>
-								<dt>Título do Plano</dt>
-								<dd>
-									<input type="text" class="js-asPlanos-titulo" />
-									<button type="button" class="js-asPlanos-submit button button_main" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
-									<a href="javascript:;" class="button js-asPlanos-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-								</dd>
-							</dl>
-							<div class="list2" style="margin-top:2rem;">
-								<table class="js-asPlanos-table">
-									<thead>
-										<tr>									
-											<th>PLANO</th>
-											<th></th>
-										</tr>
-									</thead>
-									<tbody>							
-									</tbody>
-								</table>
-							</div>
-						</form>
-					</div>
-				</section>
-				<?php
+    $('.aside-plano').on('click', '.js-asPlanos-remover', function() {
+        let obj = $(this);
+
+        if (obj.attr('data-loading') == 0) {
+
+            let id = $('.js-asPlanos-id').val();
+            swal({
+                    title: "Atenção",
+                    text: "Você tem certeza que deseja remover este registro?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Sim!",
+                    cancelButtonText: "Não",
+                    closeOnConfirm: false,
+                    closeOnCancel: false
+                },
+                function(isConfirm) {
+                    if (isConfirm) {
+
+                        obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                        obj.attr('data-loading', 1);
+                        let data = `ajax=asPlanosRemover&id=${id}`;
+                        $.ajax({
+                            type: "POST",
+                            data: data,
+                            url: baseURLApiAside,
+                            success: function(rtn) {
+                                if (rtn.success) {
+                                    $(`.js-asPlanos-id`).val(0);
+                                    $(`.js-asPlanos-titulo`).val('');
+                                    asPlanosAtualizar();
+                                    swal.close();
+                                } else if (rtn.error) {
+                                    swal({
+                                        title: "Erro!",
+                                        text: rtn.error,
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                } else {
+                                    swal({
+                                        title: "Erro!",
+                                        text: "Algum erro ocorreu durante a remoção deste horário!",
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                }
+                            },
+                            error: function() {
+                                swal({
+                                    title: "Erro!",
+                                    text: "Algum erro ocorreu durante a remoção deste horário!",
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            }
+                        }).done(function() {
+                            $('.js-asPlanos-remover').hide();
+                            obj.html(
+                                '<i class="iconify" data-icon="fluent:delete-24-regular"></i>'
+                                );
+                            obj.attr('data-loading', 0);
+                            $(`.js-asPlanos-submit`).html(
+                                `<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`
+                                );
+                        });
+                    } else {
+                        swal.close();
+                    }
+                });
+        }
+    });
+
+});
+</script>
+
+<section class="aside aside-plano">
+    <div class="aside__inner1">
+
+        <header class="aside-header">
+            <h1>Plano</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
+
+        <form method="post" class="aside-content form">
+            <input type="hidden" class="js-asPlanos-id" />
+
+            <dl>
+                <dt>Título do Plano</dt>
+                <dd>
+                    <input type="text" class="js-asPlanos-titulo" />
+                    <button type="button" class="js-asPlanos-submit button button_main" data-loading="0"><i
+                            class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
+                    <a href="javascript:;" class="button js-asPlanos-remover" data-loading="0" style="display:none;"><i
+                            class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+                </dd>
+            </dl>
+            <div class="list2" style="margin-top:2rem;">
+                <table class="js-asPlanos-table">
+                    <thead>
+                        <tr>
+                            <th>PLANO</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+</section>
+<?php
 			}
 
 		// Marca
 			if(isset($apiConfig['marca'])) {
 				?>
-				<script type="text/javascript">
-					var asMarcas = [];
+<script type="text/javascript">
+var asMarcas = [];
 
-					const asMarcasListar = (openAside) => {
-						
-						if(asMarcas) {
-							$('.js-asMarcas-table tbody').html('');
+const asMarcasListar = (openAside) => {
 
-							let atualizaMarca = $('select.ajax-id_plano')?1:0;
-							let atualizaMarcaId = 0;
-							let marcasDisabledIds = [];
-							if(atualizaMarca==1) {
+    if (asMarcas) {
+        $('.js-asMarcas-table tbody').html('');
 
-								$('select.ajax-id_marca option').each(function(index,el){
-									if($(el).prop('disabled')===true) {
-										marcasDisabledIds.push($(el).val());
-									}
-								})
-								atualizaMarcaId=$('select.ajax-id_marca').val();
-								$('select.ajax-id_marca').find('option').remove();
-								$('select.ajax-id_marca').append('<option value="">-</option>');
-							}
+        let atualizaMarca = $('select.ajax-id_plano') ? 1 : 0;
+        let atualizaMarcaId = 0;
+        let marcasDisabledIds = [];
+        if (atualizaMarca == 1) {
 
-							asMarcas.forEach(x=>{
+            $('select.ajax-id_marca option').each(function(index, el) {
+                if ($(el).prop('disabled') === true) {
+                    marcasDisabledIds.push($(el).val());
+                }
+            })
+            atualizaMarcaId = $('select.ajax-id_marca').val();
+            $('select.ajax-id_marca').find('option').remove();
+            $('select.ajax-id_marca').append('<option value="">-</option>');
+        }
 
-								$(`.js-asMarcas-table tbody`).append(`<tr class="aside-open">
+        asMarcas.forEach(x => {
+
+            $(`.js-asMarcas-table tbody`).append(`<tr class="aside-open">
 																	<td><h1>${x.titulo}</h1></td>
 																	<td style="text-align:right;"><a href="javascript:;" class="button js-asMarcas-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
 																</tr>`);
 
-								if(atualizaMarca==1) {
-									dis=marcasDisabledIds.includes(x.id)?' disabled':'';
-									sel=(atualizaMarcaId==x.id)?' selected':'';
-									$('select.ajax-id_marca').append(`<option value="${x.id}"${sel}${dis}>${x.titulo}</option>`);
-								}
+            if (atualizaMarca == 1) {
+                dis = marcasDisabledIds.includes(x.id) ? ' disabled' : '';
+                sel = (atualizaMarcaId == x.id) ? ' selected' : '';
+                $('select.ajax-id_marca').append(
+                `<option value="${x.id}"${sel}${dis}>${x.titulo}</option>`);
+            }
 
-							});
-							
-							if(openAside===true) {
-								$("#js-aside-asMarcas").fadeIn(100,function() {
-									$("#js-aside-asMarcas .aside__inner1").addClass("active");
-								});
-							}
+        });
 
-						} else {
-							if(openAside===true) {
-								$(".aside").fadeIn(100,function() {
-										$(".aside .aside__inner1").addClass("active");
-								});
-							}
-						}
-					}
+        if (openAside === true) {
+            $("#js-aside-asMarcas").fadeIn(100, function() {
+                $("#js-aside-asMarcas .aside__inner1").addClass("active");
+            });
+        }
 
-					const asMarcasAtualizar = (openAside) => {	
-						let data = `ajax=asMarcasListar`;
+    } else {
+        if (openAside === true) {
+            $(".aside").fadeIn(100, function() {
+                $(".aside .aside__inner1").addClass("active");
+            });
+        }
+    }
+}
 
-						$.ajax({
-							type:"POST",
-							url:baseURLApiAside,
-							data:data,
-							success:function(rtn) {
-								if(rtn.success) {
-									asMarcas=rtn.regs;
-									asMarcasListar(openAside);
-								}
-							}
-						})
-					}
-					
-					const asMarcasEditar = (id) => {
-						let data = `ajax=asMarcasEditar&id=${id}`;
-						$.ajax({
-							type:"POST",
-							url:baseURLApiAside,
-							data:data,
-							success:function(rtn) {
-								if(rtn.success) {
-									reg=rtn.cnt
+const asMarcasAtualizar = (openAside) => {
+    let data = `ajax=asMarcasListar`;
 
-									$(`.js-asMarcas-id`).val(reg.id);
-									$(`.js-asMarcas-titulo`).val(reg.titulo);
+    $.ajax({
+        type: "POST",
+        url: baseURLApiAside,
+        data: data,
+        success: function(rtn) {
+            if (rtn.success) {
+                asMarcas = rtn.regs;
+                asMarcasListar(openAside);
+            }
+        }
+    })
+}
 
-									
-									$('.js-asMarcas-form').animate({scrollTop: 0},'fast');
-									$('.js-asMarcas-submit').html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
-									$('.js-asMarcas-remover').show();
+const asMarcasEditar = (id) => {
+    let data = `ajax=asMarcasEditar&id=${id}`;
+    $.ajax({
+        type: "POST",
+        url: baseURLApiAside,
+        data: data,
+        success: function(rtn) {
+            if (rtn.success) {
+                reg = rtn.cnt
 
-									$('.aside-content').animate({scrollTop: 0},'fast');
+                $(`.js-asMarcas-id`).val(reg.id);
+                $(`.js-asMarcas-titulo`).val(reg.titulo);
 
-								} else if(rtn.error) {
-									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-								} else {
-									swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
-								}
-							},
-							error:function(){
-								swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
-							}
-						});
-					}
 
-					
-					$(function(){
+                $('.js-asMarcas-form').animate({
+                    scrollTop: 0
+                }, 'fast');
+                $('.js-asMarcas-submit').html(
+                    `<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
+                $('.js-asMarcas-remover').show();
 
-						asMarcasAtualizar();
+                $('.aside-content').animate({
+                    scrollTop: 0
+                }, 'fast');
 
-						$('.js-asMarcas-submit').click(function(){
-							let obj = $(this);
-							if(obj.attr('data-loading')==0) {
+            } else if (rtn.error) {
+                swal({
+                    title: "Erro!",
+                    text: rtn.error,
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            } else {
+                swal({
+                    title: "Erro!",
+                    text: "Algum erro ocorreu durante a edição deste registro!",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            }
+        },
+        error: function() {
+            swal({
+                title: "Erro!",
+                text: "Algum erro ocorreu durante a edição deste registro!",
+                type: "error",
+                confirmButtonColor: "#424242"
+            });
+        }
+    });
+}
 
-								let id = $(`.js-asMarcas-id`).val();
-								let titulo = $(`.js-asMarcas-titulo`).val();
 
-							
+$(function() {
 
-								if(titulo.length==0) {
-									swal({title: "Erro!", text: "Digite a Marca", type:"error", confirmButtonColor: "#424242"});
-								}  else {
+    asMarcasAtualizar();
 
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
+    $('.js-asMarcas-submit').click(function() {
+        let obj = $(this);
+        if (obj.attr('data-loading') == 0) {
 
-									let data = `ajax=asMarcasPersistir&id=${id}&titulo=${titulo}`;
-								
-									$.ajax({
-										type:'POST',
-										data:data,
-										url:baseURLApiAside,
-										success:function(rtn) {
-											if(rtn.success) {
-												asMarcasAtualizar();	
+            let id = $(`.js-asMarcas-id`).val();
+            let titulo = $(`.js-asMarcas-titulo`).val();
 
-												$(`.js-asMarcas-id`).val(0);
-												$(`.js-asMarcas-titulo`).val(``);
 
-											} else if(rtn.error) {
-												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-											} else {
-												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-											}
-											
-										},
-										error:function() {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										}
-									}).done(function(){
-										$('.js-asMarcas-remover').hide();
-										obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-										obj.attr('data-loading',0);
-									});
 
-								}
-							}
-						})
+            if (titulo.length == 0) {
+                swal({
+                    title: "Erro!",
+                    text: "Digite a Marca",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            } else {
 
-						$('.js-asMarcas-table').on('click','.js-asMarcas-editar',function(){
-							let id = $(this).attr('data-id');
-							asMarcasEditar(id);
-						});
+                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                obj.attr('data-loading', 1);
 
-						$('.aside-marca').on('click','.js-asMarcas-remover',function(){
-							let obj = $(this);
+                let data = `ajax=asMarcasPersistir&id=${id}&titulo=${titulo}`;
 
-							if(obj.attr('data-loading')==0) {
+                $.ajax({
+                    type: 'POST',
+                    data: data,
+                    url: baseURLApiAside,
+                    success: function(rtn) {
+                        if (rtn.success) {
+                            asMarcasAtualizar();
 
-								let id = $('.js-asMarcas-id').val();
-								swal({
-									title: "Atenção",
-									text: "Você tem certeza que deseja remover este registro?",
-									type: "warning",
-									showCancelButton: true,
-									confirmButtonColor: "#DD6B55",
-									confirmButtonText: "Sim!",
-									cancelButtonText: "Não",
-									closeOnConfirm:false,
-									closeOnCancel: false }, 
-									function(isConfirm){   
-										if (isConfirm) {   
+                            $(`.js-asMarcas-id`).val(0);
+                            $(`.js-asMarcas-titulo`).val(``);
 
-											obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-											obj.attr('data-loading',1);
-											let data = `ajax=asMarcasRemover&id=${id}`; 
-											$.ajax({
-												type:"POST",
-												data:data,
-												url:baseURLApiAside,
-												success:function(rtn) {
-													if(rtn.success) {
-														$(`.js-asMarcas-id`).val(0);
-														$(`.js-asMarcas-titulo`).val('');
-														asMarcasAtualizar();
-														swal.close();   
-													} else if(rtn.error) {
-														swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-													} else {
-														swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção deste horário!", type:"error", confirmButtonColor: "#424242"});
-													}
-												},
-												error:function(){
-													swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção deste horário!", type:"error", confirmButtonColor: "#424242"});
-												}
-											}).done(function(){
-												$('.js-asMarcas-remover').hide();
-												obj.html('<i class="iconify" data-icon="fluent:delete-24-regular"></i>');
-												obj.attr('data-loading',0);
-												$(`.js-asMarcas-submit`).html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-											});
-										} else {   
-											swal.close();   
-										} 
-									});
-							}
-						});
+                        } else if (rtn.error) {
+                            swal({
+                                title: "Erro!",
+                                text: rtn.error,
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        } else {
+                            swal({
+                                title: "Erro!",
+                                text: "Algum erro ocorreu! Tente novamente.",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
 
-					});
-				</script>
+                    },
+                    error: function() {
+                        swal({
+                            title: "Erro!",
+                            text: "Algum erro ocorreu! Tente novamente.",
+                            type: "error",
+                            confirmButtonColor: "#424242"
+                        });
+                    }
+                }).done(function() {
+                    $('.js-asMarcas-remover').hide();
+                    obj.html(
+                    `<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+                    obj.attr('data-loading', 0);
+                });
 
-				<section class="aside aside-marca">
-					<div class="aside__inner1">
+            }
+        }
+    })
 
-						<header class="aside-header">
-							<h1>Marca</h1>
-							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-						</header>
+    $('.js-asMarcas-table').on('click', '.js-asMarcas-editar', function() {
+        let id = $(this).attr('data-id');
+        asMarcasEditar(id);
+    });
 
-						<form method="post" class="aside-content form">
-							<input type="hidden" class="js-asMarcas-id" />
-							
-							<dl>
-								<dt>Título da Marca</dt>
-								<dd>
-									<input type="text" class="js-asMarcas-titulo" />
-									<button type="button" class="js-asMarcas-submit button button_main" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
-									<a href="javascript:;" class="button js-asMarcas-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-								</dd>
-							</dl>
-							<div class="list2" style="margin-top:2rem;">
-									<table class="js-asMarcas-table">
-										<thead>
-											<tr>									
-												<th>MARCA</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>								
-										</tbody>
-									</table>
-								</div>
-							</form>
-						</form>
-					</div>
-				</section>
-				<?php
+    $('.aside-marca').on('click', '.js-asMarcas-remover', function() {
+        let obj = $(this);
+
+        if (obj.attr('data-loading') == 0) {
+
+            let id = $('.js-asMarcas-id').val();
+            swal({
+                    title: "Atenção",
+                    text: "Você tem certeza que deseja remover este registro?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Sim!",
+                    cancelButtonText: "Não",
+                    closeOnConfirm: false,
+                    closeOnCancel: false
+                },
+                function(isConfirm) {
+                    if (isConfirm) {
+
+                        obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                        obj.attr('data-loading', 1);
+                        let data = `ajax=asMarcasRemover&id=${id}`;
+                        $.ajax({
+                            type: "POST",
+                            data: data,
+                            url: baseURLApiAside,
+                            success: function(rtn) {
+                                if (rtn.success) {
+                                    $(`.js-asMarcas-id`).val(0);
+                                    $(`.js-asMarcas-titulo`).val('');
+                                    asMarcasAtualizar();
+                                    swal.close();
+                                } else if (rtn.error) {
+                                    swal({
+                                        title: "Erro!",
+                                        text: rtn.error,
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                } else {
+                                    swal({
+                                        title: "Erro!",
+                                        text: "Algum erro ocorreu durante a remoção deste horário!",
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                }
+                            },
+                            error: function() {
+                                swal({
+                                    title: "Erro!",
+                                    text: "Algum erro ocorreu durante a remoção deste horário!",
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            }
+                        }).done(function() {
+                            $('.js-asMarcas-remover').hide();
+                            obj.html(
+                                '<i class="iconify" data-icon="fluent:delete-24-regular"></i>'
+                                );
+                            obj.attr('data-loading', 0);
+                            $(`.js-asMarcas-submit`).html(
+                                `<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`
+                                );
+                        });
+                    } else {
+                        swal.close();
+                    }
+                });
+        }
+    });
+
+});
+</script>
+
+<section class="aside aside-marca">
+    <div class="aside__inner1">
+
+        <header class="aside-header">
+            <h1>Marca</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
+
+        <form method="post" class="aside-content form">
+            <input type="hidden" class="js-asMarcas-id" />
+
+            <dl>
+                <dt>Título da Marca</dt>
+                <dd>
+                    <input type="text" class="js-asMarcas-titulo" />
+                    <button type="button" class="js-asMarcas-submit button button_main" data-loading="0"><i
+                            class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
+                    <a href="javascript:;" class="button js-asMarcas-remover" data-loading="0" style="display:none;"><i
+                            class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+                </dd>
+            </dl>
+            <div class="list2" style="margin-top:2rem;">
+                <table class="js-asMarcas-table">
+                    <thead>
+                        <tr>
+                            <th>MARCA</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </form>
+        </form>
+    </div>
+</section>
+<?php
 			}
 
 		// Paciente
 			if(isset($apiConfig['paciente'])) {
 				?>
-				<script type="text/javascript">
+<script type="text/javascript">
+$(function() {
 
-					$(function(){
+    $('.js-asPaciente-submit').click(function() {
+        let obj = $(this);
+        if (obj.attr('data-loading') == 0) {
 
-						$('.js-asPaciente-submit').click(function(){
-							let obj = $(this);
-							if(obj.attr('data-loading')==0) {
+            let nome = $(`.js-asPaciente-nome`).val();
+            let telefone1 = $(`.js-asPaciente-telefone1`).val();
+            let cpf = $(`.js-asPaciente-cpf`).val();
+            let indicacao_tipo = $(`.js-asPaciente-indicacao_tipo`).val();
+            let indicacao = $(`.js-asPaciente-indicacao`).val();
 
-								let nome = $(`.js-asPaciente-nome`).val();
-								let telefone1 = $(`.js-asPaciente-telefone1`).val();
-								let cpf = $(`.js-asPaciente-cpf`).val();
-								let indicacao_tipo = $(`.js-asPaciente-indicacao_tipo`).val();
-								let indicacao = $(`.js-asPaciente-indicacao`).val();
-							
 
-								if(nome.length==0) {
-									swal({title: "Erro!", text: "Digite o Nome do Paciente", type:"error", confirmButtonColor: "#424242"});
-									$('.js-asPaciente-nome').addClass('erro');
-								} else if(telefone1.length==0) {
-									swal({title: "Erro!", text: "Digite o Whatsapp do Paciente", type:"error", confirmButtonColor: "#424242"});
-									$('.js-asPaciente-telefone1').addClass('erro');
-								}  else {
+            if (nome.length == 0) {
+                swal({
+                    title: "Erro!",
+                    text: "Digite o Nome do Paciente",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+                $('.js-asPaciente-nome').addClass('erro');
+            } else if (telefone1.length == 0) {
+                swal({
+                    title: "Erro!",
+                    text: "Digite o Whatsapp do Paciente",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+                $('.js-asPaciente-telefone1').addClass('erro');
+            } else {
 
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
+                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                obj.attr('data-loading', 1);
 
-									let data = `ajax=asPacientePersistir&nome=${nome}&telefone1=${telefone1}&cpf=${cpf}&indicacao_tipo=${indicacao_tipo}&indicacao=${indicacao}`;
+                let data =
+                    `ajax=asPacientePersistir&nome=${nome}&telefone1=${telefone1}&cpf=${cpf}&indicacao_tipo=${indicacao_tipo}&indicacao=${indicacao}`;
 
-									data = {
-										'ajax':'asPacientePersistir',
-										'nome':nome,
-										'telefone1':telefone1,
-										'cpf':cpf,
-										'indicacao_tipo':indicacao_tipo,
-										'indicacao':indicacao
-									}
-									
-									$.ajax({
-										type:'POST',
-										data:data,
-										url:baseURLApiAside,
-										success:function(rtn) {
-											if(rtn.success) {
+                data = {
+                    'ajax': 'asPacientePersistir',
+                    'nome': nome,
+                    'telefone1': telefone1,
+                    'cpf': cpf,
+                    'indicacao_tipo': indicacao_tipo,
+                    'indicacao': indicacao
+                }
 
-												$(`.js-asPaciente-nome`).val(``);
-												$(`.js-asPaciente-telefone1`).val(``);
-												$(`.js-asPaciente-cpf`).val(``);
-												$(`.js-asPaciente-indicacao_tipo`).val(``);
-												$(`.js-asPaciente-indicacao`).val(``);
+                $.ajax({
+                    type: 'POST',
+                    data: data,
+                    url: baseURLApiAside,
+                    success: function(rtn) {
+                        if (rtn.success) {
 
-												$('.ajax-id_paciente').append(`<option value="${rtn.id_paciente}" selected>${rtn.nome}</option>`);
-												$('.aside-paciente .aside-close').click();
+                            $(`.js-asPaciente-nome`).val(``);
+                            $(`.js-asPaciente-telefone1`).val(``);
+                            $(`.js-asPaciente-cpf`).val(``);
+                            $(`.js-asPaciente-indicacao_tipo`).val(``);
+                            $(`.js-asPaciente-indicacao`).val(``);
 
-												$.ajax({
-													type:"POST",
-													data:`ajax=biCategorizacao`,
-													url:baseURLApiAside
-												})
+                            $('.ajax-id_paciente').append(
+                                `<option value="${rtn.id_paciente}" selected>${rtn.nome}</option>`
+                                );
+                            $('.aside-paciente .aside-close').click();
 
-											} else if(rtn.error) {
-												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-											} else {
-												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-											}
-											
-										},
-										error:function() {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										} 
-									}).done(function(){
-										obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-										obj.attr('data-loading',0);
-									});
+                            $.ajax({
+                                type: "POST",
+                                data: `ajax=biCategorizacao`,
+                                url: baseURLApiAside
+                            })
 
-								}
-							}
-						})
+                        } else if (rtn.error) {
+                            swal({
+                                title: "Erro!",
+                                text: rtn.error,
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        } else {
+                            swal({
+                                title: "Erro!",
+                                text: "Algum erro ocorreu! Tente novamente.",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
 
-						$('.js-asTag-submit').click(function(){
-							let obj = $(this);
-							let objHTMLAntigo = $(this).html();
+                    },
+                    error: function() {
+                        swal({
+                            title: "Erro!",
+                            text: "Algum erro ocorreu! Tente novamente.",
+                            type: "error",
+                            confirmButtonColor: "#424242"
+                        });
+                    }
+                }).done(function() {
+                    obj.html(
+                    `<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+                    obj.attr('data-loading', 0);
+                });
 
-							if(obj.attr('data-loading')==0) {
+            }
+        }
+    })
 
-								let id_agenda = $('#js-aside-edit input[name=id]').val();
-								let id = $('input[name=id_tag]').val();
-								let titulo = $(`.js-asTag-titulo`).val();
-								let cor = $(`.js-asTag-cor`).val();
+    $('.js-asTag-submit').click(function() {
+        let obj = $(this);
+        let objHTMLAntigo = $(this).html();
 
-								if(titulo.length==0) {
-									swal({title: "Erro!", text: "Digite o Título da Tag", type:"error", confirmButtonColor: "#424242"});
-									$('.js-asTag-titulo').addClass('erro');
-								} else {
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
+        if (obj.attr('data-loading') == 0) {
 
-									let data = `ajax=asTagPersistir&titulo=${titulo}&cor=${cor}&id=${id}&id_agenda=${id_agenda}`;
+            let id_agenda = $('#js-aside-edit input[name=id]').val();
+            let id = $('input[name=id_tag]').val();
+            let titulo = $(`.js-asTag-titulo`).val();
+            let cor = $(`.js-asTag-cor`).val();
 
-									$.ajax({
-										type:'POST',
-										data:data,
-										url:baseURLApiAside,
-										success:function(rtn) {
-											if(rtn.success) {
+            if (titulo.length == 0) {
+                swal({
+                    title: "Erro!",
+                    text: "Digite o Título da Tag",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+                $('.js-asTag-titulo').addClass('erro');
+            } else {
+                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                obj.attr('data-loading', 1);
 
-												$(`.js-asTag-titulo`).val(``);
-												$('.js-tags').empty();
+                let data =
+                    `ajax=asTagPersistir&titulo=${titulo}&cor=${cor}&id=${id}&id_agenda=${id_agenda}`;
 
-												if(rtn.tags.length>0) {
-													rtn.tags.forEach(x=>{
-														$('.js-tags').append(`<option value="${x.id}">${x.titulo}</option>`);
-													});
-												}
+                $.ajax({
+                    type: 'POST',
+                    data: data,
+                    url: baseURLApiAside,
+                    success: function(rtn) {
+                        if (rtn.success) {
 
-												if(rtn.tags_selected.length>0) {
-													let cont = 0;
-													rtn.tags_selected.forEach(idTag=>{
-														$('.js-tags').find('option[value='+idTag+']').prop('selected',true);
+                            $(`.js-asTag-titulo`).val(``);
+                            $('.js-tags').empty();
 
-														cont++;
-														if(cont==rtn.tags_selected.length) {
-															$('.js-tags').trigger('chosen:updated');
-														}
-													})
-												} else {
-													$('.js-tags').trigger('chosen:updated');
-												}
-												
-												tagsListar();
-												//$('.aside-tag .aside-close').click();
+                            if (rtn.tags.length > 0) {
+                                rtn.tags.forEach(x => {
+                                    $('.js-tags').append(
+                                        `<option value="${x.id}">${x.titulo}</option>`
+                                        );
+                                });
+                            }
 
-											} else if(rtn.error) {
-												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-											} else {
-												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-											}
-											
-										},
-										error:function() {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										} 
-									}).done(function(){
-										obj.html(objHTMLAntigo);
-										obj.attr('data-loading',0);
-									}); 
-								}
-							}
-						});
-					});
-				</script>
+                            if (rtn.tags_selected.length > 0) {
+                                let cont = 0;
+                                rtn.tags_selected.forEach(idTag => {
+                                    $('.js-tags').find('option[value=' + idTag +
+                                        ']').prop('selected', true);
 
-				<!-- Aside Paciente -->
-				<section class="aside aside-paciente">
-					<div class="aside__inner1">
+                                    cont++;
+                                    if (cont == rtn.tags_selected.length) {
+                                        $('.js-tags').trigger('chosen:updated');
+                                    }
+                                })
+                            } else {
+                                $('.js-tags').trigger('chosen:updated');
+                            }
 
-						<header class="aside-header">
-							<h1>Novo Paciente</h1>
-							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-						</header>
+                            tagsListar();
+                            //$('.aside-tag .aside-close').click();
 
-						<form method="post" class="aside-content form js-asPaciente-form">
+                        } else if (rtn.error) {
+                            swal({
+                                title: "Erro!",
+                                text: rtn.error,
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        } else {
+                            swal({
+                                title: "Erro!",
+                                text: "Algum erro ocorreu! Tente novamente.",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
 
-							<section class="filter" style="margin-bottom:0;">
-								<div class="filter-group"></div>
-								<div class="filter-group">
-									<div class="filter-form form">
-										<dl>
-											<dd><button type="button" class="button button_main js-asPaciente-submit" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
-										</dl>
-									</div>								
-								</div>
-							</section>
+                    },
+                    error: function() {
+                        swal({
+                            title: "Erro!",
+                            text: "Algum erro ocorreu! Tente novamente.",
+                            type: "error",
+                            confirmButtonColor: "#424242"
+                        });
+                    }
+                }).done(function() {
+                    obj.html(objHTMLAntigo);
+                    obj.attr('data-loading', 0);
+                });
+            }
+        }
+    });
+});
+</script>
 
-							<dl>
-								<dt>Nome</dt>
-								<dd>
-									<input type="text" class="js-asPaciente-nome" />
-								</dd>
-							</dl>
+<!-- Aside Paciente -->
+<section class="aside aside-paciente">
+    <div class="aside__inner1">
 
-							<div class="colunas2">
+        <header class="aside-header">
+            <h1>Novo Paciente</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
 
-								<dl>
-									<dt>Whatsapp</dt>
-									<dd class="form-comp">
-										<span class="js-country">BR</span><input type="text" class="js-asPaciente-telefone1" />
-									</dd>
-								</dl>
-								<dl>
-									<dt>CPF</dt>
-									<dd>
-										<input type="text" class="js-asPaciente-cpf cpf" />
-									</dd>
-									<dd class="js-cpf-dd" style="color:var(--vermelho);font-size: 12px;padding-top:5px;"></dd>
-								</dl>
-							</div>
+        <form method="post" class="aside-content form js-asPaciente-form">
 
-							<script type="text/javascript">
-								$(function(){
+            <section class="filter" style="margin-bottom:0;">
+                <div class="filter-group"></div>
+                <div class="filter-group">
+                    <div class="filter-form form">
+                        <dl>
+                            <dd><button type="button" class="button button_main js-asPaciente-submit"
+                                    data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i>
+                                    <span>Salvar</span></button></dd>
+                        </dl>
+                    </div>
+                </div>
+            </section>
 
-									$('input.js-asPaciente-cpf').change(function(){
-										let cpf = $(this).val();
-										$('.js-cpf-dd').hide();
+            <dl>
+                <dt>Nome</dt>
+                <dd>
+                    <input type="text" class="js-asPaciente-nome" />
+                </dd>
+            </dl>
 
-										if(cpf.length==14) {
-											if(validarCPF(cpf)) {
+            <div class="colunas2">
 
-												$('.js-cpf-dd').hide();
-											} else {
-												$('.js-cpf-dd').html(`<span class="iconify" data-icon="dashicons:warning" data-inline="true"></span>CPF inválido!`).show();;
-											}
-										
+                <dl>
+                    <dt>Whatsapp</dt>
+                    <dd class="form-comp">
+                        <span class="js-country">BR</span><input type="text" class="js-asPaciente-telefone1" />
+                    </dd>
+                </dl>
+                <dl>
+                    <dt>CPF</dt>
+                    <dd>
+                        <input type="text" class="js-asPaciente-cpf cpf" />
+                    </dd>
+                    <dd class="js-cpf-dd" style="color:var(--vermelho);font-size: 12px;padding-top:5px;"></dd>
+                </dl>
+            </div>
 
-											let data = `ajax=consultaCPF&cpf=${cpf}`
-											$.ajax({
-												type:"POST",
-												url:"pg_pacientes.php",
-												data:data,
-												success:function(rtn) {
-													if(rtn.success) {
-														if(rtn.pacientes && rtn.pacientes>0) {
-															$('.js-cpf-dd').html(`<span class="iconify" data-icon="dashicons:warning" data-inline="true"></span>Já existe cadastro com este CPF!`).show();;
-														} else {
-														}
-													} else if(rtn.error) {
+            <script type="text/javascript">
+            $(function() {
 
-													} else {
+                $('input.js-asPaciente-cpf').change(function() {
+                    let cpf = $(this).val();
+                    $('.js-cpf-dd').hide();
 
-													}
-												},
-												error:function(){
+                    if (cpf.length == 14) {
+                        if (validarCPF(cpf)) {
 
-												}
-											})
-										}
+                            $('.js-cpf-dd').hide();
+                        } else {
+                            $('.js-cpf-dd').html(
+                                `<span class="iconify" data-icon="dashicons:warning" data-inline="true"></span>CPF inválido!`
+                                ).show();;
+                        }
 
-									})
-								})
-							</script>
 
-							<div class="colunas2">
+                        let data = `ajax=consultaCPF&cpf=${cpf}`
+                        $.ajax({
+                            type: "POST",
+                            url: "pg_pacientes.php",
+                            data: data,
+                            success: function(rtn) {
+                                if (rtn.success) {
+                                    if (rtn.pacientes && rtn.pacientes > 0) {
+                                        $('.js-cpf-dd').html(
+                                            `<span class="iconify" data-icon="dashicons:warning" data-inline="true"></span>Já existe cadastro com este CPF!`
+                                            ).show();;
+                                    } else {}
+                                } else if (rtn.error) {
 
-								<dl>
-									<dt>Tipo Indicação</dt>
-									<dd>
-										<select class="js-asPaciente-indicacao_tipo">
-											<option value="">-</option>
-											<?php
+                                } else {
+
+                                }
+                            },
+                            error: function() {
+
+                            }
+                        })
+                    }
+
+                })
+            })
+            </script>
+
+            <div class="colunas2">
+
+                <dl>
+                    <dt>Tipo Indicação</dt>
+                    <dd>
+                        <select class="js-asPaciente-indicacao_tipo">
+                            <option value="">-</option>
+                            <?php
 											//foreach($_pacienteIndicacoes as $v) echo '<option value="'.$v->id.'"'.($values['indicacao_tipo']==$v->id?' selected':'').' data-id="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
 											
 												foreach($optTipoIndicacao as $k=>$v) echo '<option value="'.$k.'"'.($values['indicacao_tipo']==$k?' selected':'').'>'.$v.'</option>';
 											?>
-										</select>
-									</dd>
-								</dl>
-								<dl>
-									<dt>Indicação</dt>
-									<dd>
-										<input type="text" class="js-asPaciente-indicacao" />
+                        </select>
+                    </dd>
+                </dl>
+                <dl>
+                    <dt>Indicação</dt>
+                    <dd>
+                        <input type="text" class="js-asPaciente-indicacao" />
 
-									</dd>
-								</dl>
-							</div>
-						</form>
-					</div>
-				</section>
+                    </dd>
+                </dl>
+            </div>
+        </form>
+    </div>
+</section>
 
-				<!-- Aside Tag -->
-				<section class="aside aside-tag aside_sub">
-					<div class="aside__inner1">
+<!-- Aside Tag -->
+<section class="aside aside-tag aside_sub">
+    <div class="aside__inner1">
 
-						<script type="text/javascript">
-							$(function(){
-							});
-						</script>
+        <script type="text/javascript">
+        $(function() {});
+        </script>
 
-						<header class="aside-header">
-							<h1>Tags</h1>
-							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-						</header>
+        <header class="aside-header">
+            <h1>Tags</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
 
-						<form method="post" class="aside-content form js-asTag-form">
-							<input type="hidden" name="id_tag" value="0" />
+        <form method="post" class="aside-content form js-asTag-form">
+            <input type="hidden" name="id_tag" value="0" />
 
-							<section class="filter" style="margin-bottom:0;">
-								<div class="filter-group"></div>
-								<div class="filter-group">
-									<div class="filter-form form">
-										<dl>
-											<dd><button type="button" class="button button_main js-asTag-submit" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
-										</dl>
-									</div>								
-								</div>
-							</section>
+            <section class="filter" style="margin-bottom:0;">
+                <div class="filter-group"></div>
+                <div class="filter-group">
+                    <div class="filter-form form">
+                        <dl>
+                            <dd><button type="button" class="button button_main js-asTag-submit" data-loading="0"><i
+                                        class="iconify" data-icon="fluent:checkmark-12-filled"></i>
+                                    <span>Salvar</span></button></dd>
+                        </dl>
+                    </div>
+                </div>
+            </section>
 
-							<div class="colunas4">
-								<dl class="dl3">
-									<dt>Título</dt>
-									<dd>
-										<input type="text" class="js-asTag-titulo" />
-									</dd>
-								</dl>
-								<dl>
-									<dt>Cor</dt>
-									<dd><input type="color" class="js-asTag-cor" value="#c18c6a" /></dd>
-								</dl>
-							</div>
+            <div class="colunas4">
+                <dl class="dl3">
+                    <dt>Título</dt>
+                    <dd>
+                        <input type="text" class="js-asTag-titulo" />
+                    </dd>
+                </dl>
+                <dl>
+                    <dt>Cor</dt>
+                    <dd><input type="color" class="js-asTag-cor" value="#c18c6a" /></dd>
+                </dl>
+            </div>
 
-							<div class="list2" style="margin-top:2rem;">
-								<table class="js-tags-table">
-									<thead>
-										<tr>
-											<th>TÍTULO</th>
-											<th>COR</th>
-											<th></th>
-										</tr>
-									</thead>
-									<tbody>
-									</tbody>
-								</table>
-							</div>
+            <div class="list2" style="margin-top:2rem;">
+                <table class="js-tags-table">
+                    <thead>
+                        <tr>
+                            <th>TÍTULO</th>
+                            <th>COR</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
 
-						</form>
-					</div>
-				</section>
-				<?php
+        </form>
+    </div>
+</section>
+<?php
 			}
 
 		// Pacientes Relacionamento
@@ -6055,81 +6573,89 @@
 					$_historicoStatus[$x->id]=$x;
 				}
 				?>
-					<script type="text/javascript">
-
-						const pacienteRelacionamentoPopula = (obj,rtn,filtro,lista) => {
-
-
-							if(filtro=="excluidos") {
-								obj.find('textarea[name=motivo]').val(rtn.paciente.excluidoMotivo).prop('disabled',true);
-
-								if(rtn.paciente.excluidoData) {
-
-									listaExt='';
-									if(lista.length>0) listaExt=` da lista <b>${lista}</b>`;
-									obj.find('.js-excluido-desc').html(`<dd style="font-size:12px;color:#666">Excluído em <b>${rtn.paciente.excluidoData}</b> por <b>${rtn.paciente.excluidoUsuario}</b>${listaExt}</dd>`)
-								}
-							}
-
-							obj.find('.js-nome').html(`${rtn.paciente.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.paciente.id}`);
-
-							if(rtn.paciente.ft && rtn.paciente.ft.length>0) {
-								obj.find('.js-foto').attr('src',rtn.paciente.ft);
-							} else {
-								obj.find('.js-foto').attr('src','img/ilustra-usuario.jpg');
-							}
-
-							obj.find('.js-whatsapp-numero').val(rtn.paciente.telefone1);
-
-							if(rtn.paciente.idade && rtn.paciente.idade>0) {
-								obj.find('.js-idade').html(rtn.paciente.idade+(rtn.paciente.idade>=2?' anos':' ano')).show();;
-							} else {
-								obj.find('.js-idade').html(``).hide();;
-							}
-
-							if(rtn.paciente.periodicidade && rtn.paciente.periodicidade.length>0) {
-								obj.find('.js-periodicidade').html(`Periodicidade: ${rtn.paciente.periodicidade}`);
-							} else {
-								obj.find('.js-periodicidade').html(`Periodicidade: -`);
-							}
-
-							if(rtn.paciente.agendou_dias && rtn.paciente.agendou_dias.length>0) {
-								obj.find('.js-ultimoAtendimento').html(`Atendido há ${rtn.paciente.agendou_dias}`);
-							} else {
-								obj.find('.js-ultimoAtendimento').html(`Nunca foi atendido(a)`);
-							}
-
-							if(rtn.paciente.musica && rtn.paciente.musica.length>0) {
-								obj.find('.js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.paciente.musica}`);
-							} else {
-								obj.find('.js-musica').html(``);
-							}
-
-							obj.find('input[name=id_paciente]').val(rtn.paciente.id);
-
-							$('input[name=telefone1],.js-asPaciente-telefone1').mobilePhoneNumber({allowPhoneWithoutPrefix: '+55'}).bind('country.mobilePhoneNumber', function(echo, country) {
-								let countryOut = country || '  ';
-								$(this).parent().parent().find('.js-country').html(countryOut);
-							}).trigger('keyup');
+<script type="text/javascript">
+const pacienteRelacionamentoPopula = (obj, rtn, filtro, lista) => {
 
 
-							obj.find('.js-whatsappHistorico').html(``);
+    if (filtro == "excluidos") {
+        obj.find('textarea[name=motivo]').val(rtn.paciente.excluidoMotivo).prop('disabled', true);
 
-							if(rtn.paciente.historicoWts && rtn.paciente.historicoWts.length>0) {
+        if (rtn.paciente.excluidoData) {
 
-								rtn.paciente.historicoWts.forEach(x=>{
+            listaExt = '';
+            if (lista.length > 0) listaExt = ` da lista <b>${lista}</b>`;
+            obj.find('.js-excluido-desc').html(
+                `<dd style="font-size:12px;color:#666">Excluído em <b>${rtn.paciente.excluidoData}</b> por <b>${rtn.paciente.excluidoUsuario}</b>${listaExt}</dd>`
+                )
+        }
+    }
 
-									let status = `<span class="iconify" data-icon="bxs:hourglass" data-inline="true"></span> Aguardando resposta`;
-									let cor = `var(--cinza5)`;
+    obj.find('.js-nome').html(
+        `${rtn.paciente.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`
+        ).attr('href', `pg_pacientes_resumo.php?id_paciente=${rtn.paciente.id}`);
 
-									if(x.resposta_sim==1) {
-										status = '<span class="iconify" data-icon="el:ok-circle" data-inline="true"></span> Confirmado';
-										cor = 'var(--verde)';
-									} else if(x.resposta_nao==1) {
-										status = '<span class="iconify" data-icon="ic:outline-cancel" data-inline="true"></span> Não Confirmado';
-										cor = 'var(--vermelho)';
-									}
-									let html = `<div class="history2-item">
+    if (rtn.paciente.ft && rtn.paciente.ft.length > 0) {
+        obj.find('.js-foto').attr('src', rtn.paciente.ft);
+    } else {
+        obj.find('.js-foto').attr('src', 'img/ilustra-usuario.jpg');
+    }
+
+    obj.find('.js-whatsapp-numero').val(rtn.paciente.telefone1);
+
+    if (rtn.paciente.idade && rtn.paciente.idade > 0) {
+        obj.find('.js-idade').html(rtn.paciente.idade + (rtn.paciente.idade >= 2 ? ' anos' : ' ano')).show();;
+    } else {
+        obj.find('.js-idade').html(``).hide();;
+    }
+
+    if (rtn.paciente.periodicidade && rtn.paciente.periodicidade.length > 0) {
+        obj.find('.js-periodicidade').html(`Periodicidade: ${rtn.paciente.periodicidade}`);
+    } else {
+        obj.find('.js-periodicidade').html(`Periodicidade: -`);
+    }
+
+    if (rtn.paciente.agendou_dias && rtn.paciente.agendou_dias.length > 0) {
+        obj.find('.js-ultimoAtendimento').html(`Atendido há ${rtn.paciente.agendou_dias}`);
+    } else {
+        obj.find('.js-ultimoAtendimento').html(`Nunca foi atendido(a)`);
+    }
+
+    if (rtn.paciente.musica && rtn.paciente.musica.length > 0) {
+        obj.find('.js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.paciente.musica}`);
+    } else {
+        obj.find('.js-musica').html(``);
+    }
+
+    obj.find('input[name=id_paciente]').val(rtn.paciente.id);
+
+    $('input[name=telefone1],.js-asPaciente-telefone1').mobilePhoneNumber({
+        allowPhoneWithoutPrefix: '+55'
+    }).bind('country.mobilePhoneNumber', function(echo, country) {
+        let countryOut = country || '  ';
+        $(this).parent().parent().find('.js-country').html(countryOut);
+    }).trigger('keyup');
+
+
+    obj.find('.js-whatsappHistorico').html(``);
+
+    if (rtn.paciente.historicoWts && rtn.paciente.historicoWts.length > 0) {
+
+        rtn.paciente.historicoWts.forEach(x => {
+
+            let status =
+                `<span class="iconify" data-icon="bxs:hourglass" data-inline="true"></span> Aguardando resposta`;
+            let cor = `var(--cinza5)`;
+
+            if (x.resposta_sim == 1) {
+                status =
+                    '<span class="iconify" data-icon="el:ok-circle" data-inline="true"></span> Confirmado';
+                cor = 'var(--verde)';
+            } else if (x.resposta_nao == 1) {
+                status =
+                    '<span class="iconify" data-icon="ic:outline-cancel" data-inline="true"></span> Não Confirmado';
+                cor = 'var(--vermelho)';
+            }
+            let html = `<div class="history2-item">
 													<aside>
 														<span style="background:${cor}"><i class="iconify" data-icon="mdi:chat-processing-outline" ></i></span>			
 													</aside>
@@ -6147,20 +6673,20 @@
 													</article>
 												</div>`;
 
-									obj.find('.js-whatsappHistorico').append(html);
-								})
+            obj.find('.js-whatsappHistorico').append(html);
+        })
 
-							} else {
-								obj.find('.js-whatsappHistorico').html(`<center>Nenhum Whatsapp enviado</center>`);
-							}
+    } else {
+        obj.find('.js-whatsappHistorico').html(`<center>Nenhum Whatsapp enviado</center>`);
+    }
 
-							obj.find('.js-ag-historico section').find('.history2-item').remove();
+    obj.find('.js-ag-historico section').find('.history2-item').remove();
 
-							if(rtn.paciente.historico && rtn.paciente.historico.length>0) {
-								rtn.paciente.historico.forEach(x=>{
-									let html = '';
-									if(x.ev=="observacao") {
-										html = `<div class="history2-item">
+    if (rtn.paciente.historico && rtn.paciente.historico.length > 0) {
+        rtn.paciente.historico.forEach(x => {
+            let html = '';
+            if (x.ev == "observacao") {
+                html = `<div class="history2-item">
 													<aside>
 														<span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>			
 													</aside>
@@ -6176,18 +6702,19 @@
 														</div>
 													</article>
 												</div>`;
-									} else {
+            } else {
 
-										let profissionaisHTML = '';
+                let profissionaisHTML = '';
 
 
-										if(x.prof && x.prof.length>0) {
-											x.prof.forEach(p=>{
-												profissionaisHTML+=`<div class="badge-prof" style="background:${p.cor}">${p.iniciais}</div>`;
-											})
-										}
+                if (x.prof && x.prof.length > 0) {
+                    x.prof.forEach(p => {
+                        profissionaisHTML +=
+                            `<div class="badge-prof" style="background:${p.cor}">${p.iniciais}</div>`;
+                    })
+                }
 
-										html = `<div class="history2-item">
+                html = `<div class="history2-item">
 													<aside>
 														<span style="background:${x.icC};"><i class="iconify" data-icon="${x.ic}"></i></span>
 														
@@ -6204,552 +6731,710 @@
 														</div>
 													</article>
 												</div>`;
-									}
+            }
 
 
-									obj.find('.js-ag-historico section').append(html);
-								})
-							}
+            obj.find('.js-ag-historico section').append(html);
+        })
+    }
 
-							if(filtro=="excluidos") {
-							} else {
-								$('.js-btn-acao-queroAgendar').click();
-							}
-						}
+    if (filtro == "excluidos") {} else {
+        $('.js-btn-acao-queroAgendar').click();
+    }
+}
 
-						const pacienteRelacionamento = (obj) => {//id_paciente,filtro) => {
-							id_paciente=obj.attr('data-id_paciente');
-							filtro=obj.attr('data-filtro');
-							if(filtro=="excluidos") {
-								let data = `ajax=asRelacionamentoPacienteExcluido&id_paciente=${id_paciente}`;
-								lista=obj.attr('data-lista');					
-								$.ajax({
-									type:'POST',
-									data:data,
-									url:baseURLApiAside,
-									success:function(rtn) {
-										if(rtn.success) {
+const pacienteRelacionamento = (obj) => { //id_paciente,filtro) => {
+    id_paciente = obj.attr('data-id_paciente');
+    filtro = obj.attr('data-filtro');
+    if (filtro == "excluidos") {
+        let data = `ajax=asRelacionamentoPacienteExcluido&id_paciente=${id_paciente}`;
+        lista = obj.attr('data-lista');
+        $.ajax({
+            type: 'POST',
+            data: data,
+            url: baseURLApiAside,
+            success: function(rtn) {
+                if (rtn.success) {
 
-											let obj = $("#js-aside-pacienteRelacionamentoExcluido");
+                    let obj = $("#js-aside-pacienteRelacionamentoExcluido");
 
-											pacienteRelacionamentoPopula(obj,rtn,filtro,lista);
-											
-											obj.fadeIn(100,function() {
-												obj.find('.js-tab').find('a:eq(0)').click();
-												obj.find('.aside__inner1').addClass("active");
-											});
+                    pacienteRelacionamentoPopula(obj, rtn, filtro, lista);
 
-
-			 
-										} else if(rtn.error) {
-											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-										} else {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										}
-										
-									},
-									error:function() {
-										swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-									} 
-								}).done(function(){
-									//obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-									//obj.attr('data-loading',0);
-								});
-
-							} else {
-
-								let data = `ajax=asRelacionamentoPaciente&id_paciente=${id_paciente}`;
-											
-								$.ajax({
-									type:'POST',
-									data:data,
-									url:baseURLApiAside,
-									success:function(rtn) {
-										if(rtn.success) {
-											let obj = $("#js-aside-pacienteRelacionamento");
-
-											pacienteRelacionamentoPopula(obj,rtn,filtro,'');
-
-											obj.fadeIn(100,function() {
-												obj.find('.js-profissionais').chosen();
-												obj.find('.js-tab').find('a:eq(0)').click();
-												obj.find('.aside__inner1').addClass("active");
-											});
-
-											obj.find('input[name=agenda_data]').datetimepicker({
-												timepicker:false,
-												format:'d/m/Y',
-												scrollMonth:false,
-												scrollTime:false,
-												scrollInput:false,
-											}).css('background','');
-
-											obj.find('input[name=agenda_hora]').datetimepicker({
-												  datepicker:false,
-											      format:'H:i',
-											      pickDate:false
-											}).css('background','');
-
-											
-			 
-										} else if(rtn.error) {
-											swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-										} else {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										}
-										
-									},
-									error:function() {
-										swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-									} 
-								}).done(function(){
-									//obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-									//obj.attr('data-loading',0);
-								});
-							}
-						}
-
-						$(function(){
-							$('.js-tab a').click(function() {
-								$(".js-tab a").removeClass("active");
-								$(this).addClass("active");							
-							})
-						})
-					</script>
-
-					<section class="aside aside-pacienteRelacionamento" id="js-aside-pacienteRelacionamento">
-						
-						<div class="aside__inner1">
-
-							<header class="aside-header">
-								<h1>Relacionamento com Paciente</h1>
-								<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-							</header>
-
-							<form method="post" class="aside-content form" onsubmit="return false">
-								<input type="hidden" name="id_paciente" />
-								<input type="hidden" name="tipo" value="queroAgendar" />
-								<section class="header-profile">
-									<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="js-foto header-profile__foto" />
-									<div class="header-profile__inner1">
-										<h1><a href="" target="_blank" class="js-nome"></a></h1>
-										<div>
-											<p class="js-idade"></p>
-											<p class="js-periodicidade"></p>
-											<p class="js-ultimoAtendimento"></p>
-										</div>
-									</div>
-								</section>
-
-								<script>
-								
-									$(function() {
-										$('#js-aside-pacienteRelacionamento').on('change','select[name=agenda_duracao], select[name=id_cadeira],  select.js-profissionais, input[name=agenda_data]',function(){
-											horarioDisponivel(0,$('#js-aside-pacienteRelacionamento'));
-											
-										});
-
-										$('#js-aside-pacienteRelacionamento .js-btn-acao').click(function(){
-											$('#js-aside-pacienteRelacionamento .js-btn-acao').removeClass('active');
-											$(this).addClass('active');
-
-											if($(this).attr('data-tipo')=="queroAgendar") {
-												$('#js-aside-pacienteRelacionamento .js-ag-agendamento-excluir').hide();
-												$('#js-aside-pacienteRelacionamento .js-ag-agendamento-naoQueroAgendar').hide();
-												$('#js-aside-pacienteRelacionamento .js-ag-agendamento-queroAgendar').show();
-												$('#js-aside-pacienteRelacionamento input[name=tipo]').val('queroAgendar');
-											} else if($(this).attr('data-tipo')=="excluir")  {
-												$('#js-aside-pacienteRelacionamento .js-ag-agendamento-excluir').show();
-												$('#js-aside-pacienteRelacionamento .js-ag-agendamento-naoQueroAgendar').hide();
-												$('#js-aside-pacienteRelacionamento .js-ag-agendamento-queroAgendar').hide();
-												$('#js-aside-pacienteRelacionamento input[name=tipo]').val('excluir');
-											} else {
-												$('#js-aside-pacienteRelacionamento .js-ag-agendamento-excluir').hide();
-												$('#js-aside-pacienteRelacionamento .js-ag-agendamento-naoQueroAgendar').show();
-												$('#js-aside-pacienteRelacionamento .js-ag-agendamento-queroAgendar').hide();
-												$('#js-aside-pacienteRelacionamento input[name=tipo]').val('naoQueroAgendar');
-											}
-										});
-
-										$('#js-aside-pacienteRelacionamento .js-btn-whatsapp-enviar').click(function(){
-
-											let obj = $(this);
-											let objTextoAntigo = $(this).html();
-
-											if(obj.attr('data-loading')==0) {
-
-												obj.attr('data-loading',1);
-												obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-												let id_paciente = $('#js-aside-pacienteRelacionamento input[name=id_paciente]').val();
-
-												let data = `ajax=asRelacionamentoPacienteEnviarWhatsapp&id_paciente=${id_paciente}`;
-											
-												$.ajax({
-														type:'POST',
-														data:data,
-														url:baseURLApiAside,
-														success:function(rtn) {
-															if(rtn.success) {
-
-																$.ajax({
-																	type:"POST",
-																	url:baseURLApiAside,
-																	data:'ajax=asRelacionamentoPacienteDisparaWhatsapp'
-																});
-																
-
-																swal({title: "Sucesso!", text: 'Mensagem enviada com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-																});
-
-															} else if(rtn.error) {
-																swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-															} else {
-																swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-															}
-															
-														},
-														error:function() {
-															swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-														} 
-												}).done(function(){
-													obj.html(objTextoAntigo);
-													obj.attr('data-loading',0);
-												});
-
-											}
-
-										})
-
-										$('#js-aside-pacienteRelacionamento .js-ag-agendamento .js-salvar').click(function(){
-											let tipo = $('#js-aside-pacienteRelacionamento input[name=tipo]').val();
-											let id_paciente = $('#js-aside-pacienteRelacionamento input[name=id_paciente]').val();
-									
-											if(tipo=="queroAgendar") {
-												let agenda_data = $('#js-aside-pacienteRelacionamento input[name=agenda_data]').val();
-												let agenda_duracao = $('#js-aside-pacienteRelacionamento select[name=agenda_duracao]').val();
-												let id_cadeira = $('#js-aside-pacienteRelacionamento select[name=id_cadeira]').val();
-												let id_profissional = $('#js-aside-pacienteRelacionamento select.js-profissionais').val();
-												let agenda_hora = $('#js-aside-pacienteRelacionamento select[name=agenda_hora]').val();
-												let obs = $('#js-aside-pacienteRelacionamento textarea[name=obs]').val();
-												let erro = '';
-
-												if(agenda_data.length==0) erro='Defina a <b>Data do Agendamento</b>';
-												else if(agenda_duracao.length==0) erro='Defina a <b>Duração de Agendamento</b>';
-												else if(id_cadeira.length==0) erro='Defina o <b>Consultório do Agendamento</b>';
-												else if(id_profissional.length==0) erro='Defina o <b>Profissional do Agendamento</b>';
-												else if(agenda_hora.length==0) erro='Defina a <b>Hora do Agendamento</b>';
-
-												if(erro.length==0) {
-
-													let obj = $(this);
-													let obHTMLAntigo = $(this).html();
-
-													if(obj.attr('data-loading')==0) {
-														
-														obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-														obj.attr('data-loading',1);
-
-														let data = `ajax=asRelacionamentoPacienteQueroAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}`;
-
-														data = {
-															'ajax':'asRelacionamentoPacienteQueroAgendar',
-															'id_paciente':id_paciente,
-															'agenda_data':agenda_data,
-															'agenda_duracao':agenda_duracao,
-															'id_cadeira':id_cadeira,
-															'id_profissional':id_profissional,
-															'agenda_hora':agenda_hora,
-															'obs':obs,
-														}
-														$.ajax({
-																type:'POST',
-																data:data,
-																url:baseURLApiAside,
-																success:function(rtn) {
-																	if(rtn.success) {
-																		$('#js-aside-pacienteRelacionamento input[name=agenda_data]').val('');
-																		$('#js-aside-pacienteRelacionamento select[name=agenda_duracao]').val('');
-																		$('#js-aside-pacienteRelacionamento select[name=id_cadeira]').val('');
-																		$('#js-aside-pacienteRelacionamento select.js-profissionais').val('');
-																		$('#js-aside-pacienteRelacionamento select[name=agenda_hora]').val('');
-																		$('#js-aside-pacienteRelacionamento aside-close').click();
-																		atualizaValorListasInteligentes();
-																		swal({title: "Sucesso!", text: 'Agendamento realizado com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-																		});
-
-																	} else if(rtn.error) {
-																		swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-																	} else {
-																		swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-																	}
-																	
-																},
-																error:function() {
-																	swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-																} 
-														}).done(function(){
-															obj.html(obHTMLAntigo);
-															obj.attr('data-loading',0);
-														});
+                    obj.fadeIn(100, function() {
+                        obj.find('.js-tab').find('a:eq(0)').click();
+                        obj.find('.aside__inner1').addClass("active");
+                    });
 
 
-													}
 
-												} else {
-													swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
-												}
-											} else if(tipo=="naoQueroAgendar") {
-												let status = $('#js-aside-pacienteRelacionamento select[name=id_status]').val();
-												let obs = $('#js-aside-pacienteRelacionamento textarea[name=obs]').val();
-												let erro = '';
+                } else if (rtn.error) {
+                    swal({
+                        title: "Erro!",
+                        text: rtn.error,
+                        type: "error",
+                        confirmButtonColor: "#424242"
+                    });
+                } else {
+                    swal({
+                        title: "Erro!",
+                        text: "Algum erro ocorreu! Tente novamente.",
+                        type: "error",
+                        confirmButtonColor: "#424242"
+                    });
+                }
 
-												if(status.length==0) erro = 'Defina o <b>Status</b>';
-												
-												if(erro.length==0) {
-													let obj = $(this);
-													let obHTMLAntigo = $(this).html();
+            },
+            error: function() {
+                swal({
+                    title: "Erro!",
+                    text: "Algum erro ocorreu! Tente novamente.",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            }
+        }).done(function() {
+            //obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+            //obj.attr('data-loading',0);
+        });
 
-													if(obj.attr('data-loading')==0) {
-														
-														obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-														obj.attr('data-loading',1);
+    } else {
 
-														let data = `ajax=asRelacionamentoPacienteNaoQueroAgendar&id_paciente=${id_paciente}&id_status=${status}&obs=${obs}`;
+        let data = `ajax=asRelacionamentoPaciente&id_paciente=${id_paciente}`;
 
-														data = {
-															'ajax':'asRelacionamentoPacienteNaoQueroAgendar',
-															'id_paciente':id_paciente,
-															'id_status':status,
-															'obs':obs
-														}
-														$.ajax({
-																type:'POST',
-																data:data,
-																url:baseURLApiAside,
-																success:function(rtn) {
-																	if(rtn.success) {
-																		$('#js-aside-pacienteRelacionamento select[name=id_status]').val('');
-																		$('#js-aside-pacienteRelacionamento textarea[name=obs]').val('');
+        $.ajax({
+            type: 'POST',
+            data: data,
+            url: baseURLApiAside,
+            success: function(rtn) {
+                if (rtn.success) {
+                    let obj = $("#js-aside-pacienteRelacionamento");
 
-																		atualizaValorListasInteligentes();
-																		swal({title: "Sucesso!", text: 'Observação cadastrada realizado com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-																			$('.aside-close').click();
-																		});
+                    pacienteRelacionamentoPopula(obj, rtn, filtro, '');
 
-																	} else if(rtn.error) {
-																		swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-																	} else {
-																		swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-																	}
-																	
-																},
-																error:function() {
-																	swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-																} 
-														}).done(function(){
-															obj.html(obHTMLAntigo);
-															obj.attr('data-loading',0);
-														});
+                    obj.fadeIn(100, function() {
+                        obj.find('.js-profissionais').chosen();
+                        obj.find('.js-tab').find('a:eq(0)').click();
+                        obj.find('.aside__inner1').addClass("active");
+                    });
 
+                    obj.find('input[name=agenda_data]').datetimepicker({
+                        timepicker: false,
+                        format: 'd/m/Y',
+                        scrollMonth: false,
+                        scrollTime: false,
+                        scrollInput: false,
+                    }).css('background', '');
 
-													}
-												} else {
-													swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
-												}
-											} else if(tipo=="excluir") {
-
-												let motivo = $('#js-aside-pacienteRelacionamento textarea[name=motivo]').val();
-												let erro = '';
-
-												if(motivo.length==0) erro = 'Defina o <b>Motivo</b>';
-												
-												if(erro.length==0) {
-													let obj = $(this);
-													let obHTMLAntigo = $(this).html();
-
-													if(obj.attr('data-loading')==0) {
-														
-														obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-														obj.attr('data-loading',1);
-
-														let data = `ajax=asRelacionamentoPacienteExcluir&id_paciente=${id_paciente}&motivo=${motivo}`;
-														data = {
-															'ajax':'asRelacionamentoPacienteExcluir',
-															'id_paciente':id_paciente,
-															'motivo':motivo
-														}
-														$.ajax({
-																type:'POST',
-																data:data,
-																url:baseURLApiAside,
-																success:function(rtn) {
-																	if(rtn.success) {
-																		$('#js-aside-pacienteRelacionamento textarea[name=motivo]').val('');
-
-																		atualizaValorListasInteligentes();
-																		swal({title: "Sucesso!", text: 'Paciente excluído com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-																			$('.aside-close').click();
-																		});
-
-																	} else if(rtn.error) {
-																		swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-																	} else {
-																		swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-																	}
-																	
-																},
-																error:function() {
-																	swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-																} 
-														}).done(function(){
-															obj.html(obHTMLAntigo);
-															obj.attr('data-loading',0);
-														});
+                    obj.find('input[name=agenda_hora]').datetimepicker({
+                        datepicker: false,
+                        format: 'H:i',
+                        pickDate: false
+                    }).css('background', '');
 
 
-													}
-												} else {
-													swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
-												}
-											}
 
-		 
-										});
+                } else if (rtn.error) {
+                    swal({
+                        title: "Erro!",
+                        text: rtn.error,
+                        type: "error",
+                        confirmButtonColor: "#424242"
+                    });
+                } else {
+                    swal({
+                        title: "Erro!",
+                        text: "Algum erro ocorreu! Tente novamente.",
+                        type: "error",
+                        confirmButtonColor: "#424242"
+                    });
+                }
 
-										$('.js-btn-acao-queroAgendar').click();
-									});
-								</script>
-								<section class="tab tab_alt js-tab">
-									<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamento').show();" class="active">Agendamento</a>
-									<?php /*<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-whatsapp').show();">Whatsapp</a>*/?>			
-									<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>					
-								</section>
-								
-								<div class="js-ag js-ag-agendamento">
+            },
+            error: function() {
+                swal({
+                    title: "Erro!",
+                    text: "Algum erro ocorreu! Tente novamente.",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            }
+        }).done(function() {
+            //obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+            //obj.attr('data-loading',0);
+        });
+    }
+}
 
-									<section class="filter">
-										<div class="button-group">
-											<a href="javascript:;" class="js-btn-acao js-btn-acao-queroAgendar button active" data-tipo="queroAgendar"><span>Quero agendar</span></a>
-											<a href="javascript:;" class="js-btn-acao button" data-tipo="naoQueroAgendar"><span>Não consegui agendar</span></a>
-											<a href="javascript:;" class="js-btn-acao button" data-tipo="excluir"><span>Excluir da lista</span></a>
-										</div>
-										<div class="filter-group">
-											<div class="filter-form form">
-												<dl>
-													<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
-												</dl>
-											</div>								
-										</div>
-									</section>
+$(function() {
+    $('.js-tab a').click(function() {
+        $(".js-tab a").removeClass("active");
+        $(this).addClass("active");
+    })
+})
+</script>
 
-									<div class="js-ag-agendamento-queroAgendar">
-										<div class="colunas3">
-											<dl>
-												<dt>Data</dt>
-												<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data" /></dd>
-											</dl>
-										
-											<dl>
-												<dt>Duração</dt>
-												<dd class="form-comp form-comp_pos">
-													<?php /*<input type="tel" name="agenda_duracao" class="" />*/?>
-													<select name="agenda_duracao">
-														<?php
+<section class="aside aside-pacienteRelacionamento" id="js-aside-pacienteRelacionamento">
+
+    <div class="aside__inner1">
+
+        <header class="aside-header">
+            <h1>Relacionamento com Paciente</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
+
+        <form method="post" class="aside-content form" onsubmit="return false">
+            <input type="hidden" name="id_paciente" />
+            <input type="hidden" name="tipo" value="queroAgendar" />
+            <section class="header-profile">
+                <img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="js-foto header-profile__foto" />
+                <div class="header-profile__inner1">
+                    <h1><a href="" target="_blank" class="js-nome"></a></h1>
+                    <div>
+                        <p class="js-idade"></p>
+                        <p class="js-periodicidade"></p>
+                        <p class="js-ultimoAtendimento"></p>
+                    </div>
+                </div>
+            </section>
+
+            <script>
+            $(function() {
+                $('#js-aside-pacienteRelacionamento').on('change',
+                    'select[name=agenda_duracao], select[name=id_cadeira],  select.js-profissionais, input[name=agenda_data]',
+                    function() {
+                        horarioDisponivel(0, $('#js-aside-pacienteRelacionamento'));
+
+                    });
+
+                $('#js-aside-pacienteRelacionamento .js-btn-acao').click(function() {
+                    $('#js-aside-pacienteRelacionamento .js-btn-acao').removeClass('active');
+                    $(this).addClass('active');
+
+                    if ($(this).attr('data-tipo') == "queroAgendar") {
+                        $('#js-aside-pacienteRelacionamento .js-ag-agendamento-excluir').hide();
+                        $('#js-aside-pacienteRelacionamento .js-ag-agendamento-naoQueroAgendar').hide();
+                        $('#js-aside-pacienteRelacionamento .js-ag-agendamento-queroAgendar').show();
+                        $('#js-aside-pacienteRelacionamento input[name=tipo]').val('queroAgendar');
+                    } else if ($(this).attr('data-tipo') == "excluir") {
+                        $('#js-aside-pacienteRelacionamento .js-ag-agendamento-excluir').show();
+                        $('#js-aside-pacienteRelacionamento .js-ag-agendamento-naoQueroAgendar').hide();
+                        $('#js-aside-pacienteRelacionamento .js-ag-agendamento-queroAgendar').hide();
+                        $('#js-aside-pacienteRelacionamento input[name=tipo]').val('excluir');
+                    } else {
+                        $('#js-aside-pacienteRelacionamento .js-ag-agendamento-excluir').hide();
+                        $('#js-aside-pacienteRelacionamento .js-ag-agendamento-naoQueroAgendar').show();
+                        $('#js-aside-pacienteRelacionamento .js-ag-agendamento-queroAgendar').hide();
+                        $('#js-aside-pacienteRelacionamento input[name=tipo]').val('naoQueroAgendar');
+                    }
+                });
+
+                $('#js-aside-pacienteRelacionamento .js-btn-whatsapp-enviar').click(function() {
+
+                    let obj = $(this);
+                    let objTextoAntigo = $(this).html();
+
+                    if (obj.attr('data-loading') == 0) {
+
+                        obj.attr('data-loading', 1);
+                        obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                        let id_paciente = $('#js-aside-pacienteRelacionamento input[name=id_paciente]')
+                            .val();
+
+                        let data =
+                            `ajax=asRelacionamentoPacienteEnviarWhatsapp&id_paciente=${id_paciente}`;
+
+                        $.ajax({
+                            type: 'POST',
+                            data: data,
+                            url: baseURLApiAside,
+                            success: function(rtn) {
+                                if (rtn.success) {
+
+                                    $.ajax({
+                                        type: "POST",
+                                        url: baseURLApiAside,
+                                        data: 'ajax=asRelacionamentoPacienteDisparaWhatsapp'
+                                    });
+
+
+                                    swal({
+                                        title: "Sucesso!",
+                                        text: 'Mensagem enviada com sucesso!',
+                                        type: "success",
+                                        confirmButtonColor: "#424242"
+                                    }, function() {});
+
+                                } else if (rtn.error) {
+                                    swal({
+                                        title: "Erro!",
+                                        text: rtn.error,
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                } else {
+                                    swal({
+                                        title: "Erro!",
+                                        text: "Algum erro ocorreu! Tente novamente.",
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                }
+
+                            },
+                            error: function() {
+                                swal({
+                                    title: "Erro!",
+                                    text: "Algum erro ocorreu! Tente novamente.",
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            }
+                        }).done(function() {
+                            obj.html(objTextoAntigo);
+                            obj.attr('data-loading', 0);
+                        });
+
+                    }
+
+                })
+
+                $('#js-aside-pacienteRelacionamento .js-ag-agendamento .js-salvar').click(function() {
+                    let tipo = $('#js-aside-pacienteRelacionamento input[name=tipo]').val();
+                    let id_paciente = $('#js-aside-pacienteRelacionamento input[name=id_paciente]')
+                    .val();
+
+                    if (tipo == "queroAgendar") {
+                        let agenda_data = $('#js-aside-pacienteRelacionamento input[name=agenda_data]')
+                            .val();
+                        let agenda_duracao = $(
+                            '#js-aside-pacienteRelacionamento select[name=agenda_duracao]').val();
+                        let id_cadeira = $('#js-aside-pacienteRelacionamento select[name=id_cadeira]')
+                            .val();
+                        let id_profissional = $(
+                            '#js-aside-pacienteRelacionamento select.js-profissionais').val();
+                        let agenda_hora = $('#js-aside-pacienteRelacionamento select[name=agenda_hora]')
+                            .val();
+                        let obs = $('#js-aside-pacienteRelacionamento textarea[name=obs]').val();
+                        let erro = '';
+
+                        if (agenda_data.length == 0) erro = 'Defina a <b>Data do Agendamento</b>';
+                        else if (agenda_duracao.length == 0) erro =
+                            'Defina a <b>Duração de Agendamento</b>';
+                        else if (id_cadeira.length == 0) erro =
+                            'Defina o <b>Consultório do Agendamento</b>';
+                        else if (id_profissional.length == 0) erro =
+                            'Defina o <b>Profissional do Agendamento</b>';
+                        else if (agenda_hora.length == 0) erro = 'Defina a <b>Hora do Agendamento</b>';
+
+                        if (erro.length == 0) {
+
+                            let obj = $(this);
+                            let obHTMLAntigo = $(this).html();
+
+                            if (obj.attr('data-loading') == 0) {
+
+                                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                                obj.attr('data-loading', 1);
+
+                                let data =
+                                    `ajax=asRelacionamentoPacienteQueroAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}`;
+
+                                data = {
+                                    'ajax': 'asRelacionamentoPacienteQueroAgendar',
+                                    'id_paciente': id_paciente,
+                                    'agenda_data': agenda_data,
+                                    'agenda_duracao': agenda_duracao,
+                                    'id_cadeira': id_cadeira,
+                                    'id_profissional': id_profissional,
+                                    'agenda_hora': agenda_hora,
+                                    'obs': obs,
+                                }
+                                $.ajax({
+                                    type: 'POST',
+                                    data: data,
+                                    url: baseURLApiAside,
+                                    success: function(rtn) {
+                                        if (rtn.success) {
+                                            $('#js-aside-pacienteRelacionamento input[name=agenda_data]')
+                                                .val('');
+                                            $('#js-aside-pacienteRelacionamento select[name=agenda_duracao]')
+                                                .val('');
+                                            $('#js-aside-pacienteRelacionamento select[name=id_cadeira]')
+                                                .val('');
+                                            $('#js-aside-pacienteRelacionamento select.js-profissionais')
+                                                .val('');
+                                            $('#js-aside-pacienteRelacionamento select[name=agenda_hora]')
+                                                .val('');
+                                            $('#js-aside-pacienteRelacionamento aside-close')
+                                                .click();
+                                            atualizaValorListasInteligentes();
+                                            swal({
+                                                title: "Sucesso!",
+                                                text: 'Agendamento realizado com sucesso!',
+                                                type: "success",
+                                                confirmButtonColor: "#424242"
+                                            }, function() {});
+
+                                        } else if (rtn.error) {
+                                            swal({
+                                                title: "Erro!",
+                                                text: rtn.error,
+                                                type: "error",
+                                                confirmButtonColor: "#424242"
+                                            });
+                                        } else {
+                                            swal({
+                                                title: "Erro!",
+                                                text: "Algum erro ocorreu! Tente novamente.",
+                                                type: "error",
+                                                confirmButtonColor: "#424242"
+                                            });
+                                        }
+
+                                    },
+                                    error: function() {
+                                        swal({
+                                            title: "Erro!",
+                                            text: "Algum erro ocorreu! Tente novamente.",
+                                            type: "error",
+                                            confirmButtonColor: "#424242"
+                                        });
+                                    }
+                                }).done(function() {
+                                    obj.html(obHTMLAntigo);
+                                    obj.attr('data-loading', 0);
+                                });
+
+
+                            }
+
+                        } else {
+                            swal({
+                                title: "Erro!",
+                                text: erro,
+                                html: true,
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
+                    } else if (tipo == "naoQueroAgendar") {
+                        let status = $('#js-aside-pacienteRelacionamento select[name=id_status]').val();
+                        let obs = $('#js-aside-pacienteRelacionamento textarea[name=obs]').val();
+                        let erro = '';
+
+                        if (status.length == 0) erro = 'Defina o <b>Status</b>';
+
+                        if (erro.length == 0) {
+                            let obj = $(this);
+                            let obHTMLAntigo = $(this).html();
+
+                            if (obj.attr('data-loading') == 0) {
+
+                                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                                obj.attr('data-loading', 1);
+
+                                let data =
+                                    `ajax=asRelacionamentoPacienteNaoQueroAgendar&id_paciente=${id_paciente}&id_status=${status}&obs=${obs}`;
+
+                                data = {
+                                    'ajax': 'asRelacionamentoPacienteNaoQueroAgendar',
+                                    'id_paciente': id_paciente,
+                                    'id_status': status,
+                                    'obs': obs
+                                }
+                                $.ajax({
+                                    type: 'POST',
+                                    data: data,
+                                    url: baseURLApiAside,
+                                    success: function(rtn) {
+                                        if (rtn.success) {
+                                            $('#js-aside-pacienteRelacionamento select[name=id_status]')
+                                                .val('');
+                                            $('#js-aside-pacienteRelacionamento textarea[name=obs]')
+                                                .val('');
+
+                                            atualizaValorListasInteligentes();
+                                            swal({
+                                                title: "Sucesso!",
+                                                text: 'Observação cadastrada realizado com sucesso!',
+                                                type: "success",
+                                                confirmButtonColor: "#424242"
+                                            }, function() {
+                                                $('.aside-close').click();
+                                            });
+
+                                        } else if (rtn.error) {
+                                            swal({
+                                                title: "Erro!",
+                                                text: rtn.error,
+                                                type: "error",
+                                                confirmButtonColor: "#424242"
+                                            });
+                                        } else {
+                                            swal({
+                                                title: "Erro!",
+                                                text: "Algum erro ocorreu! Tente novamente.",
+                                                type: "error",
+                                                confirmButtonColor: "#424242"
+                                            });
+                                        }
+
+                                    },
+                                    error: function() {
+                                        swal({
+                                            title: "Erro!",
+                                            text: "Algum erro ocorreu! Tente novamente.",
+                                            type: "error",
+                                            confirmButtonColor: "#424242"
+                                        });
+                                    }
+                                }).done(function() {
+                                    obj.html(obHTMLAntigo);
+                                    obj.attr('data-loading', 0);
+                                });
+
+
+                            }
+                        } else {
+                            swal({
+                                title: "Erro!",
+                                text: erro,
+                                html: true,
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
+                    } else if (tipo == "excluir") {
+
+                        let motivo = $('#js-aside-pacienteRelacionamento textarea[name=motivo]').val();
+                        let erro = '';
+
+                        if (motivo.length == 0) erro = 'Defina o <b>Motivo</b>';
+
+                        if (erro.length == 0) {
+                            let obj = $(this);
+                            let obHTMLAntigo = $(this).html();
+
+                            if (obj.attr('data-loading') == 0) {
+
+                                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                                obj.attr('data-loading', 1);
+
+                                let data =
+                                    `ajax=asRelacionamentoPacienteExcluir&id_paciente=${id_paciente}&motivo=${motivo}`;
+                                data = {
+                                    'ajax': 'asRelacionamentoPacienteExcluir',
+                                    'id_paciente': id_paciente,
+                                    'motivo': motivo
+                                }
+                                $.ajax({
+                                    type: 'POST',
+                                    data: data,
+                                    url: baseURLApiAside,
+                                    success: function(rtn) {
+                                        if (rtn.success) {
+                                            $('#js-aside-pacienteRelacionamento textarea[name=motivo]')
+                                                .val('');
+
+                                            atualizaValorListasInteligentes();
+                                            swal({
+                                                title: "Sucesso!",
+                                                text: 'Paciente excluído com sucesso!',
+                                                type: "success",
+                                                confirmButtonColor: "#424242"
+                                            }, function() {
+                                                $('.aside-close').click();
+                                            });
+
+                                        } else if (rtn.error) {
+                                            swal({
+                                                title: "Erro!",
+                                                text: rtn.error,
+                                                type: "error",
+                                                confirmButtonColor: "#424242"
+                                            });
+                                        } else {
+                                            swal({
+                                                title: "Erro!",
+                                                text: "Algum erro ocorreu! Tente novamente.",
+                                                type: "error",
+                                                confirmButtonColor: "#424242"
+                                            });
+                                        }
+
+                                    },
+                                    error: function() {
+                                        swal({
+                                            title: "Erro!",
+                                            text: "Algum erro ocorreu! Tente novamente.",
+                                            type: "error",
+                                            confirmButtonColor: "#424242"
+                                        });
+                                    }
+                                }).done(function() {
+                                    obj.html(obHTMLAntigo);
+                                    obj.attr('data-loading', 0);
+                                });
+
+
+                            }
+                        } else {
+                            swal({
+                                title: "Erro!",
+                                text: erro,
+                                html: true,
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
+                    }
+
+
+                });
+
+                $('.js-btn-acao-queroAgendar').click();
+            });
+            </script>
+            <section class="tab tab_alt js-tab">
+                <a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamento').show();"
+                    class="active">Agendamento</a>
+                <?php /*<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-whatsapp').show();">Whatsapp</a>*/?>
+                <a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>
+            </section>
+
+            <div class="js-ag js-ag-agendamento">
+
+                <section class="filter">
+                    <div class="button-group">
+                        <a href="javascript:;" class="js-btn-acao js-btn-acao-queroAgendar button active"
+                            data-tipo="queroAgendar"><span>Quero agendar</span></a>
+                        <a href="javascript:;" class="js-btn-acao button" data-tipo="naoQueroAgendar"><span>Não consegui
+                                agendar</span></a>
+                        <a href="javascript:;" class="js-btn-acao button" data-tipo="excluir"><span>Excluir da
+                                lista</span></a>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-form form">
+                            <dl>
+                                <dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify"
+                                            data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="js-ag-agendamento-queroAgendar">
+                    <div class="colunas3">
+                        <dl>
+                            <dt>Data</dt>
+                            <dd class="form-comp"><span><i class="iconify"
+                                        data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel"
+                                    name="agenda_data" class="data" /></dd>
+                        </dl>
+
+                        <dl>
+                            <dt>Duração</dt>
+                            <dd class="form-comp form-comp_pos">
+                                <?php /*<input type="tel" name="agenda_duracao" class="" />*/?>
+                                <select name="agenda_duracao">
+                                    <?php
 														foreach($optAgendaDuracao as $v) {
 															echo '<option value="'.$v.'">'.$v.'</option>';
 														}
 														?>
-													</select>
-													<span>min</span>
-												</dd>
-											</dl>
+                                </select>
+                                <span>min</span>
+                            </dd>
+                        </dl>
 
-											<dl>
-												<dt>Consultório</dt>
-												<dd>
-													<select name="id_cadeira">
-														<option value=""></option>
-														<?php
+                        <dl>
+                            <dt>Consultório</dt>
+                            <dd>
+                                <select name="id_cadeira">
+                                    <option value=""></option>
+                                    <?php
 														foreach($_cadeiras as $p) {
 															echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
 														}
 														?>
-													</select>
-												</dd>
-											</dl>
-										</div>
-										<div class="colunas3">
-											<dl class="dl2">
-												<dt>Profissionais</dt>
-												<dd>
-													<select class="js-profissionais js-select-profissionais">
-														<option value=""></option>
-														<?php
+                                </select>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="colunas3">
+                        <dl class="dl2">
+                            <dt>Profissionais</dt>
+                            <dd>
+                                <select class="js-profissionais js-select-profissionais">
+                                    <option value=""></option>
+                                    <?php
 														foreach($_profissionais as $p) {
 															if($p->check_agendamento==0) continue;
 															echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
 														}
 														?>
-													</select>
-												</dd>
-											</dl>
-											<dl>
-												<dt>Hora</dt>
-												<dd class="form-comp">
-													<span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span>
-													<select name="agenda_hora">
-														<option value="">Selecione o horário</option>
-													</select>
-												</dd>
-											</dl>
-										</div>
+                                </select>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>Hora</dt>
+                            <dd class="form-comp">
+                                <span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span>
+                                <select name="agenda_hora">
+                                    <option value="">Selecione o horário</option>
+                                </select>
+                            </dd>
+                        </dl>
+                    </div>
 
-										<dl>
-											<dt>Observações</dt>
-											<dd>
-												<textarea name="obs" style="height:80px;"></textarea>
-											</dd>
-										</dl>
-									</div>
+                    <dl>
+                        <dt>Observações</dt>
+                        <dd>
+                            <textarea name="obs" style="height:80px;"></textarea>
+                        </dd>
+                    </dl>
+                </div>
 
 
-									<div class="js-ag-agendamento-naoQueroAgendar">
-										<dl>
-											<dt>Status</dt>
-											<dd>
-												<select name="id_status">
-													<option value="">selecione</option>
-													<?php
+                <div class="js-ag-agendamento-naoQueroAgendar">
+                    <dl>
+                        <dt>Status</dt>
+                        <dd>
+                            <select name="id_status">
+                                <option value="">selecione</option>
+                                <?php
 													foreach($_historicoStatus as $v) {
 														echo '<option value="'.$v->id.'">'.utf8_encode($v->titulo).'</option>';
 													}
 													?>
-												</select>
-											</dd>
-										</dl>
-										<dl>
-											<dt>Observações</dt>
-											<dd>
-												<textarea name="obs" style="height:80px;"></textarea>
-											</dd>
-										</dl>
-									</div>
+                            </select>
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>Observações</dt>
+                        <dd>
+                            <textarea name="obs" style="height:80px;"></textarea>
+                        </dd>
+                    </dl>
+                </div>
 
 
-									<div class="js-ag-agendamento-excluir">
-										<dl>
-											<dt>Motivo</dt>
-											<dd>
-												<textarea name="motivo" style="height:80px;"></textarea>
-											</dd>
-										</dl>
-									</div>
+                <div class="js-ag-agendamento-excluir">
+                    <dl>
+                        <dt>Motivo</dt>
+                        <dd>
+                            <textarea name="motivo" style="height:80px;"></textarea>
+                        </dd>
+                    </dl>
+                </div>
 
-								</div>
+            </div>
 
-								<div class="js-ag js-ag-whatsapp">
+            <div class="js-ag js-ag-whatsapp">
 
-									<?php
+                <?php
 									// id => 4: Relacionamento Gestão de Tempo
 									$sqlwts=new Mysql(true);
 									$sqlwts->consult($_p."whatsapp_mensagens_tipos","*","where id=4");
@@ -6757,592 +7442,696 @@
 									
 									if(is_object($wts)) {
 									?>
-									<div class="colunas3">
-										<dl>
-											<dt>Número</dt>
-											<dd>
-												<input type="text" disabled class="telefone js-whatsapp-numero" />
-											</dd>
-										</dl>
-									</div>
-									<dl>
-										<dt>Mensagem</dt>
-										<dd>
-											<textarea style="height: 250px;" disabled><?php echo $infozap->texto;?></textarea>
-										</dd>
-									</dl>
+                <div class="colunas3">
+                    <dl>
+                        <dt>Número</dt>
+                        <dd>
+                            <input type="text" disabled class="telefone js-whatsapp-numero" />
+                        </dd>
+                    </dl>
+                </div>
+                <dl>
+                    <dt>Mensagem</dt>
+                    <dd>
+                        <textarea style="height: 250px;" disabled><?php echo $infozap->texto;?></textarea>
+                    </dd>
+                </dl>
 
-									<a href="javascript:;" class="button button__sec js-btn-whatsapp-enviar" data-loading="0">Enviar Whatsapp</a>
+                <a href="javascript:;" class="button button__sec js-btn-whatsapp-enviar" data-loading="0">Enviar
+                    Whatsapp</a>
 
-									<?php
+                <?php
 									} else {
 									?>
-									<center>
-										<br />Mensagem <b>Relacionamento Gestão de Tempo</b> não configurado.
-										<br /><br />
-										<a href="pg_configuracoes_whatsapp.php" target="_blank" class="button">Clique aqui para configurar</a>
-									</center>
-									<?php	
+                <center>
+                    <br />Mensagem <b>Relacionamento Gestão de Tempo</b> não configurado.
+                    <br /><br />
+                    <a href="pg_configuracoes_whatsapp.php" target="_blank" class="button">Clique aqui para
+                        configurar</a>
+                </center>
+                <?php	
 									}
 									?>
 
 
-									<fieldset style="margin-top:30px;">
-										<legend>Histórico</legend>
+                <fieldset style="margin-top:30px;">
+                    <legend>Histórico</legend>
 
-										<div class="history2 js-whatsappHistorico">
-										
-										</div>
-									</fieldset>
-								</div>
+                    <div class="history2 js-whatsappHistorico">
+
+                    </div>
+                </fieldset>
+            </div>
 
 
-								<div class="js-ag js-ag-historico" style="display:none;">
-									<div class="history">
-										<section>
-											<div class="history2">
+            <div class="js-ag js-ag-historico" style="display:none;">
+                <div class="history">
+                    <section>
+                        <div class="history2">
 
-												<div class="history2-item">
-													<aside>
-														<span style="background:#f9de27;color:#FFF;"><i class="iconify" data-icon="mdi:calendar-check"></i></span>		
-													</aside>
+                            <div class="history2-item">
+                                <aside>
+                                    <span style="background:#f9de27;color:#FFF;"><i class="iconify"
+                                            data-icon="mdi:calendar-check"></i></span>
+                                </aside>
 
-													<article>
-														<div class="history2-main">
-															<div>
-																<h1>02/05 • 09:00</h1>
-																<h2>CONSULT. 4</h2>												
-																<div class="badge-prof" style="background:#c18c6a">PM</div>												
-															</div>																						
-															<h3><a href="javascript:;" onclick="$(this).parent().parent().next('.history2-more').slideToggle('fast');">detalhes</a></h3>									
-														</div>
-														<div class="history2-more">
-															
+                                <article>
+                                    <div class="history2-main">
+                                        <div>
+                                            <h1>02/05 • 09:00</h1>
+                                            <h2>CONSULT. 4</h2>
+                                            <div class="badge-prof" style="background:#c18c6a">PM</div>
+                                        </div>
+                                        <h3><a href="javascript:;"
+                                                onclick="$(this).parent().parent().next('.history2-more').slideToggle('fast');">detalhes</a>
+                                        </h3>
+                                    </div>
+                                    <div class="history2-more">
 
-															<div class="history2-more-item">
 
-																<h1>02/02/21 08:30 - Simone Helena dos Santos </h1>
-																<h2>Alterou status de <span class="data" style="background:#545559">À CONFIRMAR</span> para <span class="data" style="background:#f9de27">DESMARCADO</span></h2>
-																												
-															</div>
-															
+                                        <div class="history2-more-item">
 
-															<div class="history2-more-item">
+                                            <h1>02/02/21 08:30 - Simone Helena dos Santos </h1>
+                                            <h2>Alterou status de <span class="data" style="background:#545559">À
+                                                    CONFIRMAR</span> para <span class="data"
+                                                    style="background:#f9de27">DESMARCADO</span></h2>
 
-																<h1>25/01/21 15:30 - Alessandra Silva Alves</h1>
-																												<h2>Criou novo agendamento com status <span class="data" style="background:#545559">À CONFIRMAR</span></h2>
-																												
-															</div>
-														</div>
-													</article>
-												</div>
+                                        </div>
 
-												<div class="history2-item">
-													<aside>
-														<span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>			
-													</aside>
 
-													<article>
-														<div class="history2-main">
-															<div>
-																<h1>28/04/22 • 08:23</h1>
-																Kroner Machado Costa												
-															</div>
-															<strong>Não conseguiu contato</strong>
-															<br />																				
-														</div>
-													</article>
-												</div>
-											</div>
-										</section>
-									</div>
-								</div>
-							</div>
+                                        <div class="history2-more-item">
 
-						</form>
-					</section><!-- .aside -->
-					<section class="aside aside-pacienteRelacionamentoExcluido" id="js-aside-pacienteRelacionamentoExcluido">
-						
-						<div class="aside__inner1">
+                                            <h1>25/01/21 15:30 - Alessandra Silva Alves</h1>
+                                            <h2>Criou novo agendamento com status <span class="data"
+                                                    style="background:#545559">À CONFIRMAR</span></h2>
 
-							<header class="aside-header">
-								<h1>Paciente Excluído (ignorados)</h1>
-								<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-							</header>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
 
-							<form method="post" class="aside-content form" onsubmit="return false">
-								<input type="hidden" name="id_paciente" />
-								<input type="hidden" name="tipo" value="queroAgendar" />
-								<section class="header-profile">
-									<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="js-foto header-profile__foto" />
-									<div class="header-profile__inner1">
-										<h1><a href="" target="_blank" class="js-nome"></a></h1>
-										<div>
-											<p class="js-idade"></p>
-											<p class="js-periodicidade"></p>
-											<p class="js-ultimoAtendimento"></p>
-										</div>
-									</div>
-								</section>
+                            <div class="history2-item">
+                                <aside>
+                                    <span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>
+                                </aside>
 
-								<script>
-									
+                                <article>
+                                    <div class="history2-main">
+                                        <div>
+                                            <h1>28/04/22 • 08:23</h1>
+                                            Kroner Machado Costa
+                                        </div>
+                                        <strong>Não conseguiu contato</strong>
+                                        <br />
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+    </div>
 
-									$(function() {
+    </form>
+</section><!-- .aside -->
+<section class="aside aside-pacienteRelacionamentoExcluido" id="js-aside-pacienteRelacionamentoExcluido">
 
-										$('#js-aside-pacienteRelacionamentoExcluido .js-retirarDaLista').click(function(){
-											
-									
-											let obj = $(this);
-											let objTextoAntigo = $(this).html();
+    <div class="aside__inner1">
 
-											if(obj.attr('data-loading')==0) {
+        <header class="aside-header">
+            <h1>Paciente Excluído (ignorados)</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
 
-												obj.attr('data-loading',1);
-												obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-												let id_paciente = $('#js-aside-pacienteRelacionamentoExcluido input[name=id_paciente]').val();
+        <form method="post" class="aside-content form" onsubmit="return false">
+            <input type="hidden" name="id_paciente" />
+            <input type="hidden" name="tipo" value="queroAgendar" />
+            <section class="header-profile">
+                <img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="js-foto header-profile__foto" />
+                <div class="header-profile__inner1">
+                    <h1><a href="" target="_blank" class="js-nome"></a></h1>
+                    <div>
+                        <p class="js-idade"></p>
+                        <p class="js-periodicidade"></p>
+                        <p class="js-ultimoAtendimento"></p>
+                    </div>
+                </div>
+            </section>
 
-												let data = `ajax=asRelacionamentoPacienteRemoverExcluidos&id_paciente=${id_paciente}`;
-											
-												$.ajax({
-														type:'POST',
-														data:data,
-														url:baseURLApiAside,
-														success:function(rtn) {
-															if(rtn.success) {
+            <script>
+            $(function() {
 
-																atualizaValorListasInteligentes();
-																swal({title: "Sucesso!", text: 'Paciente excluído com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-																	$('.aside-close').click();
-																});
+                $('#js-aside-pacienteRelacionamentoExcluido .js-retirarDaLista').click(function() {
 
-															} else if(rtn.error) {
-																swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-															} else {
-																swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-															}
-															
-														},
-														error:function() {
-															swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-														} 
-												}).done(function(){
-													obj.html(objTextoAntigo);
-													obj.attr('data-loading',0);
-												});
-											};
-										});
 
-									});
-								</script>
-								<section class="tab tab_alt js-tab">
-									<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-excluido').show();" class="active">Excluído</a>			
-									<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>					
-								</section>
-								
-								<div class="js-ag js-ag-excluido">
+                    let obj = $(this);
+                    let objTextoAntigo = $(this).html();
 
-									
+                    if (obj.attr('data-loading') == 0) {
 
-									<div class="js-ag-agendamento-excluir">
-										<dl>
-											<dt>Motivo</dt>
-											<dd>
-												<textarea name="motivo" style="height:80px;"></textarea>
-											</dd>
-											<dd class="js-excluido-desc"></dd>
-										</dl>
-									</div>
+                        obj.attr('data-loading', 1);
+                        obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                        let id_paciente = $(
+                            '#js-aside-pacienteRelacionamentoExcluido input[name=id_paciente]')
+                        .val();
 
-									<center>
-										<br /><br />
-										<button class="button button_main js-retirarDaLista" data-loading="0"><i class="iconify" data-icon="fluent:delete-24-regular"></i> <span>Remover da Lista de Excluídos</span></button>
-									</center>
-								</div>
-								
-								<div class="js-ag js-ag-historico" style="display:none;">
-									<div class="history">
-										<section>
-											<div class="history2">
+                        let data =
+                            `ajax=asRelacionamentoPacienteRemoverExcluidos&id_paciente=${id_paciente}`;
 
-												<div class="history2-item">
-													<aside>
-														<span style="background:#f9de27;color:#FFF;"><i class="iconify" data-icon="mdi:calendar-check"></i></span>		
-													</aside>
+                        $.ajax({
+                            type: 'POST',
+                            data: data,
+                            url: baseURLApiAside,
+                            success: function(rtn) {
+                                if (rtn.success) {
 
-													<article>
-														<div class="history2-main">
-															<div>
-																<h1>02/05 • 09:00</h1>
-																<h2>CONSULT. 4</h2>												
-																<div class="badge-prof" style="background:#c18c6a">PM</div>												
-															</div>																						
-															<h3><a href="javascript:;" onclick="$(this).parent().parent().next('.history2-more').slideToggle('fast');">detalhes</a></h3>									
-														</div>
-														<div class="history2-more">
-															
+                                    atualizaValorListasInteligentes();
+                                    swal({
+                                        title: "Sucesso!",
+                                        text: 'Paciente excluído com sucesso!',
+                                        type: "success",
+                                        confirmButtonColor: "#424242"
+                                    }, function() {
+                                        $('.aside-close').click();
+                                    });
 
-															<div class="history2-more-item">
+                                } else if (rtn.error) {
+                                    swal({
+                                        title: "Erro!",
+                                        text: rtn.error,
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                } else {
+                                    swal({
+                                        title: "Erro!",
+                                        text: "Algum erro ocorreu! Tente novamente.",
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                }
 
-																<h1>02/02/21 08:30 - Simone Helena dos Santos </h1>
-																<h2>Alterou status de <span class="data" style="background:#545559">À CONFIRMAR</span> para <span class="data" style="background:#f9de27">DESMARCADO</span></h2>
-																												
-															</div>
-															
+                            },
+                            error: function() {
+                                swal({
+                                    title: "Erro!",
+                                    text: "Algum erro ocorreu! Tente novamente.",
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            }
+                        }).done(function() {
+                            obj.html(objTextoAntigo);
+                            obj.attr('data-loading', 0);
+                        });
+                    };
+                });
 
-															<div class="history2-more-item">
+            });
+            </script>
+            <section class="tab tab_alt js-tab">
+                <a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-excluido').show();"
+                    class="active">Excluído</a>
+                <a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-historico').show();">Histórico</a>
+            </section>
 
-																<h1>25/01/21 15:30 - Alessandra Silva Alves</h1>
-																												<h2>Criou novo agendamento com status <span class="data" style="background:#545559">À CONFIRMAR</span></h2>
-																												
-															</div>
-														</div>
-													</article>
-												</div>
+            <div class="js-ag js-ag-excluido">
 
-												<div class="history2-item">
-													<aside>
-														<span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>			
-													</aside>
 
-													<article>
-														<div class="history2-main">
-															<div>
-																<h1>28/04/22 • 08:23</h1>
-																Kroner Machado Costa												
-															</div>
-															<strong>Não conseguiu contato</strong>
-															<br />																				
-														</div>
-													</article>
-												</div>
-											</div>
-										</section>
-									</div>
-								</div>
 
-						</form>
-					</section><!-- .aside -->
-				<?php
+                <div class="js-ag-agendamento-excluir">
+                    <dl>
+                        <dt>Motivo</dt>
+                        <dd>
+                            <textarea name="motivo" style="height:80px;"></textarea>
+                        </dd>
+                        <dd class="js-excluido-desc"></dd>
+                    </dl>
+                </div>
+
+                <center>
+                    <br /><br />
+                    <button class="button button_main js-retirarDaLista" data-loading="0"><i class="iconify"
+                            data-icon="fluent:delete-24-regular"></i> <span>Remover da Lista de
+                            Excluídos</span></button>
+                </center>
+            </div>
+
+            <div class="js-ag js-ag-historico" style="display:none;">
+                <div class="history">
+                    <section>
+                        <div class="history2">
+
+                            <div class="history2-item">
+                                <aside>
+                                    <span style="background:#f9de27;color:#FFF;"><i class="iconify"
+                                            data-icon="mdi:calendar-check"></i></span>
+                                </aside>
+
+                                <article>
+                                    <div class="history2-main">
+                                        <div>
+                                            <h1>02/05 • 09:00</h1>
+                                            <h2>CONSULT. 4</h2>
+                                            <div class="badge-prof" style="background:#c18c6a">PM</div>
+                                        </div>
+                                        <h3><a href="javascript:;"
+                                                onclick="$(this).parent().parent().next('.history2-more').slideToggle('fast');">detalhes</a>
+                                        </h3>
+                                    </div>
+                                    <div class="history2-more">
+
+
+                                        <div class="history2-more-item">
+
+                                            <h1>02/02/21 08:30 - Simone Helena dos Santos </h1>
+                                            <h2>Alterou status de <span class="data" style="background:#545559">À
+                                                    CONFIRMAR</span> para <span class="data"
+                                                    style="background:#f9de27">DESMARCADO</span></h2>
+
+                                        </div>
+
+
+                                        <div class="history2-more-item">
+
+                                            <h1>25/01/21 15:30 - Alessandra Silva Alves</h1>
+                                            <h2>Criou novo agendamento com status <span class="data"
+                                                    style="background:#545559">À CONFIRMAR</span></h2>
+
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+
+                            <div class="history2-item">
+                                <aside>
+                                    <span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>
+                                </aside>
+
+                                <article>
+                                    <div class="history2-main">
+                                        <div>
+                                            <h1>28/04/22 • 08:23</h1>
+                                            Kroner Machado Costa
+                                        </div>
+                                        <strong>Não conseguiu contato</strong>
+                                        <br />
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+        </form>
+</section><!-- .aside -->
+<?php
 			}
 
 		// Profissao
 			if(isset($apiConfig['profissao'])) {
 				?>
-				<script type="text/javascript">
-					var asProfissoes = [];
+<script type="text/javascript">
+var asProfissoes = [];
 
-					const asProfissoesListar = (openAside) => {
-						
-						if(asProfissoes) {
-							$('.js-asProfissoes-table tbody').html('');
+const asProfissoesListar = (openAside) => {
 
-							let atualizaProfissao = $('select.ajax-id_profissao')?1:0;
-						
-							let atualizaProfissaoId = 0;
-							let profissaoDisabledIds = [];
-							if(atualizaProfissao==1) {
+    if (asProfissoes) {
+        $('.js-asProfissoes-table tbody').html('');
 
-								$('select.ajax-id_profissao option').each(function(index,el){
-									if($(el).prop('disabled')===true) {
-										profissaoDisabledIds.push($(el).val());
-									}
-								})
-								atualizaProfissaoId=$('select.ajax-id_profissao').val();
-								$('select.ajax-id_profissao').find('option').remove();
-							
-								$('select.ajax-id_profissao').append('<option value=""></option>');
-							}
+        let atualizaProfissao = $('select.ajax-id_profissao') ? 1 : 0;
 
-							cont=0;
-							asProfissoes.forEach(x=>{
+        let atualizaProfissaoId = 0;
+        let profissaoDisabledIds = [];
+        if (atualizaProfissao == 1) {
 
-								$(`.js-asProfissoes-table tbody`).append(`<tr class="aside-open">
+            $('select.ajax-id_profissao option').each(function(index, el) {
+                if ($(el).prop('disabled') === true) {
+                    profissaoDisabledIds.push($(el).val());
+                }
+            })
+            atualizaProfissaoId = $('select.ajax-id_profissao').val();
+            $('select.ajax-id_profissao').find('option').remove();
+
+            $('select.ajax-id_profissao').append('<option value=""></option>');
+        }
+
+        cont = 0;
+        asProfissoes.forEach(x => {
+
+            $(`.js-asProfissoes-table tbody`).append(`<tr class="aside-open">
 																	<td><h1>${x.titulo}</h1></td>
 																	<td style="text-align:right;"><a href="javascript:;" class="button js-asProfissoes-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
 																</tr>`);
 
-								if(atualizaProfissao==1) {
+            if (atualizaProfissao == 1) {
 
-									dis=profissaoDisabledIds.includes(x.id)?' disabled':'';
-									sel=(atualizaProfissaoId==x.id)?' selected':'';
-									$('select.ajax-id_profissao').append(`<option value="${x.id}"${sel}${dis}>${x.titulo}</option>`);
-								}
+                dis = profissaoDisabledIds.includes(x.id) ? ' disabled' : '';
+                sel = (atualizaProfissaoId == x.id) ? ' selected' : '';
+                $('select.ajax-id_profissao').append(
+                    `<option value="${x.id}"${sel}${dis}>${x.titulo}</option>`);
+            }
 
-								cont++;
-								if(cont==asProfissoes.length) {
-									$('select.ajax-id_profissao').trigger('chosen:updated');
-								}
+            cont++;
+            if (cont == asProfissoes.length) {
+                $('select.ajax-id_profissao').trigger('chosen:updated');
+            }
 
-							});
-							
-							if(openAside===true) {
-								$("#js-aside-asProfissoes").fadeIn(100,function() {
-									$("#js-aside-asProfissoes .aside__inner1").addClass("active");
-								});
-							}
+        });
 
-						} else {
-							if(openAside===true) {
-								$(".aside").fadeIn(100,function() {
-										$(".aside .aside__inner1").addClass("active");
-								});
-							}
-						}
-					}
+        if (openAside === true) {
+            $("#js-aside-asProfissoes").fadeIn(100, function() {
+                $("#js-aside-asProfissoes .aside__inner1").addClass("active");
+            });
+        }
 
-					const asProfissoesAtualizar = (openAside) => {	
-						let data = `ajax=asProfissoesListar`;
+    } else {
+        if (openAside === true) {
+            $(".aside").fadeIn(100, function() {
+                $(".aside .aside__inner1").addClass("active");
+            });
+        }
+    }
+}
 
-						$.ajax({
-							type:"POST",
-							url:baseURLApiAside,
-							data:data,
-							success:function(rtn) {
-								if(rtn.success) {
-									asProfissoes=rtn.regs;
-									asProfissoesListar(openAside);
-								}
-							}
-						})
-					}
-					
-					const asProfissoesEditar = (id) => {
-						let data = `ajax=asProfissoesEditar&id=${id}`;
-						$.ajax({
-							type:"POST",
-							url:baseURLApiAside,
-							data:data,
-							success:function(rtn) {
-								if(rtn.success) {
-									reg=rtn.cnt
+const asProfissoesAtualizar = (openAside) => {
+    let data = `ajax=asProfissoesListar`;
 
-									$(`.js-asProfissoes-id`).val(reg.id);
-									$(`.js-asProfissoes-titulo`).val(reg.titulo);
+    $.ajax({
+        type: "POST",
+        url: baseURLApiAside,
+        data: data,
+        success: function(rtn) {
+            if (rtn.success) {
+                asProfissoes = rtn.regs;
+                asProfissoesListar(openAside);
+            }
+        }
+    })
+}
 
-									
-									$('.js-asProfissoes-form').animate({scrollTop: 0},'fast');
-									$('.js-asProfissoes-submit').html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
-									$('.js-asProfissoes-remover').show();
+const asProfissoesEditar = (id) => {
+    let data = `ajax=asProfissoesEditar&id=${id}`;
+    $.ajax({
+        type: "POST",
+        url: baseURLApiAside,
+        data: data,
+        success: function(rtn) {
+            if (rtn.success) {
+                reg = rtn.cnt
 
-								} else if(rtn.error) {
-									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-								} else {
-									swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
-								}
-							},
-							error:function(){
-								swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
-							}
-						});
-					}
-					
-					$(function(){
+                $(`.js-asProfissoes-id`).val(reg.id);
+                $(`.js-asProfissoes-titulo`).val(reg.titulo);
 
-						asProfissoesAtualizar();
 
-						$('.js-asProfissoes-submit').click(function(){
-							let obj = $(this);
-							if(obj.attr('data-loading')==0) {
+                $('.js-asProfissoes-form').animate({
+                    scrollTop: 0
+                }, 'fast');
+                $('.js-asProfissoes-submit').html(
+                    `<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
+                $('.js-asProfissoes-remover').show();
 
-								let id = $(`.js-asProfissoes-id`).val();
-								let titulo = $(`.js-asProfissoes-titulo`).val();
+            } else if (rtn.error) {
+                swal({
+                    title: "Erro!",
+                    text: rtn.error,
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            } else {
+                swal({
+                    title: "Erro!",
+                    text: "Algum erro ocorreu durante a edição deste registro!",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            }
+        },
+        error: function() {
+            swal({
+                title: "Erro!",
+                text: "Algum erro ocorreu durante a edição deste registro!",
+                type: "error",
+                confirmButtonColor: "#424242"
+            });
+        }
+    });
+}
 
-								if(titulo.length==0) {
-									swal({title: "Erro!", text: "Digite a Profissão", type:"error", confirmButtonColor: "#424242"});
-								}  else {
+$(function() {
 
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
+    asProfissoesAtualizar();
 
-									let data = `ajax=asProfissoesPersistir&id=${id}&titulo=${titulo}`;
-									
-									$.ajax({
-										type:'POST',
-										data:data,
-										url:baseURLApiAside,
-										success:function(rtn) {
-											if(rtn.success) {
-												asProfissoesAtualizar();	
+    $('.js-asProfissoes-submit').click(function() {
+        let obj = $(this);
+        if (obj.attr('data-loading') == 0) {
 
-												$(`.js-asProfissoes-id`).val(0);
-												$(`.js-asProfissoes-titulo`).val(``);
+            let id = $(`.js-asProfissoes-id`).val();
+            let titulo = $(`.js-asProfissoes-titulo`).val();
 
-											} else if(rtn.error) {
-												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-											} else {
-												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-											}
-											
-										},
-										error:function() {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										}
-									}).done(function(){
-										$('.js-asProfissoes-remover').hide();
-										obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-										obj.attr('data-loading',0);
-									});
+            if (titulo.length == 0) {
+                swal({
+                    title: "Erro!",
+                    text: "Digite a Profissão",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            } else {
 
-								}
-							}
-						})
+                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                obj.attr('data-loading', 1);
 
-						$('.js-asProfissoes-table').on('click','.js-asProfissoes-editar',function(){
-							let id = $(this).attr('data-id');
-							asProfissoesEditar(id);
-						});
+                let data = `ajax=asProfissoesPersistir&id=${id}&titulo=${titulo}`;
 
-						$('.aside-profissao').on('click','.js-asProfissoes-remover',function(){
-							let obj = $(this);
+                $.ajax({
+                    type: 'POST',
+                    data: data,
+                    url: baseURLApiAside,
+                    success: function(rtn) {
+                        if (rtn.success) {
+                            asProfissoesAtualizar();
 
-							if(obj.attr('data-loading')==0) {
+                            $(`.js-asProfissoes-id`).val(0);
+                            $(`.js-asProfissoes-titulo`).val(``);
 
-								let id = $('.js-asProfissoes-id').val();
-								swal({
-									title: "Atenção",
-									text: "Você tem certeza que deseja remover este registro?",
-									type: "warning",
-									showCancelButton: true,
-									confirmButtonColor: "#DD6B55",
-									confirmButtonText: "Sim!",
-									cancelButtonText: "Não",
-									closeOnConfirm:false,
-									closeOnCancel: false }, 
-									function(isConfirm){   
-										if (isConfirm) {   
+                        } else if (rtn.error) {
+                            swal({
+                                title: "Erro!",
+                                text: rtn.error,
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        } else {
+                            swal({
+                                title: "Erro!",
+                                text: "Algum erro ocorreu! Tente novamente.",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
 
-											obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-											obj.attr('data-loading',1);
-											let data = `ajax=asProfissoesRemover&id=${id}`; 
-											$.ajax({
-												type:"POST",
-												data:data,
-												url:baseURLApiAside,
-												success:function(rtn) {
-													if(rtn.success) {
-														$(`.js-asProfissoes-id`).val(0);
-														$(`.js-asProfissoes-titulo`).val('');
-														asProfissoesAtualizar();
-														swal.close();   
-													} else if(rtn.error) {
-														swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-													} else {
-														swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção desta profissão!", type:"error", confirmButtonColor: "#424242"});
-													}
-												},
-												error:function(){
-													swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção desta profissão!", type:"error", confirmButtonColor: "#424242"});
-												}
-											}).done(function(){
-												$('.js-asProfissoes-remover').hide();
-												obj.html('<i class="iconify" data-icon="fluent:delete-24-regular"></i>');
-												obj.attr('data-loading',0);
-												$(`.js-asProfissoes-submit`).html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-											});
-										} else {   
-											swal.close();   
-										} 
-									});
-							}
-						});
+                    },
+                    error: function() {
+                        swal({
+                            title: "Erro!",
+                            text: "Algum erro ocorreu! Tente novamente.",
+                            type: "error",
+                            confirmButtonColor: "#424242"
+                        });
+                    }
+                }).done(function() {
+                    $('.js-asProfissoes-remover').hide();
+                    obj.html(
+                    `<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+                    obj.attr('data-loading', 0);
+                });
 
-					});
-				</script>
+            }
+        }
+    })
 
-				<section class="aside aside-profissao">
-					<div class="aside__inner1">
+    $('.js-asProfissoes-table').on('click', '.js-asProfissoes-editar', function() {
+        let id = $(this).attr('data-id');
+        asProfissoesEditar(id);
+    });
 
-						<header class="aside-header">
-							<h1>Profissão</h1>
-							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-						</header>
+    $('.aside-profissao').on('click', '.js-asProfissoes-remover', function() {
+        let obj = $(this);
 
-						<form method="post" class="aside-content form">
-							<input type="hidden" class="js-asProfissoes-id" />
-							
-							<dl>
-								<dt>Profissão</dt>
-								<dd>
-									<input type="text" class="js-asProfissoes-titulo" style="text-transform:uppercase;" />
-									<button type="button" class="js-asProfissoes-submit button button_main" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
-									<a href="javascript:;" class="button js-asProfissoes-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-								</dd>
-							</dl>
-							<div class="list2" style="margin-top:2rem;">
-								<table class="js-asProfissoes-table">
-									<thead>
-										<tr>									
-											<th>PROFISSÃO</th>
-											<th></th>
-										</tr>
-									</thead>
-									<tbody>							
-									</tbody>
-								</table>
-							</div>
-						</form>
-					</div>
-				</section>
-				<?php
+        if (obj.attr('data-loading') == 0) {
+
+            let id = $('.js-asProfissoes-id').val();
+            swal({
+                    title: "Atenção",
+                    text: "Você tem certeza que deseja remover este registro?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Sim!",
+                    cancelButtonText: "Não",
+                    closeOnConfirm: false,
+                    closeOnCancel: false
+                },
+                function(isConfirm) {
+                    if (isConfirm) {
+
+                        obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                        obj.attr('data-loading', 1);
+                        let data = `ajax=asProfissoesRemover&id=${id}`;
+                        $.ajax({
+                            type: "POST",
+                            data: data,
+                            url: baseURLApiAside,
+                            success: function(rtn) {
+                                if (rtn.success) {
+                                    $(`.js-asProfissoes-id`).val(0);
+                                    $(`.js-asProfissoes-titulo`).val('');
+                                    asProfissoesAtualizar();
+                                    swal.close();
+                                } else if (rtn.error) {
+                                    swal({
+                                        title: "Erro!",
+                                        text: rtn.error,
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                } else {
+                                    swal({
+                                        title: "Erro!",
+                                        text: "Algum erro ocorreu durante a remoção desta profissão!",
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                }
+                            },
+                            error: function() {
+                                swal({
+                                    title: "Erro!",
+                                    text: "Algum erro ocorreu durante a remoção desta profissão!",
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            }
+                        }).done(function() {
+                            $('.js-asProfissoes-remover').hide();
+                            obj.html(
+                                '<i class="iconify" data-icon="fluent:delete-24-regular"></i>'
+                                );
+                            obj.attr('data-loading', 0);
+                            $(`.js-asProfissoes-submit`).html(
+                                `<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`
+                                );
+                        });
+                    } else {
+                        swal.close();
+                    }
+                });
+        }
+    });
+
+});
+</script>
+
+<section class="aside aside-profissao">
+    <div class="aside__inner1">
+
+        <header class="aside-header">
+            <h1>Profissão</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
+
+        <form method="post" class="aside-content form">
+            <input type="hidden" class="js-asProfissoes-id" />
+
+            <dl>
+                <dt>Profissão</dt>
+                <dd>
+                    <input type="text" class="js-asProfissoes-titulo" style="text-transform:uppercase;" />
+                    <button type="button" class="js-asProfissoes-submit button button_main" data-loading="0"><i
+                            class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
+                    <a href="javascript:;" class="button js-asProfissoes-remover" data-loading="0"
+                        style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+                </dd>
+            </dl>
+            <div class="list2" style="margin-top:2rem;">
+                <table class="js-asProfissoes-table">
+                    <thead>
+                        <tr>
+                            <th>PROFISSÃO</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+</section>
+<?php
 			}
 
 		// Proxima Consulta
 			if(isset($apiConfig['proximaConsulta'])) {
 				?>
-				<script type="text/javascript">
+<script type="text/javascript">
+const headerPaciente = (aside, rtn) => {
 
-					const headerPaciente = (aside,rtn) => {
+    aside.find('.js-nome').html(
+        `${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`
+        ).attr('href', `pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
 
-						aside.find('.js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
+    if (rtn.data.ft && rtn.data.ft.length > 0) {
+        aside.find('.js-foto').attr('src', rtn.data.ft);
+    } else {
+        aside.find('.js-foto').attr('src', 'img/ilustra-usuario.jpg');
+    }
 
-						if(rtn.data.ft && rtn.data.ft.length>0) {
-							aside.find('.js-foto').attr('src',rtn.data.ft);
-						} else {
-							aside.find('.js-foto').attr('src','img/ilustra-usuario.jpg');
-						}
+    if (rtn.data.idade && rtn.data.idade > 0) {
+        aside.find('.js-idade').html(rtn.data.idade + (rtn.data.idade >= 2 ? ' anos' : ' ano'));
+    } else {
+        aside.find(' .js-idade').html(``);
+    }
 
-						if(rtn.data.idade && rtn.data.idade>0) {
-							aside.find('.js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
-						} else {
-							aside.find(' .js-idade').html(``);
-						}
+    if (rtn.data.plano_odontologico && rtn.data.plano_odontologico.length > 0) {
+        aside.find('.js-planoOdontologico').html(`Plano Odontológico: ${rtn.data.plano_odontologico}`);
+    } else {
+        aside.find('.js-planoOdontologico').html(`Plano Odontológico: -`);
+    }
 
-						if(rtn.data.plano_odontologico && rtn.data.plano_odontologico.length>0) {
-							aside.find('.js-planoOdontologico').html(`Plano Odontológico: ${rtn.data.plano_odontologico}`);
-						} else {
-							aside.find('.js-planoOdontologico').html(`Plano Odontológico: -`);
-						}
+    if (rtn.data.periodicidade && rtn.data.periodicidade.length > 0) {
+        aside.find('.js-periodicidade').html(`Periodicidade: ${rtn.data.periodicidade}`);
+    } else {
+        aside.find('.js-periodicidade').html(`Periodicidade: -`);
+    }
 
-						if(rtn.data.periodicidade && rtn.data.periodicidade.length>0) {
-							aside.find('.js-periodicidade').html(`Periodicidade: ${rtn.data.periodicidade}`);
-						} else {
-							aside.find('.js-periodicidade').html(`Periodicidade: -`);
-						}
+    if (rtn.data.musica && rtn.data.musica.length > 0) {
+        aside.find('.js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
+    } else {
+        aside.find('.js-musica').html(``);
+    }
 
-						if(rtn.data.musica && rtn.data.musica.length>0) {
-							aside.find('.js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
-						} else {
-							aside.find('.js-musica').html(``);
-						}
+    if (rtn.data.statusBI && rtn.data.statusBI.length == 0) {
+        aside.find('.js-statusBI').html(``).hide();
+    } else {
+        aside.find('.js-statusBI').html(`${rtn.data.statusBI}`).show();
+    }
 
-						if(rtn.data.statusBI && rtn.data.statusBI.length==0) {
-							aside.find('.js-statusBI').html(``).hide();
-						} else {
-							aside.find('.js-statusBI').html(`${rtn.data.statusBI}`).show();
-						}
-
-						aside.find('.js-ag-agendamentoFuturos table tr').remove();
-						if(rtn.data.agendamentosFuturos && rtn.data.agendamentosFuturos.length>0) {
-							rtn.data.agendamentosFuturos.forEach(x=>{
+    aside.find('.js-ag-agendamentoFuturos table tr').remove();
+    if (rtn.data.agendamentosFuturos && rtn.data.agendamentosFuturos.length > 0) {
+        rtn.data.agendamentosFuturos.forEach(x => {
 
 
-								let profissionalIniciais=``;
+            let profissionalIniciais = ``;
 
-								x.profissionais.forEach(p=>{
-									profissionalIniciais+=`<div class="badge-prof" title="${p.iniciais}" style="background:${p.cor}">${p.iniciais}</div>`;
-								})
-								aside.find('.js-ag-agendamentoFuturos table').append(`<tr>
+            x.profissionais.forEach(p => {
+                profissionalIniciais +=
+                    `<div class="badge-prof" title="${p.iniciais}" style="background:${p.cor}">${p.iniciais}</div>`;
+            })
+            aside.find('.js-ag-agendamentoFuturos table').append(`<tr>
 																		<td>
 																			<h1>${x.data}</h1>	
 																		</td>
@@ -7352,783 +8141,895 @@
 																			${profissionalIniciais}
 																		</td>
 																	</tr>`);
-							});
-
-						} else {
-							aside.find('.js-ag-agendamentoFuturos table').append(`<tr><td><center>Nenhum agendamento futuro</center></td></tr>`);
-						}
-
-
-						aside.find('input,select,textarea').removeClass('erro').val('');
-						aside.find('.js-id_paciente').val(rtn.data.id_paciente);
-						aside.find('.js-periodicidade_select').val(rtn.data.periodicidade_select);
-						aside.find('.js-proximaConsulta-id_agenda').val(rtn.id_agenda);
-
-						if(rtn.data.id_profissional.length>0) aside.find('.js-prontuario-profissional').val(rtn.data.id_profissional);
-						else  aside.find('.js-prontuario-profissional').val('');
-
-					}
-					
-					const asideProximaConsulta = (idAgenda=0) => {
-						$('#js-aside-proximaConsulta .js-tab').show();
-						let data = `ajax=proximaConsulta&id_agenda=${idAgenda}`;
-						$.ajax({
-							type:'POST',
-							data:data,
-							url:baseURLApiAside,
-							success:function(rtn) {
-								if(rtn.success) {
-
-									id_agenda=idAgenda;
-									id_paciente=rtn.data.id_paciente
-									headerPaciente($('#js-aside-proximaConsulta'),rtn);
-									headerPaciente($('.aside-prontuario-procedimentos'),rtn);
-									asideProcedimentos();
-
-
-									/*$("#js-aside-proximaConsulta").fadeIn(100,function() {
-										$("#js-aside-proximaConsulta .aside__inner1").addClass("active");
-										//
-
-										asideProximaConsultaProntuario();
-									});*/
-
-									$('.aside-prontuario-procedimentos').fadeIn(100,function() {
-										$('.aside-prontuario-procedimentos .aside__inner1').addClass("active");
-										$('.aside-prontuario-procedimentos').find('.tab,.header-profile').show();
-										
-									});
-
-									
-									$('#js-aside-proximaConsulta .js-btn-acao-lembrete').click();
-
-
-								} else if(rtn.error) {
-									//swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-								} else {
-									//swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-								}
-								
-							},
-							error:function() {
-								//swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-							}
-						}).done(function(){
-						});
-					}
-
-					const asideProximaConsultaLembrete = () => {
-
-						$('.aside-prontuario-procedimentos .aside-close-procedimentos').click();
-						$('#js-aside-proximaConsulta').fadeIn(100,function() {
-							$('#js-aside-proximaConsulta .aside__inner1').addClass("active");
-							
-						});
-						$('#js-aside-proximaConsulta .aside-header h1').html('Próxima Consulta');
-						$("#js-aside-proximaConsulta .js-tab a:eq(0)").click();
-						setTimeout(function(){
-										$('#js-aside-proximaConsulta .js-profissionais').chosen();
-										$('#js-aside-proximaConsulta .js-profissionais').trigger('chosen:updated');
-									},100);
-					}
-
-					const asideProximaConsultaProntuario = () => {
-						
-						/*$('#js-aside-proximaConsulta .aside-header h1').html('Evolução Geral');
-						$('#js-aside-proximaConsulta .js-prontuario-data').val('<?php echo date('d/m/Y H:i');?>');
-						$('#js-aside-proximaConsulta .js-tab').hide();
-						$('#js-aside-proximaConsulta .js-ag-agendamento').hide();
-						//$('#js-aside-proximaConsulta .js-ag-agendamentoFuturos').hide();
-						$('#js-aside-proximaConsulta .js-ag-prontuario').show();
-						$('#js-aside-proximaConsulta .js-prontuario-data').datetimepicker({
-																				timepicker:true,
-																				format:'d/m/Y H:i',
-																				scrollMonth:false,
-																				scrollTime:false,
-																				scrollInput:false,
-																			});*/
-
-						
-						$('.aside-prontuario-procedimentos').fadeIn(100,function() {
-							$(this).children(".aside__inner1").addClass("active");
-							
-						});
-					}
-
-					const asideProximaConsultaFinalizado = () => {
-						$('#js-aside-proximaConsulta input[name=agenda_data]').val('');
-						$('#js-aside-proximaConsulta select[name=agenda_duracao]').val('');
-						$('#js-aside-proximaConsulta select[name=id_cadeira]').val('');
-						$('#js-aside-proximaConsulta select.js-profissionais-qa').val('').trigger('chosen:updated');
-						$('#js-aside-proximaConsulta select[name=agenda_hora]').val('');
-						$('#js-aside-proximaConsulta textarea.js-obs-qa').val('');
-
-						
-						$(`#js-aside-proximaConsulta .js-retorno`).val('');
-						$(`#js-aside-proximaConsulta .js-agenda_duracao`).val('');
-						$(`#js-aside-proximaConsulta .js-laboratorio`).prop('checked',false);
-						$(`#js-aside-proximaConsulta .js-imagem`).prop('checked',false);
-						$(`#js-aside-proximaConsulta .js-profissionais`).val('');
-						$(`#js-aside-proximaConsulta .js-obs`).val('');
-						$('#js-aside-proximaConsulta .js-id_paciente').val('');
-						swal({title: "Sucesso!", text: 'Dados salvos com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-							$('#js-aside-proximaConsulta .aside-close').click();
-						});
-					}
-
-					$(function(){
-
-						$('#js-aside-proximaConsulta .js-btn-acao').click(function(){
-							$('#js-aside-proximaConsulta .js-btn-acao').removeClass('active');
-							$(this).addClass('active');
-
-							if($(this).attr('data-tipo')=="queroAgendar") {
-								$('#js-aside-proximaConsulta .js-ag-agendamento-lembrete').hide();
-								$('#js-aside-proximaConsulta .js-ag-agendamento-altaPeriodicidade').hide();
-								$('#js-aside-proximaConsulta .js-ag-agendamento-queroAgendar').show();
-
-								$('#js-aside-proximaConsulta .js-profissionais-qa').chosen();
-								$('#js-aside-proximaConsulta input[name=tipo]').val('queroAgendar');
-							} else if($(this).attr('data-tipo')=="altaPeriodicidade") {
-								$('#js-aside-proximaConsulta .js-ag-agendamento-lembrete').hide();
-								$('#js-aside-proximaConsulta .js-ag-agendamento-queroAgendar').hide();
-								$('#js-aside-proximaConsulta .js-ag-agendamento-altaPeriodicidade').show();
-
-								$('#js-aside-proximaConsulta .js-profissionais-qa').chosen();
-								$('#js-aside-proximaConsulta input[name=tipo]').val('altaPeriodicidade');
-							} else {
-								$('#js-aside-proximaConsulta .js-ag-agendamento-altaPeriodicidade').hide();
-								$('#js-aside-proximaConsulta .js-ag-agendamento-queroAgendar').hide();
-								$('#js-aside-proximaConsulta .js-ag-agendamento-lembrete').show();
-								$('#js-aside-proximaConsulta input[name=tipo]').val('lembrete');
-							}
-						});
-
-						
-						$('#js-aside-proximaConsulta').on('change','select[name=agenda_duracao], select[name=id_cadeira],  select.js-profissionais-qa, input[name=agenda_data]',function(){
-							horarioDisponivel(0,$('#js-aside-proximaConsulta'));
-						});
-
-						$('#js-aside-proximaConsulta .js-ag-agendamento .js-salvar').click(function(){
-							let tipo = $('#js-aside-proximaConsulta input[name=tipo]').val();
-							let id_paciente = $('#js-aside-proximaConsulta .js-id_paciente').val();
-							let id_agenda_origem = $('#js-aside-proximaConsulta .js-proximaConsulta-id_agenda').val();
-
-							if(tipo=="queroAgendar") {
-								let agenda_data = $('#js-aside-proximaConsulta input[name=agenda_data]').val();
-								let agenda_duracao = $('#js-aside-proximaConsulta select[name=agenda_duracao]').val();
-								let id_cadeira = $('#js-aside-proximaConsulta select[name=id_cadeira]').val();
-								let id_profissional = $('#js-aside-proximaConsulta select.js-profissionais-qa').val();
-								let agenda_hora = $('#js-aside-proximaConsulta select[name=agenda_hora]').val();
-								let obs = $('#js-aside-proximaConsulta textarea.js-obs-qa').val();
-								let erro = '';
-
-								if(agenda_data.length==0) erro='Defina a <b>Data do Agendamento</b>';
-								else if(agenda_duracao.length==0) erro='Defina a <b>Duração de Agendamento</b>';
-								else if(id_cadeira.length==0) erro='Defina o <b>Consultório do Agendamento</b>';
-								else if(id_profissional.length==0) erro='Defina o <b>Profissional do Agendamento</b>';
-								else if(agenda_hora.length==0) erro='Defina a <b>Hora do Agendamento</b>';
-
-								if(erro.length==0) {
-
-
-									let obj = $(this);
-									let objHTMLAntigo = $(this).html();
-
-									if(obj.attr('data-loading')==0) {
-										
-										obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-										obj.attr('data-loading',1);
-
-										let data = `ajax=asRelacionamentoPacienteQueroAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}&id_agenda_origem=${id_agenda_origem}`;
-
-										data = {
-											'ajax':'asRelacionamentoPacienteQueroAgendar',
-											'id_paciente':id_paciente,
-											'agenda_data':agenda_data,
-											'agenda_duracao':agenda_duracao,
-											'id_cadeira':id_cadeira,
-											'id_profissional':id_profissional,
-											'agenda_hora':agenda_hora,
-											'obs':obs,
-											'id_agenda_origem':id_agenda_origem
-
-										}
-
-
-
-										$.ajax({
-												type:'POST',
-												data:data,
-												url:baseURLApiAside,
-												success:function(rtn) {
-													if(rtn.success) {
-
-														//asideProximaConsultaProntuario();
-														asideProximaConsultaFinalizado();
-														
-
-													} else if(rtn.error) {
-														swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-													} else {
-														swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-													}
-													
-												},
-												error:function() {
-													swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-												} 
-										}).done(function(){
-											obj.html(objHTMLAntigo);
-											obj.attr('data-loading',0);
-										});
-
-
-									}
-
-								} else {
-									swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
-								}
-							}
-							else if(tipo=="lembrete") {
-								let retorno = $(`#js-aside-proximaConsulta .js-retorno`).val();
-								let duracao = $(`#js-aside-proximaConsulta .js-agenda_duracao`).val();
-								let laboratorio = $(`#js-aside-proximaConsulta .js-laboratorio`).prop('checked')===true?1:0;
-								let imagem = $(`#js-aside-proximaConsulta .js-imagem`).prop('checked')===true?1:0;
-								let profissionais = $(`#js-aside-proximaConsulta .js-profissionais-lembrete`).val();
-								let obs = $(`#js-aside-proximaConsulta .js-obs`).val();
-								let id_paciente = $('#js-aside-proximaConsulta .js-id_paciente').val();
-								let erro = '';
-								
-								/*if(retorno.length==0) {
-									$(`#js-aside-proximaConsulta .js-retorno`).addClass('erro')
-									erro=1;
-								} 
-
-								if(obs.length==0) {
-									$(`#js-aside-proximaConsulta .js-obs`).addClass('erro')
-									erro=1;
-								} 
-
-
-								if(erro==1) {
-									swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
-								} else if(duracao.length==0) {
-									swal({title: "Erro!", text: "Defina a duração da consulta!", type:"error", confirmButtonColor: "#424242"});
-								} else if(profissionais.length==0) {
-									
-									swal({title: "Erro!", text: "Selecione pelo menos um profissional!", type:"error", confirmButtonColor: "#424242"});
-								} */
-
-
-								if(retorno.length==0) erro='Preencha o campo <b>Retorno em</b>';
-								else if(duracao.length==0) erro='Preencha a <b>Duração</b>';
-								else if(profissionais.length==1) erro='Selecione pelo menos um profissional';
-								else if(obs.length==0) erro='Preencha o campo <b>Observações</b>';
-								
-
-								if(erro.length==0) {
-
-									let obj = $(this);
-									let objHTMLAntigo = $(this).html();
-
-									if(obj.attr('data-loading')==0) {
-										
-										obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-										obj.attr('data-loading',1);
-
-										let data = `ajax=proximaConsultaPersistir&retorno=${retorno}&duracao=${duracao}&laboratorio=${laboratorio}&imagem=${imagem}&profissionais=${profissionais}&obs=${obs}&id_paciente=${id_paciente}&id_agenda_origem=${id_agenda_origem}`;
-										
-										data = {
-											'ajax':'proximaConsultaPersistir',
-											'retorno':retorno,
-											'duracao':duracao,
-											'laboratorio':laboratorio,
-											'imagem':imagem,
-											'profissionais':profissionais,
-											'obs':obs,
-											'id_paciente':id_paciente,
-											'id_agenda_origem':id_agenda_origem
-										}
-
-										$.ajax({
-											type:'POST',
-											data:data,
-											url:baseURLApiAside,
-											success:function(rtn) {
-												if(rtn.success) {
-													
-													//asideProximaConsultaProntuario();
-													asideProximaConsultaFinalizado();
-
-												} else if(rtn.error) {
-													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-												} else {
-													swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-												}
-												
-											},
-											error:function() {
-												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-											}
-										}).done(function(){
-											obj.html(objHTMLAntigo);
-											obj.attr('data-loading',0);
-										});
-									}
-
-								} else {
-									swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
-								}
-							}
-							else if(tipo=="altaPeriodicidade") {
-								let periodicidade = $('#js-aside-proximaConsulta .js-periodicidade_select').val();
-								let alta = $('#js-aside-proximaConsulta .js-periodicidade_alta').val();
-								let periodicidadeDescricao = $('#js-aside-proximaConsulta .js-periodicidade_select option:selected').attr('data-descricao');
-
-
-								let erro= '';
-								if(periodicidade.length==0) erro='Selecione a Periodicidade do paciente';
-
-								if(erro.length==0) {
-
-									let obj = $(this);
-									let objHTMLAntigo = $(this).html();
-
-									if(obj.attr('data-loading')==0) {
-										
-										obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-										obj.attr('data-loading',1);
-
-										let data = `ajax=proximaConsultaAltaPeriodicidade&periodicidade=${periodicidade}&id_paciente=${id_paciente}&id_agenda_origem=${id_agenda_origem}&alta=${alta}`;
-										
-										$.ajax({
-											type:'POST',
-											data:data,
-											url:baseURLApiAside,
-											success:function(rtn) {
-												if(rtn.success) {
-													
-
-													$('#js-aside-proximaConsulta .js-periodicidade').html(`Periodicidade: ${periodicidadeDescricao}`);
-
-													//asideProximaConsultaProntuario();
-													asideProximaConsultaFinalizado();
-
-												} else if(rtn.error) {
-													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-												} else {
-													swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-												}
-												
-											},
-											error:function() {
-												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente...", type:"error", confirmButtonColor: "#424242"});
-											}
-										}).done(function(){
-											obj.html(objHTMLAntigo);
-											obj.attr('data-loading',0);
-										});
-									}
-
-								} else {
-									swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
-								}
-							}
-						});
-
-						$('#js-aside-proximaConsulta .js-ag-prontuario .js-salvarProntuario').click(function(){
-
-
-							let obj = $(this);
-							let objTextoAntigo = $(this).html();
-							let id_profissional = $('#js-aside-proximaConsulta .js-prontuario-profissional').val();
-							let prontuario = $('#js-aside-proximaConsulta .js-prontuario').val();
-							let id_paciente = $('#js-aside-proximaConsulta .js-id_paciente').val();
-							let dataProntuario = $('#js-aside-proximaConsulta .js-prontuario-data').val();
-
-							let erro='';
-
-							if(id_profissional.length==0) erro='Selecione o Profissional';
-							else if(prontuario.length==0) erro='Digite o prontuário para salvar'
-
-							if(erro.length==0) {
-								if(obj.attr('data-loading')==0) {
-
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
-
-									let data = `ajax=prontuarioPersistir&id_profissional=${id_profissional}&prontuario=${prontuario}&id_paciente=${id_paciente}&dataProntuario=${dataProntuario}`;
-
-									data = {'ajax':'prontuarioPersistir',
-												'id_profissional':id_profissional,
-												'prontuario':prontuario,
-												'id_paciente':id_paciente,
-												'dataProntuario':dataProntuario}
-
-									$.ajax({
-										type:"POST",
-										url:baseURLApiAside,
-										data:data,
-										success:function(rtn) {
-											if(rtn.success) {
-												asideProximaConsultaLembrete();
-												
-											} else if(rtn.error) {
-												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-											} else {
-												swal({title: "Erro!", text: 'Algum erro ocorreu ao salvar o prontuário. Tente novamente!', type:"error", confirmButtonColor: "#424242"});
-											}
-										}
-									}).done(function(){
-										obj.attr('data-loading',0);
-										obj.html(objTextoAntigo);
-									})
-								}
-							} else {
-								swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
-							}
-
-						});
-					});
-				</script>
-
-				<section class="aside aside-proximaConsulta" id="js-aside-proximaConsulta">
-					<div class="aside__inner1">
-						<header class="aside-header">
-							<h1>Próxima Consulta</h1>
-							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-						</header>
-
-						<form method="post" class="aside-content form" onsubmit="return false;">
-							<input type="hidden" class="js-proximaConsulta-id_agenda" />
-							<input type="hidden" class="js-id_paciente" value="0" />
-							<input type="hidden" name="tipo" value="" />
-							<section class="header-profile">
-								<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
-								<div class="header-profile__inner1">
-									<h1><a href="" target="_blank" class="js-nome"></a></h1>
-									<div>
-										<p class="js-statusBI"></p>
-										<p class="js-idade"></p>
-										<p class="js-periodicidade">Periodicidade: 6 meses</p>
-										<p class="js-musica"></p>
-									</div>
-								</div>
-							</section>
-
-							<section class="tab tab_alt js-tab">
-								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamento').show();" class="active">Agendamento</a>	
-								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamentoFuturos').show();" class="">Agendamentos Futuros</a>
-							</section>
-
-							<div class="js-ag js-ag-agendamento">
-								<section class="filter">
-									<div class="button-group">
-										<a href="javascript:;" class="js-btn-acao js-btn-acao-lembrete button active" data-tipo="lembrete"><span>Criar Lembrete</span></a>
-										<a href="javascript:;" class="js-btn-acao js-btn-acao-queroAgendar button" data-tipo="queroAgendar"><span>Quero agendar</span></a>
-										<a href="javascript:;" class="js-btn-acao js-btn-acao-altaPeriodicidade button" data-tipo="altaPeriodicidade"><span>Alta por Periodicidade</span></a>
-									</div>
-									<div class="filter-group">
-										<div class="filter-form form">
-											<dl>
-												<dd></dd>
-											</dl>
-											<dl>
-												<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
-											</dl>
-										</div>								
-									</div>
-								</section>
-
-								<div class="js-ag-agendamento-lembrete">
-									<input type="hidden" class="js-asProfissoes-id" />
-									<div class="colunas4">
-										<dl>
-											<dt>Retorno em</dt>
-											
-											<dd class="form-comp form-comp_pos">
-												<input type="number" class="js-retorno" maxlength="3" min=0 oninput="validity.valid||(value='');" />
-												<span>dias</span>
-											</dd>
-										</dl>
-										<dl>
-											<dt>Duração</dt>
-											
-											<dd class="form-comp form-comp_pos">
-												<select class="js-agenda_duracao">
-													<option value="">-</option>
-													<?php
+        });
+
+    } else {
+        aside.find('.js-ag-agendamentoFuturos table').append(
+            `<tr><td><center>Nenhum agendamento futuro</center></td></tr>`);
+    }
+
+
+    aside.find('input,select,textarea').removeClass('erro').val('');
+    aside.find('.js-id_paciente').val(rtn.data.id_paciente);
+    aside.find('.js-periodicidade_select').val(rtn.data.periodicidade_select);
+    aside.find('.js-proximaConsulta-id_agenda').val(rtn.id_agenda);
+
+    if (rtn.data.id_profissional.length > 0) aside.find('.js-prontuario-profissional').val(rtn.data
+    .id_profissional);
+    else aside.find('.js-prontuario-profissional').val('');
+
+}
+
+const asideProximaConsulta = (idAgenda = 0) => {
+    $('#js-aside-proximaConsulta .js-tab').show();
+    let data = `ajax=proximaConsulta&id_agenda=${idAgenda}`;
+    $.ajax({
+        type: 'POST',
+        data: data,
+        url: baseURLApiAside,
+        success: function(rtn) {
+            if (rtn.success) {
+
+                id_agenda = idAgenda;
+                id_paciente = rtn.data.id_paciente
+                headerPaciente($('#js-aside-proximaConsulta'), rtn);
+                headerPaciente($('.aside-prontuario-procedimentos'), rtn);
+                asideProcedimentos();
+
+
+                /*$("#js-aside-proximaConsulta").fadeIn(100,function() {
+                	$("#js-aside-proximaConsulta .aside__inner1").addClass("active");
+                	//
+
+                	asideProximaConsultaProntuario();
+                });*/
+
+                $('.aside-prontuario-procedimentos').fadeIn(100, function() {
+                    $('.aside-prontuario-procedimentos .aside__inner1').addClass("active");
+                    $('.aside-prontuario-procedimentos').find('.tab,.header-profile').show();
+
+                });
+
+
+                $('#js-aside-proximaConsulta .js-btn-acao-lembrete').click();
+
+
+            } else if (rtn.error) {
+                //swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+            } else {
+                //swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+            }
+
+        },
+        error: function() {
+            //swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+        }
+    }).done(function() {});
+}
+
+const asideProximaConsultaLembrete = () => {
+
+    $('.aside-prontuario-procedimentos .aside-close-procedimentos').click();
+    $('#js-aside-proximaConsulta').fadeIn(100, function() {
+        $('#js-aside-proximaConsulta .aside__inner1').addClass("active");
+
+    });
+    $('#js-aside-proximaConsulta .aside-header h1').html('Próxima Consulta');
+    $("#js-aside-proximaConsulta .js-tab a:eq(0)").click();
+    setTimeout(function() {
+        $('#js-aside-proximaConsulta .js-profissionais').chosen();
+        $('#js-aside-proximaConsulta .js-profissionais').trigger('chosen:updated');
+    }, 100);
+}
+
+const asideProximaConsultaProntuario = () => {
+
+    /*$('#js-aside-proximaConsulta .aside-header h1').html('Evolução Geral');
+    $('#js-aside-proximaConsulta .js-prontuario-data').val('<?php echo date('d/m/Y H:i');?>');
+    $('#js-aside-proximaConsulta .js-tab').hide();
+    $('#js-aside-proximaConsulta .js-ag-agendamento').hide();
+    //$('#js-aside-proximaConsulta .js-ag-agendamentoFuturos').hide();
+    $('#js-aside-proximaConsulta .js-ag-prontuario').show();
+    $('#js-aside-proximaConsulta .js-prontuario-data').datetimepicker({
+    														timepicker:true,
+    														format:'d/m/Y H:i',
+    														scrollMonth:false,
+    														scrollTime:false,
+    														scrollInput:false,
+    													});*/
+
+
+    $('.aside-prontuario-procedimentos').fadeIn(100, function() {
+        $(this).children(".aside__inner1").addClass("active");
+
+    });
+}
+
+const asideProximaConsultaFinalizado = () => {
+    $('#js-aside-proximaConsulta input[name=agenda_data]').val('');
+    $('#js-aside-proximaConsulta select[name=agenda_duracao]').val('');
+    $('#js-aside-proximaConsulta select[name=id_cadeira]').val('');
+    $('#js-aside-proximaConsulta select.js-profissionais-qa').val('').trigger('chosen:updated');
+    $('#js-aside-proximaConsulta select[name=agenda_hora]').val('');
+    $('#js-aside-proximaConsulta textarea.js-obs-qa').val('');
+
+
+    $(`#js-aside-proximaConsulta .js-retorno`).val('');
+    $(`#js-aside-proximaConsulta .js-agenda_duracao`).val('');
+    $(`#js-aside-proximaConsulta .js-laboratorio`).prop('checked', false);
+    $(`#js-aside-proximaConsulta .js-imagem`).prop('checked', false);
+    $(`#js-aside-proximaConsulta .js-profissionais`).val('');
+    $(`#js-aside-proximaConsulta .js-obs`).val('');
+    $('#js-aside-proximaConsulta .js-id_paciente').val('');
+    swal({
+        title: "Sucesso!",
+        text: 'Dados salvos com sucesso!',
+        type: "success",
+        confirmButtonColor: "#424242"
+    }, function() {
+        $('#js-aside-proximaConsulta .aside-close').click();
+    });
+}
+
+$(function() {
+
+    $('#js-aside-proximaConsulta .js-btn-acao').click(function() {
+        $('#js-aside-proximaConsulta .js-btn-acao').removeClass('active');
+        $(this).addClass('active');
+
+        if ($(this).attr('data-tipo') == "queroAgendar") {
+            $('#js-aside-proximaConsulta .js-ag-agendamento-lembrete').hide();
+            $('#js-aside-proximaConsulta .js-ag-agendamento-altaPeriodicidade').hide();
+            $('#js-aside-proximaConsulta .js-ag-agendamento-queroAgendar').show();
+
+            $('#js-aside-proximaConsulta .js-profissionais-qa').chosen();
+            $('#js-aside-proximaConsulta input[name=tipo]').val('queroAgendar');
+        } else if ($(this).attr('data-tipo') == "altaPeriodicidade") {
+            $('#js-aside-proximaConsulta .js-ag-agendamento-lembrete').hide();
+            $('#js-aside-proximaConsulta .js-ag-agendamento-queroAgendar').hide();
+            $('#js-aside-proximaConsulta .js-ag-agendamento-altaPeriodicidade').show();
+
+            $('#js-aside-proximaConsulta .js-profissionais-qa').chosen();
+            $('#js-aside-proximaConsulta input[name=tipo]').val('altaPeriodicidade');
+        } else {
+            $('#js-aside-proximaConsulta .js-ag-agendamento-altaPeriodicidade').hide();
+            $('#js-aside-proximaConsulta .js-ag-agendamento-queroAgendar').hide();
+            $('#js-aside-proximaConsulta .js-ag-agendamento-lembrete').show();
+            $('#js-aside-proximaConsulta input[name=tipo]').val('lembrete');
+        }
+    });
+
+
+    $('#js-aside-proximaConsulta').on('change',
+        'select[name=agenda_duracao], select[name=id_cadeira],  select.js-profissionais-qa, input[name=agenda_data]',
+        function() {
+            horarioDisponivel(0, $('#js-aside-proximaConsulta'));
+        });
+
+    $('#js-aside-proximaConsulta .js-ag-agendamento .js-salvar').click(function() {
+        let tipo = $('#js-aside-proximaConsulta input[name=tipo]').val();
+        let id_paciente = $('#js-aside-proximaConsulta .js-id_paciente').val();
+        let id_agenda_origem = $('#js-aside-proximaConsulta .js-proximaConsulta-id_agenda').val();
+
+        if (tipo == "queroAgendar") {
+            let agenda_data = $('#js-aside-proximaConsulta input[name=agenda_data]').val();
+            let agenda_duracao = $('#js-aside-proximaConsulta select[name=agenda_duracao]').val();
+            let id_cadeira = $('#js-aside-proximaConsulta select[name=id_cadeira]').val();
+            let id_profissional = $('#js-aside-proximaConsulta select.js-profissionais-qa').val();
+            let agenda_hora = $('#js-aside-proximaConsulta select[name=agenda_hora]').val();
+            let obs = $('#js-aside-proximaConsulta textarea.js-obs-qa').val();
+            let erro = '';
+
+            if (agenda_data.length == 0) erro = 'Defina a <b>Data do Agendamento</b>';
+            else if (agenda_duracao.length == 0) erro = 'Defina a <b>Duração de Agendamento</b>';
+            else if (id_cadeira.length == 0) erro = 'Defina o <b>Consultório do Agendamento</b>';
+            else if (id_profissional.length == 0) erro = 'Defina o <b>Profissional do Agendamento</b>';
+            else if (agenda_hora.length == 0) erro = 'Defina a <b>Hora do Agendamento</b>';
+
+            if (erro.length == 0) {
+
+
+                let obj = $(this);
+                let objHTMLAntigo = $(this).html();
+
+                if (obj.attr('data-loading') == 0) {
+
+                    obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                    obj.attr('data-loading', 1);
+
+                    let data =
+                        `ajax=asRelacionamentoPacienteQueroAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}&id_agenda_origem=${id_agenda_origem}`;
+
+                    data = {
+                        'ajax': 'asRelacionamentoPacienteQueroAgendar',
+                        'id_paciente': id_paciente,
+                        'agenda_data': agenda_data,
+                        'agenda_duracao': agenda_duracao,
+                        'id_cadeira': id_cadeira,
+                        'id_profissional': id_profissional,
+                        'agenda_hora': agenda_hora,
+                        'obs': obs,
+                        'id_agenda_origem': id_agenda_origem
+
+                    }
+
+
+
+                    $.ajax({
+                        type: 'POST',
+                        data: data,
+                        url: baseURLApiAside,
+                        success: function(rtn) {
+                            if (rtn.success) {
+
+                                //asideProximaConsultaProntuario();
+                                asideProximaConsultaFinalizado();
+
+
+                            } else if (rtn.error) {
+                                swal({
+                                    title: "Erro!",
+                                    text: rtn.error,
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            } else {
+                                swal({
+                                    title: "Erro!",
+                                    text: "Algum erro ocorreu! Tente novamente.",
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            }
+
+                        },
+                        error: function() {
+                            swal({
+                                title: "Erro!",
+                                text: "Algum erro ocorreu! Tente novamente.",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
+                    }).done(function() {
+                        obj.html(objHTMLAntigo);
+                        obj.attr('data-loading', 0);
+                    });
+
+
+                }
+
+            } else {
+                swal({
+                    title: "Erro!",
+                    text: erro,
+                    html: true,
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            }
+        } else if (tipo == "lembrete") {
+            let retorno = $(`#js-aside-proximaConsulta .js-retorno`).val();
+            let duracao = $(`#js-aside-proximaConsulta .js-agenda_duracao`).val();
+            let laboratorio = $(`#js-aside-proximaConsulta .js-laboratorio`).prop('checked') === true ?
+                1 : 0;
+            let imagem = $(`#js-aside-proximaConsulta .js-imagem`).prop('checked') === true ? 1 : 0;
+            let profissionais = $(`#js-aside-proximaConsulta .js-profissionais-lembrete`).val();
+            let obs = $(`#js-aside-proximaConsulta .js-obs`).val();
+            let id_paciente = $('#js-aside-proximaConsulta .js-id_paciente').val();
+            let erro = '';
+
+            /*if(retorno.length==0) {
+            	$(`#js-aside-proximaConsulta .js-retorno`).addClass('erro')
+            	erro=1;
+            } 
+
+            if(obs.length==0) {
+            	$(`#js-aside-proximaConsulta .js-obs`).addClass('erro')
+            	erro=1;
+            } 
+
+
+            if(erro==1) {
+            	swal({title: "Erro!", text: "Complete os campos destacados", type:"error", confirmButtonColor: "#424242"});
+            } else if(duracao.length==0) {
+            	swal({title: "Erro!", text: "Defina a duração da consulta!", type:"error", confirmButtonColor: "#424242"});
+            } else if(profissionais.length==0) {
+            	
+            	swal({title: "Erro!", text: "Selecione pelo menos um profissional!", type:"error", confirmButtonColor: "#424242"});
+            } */
+
+
+            if (retorno.length == 0) erro = 'Preencha o campo <b>Retorno em</b>';
+            else if (duracao.length == 0) erro = 'Preencha a <b>Duração</b>';
+            else if (profissionais.length == 1) erro = 'Selecione pelo menos um profissional';
+            else if (obs.length == 0) erro = 'Preencha o campo <b>Observações</b>';
+
+
+            if (erro.length == 0) {
+
+                let obj = $(this);
+                let objHTMLAntigo = $(this).html();
+
+                if (obj.attr('data-loading') == 0) {
+
+                    obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                    obj.attr('data-loading', 1);
+
+                    let data =
+                        `ajax=proximaConsultaPersistir&retorno=${retorno}&duracao=${duracao}&laboratorio=${laboratorio}&imagem=${imagem}&profissionais=${profissionais}&obs=${obs}&id_paciente=${id_paciente}&id_agenda_origem=${id_agenda_origem}`;
+
+                    data = {
+                        'ajax': 'proximaConsultaPersistir',
+                        'retorno': retorno,
+                        'duracao': duracao,
+                        'laboratorio': laboratorio,
+                        'imagem': imagem,
+                        'profissionais': profissionais,
+                        'obs': obs,
+                        'id_paciente': id_paciente,
+                        'id_agenda_origem': id_agenda_origem
+                    }
+
+                    $.ajax({
+                        type: 'POST',
+                        data: data,
+                        url: baseURLApiAside,
+                        success: function(rtn) {
+                            if (rtn.success) {
+
+                                //asideProximaConsultaProntuario();
+                                asideProximaConsultaFinalizado();
+
+                            } else if (rtn.error) {
+                                swal({
+                                    title: "Erro!",
+                                    text: rtn.error,
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            } else {
+                                swal({
+                                    title: "Erro!",
+                                    text: "Algum erro ocorreu! Tente novamente.",
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            }
+
+                        },
+                        error: function() {
+                            swal({
+                                title: "Erro!",
+                                text: "Algum erro ocorreu! Tente novamente.",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
+                    }).done(function() {
+                        obj.html(objHTMLAntigo);
+                        obj.attr('data-loading', 0);
+                    });
+                }
+
+            } else {
+                swal({
+                    title: "Erro!",
+                    text: erro,
+                    html: true,
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            }
+        } else if (tipo == "altaPeriodicidade") {
+            let periodicidade = $('#js-aside-proximaConsulta .js-periodicidade_select').val();
+            let alta = $('#js-aside-proximaConsulta .js-periodicidade_alta').val();
+            let periodicidadeDescricao = $(
+                '#js-aside-proximaConsulta .js-periodicidade_select option:selected').attr(
+                'data-descricao');
+
+
+            let erro = '';
+            if (periodicidade.length == 0) erro = 'Selecione a Periodicidade do paciente';
+
+            if (erro.length == 0) {
+
+                let obj = $(this);
+                let objHTMLAntigo = $(this).html();
+
+                if (obj.attr('data-loading') == 0) {
+
+                    obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                    obj.attr('data-loading', 1);
+
+                    let data =
+                        `ajax=proximaConsultaAltaPeriodicidade&periodicidade=${periodicidade}&id_paciente=${id_paciente}&id_agenda_origem=${id_agenda_origem}&alta=${alta}`;
+
+                    $.ajax({
+                        type: 'POST',
+                        data: data,
+                        url: baseURLApiAside,
+                        success: function(rtn) {
+                            if (rtn.success) {
+
+
+                                $('#js-aside-proximaConsulta .js-periodicidade').html(
+                                    `Periodicidade: ${periodicidadeDescricao}`);
+
+                                //asideProximaConsultaProntuario();
+                                asideProximaConsultaFinalizado();
+
+                            } else if (rtn.error) {
+                                swal({
+                                    title: "Erro!",
+                                    text: rtn.error,
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            } else {
+                                swal({
+                                    title: "Erro!",
+                                    text: "Algum erro ocorreu! Tente novamente.",
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            }
+
+                        },
+                        error: function() {
+                            swal({
+                                title: "Erro!",
+                                text: "Algum erro ocorreu! Tente novamente...",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
+                    }).done(function() {
+                        obj.html(objHTMLAntigo);
+                        obj.attr('data-loading', 0);
+                    });
+                }
+
+            } else {
+                swal({
+                    title: "Erro!",
+                    text: erro,
+                    html: true,
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            }
+        }
+    });
+
+    $('#js-aside-proximaConsulta .js-ag-prontuario .js-salvarProntuario').click(function() {
+
+
+        let obj = $(this);
+        let objTextoAntigo = $(this).html();
+        let id_profissional = $('#js-aside-proximaConsulta .js-prontuario-profissional').val();
+        let prontuario = $('#js-aside-proximaConsulta .js-prontuario').val();
+        let id_paciente = $('#js-aside-proximaConsulta .js-id_paciente').val();
+        let dataProntuario = $('#js-aside-proximaConsulta .js-prontuario-data').val();
+
+        let erro = '';
+
+        if (id_profissional.length == 0) erro = 'Selecione o Profissional';
+        else if (prontuario.length == 0) erro = 'Digite o prontuário para salvar'
+
+        if (erro.length == 0) {
+            if (obj.attr('data-loading') == 0) {
+
+                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                obj.attr('data-loading', 1);
+
+                let data =
+                    `ajax=prontuarioPersistir&id_profissional=${id_profissional}&prontuario=${prontuario}&id_paciente=${id_paciente}&dataProntuario=${dataProntuario}`;
+
+                data = {
+                    'ajax': 'prontuarioPersistir',
+                    'id_profissional': id_profissional,
+                    'prontuario': prontuario,
+                    'id_paciente': id_paciente,
+                    'dataProntuario': dataProntuario
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: baseURLApiAside,
+                    data: data,
+                    success: function(rtn) {
+                        if (rtn.success) {
+                            asideProximaConsultaLembrete();
+
+                        } else if (rtn.error) {
+                            swal({
+                                title: "Erro!",
+                                text: rtn.error,
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        } else {
+                            swal({
+                                title: "Erro!",
+                                text: 'Algum erro ocorreu ao salvar o prontuário. Tente novamente!',
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
+                    }
+                }).done(function() {
+                    obj.attr('data-loading', 0);
+                    obj.html(objTextoAntigo);
+                })
+            }
+        } else {
+            swal({
+                title: "Erro!",
+                text: erro,
+                type: "error",
+                confirmButtonColor: "#424242"
+            });
+        }
+
+    });
+});
+</script>
+
+<section class="aside aside-proximaConsulta" id="js-aside-proximaConsulta">
+    <div class="aside__inner1">
+        <header class="aside-header">
+            <h1>Próxima Consulta</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
+
+        <form method="post" class="aside-content form" onsubmit="return false;">
+            <input type="hidden" class="js-proximaConsulta-id_agenda" />
+            <input type="hidden" class="js-id_paciente" value="0" />
+            <input type="hidden" name="tipo" value="" />
+            <section class="header-profile">
+                <img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
+                <div class="header-profile__inner1">
+                    <h1><a href="" target="_blank" class="js-nome"></a></h1>
+                    <div>
+                        <p class="js-statusBI"></p>
+                        <p class="js-idade"></p>
+                        <p class="js-periodicidade">Periodicidade: 6 meses</p>
+                        <p class="js-musica"></p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tab tab_alt js-tab">
+                <a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamento').show();"
+                    class="active">Agendamento</a>
+                <a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamentoFuturos').show();"
+                    class="">Agendamentos Futuros</a>
+            </section>
+
+            <div class="js-ag js-ag-agendamento">
+                <section class="filter">
+                    <div class="button-group">
+                        <a href="javascript:;" class="js-btn-acao js-btn-acao-lembrete button active"
+                            data-tipo="lembrete"><span>Criar Lembrete</span></a>
+                        <a href="javascript:;" class="js-btn-acao js-btn-acao-queroAgendar button"
+                            data-tipo="queroAgendar"><span>Quero agendar</span></a>
+                        <a href="javascript:;" class="js-btn-acao js-btn-acao-altaPeriodicidade button"
+                            data-tipo="altaPeriodicidade"><span>Alta por Periodicidade</span></a>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-form form">
+                            <dl>
+                                <dd></dd>
+                            </dl>
+                            <dl>
+                                <dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify"
+                                            data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="js-ag-agendamento-lembrete">
+                    <input type="hidden" class="js-asProfissoes-id" />
+                    <div class="colunas4">
+                        <dl>
+                            <dt>Retorno em</dt>
+
+                            <dd class="form-comp form-comp_pos">
+                                <input type="number" class="js-retorno" maxlength="3" min=0
+                                    oninput="validity.valid||(value='');" />
+                                <span>dias</span>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>Duração</dt>
+
+                            <dd class="form-comp form-comp_pos">
+                                <select class="js-agenda_duracao">
+                                    <option value="">-</option>
+                                    <?php
 													foreach($optAgendaDuracao as $v) {
 														if($values['agenda_duracao']==$v) $possuiDuracao=true;
 														echo '<option value="'.$v.'"'.($values['agenda_duracao']==$v?' selected':'').'>'.$v.'</option>';
 													}
 													?>
-												</select>
-												<span>min</span>
-											</dd>
-										</dl>
+                                </select>
+                                <span>min</span>
+                            </dd>
+                        </dl>
 
-										<dl class="dl2">
-											<dt>&nbsp;</dt>
-											<dd>
-												<label>
-													<input type="checkbox" class="input-switch js-laboratorio" /> Laboratório
-												</label>
-												<label>
-													<input type="checkbox" class="input-switch js-imagem" /> Imagem
-												</label>
-											</dd>
-										</dl>
+                        <dl class="dl2">
+                            <dt>&nbsp;</dt>
+                            <dd>
+                                <label>
+                                    <input type="checkbox" class="input-switch js-laboratorio" /> Laboratório
+                                </label>
+                                <label>
+                                    <input type="checkbox" class="input-switch js-imagem" /> Imagem
+                                </label>
+                            </dd>
+                        </dl>
 
-									</div>
-									<dl>
-										<dt>Profissionais</dt>
-										<dd>
-											<select class="js-profissionais js-profissionais-lembrete" multiple>
-												<option value=""></option>
-												<?php
+                    </div>
+                    <dl>
+                        <dt>Profissionais</dt>
+                        <dd>
+                            <select class="js-profissionais js-profissionais-lembrete" multiple>
+                                <option value=""></option>
+                                <?php
 												foreach($_profissionais as $p) {
 													if($p->check_agendamento==0) continue;
 													echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
 												}
 												?>
-											</select>
-										</dd>
-									</dl>
-									<dl>
-										<dt>Observações</dt>
-										<dd>
-											<textarea class="js-obs" style="height:80px;"></textarea>
-										</dd>
-									</dl>
+                            </select>
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>Observações</dt>
+                        <dd>
+                            <textarea class="js-obs" style="height:80px;"></textarea>
+                        </dd>
+                    </dl>
 
-									<div class="js-ag-agendamentoFuturos" style="">
-										<div class="list1">
-											<table>
-											</table>
-										</div>
-									</div>
-								</div>
+                    <div class="js-ag-agendamentoFuturos" style="">
+                        <div class="list1">
+                            <table>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-								<div class="js-ag-agendamento-queroAgendar">
-									<div class="colunas3">
-										<dl>
-											<dt>Data</dt>
-											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data datecalendar" /></dd>
-										</dl>
-									
-										<dl>
-											<dt>Duração</dt>
-											<dd class="form-comp form-comp_pos">
-												<?php /*<input type="tel" name="agenda_duracao" class="" />*/?>
-												<select name="agenda_duracao">
-													<option value="">-</option>
-													<?php
+                <div class="js-ag-agendamento-queroAgendar">
+                    <div class="colunas3">
+                        <dl>
+                            <dt>Data</dt>
+                            <dd class="form-comp"><span><i class="iconify"
+                                        data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel"
+                                    name="agenda_data" class="data datecalendar" /></dd>
+                        </dl>
+
+                        <dl>
+                            <dt>Duração</dt>
+                            <dd class="form-comp form-comp_pos">
+                                <?php /*<input type="tel" name="agenda_duracao" class="" />*/?>
+                                <select name="agenda_duracao">
+                                    <option value="">-</option>
+                                    <?php
 													foreach($optAgendaDuracao as $v) {
 														echo '<option value="'.$v.'">'.$v.'</option>';
 													}
 													?>
-												</select>
-												<span>min</span>
-											</dd>
-										</dl>
+                                </select>
+                                <span>min</span>
+                            </dd>
+                        </dl>
 
-										<dl>
-											<dt>Consultório</dt>
-											<dd>
-												<select name="id_cadeira">
-													<option value=""></option>
-													<?php
+                        <dl>
+                            <dt>Consultório</dt>
+                            <dd>
+                                <select name="id_cadeira">
+                                    <option value=""></option>
+                                    <?php
 													foreach($_cadeiras as $p) {
 														echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
 													}
 													?>
-												</select>
-											</dd>
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl class="dl2">
-											<dt>Profissionais</dt>
-											<dd>
-												<select class="js-profissionais-qa js-select-profissionais">
-													<option value=""></option>
-													<?php
+                                </select>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="colunas3">
+                        <dl class="dl2">
+                            <dt>Profissionais</dt>
+                            <dd>
+                                <select class="js-profissionais-qa js-select-profissionais">
+                                    <option value=""></option>
+                                    <?php
 													foreach($_profissionais as $p) {
 														if($p->check_agendamento==0) continue;
 														echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
 													}
 													?>
-												</select>
-											</dd>
-										</dl>
-										<dl>
-											<dt>Hora</dt>
-											<dd class="form-comp">
-												<span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span>
-												<select name="agenda_hora">
-													<option value="">Selecione o horário</option>
-												</select>
-											</dd>
-										</dl>
-									</div>
+                                </select>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>Hora</dt>
+                            <dd class="form-comp">
+                                <span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span>
+                                <select name="agenda_hora">
+                                    <option value="">Selecione o horário</option>
+                                </select>
+                            </dd>
+                        </dl>
+                    </div>
 
-									<dl>
-										<dt>Observações</dt>
-										<dd>
-											<textarea class="js-obs-qa" style="height:80px;"></textarea>
-										</dd>
-									</dl>
-								</div>
+                    <dl>
+                        <dt>Observações</dt>
+                        <dd>
+                            <textarea class="js-obs-qa" style="height:80px;"></textarea>
+                        </dd>
+                    </dl>
+                </div>
 
-								<div class="js-ag-agendamento-altaPeriodicidade">
-									<div class="colunas4">
-										<dl>
-											<dt>Confirme a Periodicidade</dt>
-											<dd>
-												<select class="js-periodicidade_select">
-													<option value="">-</option>
-													<?php
+                <div class="js-ag-agendamento-altaPeriodicidade">
+                    <div class="colunas4">
+                        <dl>
+                            <dt>Confirme a Periodicidade</dt>
+                            <dd>
+                                <select class="js-periodicidade_select">
+                                    <option value="">-</option>
+                                    <?php
 													foreach($_pacientesPeriodicidade as $k=>$v) {
 														echo '<option value="'.$k.'" data-descricao="'.$v.'">'.$v.'</option>';
 													}
 													?>
-												</select>
-											</dd>
-										</dl>
-									</div>
+                                </select>
+                            </dd>
+                        </dl>
+                    </div>
 
-									<dl>
-										<dt>Alta por Periodicidade</dt>
-										<dd>
-											<textarea style="height:200px;" class="js-periodicidade_alta"></textarea>
-										</dd>
-									</dl>
-
-									
-								</div>
-
-							</div>
+                    <dl>
+                        <dt>Alta por Periodicidade</dt>
+                        <dd>
+                            <textarea style="height:200px;" class="js-periodicidade_alta"></textarea>
+                        </dd>
+                    </dl>
 
 
-							
+                </div>
 
-							<section class="tab tab_alt js-ag js-ag-prontuario">
-								<a href="javascript:;" class="active">Prontuário</a>
-							</section>
+            </div>
 
-							<div class="js-ag js-ag-prontuario" style="display:none">
-								<section class="filter">
-									<div class="button-group">
-										
-									</div>
-									<div class="filter-group">
-										<div class="filter-form form">
-											<dl>
-												<dd><button class="button button_main js-salvarProntuario" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
-											</dl>
-										</div>								
-									</div>
-								</section>
-								<div class="colunas3">
-									<dl>
-										<dt>Data</dt>
-										<dd>
-											<input type="text" class="js-prontuario-data" class="datahora" />
-										</dd>
-									</dl>
-								</div>
 
-								<dl>
-									<dt>Profissional</dt>
-									<dd>
-										<select class="js-prontuario-profissional">
-											<option value="">-</option>
-											<?php
+
+
+            <section class="tab tab_alt js-ag js-ag-prontuario">
+                <a href="javascript:;" class="active">Prontuário</a>
+            </section>
+
+            <div class="js-ag js-ag-prontuario" style="display:none">
+                <section class="filter">
+                    <div class="button-group">
+
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-form form">
+                            <dl>
+                                <dd><button class="button button_main js-salvarProntuario" data-loading="0"><i
+                                            class="iconify" data-icon="fluent:checkmark-12-filled"></i>
+                                        <span>Salvar</span></button></dd>
+                            </dl>
+                        </div>
+                    </div>
+                </section>
+                <div class="colunas3">
+                    <dl>
+                        <dt>Data</dt>
+                        <dd>
+                            <input type="text" class="js-prontuario-data" class="datahora" />
+                        </dd>
+                    </dl>
+                </div>
+
+                <dl>
+                    <dt>Profissional</dt>
+                    <dd>
+                        <select class="js-prontuario-profissional">
+                            <option value="">-</option>
+                            <?php
 											foreach($_profissionais as $p) {
 												if($p->check_agendamento==0) continue;
 												echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
 											}
 											?>
-										</select>
-									</dd>
-								</dl>
-								
-								<dl>
-									<dt>Prontuário</dt>
-									<dd>
-										<textarea class="js-prontuario" style="height:250px;"></textarea>
-									</dd>
-								</dl>
-							</div>
+                        </select>
+                    </dd>
+                </dl>
+
+                <dl>
+                    <dt>Prontuário</dt>
+                    <dd>
+                        <textarea class="js-prontuario" style="height:250px;"></textarea>
+                    </dd>
+                </dl>
+            </div>
 
 
-						</form>
-					</div>
-				</section>
-				<?php
+        </form>
+    </div>
+</section>
+<?php
 			}
 
 		// Quero Agendar
 			if(isset($apiConfig['queroAgendar'])) {
 				?>
-				<script type="text/javascript">
-					
-					const asideQueroAgendar = (id_paciente,id_proximaconsulta) => {
+<script type="text/javascript">
+const asideQueroAgendar = (id_paciente, id_proximaconsulta) => {
 
-						$('#js-aside-queroAgendar .js-tab').show();
-						let data = `ajax=asideQueroAgendarPaciente&id_paciente=${id_paciente}&id_proximaconsulta=${id_proximaconsulta}`;
-						$.ajax({
-							type:'POST',
-							data:data,
-							url:baseURLApiAside,
-							success:function(rtn) {
-								if(rtn.success) {
-									$('#js-aside-queroAgendar .js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
-
-								
-									if(rtn.data.ft && rtn.data.ft.length>0) {
-										$('#js-aside-queroAgendar .js-foto').attr('src',rtn.data.ft);
-									} else {
-										$('#js-aside-queroAgendar .js-foto').attr('src','img/ilustra-usuario.jpg');
-									}
-
-									if(rtn.data.idade && rtn.data.idade>0) {
-										$('#js-aside-queroAgendar .js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
-									} else {
-										$('#js-aside-queroAgendar .js-idade').html(``);
-									}
-
-									if(rtn.data.periodicidade && rtn.data.periodicidade.length>0) {
-										$('#js-aside-queroAgendar .js-periodicidade').html(`Periodicidade: ${rtn.data.periodicidade}`);
-									} else {
-										$('#js-aside-queroAgendar .js-periodicidade').html(`Periodicidade: -`);
-									}
-
-									if(rtn.data.musica && rtn.data.musica.length>0) {
-										$('#js-aside-queroAgendar .js-musica').html(`<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
-									} else {
-										$('#js-aside-queroAgendar .js-musica').html(``);
-									}
-
-									if(rtn.data.statusBI && rtn.data.statusBI.length==0) {
-										$('#js-aside-queroAgendar .js-statusBI').html(``).hide();
-									} else {
-										$('#js-aside-queroAgendar .js-statusBI').html(`${rtn.data.statusBI}`).show();
-									}
-
-									$('#js-aside-queroAgendar .js-ag-agendamentoFuturos table tr').remove();
-									if(rtn.data.agendamentosFuturos && rtn.data.agendamentosFuturos.length>0) {
-										rtn.data.agendamentosFuturos.forEach(x=>{
+    $('#js-aside-queroAgendar .js-tab').show();
+    let data = `ajax=asideQueroAgendarPaciente&id_paciente=${id_paciente}&id_proximaconsulta=${id_proximaconsulta}`;
+    $.ajax({
+        type: 'POST',
+        data: data,
+        url: baseURLApiAside,
+        success: function(rtn) {
+            if (rtn.success) {
+                $('#js-aside-queroAgendar .js-nome').html(
+                    `${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`
+                    ).attr('href', `pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
 
 
-											let profissionalIniciais=``;
+                if (rtn.data.ft && rtn.data.ft.length > 0) {
+                    $('#js-aside-queroAgendar .js-foto').attr('src', rtn.data.ft);
+                } else {
+                    $('#js-aside-queroAgendar .js-foto').attr('src', 'img/ilustra-usuario.jpg');
+                }
 
-											x.profissionais.forEach(p=>{
-												profissionalIniciais+=`<div class="badge-prof" title="${p.iniciais}" style="background:${p.cor}">${p.iniciais}</div>`;
-											})
-											$('#js-aside-queroAgendar .js-ag-agendamentoFuturos table').append(`<tr>
+                if (rtn.data.idade && rtn.data.idade > 0) {
+                    $('#js-aside-queroAgendar .js-idade').html(rtn.data.idade + (rtn.data.idade >= 2 ?
+                        ' anos' : ' ano'));
+                } else {
+                    $('#js-aside-queroAgendar .js-idade').html(``);
+                }
+
+                if (rtn.data.periodicidade && rtn.data.periodicidade.length > 0) {
+                    $('#js-aside-queroAgendar .js-periodicidade').html(
+                        `Periodicidade: ${rtn.data.periodicidade}`);
+                } else {
+                    $('#js-aside-queroAgendar .js-periodicidade').html(`Periodicidade: -`);
+                }
+
+                if (rtn.data.musica && rtn.data.musica.length > 0) {
+                    $('#js-aside-queroAgendar .js-musica').html(
+                        `<i class="iconify" data-icon="bxs:music"></i> ${rtn.data.musica}`);
+                } else {
+                    $('#js-aside-queroAgendar .js-musica').html(``);
+                }
+
+                if (rtn.data.statusBI && rtn.data.statusBI.length == 0) {
+                    $('#js-aside-queroAgendar .js-statusBI').html(``).hide();
+                } else {
+                    $('#js-aside-queroAgendar .js-statusBI').html(`${rtn.data.statusBI}`).show();
+                }
+
+                $('#js-aside-queroAgendar .js-ag-agendamentoFuturos table tr').remove();
+                if (rtn.data.agendamentosFuturos && rtn.data.agendamentosFuturos.length > 0) {
+                    rtn.data.agendamentosFuturos.forEach(x => {
+
+
+                        let profissionalIniciais = ``;
+
+                        x.profissionais.forEach(p => {
+                            profissionalIniciais +=
+                                `<div class="badge-prof" title="${p.iniciais}" style="background:${p.cor}">${p.iniciais}</div>`;
+                        })
+                        $('#js-aside-queroAgendar .js-ag-agendamentoFuturos table').append(`<tr>
 																					<td>
 																						<h1>${x.data}</h1>									
 																					</td>
@@ -8137,673 +9038,796 @@
 																						${profissionalIniciais}
 																					</td>
 																				</tr>`);
-										});
+                    });
 
-									} else {
-										$('#js-aside-queroAgendar .js-ag-agendamentoFuturos table').append(`<tr><td><center>Nenhum agendamento futuro</center></td></tr>`);
-									}
-
-
-
-									$('#js-aside-queroAgendar').find('input,select,textarea').removeClass('erro').val('');
-									$('#js-aside-queroAgendar .js-id_paciente').val(rtn.data.id_paciente);
-									$("#js-aside-queroAgendar").fadeIn(100,function() {
-										$("#js-aside-queroAgendar .aside__inner1").addClass("active");
-										$("#js-aside-queroAgendar .js-tab a:eq(0)").click();
-
-
-										$('#js-aside-queroAgendar .js-profissionais').chosen();
-										$('#js-aside-queroAgendar .js-profissionais').trigger('chosen:updated');
-									});
-
-									$('#js-aside-queroAgendar .js-periodicidade_select').val(rtn.data.periodicidade_select);
-
-									$('#js-aside-queroAgendar .js-btn-acao-lembrete').click();
-								} else if(rtn.error) {
-									//swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-								} else {
-									//swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-								}
-
-
-								$('#js-aside-queroAgendar select[name=agenda_duracao]').val('');
-								$('#js-aside-queroAgendar textarea.js-obs-qa').val('');
-								$('#js-aside-queroAgendar textarea.js-profissionais-qa').val('');
-								$('#js-aside-queroAgendar .js-id_proximaconsulta').val(0);
-								if(rtn.data.proximaConsulta) {
-
-									if(rtn.data.proximaConsulta.duracao) {
-										$('#js-aside-queroAgendar select[name=agenda_duracao]').val(rtn.data.proximaConsulta.duracao);
-									} 
-
-
-									if(rtn.data.proximaConsulta.obs) {
-										$('#js-aside-queroAgendar textarea.js-obs-qa').val(rtn.data.proximaConsulta.obs);
-									}
-
-									if(rtn.data.proximaConsulta.id_profissional) {
-										$('#js-aside-queroAgendar select.js-profissionais-qa').val(rtn.data.proximaConsulta.id_profissional);
-									}
-
-									if(rtn.data.proximaConsulta.id_proximaconsulta) {
-										$('#js-aside-queroAgendar .js-id_proximaconsulta').val(rtn.data.proximaConsulta.id_proximaconsulta);
-									}
-								}
-
-								
-							},
-							error:function() {
-								//swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-							}
-						}).done(function(){
-
-						});
-					}
-
-					$(function(){
-
-						
-						$('#js-aside-queroAgendar').on('change','select[name=agenda_duracao], select[name=id_cadeira],  select.js-profissionais-qa, input[name=agenda_data]',function(){
-							horarioDisponivel(0,$('#js-aside-queroAgendar'));
-						});
+                } else {
+                    $('#js-aside-queroAgendar .js-ag-agendamentoFuturos table').append(
+                        `<tr><td><center>Nenhum agendamento futuro</center></td></tr>`);
+                }
 
 
 
-						$('#js-aside-queroAgendar .js-ag-agendamento .js-salvar').click(function(){
-							let id_paciente = $('#js-aside-queroAgendar .js-id_paciente').val();
-							
-							let agenda_data = $('#js-aside-queroAgendar input[name=agenda_data]').val();
-							let agenda_duracao = $('#js-aside-queroAgendar select[name=agenda_duracao]').val();
-							let id_cadeira = $('#js-aside-queroAgendar select[name=id_cadeira]').val();
-							let id_profissional = $('#js-aside-queroAgendar select.js-profissionais-qa').val();
-							let agenda_hora = $('#js-aside-queroAgendar select[name=agenda_hora]').val();
-							let id_proximaconsulta = $('#js-aside-queroAgendar .js-id_proximaconsulta').val();
-							let obs = $('#js-aside-queroAgendar textarea.js-obs-qa').val();
-							let erro = '';
-
-							if(agenda_data.length==0) erro='Defina a <b>Data do Agendamento</b>';
-							else if(agenda_duracao.length==0) erro='Defina a <b>Duração de Agendamento</b>';
-							else if(id_cadeira.length==0) erro='Defina o <b>Consultório do Agendamento</b>';
-							else if(id_profissional.length==0) erro='Defina o <b>Profissional do Agendamento</b>';
-							else if(agenda_hora.length==0) erro='Defina a <b>Hora do Agendamento</b>';
-
-							if(erro.length==0) {
+                $('#js-aside-queroAgendar').find('input,select,textarea').removeClass('erro').val('');
+                $('#js-aside-queroAgendar .js-id_paciente').val(rtn.data.id_paciente);
+                $("#js-aside-queroAgendar").fadeIn(100, function() {
+                    $("#js-aside-queroAgendar .aside__inner1").addClass("active");
+                    $("#js-aside-queroAgendar .js-tab a:eq(0)").click();
 
 
-								let obj = $(this);
-								let obHTMLAntigo = $(this).html();
+                    $('#js-aside-queroAgendar .js-profissionais').chosen();
+                    $('#js-aside-queroAgendar .js-profissionais').trigger('chosen:updated');
+                });
 
-								if(obj.attr('data-loading')==0) {
-									
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
+                $('#js-aside-queroAgendar .js-periodicidade_select').val(rtn.data.periodicidade_select);
 
-									let data = `ajax=asideQueroAgendarAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}&id_proximaconsulta=${id_proximaconsulta}`;
-
-									data = {
-										'ajax':'asideQueroAgendarAgendar',
-										'id_paciente':id_paciente,
-										'agenda_data':agenda_data,
-										'agenda_duracao':agenda_duracao,
-										'id_cadeira':id_cadeira,
-										'id_profissional':id_profissional,
-										'agenda_hora':agenda_hora,
-										'obs':obs,
-										'id_proximaconsulta':id_proximaconsulta
-
-									}
-
-									$.ajax({
-											type:'POST',
-											data:data,
-											url:baseURLApiAside,
-											success:function(rtn) {
-												if(rtn.success) {
-
-													atualizaValorListasInteligentes();
-													$('.aside-close').click();
-
-												} else if(rtn.error) {
-													swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-												} else {
-													swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-												}
-												
-											},
-											error:function() {
-												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-											} 
-									}).done(function(){
-										obj.html(obHTMLAntigo);
-										obj.attr('data-loading',0);
-									});
+                $('#js-aside-queroAgendar .js-btn-acao-lembrete').click();
+            } else if (rtn.error) {
+                //swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+            } else {
+                //swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+            }
 
 
-								}
+            $('#js-aside-queroAgendar select[name=agenda_duracao]').val('');
+            $('#js-aside-queroAgendar textarea.js-obs-qa').val('');
+            $('#js-aside-queroAgendar textarea.js-profissionais-qa').val('');
+            $('#js-aside-queroAgendar .js-id_proximaconsulta').val(0);
+            if (rtn.data.proximaConsulta) {
 
-							} else {
-								swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
-							}
-							
-						});
-
-						$('#js-aside-queroAgendar .js-ag-prontuario .js-salvarProntuario').click(function(){
-
-
-							let obj = $(this);
-							let objTextoAntigo = $(this).html();
-							let id_profissional = $('#js-aside-queroAgendar .js-prontuario-profissional').val();
-							let prontuario = $('#js-aside-queroAgendar .js-prontuario').val();
-							let id_paciente = $('#js-aside-queroAgendar .js-id_paciente').val();
-
-							let erro='';
-
-							if(dataProntuario.length==0) erro='Preencha o campo de Data';
-							else if(id_profissional.length==0) erro='Selecione o Profissional';
-							else if(prontuario.length==0) erro='Digite o prontuário para salvar'
-
-							if(erro.length==0) {
-								if(obj.attr('data-loading')==0) {
-
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
-
-									
-									let data = {'ajax':'prontuarioPersistir',
-												'id_profissional':id_profissional,
-												'prontuario':prontuario,
-												'id_paciente':id_paciente}
-
-									$.ajax({
-										type:"POST",
-										url:baseURLApiAside,
-										data:data,
-										success:function(rtn) {
-											if(rtn.success) {
-
-												$('#js-aside-queroAgendar input[name=agenda_data]').val('');
-												$('#js-aside-queroAgendar select[name=agenda_duracao]').val('');
-												$('#js-aside-queroAgendar select[name=id_cadeira]').val('');
-												$('#js-aside-queroAgendar select.js-profissionais-qa').val('').trigger('chosen:updated');
-												$('#js-aside-queroAgendar select[name=agenda_hora]').val('');
-												$('#js-aside-queroAgendar textarea.js-obs-qa').val('');
-
-												
-												$(`#js-aside-queroAgendar .js-retorno`).val('');
-												$(`#js-aside-queroAgendar .js-agenda_duracao`).val('');
-												$(`#js-aside-queroAgendar .js-laboratorio`).prop('checked',false);
-												$(`#js-aside-queroAgendar .js-imagem`).prop('checked',false);
-												$(`#js-aside-queroAgendar .js-profissionais`).val('');
-												$(`#js-aside-queroAgendar .js-obs`).val('');
-												$('#js-aside-queroAgendar .js-id_paciente').val('');
-												swal({title: "Sucesso!", text: 'Dados salvos com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-													$('#js-aside-queroAgendar .aside-close').click();
-												});
-											} else if(rtn.error) {
-												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-											} else {
-												swal({title: "Erro!", text: 'Algum erro ocorreu ao salvar o prontuário. Tente novamente!', type:"error", confirmButtonColor: "#424242"});
-											}
-										}
-									}).done(function(){
-										obj.attr('data-loading',0);
-										obj.html(objTextoAntigo);
-									})
-								}
-							} else {
-								swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
-							}
-
-						});
+                if (rtn.data.proximaConsulta.duracao) {
+                    $('#js-aside-queroAgendar select[name=agenda_duracao]').val(rtn.data.proximaConsulta
+                        .duracao);
+                }
 
 
-						$('#js-aside-queroAgendar .js-tab-choises a').click(function() {
-							$("#js-aside-queroAgendar .js-tab-choises a").removeClass("active");
-							$(this).addClass("active");							
-						})
+                if (rtn.data.proximaConsulta.obs) {
+                    $('#js-aside-queroAgendar textarea.js-obs-qa').val(rtn.data.proximaConsulta.obs);
+                }
+
+                if (rtn.data.proximaConsulta.id_profissional) {
+                    $('#js-aside-queroAgendar select.js-profissionais-qa').val(rtn.data.proximaConsulta
+                        .id_profissional);
+                }
+
+                if (rtn.data.proximaConsulta.id_proximaconsulta) {
+                    $('#js-aside-queroAgendar .js-id_proximaconsulta').val(rtn.data.proximaConsulta
+                        .id_proximaconsulta);
+                }
+            }
+
+
+        },
+        error: function() {
+            //swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+        }
+    }).done(function() {
+
+    });
+}
+
+$(function() {
+
+
+    $('#js-aside-queroAgendar').on('change',
+        'select[name=agenda_duracao], select[name=id_cadeira],  select.js-profissionais-qa, input[name=agenda_data]',
+        function() {
+            horarioDisponivel(0, $('#js-aside-queroAgendar'));
+        });
 
 
 
-					});
-				</script>
+    $('#js-aside-queroAgendar .js-ag-agendamento .js-salvar').click(function() {
+        let id_paciente = $('#js-aside-queroAgendar .js-id_paciente').val();
 
-				<section class="aside aside-queroAgendar" id="js-aside-queroAgendar">
-					<div class="aside__inner1">
+        let agenda_data = $('#js-aside-queroAgendar input[name=agenda_data]').val();
+        let agenda_duracao = $('#js-aside-queroAgendar select[name=agenda_duracao]').val();
+        let id_cadeira = $('#js-aside-queroAgendar select[name=id_cadeira]').val();
+        let id_profissional = $('#js-aside-queroAgendar select.js-profissionais-qa').val();
+        let agenda_hora = $('#js-aside-queroAgendar select[name=agenda_hora]').val();
+        let id_proximaconsulta = $('#js-aside-queroAgendar .js-id_proximaconsulta').val();
+        let obs = $('#js-aside-queroAgendar textarea.js-obs-qa').val();
+        let erro = '';
 
-						<header class="aside-header">
-							<h1>Quero Agendar</h1>
-							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-						</header>
+        if (agenda_data.length == 0) erro = 'Defina a <b>Data do Agendamento</b>';
+        else if (agenda_duracao.length == 0) erro = 'Defina a <b>Duração de Agendamento</b>';
+        else if (id_cadeira.length == 0) erro = 'Defina o <b>Consultório do Agendamento</b>';
+        else if (id_profissional.length == 0) erro = 'Defina o <b>Profissional do Agendamento</b>';
+        else if (agenda_hora.length == 0) erro = 'Defina a <b>Hora do Agendamento</b>';
 
-						<form method="post" class="aside-content form" onsubmit="return false;">
-							<input type="hidden" class="js-id_paciente" value="0" />
-							<input type="hidden" class="js-id_proximaconsulta" value="0" />
-							<input type="hidden" name="tipo" value="" />
-							<section class="header-profile">
-								<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
-								<div class="header-profile__inner1">
-									<h1><a href="" target="_blank" class="js-nome"></a></h1>
-									<div>
-										<p class="js-statusBI"></p>
-										<p class="js-idade"></p>
-										<p class="js-periodicidade"></p>
-										<p class="js-musica"></p>
-									</div>
-								</div>
-							</section>
+        if (erro.length == 0) {
 
-							<section class="tab tab_alt js-tab-choises">
-								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamento').show();" class="active">Agendamento</a>	
-								<a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamentoFuturos').show();" class="">Agendamentos Futuros</a>
-							</section>
 
-							<div class="js-ag js-ag-agendamento">
-								<section class="filter">
-									<div class="button-group">
-									</div>
-									<div class="filter-group">
-										<div class="filter-form form">
-											<dl>
-												<dd></dd>
-											</dl>
-											<dl>
-												<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
-											</dl>
-										</div>								
-									</div>
-								</section>
+            let obj = $(this);
+            let obHTMLAntigo = $(this).html();
 
-								<div class="js-ag-agendamento-queroAgendar">
-									<div class="colunas3">
-										<dl>
-											<dt>Data</dt>
-											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data datecalendar" /></dd>
-										</dl>
-									
-										<dl>
-											<dt>Duração</dt>
-											<dd class="form-comp form-comp_pos">
-												<?php /*<input type="tel" name="agenda_duracao" class="" />*/?>
-												<select name="agenda_duracao">
-													<option value="">-</option>
-													<?php
+            if (obj.attr('data-loading') == 0) {
+
+                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                obj.attr('data-loading', 1);
+
+                let data =
+                    `ajax=asideQueroAgendarAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}&id_proximaconsulta=${id_proximaconsulta}`;
+
+                data = {
+                    'ajax': 'asideQueroAgendarAgendar',
+                    'id_paciente': id_paciente,
+                    'agenda_data': agenda_data,
+                    'agenda_duracao': agenda_duracao,
+                    'id_cadeira': id_cadeira,
+                    'id_profissional': id_profissional,
+                    'agenda_hora': agenda_hora,
+                    'obs': obs,
+                    'id_proximaconsulta': id_proximaconsulta
+
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    data: data,
+                    url: baseURLApiAside,
+                    success: function(rtn) {
+                        if (rtn.success) {
+
+                            atualizaValorListasInteligentes();
+                            $('.aside-close').click();
+
+                        } else if (rtn.error) {
+                            swal({
+                                title: "Erro!",
+                                text: rtn.error,
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        } else {
+                            swal({
+                                title: "Erro!",
+                                text: "Algum erro ocorreu! Tente novamente.",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
+
+                    },
+                    error: function() {
+                        swal({
+                            title: "Erro!",
+                            text: "Algum erro ocorreu! Tente novamente.",
+                            type: "error",
+                            confirmButtonColor: "#424242"
+                        });
+                    }
+                }).done(function() {
+                    obj.html(obHTMLAntigo);
+                    obj.attr('data-loading', 0);
+                });
+
+
+            }
+
+        } else {
+            swal({
+                title: "Erro!",
+                text: erro,
+                html: true,
+                type: "error",
+                confirmButtonColor: "#424242"
+            });
+        }
+
+    });
+
+    $('#js-aside-queroAgendar .js-ag-prontuario .js-salvarProntuario').click(function() {
+
+
+        let obj = $(this);
+        let objTextoAntigo = $(this).html();
+        let id_profissional = $('#js-aside-queroAgendar .js-prontuario-profissional').val();
+        let prontuario = $('#js-aside-queroAgendar .js-prontuario').val();
+        let id_paciente = $('#js-aside-queroAgendar .js-id_paciente').val();
+
+        let erro = '';
+
+        if (dataProntuario.length == 0) erro = 'Preencha o campo de Data';
+        else if (id_profissional.length == 0) erro = 'Selecione o Profissional';
+        else if (prontuario.length == 0) erro = 'Digite o prontuário para salvar'
+
+        if (erro.length == 0) {
+            if (obj.attr('data-loading') == 0) {
+
+                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                obj.attr('data-loading', 1);
+
+
+                let data = {
+                    'ajax': 'prontuarioPersistir',
+                    'id_profissional': id_profissional,
+                    'prontuario': prontuario,
+                    'id_paciente': id_paciente
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: baseURLApiAside,
+                    data: data,
+                    success: function(rtn) {
+                        if (rtn.success) {
+
+                            $('#js-aside-queroAgendar input[name=agenda_data]').val('');
+                            $('#js-aside-queroAgendar select[name=agenda_duracao]').val('');
+                            $('#js-aside-queroAgendar select[name=id_cadeira]').val('');
+                            $('#js-aside-queroAgendar select.js-profissionais-qa').val('')
+                                .trigger('chosen:updated');
+                            $('#js-aside-queroAgendar select[name=agenda_hora]').val('');
+                            $('#js-aside-queroAgendar textarea.js-obs-qa').val('');
+
+
+                            $(`#js-aside-queroAgendar .js-retorno`).val('');
+                            $(`#js-aside-queroAgendar .js-agenda_duracao`).val('');
+                            $(`#js-aside-queroAgendar .js-laboratorio`).prop('checked',
+                                false);
+                            $(`#js-aside-queroAgendar .js-imagem`).prop('checked', false);
+                            $(`#js-aside-queroAgendar .js-profissionais`).val('');
+                            $(`#js-aside-queroAgendar .js-obs`).val('');
+                            $('#js-aside-queroAgendar .js-id_paciente').val('');
+                            swal({
+                                title: "Sucesso!",
+                                text: 'Dados salvos com sucesso!',
+                                type: "success",
+                                confirmButtonColor: "#424242"
+                            }, function() {
+                                $('#js-aside-queroAgendar .aside-close').click();
+                            });
+                        } else if (rtn.error) {
+                            swal({
+                                title: "Erro!",
+                                text: rtn.error,
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        } else {
+                            swal({
+                                title: "Erro!",
+                                text: 'Algum erro ocorreu ao salvar o prontuário. Tente novamente!',
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
+                    }
+                }).done(function() {
+                    obj.attr('data-loading', 0);
+                    obj.html(objTextoAntigo);
+                })
+            }
+        } else {
+            swal({
+                title: "Erro!",
+                text: erro,
+                type: "error",
+                confirmButtonColor: "#424242"
+            });
+        }
+
+    });
+
+
+    $('#js-aside-queroAgendar .js-tab-choises a').click(function() {
+        $("#js-aside-queroAgendar .js-tab-choises a").removeClass("active");
+        $(this).addClass("active");
+    })
+
+
+
+});
+</script>
+
+<section class="aside aside-queroAgendar" id="js-aside-queroAgendar">
+    <div class="aside__inner1">
+
+        <header class="aside-header">
+            <h1>Quero Agendar</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
+
+        <form method="post" class="aside-content form" onsubmit="return false;">
+            <input type="hidden" class="js-id_paciente" value="0" />
+            <input type="hidden" class="js-id_proximaconsulta" value="0" />
+            <input type="hidden" name="tipo" value="" />
+            <section class="header-profile">
+                <img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
+                <div class="header-profile__inner1">
+                    <h1><a href="" target="_blank" class="js-nome"></a></h1>
+                    <div>
+                        <p class="js-statusBI"></p>
+                        <p class="js-idade"></p>
+                        <p class="js-periodicidade"></p>
+                        <p class="js-musica"></p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tab tab_alt js-tab-choises">
+                <a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamento').show();"
+                    class="active">Agendamento</a>
+                <a href="javascript:;" onclick="$('.js-ag').hide(); $('.js-ag-agendamentoFuturos').show();"
+                    class="">Agendamentos Futuros</a>
+            </section>
+
+            <div class="js-ag js-ag-agendamento">
+                <section class="filter">
+                    <div class="button-group">
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-form form">
+                            <dl>
+                                <dd></dd>
+                            </dl>
+                            <dl>
+                                <dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify"
+                                            data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="js-ag-agendamento-queroAgendar">
+                    <div class="colunas3">
+                        <dl>
+                            <dt>Data</dt>
+                            <dd class="form-comp"><span><i class="iconify"
+                                        data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel"
+                                    name="agenda_data" class="data datecalendar" /></dd>
+                        </dl>
+
+                        <dl>
+                            <dt>Duração</dt>
+                            <dd class="form-comp form-comp_pos">
+                                <?php /*<input type="tel" name="agenda_duracao" class="" />*/?>
+                                <select name="agenda_duracao">
+                                    <option value="">-</option>
+                                    <?php
 													foreach($optAgendaDuracao as $v) {
 														echo '<option value="'.$v.'">'.$v.'</option>';
 													}
 													?>
-												</select>
-												<span>min</span>
-											</dd>
-										</dl>
+                                </select>
+                                <span>min</span>
+                            </dd>
+                        </dl>
 
-										<dl>
-											<dt>Consultório</dt>
-											<dd>
-												<select name="id_cadeira">
-													<option value=""></option>
-													<?php
+                        <dl>
+                            <dt>Consultório</dt>
+                            <dd>
+                                <select name="id_cadeira">
+                                    <option value=""></option>
+                                    <?php
 													foreach($_cadeiras as $p) {
 														echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
 													}
 													?>
-												</select>
-											</dd>
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl class="dl2">
-											<dt>Profissionais</dt>
-											<dd>
-												<select class="js-profissionais-qa js-select-profissionais">
-													<option value=""></option>
-													<?php
+                                </select>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="colunas3">
+                        <dl class="dl2">
+                            <dt>Profissionais</dt>
+                            <dd>
+                                <select class="js-profissionais-qa js-select-profissionais">
+                                    <option value=""></option>
+                                    <?php
 													foreach($_profissionais as $p) {
 														if($p->check_agendamento==0) continue;
 														echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
 													}
 													?>
-												</select>
-											</dd>
-										</dl>
-										<dl>
-											<dt>Hora</dt>
-											<dd class="form-comp">
-												<span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span>
-												<select name="agenda_hora">
-													<option value="">Selecione o horário</option>
-												</select>
-											</dd>
-										</dl>
-									</div>
+                                </select>
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>Hora</dt>
+                            <dd class="form-comp">
+                                <span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span>
+                                <select name="agenda_hora">
+                                    <option value="">Selecione o horário</option>
+                                </select>
+                            </dd>
+                        </dl>
+                    </div>
 
-									<dl>
-										<dt>Observações</dt>
-										<dd>
-											<textarea class="js-obs-qa" style="height:80px;"></textarea>
-										</dd>
-									</dl>
-								</div>
-							</div>
-
-
-							<div class="js-ag js-ag-agendamentoFuturos" style="display:none">
-								<div class="list1">
-									<table>
-									</table>
-								</div>
-							</div>
+                    <dl>
+                        <dt>Observações</dt>
+                        <dd>
+                            <textarea class="js-obs-qa" style="height:80px;"></textarea>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
 
 
-						</form>
-					</div>
-				</section>
-				<?php
+            <div class="js-ag js-ag-agendamentoFuturos" style="display:none">
+                <div class="list1">
+                    <table>
+                    </table>
+                </div>
+            </div>
+
+
+        </form>
+    </div>
+</section>
+<?php
 			}
 
 		// Indicacao / Lista Personalizada
 			if(isset($apiConfig['indicacaoListaPersonalizada'])) {
 				?>
-				<script type="text/javascript">
-					var asListaPersonalizada = [];
+<script type="text/javascript">
+var asListaPersonalizada = [];
 
-					const asListaPersonalizadaListar = (openAside) => {
-						
-						if(asListaPersonalizada) {
-							$('.js-asListaPersonalizada-table tbody').html('');
+const asListaPersonalizadaListar = (openAside) => {
 
-							let atualizaListaPersonalizada = 0;//$('select.ajax-indicacao')?1:0;
-						
-							let atualizaIndicacao = 0;
-							let listaPersonalizadaDisabledIds = [];
-							if(atualizaListaPersonalizada==1) {
+    if (asListaPersonalizada) {
+        $('.js-asListaPersonalizada-table tbody').html('');
 
-								$('select.ajax-indicacao option').each(function(index,el){
-									if($(el).prop('disabled')===true) {
-										listaPersonalizadaDisabledIds.push($(el).val());
-									}
-								})
-								atualizaIndicacao=$('select.ajax-indicacao').val();
-								$('select.ajax-indicacao').find('option').remove();
-							
-								$('select.ajax-indicacao').append('<option value=""></option>');
-							}
+        let atualizaListaPersonalizada = 0; //$('select.ajax-indicacao')?1:0;
 
-							cont=0;
-							asListaPersonalizada.forEach(x=>{
+        let atualizaIndicacao = 0;
+        let listaPersonalizadaDisabledIds = [];
+        if (atualizaListaPersonalizada == 1) {
 
-								$(`.js-asListaPersonalizada-table tbody`).append(`<tr class="aside-open">
+            $('select.ajax-indicacao option').each(function(index, el) {
+                if ($(el).prop('disabled') === true) {
+                    listaPersonalizadaDisabledIds.push($(el).val());
+                }
+            })
+            atualizaIndicacao = $('select.ajax-indicacao').val();
+            $('select.ajax-indicacao').find('option').remove();
+
+            $('select.ajax-indicacao').append('<option value=""></option>');
+        }
+
+        cont = 0;
+        asListaPersonalizada.forEach(x => {
+
+            $(`.js-asListaPersonalizada-table tbody`).append(`<tr class="aside-open">
 																				<td><h1>${x.titulo}</h1></td>
 																				<td style="text-align:right;"><a href="javascript:;" class="button js-asListaPersonalizada-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
 																			</tr>`);
 
-								if(atualizaListaPersonalizada==1) {
+            if (atualizaListaPersonalizada == 1) {
 
-									dis=listaPersonalizadaDisabledIds.includes(x.id)?' disabled':'';
-									sel=(atualizaIndicacao==x.id)?' selected':'';
-									$('select.ajax-indicacao').append(`<option value="${x.id}"${sel}${dis}>${x.titulo}</option>`);
-								}
+                dis = listaPersonalizadaDisabledIds.includes(x.id) ? ' disabled' : '';
+                sel = (atualizaIndicacao == x.id) ? ' selected' : '';
+                $('select.ajax-indicacao').append(
+                    `<option value="${x.id}"${sel}${dis}>${x.titulo}</option>`);
+            }
 
-								cont++;
-								if(atualizaListaPersonalizada==1 && cont==asListaPersonalizada.length) {
-									$('select.ajax-indicacao').trigger('chosen:updated');
-								}
+            cont++;
+            if (atualizaListaPersonalizada == 1 && cont == asListaPersonalizada.length) {
+                $('select.ajax-indicacao').trigger('chosen:updated');
+            }
 
-							});
-							
-							if(openAside===true) {
-								$("#js-aside-asListaPersonalizada").fadeIn(100,function() {
-									$("#js-aside-asListaPersonalizada .aside__inner1").addClass("active");
-								});
-							}
+        });
 
-						} else {
-							if(openAside===true) {
-								$(".aside").fadeIn(100,function() {
-										$(".aside .aside__inner1").addClass("active");
-								});
-							}
-						}
-					}
+        if (openAside === true) {
+            $("#js-aside-asListaPersonalizada").fadeIn(100, function() {
+                $("#js-aside-asListaPersonalizada .aside__inner1").addClass("active");
+            });
+        }
 
-					const asListaPersonalizadaAtualizar = (openAside) => {	
-						let data = `ajax=asListaPersonalizadaAtualizar`;
+    } else {
+        if (openAside === true) {
+            $(".aside").fadeIn(100, function() {
+                $(".aside .aside__inner1").addClass("active");
+            });
+        }
+    }
+}
 
-						$.ajax({
-							type:"POST",
-							url:baseURLApiAside,
-							data:data,
-							success:function(rtn) {
-								if(rtn.success) {
-									asListaPersonalizada=rtn.regs;
-									asListaPersonalizadaListar(openAside);
-								}
-							}
-						})
-					}
-					
-					const asListaPersonalizadaEditar = (id) => {
-						let data = `ajax=asListaPersonalizadaEditar&id=${id}`;
-						$.ajax({
-							type:"POST",
-							url:baseURLApiAside,
-							data:data,
-							success:function(rtn) {
-								if(rtn.success) {
-									reg=rtn.cnt
+const asListaPersonalizadaAtualizar = (openAside) => {
+    let data = `ajax=asListaPersonalizadaAtualizar`;
 
-									$(`.js-asListaPersonalizada-id`).val(reg.id);
-									$(`.js-asListaPersonalizada-titulo`).val(reg.titulo);
+    $.ajax({
+        type: "POST",
+        url: baseURLApiAside,
+        data: data,
+        success: function(rtn) {
+            if (rtn.success) {
+                asListaPersonalizada = rtn.regs;
+                asListaPersonalizadaListar(openAside);
+            }
+        }
+    })
+}
 
-									
-									$('.js-asListaPersonalizada-form').animate({scrollTop: 0},'fast');
-									$('.js-asListaPersonalizada-submit').html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
-									$('.js-asListaPersonalizada-remover').show();
+const asListaPersonalizadaEditar = (id) => {
+    let data = `ajax=asListaPersonalizadaEditar&id=${id}`;
+    $.ajax({
+        type: "POST",
+        url: baseURLApiAside,
+        data: data,
+        success: function(rtn) {
+            if (rtn.success) {
+                reg = rtn.cnt
 
-								} else if(rtn.error) {
-									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-								} else {
-									swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
-								}
-							},
-							error:function(){
-								swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
-							}
-						});
-					}
+                $(`.js-asListaPersonalizada-id`).val(reg.id);
+                $(`.js-asListaPersonalizada-titulo`).val(reg.titulo);
 
-					const formatTemplateIndicacao = (state) => {
-						if (!state.id) return state.text;
-						var $state = $('<span style="display:flex; align-items:center; gap:.5rem;">' + state.text + '</span>');
-						return $state;
-					}
-					
-					var indicacaoTipo = '';
-					$(function(){
 
-						$('select[name=indicacao_tipo]').change(function(){
+                $('.js-asListaPersonalizada-form').animate({
+                    scrollTop: 0
+                }, 'fast');
+                $('.js-asListaPersonalizada-submit').html(
+                    `<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
+                $('.js-asListaPersonalizada-remover').show();
 
-							if($(this).val()=="INDICACAO") {
-								$('.js-parametrizacao-indicacao').show();
-							} else {
-								$('.js-parametrizacao-indicacao').hide();
-							}
-							indicacaoTipo=$('select[name=indicacao_tipo]').val();
-						}).trigger('change');
+            } else if (rtn.error) {
+                swal({
+                    title: "Erro!",
+                    text: rtn.error,
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            } else {
+                swal({
+                    title: "Erro!",
+                    text: "Algum erro ocorreu durante a edição deste registro!",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            }
+        },
+        error: function() {
+            swal({
+                title: "Erro!",
+                text: "Algum erro ocorreu durante a edição deste registro!",
+                type: "error",
+                confirmButtonColor: "#424242"
+            });
+        }
+    });
+}
 
-						$('select[name=indicacao]').select2({
-							ajax: {
-								url: function () {
-									return baseURLApiAside+'?ajaxApiAside=buscaIndicacao&indicacaoTipo='+indicacaoTipo;
-								},
-								data: function (params) {
-										var query = {
-										search: params.term,
-										type: 'public'
-									}
-									// ?search=[term]&type=public
-									return query;
-								},
-								processResults: function (data) {
-									// Transforms the top-level key of the response object from 'items' to 'results'
-									return {
-										results: data.items
-									};
-								}
+const formatTemplateIndicacao = (state) => {
+    if (!state.id) return state.text;
+    var $state = $('<span style="display:flex; align-items:center; gap:.5rem;">' + state.text + '</span>');
+    return $state;
+}
 
-							},
-							templateResult:formatTemplateIndicacao,
-							//	templateSelection:formatTemplateSelection,
-							//dropdownParent: $(".modal")
-						});
+var indicacaoTipo = '';
+$(function() {
 
-						$('select[name=indicacao_tipo]').trigger('change');
+    $('select[name=indicacao_tipo]').change(function() {
 
-						asListaPersonalizadaAtualizar();
+        if ($(this).val() == "INDICACAO") {
+            $('.js-parametrizacao-indicacao').show();
+        } else {
+            $('.js-parametrizacao-indicacao').hide();
+        }
+        indicacaoTipo = $('select[name=indicacao_tipo]').val();
+    }).trigger('change');
 
-						$('.js-asListaPersonalizada-submit').click(function(){
-							let obj = $(this);
-							if(obj.attr('data-loading')==0) {
+    $('select[name=indicacao]').select2({
+        ajax: {
+            url: function() {
+                return baseURLApiAside + '?ajaxApiAside=buscaIndicacao&indicacaoTipo=' +
+                    indicacaoTipo;
+            },
+            data: function(params) {
+                var query = {
+                    search: params.term,
+                    type: 'public'
+                }
+                // ?search=[term]&type=public
+                return query;
+            },
+            processResults: function(data) {
+                // Transforms the top-level key of the response object from 'items' to 'results'
+                return {
+                    results: data.items
+                };
+            }
 
-								let id = $(`.js-asListaPersonalizada-id`).val();
-								let titulo = $(`.js-asListaPersonalizada-titulo`).val();
+        },
+        templateResult: formatTemplateIndicacao,
+        //	templateSelection:formatTemplateSelection,
+        //dropdownParent: $(".modal")
+    });
 
-								if(titulo.length==0) {
-									swal({title: "Erro!", text: "Digite o nome da Indicação", type:"error", confirmButtonColor: "#424242"});
-								}  else {
+    $('select[name=indicacao_tipo]').trigger('change');
 
-									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									obj.attr('data-loading',1);
+    asListaPersonalizadaAtualizar();
 
-									let data = `ajax=asListaPersonalizadaPersistir&id=${id}&titulo=${titulo}`;
-									
-									$.ajax({
-										type:'POST',
-										data:data,
-										url:baseURLApiAside,
-										success:function(rtn) {
-											if(rtn.success) {
-												asListaPersonalizadaAtualizar();	
+    $('.js-asListaPersonalizada-submit').click(function() {
+        let obj = $(this);
+        if (obj.attr('data-loading') == 0) {
 
-												$(`.js-asListaPersonalizada-id`).val(0);
-												$(`.js-asListaPersonalizada-titulo`).val(``);
+            let id = $(`.js-asListaPersonalizada-id`).val();
+            let titulo = $(`.js-asListaPersonalizada-titulo`).val();
 
-											} else if(rtn.error) {
-												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-											} else {
-												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-											}
-											
-										},
-										error:function() {
-											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
-										}
-									}).done(function(){
-										$('.js-asListaPersonalizada-remover').hide();
-										obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-										obj.attr('data-loading',0);
-									});
+            if (titulo.length == 0) {
+                swal({
+                    title: "Erro!",
+                    text: "Digite o nome da Indicação",
+                    type: "error",
+                    confirmButtonColor: "#424242"
+                });
+            } else {
 
-								}
-							}
-						})
+                obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                obj.attr('data-loading', 1);
 
-						$('.js-asListaPersonalizada-table').on('click','.js-asListaPersonalizada-editar',function(){
-							let id = $(this).attr('data-id');
-							asListaPersonalizadaEditar(id);
-						});
+                let data = `ajax=asListaPersonalizadaPersistir&id=${id}&titulo=${titulo}`;
 
-						$('.aside-indicacao').on('click','.js-asListaPersonalizada-remover',function(){
-							let obj = $(this);
+                $.ajax({
+                    type: 'POST',
+                    data: data,
+                    url: baseURLApiAside,
+                    success: function(rtn) {
+                        if (rtn.success) {
+                            asListaPersonalizadaAtualizar();
 
-							if(obj.attr('data-loading')==0) {
+                            $(`.js-asListaPersonalizada-id`).val(0);
+                            $(`.js-asListaPersonalizada-titulo`).val(``);
 
-								let id = $('.js-asListaPersonalizada-id').val();
-								swal({
-									title: "Atenção",
-									text: "Você tem certeza que deseja remover este registro?",
-									type: "warning",
-									showCancelButton: true,
-									confirmButtonColor: "#DD6B55",
-									confirmButtonText: "Sim!",
-									cancelButtonText: "Não",
-									closeOnConfirm:false,
-									closeOnCancel: false }, 
-									function(isConfirm){   
-										if (isConfirm) {   
+                        } else if (rtn.error) {
+                            swal({
+                                title: "Erro!",
+                                text: rtn.error,
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        } else {
+                            swal({
+                                title: "Erro!",
+                                text: "Algum erro ocorreu! Tente novamente.",
+                                type: "error",
+                                confirmButtonColor: "#424242"
+                            });
+                        }
 
-											obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-											obj.attr('data-loading',1);
-											let data = `ajax=asListaPersonalizadaRemover&id=${id}`; 
-											$.ajax({
-												type:"POST",
-												data:data,
-												url:baseURLApiAside,
-												success:function(rtn) {
-													if(rtn.success) {
-														$(`.js-asListaPersonalizada-id`).val(0);
-														$(`.js-asListaPersonalizada-titulo`).val('');
-														asListaPersonalizadaAtualizar();
-														swal.close();   
-													} else if(rtn.error) {
-														swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
-													} else {
-														swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção desta indicação!", type:"error", confirmButtonColor: "#424242"});
-													}
-												},
-												error:function(){
-													swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção desta indicação!", type:"error", confirmButtonColor: "#424242"});
-												}
-											}).done(function(){
-												$('.js-asListaPersonalizada-remover').hide();
-												obj.html('<i class="iconify" data-icon="fluent:delete-24-regular"></i>');
-												obj.attr('data-loading',0);
-												$(`.js-asListaPersonalizada-submit`).html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
-											});
-										} else {   
-											swal.close();   
-										} 
-									});
-							}
-						});
+                    },
+                    error: function() {
+                        swal({
+                            title: "Erro!",
+                            text: "Algum erro ocorreu! Tente novamente.",
+                            type: "error",
+                            confirmButtonColor: "#424242"
+                        });
+                    }
+                }).done(function() {
+                    $('.js-asListaPersonalizada-remover').hide();
+                    obj.html(
+                    `<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+                    obj.attr('data-loading', 0);
+                });
 
-					});
-				</script>
+            }
+        }
+    })
 
-				<section class="aside aside-indicacao">
-					<div class="aside__inner1">
+    $('.js-asListaPersonalizada-table').on('click', '.js-asListaPersonalizada-editar', function() {
+        let id = $(this).attr('data-id');
+        asListaPersonalizadaEditar(id);
+    });
 
-						<header class="aside-header">
-							<h1>Indicações</h1>
-							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-						</header>
+    $('.aside-indicacao').on('click', '.js-asListaPersonalizada-remover', function() {
+        let obj = $(this);
 
-						<form method="post" class="aside-content form">
-							<input type="hidden" class="js-asListaPersonalizada-id" />
-							
-							<dl>
-								<dt>Indicação</dt>
-								<dd>
-									<input type="text" class="js-asListaPersonalizada-titulo" style="text-transform:uppercase;" />
-									<button type="button" class="js-asListaPersonalizada-submit button button_main" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
-									<a href="javascript:;" class="button js-asListaPersonalizada-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
-								</dd>
-							</dl>
-							<div class="list2" style="margin-top:2rem;">
-								<table class="js-asListaPersonalizada-table">
-									<thead>
-										<tr>									
-											<th>INDICAÇÃO</th>
-											<th></th>
-										</tr>
-									</thead>
-									<tbody>							
-									</tbody>
-								</table>
-							</div>
-						</form>
-					</div>
-				</section>
-				<?php
+        if (obj.attr('data-loading') == 0) {
+
+            let id = $('.js-asListaPersonalizada-id').val();
+            swal({
+                    title: "Atenção",
+                    text: "Você tem certeza que deseja remover este registro?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Sim!",
+                    cancelButtonText: "Não",
+                    closeOnConfirm: false,
+                    closeOnCancel: false
+                },
+                function(isConfirm) {
+                    if (isConfirm) {
+
+                        obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+                        obj.attr('data-loading', 1);
+                        let data = `ajax=asListaPersonalizadaRemover&id=${id}`;
+                        $.ajax({
+                            type: "POST",
+                            data: data,
+                            url: baseURLApiAside,
+                            success: function(rtn) {
+                                if (rtn.success) {
+                                    $(`.js-asListaPersonalizada-id`).val(0);
+                                    $(`.js-asListaPersonalizada-titulo`).val('');
+                                    asListaPersonalizadaAtualizar();
+                                    swal.close();
+                                } else if (rtn.error) {
+                                    swal({
+                                        title: "Erro!",
+                                        text: rtn.error,
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                } else {
+                                    swal({
+                                        title: "Erro!",
+                                        text: "Algum erro ocorreu durante a remoção desta indicação!",
+                                        type: "error",
+                                        confirmButtonColor: "#424242"
+                                    });
+                                }
+                            },
+                            error: function() {
+                                swal({
+                                    title: "Erro!",
+                                    text: "Algum erro ocorreu durante a remoção desta indicação!",
+                                    type: "error",
+                                    confirmButtonColor: "#424242"
+                                });
+                            }
+                        }).done(function() {
+                            $('.js-asListaPersonalizada-remover').hide();
+                            obj.html(
+                                '<i class="iconify" data-icon="fluent:delete-24-regular"></i>'
+                                );
+                            obj.attr('data-loading', 0);
+                            $(`.js-asListaPersonalizada-submit`).html(
+                                `<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`
+                                );
+                        });
+                    } else {
+                        swal.close();
+                    }
+                });
+        }
+    });
+
+});
+</script>
+
+<section class="aside aside-indicacao">
+    <div class="aside__inner1">
+
+        <header class="aside-header">
+            <h1>Indicações</h1>
+            <a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify"
+                    data-icon="fluent:dismiss-24-filled"></i></a>
+        </header>
+
+        <form method="post" class="aside-content form">
+            <input type="hidden" class="js-asListaPersonalizada-id" />
+
+            <dl>
+                <dt>Indicação</dt>
+                <dd>
+                    <input type="text" class="js-asListaPersonalizada-titulo" style="text-transform:uppercase;" />
+                    <button type="button" class="js-asListaPersonalizada-submit button button_main" data-loading="0"><i
+                            class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
+                    <a href="javascript:;" class="button js-asListaPersonalizada-remover" data-loading="0"
+                        style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+                </dd>
+            </dl>
+            <div class="list2" style="margin-top:2rem;">
+                <table class="js-asListaPersonalizada-table">
+                    <thead>
+                        <tr>
+                            <th>INDICAÇÃO</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+</section>
+<?php
 			}
 
 	?>

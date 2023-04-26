@@ -1,5 +1,4 @@
 <?php 
-
 	if(isset($_GET['instancia'])) {
 		setcookie("infoName", $_GET['instancia'], time() + 3600*24, "/");
 		header("Location: ./");
@@ -12,17 +11,17 @@
 
 <section class="login">
 
-	<div class="login-bg">
-		<img src="img/login-bg.jpg" alt="" width="800" height="1080" class="login-bg__img" />
-		<div class="login-bg-logo">
-			<img src="img/logo-reduzido.svg" alt="" width="60" height="55" />
-		</div>
-	</div>
+    <div class="login-bg">
+        <img src="img/login-bg.jpg" alt="" width="800" height="1080" class="login-bg__img" />
+        <div class="login-bg-logo">
+            <img src="img/logo-reduzido.svg" alt="" width="60" height="55" />
+        </div>
+    </div>
 
-	<div class="login-form">
+    <div class="login-form">
 
-		<div class="login-form__inner1">
-			<?php
+        <div class="login-form__inner1">
+            <?php
 			$image = "";
 			$sql = new Mysql();
 			$sql->consult($_p . "clinica", "*", "");
@@ -34,32 +33,37 @@
 			}
 			if (!empty($image)) {
 			?>
-				<img src="<?php echo $image; ?>" alt="" width="484" height="68" class="login-form__logo" />
-			<?php
+            <img src="<?php echo $image; ?>" alt="" width="484" height="68" class="login-form__logo" />
+            <?php
 			}
 			?>
 
-			<form method="post" action="usuarios/login.php" class="form formulario-validacao">
-				<input type="hidden" name="url" value="<?php echo isset($_GET['url']) ? str_replace("erro=1&url=", "", str_replace("erro=2&url=", "", str_replace("erro=3&url=", "", str_replace("erro=4&url=", "", str_replace("erro=5&url=", "", str_replace("erro=6&url=", "", $_SERVER['QUERY_STRING'])))))) : ""; ?>" />
-				<dl>
-					<dd class="form-comp"><span><i class="iconify" data-icon="fluent:person-12-regular"></i></span><input type="text" name="auth_cpf" class="obg" placeholder="Login" /></dd>
-				</dl>
-				<dl>
-					<dd class="form-comp"><span><i class="iconify" data-icon="fluent:lock-closed-12-regular"></i></span><input type="password" name="auth_senha" class="obg" placeholder="Senha" /></dd>
-				</dl>
-				<dl>
-					<dd><button type="submit" class="button button_main button_full">Entrar</button></dd>
-				</dl>
-				<?php /*<dl>
+            <form method="post" action="usuarios/login.php" class="form formulario-validacao">
+                <input type="hidden" name="url"
+                    value="<?php echo isset($_GET['url']) ? str_replace("erro=1&url=", "", str_replace("erro=2&url=", "", str_replace("erro=3&url=", "", str_replace("erro=4&url=", "", str_replace("erro=5&url=", "", str_replace("erro=6&url=", "", $_SERVER['QUERY_STRING'])))))) : ""; ?>" />
+                <dl>
+                    <dd class="form-comp"><span><i class="iconify"
+                                data-icon="fluent:person-12-regular"></i></span><input type="text" name="auth_cpf"
+                            class="obg" placeholder="Login" /></dd>
+                </dl>
+                <dl>
+                    <dd class="form-comp"><span><i class="iconify"
+                                data-icon="fluent:lock-closed-12-regular"></i></span><input type="password"
+                            name="auth_senha" class="obg" placeholder="Senha" /></dd>
+                </dl>
+                <dl>
+                    <dd><button type="submit" class="button button_main button_full">Entrar</button></dd>
+                </dl>
+                <?php /*<dl>
 					<dd><a href="">Esqueci minha senha <i class="iconify" data-icon="fluent:arrow-right-20-filled"></i></a></dd>
 				</dl>*/ ?>
-			</form>
+            </form>
 
-		</div>
+        </div>
 
-	</div>
+    </div>
 
-	<?php
+    <?php
 	if (isset($_GET['erro'])) {
 		if ($_GET['erro'] == 1) {
 			$jsc = new Js();
