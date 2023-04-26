@@ -209,7 +209,9 @@
 	<head>
 		<meta charset="utf-8">
 		<title><?php echo $title;?></title>
-		<link rel="stylesheet" type="text/css" href="../css/evolucoes.css" />
+
+		<base href="//<?php echo $_SERVER['HTTP_HOST'];?>/evolucoes/" />
+		<link rel="stylesheet" type="text/css" href="css/evolucoes.css" />
 		<link rel="stylesheet" type="text/css" href="../css/apps.css" />
 		<link rel="stylesheet" type="text/css" href="../css/annamnese.css" />
 		<script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
@@ -242,7 +244,7 @@
 		// Se nao encontrou a evolucao
 		if(empty($evolucao) or empty($anamnese)) {
 
-		?>
+			?>
 			<table class="print-table">
 
 				<thead><tr><td><div class="print-table-header">&nbsp;</div></td></tr></thead>
@@ -254,12 +256,11 @@
 					</tr>
 				</tbody>
 			</table>
-		<?php
+			<?php
 		} 
 
 		// Se encontrou a evolucao
 		else {
-
 
 			// Se nao estiver autenticado
 			if($auth===false) {
@@ -322,37 +323,19 @@
 				</script>
 
 
-	<main class="centralizacao">
-      <div class="imagem-sorriso">
-        <img src="../img/Sorriso.png" alt="Ícone de sorriso" />
-      </div>
-
-      <form class="formulario" action="" method="post">
-        <label class="input_icon" for="cpf">
-          <div class="border-icon">
-		  <iconify-icon icon="mdi:file-document-outline"></iconify-icon>
-          </div>
-          <input type="text" class="js-cpf" name="cpf" id="cpf"  maxlength="14"  pattern="[0-9]*" placeholder="CPF" />
-        </label>
-        <span id="cpf-error" style="color: rgb(175, 175, 175); display: none">CPF inválido</span
-        >
-        <label class="input_icon" for="data">
-          <div class="border-icon">
-            <img class="icon_input" src="../img/Calendario.svg" alt="Ícone de data"/>
-          </div>
-          <input type="text" name="data_nascimento" class="js-dn" id="data_nascimento" maxlength="10" pattern="[0-9]*"placeholder="Data de nascimento" onkeypress="return onlyNumbers(event)"oninput="maskCpf(); validateCpf()"/>
-        </label>
-
-
-        <button type="submit" class="autenticar">Autenticar</button>
-      </form>
-    </main>
-
-
-
-
-
-				
+				<div style="text-align: center;margin-top:200px;">
+					<form>
+						<dl>
+							<dt>CPF</dt>
+							<dd><input type="text" class="js-cpf" /></dd>
+						</dl>
+						<dl>
+							<dt>Data Nascimento</dt>
+							<dd><input type="text" class="js-dn" /></dd>
+						</dl>
+						<button type="button" class="button js-auth" data-loading="0">Autenticar</button>
+					</form>
+				</div>
 				<?php
 			} 
 
@@ -576,7 +559,6 @@
 													<?php
 													}
 													?>
-													
 												</table>
 											</div>
 
@@ -596,13 +578,11 @@
 											$pdfAnamnese = $_scalewayS3endpoint."/".$infoConta->instancia."/arqs/pacientes/anamneses/".sha1($evolucao->id).".pdf";
 										}
 
-
-										
-									?>
-									<object data='<?php echo $pdfAnamnese;?>#view=fit&toolbar=0' style="width:100%;height:700px;" toolbar="0">			    
-									    <p><a href="<?php echo $pdfAnamnese;?>" class="button"><i class="iconify" data-icon="fluent:document-24-regular"></i><span>Baixar documento</span></a></p>
-									</object>
-									<?php
+										?>
+										<object data='<?php echo $pdfAnamnese;?>#view=fit&toolbar=0' style="width:100%;height:700px;" toolbar="0">			    
+										    <p><a href="<?php echo $pdfAnamnese;?>" class="button"><i class="iconify" data-icon="fluent:document-24-regular"></i><span>Baixar documento</span></a></p>
+										</object>
+										<?php
 									}
 									?>
 								</section>
@@ -614,11 +594,6 @@
 								?>
 							</td>
 						</tr>
-
-
-
-
-						
 
 						<tr>
 							<td style="padding-top:40px;">
