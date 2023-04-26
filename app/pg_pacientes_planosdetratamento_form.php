@@ -139,7 +139,7 @@ if (isset($_GET['edita']) and is_numeric($_GET['edita'])) {
 			$usuariosIds[$x->id_usuario] = $x->id_usuario;
 			$procedimentosRegs[] = $x;
 		}
-	
+
 		$_usuarios = array();
 		if (count($usuariosIds) > 0) {
 			$sql->consult($_p . "colaboradores", "id,nome", "where id IN (" . implode(",", $usuariosIds) . ")");
@@ -191,9 +191,8 @@ if (isset($_GET['edita']) and is_numeric($_GET['edita'])) {
 				'faces' => $facesArray,
 				'hof' => $x->hof
 			);
-			
 		}
-	
+
 		if ($cnt->status == "APROVADO") {
 			$values['procedimentos'] = json_encode($procedimentos);
 		} else {
@@ -609,7 +608,7 @@ if (isset($_POST['acao'])) {
 										$id_tratamento_pagamento = $sql->ulid;
 										$sql->add($_p . "log", "data=now(),id_usuario='" . $usr->id . "',tipo='insert',vsql='" . addslashes($vSQLPagamento) . "',tabela='" . $_p . "financeiro_fluxo_recebimentos',id_reg='" . $id_tratamento_pagamento . "'");
 									}
-								
+
 									if (isset($x->id_formapagamento) and is_numeric($x->id_formapagamento) and isset($_formasDePagamento[$x->id_formapagamento])) {
 										$f = $_formasDePagamento[$x->id_formapagamento];
 										if ($f->tipo == "credito") {
@@ -698,7 +697,7 @@ if (isset($_POST['acao'])) {
 										}
 									}
 								}
-							
+
 								foreach ($vSQLBaixa as $x) {
 									$x = (object)$x;
 									$vsql = "";
@@ -729,7 +728,7 @@ if (isset($_POST['acao'])) {
 												valor_desconto='" . (isset($x->desconto) ? $x->desconto : 0) . "',
 												taxa_cartao='" . (isset($x->taxa) ? $x->taxa : 0) . "'";
 
-								
+
 									if (is_object($baixa)) {
 										$sql->update($_p . "financeiro_fluxo", $vsql, "where id=$baixa->id");
 									} else {
@@ -1491,7 +1490,8 @@ if (isset($_POST['acao'])) {
 			$('.js-tipo-manual').show();
 			$('.js-tipo-politica').hide();
 			//$('.js-tipo-politica table').html("")
-			atualizaValor();
+			$('.js-pagamentos-quantidade').val(($('.js-pagamentos-quantidade').val() > 0) ? $('.js-pagamentos-quantidade').val() : 1)
+			atualizaValor(true);
 		} else if (tipo == 'politica') {
 			tipoFinaneiroPadrao = 'politica'
 			$('.js-tipo').hide();
@@ -1592,8 +1592,8 @@ if (isset($_POST['acao'])) {
 			$('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento').chosen();
 
 		})
-	
-	
+
+
 	});
 </script>
 
