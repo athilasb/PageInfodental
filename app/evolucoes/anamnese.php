@@ -209,7 +209,9 @@
 	<head>
 		<meta charset="utf-8">
 		<title><?php echo $title;?></title>
-		<link rel="stylesheet" type="text/css" href="../css/evolucoes.css" />
+
+		<base href="//<?php echo $_SERVER['HTTP_HOST'];?>/evolucoes/" />
+		<link rel="stylesheet" type="text/css" href="css/evolucoes.css" />
 		<link rel="stylesheet" type="text/css" href="../css/apps.css" />
 		<script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
 		<script src="../js/jquery.js"></script>
@@ -243,7 +245,7 @@
 		// Se nao encontrou a evolucao
 		if(empty($evolucao) or empty($anamnese)) {
 
-		?>
+			?>
 			<table class="print-table">
 
 				<thead><tr><td><div class="print-table-header">&nbsp;</div></td></tr></thead>
@@ -255,12 +257,11 @@
 					</tr>
 				</tbody>
 			</table>
-		<?php
+			<?php
 		} 
 
 		// Se encontrou a evolucao
 		else {
-
 
 			// Se nao estiver autenticado
 			if($auth===false) {
@@ -321,6 +322,7 @@
 						})
 					})
 				</script>
+
 				<div style="text-align: center;margin-top:200px;">
 					<form>
 						<dl>
@@ -557,7 +559,6 @@
 													<?php
 													}
 													?>
-													
 												</table>
 											</div>
 
@@ -578,13 +579,11 @@
 											$pdfAnamnese = $_scalewayS3endpoint."/".$infoConta->instancia."/arqs/pacientes/anamneses/".sha1($evolucao->id).".pdf";
 										}
 
-
-										
-									?>
-									<object data='<?php echo $pdfAnamnese;?>#view=fit&toolbar=0' style="width:100%;height:700px;" toolbar="0">			    
-									    <p><a href="<?php echo $pdfAnamnese;?>" class="button"><i class="iconify" data-icon="fluent:document-24-regular"></i><span>Baixar documento</span></a></p>
-									</object>
-									<?php
+										?>
+										<object data='<?php echo $pdfAnamnese;?>#view=fit&toolbar=0' style="width:100%;height:700px;" toolbar="0">			    
+										    <p><a href="<?php echo $pdfAnamnese;?>" class="button"><i class="iconify" data-icon="fluent:document-24-regular"></i><span>Baixar documento</span></a></p>
+										</object>
+										<?php
 									}
 									?>
 								</section>
@@ -596,11 +595,6 @@
 								?>
 							</td>
 						</tr>
-
-
-
-
-						
 
 						<tr>
 							<td style="padding-top:40px;">
