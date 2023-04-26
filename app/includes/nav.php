@@ -18,7 +18,7 @@
 		),
 		'pacientes' => array(
 			'page' => 'pg_pacientes.php',
-			'pages' => explode(',', 'pg_pacientes.php,pg_pacientes_dadospessoais.php,pg_pacientes_resumo.php,pg_pacientes_kanban.php,pg_pacientes_prontuario.php'),
+			'pages' => explode(',', 'pg_pacientes.php,pg_pacientes_dadospessoais.php,pg_pacientes_resumo.php,pg_pacientes_kanban.php,pg_pacientes_prontuario.php,pg_pacientes_whatsapp.php'),
 			'title' => 'Pacientes',
 			'icon' => '<i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular"></i>'
 		),
