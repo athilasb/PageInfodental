@@ -299,7 +299,7 @@ function getValores($data_inicial, $data_final)
 <?php
 $apiConfig = array(
 	'Pagamentos' => 1,
-	'Avulso-a-Receber' => 1,
+	'avulsoAReceber' => 1,
 );
 require_once("includes/api/apiAsidePagamentos.php");
 
