@@ -513,7 +513,7 @@
 								$this->erro="Paciente não encontrado!";
 							}
 						}
-						else if($tipo->id==2 or $tipo->id==3 or $tipo->id==5) {
+						else if($tipo->id==2 or $tipo->id==3 or $tipo->id==5 or $tipo->id==12) {
 
 							if(is_object($paciente)) {
 
