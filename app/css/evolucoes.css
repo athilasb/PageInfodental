@@ -21,11 +21,14 @@ body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font
 	--cinza6:#D0D0D0;
 	--fundo:#F6F6F6;
 	--cor1:#FECEA2;
+
 	--cor1hover:#DFAE81;
 
 	--border-radius1:12px;
 	--border-radius2:8px;
+
 	--box-shadow1:0 0 20px rgba(0,0,0,0.1);
+
 	--padding1:1.5rem;
 	--margin1:1.5rem;
 
@@ -33,6 +36,7 @@ body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font
 	--vermelho: red;
 	--laranja: orange;
 	--cor-base:#9D7575;
+	--verde-fluorescente:#3ECB90;
 	
 }
 
@@ -40,7 +44,7 @@ body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font
 	background:var(--fundo) ;
 }
 
-.print-table {width:19cm; margin:0 auto;}
+.print-table { margin:0 auto;}
 .print-table-header {height:1.8cm;}
 .print-table-footer {height:2.5cm;}
 .print-header {
@@ -51,12 +55,9 @@ body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font
     background: transparent;
     margin: auto;
 }
-.print-header__logo {width: auto; height: 80px;
-
-
-}
+.print-header__logo {width: auto; height: 80px;}
 /* .print-footer {position:fixed; bottom:0; left:50%; width:19cm; margin-left:-9.5cm; height:2.5cm; text-align:center; padding-top:.5cm; background:#fff;} */
-.print-footer {  width:19cm;height:2.5cm; text-align:center; background:transparent;} 
+.print-footer {width: 100%; max-width: 356px; min-width: 100px; margin: auto; text-align:center; background:transparent;} 
 .print-footer p {margin-bottom:8px;}
 .print-footer p span {margin-right:1rem;}
 .print-footer p span:last-child {margin-right:0;}
@@ -68,7 +69,7 @@ body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font
 .titulo1 h1 {font-size:20pt; text-transform:none; letter-spacing:3px; font-weight:normal; font-weight:normal; font-family:"Georgia";}
 .titulo1 p {font-size:9pt;}
 
-.titulo-ficha{
+.titulo-ficha {
     padding: 10px;
     background: var(--branco);
     border: 1px solid var(--cinza0);
@@ -77,7 +78,8 @@ body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font
 	color: var(--cinza5);
 	margin-bottom: 10px;
 }
-.titulo-ficha p{
+
+.titulo-ficha p {
 	text-align: right;
 	font-family: 'Manrope';
 	font-style: normal;
@@ -85,19 +87,27 @@ body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font
 	font-size: 12px;
 	line-height: 16px;
 }
-.titulo-ficha h1{
+.titulo-ficha h1 {
 	font-family: 'Poppins';
 	font-style: normal;
 	font-weight: 700;
 	font-size: 24px;
 	line-height: 36px;
 }
-.titulo-ficha h2{
+.titulo-ficha h2 {
 	font-family: 'Poppins';
 	font-style: normal;
 	font-weight: 700;
 	font-size: 14px;
 	line-height: 21px;
+}
+
+.titulo-ficha .titulo {
+	font-family: 'Manrope';
+	font-style: normal;
+	font-weight: 400;
+	font-size: 12px;
+	line-height: 16px;
 }
 
 
@@ -107,11 +117,11 @@ body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font
 
 .print-table table {width:100%; break-inside: avoid;}
 .print-table table th {text-align:left; padding:8px;}
-.print-table table td {padding:8px;}
+.print-table table td {padding:2px;}
 .box table td {padding:8px; width: 100%; display: contents;}
 .print-table table td h1 {font-size:7pt; text-transform:uppercase; margin-bottom:.25rem;}
 .print-table table td p {line-height:1;}
-.print-table table td a {border-bottom:1px solid #000;}
+.print-table table td a {border-bottom:1px solid #000; }
 .print-table table td small {font-size:0.813em;}
 
 .ficha {
@@ -155,7 +165,7 @@ body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font
 
 .no-padding td {padding:4px !important;}
 
-@page { size: auto;  margin: 0mm; }
+@page { size: auto;  margin: 0mm;}
 
 .fck {font-weight:300;}
 .fck hr {border:0; border-bottom:1px solid var(--cinza2); margin:2rem 0;}
@@ -186,7 +196,7 @@ textarea::placeholder {
 textarea {
 	width: 100%;
 	border: solid transparent;
-    border-bottom: 0.5px solid var(--cinza5);
+    border-bottom: 0.5px solid var(--cinza3);
     height: 100%;
 	font-family: 'Manrope';
 	font-style: normal;
@@ -230,7 +240,6 @@ input::placeholder {
 	max-width: 356px;
 	min-width: 100px;
 	margin: auto;
-
 }
 
 .form input[type="text"] {
@@ -255,7 +264,12 @@ input::placeholder {
 .form [class^="block"] {display: block;}
 .form [class^="block"] dl {margin-top: 10px;}
 
-.form .form-comp {gap: 0;}
+.form .form-comp {
+	gap: 0;
+	margin-bottom: 10px;
+
+
+}
 
 .form dd {
 	display: flex;
@@ -320,7 +334,8 @@ input::placeholder {
 	height: 24px;
 	display: flex;
 	justify-content: center;
-	align-items: center;}
+	align-items: center;
+}
 
 
 .radios-Numeros input[type="radio"]:checked + .contagem {
@@ -335,7 +350,7 @@ input::placeholder {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	}
+}
 	
 	@media (max-width: 390px)
 {
@@ -394,10 +409,47 @@ input::placeholder {
 	font-weight: 400;
 	font-size: 12px;
 	line-height: 16px;
-	color: #344848;
+	color: var(--cinza5);
+}
 
-
+/*botao*/
+  
+.bottom-assinar {
+    padding: 10px 15px;
+	height: 46px;
+	background: var(--cinza5);
+	border: 1px solid var(--cinza5);
+	border-radius: 10px;
+	color: var(--branco);
 }
 
 
-  
+.bottom-apagar {
+    padding: 10px 15px;
+	height: 46px;
+	background: var(--branco);
+	border: 1px solid var(--cinza5);
+	border-radius: 10px;
+	color: var(--cinza5);
+}
+/*assinatura	*/
+.text-assinatura {
+	margin-top: 25px;
+    text-align: center;
+    margin-bottom: 5px;
+    font-family: 'Manrope';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 22px;
+    color: var(--cinza5);
+}
+
+.documento-assinado {
+	color:white;
+	text-align: center;
+	font-size: 12px;
+	padding: 5px;
+	background: var(--verde-fluorescente);
+	margin-top: 15px;
+}

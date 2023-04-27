@@ -207,14 +207,15 @@
       xmlns:fb="http://www.facebook.com/2008/fbml">
 
 	<head>
-		<meta charset="utf-8">
-		<title><?php echo $title;?></title>
 
-		<base href="//<?php echo $_SERVER['HTTP_HOST'];?>/evolucoes/" />
-		<link rel="stylesheet" type="text/css" href="../css/evolucoes.css?v068" />
+		<meta charset="UTF-8"/>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<title><?php echo $title;?></title>
+		
+		<link rel="stylesheet" type="text/css" href="../css/evolucoes.css?v1.3" />
 		<link rel="stylesheet" type="text/css" href="../css/apps.css" />
 		<script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
-		<script defer src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
 		<script src="../js/jquery.js"></script>
 	</head>
 	
@@ -352,7 +353,7 @@
 			// Se estiver autenticado
 			else {
 				?>
-				<table class="print-table assinatura">
+				<div class="print-table assinatura">
 					<thead><tr><td><div class="print-table-header">&nbsp;</div></td></tr></thead>
 					<tbody>
 						<tr>
@@ -361,39 +362,33 @@
 
 									<header class="titulo-ficha">
 										<div>	
-									<?php
-										if(!empty($logo)) {
-										?>
-											<img src="../img/Sorriso.png?v1" class="print-header__logo"/>
-										<?php
-										}; 
-									?>	
-										<h1>Ficha do Paciente</h1>
-										<h2>Formulário da Anamnese</h2>
-										<h2><?php echo utf8_encode($anamnese->titulo);?></h2>
+											<?php
+												if(!empty($logo)) {
+												?>
+													<img src="../img/Sorriso.png?v1" class="print-header__logo"/>
+												<?php
+												}; 
+											?>	
+											<h1>Ficha do Paciente</h1>
+											<h2>Formulário da Anamnese</h2>
+											<div class="titulo"><?php echo utf8_encode($anamnese->titulo);?></div>
 
-										<p><?php echo date('d/m/Y',strtotime($evolucao->data));?></p>
+											<p><?php echo date('d/m/Y',strtotime($evolucao->data));?></p>
+										</div>
 									</header>
 
-									<div class="ficha ">
-										<table border="0">
-											<tr>
-												<td colspan="3"><strong><?php echo utf8_encode($paciente->nome);?></strong></td>
-											</tr>
-											<tr>
-												<td><?php echo $idade>1?"$idade anos":"$idade";?></td>
-												<td><?php echo $paciente->sexo=="M"?"Masculino":$paciente->sexo=="F"?"Feminino":'';?></td>
-												<td style="text-align:right;"><span class="iconify" data-icon="bxs:phone" data-inline="true"></span> <?php echo maskTelefone($paciente->telefone1);?></td>
-											</tr>
+									<div class="ficha" style="display:flex; justify-content: space-between;">
+											<div>
+												<div colspan="3" style="max-width: 120px;"><strong><?php echo utf8_encode($paciente->nome);?></strong></div>
+												<div colspan="3" style="margin-bottom: 5px;"><?php echo $idade>1?"$idade anos":"$idade";?></div>
+											</div>
+											<div>
+											<div colspan="3" style="margin-bottom: 5px;" ><span class="iconify" data-icon="mdi:file-document-outline" data-inline="true"></span> <?php echo utf8_encode($paciente->cpf);?></div>
+												<div colspan="3"><span class="iconify" data-icon="bxs:phone" data-inline="true"></span> <?php echo maskTelefone($paciente->telefone1);?></div>
+											</div>
 										</table>
+										
 									</div>
-
-									<header class="titulo2">
-										<span>
-											
-											
-										</span>
-									</header>
 									<?php
 
 									// Anamnese nao finalizada
@@ -604,15 +599,22 @@
 									else {
 
 										if(is_object($assinatura)) {
+											?>
+												<div class="documento-assinado">
+													<span class="iconify" data-icon="material-symbols:check-small" style="color: white;"></span> Documento assinado em <b><?php echo date('d/m/Y H:i',strtotime($assinatura->data)); ?></b>  <span>por</span> <b> <?php echo utf8_encode($paciente->nome) ?> </b>
+												</div>
+											<?php
 											$pdfAnamnese = $_scalewayS3endpoint."/".$infoConta->instancia."/arqs/pacientes/anamneses/assinados/".sha1($evolucao->id).".pdf";
 										} else {
 											$pdfAnamnese = $_scalewayS3endpoint."/".$infoConta->instancia."/arqs/pacientes/anamneses/".sha1($evolucao->id).".pdf";
 										}
-
 										?>
-										<object data='<?php echo $pdfAnamnese;?>#view=fit&toolbar=0' style="width:100%;height:700px;" toolbar="0">			    
-										    <p><a href="<?php echo $pdfAnamnese;?>" class="button"><i class="iconify" data-icon="fluent:document-24-regular"></i><span>Baixar documento</span></a></p>
-										</object>
+										
+
+										<iframe  src="<?php echo $pdfAnamnese;?>" type="application/pdf" data='<?php echo $pdfAnamnese;?>#view=fit&toolbar=0' style="width:100%;height:550px;" toolbar="0">			    
+										    <p ><a href="<?php echo $pdfAnamnese;?>" class="button"><i class="iconify" data-icon="fluent:document-24-regular"></i><span>Baixar documento</span></a></p>
+										</iframe>
+
 										<?php
 									}
 									?>
@@ -623,6 +625,7 @@
 									require_once("includes/assinatura-canvas.php");
 								}
 								?>
+					<table>
 							</td>
 						</tr>
 
@@ -641,8 +644,8 @@
 						</tr>
 
 
-					</tbody>
-				</table>
+					</table>
+				</div>
 				<?php
 			}	
 		}
