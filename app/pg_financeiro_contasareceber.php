@@ -199,9 +199,11 @@ function getValores($data_inicial, $data_final)
 	<div class="main__content content">
 		<section class="filter">
 			<div class="filter-group">
-				<div class="filter-title">
-					<p>Lançamentos de contas a receber</p>
-				</div>
+					<dl>
+						<dd>
+							<a href="javascript:;" id='pagamento_avulso-receber' class="button button_main js-btn-abrir-aside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Pagamento Avulso</span></a>
+						</dd>
+					</dl>
 			</div>
 			<div class="filter-group">
 				<a href="javascript:;" class="button js-calendario">
@@ -297,6 +299,7 @@ function getValores($data_inicial, $data_final)
 <?php
 $apiConfig = array(
 	'Pagamentos' => 1,
+	'avulsoAReceber' => 1,
 );
 require_once("includes/api/apiAsidePagamentos.php");
 
