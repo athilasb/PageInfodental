@@ -1,5 +1,6 @@
 /* reset */html,button,input,textarea,select,figure,article,section,aside,header,footer,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend {margin: 0;padding: 0;border: 0;outline: 0;font-size: 100%;vertical-align: baseline;background: transparent;box-sizing: border-box;-moz-box-sizing: border-box;-webkit-box-sizing: border-box;}
 select {background: url(../img/select-icon.png) no-repeat right center;-webkit-appearance: none;-moz-appearance: none;appearance: none;border-radius: 0;}
+
 a {color: inherit;text-decoration: none;}
 img {border: 0;}
 ol,ul {list-style: none;}
@@ -496,3 +497,120 @@ input[type="radio"]:checked {background: var(--cinza5);}
 .mcal-date__month {font-weight:bold;}
 .mcal-events {flex:1; display:flex; flex-direction:column; gap:.25rem;}
 .mcal-events .cal-item {font-size:13px;}
+
+.container {
+	padding: 15px;
+	background: #DEE2E3;
+	margin-bottom: 15px;
+	border: 1px solid #DEE2E3;
+	border-radius: 10px;
+}
+
+.grupos-display {
+    display: flex;
+    flex-wrap:wrap;
+	justify-content: space-between;
+}
+
+.grupos-display .elementos {
+	min-width: 100px;
+    max-width: 180px;
+    width: 100%;
+    height: 72px;
+    background: #FFFFFF;
+    border: 1px solid #CDCDCD;
+    border-radius: 10px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex-direction: column;
+    padding: 15px;
+	font-family: 'Manrope';
+	font-style: normal;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 22px;
+}
+
+.grupos-display .elementos div {
+	font-family: 'Manrope';
+	font-style: normal;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 22px;
+	color: #344848;
+}
+
+.grupos-display .elementos span {
+	font-family: 'Manrope';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #848484;
+}
+
+@media  (max-width: 770px) {
+	.grupos-display{
+		justify-content: center;
+	}
+  }
+
+  .container .titulo .itens{
+	background: #FFFFFF;
+    border: 1px solid #CDCDCD;
+    border-radius: 10px;
+    width: 100%;
+    padding: 15px 20px;
+    margin-top: 15px;
+	display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .container .titulo .itens .container .titulo {
+	text-align: left;
+	font-family: 'Manrope';
+	font-style: normal;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 22px;
+	color: #344848;
+  }
+
+  .container .titulo .itens .valores-positivos {
+	font-family: 'Manrope';
+	font-style: normal;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 22px;
+	color: #15B64F;
+  }
+
+  .container .titulo .itens .bancos{
+	font-family: 'Manrope';
+	font-style: normal;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 22px;
+	color:#344848;
+  }
+
+  .container .titulo .itens .valores-negativos {
+	font-family: 'Manrope';
+	font-style: normal;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 22px;
+	color: #FF0000;;
+  }
+
+  .veja-grafico{
+	font-family: 'Manrope';
+	font-style: normal;
+	font-weight: 400;
+	font-size: 16px;
+	line-height: 22px;
+	color: #848484;
+	margin-right: 10px;
+}

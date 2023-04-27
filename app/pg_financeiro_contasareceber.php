@@ -174,6 +174,13 @@ function getValores($data_inicial, $data_final)
 [$dados, $_registros, $valor] = getValores($data_inicial_filtro, $data_final_filtro);
 
 ?>
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="css/style.css?v1"/>
+</head>
+
 <header class="header">
 	<div class="header__content content">
 		<div class="header__inner1">
@@ -219,7 +226,7 @@ function getValores($data_inicial, $data_final)
 			</div>
 		</section>
 		<section class="grid">
-			<div class="box">
+			<div class="box" style="display:flex; flex-wrap:wrap; justify-content:space-between;">
 				<section class="filter" style="margin-bottom:0;">
 					<div class="filter-group">
 						<div class="filter-title">
@@ -246,6 +253,14 @@ function getValores($data_inicial, $data_final)
 					<div class="filter-group">
 						<!-- <a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i> <span>Gráficos</span></a> -->
 					</div>
+				</section>
+				<section>
+					<a href="javascript:;">
+						<span class="veja-graficos">Veja os gráficos</span>
+						<span class="iconify" id="arrow-down" style="background: #FFFFFF;border: 1px solid #CDCDCD; border-radius: 7px;" data-icon="material-symbols:arrow-drop-down-rounded"></span>
+						<span class="iconify" id="arrow-up" style="background: #FFFFFF;border: 1px solid #CDCDCD; border-radius: 7px; display:none;" data-icon="material-symbols:arrow-drop-up-rounded"></span>
+					</a>
+
 				</section>
 			</div>
 			<div class="box">
@@ -295,6 +310,12 @@ function getValores($data_inicial, $data_final)
 		let idRegistro = $(this).attr('data-idRegistro')
 		abrirAside('contasAreceber', idRegistro)
 	}));
+
+	$('a').click(function() {
+  $('#arrow-down').toggle();
+  $('#arrow-up').toggle();});
+
+
 </script>
 <?php
 $apiConfig = array(
