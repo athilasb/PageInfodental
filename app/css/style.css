@@ -605,7 +605,7 @@ input[type="radio"]:checked {background: var(--cinza5);}
 	color: #FF0000;;
   }
 
-  .veja-grafico{
+  .veja-graficos{
 	font-family: 'Manrope';
 	font-style: normal;
 	font-weight: 400;
@@ -613,4 +613,207 @@ input[type="radio"]:checked {background: var(--cinza5);}
 	line-height: 22px;
 	color: #848484;
 	margin-right: 10px;
+}
+
+.link-graficos{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.grafico-content {
+	display: none;
+}
+.grafico-btn {
+	max-width: 285px;
+	min-width: 100px;
+	width: 100%;
+	height: 54px;
+	background: #FFFFFF;
+	border: 1px solid #CDCDCD;
+	border-radius: 10px;
+	color: #848484;
+	border-radius: 10px;
+	margin: 10px;
+  }
+.grafico-btn.active {
+	max-width: 285px;
+	min-width: 100px;
+	width: 100%;
+	height: 54px;
+	border: 1px solid #CDCDCD;
+	border-radius: 10px;
+	border-radius: 10px;
+	background-color: #344848;
+	color: #fff;
+  }
+  .display-flex-center{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.botoes-graficos{
+	width: 50%;
+	display: flex;
+    flex-wrap: wrap;
+    align-content: space-between;
+	justify-content: left;
+}
+
+.graficos{
+	width: 50%;
+}
+
+.info-item{
+    display: flex;
+    align-items: center;
+    justify-content: left;
+	margin-top: 25px;
+	font-family: 'Manrope';
+	font-style: normal;
+}
+.info-item .value{
+    margin-left: auto;
+	white-space: nowrap;
+}
+
+.margin-left-25 {
+    width: 30%;
+    margin-left: 25px;
+}
+
+
+/*Status do pagamento*/
+#chart-info1 .label-info-1 .color{
+	display: block;
+	width: 10px;
+	height: 10px;
+	background: #01E296;
+	border-radius: 30px;
+    margin-right: 10px;
+}
+
+#chart-info1 .label-info-2 .color{
+	display: block;
+	width: 10px;
+	height: 10px;
+	background: #FD324E;
+	border-radius: 30px;
+    margin-right: 10px;
+}
+
+#chart-info1 .label-info-3 .color{
+	display: block;
+	width: 10px;
+	height: 10px;
+	background: #FFAF15;
+	border-radius: 30px;
+    margin-right: 10px;
+}
+
+#chart-info1 .label-info-4 .color{
+	display: block;
+	width: 10px;
+	height: 10px;
+	background:#566FFF;
+	border-radius: 30px;
+    margin-right: 10px;
+}
+
+/*Formas de pagamento*/
+#chart-info2 .label-info-1 .color{
+	display: block;
+	width: 10px;
+	height: 10px;
+	background:#1E145E;
+	border-radius: 30px;
+    margin-right: 10px;
+}
+
+#chart-info2 .label-info-2 .color{
+	display: block;
+	width: 10px;
+	height: 10px;
+	background:#FC8DB0;
+	border-radius: 30px;
+    margin-right: 10px;
+}
+
+#chart-info2 .label-info-3 .color{
+	display: block;
+	width: 10px;
+	height: 10px;
+	background: #6EA1D2;
+	border-radius: 30px;
+    margin-right: 10px;
+}
+
+#chart-info2 .label-info-4 .color{
+	display: block;
+	width: 10px;
+	height: 10px;
+	background:#566FFF;
+	border-radius: 30px;
+    margin-right: 10px;
+}
+
+
+/*Emissão de notas e recibos*/
+#chart-info4 .label-info-1 .color{
+	display: block;
+	width: 10px;
+	height: 10px;
+	background:#1E145E;
+	border-radius: 30px;
+    margin-right: 10px;
+}
+
+#chart-info4 .label-info-2 .color{
+	display: block;
+	width: 10px;
+	height: 10px;
+	background:#546CF8;
+	border-radius: 30px;
+    margin-right: 10px;
+}
+
+#chart-info4 .label-info-3 .color{
+	display: block;
+	width: 10px;
+	height: 10px;
+	background: #6EA1D2;
+	border-radius: 30px;
+    margin-right: 10px;
+}
+
+
+@media screen and (max-width: 1100px) {
+	.display-flex-center {
+		display: block;
+		text-align: center;
+	}
+
+	.botoes-graficos{
+		width: 100%;
+		justify-content: center
+	}
+	.graficos{
+		width: 100%;
+
+	}
+	.margin-left-25{
+		width: 100%;
+		margin-left: 0;
+
+	}
+}
+
+
+.apexcharts-datalabels , .apexcharts-text tspan , .apexcharts-legend-text { 
+	font-family: "Manrope" !important;  
+	font-style: normal !important;
+	font-weight: 700 !important;
+	font-size: 16px !important;
+	line-height: 22px !important;
 }
