@@ -812,7 +812,6 @@
 													'msg'=>$msg);
 										$msg = $this->mensagemAtalhos($attr);	
 										$this->msg=$msg;
-
 										$this->celular=$numero;
 
 										// verifica se ja enviou
@@ -864,6 +863,66 @@
 							}
 
 
+						}
+
+						// Aniversariantes do dia
+						else if($tipo->id==13) {
+
+							if(is_object($paciente)) {
+
+
+								$msg = $tipo->texto;
+								$numero = telefone($paciente->telefone1);
+
+								if(!empty($numero) and !empty($msg)) {
+
+									if(in_array($numero,$this->block)) {
+										$this->erro="Numero bloqueado ($numero)";
+										return false;
+									}
+
+									$attr=array('paciente'=>$paciente,
+												'msg'=>$msg);
+									$msg = $this->mensagemAtalhos($attr);	
+									$this->msg=$msg;
+									//$numero="62984943276";
+
+									// verifica se ja enviou
+									$where="where id_paciente=$paciente->id and 
+												  id_tipo=$tipo->id  and 
+												  numero='".addslashes($numero)."' and 
+												  data > NOW() - INTERVAL 4 HOUR and lixo=0";
+
+									$sql->consult($_p."whatsapp_mensagens","*",$where);
+								
+									if($sql->rows==0) {
+										$vSQL="data=now(),
+												id_tipo=$tipo->id,
+												id_paciente=$paciente->id,
+												numero='$numero',
+												mensagem='$msg'";
+
+										$sqlWts->add($_p."whatsapp_mensagens",$vSQL);
+										$id_whatsapp=$sqlWts->ulid;
+
+										// cadastra no rabbitmq
+										$this->wtsRabbitmq($id_whatsapp);
+
+									} else {
+										$wtsEnviada=mysqli_fetch_object($sql->mysqry);
+										$id_whatsapp=$wtsEnviada->id;
+
+										if($wtsEnviada->enviado==0) {
+											$this->wtsRabbitmq($id_whatsapp);
+										} else {
+											$this->erro="Esta mensagem já foi enviada!";
+										}
+									}
+
+								} else {
+									$this->erro="Paciente #$paciente->id não possui número de whatsapp";
+								}
+							}
 						}
 
 						else {

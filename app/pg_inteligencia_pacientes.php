@@ -1129,11 +1129,12 @@ Lista Unica
 
 					</div>
 
+					<?php /*
 					<div style="display:none;flex-wrap: nowrap;justify-content:space-between;margin: 10px 10px 0px 10px;" class="js-paginacao">
 						<a href="javascript:;" class="js-anterior"><span class="iconify" data-icon="akar-icons:circle-chevron-left-fill" data-height="25"></span></a>
 						<span class="js-guia"></span>
-						<a href="javascript:;" class="js-proximo"><span class="iconify" data-icon="akar-icons:circle-chevron-right-fill" data-height="25"></span></a>
-					</div>
+						<a href="javascript:;" class="js-proximo"><span class="iconify" data-icon="akar-icons:circle-chevron-right-fill" data-height="25"></span></a> 
+					</div> */ ?>
 
 				</div>
 

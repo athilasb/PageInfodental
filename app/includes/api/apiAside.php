@@ -7989,6 +7989,8 @@
 
 									$('#js-aside-queroAgendar').find('input,select,textarea').removeClass('erro').val('');
 									$('#js-aside-queroAgendar .js-id_paciente').val(rtn.data.id_paciente);
+									$('#js-aside-queroAgendar .js-webwhatsapp').attr({'href':'https://wa.me/55'+rtn.data.telefone1})
+
 									$("#js-aside-queroAgendar").fadeIn(100,function() {
 										$("#js-aside-queroAgendar .aside__inner1").addClass("active");
 										$("#js-aside-queroAgendar .js-tab a:eq(0)").click();
@@ -8246,7 +8248,7 @@
 									<div class="filter-group">
 										<div class="filter-form form">
 											<dl>
-												<dd></dd>
+												<dd><a href="javascript:;" class="button js-webwhatsapp" target="_blank"><span class="iconify" data-icon="ic:outline-whatsapp"></span> Web Whatsapp</a></dd>
 											</dl>
 											<dl>
 												<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
