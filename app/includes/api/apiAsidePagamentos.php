@@ -448,7 +448,7 @@ if (isset($_POST['ajax'])) {
 					// aqui é se nao for split e nao for recorrente
 					foreach ($objeto->pagamentos as $x) {
 						$data_vencimento_inicial = $x->data_vencimento;
-						$valor = ($x->valor)*(-1);
+						$valor = ($x->valor) * (-1);
 						$id_formapagamento = $x->id_formapagamento;
 						$id_centro_de_custo = $objeto->split_pagamento->id_centro_de_custo;
 						$id_categoria_split = $objeto->split_pagamento->id_categoria_split;
@@ -1484,10 +1484,17 @@ if (isset($_POST['ajax'])) {
 								data: data,
 								success: function(rtn) {
 									if (rtn.success) {
-										pagamentos[pagamentoIndex].baixas[baixaIndex].pago = "1";
+										//pagamentos[pagamentoIndex].baixas[baixaIndex].pago = "1";
 										$('#js-aside-asFinanceiro-receber .aside-close').click();
 										$('#js-aside-asFinanceiro .aside-close').click();
 										$('.js-pagamento-item-' + id_parcela).click();
+										swal({
+											title: "Sucesso!",
+											text: 'Recebido com Sucesso!',
+											html: true,
+											type: "success",
+											confirmButtonColor: "#424242"
+										});
 										document.location.reload();
 									} else if (rtn.error) {
 										swal({
@@ -1581,7 +1588,7 @@ if (isset($_POST['ajax'])) {
 					$(this).val(0);
 					ValorDigitado = pagamento.saldoApagar
 				}
-				
+
 				//let data = new Date(`${pagamento.data_vencimento.split('-')[2]}/${pagamento.data_vencimento.split('-')[1]}/${pagamento.data_vencimento.split('-')[0]}`);
 				let data = new Date(pagamento.data_vencimento);
 				let hoje = new Date();
@@ -2639,7 +2646,7 @@ if (isset($_POST['ajax'])) {
 								type: "error",
 								confirmButtonColor: "#424242"
 							});
-						}else{
+						} else {
 							console.log('erro desconhecido')
 							console.log(rtn)
 						}
@@ -2913,7 +2920,7 @@ if (isset($_POST['ajax'])) {
 					// }
 				});
 			});
-			
+
 			AdicionaMaskaras()
 		})
 	</script>

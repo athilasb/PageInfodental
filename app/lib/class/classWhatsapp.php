@@ -144,7 +144,6 @@
 																		         'text'=>($whatsappMessage->mensagem))));
 								}
 							}
-						
 
 							# cadastra na fila e atualiza tabela
 								if(!empty($message) and $rabbitmq->sendMessageToQueueWts($message,$_rabbitmqFila)) {
@@ -410,6 +409,9 @@
 										$msg = $tipo->texto;
 										$numero = telefone($paciente->telefone1);
 
+										$this->celular=$numero;
+
+
 										if(!empty($numero) and !empty($msg)) {
 
 											if(in_array($numero,$this->block)) {
@@ -435,7 +437,7 @@
 															data > NOW() - INTERVAL 48 HOUR";
 
 											$sql->consult($_p."whatsapp_mensagens","*",$where);
-
+											
 										
 											if($sql->rows==0) {
 
@@ -492,7 +494,7 @@
 														$this->erro='Esta mensagem está na fila ('.$wtsEnviada->fila_numero.') desde '.$wtsEnviada->fila_data;
 													}
 												} else {
-													$this->erro="Esta mensagem já foi enviada!";
+													$this->erro="Esta mensagem já foi enviada nas últimas 48 horas!";
 												}
 											}
 										} else {
@@ -511,7 +513,7 @@
 								$this->erro="Paciente não encontrado!";
 							}
 						}
-						else if($tipo->id==2 or $tipo->id==3 or $tipo->id==5) {
+						else if($tipo->id==2 or $tipo->id==3 or $tipo->id==5 or $tipo->id==12) {
 
 							if(is_object($paciente)) {
 
@@ -527,6 +529,8 @@
 
 										$msg = $tipo->texto;
 										$numero = telefone($paciente->telefone1);
+
+										$this->celular=$numero;
 
 										if(!empty($numero) and !empty($msg)) {
 
@@ -553,8 +557,8 @@
 															data > NOW() - INTERVAL 48 HOUR";
 
 											$sql->consult($_p."whatsapp_mensagens","*",$where);
-											//echo $sql->rows;
 										
+											
 											if($sql->rows==0) {
 
 												// verifica a conexao ativa
@@ -596,7 +600,7 @@
 												if($wtsEnviada->enviado==0) {
 													$this->wtsRabbitmq($id_whatsapp);
 												} else {
-													$this->erro="Esta mensagem já foi enviada!";
+													$this->erro="Esta mensagem já foi enviada nas últimas 48 horas!";
 												}
 											}
 										} else {
