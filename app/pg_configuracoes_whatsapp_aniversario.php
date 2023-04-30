@@ -337,7 +337,7 @@
 									<form method="post" class="form">
 										<dl>
 											<dd>
-												<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="13"<?php echo $_tipos[13]->pub?" checked":"";?> />Ativar</label></dd>
+												<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="10"<?php echo $_tipos[10]->pub?" checked":"";?> />Ativar</label></dd>
 											</dd>
 										</dl>
 										<dl>
@@ -348,7 +348,7 @@
 									<div>
 										<dt></dt>
 										<dl>
-											<dd><textarea class="js-mensagem" rows="6"><?php echo $_tipos[13]->texto;?></textarea></dd>
+											<dd><textarea class="js-mensagem" rows="6"><?php echo $_tipos[10]->texto;?></textarea></dd>
 										</dl>
 									</div>
 
@@ -357,7 +357,7 @@
 										<div class="infozap-chat-text infozap-chat-text--author">
 											<article>
 												<p class="infozap-chat-text__msg js-msg">
-													<?php echo substituiTags($_tipos[13]->texto);?>
+													<?php echo substituiTags($_tipos[10]->texto);?>
 												</p>
 												<p class="infozap-chat-text__date">11:59</p>
 											</article>

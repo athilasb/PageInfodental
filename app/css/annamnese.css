@@ -1,3 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&family=Poppins:ital,wght@0,100;0,200;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
+
+:root{
+  --cor-principal:#344848;
+
+}
+
+
 .imagem-sorriso{
     width: 100%;
     text-align: center;
@@ -98,5 +106,47 @@
   right: 10px;
 }
 
+.Titulo{
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 36px;
+  color: var(--cor-principal);
+}
 
+.sub-titulo{
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 19px;
+  color: var(--cor-principal);
+}
+
+.dados-pessoais{
+  background: #FFFFFF;
+  border: 1px solid #DADCE0;
+  display: block;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  width: 60% !important;
+  margin: auto;
+}
+
+.dados-pessoais tbody{
+  width: 100%;
+  display: block;
+}
+
+.dados-pessoais tr{
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.print-table {
+  width: 80% !important;
+  margin: 0 auto !important;
+}
 /* input */

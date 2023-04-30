@@ -74,99 +74,6 @@
 			} else {
 				$rtn=array('success'=>false,'error'=>$erro);
 			}
-		} else if($_POST['ajax']=="persistirMsg") {
-
-			if(isset($_POST['id_tipo']) and is_numeric($_POST['id_tipo']) and isset($_POST['mensagem']) and !empty($_POST['mensagem'])) {
-
-				$sql = new Mysql(true);
-				$sql->consult($_p."whatsapp_mensagens_tipos","*","where id='".$_POST['id_tipo']."'");
-				if($sql->rows) {
-					$tipo=mysqli_fetch_object($sql->mysqry);
-				}
-
-				if(empty($tipo)) $erro='Tipo de mensagem não identificada!';
-
-				if(empty($erro)) {
-					$vSQL="texto='".addslashes($_POST['mensagem'])."'";
-					$vWHERE="where id=$tipo->id";
-					$sql->update($_p."whatsapp_mensagens_tipos",$vSQL,$vWHERE);
-					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."whatsapp_mensagens_tipos',id_reg='".$tipo->id."'");
-				}
-
-				if(empty($erro)) {
-					$rtn=array('success'=>true);
-				} else {
-					$rtn=array('success'=>false,'error'=>$erro);
-				}
-			}
-		} else if($_POST['ajax']=="persistirConfirmacao") {
-
-			if(isset($_POST['id_tipo']) and !empty($_POST['id_tipo']) and isset($_POST['mensagem']) and !empty($_POST['mensagem'])) {
-
-				$sql = new Mysql(true);
-				$sql->consult($_p."whatsapp_respostasdeconfirmacao","*","");
-				if($sql->rows) {
-					$tipo=mysqli_fetch_object($sql->mysqry);
-				}
-
-				if(empty($tipo)) $erro='Tipo de mensagem não identificada!';
-
-				$campo="";
-				if($_POST['id_tipo']=="sim") {
-					$campo="msgSim";
-				} else {
-					$campo="msgNao";
-				}
-
-				if(empty($erro)) {
-					$vSQL=$campo."='".addslashes($_POST['mensagem'])."'";
-					$vWHERE="where id=$tipo->id";
-					$sql->update($_p."whatsapp_respostasdeconfirmacao",$vSQL,$vWHERE);
-					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."whatsapp_mensagens_tipos',id_reg='".$tipo->id."'");
-				}
-
-				if(empty($erro)) {
-					$rtn=array('success'=>true);
-				} else {
-					$rtn=array('success'=>false,'error'=>$erro);
-				}
-			}
-		} else if($_POST['ajax']=="restaurarMsg") {
-
-			if(isset($_POST['id_tipo']) and is_numeric($_POST['id_tipo'])) {
-
-				$sql = new Mysql(true);
-				$sql->consult($_p."whatsapp_mensagens_tipos","*","where id='".$_POST['id_tipo']."'");
-				if($sql->rows) {
-					$tipo=mysqli_fetch_object($sql->mysqry);
-				}
-
-				if(empty($tipo)) $erro='Tipo de mensagem não identificada!';
-
-				$msgSim=$msgNao="";
-				if(empty($erro)) {
-					$vSQL="texto='".$tipo->texto_original."'";
-					$vWHERE="where id=$tipo->id";
-					$sql->update($_p."whatsapp_mensagens_tipos",$vSQL,$vWHERE);
-					$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."whatsapp_mensagens_tipos',id_reg='".$tipo->id."'");
-
-					if($tipo->id==1) {
-						$sql->consult($_p."whatsapp_respostasdeconfirmacao","*","");
-						if($sql->rows) {
-							$x=mysqli_fetch_object($sql->mysqry);
-							$msgSim=$x->msgSim_original;
-							$msgNao=$x->msgNao_original;
-							$sql->update($_p."whatsapp_respostasdeconfirmacao","msgSim='".$x->msgSim_original."',msgNao='".$x->msgNao_original."'","WHERE id='".$x->id."'");
-						}
-					}
-				}
-
-				if(empty($erro)) {
-					$rtn=array('success'=>true, 'msg' => $tipo->texto_original, 'msgSim' => $msgSim, 'msgNao' => $msgNao);
-				} else {
-					$rtn=array('success'=>false,'error'=>$erro);
-				}
-			}
 		}
 
 		header("Content-type: application/json");
@@ -279,7 +186,6 @@
 		$texto = str_replace("*Desmarcar*", "<b>Desmarcar</b>", $texto);
 		$texto = str_replace("*CONFIRMADO*", "<b>CONFIRMADO</b>", $texto);
 		$texto = str_replace("*DESMARCADO*", "<b>DESMARCADO</b>", $texto);
-		$texto = preg_replace('/(?:\*)([^*]*)(?:\*)/', '<b>$1</b>', $texto);
 
 		return nl2br($texto);
 
@@ -327,51 +233,6 @@
 		$(function(){
 			whatsappStatus();
 
-			const addZero = (i) => {
-			  if (i < 10) {i = "0" + i}
-			  return i;
-			}
-
-			const nl2br = (str, is_xhtml) => {
-			    if (typeof str === 'undefined' || str === null) {
-			        return '';
-			    }
-			    var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';
-			    return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1' + breakTag + '$2');
-			}
-
-			const substituirTags = (mensagem) => {
-				let data    = new Date();
-				let dia     = data.getDate();
-				let mes     = String(data.getMonth() + 1).padStart(2, '0');
-				let ano     = data.getFullYear();
-				let horas   = addZero(data.getHours() + 2);
-				let minutos = addZero(data.getMinutes());
-
-				// Data daqui 2 dias
-				data.setDate(data.getDate() + 2);
-				let novoDia     = data.getDate();
-				let novoMes     = String(data.getMonth() + 1).padStart(2, '0');
-				let novoAno     = data.getFullYear();
-
-				mensagem = mensagem.replace("*[nome]*","<b>João</b>");
-				mensagem = mensagem.replace("*[paciente]*", "<b>João</b>");
-				mensagem = mensagem.replace("*[clinica_nome]*", "<b>Clínica Sorriso Feliz</b>");
-				mensagem = mensagem.replace("*[agenda_data]*", "<b>"+dia+"/"+mes+"/"+ano+"</b>");
-				mensagem = mensagem.replace("*[agenda_hora]*", "<b>"+horas+":"+minutos+"</b>");
-				mensagem = mensagem.replace("*[agenda_antiga_data]*", "<b>"+novoDia+"/"+novoMes+"/"+novoAno+"</b>");
-				mensagem = mensagem.replace("*[agenda_antiga_hora]*", "<b>09:00</b>");
-				mensagem = mensagem.replace("*[duracao]*", "<b>60min</b>");
-				mensagem = mensagem.replace("*[profissionais]*", "<b>Dr. Luciano</b>");
-				mensagem = mensagem.replace("[clinica_endereco]", "<b>Rua das Esmeraldas, nº3444 Bairro Ouro Fino, Sala 01, São Paulo-SP</b>");
-				mensagem = mensagem.replace("*Confirmar*", "<b>Confirmar</b>");
-				mensagem = mensagem.replace("*Desmarcar*", "<b>Desmarcar</b>");
-				mensagem = mensagem.replace("*CONFIRMADO*", "<b>CONFIRMADO</b>");
-				mensagem = mensagem.replace("*DESMARCADO*", "<b>DESMARCADO</b>");
-				mensagem = mensagem.replace(/(?:\*)([^*]*)(?:\*)/gm,"<b>$1</b>");
-				return mensagem;
-			}
-
 			$('.js-pub').click(function(){
 				let id_tipo = $(this).attr('data-id_tipo');
 				let data = `ajax=pub&id_tipo=${id_tipo}&checked=${($(this).prop('checked')?1:0)}`
@@ -397,67 +258,11 @@
 					}
 				})
 			})
-
-			$('.js-mensagem').keyup(function(){
-				let texto = $(this).val();
-				let id_tipo = $(this).attr('data-id_tipo');
-
-				let data = `ajax=persistirMsg&id_tipo=${id_tipo}&mensagem=${texto}`;
-				$.ajax({
-					type:"POST",
-					data:data,
-					success:function(rtn) {
-						texto = substituirTags(texto);
-						$(`.js-msg-${id_tipo}`).html(nl2br(texto));
-					}
-				})
-			});
-
-			$('.js-confirmacao').keyup(function(){
-				let texto = $(this).val();
-				let id_tipo = $(this).attr('data-id_tipo');
-
-				let data = `ajax=persistirConfirmacao&id_tipo=${id_tipo}&mensagem=${texto}`;
-				$.ajax({
-					type:"POST",
-					data:data,
-					success:function(rtn) {
-						texto = substituirTags(texto);
-						$(`.js-confirmacao-${id_tipo}`).html(nl2br(texto));
-					}
-				})
-			});
-
-			$('.js-restaurar').click(function(){
-				let id_tipo = $(this).attr('data-id_tipo');
-				let data = `ajax=restaurarMsg&id_tipo=${id_tipo}`;
-
-				$.ajax({
-					type:"POST",
-					data:data,
-					success:function(rtn) {
-						$(`.js-mensagem-${id_tipo}`).val(rtn.msg);
-						rtn.msg = substituirTags(rtn.msg);
-						$(`.js-msg-${id_tipo}`).html(nl2br(rtn.msg));
-
-						if(rtn.msgSim) {
-							$('.js-confirmacaoMsgSim').val(rtn.msgSim);
-							rtn.msgSim = substituirTags(rtn.msgSim);
-							$(`.js-confirmacao-sim`).html(nl2br(rtn.msgSim));
-						}
-						if(rtn.msgNao) {
-							$('.js-confirmacaoMsgNao').val(rtn.msgNao);
-							rtn.msgNao = substituirTags(rtn.msgNao);
-							$(`.js-confirmacao-nao`).html(nl2br(rtn.msgNao));
-						}
-					}
-				});
-			});
 		})
 	</script>
 
 	<main class="main">
-		<div class="main__content  content">
+		<div class="main__content content">
 
 			<section class="filter">
 				
@@ -508,7 +313,7 @@
 							<fieldset>
 								<legend>Confirmação de Agendamento</legend>
 
-								<div class="grid grid_3" style="margin-bottom:0;">
+								 <div class="grid grid_3" style="margin-bottom:0;">
 									<form method="post" class="form">
 										<dl>
 											<dd>
@@ -516,27 +321,14 @@
 											</dd>
 										</dl>
 										<dl>
-											<dd><a href="javascript:;" class="button js-restaurar" title="Restaurar mensagem" data-id_tipo="1"><span class="iconify" data-icon="ic:baseline-restart-alt"></span></a></dd>
-										</dl>
-										<dl>
 											<dd>Mensagem para confirmação dos agendamentos. A mesma pode ser realizada com 24 horas ou 48 horas de antecedência, a depender do tempo de criação do agendamento.</dd>
 										</dl>
 									</form>
 
-									<div>
-										<dt></dt>
-										<dl>
-											<dd>
-												<textarea class="js-mensagem js-mensagem-1" rows="20" data-id_tipo="1"><?php echo $_tipos[1]->texto;?></textarea>&nbsp;
-												<textarea class="js-confirmacao js-confirmacaoMsgSim" rows="8" data-id_tipo="sim"><?php echo $wrc->msgSim;?></textarea>
-											</dd>
-										</dl>
-									</div>
-								
 									<div class="infozap-chat">
 										<div class="infozap-chat-text infozap-chat-text--author">
 											<article>
-												<p class="infozap-chat-text__msg js-msg-1">
+												<p class="infozap-chat-text__msg">
 													<?php echo substituiTags($_tipos[1]->texto);?>
 												</p>
 												<p class="infozap-chat-text__date">11:59</p>
@@ -555,24 +347,12 @@
 
 										<div class="infozap-chat-text infozap-chat-text--author">
 											<article>
-												<p class="infozap-chat-text__msg js-confirmacao-sim">
+												<p class="infozap-chat-text__msg">
 													<?php echo substituiTags($wrc->msgSim);?>
 												</p>
 												<p class="infozap-chat-text__date">12:01</p>
 											</article>
 										</div>
-									</div>
-
-									<form method="post" class="form">
-									</form>
-
-									<div>
-										<dt></dt>
-										<dl>
-											<dd>
-												<textarea class="js-confirmacao js-confirmacaoMsgNao" rows="8" data-id_tipo="nao"><?php echo $wrc->msgNao;?></textarea>
-											</dd>
-										</dl>
 									</div>
 
 									<div class="infozap-chat">
@@ -597,7 +377,7 @@
 
 										<div class="infozap-chat-text infozap-chat-text--author">
 											<article>
-												<p class="infozap-chat-text__msg js-confirmacao-nao">
+												<p class="infozap-chat-text__msg">
 													<?php echo substituiTags($wrc->msgNao);?>
 												</p>
 												<p class="infozap-chat-text__date">12:01</p>
@@ -620,23 +400,16 @@
 												<label><input type="checkbox" class="js-geolocalizacao input-switch" data-id_tipo="2"<?php echo $_tipos[2]->geolocalizacao?" checked":"";?> /> Enviar geolocalização em seguida</label>
 											</dd>
 										</dl>
-										<dl>
-											<dd><a href="javascript:;" class="button js-restaurar" title="Restaurar mensagem" data-id_tipo="2"><span class="iconify" data-icon="ic:baseline-restart-alt"></span></a></dd>
-										</dl>
+
 										<dl>
 											<dd>Mensagem enviada com 3 horas de antecedencia para agendamentos com status CONFIRMADO.</dd>
 										</dl>
 									</form>
-									<div>
-										<dt></dt>
-										<dl>
-											<dd><textarea class="js-mensagem js-mensagem-2" rows="10" data-id_tipo="2"><?php echo $_tipos[2]->texto;?></textarea></dd>
-										</dl>
-									</div>
+
 									<div class="infozap-chat">
 										<div class="infozap-chat-text infozap-chat-text--author">
 											<article>
-												<p class="infozap-chat-text__msg js-msg-2">
+												<p class="infozap-chat-text__msg">
 													<?php echo substituiTags($_tipos[2]->texto);?>
 												</p>
 												<p class="infozap-chat-text__date">11:59</p>
@@ -652,63 +425,38 @@
 
 								 <div class="grid grid_3" style="margin-bottom:0;">
 									<form method="post" class="form">
-										<div class="">
-											<dl>
-												<dd>
-													<label><input type="checkbox"  class="js-pub input-switch" data-id_tipo="5"<?php echo $_tipos[5]->pub?" checked":"";?> />Ativar envio para paciente</label></dd>
-												</dd>
-											</dl>
-											<dl>
-												<dd><a href="javascript:;" class="button js-restaurar" title="Restaurar mensagem" data-id_tipo="5"><span class="iconify" data-icon="ic:baseline-restart-alt"></span></a></dd>
-											</dl>
-										</div>
+										<dl>
+											<dd>
+												<label><input type="checkbox"  class="js-pub input-switch" data-id_tipo="5"<?php echo $_tipos[5]->pub?" checked":"";?> />Ativar envio para paciente</label></dd>
+											</dd>
+										</dl>
+										<dl>
+											<dd>
+												<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="6"<?php echo $_tipos[6]->pub?" checked":"";?> />Ativar envio para profissional</label></dd>
+											</dd>
+										</dl>
+
 										<dl>
 											<dd>Mensagem enviada para paciente/dentista quando um agendamento é alterado.</dd>
 										</dl>
 									</form>
-									<div>
-										<dt></dt>
-										<dl>
-											<dd><textarea class="js-mensagem js-mensagem-5" rows="12" data-id_tipo="5"><?php echo $_tipos[5]->texto;?></textarea></dd>
-										</dl>
-									</div>
 									<div class="infozap-chat">
 										<div class="infozap-chat-text infozap-chat-text--author">
 											<article>
-												<p class="infozap-chat-text__msg js-msg-5">
+												<p class="infozap-chat-text__msg">
 													<?php echo substituiTags($_tipos[5]->texto);?>
 												</p>
 												<p class="infozap-chat-text__date">11:59</p>
 											</article>
 										
 										</div>
+										
 									</div>
 
-									<form method="post" class="form">
-										<div class="">
-											<dl>
-												<dd>
-													<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="6"<?php echo $_tipos[6]->pub?" checked":"";?> />Ativar envio para profissional</label></dd>
-												</dd>
-											</dl>
-											<dl>
-												<dd><a href="javascript:;" class="button js-restaurar" title="Restaurar mensagem" data-id_tipo="6"><span class="iconify" data-icon="ic:baseline-restart-alt"></span></a></dd>
-											</dl>
-										</div>
-										<dl>
-											<dd>Mensagem enviada para paciente/dentista quando um agendamento é alterado.</dd>
-										</dl>
-									</form>
-									<div>
-										<dt></dt>
-										<dl>
-											<dd><textarea class="js-mensagem js-mensagem-6" rows="12" data-id_tipo="6"><?php echo $_tipos[6]->texto;?></textarea></dd>
-										</dl>
-									</div>
 									<div class="infozap-chat">
 										<div class="infozap-chat-text infozap-chat-text--author">
 											<article>
-												<p class="infozap-chat-text__msg js-msg-6">
+												<p class="infozap-chat-text__msg">
 													<?php echo substituiTags($_tipos[6]->texto);?>
 												</p>
 												<p class="infozap-chat-text__date">11:59</p>
@@ -726,30 +474,25 @@
 
 								 <div class="grid grid_3" style="margin-bottom:0;">
 									<form method="post" class="form">
-										<div class="">
-											<dl>
-												<dd>
-													<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="3"<?php echo $_tipos[3]->pub?" checked":"";?> />Ativar envio para paciente</label></dd>
-												</dd>
-											</dl>
-											<dl>
-												<dd><a href="javascript:;" class="button js-restaurar" title="Restaurar mensagem" data-id_tipo="3"><span class="iconify" data-icon="ic:baseline-restart-alt"></span></a></dd>
-											</dl>
-										</div>
+										<dl>
+											<dd>
+												<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="3"<?php echo $_tipos[3]->pub?" checked":"";?> />Ativar envio para paciente</label></dd>
+											</dd>
+										</dl>
+										<dl>
+											<dd>
+												<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="8"<?php echo $_tipos[8]->pub?" checked":"";?> />Ativar envio para profissional</label></dd>
+											</dd>
+										</dl>
+
 										<dl>
 											<dd>Mensagem enviada para paciente/dentista quando um agendamento é cancelado.</dd>
 										</dl>
 									</form>
-									<div>
-										<dt></dt>
-										<dl>
-											<dd><textarea class="js-mensagem js-mensagem-3" rows="14" data-id_tipo="3"><?php echo $_tipos[3]->texto;?></textarea></dd>
-										</dl>
-									</div>
 									<div class="infozap-chat">
 										<div class="infozap-chat-text infozap-chat-text--author">
 											<article>
-												<p class="infozap-chat-text__msg js-msg-3">
+												<p class="infozap-chat-text__msg">
 													<?php echo substituiTags($_tipos[3]->texto);?>
 												</p>
 												<p class="infozap-chat-text__date">11:59</p>
@@ -757,31 +500,11 @@
 										</div>
 									</div>
 
-									<form method="post" class="form">
-										<div class="">
-											<dl>
-												<dd>
-													<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="8"<?php echo $_tipos[8]->pub?" checked":"";?> />Ativar envio para profissional</label></dd>
-												</dd>
-											</dl>
-											<dl>
-												<dd><a href="javascript:;" class="button js-restaurar" title="Restaurar mensagem" data-id_tipo="8"><span class="iconify" data-icon="ic:baseline-restart-alt"></span></a></dd>
-											</dl>
-										</div>
-										<dl>
-											<dd>Mensagem enviada para paciente/dentista quando um agendamento é cancelado.</dd>
-										</dl>
-									</form>
-									<div>
-										<dt></dt>
-										<dl>
-											<dd><textarea class="js-mensagem js-mensagem-8" rows="12" data-id_tipo="8"><?php echo $_tipos[8]->texto;?></textarea></dd>
-										</dl>
-									</div>
+
 									<div class="infozap-chat">
 										<div class="infozap-chat-text infozap-chat-text--author">
 											<article>
-												<p class="infozap-chat-text__msg js-msg-8">
+												<p class="infozap-chat-text__msg">
 													<?php echo substituiTags($_tipos[8]->texto);?>
 												</p>
 												<p class="infozap-chat-text__date">11:59</p>
@@ -799,37 +522,28 @@
 
 								 <div class="grid grid_3" style="margin-bottom:0;">
 									<form method="post" class="form">
-										<div class="">
-											<dl>
-												<dd>
-													<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="9"<?php echo $_tipos[9]->pub?" checked":"";?> />Ativar</label></dd>
-												</dd>
-											</dl>
-											<dl>
-												<dd><a href="javascript:;" class="button js-restaurar" title="Restaurar mensagem" data-id_tipo="9"><span class="iconify" data-icon="ic:baseline-restart-alt"></span></a></dd>
-											</dl>
-										</div>
+										<dl>
+											<dd>
+												<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="9"<?php echo $_tipos[9]->pub?" checked":"";?> />Ativar</label></dd>
+											</dd>
+										</dl>
+
 										<dl>
 											<dd>Mensagem enviada para paciente quando é criado um novo prontuário.</dd>
 										</dl>
 									</form>
-									<div>
-										<dt></dt>
-										<dl>
-											<dd><textarea class="js-mensagem js-mensagem-9" rows="6" data-id_tipo="9"><?php echo $_tipos[9]->texto;?></textarea></dd>
-										</dl>
-									</div>
-
 									<div class="infozap-chat">
 										<div class="infozap-chat-text infozap-chat-text--author">
 											<article>
-												<p class="infozap-chat-text__msg js-msg-9">
+												<p class="infozap-chat-text__msg">
 													<?php echo substituiTags($_tipos[9]->texto);?>
 												</p>
 												<p class="infozap-chat-text__date">11:59</p>
 											</article>
 										</div>
 									</div>
+
+
 								
 								</div>
 							</fieldset>
