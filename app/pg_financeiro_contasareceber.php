@@ -53,7 +53,7 @@ function getValores($data_inicial, $data_final)
 	if ($sql->rows) {
 		while ($x = mysqli_fetch_object($sql->mysqry)) {
 			$_baixas[$x->id] = $x;
-			$origem = $origens[$x->id_origem];
+			#$origem = $origens[$x->id_origem];
 			$idRegistros[$x->id_registro] = $x->id_registro;
 		}
 	}
@@ -174,6 +174,15 @@ function getValores($data_inicial, $data_final)
 [$dados, $_registros, $valor] = getValores($data_inicial_filtro, $data_final_filtro);
 
 ?>
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="css/style.css?v99"/>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+</head>
+
 <header class="header">
 	<div class="header__content content">
 		<div class="header__inner1">
@@ -220,33 +229,133 @@ function getValores($data_inicial, $data_final)
 		</section>
 		<section class="grid">
 			<div class="box">
-				<section class="filter" style="margin-bottom:0;">
-					<div class="filter-group">
-						<div class="filter-title">
-							<p>Total</p>
-							<h2><strong id='valor-valorTotal'>R$ <?= number_format($valor['valorTotal'], 2, ',', '.') ?></strong></h2>
+				<div class="" style="display:flex; flex-wrap:wrap; justify-content:space-between;">
+					<section class="filter" style="margin-bottom:0;">
+						<div class="filter-group">
+							<div class="filter-title">
+								<p>Total</p>
+								<h2><strong id='valor-valorTotal'>R$ <?= number_format($valor['valorTotal'], 2, ',', '.') ?></strong></h2>
+							</div>
+							<div class="filter-title">
+								<p>A receber</p>
+								<h2 style="color:var(--cinza4)" id='valor-aReceber'>R$ <?= number_format($valor['aReceber'], 2, ',', '.') ?></h2>
+							</div>
+							<div class="filter-title">
+								<p>A definir pagamento</p>
+								<h2 style="color:var(--laranja)" id='valor-definirPagamento'>R$ <?= number_format($valor['definirPagamento'], 2, ',', '.') ?></h2>
+							</div>
+							<div class="filter-title">
+								<p>Recebido</p>
+								<h2 style="color:var(--verde)" id='valor-valorRecebido'>R$ <?= number_format($valor['valorRecebido'], 2, ',', '.') ?></h2>
+							</div>
+							<div class="filter-title">
+								<p>Vencido</p>
+								<h2 style="color:var(--vermelho)" id='valor-valoresVencido'>R$ <?= number_format($valor['valoresVencido'], 2, ',', '.') ?></h2>
+							</div>
 						</div>
-						<div class="filter-title">
-							<p>A receber</p>
-							<h2 style="color:var(--cinza4)" id='valor-aReceber'>R$ <?= number_format($valor['aReceber'], 2, ',', '.') ?></h2>
+						<div class="filter-group">
+							<!-- <a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i> <span>Gráficos</span></a> -->
 						</div>
-						<div class="filter-title">
-							<p>A definir pagamento</p>
-							<h2 style="color:var(--laranja)" id='valor-definirPagamento'>R$ <?= number_format($valor['definirPagamento'], 2, ',', '.') ?></h2>
+					</section>
+					<section>
+						<a href="javascript:;" class="link-graficos">
+							<span class="veja-graficos">Veja os gráficos</span>
+							<span class="iconify" id="arrow-up" style="background: #FFFFFF;border: 1px solid #CDCDCD; border-radius: 7px; display:none; width: 35px; height: 35px;" data-icon="material-symbols:arrow-drop-up-rounded"></span>
+							<span class="iconify" id="arrow-down" style="background: #FFFFFF;border: 1px solid #CDCDCD; border-radius: 7px; width: 35px; height: 35px;" data-icon="material-symbols:arrow-drop-down-rounded"></span>
+						</a>
+
+					</section>
+				</div>
+				<div class=" accordion display-flex-center" style="display:none">
+					<div class="botoes-graficos">
+						<button id="status-pagamento-btn" class="grafico-btn active">Status do pagamento</button>
+						<button id="formas-pagamento-btn" class="grafico-btn">Formas de pagamento</button>
+						<button id="conciliacoes-btn" class="grafico-btn">Conciliações dos pagamentos</button>
+						<button id="emissao-notas-btn" class="grafico-btn">Emissão de notas e recibos</button>
+					</div>
+					<div class="graficos">
+						<div id="status-pagamento" class="grafico-content" style="display:block">
+							<div class="graficos-view display-flex-center"> 
+								<div id="chart1" style="height: 305px;"></div>
+								<div id="chart-info1" class="margin-left-25"> 
+									<div class="label-info-1 info-item">
+										<span class="color"></span> 
+										<span class="label"><b>Pago:</b></span>
+										<span class="value">R$  5.000,00</span>
+									</div> 
+									<div class="label-info-2 info-item">
+										<span class="color"></span> 
+										<span class="label"><b>Vencidos:</b></span>
+										<span class="value">R$  1.000,00</span>
+									</div> 
+									<div class="label-info-3 info-item">
+										<span class="color"></span> 
+										<span class="label"><b>Definir pagamento:</b></span>
+										<span class="value">R$  2.000,00</span>
+									</div> 
+									<div class="label-info-3 info-item">
+										<span class="color"></span> 
+										<span class="label"><b>A receber</b></span>
+										<span class="value">R$  900,00</span>
+									</div> 
+
+								</div>
+							</div>
 						</div>
-						<div class="filter-title">
-							<p>Recebido</p>
-							<h2 style="color:var(--verde)" id='valor-valorRecebido'>R$ <?= number_format($valor['valorRecebido'], 2, ',', '.') ?></h2>
+						<div id="formas-pagamento" class="grafico-content">
+							<div class="graficos-view display-flex-center"> 
+									<div id="chart2" style="height: 305px;"></div>
+									<div id="chart-info2" class="margin-left-25"> 
+										<div class="label-info-1 info-item">
+											<span class="color"></span> 
+											<span class="label"><b>Cartão de crédito:</b></span>
+											<span class="value">R$  5.000,00</span>
+										</div> 
+										<div class="label-info-2 info-item">
+											<span class="color"></span> 
+											<span class="label"><b>Boleto bancário:</b></span>
+											<span class="value">R$  1.000,00</span>
+										</div> 
+										<div class="label-info-3 info-item">
+											<span class="color"></span> 
+											<span class="label"><b>Dinheiro:</b></span>
+											<span class="value">R$  2.000,00</span>
+										</div> 
+										<div class="label-info-4 info-item">
+											<span class="color"></span> 
+											<span class="label"><b>Pix:</b></span>
+											<span class="value">R$  900,00</span>
+										</div> 
+									</div>
+							</div>
 						</div>
-						<div class="filter-title">
-							<p>Vencido</p>
-							<h2 style="color:var(--vermelho)" id='valor-valoresVencido'>R$ <?= number_format($valor['valoresVencido'], 2, ',', '.') ?></h2>
+						<div id="conciliacoes" class="grafico-content">
+							<div id="chart3" style="height: 305px;"></div>
+						</div>
+						<div id="emissao-notas" class="grafico-content">
+							<div class="graficos-view display-flex-center"> 
+									<div id="chart4" style="height: 305px;"></div>
+									<div id="chart-info4" class="margin-left-25"> 
+										<div class="label-info-1 info-item">
+											<span class="color"></span> 
+											<span class="label"><b>Notas emitidas:</b></span>
+											<span class="value">R$  5.000,00</span>
+										</div> 
+										<div class="label-info-2 info-item">
+											<span class="color"></span> 
+											<span class="label"><b>Recibos emitidos:</b></span>
+											<span class="value">R$  1.000,00</span>
+										</div> 
+										<div class="label-info-3 info-item">
+											<span class="color"></span> 
+											<span class="label"><b>Não emitidos:</b></span>
+											<span class="value">R$  2.000,00</span>
+										</div> 
+									</div>
+							</div>
 						</div>
 					</div>
-					<div class="filter-group">
-						<!-- <a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i> <span>Gráficos</span></a> -->
-					</div>
-				</section>
+				</div>
 			</div>
 			<div class="box">
 				<!-- <div class="filter">
@@ -295,6 +404,279 @@ function getValores($data_inicial, $data_final)
 		let idRegistro = $(this).attr('data-idRegistro')
 		abrirAside('contasAreceber', idRegistro)
 	}));
+
+	$(document).ready(function() {
+  $('#arrow-up').hide(); // oculta o ícone de seta para cima
+  $('.link-graficos').click(function() {
+    $(".accordion").slideToggle();
+	$('#arrow-up').toggle();
+    $('#arrow-down').toggle();
+
+  });
+});
+
+$(document).ready(function() {
+  $('.grafico-btn').click(function() {
+    // Adiciona a classe ativa apenas para o botão clicado
+    $(this).addClass('active');
+    // Remove a classe ativa de todos os botões, exceto o botão atual
+    $('.grafico-btn').not(this).removeClass('active');
+    // Oculta todo o conteúdo do gráfico
+    $('.grafico-content').hide();
+    // Mostra apenas o conteúdo do gráfico correspondente
+    var id = $(this).attr('id').replace('-btn', '');
+    $('#' + id).show();
+    // Altera a cor de fundo e a cor do texto do botão clicado
+  });
+});
+
+
+
+
+//chart Status do pagamento
+      
+	var options = {
+		//informações do grafico 
+          series: [5000, 1000, 2000, 9000],
+          chart: {
+          	height: 327,
+          	type: 'donut',
+        },
+		//cor de cada elemento
+		  dataLabels: {
+          enabled: false
+        },
+		//cor de cada elemento
+		colors: ['#01E296', '#FD324E', '#FFAF15', "#566FFF"],
+        responsive: [{
+          breakpoint: 480,
+          options: {
+        	 chart: {
+              width: 200
+            },
+			 legend: {
+              show: false
+            }
+          }
+        }],
+		legend: {
+			position: 'right',
+			offsetY: 0,
+			height: 230,
+			show: false // oculta as labels da direita,"
+		},	 
+		//informações do hover 
+		labels: ['Pago: R$ 5.000,00', 'Vencidos: R$  1.000,00', 'Definir pagamento: R$  2.000,00 ', 'A receber: R$  900,00']
+        };
+        var chart = new ApexCharts(document.querySelector("#chart1"), options);
+		//redenrizar elementos
+        chart.render();
+
+
+//chart Status do pagamento
+
+	var options = {
+		//informações do grafico 
+          series: [5000, 1000, 2000, 9000],
+          chart: {
+          	height: 327,
+          	type: 'donut',
+        },
+		//cor de cada elemento
+		  dataLabels: {
+          enabled: false
+        },
+		//cor de cada elemento
+		colors: ['#1E145E', '#FC8DB0', '#6EA1D2', "#566FFF"],
+        responsive: [{
+          breakpoint: 480,
+          options: {
+        	 chart: {
+              width: 200
+            },
+			 legend: {
+              show: false
+            }
+          }
+        }],
+		legend: {
+			position: 'right',
+			offsetY: 0,
+			height: 230,
+			show: false // oculta as labels da direita,"
+		},	 
+		//informações do hover 
+		labels: ['Cartão de crédito: R$ 5.000,00', 'Boleto bancário: R$  1.000,00', 'Dinheiro: R$  2.000,00 ', 'Pix: R$  900,00']
+        };
+        var chart = new ApexCharts(document.querySelector("#chart2"), options);
+		//redenrizar elementos
+        chart.render();
+
+//Conciliações dos pagamentos
+
+	var options = {
+          series: [
+          {
+            name: 'Paguei',
+            data: [
+              {
+                x: '26/Abr',
+                y: 1292,
+                goals: [
+                  {
+                    name: 'Conciliado',
+                    value: 1400,
+                    strokeHeight: 5,
+                    strokeColor: '#5C7DB0'
+                  }
+                ]
+              },
+              {
+                x: '27/Abr',
+                y: 4432,
+                goals: [
+                  {
+                    name: 'Conciliado',
+                    value: 5400,
+                    strokeHeight: 5,
+                    strokeColor: '#5C7DB0'
+                  }
+                ]
+              },
+              {
+                x: '28/Abr',
+                y: 5423,
+                goals: [
+                  {
+                    name: 'Conciliado',
+                    value: 5200,
+                    strokeHeight: 5,
+                    strokeColor: '#5C7DB0'
+                  }
+                ]
+              },
+              {
+                x: '29/Abr',
+                y: 6653,
+                goals: [
+                  {
+                    name: 'Conciliado',
+                    value: 6500,
+                    strokeHeight: 5,
+                    strokeColor: '#5C7DB0'
+                  }
+                ]
+              },
+              {
+                x: '30/Abr',
+                y: 8133,
+                goals: [
+                  {
+                    name: 'Conciliado',
+                    value: 6600,
+                    strokeHeight: 5,
+                    strokeColor: '#5C7DB0'
+                  }
+                ]
+              },
+              {
+                x: '01/Mar',
+                y: 7132,
+                goals: [
+                  {
+                    name: 'Conciliado',
+                    value: 7500,
+                    strokeHeight: 5,
+                    strokeColor: '#5C7DB0'
+                  }
+                ]
+              },
+              {
+                x: '02/Mar',
+                y: 7332,
+                goals: [
+                  {
+                    name: 'Conciliado',
+                    value: 8700,
+                    strokeHeight: 5,
+                    strokeColor: '#5C7DB0'
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+          chart: {
+          height: 327,
+          type: 'bar'
+        },
+        plotOptions: {
+          bar: {
+            columnWidth: '60%'
+          }
+        },
+        colors: ['#00E396'],
+        dataLabels: {
+          enabled: false
+        },
+        legend: {
+          show: true,
+          showForSingleSeries: true,
+          customLegendItems: ['Paguei', 'Conciliado'],
+          markers: {
+            fillColors: ['#00E396', '#5C7DB0']
+          }
+        }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#chart3"), options);
+        chart.render();
+      
+
+
+
+
+//chart Emissão de notas e recibos
+
+var options = {
+		//informações do grafico 
+          series: [5000, 1000, 2000],
+          chart: {
+          	height: 327,
+          	type: 'donut',
+        },
+		//cor de cada elemento
+		  dataLabels: {
+          enabled: false
+        },
+		//cor de cada elemento
+		colors: ['#1E145E', '#546CF8', '#6EA1D2'],
+        responsive: [{
+          breakpoint: 480,
+          options: {
+        	 chart: {
+              width: 200
+            },
+			 legend: {
+              show: false
+            }
+          }
+        }],
+		legend: {
+			position: 'right',
+			offsetY: 0,
+			height: 230,
+			show: false // oculta as labels da direita,"
+		},	 
+		//informações do hover 
+		labels: ['Notas emitidas: R$ 5.000,00', 'Recibos emitidos: R$  1.000,00', 'Não emitidos: R$  2.000,00 ']
+        };
+        var chart = new ApexCharts(document.querySelector("#chart4"), options);
+		//redenrizar elementos
+        chart.render();
+
+
+      
 </script>
 <?php
 $apiConfig = array(

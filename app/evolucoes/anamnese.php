@@ -207,7 +207,6 @@
       xmlns:fb="http://www.facebook.com/2008/fbml">
 
 	<head>
-
 		<meta charset="UTF-8"/>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -234,11 +233,11 @@
 			if($auth===false){
 				if(!empty($logo)) {
 				?>
-				<img src="../img/Sorriso.png?v1" class="print-header__logo"/>
+					<img src="<?php echo $logo;?>" class="print-header__logo"/>
 				<?php
 				} else {
 				?>
-				<img src="../img/logo-info.svg"  class="print-header__logo"/>
+					<img src="../img/logo-info.svg"  class="print-header__logo"/>
 				<?php
 				}
 			}
@@ -253,7 +252,6 @@
 			?>
 
 			<table class="print-table">
-
 				<thead><tr><td><div class="print-table-header">&nbsp;</div></td></tr></thead>
 				<tbody>
 					<tr>
@@ -331,18 +329,17 @@
 
 				<div class="form-unico-centro">
 					<form class="form Autentificar">
-					<div class="block">
-						<dl>
-							<dd class="form-comp ">
-								
+						<div class="block">
+							<dl>
+								<dd class="form-comp ">
 								<span><i class="iconify" data-icon="mdi:file-document-outline" style="color:var(--cor-base);"></i></span>
 								<input placeholder="CPF" type="text" class="js-cpf" /></dd>
-						</dl>
-						<dl>
-							<dd class="form-comp">
-							<span><i class="iconify" data-icon="material-symbols:calendar-month" style="color:var(--cor-base);"></i></span>
+							</dl>
+							<dl>
+								<dd class="form-comp">
+								<span><i class="iconify" data-icon="material-symbols:calendar-month" style="color:var(--cor-base);"></i></span>
 								<input placeholder="Data Nascimento" type="text" class="js-dn" /></dd>
-						</dl>
+							</dl>
 						</div>
 						<button type="button" class="button js-auth .cor-base" data-loading="0">Autenticar</button>
 					</form>
@@ -365,7 +362,7 @@
 											<?php
 												if(!empty($logo)) {
 												?>
-													<img src="../img/Sorriso.png?v1" class="print-header__logo"/>
+													<img src="<?php echo $logo;?>" class="print-header__logo"/>
 												<?php
 												}; 
 											?>	
@@ -383,7 +380,7 @@
 												<div colspan="3" style="margin-bottom: 5px;"><?php echo $idade>1?"$idade anos":"$idade";?></div>
 											</div>
 											<div>
-											<div colspan="3" style="margin-bottom: 5px;" ><span class="iconify" data-icon="mdi:file-document-outline" data-inline="true"></span> <?php echo utf8_encode($paciente->cpf);?></div>
+												<div colspan="3" style="margin-bottom: 5px;" ><span class="iconify" data-icon="mdi:file-document-outline" data-inline="true"></span> <?php echo utf8_encode($paciente->cpf);?></div>
 												<div colspan="3"><span class="iconify" data-icon="bxs:phone" data-inline="true"></span> <?php echo maskTelefone($paciente->telefone1);?></div>
 											</div>
 										</table>
@@ -561,14 +558,14 @@
 																	for($i=1;$i<=10;$i++) {
 																	?>
 																		<span class="radios-Numeros">
-																		<input  id="nota-<?php echo $i;?>" type="radio" name="resposta_<?php echo $p->id;?>" value="<?php echo $i;?>" class="js-resposta js-nota-<?php echo $pergunta->id;?>" data-tipo="nota" data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta==$i?" checked":"";?> />
-																		<label class="contagem" for="nota-<?php echo $i;?>"><?php echo $i;?></label>
+																			<input  id="nota-<?php echo $i;?>" type="radio" name="resposta_<?php echo $p->id;?>" value="<?php echo $i;?>" class="js-resposta js-nota-<?php echo $pergunta->id;?>" data-tipo="nota" data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta==$i?" checked":"";?> />
+																			<label class="contagem" for="nota-<?php echo $i;?>"><?php echo $i;?></label>
 																		</span>
-																		
 																	<?php
-																	
 																	}
-																	?> </div><?php 
+																	?> 
+																			</div>
+																	<?php 
 																	
 																} else {
 																	?>
