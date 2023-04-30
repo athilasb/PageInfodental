@@ -174,12 +174,13 @@ function getValores($data_inicial, $data_final)
 [$dados, $_registros, $valor] = getValores($data_inicial_filtro, $data_final_filtro);
 
 ?>
+
 <head>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="css/style.css?v99"/>
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="css/style.css?v99" />
+	<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 </head>
 
@@ -208,11 +209,11 @@ function getValores($data_inicial, $data_final)
 	<div class="main__content content">
 		<section class="filter">
 			<div class="filter-group">
-					<dl>
-						<dd>
-							<a href="javascript:;" id='pagamento_avulso-receber' class="button button_main js-btn-abrir-aside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Pagamento Avulso</span></a>
-						</dd>
-					</dl>
+				<dl>
+					<dd>
+						<a href="javascript:;" id='pagamento_avulso-receber' class="button button_main js-btn-abrir-aside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Pagamento Avulso</span></a>
+					</dd>
+				</dl>
 			</div>
 			<div class="filter-group">
 				<a href="javascript:;" class="button js-calendario">
@@ -275,83 +276,83 @@ function getValores($data_inicial, $data_final)
 					</div>
 					<div class="graficos">
 						<div id="status-pagamento" class="grafico-content" style="display:block">
-							<div class="graficos-view display-flex-center"> 
+							<div class="graficos-view display-flex-center">
 								<div id="chart1" style="height: 305px;"></div>
-								<div id="chart-info1" class="margin-left-25"> 
+								<div id="chart-info1" class="margin-left-25">
 									<div class="label-info-1 info-item">
-										<span class="color"></span> 
+										<span class="color"></span>
 										<span class="label"><b>Pago:</b></span>
-										<span class="value">R$  5.000,00</span>
-									</div> 
+										<span class="value">R$ 5.000,00</span>
+									</div>
 									<div class="label-info-2 info-item">
-										<span class="color"></span> 
+										<span class="color"></span>
 										<span class="label"><b>Vencidos:</b></span>
-										<span class="value">R$  1.000,00</span>
-									</div> 
+										<span class="value">R$ 1.000,00</span>
+									</div>
 									<div class="label-info-3 info-item">
-										<span class="color"></span> 
+										<span class="color"></span>
 										<span class="label"><b>Definir pagamento:</b></span>
-										<span class="value">R$  2.000,00</span>
-									</div> 
+										<span class="value">R$ 2.000,00</span>
+									</div>
 									<div class="label-info-3 info-item">
-										<span class="color"></span> 
+										<span class="color"></span>
 										<span class="label"><b>A receber</b></span>
-										<span class="value">R$  900,00</span>
-									</div> 
+										<span class="value">R$ 900,00</span>
+									</div>
 
 								</div>
 							</div>
 						</div>
 						<div id="formas-pagamento" class="grafico-content">
-							<div class="graficos-view display-flex-center"> 
-									<div id="chart2" style="height: 305px;"></div>
-									<div id="chart-info2" class="margin-left-25"> 
-										<div class="label-info-1 info-item">
-											<span class="color"></span> 
-											<span class="label"><b>Cartão de crédito:</b></span>
-											<span class="value">R$  5.000,00</span>
-										</div> 
-										<div class="label-info-2 info-item">
-											<span class="color"></span> 
-											<span class="label"><b>Boleto bancário:</b></span>
-											<span class="value">R$  1.000,00</span>
-										</div> 
-										<div class="label-info-3 info-item">
-											<span class="color"></span> 
-											<span class="label"><b>Dinheiro:</b></span>
-											<span class="value">R$  2.000,00</span>
-										</div> 
-										<div class="label-info-4 info-item">
-											<span class="color"></span> 
-											<span class="label"><b>Pix:</b></span>
-											<span class="value">R$  900,00</span>
-										</div> 
+							<div class="graficos-view display-flex-center">
+								<div id="chart2" style="height: 305px;"></div>
+								<div id="chart-info2" class="margin-left-25">
+									<div class="label-info-1 info-item">
+										<span class="color"></span>
+										<span class="label"><b>Cartão de crédito:</b></span>
+										<span class="value">R$ 5.000,00</span>
 									</div>
+									<div class="label-info-2 info-item">
+										<span class="color"></span>
+										<span class="label"><b>Boleto bancário:</b></span>
+										<span class="value">R$ 1.000,00</span>
+									</div>
+									<div class="label-info-3 info-item">
+										<span class="color"></span>
+										<span class="label"><b>Dinheiro:</b></span>
+										<span class="value">R$ 2.000,00</span>
+									</div>
+									<div class="label-info-4 info-item">
+										<span class="color"></span>
+										<span class="label"><b>Pix:</b></span>
+										<span class="value">R$ 900,00</span>
+									</div>
+								</div>
 							</div>
 						</div>
 						<div id="conciliacoes" class="grafico-content">
 							<div id="chart3" style="height: 305px;"></div>
 						</div>
 						<div id="emissao-notas" class="grafico-content">
-							<div class="graficos-view display-flex-center"> 
-									<div id="chart4" style="height: 305px;"></div>
-									<div id="chart-info4" class="margin-left-25"> 
-										<div class="label-info-1 info-item">
-											<span class="color"></span> 
-											<span class="label"><b>Notas emitidas:</b></span>
-											<span class="value">R$  5.000,00</span>
-										</div> 
-										<div class="label-info-2 info-item">
-											<span class="color"></span> 
-											<span class="label"><b>Recibos emitidos:</b></span>
-											<span class="value">R$  1.000,00</span>
-										</div> 
-										<div class="label-info-3 info-item">
-											<span class="color"></span> 
-											<span class="label"><b>Não emitidos:</b></span>
-											<span class="value">R$  2.000,00</span>
-										</div> 
+							<div class="graficos-view display-flex-center">
+								<div id="chart4" style="height: 305px;"></div>
+								<div id="chart-info4" class="margin-left-25">
+									<div class="label-info-1 info-item">
+										<span class="color"></span>
+										<span class="label"><b>Notas emitidas:</b></span>
+										<span class="value">R$ 5.000,00</span>
 									</div>
+									<div class="label-info-2 info-item">
+										<span class="color"></span>
+										<span class="label"><b>Recibos emitidos:</b></span>
+										<span class="value">R$ 1.000,00</span>
+									</div>
+									<div class="label-info-3 info-item">
+										<span class="color"></span>
+										<span class="label"><b>Não emitidos:</b></span>
+										<span class="value">R$ 2.000,00</span>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -405,283 +406,306 @@ function getValores($data_inicial, $data_final)
 		abrirAside('contasAreceber', idRegistro)
 	}));
 
+	$('.js-calendario').daterangepicker({
+		"autoApply": true,
+		"locale": {
+			"format": "DD/MM/YYYY",
+			"separator": " - ",
+			"fromLabel": "De",
+			"toLabel": "Até",
+			"customRangeLabel": "Customizar",
+			"weekLabel": "W",
+			"daysOfWeek": [
+				"Dom",
+				"Seg",
+				"Ter",
+				"Qua",
+				"Qui",
+				"Sex",
+				"Sáb"
+			],
+			"monthNames": [
+				"Janeiro",
+				"Fevereiro",
+				"Março",
+				"Abril",
+				"Maio",
+				"Junho",
+				"Julho",
+				"Agosto",
+				"Setembro",
+				"Outubro",
+				"Novembro",
+				"Dezembro"
+			],
+			"firstDay": 1
+		},
+	});
+
+
+	$('.js-calendario').on('apply.daterangepicker', function(ev, picker) {
+		let dtFim = picker.endDate.format('YYYY-MM-DD');
+		let dtInicio = picker.startDate.format('YYYY-MM-DD');
+		document.location.href = `<?php echo "$_page?pg_financeiro_contasareceber?"; ?>&data_inicio=${dtInicio}&data_final=${dtFim}`
+	});
+
 	$(document).ready(function() {
-  $('#arrow-up').hide(); // oculta o ícone de seta para cima
-  $('.link-graficos').click(function() {
-    $(".accordion").slideToggle();
-	$('#arrow-up').toggle();
-    $('#arrow-down').toggle();
+		$('#arrow-up').hide(); // oculta o ícone de seta para cima
+		$('.link-graficos').click(function() {
+			$(".accordion").slideToggle();
+			$('#arrow-up').toggle();
+			$('#arrow-down').toggle();
 
-  });
-});
+		});
+	});
 
-$(document).ready(function() {
-  $('.grafico-btn').click(function() {
-    // Adiciona a classe ativa apenas para o botão clicado
-    $(this).addClass('active');
-    // Remove a classe ativa de todos os botões, exceto o botão atual
-    $('.grafico-btn').not(this).removeClass('active');
-    // Oculta todo o conteúdo do gráfico
-    $('.grafico-content').hide();
-    // Mostra apenas o conteúdo do gráfico correspondente
-    var id = $(this).attr('id').replace('-btn', '');
-    $('#' + id).show();
-    // Altera a cor de fundo e a cor do texto do botão clicado
-  });
-});
-
-
+	$(document).ready(function() {
+		$('.grafico-btn').click(function() {
+			// Adiciona a classe ativa apenas para o botão clicado
+			$(this).addClass('active');
+			// Remove a classe ativa de todos os botões, exceto o botão atual
+			$('.grafico-btn').not(this).removeClass('active');
+			// Oculta todo o conteúdo do gráfico
+			$('.grafico-content').hide();
+			// Mostra apenas o conteúdo do gráfico correspondente
+			var id = $(this).attr('id').replace('-btn', '');
+			$('#' + id).show();
+			// Altera a cor de fundo e a cor do texto do botão clicado
+		});
+	});
 
 
-//chart Status do pagamento
-      
+
+
+	//chart Status do pagamento
+
 	var options = {
 		//informações do grafico 
-          series: [5000, 1000, 2000, 9000],
-          chart: {
-          	height: 327,
-          	type: 'donut',
-        },
+		series: [5000, 1000, 2000, 9000],
+		chart: {
+			height: 327,
+			type: 'donut',
+		},
 		//cor de cada elemento
-		  dataLabels: {
-          enabled: false
-        },
+		dataLabels: {
+			enabled: false
+		},
 		//cor de cada elemento
 		colors: ['#01E296', '#FD324E', '#FFAF15', "#566FFF"],
-        responsive: [{
-          breakpoint: 480,
-          options: {
-        	 chart: {
-              width: 200
-            },
-			 legend: {
-              show: false
-            }
-          }
-        }],
+		responsive: [{
+			breakpoint: 480,
+			options: {
+				chart: {
+					width: 200
+				},
+				legend: {
+					show: false
+				}
+			}
+		}],
 		legend: {
 			position: 'right',
 			offsetY: 0,
 			height: 230,
 			show: false // oculta as labels da direita,"
-		},	 
+		},
 		//informações do hover 
 		labels: ['Pago: R$ 5.000,00', 'Vencidos: R$  1.000,00', 'Definir pagamento: R$  2.000,00 ', 'A receber: R$  900,00']
-        };
-        var chart = new ApexCharts(document.querySelector("#chart1"), options);
-		//redenrizar elementos
-        chart.render();
+	};
+	var chart = new ApexCharts(document.querySelector("#chart1"), options);
+	//redenrizar elementos
+	chart.render();
 
 
-//chart Status do pagamento
+	//chart Status do pagamento
 
 	var options = {
 		//informações do grafico 
-          series: [5000, 1000, 2000, 9000],
-          chart: {
-          	height: 327,
-          	type: 'donut',
-        },
+		series: [5000, 1000, 2000, 9000],
+		chart: {
+			height: 327,
+			type: 'donut',
+		},
 		//cor de cada elemento
-		  dataLabels: {
-          enabled: false
-        },
+		dataLabels: {
+			enabled: false
+		},
 		//cor de cada elemento
 		colors: ['#1E145E', '#FC8DB0', '#6EA1D2', "#566FFF"],
-        responsive: [{
-          breakpoint: 480,
-          options: {
-        	 chart: {
-              width: 200
-            },
-			 legend: {
-              show: false
-            }
-          }
-        }],
+		responsive: [{
+			breakpoint: 480,
+			options: {
+				chart: {
+					width: 200
+				},
+				legend: {
+					show: false
+				}
+			}
+		}],
 		legend: {
 			position: 'right',
 			offsetY: 0,
 			height: 230,
 			show: false // oculta as labels da direita,"
-		},	 
+		},
 		//informações do hover 
 		labels: ['Cartão de crédito: R$ 5.000,00', 'Boleto bancário: R$  1.000,00', 'Dinheiro: R$  2.000,00 ', 'Pix: R$  900,00']
-        };
-        var chart = new ApexCharts(document.querySelector("#chart2"), options);
-		//redenrizar elementos
-        chart.render();
+	};
+	var chart = new ApexCharts(document.querySelector("#chart2"), options);
+	//redenrizar elementos
+	chart.render();
 
-//Conciliações dos pagamentos
+	//Conciliações dos pagamentos
 
 	var options = {
-          series: [
-          {
-            name: 'Paguei',
-            data: [
-              {
-                x: '26/Abr',
-                y: 1292,
-                goals: [
-                  {
-                    name: 'Conciliado',
-                    value: 1400,
-                    strokeHeight: 5,
-                    strokeColor: '#5C7DB0'
-                  }
-                ]
-              },
-              {
-                x: '27/Abr',
-                y: 4432,
-                goals: [
-                  {
-                    name: 'Conciliado',
-                    value: 5400,
-                    strokeHeight: 5,
-                    strokeColor: '#5C7DB0'
-                  }
-                ]
-              },
-              {
-                x: '28/Abr',
-                y: 5423,
-                goals: [
-                  {
-                    name: 'Conciliado',
-                    value: 5200,
-                    strokeHeight: 5,
-                    strokeColor: '#5C7DB0'
-                  }
-                ]
-              },
-              {
-                x: '29/Abr',
-                y: 6653,
-                goals: [
-                  {
-                    name: 'Conciliado',
-                    value: 6500,
-                    strokeHeight: 5,
-                    strokeColor: '#5C7DB0'
-                  }
-                ]
-              },
-              {
-                x: '30/Abr',
-                y: 8133,
-                goals: [
-                  {
-                    name: 'Conciliado',
-                    value: 6600,
-                    strokeHeight: 5,
-                    strokeColor: '#5C7DB0'
-                  }
-                ]
-              },
-              {
-                x: '01/Mar',
-                y: 7132,
-                goals: [
-                  {
-                    name: 'Conciliado',
-                    value: 7500,
-                    strokeHeight: 5,
-                    strokeColor: '#5C7DB0'
-                  }
-                ]
-              },
-              {
-                x: '02/Mar',
-                y: 7332,
-                goals: [
-                  {
-                    name: 'Conciliado',
-                    value: 8700,
-                    strokeHeight: 5,
-                    strokeColor: '#5C7DB0'
-                  }
-                ]
-              }
-            ]
-          }
-        ],
-          chart: {
-          height: 327,
-          type: 'bar'
-        },
-        plotOptions: {
-          bar: {
-            columnWidth: '60%'
-          }
-        },
-        colors: ['#00E396'],
-        dataLabels: {
-          enabled: false
-        },
-        legend: {
-          show: true,
-          showForSingleSeries: true,
-          customLegendItems: ['Paguei', 'Conciliado'],
-          markers: {
-            fillColors: ['#00E396', '#5C7DB0']
-          }
-        }
-        };
+		series: [{
+			name: 'Paguei',
+			data: [{
+					x: '26/Abr',
+					y: 1292,
+					goals: [{
+						name: 'Conciliado',
+						value: 1400,
+						strokeHeight: 5,
+						strokeColor: '#5C7DB0'
+					}]
+				},
+				{
+					x: '27/Abr',
+					y: 4432,
+					goals: [{
+						name: 'Conciliado',
+						value: 5400,
+						strokeHeight: 5,
+						strokeColor: '#5C7DB0'
+					}]
+				},
+				{
+					x: '28/Abr',
+					y: 5423,
+					goals: [{
+						name: 'Conciliado',
+						value: 5200,
+						strokeHeight: 5,
+						strokeColor: '#5C7DB0'
+					}]
+				},
+				{
+					x: '29/Abr',
+					y: 6653,
+					goals: [{
+						name: 'Conciliado',
+						value: 6500,
+						strokeHeight: 5,
+						strokeColor: '#5C7DB0'
+					}]
+				},
+				{
+					x: '30/Abr',
+					y: 8133,
+					goals: [{
+						name: 'Conciliado',
+						value: 6600,
+						strokeHeight: 5,
+						strokeColor: '#5C7DB0'
+					}]
+				},
+				{
+					x: '01/Mar',
+					y: 7132,
+					goals: [{
+						name: 'Conciliado',
+						value: 7500,
+						strokeHeight: 5,
+						strokeColor: '#5C7DB0'
+					}]
+				},
+				{
+					x: '02/Mar',
+					y: 7332,
+					goals: [{
+						name: 'Conciliado',
+						value: 8700,
+						strokeHeight: 5,
+						strokeColor: '#5C7DB0'
+					}]
+				}
+			]
+		}],
+		chart: {
+			height: 327,
+			type: 'bar'
+		},
+		plotOptions: {
+			bar: {
+				columnWidth: '60%'
+			}
+		},
+		colors: ['#00E396'],
+		dataLabels: {
+			enabled: false
+		},
+		legend: {
+			show: true,
+			showForSingleSeries: true,
+			customLegendItems: ['Paguei', 'Conciliado'],
+			markers: {
+				fillColors: ['#00E396', '#5C7DB0']
+			}
+		}
+	};
 
-        var chart = new ApexCharts(document.querySelector("#chart3"), options);
-        chart.render();
-      
+	var chart = new ApexCharts(document.querySelector("#chart3"), options);
+	chart.render();
 
 
 
 
-//chart Emissão de notas e recibos
 
-var options = {
+	//chart Emissão de notas e recibos
+
+	var options = {
 		//informações do grafico 
-          series: [5000, 1000, 2000],
-          chart: {
-          	height: 327,
-          	type: 'donut',
-        },
+		series: [5000, 1000, 2000],
+		chart: {
+			height: 327,
+			type: 'donut',
+		},
 		//cor de cada elemento
-		  dataLabels: {
-          enabled: false
-        },
+		dataLabels: {
+			enabled: false
+		},
 		//cor de cada elemento
 		colors: ['#1E145E', '#546CF8', '#6EA1D2'],
-        responsive: [{
-          breakpoint: 480,
-          options: {
-        	 chart: {
-              width: 200
-            },
-			 legend: {
-              show: false
-            }
-          }
-        }],
+		responsive: [{
+			breakpoint: 480,
+			options: {
+				chart: {
+					width: 200
+				},
+				legend: {
+					show: false
+				}
+			}
+		}],
 		legend: {
 			position: 'right',
 			offsetY: 0,
 			height: 230,
 			show: false // oculta as labels da direita,"
-		},	 
+		},
 		//informações do hover 
 		labels: ['Notas emitidas: R$ 5.000,00', 'Recibos emitidos: R$  1.000,00', 'Não emitidos: R$  2.000,00 ']
-        };
-        var chart = new ApexCharts(document.querySelector("#chart4"), options);
-		//redenrizar elementos
-        chart.render();
-
-
-      
+	};
+	var chart = new ApexCharts(document.querySelector("#chart4"), options);
+	//redenrizar elementos
+	chart.render();
 </script>
 <?php
 $apiConfig = array(
-	'Pagamentos' => 1,
-	'avulsoAReceber' => 1,
+	'contasAReceber' => 1,
+	'contasAvulsoAReceber' => 1,
 );
 require_once("includes/api/apiAsidePagamentos.php");
 

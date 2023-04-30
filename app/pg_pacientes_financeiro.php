@@ -725,7 +725,7 @@ _pagamentosList = JSON.parse(`<?= json_encode($pagamentosJSON); ?>`);
 //require_once("includes/api/apiAsideFinanceiro.php");
 $apiConfig = array(
 	'Pagamentos' => 1,
-	'Avulso' => 1,
+	'contasAvulsoAReceberPaciente' => 1,
 );
 
 include_once "includes/api/apiAsidePagamentos.php";

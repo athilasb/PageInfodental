@@ -159,11 +159,11 @@ function getPagamentos($data_inicial_filtro, $data_final_filtro)
 		<div class="header__inner2">
 			<section class="header-date">
 				<div class="header-date-now">
-					<h1 id="dia_i"><?= date('d', strtotime($data_inicial_filtro)) ?></h1>
-					<h2 id="mes_i"><?= date('M', strtotime($data_inicial_filtro)) ?></h2>
+					<h1 class="js-cal-titulo-diames"><?php echo date('d', strtotime($data_inicial_filtro)); ?></h1>
+					<h2 class="js-cal-titulo-mes"><?php echo substr(strtolower(mes(date('m', strtotime($data_inicial_filtro)))), 0, 3); ?>/<?php echo substr(strtolower((date('Y', strtotime($data_inicial_filtro)))), 2, 2); ?></h2>
 					até
-					<h1 id="dia_f"><?= date('d', strtotime($data_final_filtro)) ?></h1>
-					<h2 id="mes_f"><?= date('M', strtotime($data_final_filtro)) ?></h2>
+					<h1 class="js-cal-titulo-diames"><?php echo date('d', strtotime($data_final_filtro)); ?></h1>
+					<h2 class="js-cal-titulo-mes"><?php echo substr(strtolower(mes(date('m', strtotime($data_final_filtro)))), 0, 3); ?>/<?php echo substr(strtolower((date('Y', strtotime($data_final_filtro)))), 2, 2); ?></h2>
 				</div>
 			</section>
 		</div>
@@ -182,10 +182,7 @@ function getPagamentos($data_inicial_filtro, $data_final_filtro)
 				</div>
 			</div>
 			<div class="filter-group">
-				<a href="javascript:;" class="button js-calendario">
-					<span class="iconify" data-icon="bi:calendar-week"></span>
-					<!-- <input type="text" id="calendario" /> -->
-				</a>
+				<a href="javascript:;" class="button js-calendario"><span class="iconify" data-icon="bi:calendar-week" data-inline="false" data-width="20"></span></a>
 				<div class="button-group">
 					<a href="/pg_financeiro_contasapagar.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 7 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 7) ? 'active' : '' ?>" data-dias='7'>7 dias</a>
 					<a href="/pg_financeiro_contasapagar.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 30 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 30) ? 'active' : '' ?>" data-dias='30'>30 dias</a>
@@ -249,7 +246,7 @@ function getPagamentos($data_inicial_filtro, $data_final_filtro)
 										<span style="color:var(--cinza3)" title="Não conciliado" class="tooltip"><i class="iconify" data-icon="fluent:checkbox-checked-sync-20-regular"></i></span>
 										<span style="color:var(--cinza3)" title="Regua não executada" class="tooltip"><i class="iconify" data-icon="fluent:task-list-ltr-20-filled"></i></span>
 									</td>
-									<td><a href="javascript:;" class="button js-pagamento-item" style="width:120px" data-idRegistro='<?= $x->id_registro ?>'><i class="iconify" data-icon="ph:currency-circle-dollar"></i> <span>Pagar</span></a></td>
+									<td><a href="javascript:;" class="button js-pagamento-item" style="width:120px" data-idregistro='<?= $x->id_registro ?>'><i class="iconify" data-icon="ph:currency-circle-dollar"></i> <span>Pagar</span></a></td>
 								</tr>
 							<?php } ?>
 						</tbody>
@@ -260,46 +257,90 @@ function getPagamentos($data_inicial_filtro, $data_final_filtro)
 		</section>
 	</div>
 </main>
-<link rel="stylesheet" href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css" />
-<script src="http://code.jquery.com/jquery-1.8.2.js"></script>
-<script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
 <script>
-	function minhaFuncao(data1, data2) {
-		console.log(`DATA 1: ${data1} DATA2: ${data2}`)
-		// faz alguma coisa com as duas datas selecionadas
-	}
-
 	$('.js-btn-abrir-aside').on('click', (function() {
 		abrirAside1()
 	}));
-	$(function() {
-		// add calendario no botao de filtro
-		$("#calendario").datepicker({
-			onSelect: function(dataSelecionada) {
-				console.log(dataSelecionada)
-				return
-				// verifica se já foram selecionadas duas datas
-				if (calendario.data('datas-selecionadas') == 2) {
-					// chama a função passando as duas datas selecionadas
-					minhaFuncao(calendario.data('data-1'), calendario.data('data-2'));
-				} else {
-					// armazena a data selecionada
-					calendario.data('datas-selecionadas', calendario.data('datas-selecionadas') + 1);
-					if (calendario.data('datas-selecionadas') == 1) {
-						calendario.data('data-1', dataSelecionada);
-					} else {
-						calendario.data('data-2', dataSelecionada);
-					}
-				}
+	// add calendario no botao de filtro
 
-			}
-		});
+	$('.js-calendario').daterangepicker({
+		"autoApply": true,
+		"locale": {
+			"format": "DD/MM/YYYY",
+			"separator": " - ",
+			"fromLabel": "De",
+			"toLabel": "Até",
+			"customRangeLabel": "Customizar",
+			"weekLabel": "W",
+			"daysOfWeek": [
+				"Dom",
+				"Seg",
+				"Ter",
+				"Qua",
+				"Qui",
+				"Sex",
+				"Sáb"
+			],
+			"monthNames": [
+				"Janeiro",
+				"Fevereiro",
+				"Março",
+				"Abril",
+				"Maio",
+				"Junho",
+				"Julho",
+				"Agosto",
+				"Setembro",
+				"Outubro",
+				"Novembro",
+				"Dezembro"
+			],
+			"firstDay": 1
+		},
 	});
+
+
+	$('.js-calendario').on('apply.daterangepicker', function(ev, picker) {
+		let dtFim = picker.endDate.format('YYYY-MM-DD');
+		let dtInicio = picker.startDate.format('YYYY-MM-DD');
+		document.location.href = `<?php echo "$_page?pg_financeiro_contasapagar?"; ?>&data_inicio=${dtInicio}&data_final=${dtFim}`
+	});
+	$('.js-pagamento-item').on('click', function() {
+		let id_registro = $(this).attr('data-idregistro')
+		swal({
+				title: "Atenção",
+				text: "Você tem certeza que deseja pagar este registro?",
+				type: "warning",
+				showCancelButton: true,
+				confirmButtonColor: "#DD6B55",
+				confirmButtonText: "Sim!",
+				cancelButtonText: "Não",
+				closeOnConfirm: false,
+				closeOnCancel: false
+			},
+			function(isConfirm) {
+				if (isConfirm) {
+					console.log('DELETANDO...')
+					swal({
+						title: "Erro!",
+						text: "AINDA NAO IMPLEMENTADO...",
+						html: true,
+						type: "error",
+						confirmButtonColor: "#424242"
+					});
+					//document.location.href = '?<#?= "id_paciente=$paciente->id&id_pagamento="; ?>' + idPagamento;
+				} else {
+					swal.close();
+				}
+			});
+
+
+	})
 </script>
 
 <?php
 $apiConfig = array(
-	'AddPagamento' => 1,
+	'contasAPagar' => 1,
 );
 require_once("includes/api/apiAsidePagamentos.php");
 
