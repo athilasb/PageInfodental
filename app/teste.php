@@ -10,7 +10,6 @@ $_page = basename($_SERVER['PHP_SELF']);
 
 // dados
 // clinica
-//teste
 $clinica = '';
 $sql->consult($_p . "clinica", "*", "");
 $clinica = mysqli_fetch_object($sql->mysqry);
