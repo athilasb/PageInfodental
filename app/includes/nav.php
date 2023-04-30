@@ -18,13 +18,13 @@
 		),
 		'pacientes' => array(
 			'page' => 'pg_pacientes.php',
-			'pages' => explode(',', 'pg_pacientes.php,pg_pacientes_dadospessoais.php,pg_pacientes_resumo.php,pg_pacientes_kanban.php,pg_pacientes_prontuario.php'),
+			'pages' => explode(',', 'pg_pacientes.php,pg_pacientes_dadospessoais.php,pg_pacientes_resumo.php,pg_pacientes_kanban.php,pg_pacientes_prontuario.php,pg_pacientes_whatsapp.php'),
 			'title' => 'Pacientes',
 			'icon' => '<i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular"></i>'
 		),
 		'financeiro' => array(
 			'page' => 'pg_clinica_financeiro.php',
-			'pages' => explode(",", "pg_clinica_financeiro.php"),
+			'pages' => explode(",", "pg_clinica_financeiro.php,pg_financeiro_contasareceber.php"),
 			'title' => 'Financeiro',
 			'icon' => '<i class="iconify" data-icon="ph:currency-circle-dollar-light"></i>'
 		),

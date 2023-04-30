@@ -300,7 +300,21 @@
 					</div>
 					<div>
 						<i class="iconify" data-icon="ph:phone-call-bold"></i>
-						<h1><?php echo empty($paciente->telefone1)?"-":maskTelefone($paciente->telefone1);?></h1>
+						<h1>
+							<?php echo empty($paciente->telefone1)?"-":maskTelefone($paciente->telefone1);?>
+							<?php
+							if(!empty($paciente->telefone1)) {
+							?>
+							<br />
+							<a href="https://wa.me/55<?php echo $paciente->telefone1;?>" style="font-size:12px;color:var(--verde)" target="_blank"><b>Abrir Web Whatsapp</b></a>
+							<?php	
+							}
+							?>
+						</h1>
+
+					</div>
+					<div>
+						
 					</div>
 					<div>
 						<i class="iconify" data-icon="fluent:target-arrow-20-filled"></i>
