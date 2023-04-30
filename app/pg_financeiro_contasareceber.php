@@ -185,11 +185,11 @@ function getValores($data_inicial, $data_final)
 		<div class="header__inner2">
 			<section class="header-date">
 				<div class="header-date-now">
-					<h1 id="dia_i"><?= date('d', strtotime($data_inicial_filtro)) ?></h1>
-					<h2 id="mes_i"><?= date('M', strtotime($data_inicial_filtro)) ?></h2>
+					<h1 class="js-cal-titulo-diames"><?php echo date('d', strtotime($data_inicial_filtro)); ?></h1>
+					<h2 class="js-cal-titulo-mes"><?php echo substr(strtolower(mes(date('m', strtotime($data_inicial_filtro)))), 0, 3); ?>/<?php echo substr(strtolower((date('Y', strtotime($data_inicial_filtro)))), 2, 2); ?></h2>
 					até
-					<h1 id="dia_f"><?= date('d', strtotime($data_final_filtro)) ?></h1>
-					<h2 id="mes_f"><?= date('M', strtotime($data_final_filtro)) ?></h2>
+					<h1 class="js-cal-titulo-diames"><?php echo date('d', strtotime($data_final_filtro)); ?></h1>
+					<h2 class="js-cal-titulo-mes"><?php echo substr(strtolower(mes(date('m', strtotime($data_final_filtro)))), 0, 3); ?>/<?php echo substr(strtolower((date('Y', strtotime($data_final_filtro)))), 2, 2); ?></h2>
 				</div>
 			</section>
 		</div>
@@ -199,16 +199,12 @@ function getValores($data_inicial, $data_final)
 	<div class="main__content content">
 		<section class="filter">
 			<div class="filter-group">
-					<dl>
-						<dd>
-							<a href="javascript:;" id='pagamento_avulso-receber' class="button button_main js-btn-abrir-aside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Pagamento Avulso</span></a>
-						</dd>
-					</dl>
+				<div class="filter-title">
+					<p>Lançamentos de contas a receber</p>
+				</div>
 			</div>
 			<div class="filter-group">
-				<a href="javascript:;" class="button js-calendario">
-					<span class="iconify" data-icon="bi:calendar-week"></span>
-				</a>
+				<a href="javascript:;" class="button js-calendario"><span class="iconify" data-icon="bi:calendar-week" data-inline="false" data-width="20"></span></a>
 				<div class="button-group">
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 7 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 7) ? 'active' : '' ?>" data-dias='7'>7 dias</a>
 					<a href="/pg_financeiro_contasareceber.php?data_inicio=<?= date('Y-m-d') ?>&data_final=<?= date('Y-m-d', strtotime('+ 30 days')) ?>" class="button btn-prefiltro <?= ($dias_filtro == 30) ? 'active' : '' ?>" data-dias='30'>30 dias</a>
@@ -295,11 +291,53 @@ function getValores($data_inicial, $data_final)
 		let idRegistro = $(this).attr('data-idRegistro')
 		abrirAside('contasAreceber', idRegistro)
 	}));
+
+	$('.js-calendario').daterangepicker({
+		"autoApply": true,
+		"locale": {
+			"format": "DD/MM/YYYY",
+			"separator": " - ",
+			"fromLabel": "De",
+			"toLabel": "Até",
+			"customRangeLabel": "Customizar",
+			"weekLabel": "W",
+			"daysOfWeek": [
+				"Dom",
+				"Seg",
+				"Ter",
+				"Qua",
+				"Qui",
+				"Sex",
+				"Sáb"
+			],
+			"monthNames": [
+				"Janeiro",
+				"Fevereiro",
+				"Março",
+				"Abril",
+				"Maio",
+				"Junho",
+				"Julho",
+				"Agosto",
+				"Setembro",
+				"Outubro",
+				"Novembro",
+				"Dezembro"
+			],
+			"firstDay": 1
+		},
+	});
+
+
+	$('.js-calendario').on('apply.daterangepicker', function(ev, picker) {
+		let dtFim = picker.endDate.format('YYYY-MM-DD');
+		let dtInicio = picker.startDate.format('YYYY-MM-DD');
+		document.location.href = `<?php echo "$_page?pg_financeiro_contasareceber?"; ?>&data_inicio=${dtInicio}&data_final=${dtFim}`
+	});
 </script>
 <?php
 $apiConfig = array(
 	'Pagamentos' => 1,
-	'avulsoAReceber' => 1,
 );
 require_once("includes/api/apiAsidePagamentos.php");
 

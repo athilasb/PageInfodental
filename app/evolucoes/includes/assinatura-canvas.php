@@ -34,13 +34,15 @@
 								
 								<dl>
 									<dd class="form-comp">
-									<span><i class="iconify" data-icon="mdi:file-document-outline" style="color:var(--cor-base);"></i></span>
-										<input placeholder="CPF" maxlength="14" type="text" class="js-sign-cpf cpf js-cpf" /></dd>
+										<span><i class="iconify" data-icon="mdi:file-document-outline" style="color:var(--cor-base);"></i></span>
+										<input placeholder="CPF" maxlength="14" type="text" class="js-sign-cpf cpf js-cpf" />
+									</dd>
 								</dl>
 								<dl >
 									<dd class="form-comp">
-									<span><i class="iconify" data-icon="material-symbols:calendar-month" style="color:var(--cor-base);"></i></span>
-									<input placeholder="Data Nascimento" maxlength="10" type="text" class="js-sign-dn js-dn dn"/></dd>
+										<span><i class="iconify" data-icon="material-symbols:calendar-month" style="color:var(--cor-base);"></i></span>
+										<input placeholder="Data Nascimento" maxlength="10" type="text" class="js-sign-dn js-dn dn"/>
+									</dd>
 								</dl>
 							</div>
 
