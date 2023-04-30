@@ -340,7 +340,7 @@ function getPagamentos($data_inicial_filtro, $data_final_filtro)
 
 <?php
 $apiConfig = array(
-	'AddPagamento' => 1,
+	'contasAPagar' => 1,
 );
 require_once("includes/api/apiAsidePagamentos.php");
 
