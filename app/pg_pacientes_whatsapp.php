@@ -113,9 +113,6 @@
 									if(isset($_tipos[$x->id_tipo])) $tipo=$_tipos[$x->id_tipo];
 									if(empty($tipo)) continue;
 								?>
-									
-									
-
 										<div class="infozap-chat-text infozap-chat-text--author">
 											<article>
 												<p class="infozap-chat-text__msg">
