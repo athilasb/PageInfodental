@@ -69,7 +69,7 @@ if (isset($_POST['ajax'])) {
 		let cont = 1;
 		let descontos = 0
 		procedimentos.forEach(x => {
-			if (x.situacao != 'naoAprovado') {
+			if (x.situacao == 'aprovado') {
 				valorProcedimento = x.valor;
 				hof = x.hof > 0 ? x.hof : 1;
 				if (x.quantitativo == 1) valorProcedimento *= x.quantidade;
@@ -83,7 +83,6 @@ if (isset($_POST['ajax'])) {
 				}
 				valorTotal += valorProcedimento;
 			}
-
 			cont++;
 		});
 		valorOriginalProcedimentos = valorTotal
@@ -309,6 +308,7 @@ if (isset($_POST['ajax'])) {
 			procedimentos.forEach(x => {
 				procedimentoValor = x.valor;
 				valorOriginalProcedimentos += procedimentoValor
+				//if (x.situacao == "naoAprovado"){valorOriginalProcedimentos -= procedimentoValor};
 				valorDescontos += x.desconto
 				if (x.quantitativo == 1) procedimentoValor *= x.quantidade;
 				if (x.face == 1) procedimentoValor *= x.faces.length;
