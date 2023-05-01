@@ -111,7 +111,7 @@ function getValores($data_inicial, $data_final)
 	$extras = array();
 
 	foreach ($_recebimentos as $id_recebimento => $recebimento) {
-		$titulo = (isset($_tratamentos[$recebimento->id_tratamento]->titulo)) ? utf8_decode($_tratamentos[$recebimento->id_tratamento]->titulo) : "-";
+		$titulo = (isset($_tratamentos[$recebimento->id_tratamento]->titulo)) ? utf8_decode($_tratamentos[$recebimento->id_tratamento]->titulo) : "Pagamento Avulso";
 		$pagante  = (isset($_pagantes[$recebimento->id_pagante]->nome)) ? utf8_decode($_pagantes[$recebimento->id_pagante]->nome) : '-';
 		// verifica se existe um fluxo
 		$valor['valorTotal'] += $recebimento->valor;
@@ -362,13 +362,13 @@ function getValores($data_inicial, $data_final)
 		</div>
 	</div>
 </header>
-<main class="main">
+<main class="main" id="body" data-pagina="contasareceber">
 	<div class="main__content content">
 		<section class="filter">
 			<div class="filter-group">
 				<dl>
 					<dd>
-						<a href="javascript:;" id='pagamento_avulso-receber' class="button button_main js-btn-abrir-aside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Pagamento Avulso</span></a>
+						<button id='pagamento_avulso-receber' class="button button_main js-btn-abrir-aside" data-tipoAvulso="geral"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Pagamento Avulso</span></button>
 					</dd>
 				</dl>
 			</div>
@@ -884,11 +884,11 @@ function getValores($data_inicial, $data_final)
 	chart.render();
 </script>
 <?php
-$apiConfig = array(
-	'contasAReceber' => 1,
-	'contasAvulsoAReceber' => 1,
-);
-require_once("includes/api/apiAsidePagamentos.php");
+	$apiConfig = array(
+		'contasAReceber' => 1,
+		'contasAvulsoAReceber' => 1,
+	);
+	require_once("includes/api/apiAsidePagamentos.php");
 
-include "includes/footer.php";
+	include "includes/footer.php";
 ?>

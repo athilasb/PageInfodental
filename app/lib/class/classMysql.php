@@ -8,7 +8,7 @@ class Mysql {
 		$bd_info=array('ident_colaboradores_cargos'=>'infod_parametros_cargos',
 						'ident_parametros_cartoes_bandeiras'=>'infod_parametros_cartoes_bandeiras');
 
-	public $mysqry, $rows;
+	public $mysqry, $connecting,$rows,$ulid,$resul,	$mysqryPag,	$mysvazio,	$myspaginacao,	$myspaginacao2;
 	
 	function __construct($mb4='') { 
 		/*if($_SERVER['HTTP_HOST']=="studiodental.dental") {
@@ -111,6 +111,7 @@ class Mysql {
 		//$this->rows=mysqli_num_rows($this->mysqry);
 	}
 	function consultPagMto2($mysqltabela,$mysqlcampos,$myslimite,$mysargumentos,$mysurl,$inter,$pagnome,$root="") {
+		$ms_table="";
 		if(isset($this->bd_info[$mysqltabela])) { 
 			$ms_table="infodentalADM.".$this->bd_info[$ms_table];
 		}
