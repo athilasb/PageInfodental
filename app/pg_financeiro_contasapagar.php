@@ -1,5 +1,4 @@
 <?php
-echo sha1(287);die();
 	require_once("lib/conf.php");
 	require_once("usuarios/checa.php");
 
@@ -171,13 +170,11 @@ echo sha1(287);die();
 	<div class="main__content content">
 		<section class="filter">
 			<div class="filter-group">
-				<div class="filter-title">
-					<dl>
-						<dd>
-							<a class="button button_main js-btn-abrir-aside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Novo Pagamento</span></a>
-						</dd>
-					</dl>
-				</div>
+				<dl>
+					<dd>
+						<a href="javascript:;" class="button button_main js-btn-abrir-aside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Novo Pagamento</span></a>
+					</dd>
+				</dl>
 			</div>
 			<div class="filter-group">
 				<a href="javascript:;" class="button js-calendario"><span class="iconify" data-icon="bi:calendar-week" data-inline="false" data-width="20"></span></a>
@@ -335,12 +332,16 @@ echo sha1(287);die();
 
 	})
 </script>
+<?php 
+	$apiConfig = array(
+		'contasAPagar' => 1,
+	);
+	require_once("includes/api/apiAsidePagamentos.php");
 
-<?php
-$apiConfig = array(
-	'contasAPagar' => 1,
-);
-require_once("includes/api/apiAsidePagamentos.php");
+	$apiConfig = array(
+		'financeiroFluxoCategorias' => 1,
+	);
+	require_once("includes/api/apiAsideFinanceiro.php");
 
-include "includes/footer.php";
+	include "includes/footer.php";
 ?>
