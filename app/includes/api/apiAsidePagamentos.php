@@ -329,7 +329,6 @@
 				}
 			}
 			$id_banco = (isset($_POST['id_banco']) and is_numeric($_POST['id_banco'])) ? $_POST['id_banco'] : 0;
-
 			$dataPagamento = '';
 			if (isset($_POST['dataPagamento']) and !empty($_POST['dataPagamento'])) {
 				list($dia, $mes, $ano) = explode("/", $_POST['dataPagamento']);
@@ -337,9 +336,7 @@
 					$dataPagamento = $ano . "-" . $mes . "-" . $dia;
 				}
 			}
-
-
-
+		
 			if (is_object($baixa)) {
 				if (!empty($dataPagamento)) {
 					$sql->update($_p . "financeiro_fluxo", "pagamento=1,data_efetivado='" . $dataPagamento . "',pagamento_id_colaborador=$usr->id,id_banco='$id_banco'", "where id=$baixa->id");
@@ -1544,7 +1541,7 @@
 						}
 					}
 				});
-
+				// abre o modal de confirmar  pagamento 
 				$('#js-aside-asFinanceiro .js-baixas').on('click', '.js-receber', function() {
 					let pagamentoIndex = $('#js-aside-asFinanceiro .js-index').val();
 					let baixaIndex = $(this).attr('data-index');
@@ -1569,7 +1566,7 @@
 						}
 					}
 				});
-
+				// clica no botao de confiramr o pagamento
 				$('#js-aside-asFinanceiro-receber .js-btn-receber').click(function() {
 					let pagamentoIndex = $('#js-aside-asFinanceiro .js-index').val();
 					let baixaIndex = $('#js-aside-asFinanceiro-receber .js-index').val();
@@ -1579,8 +1576,6 @@
 					let erro = '';
 					if (!_pagamentos[pagamentoIndex].baixas[baixaIndex]) erro = 'Pagamento não encontrado!';
 					else if (dataPagamento.length == 0) erro = 'Defina a Data de Pagamento!';
-
-
 					if (erro.length > 0) {
 						swal({
 							title: "Erro!",
@@ -3575,6 +3570,177 @@
 					}
 				})
 				AdicionaMaskaras()
+			})
+		</script>
+<?php 
+	}
+	# ASIDE CONFIRMAR PAGAMENTO
+	if(isset($apiConfig['confirmaPagamento'])){
+		// banco e contas
+		$_bancos = array();
+		$sql->consult($_p . "financeiro_bancosecontas", "*", " WHERE lixo =0 order by titulo asc");
+		while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
+		?>
+		<section class="aside" id="js-aside-asFinanceiro-pagar">
+			<div class="aside__inner1" style="width:600px;">
+				<header class="aside-header">
+					<h1 class="js-titulo"></h1>
+					<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+				</header>
+				<form method="post" class="aside-content form">
+					<input type="hidden" class="js-id_pagamento" value="0" />
+					<!-- Programacao de pagamento -->
+					<div class="js-fin js-fin-programacao">
+						<section class="filter">
+							<div class="filter-group"></div>
+							<div class="filter-group">
+								<div class="filter-form form">
+									<dl>
+										<dd><button type="button" class="button button_main js-btn-pagar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Pagar</span></button></dd>
+									</dl>
+								</div>
+							</div>
+						</section>
+						<input type="hidden" class="js-index" />
+						<fieldset>
+							<legend>Confirmação do Pagamento</legend>
+							<div class="colunas3">
+								<dl>
+									<dt>Data do Pagamento</dt>
+									<dd><input type="text" class="js-dataPagamento datecalendar" value="<?=date('Y-m-d')?>" /></dd>
+								</dl>
+							</div>
+							<div class="colunas3">
+								<dl>
+									<dt>Vencimento da Parcela</dt>
+									<dd><input type="text" class="js-vencimentoParcela" readonly /></dd>
+								</dl>
+								<dl>
+									<dt>Valor da Parcela</dt>
+									<dd class="form-comp"><span>R$</span>
+										<input type="text" class="js-valorParcela" readonly /></dd>
+									</dd>
+								</dl>
+								<!-- <dl>
+									<dt>Forma de Pagamento</dt>
+									<dd><input type="text" class="js-formaPagamento" readonly /></dd>
+								</dl> -->
+							</div>
+						</fieldset>
+						<fieldset class="js-fieldset-conta">
+							<legend>Conta</legend>
+							<dl>
+								<dd>
+									<select class="js-id_banco">
+										<option value="">-</option>
+										<?php
+										foreach ($_bancos as $x) {
+											echo '<option value="' . $x->id . '">' . utf8_encode($x->titulo) . '</option>';
+										}
+										?>
+									</select>
+								</dd>
+							</dl>
+						</fieldset>
+					</div>
+				</form>
+			</div>
+		</section>
+		<script>
+			$('.js-pagamento-item').on('click', function() {
+				let id_registro = $(this).attr('data-idregistro')
+				if(_pagamentos[id_registro].pagamento==1){
+					// swal({
+					// 	title: "Erro!",
+					// 	text: "Este Pagamento ja foi Pago!",
+					// 	html: true,
+					// 	type: "error",
+					// 	confirmButtonColor: "#424242"
+					// });
+					return;
+				}
+				$('.js-vencimentoParcela').val(formatarData(_pagamentos[id_registro].data_vencimento))
+				$('.js-dataPagamento').val(formatarData(_pagamentos[id_registro].data_vencimento))
+				$('.js-valorParcela').val(number_format(_pagamentos[id_registro].valor,2,',','.'))
+				$('#js-aside-asFinanceiro-pagar .js-index').val(id_registro);
+
+				$('#js-aside-asFinanceiro-pagar .js-fieldset-conta').show();
+				$("#js-aside-asFinanceiro-pagar").fadeIn(100, function() {
+					$("#js-aside-asFinanceiro-pagar .aside__inner1").addClass("active");
+				});
+			})
+
+			$('.js-btn-pagar').on('click', function() {
+				let pagamentoIndex = $('#js-aside-asFinanceiro-pagar .js-index').val();
+				let dataPagamento = $('#js-aside-asFinanceiro-pagar .js-dataPagamento').val();
+				let bancoPagamento = $('#js-aside-asFinanceiro-pagar .js-id_banco').val();
+
+				let erro = '';
+				if (!_pagamentos[pagamentoIndex]) erro = 'Pagamento não encontrado!';
+				else if (dataPagamento.length == 0) erro = 'Defina a Data de Pagamento!';
+				if (erro.length > 0) {
+					swal({
+						title: "Erro!",
+						text: erro,
+						html: true,
+						type: "error",
+						confirmButtonColor: "#424242"
+					});
+				} else {
+					if (_pagamentos[pagamentoIndex]) {
+						let id_baixa = _pagamentos[pagamentoIndex].id_baixa;
+						let obj = $(this);
+						let objHTMLAntigo = $(this).html();
+
+						if (obj.attr('data-loading') == 0) {
+							obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>');
+							obj.attr('data-loading', 1);
+
+							let data = `ajax=receber&id_baixa=${id_baixa}&dataPagamento=${dataPagamento}&id_banco=${bancoPagamento}`;
+							console.log(data)
+							$.ajax({
+								type: "POST",
+								url: baseURLApiAsidePagamentos,
+								data: data,
+								success: function(rtn) {
+									if (rtn.success) {
+										$('#js-aside-asFinanceiro-receber .aside-close').click();
+										$('#js-aside-asFinanceiro .aside-close').click();
+										swal({
+											title: "Sucesso!",
+											text: 'Recebido com Sucesso!',
+											html: true,
+											type: "success",
+											confirmButtonColor: "#424242"
+										});
+										document.location.reload();
+									} else if (rtn.error) {
+										swal({
+											title: "Erro!",
+											text: rtn.error,
+											html: true,
+											type: "error",
+											confirmButtonColor: "#424242"
+										});
+									} else {
+										console.log(rtn)
+										swal({
+											title: "Erro!",
+											text: 'Algum erro ocorreu. Tente novamente!',
+											html: true,
+											type: "error",
+											confirmButtonColor: "#424242"
+										});
+									}
+								}
+							}).done(function() {
+								obj.attr('data-loading', 0);
+								obj.html(objHTMLAntigo);
+							})
+
+						}
+					}
+				}
 			})
 		</script>
 <?php 
