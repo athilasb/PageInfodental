@@ -1,150 +1,148 @@
 <?php
-require_once("lib/conf.php");
-require_once("usuarios/checa.php");
+echo sha1(287);die();
+	require_once("lib/conf.php");
+	require_once("usuarios/checa.php");
 
 
-include "includes/header.php";
-include "includes/nav.php";
-$data_inicial_filtro = isset($_GET['data_inicio']) ? $_GET['data_inicio'] : date('Y-m-d');
-$data_final_filtro =  isset($_GET['data_final']) ? $_GET['data_final'] : date('Y-m-d', strtotime("+7 days"));
-$dias_filtro = (strtotime($data_final_filtro) - strtotime($data_inicial_filtro)) / (60 * 60 * 24);
+	include "includes/header.php";
+	include "includes/nav.php";
+	$data_inicial_filtro = isset($_GET['data_inicio']) ? $_GET['data_inicio'] : date('Y-m-d');
+	$data_final_filtro =  isset($_GET['data_final']) ? $_GET['data_final'] : date('Y-m-d', strtotime("+7 days"));
+	$dias_filtro = (strtotime($data_final_filtro) - strtotime($data_inicial_filtro)) / (60 * 60 * 24);
 
-function getPagamentos($data_inicial_filtro, $data_final_filtro)
-{
-	global $sql;
-	global $_p;
-	$_origens = array();
-	$_pagamentos = array();
-	$_pagantes = array();
-	$idPagantes = array();
-	$valor = array(
-		'aPagar' => 0,
-		'valorPago' => 0,
-		'valorVencido' => 0,
-		'valorTotal' => 0,
-		'valorJuros' => 0,
-		'valorMulta' => 0,
-	);
-	// pegando as oriugens
-	$sql->consult($_p . "financeiro_fluxo_origens", "*", "WHERE 1");
-	if ($sql->rows) {
-		while ($x = mysqli_fetch_object($sql->mysqry)) {
-			$_origens[$x->id] = $x->tabela;
+	function getPagamentos($data_inicial_filtro, $data_final_filtro) {
+		global $sql;
+		global $_p;
+		$_origens = array();
+		$_pagamentos = array();
+		$_pagantes = array();
+		$idPagantes = array();
+		$valor = array(
+			'aPagar' => 0,
+			'valorPago' => 0,
+			'valorVencido' => 0,
+			'valorTotal' => 0,
+			'valorJuros' => 0,
+			'valorMulta' => 0,
+		);
+		// pegando as oriugens
+		$sql->consult($_p . "financeiro_fluxo_origens", "*", "WHERE 1");
+		if ($sql->rows) {
+			while ($x = mysqli_fetch_object($sql->mysqry)) {
+				$_origens[$x->id] = $x->tabela;
+			}
 		}
-	}
-	// aqui eu busco as baixas que foram dadas
-	$sql->consult($_p . "financeiro_fluxo", "*", "WHERE (data_vencimento>='$data_inicial_filtro' AND data_vencimento<='$data_final_filtro') AND lixo=0 AND valor<0 AND id_dividido=0 order by data_vencimento asc");
-	if ($sql->rows) {
-		while ($x = mysqli_fetch_object($sql->mysqry)) {
-			$_pagamentos[$x->id]['id'] = $x->id;
-			$_pagamentos[$x->id]['data'] = $x->data;
-			$_pagamentos[$x->id]['lixo'] = $x->lixo;
-			$_pagamentos[$x->id]['id_origem'] = $x->id_origem;
-			$_pagamentos[$x->id]['id_registro'] = $x->id_registro;
-			$_pagamentos[$x->id]['data_vencimento'] = $x->data_vencimento;
-			$_pagamentos[$x->id]['pagamento'] = $x->pagamento;
-			$_pagamentos[$x->id]['pagamento_id_colaborador'] = $x->pagamento_id_colaborador;
-			$_pagamentos[$x->id]['data_efetivado'] = $x->data_efetivado;
-			$_pagamentos[$x->id]['id_formapagamento'] = $x->id_formapagamento;
-			$_pagamentos[$x->id]['id_operadora'] = $x->id_operadora;
-			$_pagamentos[$x->id]['id_bandeira'] = $x->id_bandeira;
-			$_pagamentos[$x->id]['taxa_cartao'] = $x->taxa_cartao;
-			$_pagamentos[$x->id]['tipo'] = $x->tipo;
-			$_pagamentos[$x->id]['id_pagante_beneficiario'] = $x->id_pagante_beneficiario;
-			$_pagamentos[$x->id]['valor'] = $x->valor;
-			$_pagamentos[$x->id]['valor_multa'] = $x->valor_multa;
-			$_pagamentos[$x->id]['valor_taxa'] = $x->valor_taxa;
-			$_pagamentos[$x->id]['valor_desconto'] = $x->valor_desconto;
-			$_pagamentos[$x->id]['valor_juros'] = $x->valor_juros;
-			$_pagamentos[$x->id]['obs'] = $x->obs;
-			$_pagamentos[$x->id]['id_banco'] = $x->id_banco;
-			$_pagamentos[$x->id]['lixo_data'] = $x->lixo_data;
-			$_pagamentos[$x->id]['lixo_id_colaborador'] = $x->lixo_id_colaborador;
-			$_pagamentos[$x->id]['desconto'] = $x->desconto;
-			$_pagamentos[$x->id]['descricao'] = utf8_encode($x->descricao);
-			$_pagamentos[$x->id]['id_categoria'] = $x->id_categoria;
-			$_pagamentos[$x->id]['id_centro_custo'] = $x->id_centro_custo;
-			$_pagamentos[$x->id]['dividido'] = $x->dividido;
-			$_pagamentos[$x->id]['id_dividido'] = $x->id_dividido;
-			$origem = $_origens[$x->id_origem];
-			$idRegistros[$x->id_registro] = $x->id_registro;
-			$idPagantes[$x->id_pagante_beneficiario] = $x->tipo;
+		// aqui eu busco as baixas que foram dadas
+		$sql->consult($_p . "financeiro_fluxo", "*", "WHERE (data_vencimento>='$data_inicial_filtro' AND data_vencimento<='$data_final_filtro') AND lixo=0 AND valor<0 AND id_dividido=0 order by data_vencimento asc");
+		if ($sql->rows) {
+			while ($x = mysqli_fetch_object($sql->mysqry)) {
+				$_pagamentos[$x->id]['id'] = $x->id;
+				$_pagamentos[$x->id]['data'] = $x->data;
+				$_pagamentos[$x->id]['lixo'] = $x->lixo;
+				$_pagamentos[$x->id]['id_origem'] = $x->id_origem;
+				$_pagamentos[$x->id]['id_registro'] = $x->id_registro;
+				$_pagamentos[$x->id]['data_vencimento'] = $x->data_vencimento;
+				$_pagamentos[$x->id]['pagamento'] = $x->pagamento;
+				$_pagamentos[$x->id]['pagamento_id_colaborador'] = $x->pagamento_id_colaborador;
+				$_pagamentos[$x->id]['data_efetivado'] = $x->data_efetivado;
+				$_pagamentos[$x->id]['id_formapagamento'] = $x->id_formapagamento;
+				$_pagamentos[$x->id]['id_operadora'] = $x->id_operadora;
+				$_pagamentos[$x->id]['id_bandeira'] = $x->id_bandeira;
+				$_pagamentos[$x->id]['taxa_cartao'] = $x->taxa_cartao;
+				$_pagamentos[$x->id]['tipo'] = $x->tipo;
+				$_pagamentos[$x->id]['id_pagante_beneficiario'] = $x->id_pagante_beneficiario;
+				$_pagamentos[$x->id]['valor'] = $x->valor;
+				$_pagamentos[$x->id]['valor_multa'] = $x->valor_multa;
+				$_pagamentos[$x->id]['valor_taxa'] = $x->valor_taxa;
+				$_pagamentos[$x->id]['valor_desconto'] = $x->valor_desconto;
+				$_pagamentos[$x->id]['valor_juros'] = $x->valor_juros;
+				$_pagamentos[$x->id]['obs'] = $x->obs;
+				$_pagamentos[$x->id]['id_banco'] = $x->id_banco;
+				$_pagamentos[$x->id]['lixo_data'] = $x->lixo_data;
+				$_pagamentos[$x->id]['lixo_id_colaborador'] = $x->lixo_id_colaborador;
+				$_pagamentos[$x->id]['desconto'] = $x->desconto;
+				$_pagamentos[$x->id]['descricao'] = utf8_encode($x->descricao);
+				$_pagamentos[$x->id]['id_categoria'] = $x->id_categoria;
+				$_pagamentos[$x->id]['id_centro_custo'] = $x->id_centro_custo;
+				$_pagamentos[$x->id]['dividido'] = $x->dividido;
+				$_pagamentos[$x->id]['id_dividido'] = $x->id_dividido;
+				$origem = $_origens[$x->id_origem];
+				$idRegistros[$x->id_registro] = $x->id_registro;
+				$idPagantes[$x->id_pagante_beneficiario] = $x->tipo;
+			}
+			$_pagamentos = json_decode(json_encode($_pagamentos));
 		}
-		$_pagamentos = json_decode(json_encode($_pagamentos));
-	}
-	//pegando os pagantes
-	if (count($idPagantes) > 0) {
-		foreach ($idPagantes as $id => $tipo) {
-			if ($tipo == 'paciente') {
-				$sql->consult($_p . "pacientes", "*", " WHERE id =$id");
-				if ($sql->rows) {
-					while ($x = mysqli_fetch_object($sql->mysqry)) {
-						// $_pagantes[$x->id] = $x;
-						$_pagantes[$x->id]['nome'] = utf8_encode($x->nome);
+		//pegando os pagantes
+		if (count($idPagantes) > 0) {
+			foreach ($idPagantes as $id => $tipo) {
+				if ($tipo == 'paciente') {
+					$sql->consult($_p . "pacientes", "*", " WHERE id =$id");
+					if ($sql->rows) {
+						while ($x = mysqli_fetch_object($sql->mysqry)) {
+							// $_pagantes[$x->id] = $x;
+							$_pagantes[$x->id]['nome'] = utf8_encode($x->nome);
+						}
 					}
-				}
-			} else if ($tipo == 'colaborador') {
-				$sql->consult($_p . "colaboradores", "*", " WHERE id =$id");
-				if ($sql->rows) {
-					while ($x = mysqli_fetch_object($sql->mysqry)) {
-						// $_pagantes[$x->id] = $x;
-						$_pagantes[$x->id]['nome'] = utf8_encode($x->nome);
+				} else if ($tipo == 'colaborador') {
+					$sql->consult($_p . "colaboradores", "*", " WHERE id =$id");
+					if ($sql->rows) {
+						while ($x = mysqli_fetch_object($sql->mysqry)) {
+							// $_pagantes[$x->id] = $x;
+							$_pagantes[$x->id]['nome'] = utf8_encode($x->nome);
+						}
 					}
-				}
-			} else if ($tipo == 'fornecedor') {
-				$sql->consult($_p . "parametros_fornecedores", "*", " WHERE id =$id");
-				if ($sql->rows) {
-					while ($x = mysqli_fetch_object($sql->mysqry)) {
-						// $_pagantes[$x->id] = $x;
-						$_pagantes[$x->id]['nome'] = utf8_encode($x->razao_social);
+				} else if ($tipo == 'fornecedor') {
+					$sql->consult($_p . "parametros_fornecedores", "*", " WHERE id =$id");
+					if ($sql->rows) {
+						while ($x = mysqli_fetch_object($sql->mysqry)) {
+							// $_pagantes[$x->id] = $x;
+							$_pagantes[$x->id]['nome'] = utf8_encode($x->razao_social);
+						}
 					}
 				}
 			}
 		}
-	}
-	// montando o objeto
+		// montando o objeto
 
-	$dados = [];
-	foreach ($_pagamentos as $baixa) {
-		$titulo = (isset($_registros[$baixa->id_registro]) && isset($_registros[$baixa->id_registro]->id_tratamento) && isset($_tratamentos[$_registros[$baixa->id_registro]->id_tratamento])) ? utf8_encode($_tratamentos[$_registros[$baixa->id_registro]->id_tratamento]->titulo) : "";
-		$pagante  = $_pagantes[$baixa->id_pagante_beneficiario]['nome'] ?? 'Nao Econtrado';
+		$dados = [];
+		foreach ($_pagamentos as $baixa) {
+			$titulo = (isset($_registros[$baixa->id_registro]) && isset($_registros[$baixa->id_registro]->id_tratamento) && isset($_tratamentos[$_registros[$baixa->id_registro]->id_tratamento])) ? utf8_encode($_tratamentos[$_registros[$baixa->id_registro]->id_tratamento]->titulo) : "";
+			$pagante  = $_pagantes[$baixa->id_pagante_beneficiario]['nome'] ?? 'Nao Econtrado';
 
-		$dados[$baixa->id]['id_baixa'] = $baixa->id;
-		$dados[$baixa->id]['data_vencimento'] = $baixa->data_vencimento;
-		$dados[$baixa->id]['id_registro'] = $baixa->id_registro;
-		$dados[$baixa->id]['pagamento'] = $baixa->pagamento;
-		$dados[$baixa->id]['data_efetivado'] = $baixa->data_efetivado;
-		$dados[$baixa->id]['tipo'] = 'fluxo';
-		$dados[$baixa->id]['valor'] = $baixa->valor;
-		$dados[$baixa->id]['valor_multa'] = $baixa->valor_multa;
-		$dados[$baixa->id]['valor_taxa'] = $baixa->valor_taxa;
-		$dados[$baixa->id]['valor_desconto'] = $baixa->valor_desconto;
-		$dados[$baixa->id]['valor_juros'] = $baixa->valor_juros;
-		$dados[$baixa->id]['desconto'] = $baixa->desconto;
-		$dados[$baixa->id]['titulo'] = $baixa->descricao;
-		$dados[$baixa->id]['nome_pagante'] = $pagante;
-		$dados[$baixa->id]['status'] = '';
-		$valor['valorTotal'] += $baixa->valor;
-		if ($baixa->pagamento == 1) {
-			$valor['valorPago'] += $baixa->valor;
-			$dados[$baixa->id]['status'] = 'Pago';
-		} else {
-			$atraso = (strtotime($baixa->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
-			if ($atraso < 0) {
-				$valor['valorVencido'] += $baixa->valor;
-				$dados[$baixa->id]['status'] = 'Vencido';
+			$dados[$baixa->id]['id_baixa'] = $baixa->id;
+			$dados[$baixa->id]['data_vencimento'] = $baixa->data_vencimento;
+			$dados[$baixa->id]['id_registro'] = $baixa->id_registro;
+			$dados[$baixa->id]['pagamento'] = $baixa->pagamento;
+			$dados[$baixa->id]['data_efetivado'] = $baixa->data_efetivado;
+			$dados[$baixa->id]['tipo'] = 'fluxo';
+			$dados[$baixa->id]['valor'] = $baixa->valor;
+			$dados[$baixa->id]['valor_multa'] = $baixa->valor_multa;
+			$dados[$baixa->id]['valor_taxa'] = $baixa->valor_taxa;
+			$dados[$baixa->id]['valor_desconto'] = $baixa->valor_desconto;
+			$dados[$baixa->id]['valor_juros'] = $baixa->valor_juros;
+			$dados[$baixa->id]['desconto'] = $baixa->desconto;
+			$dados[$baixa->id]['titulo'] = $baixa->descricao;
+			$dados[$baixa->id]['nome_pagante'] = $pagante;
+			$dados[$baixa->id]['status'] = '';
+			$valor['valorTotal'] += $baixa->valor;
+			if ($baixa->pagamento == 1) {
+				$valor['valorPago'] += $baixa->valor;
+				$dados[$baixa->id]['status'] = 'Pago';
 			} else {
-				$valor['aPagar'] += $baixa->valor;
-				$dados[$baixa->id]['status'] = 'a Pagar';
+				$atraso = (strtotime($baixa->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
+				if ($atraso < 0) {
+					$valor['valorVencido'] += $baixa->valor;
+					$dados[$baixa->id]['status'] = 'Vencido';
+				} else {
+					$valor['aPagar'] += $baixa->valor;
+					$dados[$baixa->id]['status'] = 'a Pagar';
+				}
 			}
 		}
+		$dados = json_decode(json_encode($dados));
+		return [$dados, $valor];
 	}
-	$dados = json_decode(json_encode($dados));
-	return [$dados, $valor];
-}
-[$dados, $valor] = getPagamentos($data_inicial_filtro, $data_final_filtro);
-
-
+	[$dados, $valor] = getPagamentos($data_inicial_filtro, $data_final_filtro);
 ?>
 <header class="header">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
