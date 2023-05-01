@@ -4,8 +4,6 @@ require_once("../../lib/conf.php");
 require_once("../../lib/class/classMysql.php");
 require_once("../../vendor/autoload.php");
 
-
-
 use Aws\S3\S3Client;
 $s3 = new S3Client([
     'version' => 'latest',
@@ -19,17 +17,14 @@ $s3 = new S3Client([
     'bucket_endpoint' => true
 ]);
 
-
-
 $sql = new Mysql();
 
-
-
 $_p = "infodental.ident_";
+$dir_arquivos = "arqs/pacientes/arquivos";
 
 //pegando todos os pacientes do sistema, preciso saber qual arquivo pentence a quem
-$sql->consult($_p."pacientes", "id, nome", "");
-$list_pacientes = mysqli_fetch_all($sql->mysqry, MYSQLI_ASSOC);
+//$sql->consult($_p."pacientes", "id, nome", "");
+//$list_pacientes = mysqli_fetch_all($sql->mysqry, MYSQLI_ASSOC);
 
 //vendo se já não existe um arquivo cadastrado no sistema
 $sql->consult($_p.'pacientes_arquivos', "max(id) as id", "");
@@ -38,8 +33,16 @@ $max_id++;
 
 
 $arquivos = file("arquivos.csv");
+$pacientes = file("pacientes_pessoa.csv");
 $list_arquivos = array();
+$list_pacientes = array();
 //id;id_pessoa;id_documento;tx_nome_pessoa;tx_nome_documento;tx_nome_arquivo;tx_url_arquivo;tx_descricao;tx_tipo_arquivo;tx_formato_arquivo
+
+foreach($pacientes as $linha)
+{
+    list($id_paciente, $id_pessoa) = explode($linha);
+    $list_pacientes[$id_pessoa] = $id_paciente; 
+}
 
 
 foreach($arquivos as $linha){
@@ -61,7 +64,7 @@ foreach($arquivos as $linha){
     $index = strtolowerWLIB(str_replace(" ", "", tirarAcentos($tx_nome_pessoa)));
 
         
-    list(, $extensao) = explode('.', $tx_nome_arquivo);
+    list($nome_sem_extensao, $extensao) = explode('.', $tx_nome_arquivo);
     //    echo $extensao;
 
         $isImage = 0;
@@ -73,11 +76,12 @@ foreach($arquivos as $linha){
         'id' => $max_id,
         'tx_nome_pessoa' => $tx_nome_pessoa,
         'to_nome_documento' => $tx_nome_documento,
-        'tx_nome_arquivo' => $tx_nome_arquivo,
+        'tx_nome_arquivo' => $nome_sem_extensao,
         'tx_url_arquivo' => $tx_url_arquivo,
         'tx_descricao' => $tx_descricao,
         'tx_tipo_arquivo' => $tx_tipo_arquivo,
         'tx_formato_arquivo' => $tx_formato_arquivo,
+        'id_paciente' => $list_pacientes[$id_pessoa],
         'extensao' => $extensao,
         'isImage' => $isImage
     );
@@ -85,65 +89,38 @@ foreach($arquivos as $linha){
     $max_id++;
 }
 
-
-if(isset($_GET['fim']) && 
-   isset($_GET['inicio']) &&
-   ($_GET['fim'] != '') &&
-   ($_GET['inicio'] != '')
-   ){
-
 //montando o sql e guardando os ids 
-//print_r($list_pacientes);
-    $vSQL = "id, data, id_paciente, tipo, titulo, extensao, id_colaborador, obs, lixo";
+$vSQL = "id, data, id_paciente, tipo, titulo, extensao, id_colaborador, obs, lixo";
 
-    //echo "??";
-    $i = $_GET['inicio'];
-    $j = $_GET['fim'];
 
-    for(;$i <= $j; $i++){
-        //echo "mmm";
-        $linha = $list_pacientes[$i];
-    //    print_r($linha);
+foreach($list_arquivos as $arquivo){
 
-        //pesquisando por nomes na lista de pacientes do bacno
-        $index = strtolowerWLIB(str_replace(" ", "", tirarAcentos(utf8_encode($linha['nome']))));
 
-        if($linha['nome'] == "" || !isset($linha[$index])){
-            continue;
-        }
+    $vSQL .= "( '". $arquivos['id'] ."', 
+                    now(), '" . 
+                    $arquivos['id_paciente'] . "', '" . 
+                    $arquivos['tx_tipo_arquivo'] . "', '" . 
+                    $arquivos['tx_nome_arquivo'] . "', '" .
+                    $arquivos['extensao'] . "', '" . 
+                // verificar se esse é o id do profissional    "'101', ".
+                    "'',".
+                    "'0')";
 
-        echo("<br> =============================================================<br>");
-        echo $linha['nome']."::::::::::::::::::<br>";
-        print_r($list_arquivos[$index]);
-        echo("<br>-------------------------------------------------------------<br>");
-        print_r($linha);
-        echo("<br> +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
-    
-        $vSQL .= "( '". $list_arquivos[$index]['id'] ."', 
-                        now(), '" . 
-                        $linha['id'] . "', '" . 
-                        $list_arquivos[$index]['tx_tipo_arquivo'] . "', '" . 
-                        $list_arquivos[$index]['tx_nome_arquivo'] . "', '" .
-                        $list_arquivos[$index]['extensao'] . "', '" . 
-                    // verificar se esse é o id do profissional    "'101', ".
-                        "'',".
-                        "'0')";
-    }
-}
+echo("Nome: " . $arquivos['tx_nome_paciente']. " id paciente: " . $arquivos['id_paciente'] . "<br>");
 
-if(isset($_GET['image'])){
-    $url = $_GET['image'];
+
+/*    $url = $arquivos['tx_url_arquivo'];
     $stream = fopen($url, "rb");
     $file = stream_get_contents($stream);
     $size = strlen($file);
-    echo $stream;
-    echo $size;
+    $nome_arquivo = md5($arquivos['id']) . "." . $arquivos['tx_nome_arquivo'];
+  
     //print_r($size);
     try {
         $s3->putObject(array(
             'Bucket'=>'infodental',
-            'Key' =>  "agenda/arqs/pacientes/arquivos/imgem.webp",
+            'Key' =>  "agenda/arqs/pacientes/testes_walker/".$nome_arquivo,
             'Body' => $file,
         //    'ContentLength' => $size,
             'ACL'    => 'public-read', //for public access
@@ -151,7 +128,7 @@ if(isset($_GET['image'])){
     } catch (Exception $exception) {
         echo "<h1>Failed to upload  with error: " . $exception->getMessage() . "</h1>";
         exit("Please fix error with file upload before continuing.");
-    }
+    }*/
 }
 ?>
 
