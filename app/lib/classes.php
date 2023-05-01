@@ -702,7 +702,6 @@ function generatePDF($id_evolucao,$id_assinatura=0)
 
 	$response = curl_exec($curl);
 	$err = curl_error($curl);
-	
 
 	curl_close($curl);
 	if ($err) {

@@ -85,5 +85,6 @@ RUN npm install
 #ENTRYPOINT ["/bin/bash", "-c", "npx prisma migrate deploy --preview-feature && pm2 start /var/www/html/nodejs/srv-lifebox.js --name node-socket && apachectl -D FOREGROUND"]
 ENTRYPOINT ["/bin/bash", "-c", "env > /etc/environment && service cron start && npx prisma migrate deploy --preview-feature && apachectl -D FOREGROUND"]
 
+CHMOD 777 /var/app/services/arqs/
 
 
