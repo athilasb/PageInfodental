@@ -1,770 +1,526 @@
 <?php
-// formas de pagamento
-$_formasDePagamento = array();
-$optionFormasDePagamento = '';
-$sql->consult($_p . "parametros_formasdepagamento", "*", "order by titulo asc");
-while ($x = mysqli_fetch_object($sql->mysqry)) {
-	$_formasDePagamento[$x->id] = $x;
-	$optionFormasDePagamento .= '<option value="' . $x->id . '" data-tipo="' . $x->tipo . '">' . utf8_encode($x->titulo) . '</option>';
-}
-
-// credito, debito, bandeiras
-$_bandeiras = array();
-$sql->consult($_p . "parametros_cartoes_bandeiras", "*", "where lixo=0");
-while ($x = mysqli_fetch_object($sql->mysqry)) {
-	$_bandeiras[$x->id] = $x;
-}
+	if(isset($_POST['ajax'])) {
+		$dir="../../";
+		require_once("../../lib/conf.php");
+		require_once("../../usuarios/checa.php");
 
 
-$creditoBandeiras = array();
-$debitoBandeiras = array();
-$taxasBandeiras = array();
-$_operadoras = array();
+		$attr=array('prefixo'=>$_p,'usr'=>$usr);
 
-$sql->consult($_p . "parametros_cartoes_operadoras", "*", "where lixo=0 order by titulo");
-while ($x = mysqli_fetch_object($sql->mysqry)) {
-	$creditoBandeiras[$x->id] = array('titulo' => utf8_encode($x->titulo), 'bandeiras' => array());
-	$debitoBandeiras[$x->id] = array('titulo' => utf8_encode($x->titulo), 'bandeiras' => array());
-	$_operadoras[$x->id] = $x;
-}
+		// Categorias
+			if($_POST['ajax']=="categoriasListar") {
 
-$sql->consult($_p . "parametros_cartoes_operadoras_bandeiras", "*", "where lixo=0");
-while ($x = mysqli_fetch_object($sql->mysqry)) {
-	if (!isset($_operadoras[$x->id_operadora])) continue;
+				$regsCategorias=[];
+				$categoriasIds=[];
+				$sql->consult($_p."financeiro_fluxo_categorias","*","where id_categoria=0 and lixo=0 order by titulo asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$regsCategorias[]=$x;
+					$categoriasIds[]=$x->id;
+				}
 
-	if (isset($_bandeiras[$x->id_bandeira])) {
-		$bandeira = $_bandeiras[$x->id_bandeira];
-		$txJson = json_decode($x->taxas);
-		$taxasBandeiras[$x->id_operadora][$x->id_bandeira] = $txJson->creditoTaxas ?? [];
-		if ($x->check_debito == 1) {
-			$debitoTaxa = isset($txJson->debitoTaxas->taxa) ? $txJson->debitoTaxas->taxa : 0;
-			$debitoDias = isset($txJson->debitoTaxas->dias) ? $txJson->debitoTaxas->dias : 0;
-			$debitoBandeiras[$x->id_operadora]['bandeiras'][$x->id_bandeira] = array(
-				'id_bandeira' => $x->id_bandeira,
-				'titulo' => utf8_encode($bandeira->titulo),
-				'taxa' => $debitoTaxa,
-				'dias' => $debitoDias
-			);
-		}
-		if ($x->check_credito == 1) {
-
-			$creditoTaxa = isset($txJson->creditoTaxas->taxa) ? $txJson->creditoTaxas->taxa : 0;
-			$creditoBandeiras[$x->id_operadora]['bandeiras'][$x->id_bandeira] = array(
-				'id_bandeira' => $x->id_bandeira,
-				'titulo' => utf8_encode($bandeira->titulo),
-				'parcelas' => $x->credito_parcelas,
-				'taxa' => $creditoTaxa,
-				'semJuros' => $x->credito_parcelas_semjuros
-			);
-		}
-	}
-}
-
-// banco e contas
-$_bancos = array();
-$sql->consult($_p . "financeiro_bancosecontas", "*", " WHERE lixo =0 order by titulo asc");
-while ($x = mysqli_fetch_object($sql->mysqry)) $_bancos[$x->id] = $x;
-?>
-
-<script type="text/javascript">
-	const _taxaBandeiras = <?= json_encode($taxasBandeiras) ?>;
-	// carrega campos de complemento da forma de pagamento
-	const pagamentosAtualizaCampos = (formaDePagamento) => {
-		if (formaDePagamento) {
-			let id_formapagamento = formaDePagamento.val();
-			let obj = formaDePagamento.parent().parent().parent().parent();
-			let tipo = $(obj).find('select.js-id_formapagamento option:checked').attr('data-tipo');
-			$(obj).find('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
-			if (tipo == "credito") {
-				$(obj).find('.js-parcelas,.js-creditoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
-			} else if (tipo == "debito") {
-				$(obj).find('.js-debitoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
-				let valorDigitado = unMoney($('.js-valor').val())
-				if (valorDigitado == undefined) {
-					valorDigitado = unMoney($('.js-saldoPagar').text())
-					$('.js-valor').val(number_format(valorDigitado, 2, ",", "."))
-					if ($('.js-aplicar-multas-juros').prop('checked') == true) {
-						$("input.js-valor").trigger("keyup");
+				$subcategorias=[];
+				if(count($categoriasIds)>0) {
+					$sql->consult($_p."financeiro_fluxo_categorias","*","where id_categoria IN (".implode(",",$categoriasIds).") and lixo=0 order by titulo asc");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$subcategorias[$x->id_categoria][]=array('id'=>$x->id,
+																	'titulo'=>utf8_encode($x->titulo));
 					}
 				}
-				let valorMulta = unMoney($('.js-valorMultas').text())
-				let valorJuros = unMoney($('.js-valorJuros').text())
-				let valorDesconto = (unMoney($('.js-descontoMultasJuros').val()) != undefined) ? unMoney($('.js-descontoMultasJuros').val()) : 0
-				if ($('.js-aplicar-multas-juros').prop('checked') == false) {
-					valorMulta = 0
-					valorJuros = 0
-				}
-				let valorSomado = (valorDigitado + valorMulta + valorJuros) - valorDesconto
-				let valorParcelas = valorSomado
-				let id_operadora = $('.js-creditoBandeira option:selected').attr('data-id_operadora')
-				let id_bandeira = $('.js-creditoBandeira option:selected').val()
-				valorTaxa = 0
-				$('.js-valorCreditoDebito').text(`R$ ${number_format(valorParcelas, 2, ",", ".")}`)
-				$('.js-valorCreditoDebitoTaxa').text(`${number_format(valorTaxa, 2)}`)
-				$(obj).find('.js-valorCreditoDebitoTaxa').parent().parent().hide();
-			} else {
-				$(obj).find('.js-identificador').parent().parent().show();
-				if (tipo == "permuta") {
-					//$(obj).find('.js-obs').parent().parent().show();
-				}
-			}
-			let index = $('.js-pagamentos .js-id_formapagamento').index(this);
-		} else {
-			$('#js-aside-asFinanceiro').find('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
-		}
-	}
-	$(function() {
-		// se clicar nas abas
-		$('#js-aside-asFinanceiro .js-tab a').click(function() {
-			$(".js-tab a").removeClass("active");
-			$(this).addClass("active");
-		});
 
-		// desfaz uniao de agrupamento de pagametnos
-		$('#js-aside-asFinanceiro').on('click', '.js-desfazerUniao', function() {
-			let idPagamento = $('#js-aside-asFinanceiro .js-id_pagamento').val();
-			let data = `ajax=desfazerUniao&id_pagamento=${idPagamento}`;
+				$categorias=[];
+				foreach($regsCategorias as $x) {
+					$categorias[]=array('id'=>$x->id,
+										'titulo'=>utf8_encode($x->titulo),
+										'subcategorias'=>isset($subcategorias[$x->id])?$subcategorias[$x->id]:[]);
 
-			swal({
-				title: "Atenção",
-				text: "Tem certeza que deseja desfazer essa união de pagamento?",
-				type: "warning",
-				showCancelButton: true,
-				confirmButtonColor: "#DD6B55",
-				confirmButtonText: "Sim!",
-				cancelButtonText: "Não",
-				closeOnConfirm: false,
-				closeOnCancel: false
-			}, function(isConfirm) {
-				if (isConfirm) {
-					$.ajax({
-						type: "POST",
-						data: data,
-						success: function(rtn) {
-							if (rtn.success) {
-								document.location.href = '<?php echo "$_page?$url"; ?>';
-							} else if (rtn.error) {
-								swal({
-									title: "Erro!",
-									text: rtn.error,
-									html: true,
-									type: "error",
-									confirmButtonColor: "#424242"
-								});
-							} else {
-								swal({
-									title: "Erro!",
-									text: "Algum erro ocorreu durante a baixa deste pagamento!",
-									html: true,
-									type: "error",
-									confirmButtonColor: "#424242"
-								});
-							}
-						},
-						error: function() {
-							swal({
-								title: "Erro!",
-								text: "Algum erro ocorreu durante a baixa deste pagamento!",
-								html: true,
-								type: "error",
-								confirmButtonColor: "#424242"
-							});
-						}
-					})
+				}
+
+				$rtn=array('success'=>true,'categorias'=>$categorias);
+
+			} 
+
+			else if($_POST['ajax']=="categoriasPersistir") {
+
+				$titulo = (isset($_POST['titulo'])) ? $_POST['titulo'] : '';
+
+				$categoria = '';
+				if(isset($_POST['id_categoria']) and is_numeric($_POST['id_categoria']) and $_POST['id_categoria']>0) {
+					$sql->consult($_p."financeiro_fluxo_categorias","*","where id=".$_POST['id_categoria']." and id_categoria=0 and lixo=0");
+					if($sql->rows) $categoria=mysqli_fetch_object($sql->mysqry);
+				}
+
+				$erro='';
+				if(empty($titulo)) $erro='Digite o título da categoria';
+
+
+				if(empty($erro)) {
+
+					$vSQL="titulo='".addslashes(utf8_decode($_POST['titulo']))."',
+							id_categoria=0";
+
+					if(is_object($categoria)) {
+						$vWHERE="where id=$categoria->id";
+
+						$sql->update($_p."financeiro_fluxo_categorias",$vSQL,$vWHERE);
+						$id_categoria=$categoria->id;
+
+						$sql->add($_p."log","data=now(),
+												id_usuario='".$usr->id."',
+												tipo='update',
+												vsql='".addslashes($vSQL)."',
+												vwhere='".addslashes($vWHERE)."',
+												tabela='".$_p."financeiro_fluxo_categorias',
+												id_reg='".$id_categoria."'");
+
+
+					} else {
+
+						$vSQL.=",data=now()";
+
+						$sql->add($_p."financeiro_fluxo_categorias",$vSQL);
+						$id_categoria=$sql->ulid;
+
+						$sql->add($_p."log","data=now(),
+												id_usuario='".$usr->id."',
+												tipo='insert',
+												vsql='".addslashes($vSQL)."',
+												tabela='".$_p."financeiro_fluxo_categorias',
+												id_reg='".$id_categoria."'");
+
+
+					}
+				}
+
+				if(empty($erro)) {
+					$rtn=array('success'=>true);
 				} else {
-					swal.close();
+					$rtn=array('success'=>false);
 				}
-			});
-		});
 
-		// atualiza complementos das formas de pagamento 
-		$('select.js-id_formapagamento').change(function() {
-			pagamentosAtualizaCampos($(this));
-		});
-
-		// se alterar o tipo de baixa
-		$('input[name=tipoBaixa]').click(function() {
-			if ($(this).val() == "pagamento") {
-				$('.js-tipoPagamento').parent().parent().show();
-				$('.js-tipoDescontoDespesa').parent().parent().hide();
-				$('.js-obs').parent().parent().hide();
-				$('select.js-id_formapagamento').trigger('change');
-			} else {
-				$('.js-tipoPagamento').parent().parent().hide();
-				$('.js-tipoDescontoDespesa').parent().parent().show();
-				$('.js-obs').parent().parent().show();
 			}
-		});
 
-		pagamentosAtualizaCampos('');
+		// Subcategorias
+			else if($_POST['ajax']=="subcategoriasListar") {
 
-		// se clicar em adicionar baixa
-		$('.js-btn-addBaixa').click(function() {
-			let obj = $(this);
-			let objHTMLAntigo = obj.html();
-			let loading = obj.attr('data-loading');
+				$categoria = '';
+				if(isset($_POST['id_categoria']) and is_numeric($_POST['id_categoria']) and $_POST['id_categoria']>0) {
+					$sql->consult($_p."financeiro_fluxo_categorias","*","where id=".$_POST['id_categoria']." and id_categoria=0 and lixo=0");
+					if($sql->rows) $categoria=mysqli_fetch_object($sql->mysqry);
+				}
 
-			if (loading == 0) {
-				obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>');
-				obj.attr('data-loading', 1);
-				let tipoPagamento = $('.js-id_formapagamento option:checked').attr('data-tipo');
-				let saldoAPagar = unMoney($('.js-saldoPagar').text());
-				let tipoBaixa = $('input[name=tipoBaixa]:checked').val();
+				$erro='';
+				if(empty($categoria)) $erro='Categoria não definida';
 
-				if (tipoBaixa == "despesa" || tipoBaixa == "desconto" || tipoPagamento !== undefined) {
-					let dataPagamento = $('input.js-dataPagamento').val();
-					let dataVencimento = $('input.js-vencimento').val();
-					let valor = ($('input.js-valor').val() && $('input.js-valor').val().length > 0 && unMoney($('input.js-valor').val()) > 0) ? unMoney($('input.js-valor').val()) : '';
-					let valorDesconto = ($('input.js-valorDesconto').val().length > 0 && unMoney($('input.js-valorDesconto').val()) > 0) ? unMoney($('input.js-valorDesconto').val()) : '';
-					let valorJuros = ($('.js-valorJuros').text() && $('.js-valorJuros').text().length > 0 && unMoney($('.js-valorJuros').text()) > 0) ? unMoney($('.js-valorJuros').text()) : '';
-					let valorMulta = ($('.js-valorMultas').text() && $('.js-valorMultas').text().length > 0 && unMoney($('.js-valorMultas').text()) > 0) ? unMoney($('.js-valorMultas').text()) : '';
-					let descontoMultasJuros = ($('input.js-descontoMultasJuros').val() && $('input.js-descontoMultasJuros').val().length > 0 && unMoney($('input.js-descontoMultasJuros').val()) > 0) ? unMoney($('input.js-descontoMultasJuros').val()) : 0;
-					let id_formapagamento = $('.js-id_formapagamento').val();
-					let obs = $('input.js-obs').val();
-					let obsDesconto = $('input.js-obs-desconto').val();
-					let debitoBandeira = $('select.js-debitoBandeira').val();
-					let creditoBandeira = $('select.js-creditoBandeira').val();
-					let creditoParcelas = $('select.js-parcelas').val();
-					let id_operadora = 0;
-					let taxa = 0;
-					let valorParcela = valor
-					id_pagamento = $('#js-aside-asFinanceiro .js-id_pagamento').val();
-					let erro = '';
-					if ($('.js-aplicar-multas-juros').prop('checked') == false) {
-						valorJuros = 0
-						valorMulta = 0
-						descontoMultasJuros = 0
+				if(empty($erro)) {
+
+					$subcategorias=[];
+					$sql->consult($_p."financeiro_fluxo_categorias","*","where id_categoria=$categoria->id and lixo=0 order by titulo asc");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$subcategorias[]=array('id'=>$x->id,
+												'titulo'=>utf8_encode($x->titulo));
 					}
-					if (tipoBaixa == 'pagamento') {
-						if (valor.length == 0) erro = 'Defina o <b>Valor</b> a ser pago';
-						else if (saldoAPagar < unMoney(valor)) erro = `O valor não pode ser maior que <b>${number_format(saldoAPagar,2,",",".")}`;
-						if (tipoPagamento == 'credito') {
-							if (dataVencimento.length == 0) erro = 'Defina a <b>Data do Vencimento</b>';
-							else if (valor.length == 0) erro = 'Defina o <b>Valor do Pagamento</b>';
-							else if (creditoBandeira.length == 0) erro = 'Selecione a <b>Bandeira</b> do Cartão de Crédito';
-							else if (creditoParcelas.length == 0) erro = 'Selecione o <b>Nº de Parcelas</b> do Cartão de Crédito';
-							else if (saldoAPagar < unMoney($('input.js-valor').val())) erro = `O valor não pode ser maior que <b>${number_format(saldoAPagar,2,",",".")}`;
-							id_operadora = $('select.js-creditoBandeira option:selected').attr('data-id_operadora');
-							taxa = $('.js-valorCreditoDebitoTaxa').text();
-							valorParcela = unMoney($('.js-valorCreditoDebito').text());
-							valorJuros = valorJuros / creditoParcelas
-							valorMulta = valorMulta / creditoParcelas
-							descontoMultasJuros = descontoMultasJuros / creditoParcelas
-							valorParcela = valorParcela - (valorJuros + valorMulta - descontoMultasJuros)
+					
 
-						} else if (tipoPagamento == 'debito') {
-							if (dataVencimento.length == 0) erro = 'Defina a <b>Data do Vencimento</b>';
-							else if (valor.length == 0) erro = 'Defina o <b>Valor do Pagamento</b>';
-							else if (debitoBandeira.length == 0) erro = 'Selecione a <b>Bandeira</b> do Cartão de Débito';
-							else if (saldoAPagar < unMoney($('input.js-valor').val())) erro = `O valor não pode ser maior que <b>${number_format(saldoAPagar,2,",",".")}`;
-							id_operadora = $('select.js-debitoBandeira option:selected').attr('data-id_operadora');
-							taxa = $('input.js-valorCreditoDebitoTaxa').val();
-							valorParcela = $('input.js-valorCreditoDebito').val();
+					$rtn=array('success'=>true,'subcategorias'=>$subcategorias);
+				} else {
+					$rtn=array('success'=>false,'error'=>$erro);
+				}
 
-						} else {
-							id_operadora = 0;
-							taxa = 0;
-							valorParcela = $('input.js-valor').val().replace(/[^\d,-.]+/g, '');
-							if (dataVencimento.length == 0) erro = 'Defina a <b>Data do Vencimento</b>';
-							else if (valor.length == 0) erro = 'Defina o <b>Valor do Pagamento</b>';
-						}
-					} else if (tipoBaixa == 'desconto' || tipoBaixa == 'despesa') {
-						if (dataPagamento.length == 0) dataPagamento = dataVencimento;
-						if (valorDesconto.length == 0 || valorDesconto == '' || valorDesconto == 0) erro = 'Defina o <b>Valor</b> Para o Desconto';
-						else if (obsDesconto.length == 0 || obsDesconto == '') erro = 'Digite uma <b>Observação</b>';
-						obs = obsDesconto
-						valor = valorDesconto
+			} 
+
+			else if($_POST['ajax']=="subcategoriasPersistir") {
+
+				$titulo = (isset($_POST['titulo'])) ? $_POST['titulo'] : '';
+
+				$categoria = '';
+				if(isset($_POST['id_categoria']) and is_numeric($_POST['id_categoria']) and $_POST['id_categoria']>0) {
+					$sql->consult($_p."financeiro_fluxo_categorias","*","where id=".$_POST['id_categoria']." and id_categoria=0 and lixo=0");
+					if($sql->rows) $categoria=mysqli_fetch_object($sql->mysqry);
+				}
+
+				$erro='';
+				if(empty($titulo)) $erro='Digite o título da categoria';
+
+
+				if(empty($erro)) {
+
+					$vSQL="titulo='".addslashes(utf8_decode($_POST['titulo']))."',
+							id_categoria=0";
+
+					if(is_object($categoria)) {
+						$vWHERE="where id=$categoria->id";
+
+						$sql->update($_p."financeiro_fluxo_categorias",$vSQL,$vWHERE);
+						$id_categoria=$categoria->id;
+
+						$sql->add($_p."log","data=now(),
+												id_usuario='".$usr->id."',
+												tipo='update',
+												vsql='".addslashes($vSQL)."',
+												vwhere='".addslashes($vWHERE)."',
+												tabela='".$_p."financeiro_fluxo_categorias',
+												id_reg='".$id_categoria."'");
+
+
+					} else {
+
+						$vSQL.=",data=now()";
+
+						$sql->add($_p."financeiro_fluxo_categorias",$vSQL);
+						$id_categoria=$sql->ulid;
+
+						$sql->add($_p."log","data=now(),
+												id_usuario='".$usr->id."',
+												tipo='insert',
+												vsql='".addslashes($vSQL)."',
+												tabela='".$_p."financeiro_fluxo_categorias',
+												id_reg='".$id_categoria."'");
+
+
 					}
+				}
 
-					if (dataVencimento.length == 0) erro = 'Defina a <b>Data</b> de Vencimento';
-					else if (tipoBaixa.length == 0) erro = 'Defina o <b>Tipo de Baixa</b>';
-					else if (tipoBaixa == "pagamento" && id_formapagamento.length == 0) erro = 'Defina a <b>Forma de Pagamento</b>';
-					else if (saldoAPagar <= 0) erro = `Não existe mais débitos!`;
-					else if (descontoMultasJuros >= (saldoAPagar + valorJuros + valorMulta)) erro = `Voce Não Pode dar um Desconto Maior do que o Valor da Parcela!`;
-					//valorParcela = (unMoney(valorParcela) + valorJuros + valorMulta) - descontoMultasJuros
-					if (erro.length == 0) {
-						let data = `ajax=pagamentoBaixa&tipoBaixa=${tipoBaixa}&id_pagamento=${id_pagamento}&dataPagamento=${dataPagamento}&dataVencimento=${dataVencimento}&valor=${valor}&id_formapagamento=${id_formapagamento}&debitoBandeira=${debitoBandeira}&creditoBandeira=${creditoBandeira}&creditoParcelas=${creditoParcelas}&obs=${obs}&id_operadora=${id_operadora}&taxa=${taxa}&valorParcela=${(valorParcela)}&valorJuros=${(valorJuros)}&valorMulta=${(valorMulta)}&descontoMultasJuros=${descontoMultasJuros}`;
+				if(empty($erro)) {
+					$rtn=array('success'=>true);
+				} else {
+					$rtn=array('success'=>false);
+				}
+
+			}
+
+		header("Content-type: application/json");
+		echo json_encode($rtn);
+		die();
+	}
+
+
+
+	# ASIDES
+
+		// Categorias
+			if(isset($apiConfig['financeiroFluxoCategorias'])) {
+
+				?>
+
+				<script type="text/javascript">
+
+					const financeiroFluxoCategoriasLista = () => {
+						let data = `ajax=categoriasListar`;
+
 						$.ajax({
-							type: "POST",
-							data: data,
-							success: function(rtn) {
-								console.log(rtn)
-								if (rtn.success) {
-									let index = pagamentos.findIndex((item, index) => {
-										return item.id_parcela == id_pagamento
-									})
-									pagamentos[index].saldoApagar = unMoney(pagamentos[index].saldoApagar) - unMoney(valor)
-									baixasAtualizar();
-									$('.js-dataPagamento').val('<?= date('d/m/Y'); ?>');
-									$('.js-valor').val('');
-									$('.js-valorDesconto').val('');
-									$('.js-id_formapagamento').val('');
-									$('.js-obs').val('');
-									$('.js-valorJuros').val('');
-									$('.js-valorMultas').val('');
-									$('.js-descontoMultasJuros').val('');
-									$('.js-TotalaPagar').val('');
+							type:"POST",
+							data:data,
+							url:baseURLApiAsideFinanceiro,
+							success:function(rtn) {
+								if(rtn.success) {
 
-									$('.js-multa').hide()
-									$('.js-valorCreditoDebitoTaxa').closest('dl').hide()
-									$('.js-valorCreditoDebito').closest('dl').hide()
-									$('.js-parcelas').closest('dl').hide()
-									$('.js-creditoBandeira').closest('dl').hide()
-									if (saldoAPagar <= 0) $('.js-form-pagamentos').hide();
+									$('.js-financeiroFluxoCategorias-table tbody tr').remove();
 
-								} else if (rtn.error) {
-									swal({
-										title: "Erro!",
-										text: rtn.error,
-										html: true,
-										type: "error",
-										confirmButtonColor: "#424242"
+									if(rtn.categorias.length>0) {
+										rtn.categorias.forEach(x => {
+											let tr = `<tr>
+															<td class="titulo">${x.titulo}</td>
+															<td>
+																<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-subcategoria-adicionar" data-id="${x.id}"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
+
+																<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-categoria-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+
+																<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-categoria-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+															</td>
+														</tr>`;
+
+											if(x.subcategorias.length>0) {
+												x.subcategorias.forEach(s => {
+													tr += `<tr style="background:var(--cinza1);font-size:12px;color:#999">
+																<td>${s.titulo}</td>
+																<td>
+																	<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-subcategoria-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+
+																	<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-subcategoria-remover" data-id="${x.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+																</td>
+															</tr>`;
+												});
+											} else {
+												tr += `<tr style="background:var(--cinza1);font-size:12px;color:#999"><td colspan="2"><center>Nenhums subcategoria cadastrada</center></td></tr>`;
+											}
+
+											$('.js-financeiroFluxoCategorias-table tbody').append(tr);
+										});
+									} else {
+										$('.js-financeiroFluxoCategorias-table tbody').append(`<tr><td colspan="2"><center>Nenhuma categoria cadastrada</center></td></tr>`);
+									}
+
+								} else {
+									let error = rtn.error ? rtn.error : 'Algum erro ocorreu durante a listagem das categorias';
+									swal({title: "Erro!", text: error, type:"error", confirmButtonColor: "#424242"});
+
+								}
+							}
+						})
+					}
+
+					const financeiroFluxoSubcategoriasLista = (id_categoria) => {
+						let data = `ajax=subcategoriasListar&id_categoria=${id_categoria}`;
+
+						$.ajax({
+							type:"POST",
+							data:data,
+							url:baseURLApiAsideFinanceiro,
+							success:function(rtn) {
+								if(rtn.success) {
+
+									$('.js-financeiroFluxoSubcategorias-table tbody tr').remove();
+
+									if(rtn.subcategorias.length>0) {
+										rtn.subcategorias.forEach(x => {
+											let tr = `<tr>
+															<td class="titulo">${x.titulo}</td>
+															<td>
+
+																<a href="javascript:;" class="button js-asFinanceiroFluxoSubcategorias-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+
+																<a href="javascript:;" class="button js-asFinanceiroFluxoSubcategorias-remover" data-id="${x.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+															</td>
+														</tr>`;
+
+											
+											$('.js-financeiroFluxoSubcategorias-table tbody').append(tr);
+										});
+									} else {
+										$('.js-financeiroFluxoSubcategorias-table tbody').append(`<tr><td colspan="2"><center>Nenhuma subcategoria cadastrada</center></td></tr>`);
+									}
+
+									$("#js-aside-financeiroFluxoSubcategorias").fadeIn(100, function() {
+										$("#js-aside-financeiroFluxoSubcategorias .aside__inner1").addClass("active");
+										$('.js-asFinanceiroFluxoCategorias-id_categoria').val(id_categoria);
+										$('.js-asFinanceiroFluxoCategorias-id_subcategoria').val(0);
+										$('.js-asFinanceiroFluxoCategorias-titulo').val('');
 									});
 								} else {
-									swal({
-										title: "Erro!",
-										text: "Algum erro ocorreu durante a baixa deste pagamento!",
-										html: true,
-										type: "error",
-										confirmButtonColor: "#424242"
-									});
+									let error = rtn.error ? rtn.error : 'Algum erro ocorreu durante a listagem das categorias';
+									swal({title: "Erro!", text: error, type:"error", confirmButtonColor: "#424242"});
+
 								}
-							},
-							error: function(error) {
-								console.log(error)
-								swal({
-									title: "Erro!",
-									text: "Algum erro ocorreu durante a baixa deste pagamento",
-									html: true,
-									type: "error",
-									confirmButtonColor: "#424242"
-								});
-								obj.html(objHTMLAntigo);
-								obj.attr('data-loading', 0);
 							}
-						}).done(function() {
-							obj.html(objHTMLAntigo);
-							obj.attr('data-loading', 0);
-						});
-					} else {
-						swal({
-							title: "Erro!",
-							text: erro,
-							html: true,
-							type: "error",
-							confirmButtonColor: "#424242"
-						});
-						obj.html(objHTMLAntigo);
-						obj.attr('data-loading', 0);
+						})
+
 					}
-				} else {
-					swal({
-						title: "Erro!",
-						text: "Define a <b>Forma de Pagamento</b>",
-						html: true,
-						type: "error",
-						confirmButtonColor: "#424242"
-					});
-					obj.html(objHTMLAntigo);
-					obj.attr('data-loading', 0);
-				}
-			}
-		});
 
-		$('input.money').maskMoney({
-			symbol: '',
-			allowZero: false,
-			showSymbol: true,
-			thousands: '.',
-			decimal: ',',
-			symbolStay: true
-		});
+					$(function(){
+						financeiroFluxoCategoriasLista(); 	
 
-		$('.aside-close').click(function() {
-			if ($('[name="alteracao"]').val() == '1') {
-				document.location.reload();
-			} else {
-				// $('#js-aside-asFinanceiro .js-index').val("");
-				// $('#js-aside-asFinanceiro .js-id_pagamento').val("");
-				// $('#js-aside-asFinanceiro .js-titulo').html("");
-				// $('#js-aside-asFinanceiro .js-dataOriginal').html(``);
-				// $('#js-aside-asFinanceiro .js-valorParcela').html(`R$ ${number_format(0, 2, ",", ".")}`);
-				// $('#js-aside-asFinanceiro .js-valorDesconto').html(`R$ ${number_format(0, 2, ",", ".")}`);
-				// $('#js-aside-asFinanceiro .js-valorCorrigido').html(`R$ ${number_format(0, 2, ",", ".")}`);
-				// $('#js-aside-asFinanceiro .js-btn-pagamento').attr('data-id_pagamento', 0);
-				// $("input").val("");
-				// $("select").val("");
-			}
-		})
-	});
-</script>
-<!-- ASIDE PROGRAMAÇÂO DE PAGAMENTO-->
-<section class="aside aside-form" id="js-aside-asFinanceiro">
-	<div class="aside__inner1">
-		<input type="hidden" name="alteracao" value="0">
-		<header class="aside-header">
-			<h1 class="js-titulo"></h1>
-			<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-		</header>
+						$('.js-btn-financeiroFluxoCategorias').click(function(){
 
-		<form method="post" class="aside-content form">
-			<input type="hidden" class="js-id_pagamento" value="0" />
-			<input type="hidden" class="js-index" />
-			<section class="tab tab_alt js-tab">
-				<?php /*<a href="javascript:;" onclick="$('.js-fin').hide(); $('.js-fin-resumo').show();" class="active">Informações</a>*/ ?>
-				<a href="javascript:;" onclick="$('.js-fin').hide(); $('.js-fin-programacao').show();" class="active">Programação de Pagamento</a>
-				<a href="javascript:;" onclick="$('.js-fin').hide(); $('.js-fin-agrupamento').show();" class="js-tab-agrupamento">Agrupamento</a>
-			</section>
+							$("#js-aside-financeiroFluxoCategorias").fadeIn(100, function() {
+								$("#js-aside-financeiroFluxoCategorias .aside__inner1").addClass("active");
+							});
 
-			<!-- Programacao de pagamento -->
-			<div class="js-fin js-fin-programacao" style="display: ;">
-				<section class="filter">
-					<?php /*<div class="filter-group"></div>
-					<div class="filter-group">
-						<div class="filter-form form">
-							<dl>
-								<dd><a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
-							</dl>
-							<dl>
-								<dd><button class="button button_main"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
-							</dl>
-						</div>								
-					</div>*/ ?>
-				</section>
+						});	
 
-				<fieldset style="padding:.75rem 1.5rem;">
-					<div class="colunas5">
-						<dl>
-							<dt>Data Original</dt>
-							<dd class="js-dataOriginal">12/01/2023</dd>
-						</dl>
-						<dl>
-							<dt>Valor da Parcela</dt>
-							<dd class="js-valorParcela"> R$ 0,00</dd>
-						</dl>
-						<dl>
-							<dt>Desconto</dt>
-							<dd class="js-valorDesconto" data-tipo="descontos">R$ 0,00</dd>
-						</dl>
-						<dl style="font-weight:bold">
-							<dt>Total</dt>
-							<dd><strong class="js-valorCorrigido">R$ 1,00</strong></dd>
-						</dl>
-						<dl style="font-weight:bold; color:var(--vermelho);">
-							<dt>Saldo a Pagar</dt>
-							<dd class="js-saldoPagar">R$ 0,00</dd>
-						</dl>
-					</div>
-				</fieldset>
-				<fieldset class="js-fieldset-pagamentos">
-					<legend>Definir fatura</legend>
-					<dl>
-						<dd>
-							<label><input type="radio" name="tipoBaixa" value="pagamento" checked onclick="$('.js-pagamento').show(); $('.js-desconto').hide()"> Pagamento</label>
-							<label><input type="radio" name="tipoBaixa" value="desconto" onclick="$('.js-pagamento').hide(); $('.js-desconto').show();"> Desconto</label>
-						</dd>
-					</dl>
-					<section class="js-pagamento">
-						<div class="colunas4">
-							<dl>
-								<dt>Valor</dt>
-								<dd class="form-comp"><span>R$</span>
-									<input type="text" class="js-valor money" />
-								</dd>
-							</dl>
-							<dl>
-								<dt>Forma de Pagamento</dt>
-								<dd><select class="js-id_formapagamento js-tipoPagamento">
-										<option value=""></option>
-										<?= $optionFormasDePagamento; ?>
-									</select>
-								</dd>
-							</dl>
-							<dl>
-								<dt>Vencimento</dt>
-								<dd><input type="text" class="js-vencimento js-tipoPagamento data" value="<?= date('d/m/Y'); ?>" /></dd>
-							</dl>
-							<dl>
-								<dt>Obs.:</dt>
-								<dd><input type="text" class="js-obs" /></dd>
-							</dl>
-							<dl class="dl2">
-								<dt>Bandeira</dt>
-								<dd>
-									<select class="js-debitoBandeira js-tipoPagamento">
-										<option value="">selecione</option>
-										<?php
-										foreach ($debitoBandeiras as $id_operadora => $x) {
-											echo '<optgroup label="' . utf8_encode($x['titulo']) . '">';
-											foreach ($x['bandeiras'] as $band) {
-												echo '<option value="' . $band['id_bandeira'] . '" data-id_operadora="' . $id_operadora . '" data-taxa="' . $band['taxa'] . '" data-cobrarTaxa="' . $band['cobrarTaxa'] . '">' . utf8_encode($band['titulo']) . '</option>';
-											}
-											echo '</optgroup>';
+						$('.aside-close-financeiroFluxoCategorias').click(function(){
+							$('.aside-close-financeiroFluxoCategorias').parent().parent().removeClass("active");
+							$('.aside-close-financeiroFluxoCategorias').parent().parent().parent().fadeOut();
+						});
+
+						$('.js-asFinanceiroFluxoCategorias-submit').click(function(){
+
+							let titulo = $('.js-asFinanceiroFluxoCategorias-titulo').val();
+							let id_categoria = $('.js-asFinanceiroFluxoCategorias-id_categoria').val();
+
+							let data = `ajax=categoriasPersistir&titulo=${titulo}&id_categoria=${id_categoria}`;
+
+							let obj = $(this);
+							let objHTMLAntigo = $(this).html();
+
+							if(obj.attr('data-loading')==0) {
+
+								obj.attr('data-loading',1);
+								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+
+								$.ajax({
+									type:"POST",
+									data:data,
+									url:baseURLApiAsideFinanceiro,
+									success:function(rtn) {
+										if(rtn.success) {
+											financeiroFluxoCategoriasLista();
+											$('.js-asFinanceiroFluxoCategorias-id_categoria').val(0);
+											$('.js-asFinanceiroFluxoCategorias-titulo').val('');
+										} else {
+											let error = rtn.error ? rtn.error : 'Algum erro ocorreu durante o registro da Categoria. Tente novamente!';
+											swal({title: "Erro!", text: error, type:"error", confirmButtonColor: "#424242"});
 										}
-										?>
-									</select>
-								</dd>
-							</dl>
-							<dl class="dl2">
-								<dt>Bandeira</dt>
-								<dd>
-									<select class="js-creditoBandeira js-tipoPagamento">
-										<option value="">selecione</option>
-										<?php
-										foreach ($creditoBandeiras as $id_operadora => $x) {
-											echo '<optgroup label="' . utf8_encode($x['titulo']) . '">';
-											foreach ($x['bandeiras'] as $band) {
-												echo '<option value="' . $band['id_bandeira'] . '" data-id_operadora="' . $id_operadora . '" data-semjuros="' . $band['semJuros'] . '" data-parcelas="' . $band['parcelas'] . '" data-taxa="' . $band['taxa'] . '">' . utf8_encode($band['titulo']) . '</option>';
-											}
-											echo '</optgroup>';
+									}
+								}).done(function(){
+									obj.attr('data-loading',0);
+									obj.html(objHTMLAntigo);
+								});
+							}
+						});
+
+						$('.js-financeiroFluxoCategorias-table').on('click','.js-asFinanceiroFluxoCategorias-subcategoria-adicionar',function(){
+							let id_categoria = $(this).attr('data-id');
+							let titulo = $(this).parent().parent().find('.titulo').html();
+						
+							$('.js-asFinanceiroFluxoSubcategorias-categoriaTitulo').val(titulo);
+							financeiroFluxoSubcategoriasLista(id_categoria);
+							
+						});
+
+
+						$('.aside-close-financeiroFluxoSubcategorias').click(function(){
+							$('.aside-close-financeiroFluxoSubcategorias').parent().parent().removeClass("active");
+							$('.aside-close-financeiroFluxoSubcategorias').parent().parent().parent().fadeOut();
+						});
+
+						$('.js-asFinanceiroFluxoSubcategorias-submit').click(function(){
+
+							let titulo = $('.js-asFinanceiroFluxoSubcategorias-titulo').val();
+							let id_categoria = $('.js-asFinanceiroFluxoSubcategorias-id_categoria').val();
+							let id_subcategoria = $('.js-asFinanceiroFluxoSubcategorias-id_subcategoria').val();
+
+							let data = `ajax=subcategoriasPersistir&titulo=${titulo}&id_categoria=${id_categoria}&id_subcategoria=${id_subcategoria}`;
+
+							let obj = $(this);
+							let objHTMLAntigo = $(this).html();
+
+							if(obj.attr('data-loading')==0) {
+
+								obj.attr('data-loading',1);
+								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+
+								$.ajax({
+									type:"POST",
+									data:data,
+									url:baseURLApiAsideFinanceiro,
+									success:function(rtn) {
+										if(rtn.success) {
+											financeiroFluxoSubcategoriasLista(id_categoria);
+											$('.js-asFinanceiroFluxoSubcategorias-id_subcategoria').val(0);
+											$('.js-asFinanceiroFluxoSubcategorias-titulo').val('');
+										} else {
+											let error = rtn.error ? rtn.error : 'Algum erro ocorreu durante o registro da Subcategoria. Tente novamente!';
+											swal({title: "Erro!", text: error, type:"error", confirmButtonColor: "#424242"});
 										}
+									}
+								}).done(function(){
+									obj.attr('data-loading',0);
+									obj.html(objHTMLAntigo);
+								});
+							}
+						})
+					})
+				</script>
 
-										?>
-									</select>
-								</dd>
-							</dl>
-							<dl class="dl2">
-								<dt>Qtd. Parcelas</dt>
-								<dd>
-									<select class="js-parcelas js-tipoPagamento">
-										<option value="">selecione a bandeira</option>
-									</select>
-								</dd>
-							</dl>
+				<!-- Aside Financeiro Fluxo Categorias -->
+				<section class="aside aside-financeiroFluxoCategorias" id="js-aside-financeiroFluxoCategorias">
 
-							<dl>
-								<dt>Valor da Parcela</dt>
-								<dd><label class="js-valorCreditoDebito js-tipoPagamento">R$ 0,00</label></dd>
-							</dl>
+					<div class="aside__inner1">
 
-							<dl>
-								<dt>Taxa (%)</dt>
-								<dd><label class="js-valorCreditoDebitoTaxa js-tipoPagamento">R$ 0,00</label></dd>
-							</dl>
+						<header class="aside-header">
+							<h1>Categorias</h1>
+							<a href="javascript:;" class="aside-header__fechar aside-close-financeiroFluxoCategorias"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+						</header>
 
-						</div>
-						<dl>
-							<dd><label><input type="checkbox" name="juros" class="input-switch  js-aplicar-multas-juros" onclick="//$('.js-multa').toggle();" checked />Aplicar juros e multas</label></dd>
-						</dl>
-						<div class="js-multa" style="display:none;">
-							<div class="colunas4">
-								<dl>
-									<dt>Multa</dt>
-									<dd><label class="js-valorMultas money">R$ 0,0</label></dd>
-								</dl>
-								<dl>
-									<dt>Juros</dt>
-									<dd><label class="js-valorJuros money">R$ 0,00</label></dd>
-								</dl>
-								<dl>
-									<dt>Desconto Juros</dt>
-									<dd class="form-comp"><span>R$</span><input type="text" class="js-descontoMultasJuros money" style="width:100px;" value="0,00" /></dd>
-								</dl>
-								<dl style="font-weight:bold">
-									<dt>Total</dt>
-									<dd><label class="js-TotalaPagar money">R$ 0,00</label></dd>
+						<form method="post" class="aside-content form js-asFinancieroFluxoCategorias-form">
+							<input type="hidden" class="js-asFinanceiroFluxoCategorias-id_categoria" value="0" />
+
+							<section class="filter" style="margin-bottom:0;">
+								<div class="filter-group"></div>
+								<div class="filter-group">
+									<div class="filter-form form">
+										<dl>
+											<dd><button type="button" class="button button_main js-asFinanceiroFluxoCategorias-submit" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+										</dl>
+									</div>								
+								</div>
+							</section>
+
+							<div class=" ">
+								<dl class="">
+									<dt>Categoria</dt>
+									<dd>
+										<input type="text" class="js-asFinanceiroFluxoCategorias-titulo" />
+									</dd>
 								</dl>
 							</div>
-						</div>
-					</section>
-					<section class="js-desconto">
-						<div class="colunas4">
-							<dl>
-								<dt>Valor</dt>
-								<dd class="form-comp"><span>R$</span><input type="text" class="js-valorDesconto money" /></dd>
-							</dl>
-							<dl class="dl3">
-								<dt>Observações</dt>
-								<dd><input type="text" class="js-obs-desconto" /></dd>
-							</dl>
-						</div>
-					</section>
-					<dl style="margin-top:1.5rem;">
-						<dd><button href="javascript:;" class="button button_main js-btn-addBaixa" type="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar</span></button></dd>
-					</dl>
-				</fieldset>
 
-				<fieldset>
-					<legend>FATURAS</legend>
-					<div class="list2 list2_sm">
-						<table class="js-baixas">
-							<tr>
-								<th></th>
-								<th>Data Recebimento</th>
-								<th>Tipo de Baixa</th>
-								<th>Forma/Obs.</th>
-								<th>Valor</th>
-								<th style="width:80px;"></th>
-							</tr>
-						</table>
-					</div>
+							<div class="list2" style="margin-top:2rem;">
+								<table class="js-financeiroFluxoCategorias-table">
+									<thead>
+										<tr>
+											<th>TÍTULO</th>
+											<th style="width:150px;"></th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
 
-				</fieldset>
-
-			</div>
-
-			<!-- Agrupamento de pagamento -->
-			<div class="js-fin js-fin-agrupamento" style="display: none;">
-				<section class="filter"></section>
-				<fieldset>
-					<legend>Agrupamento de Pagamentos</legend>
-
-					<div class="list2">
-						<table>
-							<thead>
-								<tr>
-									<th>Data</th>
-									<th>Plano</th>
-									<th>Valor</th>
-								</tr>
-							</thead>
-							<tbody class="js-subpagamentos">
-
-							</tbody>
-						</table>
-					</div>
-				</fieldset>
-			</div>
-		</form>
-	</div>
-</section>
-<!--ASIDE CONFIRMACAO RECEBER-->
-<section class="aside" id="js-aside-asFinanceiro-receber">
-	<div class="aside__inner1" style="width:600px;">
-
-		<header class="aside-header">
-			<h1 class="js-titulo"></h1>
-			<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
-		</header>
-		<form method="post" class="aside-content form">
-			<input type="hidden" class="js-id_pagamento" value="0" />
-			<!-- Programacao de pagamento -->
-			<div class="js-fin js-fin-programacao" style="display: ;">
-				<section class="filter">
-					<div class="filter-group"></div>
-					<div class="filter-group">
-						<div class="filter-form form">
-							<?php /*<dl>
-								<dd><a href="" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
-							</dl>*/ ?>
-							<dl>
-								<dd><button type="button" class="button button_main js-btn-receber" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Receber</span></button></dd>
-							</dl>
-						</div>
+						</form>
 					</div>
 				</section>
 
 
-				<input type="hidden" class="js-index" />
-				<fieldset>
-					<legend>Confirmação do Pagamento</legend>
-					<div class="colunas3">
-						<dl>
-							<dt>Data do Pagamento</dt>
-							<dd><input type="text" class="js-dataPagamento datecalendar" value="" /></dd>
-						</dl>
+				<!-- Aside Financeiro Fluxo Categorias Subcategorias -->
+				<section class="aside aside-financeiroFluxoSubcategorias" id="js-aside-financeiroFluxoSubcategorias">
+
+					<div class="aside__inner1" style="width:40%">
+
+						<header class="aside-header">
+							<h1>Subcategorias</h1>
+							<a href="javascript:;" class="aside-header__fechar aside-close-financeiroFluxoSubcategorias"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+						</header>
+
+						<form method="post" class="aside-content form js-asFinancieroFluxoCategorias-form">
+							<input type="hidden" class="js-asFinanceiroFluxoCategorias-id_subcategoria" value="0" />
+							<input type="hidden" class="js-asFinanceiroFluxoCategorias-id_categoria" value="0" />
+
+							<section class="filter" style="margin-bottom:0;">
+								<div class="filter-group"></div>
+								<div class="filter-group">
+									<div class="filter-form form">
+										<dl>
+											<dd><button type="button" class="button button_main js-asFinanceiroFluxoSubcategorias-submit" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+										</dl>
+									</div>								
+								</div>
+							</section>
+
+							<div class=" ">
+								<dl class="">
+									<dt>Categoria</dt>
+									<dd>
+										<input type="text" class="js-asFinanceiroFluxoSubcategorias-categoriaTitulo" disabled />
+									</dd>
+								</dl>
+								<dl class="">
+									<dt>Subcategoria</dt>
+									<dd>
+										<input type="text" class="js-asFinanceiroFluxoSubcategorias-titulo" />
+									</dd>
+								</dl>
+							</div>
+
+							<div class="list2" style="margin-top:2rem;">
+								<table class="js-financeiroFluxoSubcategorias-table">
+									<thead>
+										<tr>
+											<th>TÍTULO</th>
+											<th style="width:100px;"></th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+
+						</form>
 					</div>
-					<div class="colunas3">
-
-						<dl>
-							<dt>Vencimento da Parcela</dt>
-							<dd><input type="text" class="js-vencimentoParcela" readonly /></dd>
-						</dl>
-						<dl>
-							<dt>Valor da Parcela</dt>
-							<dd><input type="text" class="js-valorParcela" readonly /></dd>
-						</dl>
-						<dl>
-							<dt>Forma de Pagamento</dt>
-							<dd><input type="text" class="js-formaPagamento" readonly /></dd>
-						</dl>
-
-					</div>
-				</fieldset>
-
-				<fieldset class="js-fieldset-conta">
-					<legend>Conta</legend>
-					<dl>
-						<dd>
-							<select class="js-id_banco">
-								<option value="">-</option>
-								<?php
-								foreach ($_bancos as $x) {
-									//if($x->tipo=="dinheiro") {
-									echo '<option value="' . $x->id . '">' . utf8_encode($x->titulo) . '</option>';
-									//}
-								}
-								?>
-							</select>
-						</dd>
-					</dl>
-
-
-				</fieldset>
-
-			</div>
-
-		</form>
-	</div>
-</section>
-
-<script type="text/javascript">
-	$(function() {
-		// adiciona o calendario quando selecionar a data de vencimento
-		$('.js-vencimento').datetimepicker({
-			timepicker: false,
-			format: 'd/m/Y',
-			scrollMonth: false,
-			scrollInput: false
-		});
-		// quando seleciona a bandeira do cartao
-		$('.js-creditoBandeira').change(function() {
-			$('select.js-parcelas option').remove();
-			if ($(this).val().length > 0) {
-				let parcelas = eval($(this).find('option:checked').attr('data-parcelas'));
-				//alert(parcelas);
-				if ($.isNumeric(parcelas)) {
-					$('select.js-parcelas').append(`<option value="">-</option>`);
-					for (var i = 1; i <= parcelas; i++) {
-						$('select.js-parcelas').append(`<option value="${i}">${i}x</option>`);
-					}
-				} else {
-					$('select.js-parcelas').append(`<option value="">erro</option>`);
-				}
-			} else {
-				$('select.js-parcelas').append(`<option value="">selecione a bandeira</option>`);
+				</section>
+				<?php
 			}
+	?>
 
-		});
-		//quando selecionar a quantidade de parcelas
-		$('.js-parcelas').change(function() {
-			let qtdParcelas = unMoney($(this).val())
-			let valorDigitado = unMoney($('.js-valor').val())
-			if (valorDigitado == undefined) {
-				valorDigitado = unMoney($('.js-saldoPagar').text())
-				$('.js-valor').val(number_format(valorDigitado, 2, ",", "."))
-				if ($('.js-aplicar-multas-juros').prop('checked') == true) {
-					$("input.js-valor").trigger("keyup");
-				}
-			}
-			let valorMulta = unMoney($('.js-valorMultas').text())
-			let valorJuros = unMoney($('.js-valorJuros').text())
-			let valorDesconto = (unMoney($('.js-descontoMultasJuros').val()) != undefined) ? unMoney($('.js-descontoMultasJuros').val()) : 0
-			if ($('.js-aplicar-multas-juros').prop('checked') == false) {
-				valorMulta = 0
-				valorJuros = 0
-			}
-			let valorSomado = (valorDigitado + valorMulta + valorJuros) - valorDesconto
-			let valorParcelas = valorSomado / qtdParcelas
 
-			let id_operadora = $('.js-creditoBandeira option:selected').attr('data-id_operadora')
-			let id_bandeira = $('.js-creditoBandeira option:selected').val()
-			if (_taxaBandeiras[id_operadora] && _taxaBandeiras[id_operadora][id_bandeira] && _taxaBandeiras[id_operadora][id_bandeira][qtdParcelas] && _taxaBandeiras[id_operadora][id_bandeira][qtdParcelas][qtdParcelas] && _taxaBandeiras[id_operadora][id_bandeira][qtdParcelas][qtdParcelas].taxa) {
-				valorTaxa = unMoney(_taxaBandeiras[id_operadora][id_bandeira][qtdParcelas][qtdParcelas].taxa)
-			}
-			$('.js-valorCreditoDebito').text(`R$ ${number_format(valorParcelas, 2, ",", ".")}`)
-			$('.js-valorCreditoDebitoTaxa').text(`${number_format(valorTaxa, 2)}`)
-
-		})
-	});
-</script>
