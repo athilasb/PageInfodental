@@ -91,7 +91,7 @@
 		$sql->consult("ident_financeiro_fluxo", "SUM(valor) as total", "WHERE valor<0 AND id_dividido=0 AND lixo=0 AND pagamento=1 AND id_banco='$id_conta'");
 		$contas_cadastradas[$id_conta]['valor_negativo']=mysqli_fetch_object($sql->mysqry)->total;
 
-		$contas_cadastradas[$id_conta]['balanco'] = $contas_cadastradas[$id_conta]['valor_positivo']-$contas_cadastradas[$id_conta]['valor_negativo'];
+		$contas_cadastradas[$id_conta]['balanco'] = $contas_cadastradas[$id_conta]['valor_positivo']+$contas_cadastradas[$id_conta]['valor_negativo'];
 		$contas_cadastradas[$id_conta]['classe'] = ($contas_cadastradas[$id_conta]['balanco']>0)?'valores-positivos':'valores-negativos';
 	}
 	//pegando valor a receber hoje
@@ -104,7 +104,7 @@
 	$sql->consult("ident_financeiro_fluxo", "SUM(valor) as total", "WHERE data_vencimento<'$data_hoje' AND valor<0 AND id_dividido=0 AND lixo=0 AND pagamento=0");
 	$valor['contasVencidas'] = mysqli_fetch_object($sql->mysqry)->total;
 
-	//debug($contas_cadastradas,true)
+//	debug($contas_cadastradas,true)
 ?>
 
 <head>
