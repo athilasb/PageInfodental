@@ -18,6 +18,7 @@
 	$extras = array();
 	$_recebimentos = array();
 	$_fluxos = array();
+	$contas_cadastradas = array();
 	$valor = array(
 		"valorTotal" => 0,
 		"definirPagamento" => 0,
@@ -26,6 +27,11 @@
 		"aPagarHoje" => 0,
 		"contasVencidas" => 0,
 	);
+	//pegando bancos e contas
+	$sql->consult("ident_financeiro_bancosecontas","*","WHERE lixo=0");
+	while($x=mysqli_fetch_object($sql->mysqry)){
+		$_contas_cadastradas[$x->id] = $x;
+	}
 	//pegando valores promessa de pagamento e vencidos
 	$sql->consult("ident_financeiro_fluxo_recebimentos","*","WHERE lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)){
@@ -73,20 +79,32 @@
 				$valor['definirPagamento']+=$recebimento->valor;
 				$extras['ids']['definirPagamento']['recebimento'][$recebimento->id] = $recebimento->id;
 			}
+
+			
 		}
-		// debug($recebimento);
-		// debug($_fluxos[$id_recebimento], true);
+	}
+	foreach($_contas_cadastradas as $id_conta=>$conta){
+		$contas_cadastradas[$id_conta]['id']=$id_conta;
+		$contas_cadastradas[$id_conta]['titulo']=$conta->titulo;
+		$sql->consult("ident_financeiro_fluxo", "SUM(valor) as total", "WHERE valor>0 AND id_dividido=0 AND lixo=0 AND pagamento=1 AND id_banco='$id_conta'");
+		$contas_cadastradas[$id_conta]['valor_positivo']=mysqli_fetch_object($sql->mysqry)->total;
+		$sql->consult("ident_financeiro_fluxo", "SUM(valor) as total", "WHERE valor<0 AND id_dividido=0 AND lixo=0 AND pagamento=1 AND id_banco='$id_conta'");
+		$contas_cadastradas[$id_conta]['valor_negativo']=mysqli_fetch_object($sql->mysqry)->total;
+
+		$contas_cadastradas[$id_conta]['balanco'] = $contas_cadastradas[$id_conta]['valor_positivo']-$contas_cadastradas[$id_conta]['valor_negativo'];
+		$contas_cadastradas[$id_conta]['classe'] = ($contas_cadastradas[$id_conta]['balanco']>0)?'valores-positivos':'valores-negativos';
 	}
 	//pegando valor a receber hoje
 	$sql->consult("ident_financeiro_fluxo", "SUM(valor) as total", "WHERE data_vencimento='$data_hoje' AND valor>0 AND id_dividido=0 AND lixo=0 AND pagamento=0");
-	$valor['aReceberHoje'] = $x = mysqli_fetch_object($sql->mysqry)->total;
+	$valor['aReceberHoje'] = mysqli_fetch_object($sql->mysqry)->total;
 	//pegando valor a pagar hoje
 	$sql->consult("ident_financeiro_fluxo", "SUM(valor) as total", "WHERE data_vencimento='$data_hoje' AND valor<0 AND id_dividido=0 AND lixo=0 AND pagamento=0");
-	$valor['aPagarHoje'] = $x = mysqli_fetch_object($sql->mysqry)->total;
+	$valor['aPagarHoje'] =  mysqli_fetch_object($sql->mysqry)->total;
 	// pegando as contas vencidas
 	$sql->consult("ident_financeiro_fluxo", "SUM(valor) as total", "WHERE data_vencimento<'$data_hoje' AND valor<0 AND id_dividido=0 AND lixo=0 AND pagamento=0");
-	$valor['contasVencidas'] = $x = mysqli_fetch_object($sql->mysqry)->total;
-	//debug($valor, true);
+	$valor['contasVencidas'] = mysqli_fetch_object($sql->mysqry)->total;
+
+	//debug($contas_cadastradas,true)
 ?>
 
 <head>
@@ -148,11 +166,18 @@
 					</div>
 					<div class="container">
 						<div class="titulo">
-							<h2>Contas cadastradas (4)</h2>
+							<h2>Contas cadastradas (<?=count($contas_cadastradas)?>)</h2>
+							<?php 
+								foreach($contas_cadastradas as $id=>$conta){
+							?>
+								<div class="itens"> <span class="bancos"><?=$conta['titulo']?></span> <span class="<?=$conta['classe']?>">R$ <?=number_format($conta['balanco'], 2, ',', '.')?></span></div>
+
+							<?php 
+								}
+							?>
+							<!-- <div class="itens"> <span class="bancos">Banco santader</span> <span class="valores-positivos">+ R$ 10.000,00</span></div>
 							<div class="itens"> <span class="bancos">Banco santader</span> <span class="valores-negativos">- R$ 10.000,00</span></div>
-							<div class="itens"> <span class="bancos">Banco santader</span> <span class="valores-positivos">+ R$ 10.000,00</span></div>
-							<div class="itens"> <span class="bancos">Banco santader</span> <span class="valores-negativos">- R$ 10.000,00</span></div>
-							<div class="itens"> <span class="bancos">Banco santader</span> <span class="valores-positivos">+ R$ 10.000,00</span></div>
+							<div class="itens"> <span class="bancos">Banco santader</span> <span class="valores-positivos">+ R$ 10.000,00</span></div> -->
 						</div>
 
 					</div>
