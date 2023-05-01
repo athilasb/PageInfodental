@@ -2063,7 +2063,9 @@
 				<form method="post" class="aside-content form">
 					<input type="hidden" class="js-id_pagamento" value="0" />
 					<input type="hidden" class="js-index" />
+
 					<textarea id='splits-pagamentos' style='display:none'></textarea>
+
 					<!-- Programacao de pagamento -->
 					<div class="js-fin js-fin-programacao">
 						<fieldset style="padding:.75rem 1.5rem;">
@@ -2087,6 +2089,7 @@
 											<select name="id_beneficiario" class="select2 obg-0 ajax-id_paciente" disabled>
 												<option value="">Buscar Beneficiario...</option>
 											</select>
+											
 											<a href="javascript:;" class="js-btn-aside button" data-aside="paciente" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
 										</dd>
 									</dl>
@@ -2136,25 +2139,34 @@
 								</section>
 								<dl class="dl2" id='split-false-centro-custo'>
 									<dt>Centro de Custo</dt>
-									<select name="id_centro_de_custo" class="select2">
-										<option value="0">-</option>
-										<?php foreach ($centrodecustos as $id => $c) : ?>
-											<option value="<?= $id ?>"><?= $c['titulo'] ?></option>
-										<?php endforeach; ?>
-									</select>
+									<dd>
+										<select name="id_centro_de_custo" class="select2">
+											<option value="0">-</option>
+											<?php 
+											foreach ($centrodecustos as $id => $c) { 
+												?>
+												<option value="<?= $id ?>"><?= $c['titulo'] ?></option>
+												<?php
+											}
+											?>
+										</select>
+									</dd>
 								</dl>
 								<dl class="dl2" id='split-false-categorias'>
 									<dt>Categoria</dt>
-									<select name="id_categoria" class="select2">
-										<option value="0">-</option>
-										<?php foreach ($categorias as $id => $cat) : ?>
-											<optgroup label="<?= $cat['titulo'] ?>">
-												<?php foreach ($cat['subcategorias'] as $id_sub => $sub) : ?>
-													<option value="<?= $id_sub ?>"><?= $sub['titulo'] ?></option>
-												<?php endforeach; ?>
-											</optgroup>
-										<?php endforeach; ?>
-									</select>
+									<dd >
+										<select name="id_categoria" class="select2">
+											<option value="0">-</option>
+											<?php foreach ($categorias as $id => $cat) { ?>
+												<optgroup label="<?= $cat['titulo'] ?>">
+													<?php foreach ($cat['subcategorias'] as $id_sub => $sub) : ?>
+														<option value="<?= $id_sub ?>"><?= $sub['titulo'] ?></option>
+													<?php endforeach; ?>
+												</optgroup>
+											<?php } ?>
+										</select>
+									<a href="javascript:;" class="js-btn-financeiroFluxoCategorias button" data-aside="tag" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a> 
+									</dd>
 								</dl>
 							</div>
 							<fieldset class="js-fieldset-pagamentos-splits" style="display:none">
