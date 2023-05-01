@@ -1158,12 +1158,13 @@
 	}
 	//quando possui pagamentos salvos ele persiste as info
 	const PossuiPagamentosSalvos = () => {
-		$('.js-tipo-manual').hide();
-		$('.js-tipo-politica').hide();
+		if(tipoFinaneiroPadrao=='politica'){
+			$('.js-tipo-manual').hide();
+		}else if(tipoFinaneiroPadrao=='manual'){
+			$('.js-tipo-politica').hide();
+		}
 		pagamentosListar(3);
 		if (contrato.pagamentos.length > 0) {
-			$('.js-creditoBandeira').closest('dl').show();
-			$('.js-parcelas').closest('dl').show();
 			let valorPagamentos = 0
 			pagamentos.forEach(x => {
 				let disabledData = 'null'
@@ -1751,7 +1752,7 @@
 							</div>
 						</section>
 						<?php if ($tratamentoAprovado === false) : ?>
-							<dl style="margin-bottom:2rem">
+							<dl style="margin-bottom:2rem" id='dl-tipo_financeiro'>
 								<dd>
 									<label><input type="radio" name="tipo_financeiro" value="politica" onclick="alternaManualPolitica('politica')" <?= (is_object($cnt) and $cnt->tipo_financeiro == "politica") ? " checked" : ""; ?> /> Política de pagamento</label>
 									<label><input type="radio" name="tipo_financeiro" value="manual" onclick="alternaManualPolitica('manual')" <?= (is_object($cnt) and $cnt->tipo_financeiro == "manual") ? " checked" : ""; ?> /> Financeiro manual</label>

@@ -87,6 +87,7 @@ if (isset($_POST['ajax'])) {
 		});
 		valorOriginalProcedimentos = valorTotal
 		valorDescontos = descontos
+	
 		for (let x in _politicas) {
 			let politica = _politicas[x]
 			if ((politica.tipo_politica == 'intervalo' && (valorOriginalProcedimentos - descontos) >= parseFloat(politica.de) && (valorOriginalProcedimentos - descontos) <= parseFloat(politica.ate)) || (politica.tipo_politica == 'acima' && (valorOriginalProcedimentos - descontos) >= parseFloat(politica.de))) {
@@ -103,7 +104,10 @@ if (isset($_POST['ajax'])) {
 				temPolitica = false
 			}
 		}
-
+		if(_politicas.length<=0){
+			$('#dl-tipo_financeiro').hide();
+			tipoFinaneiroPadrao = 'manual'
+		}
 		//$('.js-valorTotal').text(number_format(valorTotal,2,",","."));
 		let parcelas = [];
 		if (atualizarParcelas === true) {
@@ -570,7 +574,7 @@ if (isset($_POST['ajax'])) {
 		$(obj).find('.js-identificador,.js-parcelas,.js-creditoBandeira,.js-debitoBandeira,.js-debitoBandeira,.js-valorCreditoDebito,.js-obs,.js-valorCreditoDebitoTaxa').parent().parent().hide();
 
 		if (id_formadepagamento == "2") {
-			$(obj).find('.js-listar-parcelas,.js-creditoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
+			$(obj).find('.js-listar-parcelas,.js-creditoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador,.js-parcelas').parent().parent().show();
 		} else if (id_formadepagamento == "3") {
 			$(obj).find('.js-debitoBandeira,.js-valorCreditoDebito,.js-valorCreditoDebitoTaxa,.js-identificador').parent().parent().show();
 		} else {
@@ -1158,7 +1162,6 @@ if (isset($_POST['ajax'])) {
 					item.quantitativo = eval(quantitativo);
 					item.desconto = 0;
 					item.taxas = 0;
-					console.log(item)
 					// Data e Usuario
 					let dt = new Date();
 					let dia = dt.getDate();
@@ -1188,10 +1191,6 @@ if (isset($_POST['ajax'])) {
 					// Faces, Quantitativo ou Hof (id_regiao=5)
 					faces = [];
 					hof = '';
-					// console.log('-------------------------------------')
-					// console.log(valor)
-					// console.log(hof)
-					// console.log('-------------------------------------')
 					if (face == 1) {
 						$(`.aside-plano-procedimento-adicionar select.js-regiao-${id_regiao}-select option:selected:eq(${i})`).each(function(index, el) {
 							let id_opcao = $(el).val();
@@ -1231,6 +1230,9 @@ if (isset($_POST['ajax'])) {
 
 			if (temPolitica.parcelasParametros) {
 				$('[name="tipo_financeiro').filter("[value='politica']").prop("checked", true);
+			}else{
+				$('.js-pagamentos-quantidade').val(($('.js-pagamentos-quantidade').val() > 0) ? $('.js-pagamentos-quantidade').val() : 1)
+				atualizaValor(true)
 			}
 
 
