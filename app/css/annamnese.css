@@ -130,8 +130,19 @@
   display: block;
   border-radius: 10px;
   margin-bottom: 10px;
-  width: 60% !important;
+  max-width: 380px;
+  min-width: 100px;
+  width: 100%;
   margin: auto;
+  margin-bottom: 30px;
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  color: #344848;
+  
+
 }
 
 .dados-pessoais tbody{
@@ -144,9 +155,154 @@
   justify-content: space-between;
   width: 100%;
 }
+.dados-pessoais b {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 16px;
+  color: #344848;
+}
 
 .print-table {
   width: 80% !important;
   margin: 0 auto !important;
 }
-/* input */
+
+.pergunta-form{
+  padding: 10px;
+  max-width: 546px;
+  min-width: 100px;
+  width: 100%;
+  text-align: left;
+  background: #344848;
+  border-radius: 10px;
+  color: #fff;
+  font-family: 'Manrope';
+  font-style: normal;
+}
+
+.resposta-form{
+  margin-top: 10px;
+}
+
+.page-form{
+  max-width: 584px;
+  min-width: 100px;
+  width: 100%;
+  margin: auto;
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;  
+  color: #344848;
+}
+
+
+.resposta-form, .resposta-form + p {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 19px;
+  color: #344848;
+  margin-bottom: 5px;
+  margin-left: 10px;
+}
+
+
+.box-border{
+  border: 1px solid #E7E7E7;
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 35px;
+  margin-bottom: 20px;
+  font-family: 'Manrope';
+  font-style: normal;
+  font-size: 14px;
+  line-height: 19px;
+  color: #344848;
+
+}
+
+.margin-top-20 {
+  margin-top: 20px;
+}
+
+.assinatura-data{
+  margin-bottom: 50px;
+  display: block;
+}
+
+.display-flex-space-around {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.display-flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.border-bottom{
+  border-bottom: 1px solid #344848;
+}
+
+.assinaturas{
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 14px;
+  color: #344848;
+}
+
+.assinaturas b {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 10px;
+  line-height: 14px;
+  color: #344848;
+}
+
+.font14{
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 19px;
+  color: #344848;
+}
+
+.text-center{
+  text-align: center;
+}
+
+.historico{
+  font-family: 'Manrope';
+  font-style: normal;
+  font-size: 10px;
+  line-height: 14px;
+  color: #344848;
+}
+
+.historico tr{
+  display: block;
+  margin-bottom: 20px;
+}
+
+.icon-historico{
+  width: 60px;
+}
+
+.historico-titulo{
+  margin: 50px 0px;
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 19px;
+  color: #344848;
+}
