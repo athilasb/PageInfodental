@@ -167,7 +167,7 @@
 <script defer type="text/javascript" src="js/jquery.mobilePhoneNumber.js"></script>
 <script type="text/javascript" src="js/jquery.sweetalert.js"></script>
 <script type="text/javascript" src="js/jquery.validacao.js"></script>
-<script type="text/javascript" src="js/jquery.funcoes.js?v1"></script>
+<script type="text/javascript" src="js/jquery.funcoes.js?v2"></script>
 <script type="text/javascript" src="ckeditor/ckeditor.js"></script>
 <script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
 <script type="text/javascript" src="js/moment.js"></script>

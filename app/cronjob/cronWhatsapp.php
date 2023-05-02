@@ -2,7 +2,7 @@
 	//require_once("../lib/conf.php");
 	//require_once("../lib/classes.php");
 
-	echo getcwd()."\n\n";
+	//echo getcwd()."\n\n";
 	require_once("/var/www/html/lib/conf.php");
 	require_once("/var/www/html/lib/classes.php");
 
@@ -21,6 +21,8 @@
 		else echo "Erro: $wts->erro";
 		die();
 	}
+
+
 
 	# Envia confirmacao de 24-48h para agendamentos realizados a menos de 7 dias (id_tipo=1)
 		echo "<h1>Lembrete de 23h-24h</h1>";
@@ -197,6 +199,35 @@
 				else echo "erro: ".$wts->erro;
 			}
 		}
+
+	# Desativação de Espera de resposta para Confirmação de Mensagem
+		echo "<h1>Desativação de espera para confirmação de agendamento (id_tipo=12)</h1>";
+		$sql->consult($_p."whatsapp_mensagens","*","where data>='2023-04-27 00:00:00' and data < NOW() - INTERVAL 4 HOUR and webhook_desativado=0 and lixo=0 and enviado=1 and data_enviado>'0000-00-00 00:00:00'");
+		if($sql->rows) {
+			$webhookVencidos=[];
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$webhookVencidos[]=$x;
+			}
+
+			foreach($webhookVencidos as $x) {
+
+				echo "ID Wts: $x->id | ID Agenda: $x->id_agenda<br />";
+				$attr=array('id_tipo'=>12,
+								'id_paciente'=>$x->id_paciente,
+								'id_agenda'=>$x->id_agenda,
+								'cronjob'=>1);
+
+				if($wts->adicionaNaFila($attr)) {
+					$sql->update($_p."whatsapp_mensagens","webhook_desativado=1,webhook_expirado_inoperacao=now()","where id=$x->id");
+					echo "Sucesso!";
+				}
+				else echo "Erro: ".$wts->erro;
+				echo "<hr>";
+			}
+		} else echo "Nehuma mensagem de confirmação de agendamento expirada";
+
+
+
 
 	# Dispara
 		// 2023-03-20: removido pois nao precisa mais disparar pois ja cadastra na fila do rabbitmq

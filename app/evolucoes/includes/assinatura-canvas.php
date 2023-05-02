@@ -8,9 +8,6 @@
 				// se foi assinado
 				if(is_object($assinatura)) {
 					?>
-					<div style="color:green;font-size: 15px;text-align: center;">
-						<span class="iconify" data-icon="icon-park-solid:success"></span> Documento assinado em <?php echo date('d/m/Y H:i',strtotime($assinatura->data));?>
-					</div>
 					<?php
 				}	
 
@@ -21,33 +18,38 @@
 					<div style="display:<?php echo $evolucaoProntoParaAssinatura==true?"block":"none";?>">
 
 						<div class="sign-form-status">
-							<h1 style="background:var(--laranja);padding:5px;text-align: center;">
+							<h1 style="    background: var(--cinza4); padding: 5px; color: var(--branco); text-align: center;">
 								<strong>Aguardando Assinatura</strong>
 							</h1>
 						</div>
 
 						<div class="form sign-form-canva js-passo2">
-							<p>Faça a assinatura eletrônica na caixa abaixo:</p>
+							<p class="text-assinatura">Faça a assinatura eletrônica na caixa abaixo:</p>
 
-							<canvas id="canvas" style="width: 100%;border: solid 1px #CCC" >
+							<canvas id="canvas" style="width: 100%; border: 1px solid #E7E7E7; box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);" >
 								<p> painel de assinatura </p>
 							</canvas>
 
-							<div class="colunas">
+							<div class="colunas" style="margin-top:35px; margin-bottom:35px;">
+								
 								<dl>
-									<dt>CPF</dt>
-									<dd><input maxlength="14" type="tel" class="js-sign-cpf cpf" /></dd>
+									<dd class="form-comp">
+										<span><i class="iconify" data-icon="mdi:file-document-outline" style="color:var(--cor-base);"></i></span>
+										<input placeholder="CPF" maxlength="14" type="text" class="js-sign-cpf cpf js-cpf" />
+									</dd>
 								</dl>
-								<dl>
-									<dt>Data de Nascimento</dt>
-									<dd><input maxlength="10" type="tel" class="js-sign-dn dn" /></dd>
+								<dl >
+									<dd class="form-comp">
+										<span><i class="iconify" data-icon="material-symbols:calendar-month" style="color:var(--cor-base);"></i></span>
+										<input placeholder="Data Nascimento" maxlength="10" type="text" class="js-sign-dn js-dn dn"/>
+									</dd>
 								</dl>
 							</div>
 
 							<center>
-								<a href="javascript:;" data-loading="0" class="button js-sign-concluir"><span class="iconify" data-icon="mdi:file-sign"></span> Assinar</a>
+								<a href="javascript:;" data-loading="0" class="button js-sign-concluir bottom-assinar"><span class="iconify" data-icon="mdi:file-sign"></span> Assinar</a>
 
-								<a href="javascript:;" class="button button_lg button_full" id="canvas-clear"><i class="iconify" data-icon="fluent:eraser-24-regular"></i><span> Apagar</span></a>
+								<a href="javascript:;" class="button button_lg button_full bottom-apagar" id="canvas-clear"><i class="iconify" data-icon="fluent:eraser-24-regular"></i><span> Apagar</span></a>
 							</center>
 	                        
 							
