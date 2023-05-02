@@ -4,6 +4,7 @@ var baseURLApiAsidePaciente = 'includes/api/apiAsidePaciente.php';
 var baseURLApiAsidePlanoDeTratamento = 'includes/api/apiAsidePlanoDeTratamento.php';
 var baseURLApiAsidePagamentos = 'includes/api/apiAsidePagamentos.php';
 var baseURLApiAsideArquivos = 'includes/api/apiAsideArquivos.php';
+var baseURLApiAsideFinanceiro = 'includes/api/apiAsideFinanceiro.php';
 
 function d2(num) {
 	return num > 9 ? num : `0${num}`;

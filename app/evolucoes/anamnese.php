@@ -66,10 +66,13 @@
 
 			if(empty($erro)) {
 
-				$sql->update($_p."pacientes_evolucoes","enviarLinkFinalizado=now()","where id=$evolucao->id");
-				generatePDF($evolucao->id);
+				if(generatePDF($evolucao->id)) {
+					$sql->update($_p."pacientes_evolucoes","enviarLinkFinalizado=now()","where id=$evolucao->id");
+					$rtn=array('success'=>true);
+				} else {
+					$rtn=array('success'=>false,'error'=>'Não foi possível finalizar a anamnese.');
+				}
 
-				$rtn=array('success'=>true);
 
 
 			} else {
@@ -418,6 +421,7 @@
 														type:"POST",
 														data:data,
 														success:function(rtn) {
+
 															if(rtn.success) {
 																document.location.reload();
 
@@ -523,7 +527,7 @@
 													?>
 													<tr>
 														<td class="js-td" data-id_pergunta="<?php echo $pergunta->id;?>">
-															<p><strong class="js-pergunta-<?php echo $pergunta->id;?>"><?php echo utf8_encode($p->pergunta);?></strong></p>
+															<p><strong class="js-pergunta-<?php echo $pergunta->id;?>"><?php echo utf8_encode($p->pergunta).($pergunta->obrigatorio==1?"*":"");?></strong></p>
 															<p>
 																<dl class="">
 																	
