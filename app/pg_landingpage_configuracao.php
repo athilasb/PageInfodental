@@ -112,6 +112,14 @@
 
 					<?php
 					require_once("includes/submenus/subLandingPage.php");
+
+					if(isset($_GET['deleta']) and is_numeric($_GET['deleta'])) {
+						$vSQL="lixo=1";
+						$vWHERE="where id=$landingpage->id";
+						$sql->update($_table,$vSQL,$vWHERE);
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='delete',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='$_table',id_reg='$landingpage->id'");
+						$jsc->go("pg_landingpage.php");
+					}
 					?>
 					<div class="box-col__inner1">
 
@@ -119,6 +127,9 @@
 							<div class="filter-group"></div>
 							<div class="filter-group">
 								<div class="filter-form form">
+									<dl>
+										<dd><a href="<?php echo "pg_landingpage_configuracao.php?id_landingpage=$landingpage->id&deleta=$landingpage->id";?>" class="button js-confirmarDeletar"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
+									</dl>
 									<dl>
 										<dd><a href="javascript:;" class="button button_main js-submit"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></a></dd>
 									</dl>
