@@ -67,27 +67,22 @@
     </table>
 </header>
 
-
-
 <table class="dados-pessoais">
         <tbody>
-            <tr>
-              <td ><b><?php echo utf8_encode($paciente->nome);?></b> </td>
-              <td class="text-right"><span class="iconify" data-icon="mdi:file-document-outline"></span><?php $cpf = utf8_encode($paciente->cpf); $cpf_formatado = preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $cpf);echo $cpf_formatado;?>
-</td>
-             
-            </tr>    
-            <tr  class=>
-                <td><?php echo $idade>1?"$idade anos":"$idade";?></td> 
-                <td class="text-right"><span class="iconify" data-icon="bxs:phone"></span><?php echo maskTelefone($paciente->telefone1);?></td>
-              </tr> 
-          </tbody>
+			<tr>
+				<td ><b><?php echo utf8_encode($paciente->nome);?></b> </td>
+				<td class="text-right"><span class="iconify" data-icon="mdi:file-document-outline"></span><?php $cpf = utf8_encode($paciente->cpf); $cpf_formatado = preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $cpf);echo $cpf_formatado;?></td>   
+			</tr>    
+			<tr>
+				<td><?php echo $idade>1?"$idade anos":"$idade";?></td> 
+				<td class="text-right"><span class="iconify" data-icon="bxs:phone"></span><?php echo maskTelefone($paciente->telefone1);?></td>
+			</tr> 
+	</tbody>
 </table>
 
 <div class="page-form">
 	<section>
 		<table>
-
 			<?php
 			foreach($_anamnesePerguntas as $p) {
 				$pergunta=json_decode($p->json_pergunta);
@@ -137,7 +132,6 @@
 					<td><b>CRO</b></td>
 					<td><b>UF</b></td>
 				</tr>
-	
 				<tr>
 					<td>Eliabio da Silva Pereira</td>
 					<td>15656</td>
@@ -180,7 +174,6 @@
 			</tr>
 		</table>
 	</section>
-
 	<section> <div class="historico-titulo">Histórico do documento</div></section>
 	<section class="historico">
 		<table > 
