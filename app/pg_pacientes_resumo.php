@@ -71,6 +71,10 @@
 
 	include "includes/header.php";
 	include "includes/nav.php";
+	if($usr->tipo!="admin" and !in_array("pacientes",$_usuariosPermissoes)) {
+		$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
+		die();
+	}
 
 	$values=$adm->get($_GET);
 	$campos=explode(",","nome,situacao,sexo,foto_cn,rg,rg_orgaoemissor,rg_uf,cpf,data_nascimento,profissao,estado_civil,telefone1,telefone1_whatsapp,telefone1_whatsapp_permissao,telefone2,email,instagram,instagram_naopossui,musica,indicacao_tipo,indicacao,cep,endereco,numero,complemento,bairro,estado,cidade,id_cidade,responsavel_possui,responsavel_nome,responsavel_sexo,responsavel_rg,responsavel_rg_orgaoemissor,responsavel_rg_estado,responsavel_datanascimento,responsavel_estadocivil,responsavel_cpf,responsavel_profissao,responsavel_grauparentesco,preferencia_contato,estrangeiro,estrangeiro_passaporte,lat,lng,responsavel_estado_civil");
@@ -296,7 +300,21 @@
 					</div>
 					<div>
 						<i class="iconify" data-icon="ph:phone-call-bold"></i>
-						<h1><?php echo empty($paciente->telefone1)?"-":maskTelefone($paciente->telefone1);?></h1>
+						<h1>
+							<?php echo empty($paciente->telefone1)?"-":maskTelefone($paciente->telefone1);?>
+							<?php
+							if(!empty($paciente->telefone1)) {
+							?>
+							<br />
+							<a href="https://wa.me/55<?php echo $paciente->telefone1;?>" style="font-size:12px;color:var(--verde)" target="_blank"><b>Abrir Web Whatsapp</b></a>
+							<?php	
+							}
+							?>
+						</h1>
+
+					</div>
+					<div>
+						
 					</div>
 					<div>
 						<i class="iconify" data-icon="fluent:target-arrow-20-filled"></i>
@@ -313,9 +331,19 @@
 					$sql->consult($_p."agenda","id,id_status,agenda_duracao,id_cadeira,profissionais,agenda_data,id_status,lixo","where id_paciente=$paciente->id and lixo=0");
 					$agendamentos=$sql->rows;
 					$agendamentosAtendidos=$agendamentosDesmarcados=$agendamentosFaltou=$agendamentosAtendidosDuracao=0;
+					$agendamentosAtendidosParaPercentual=0;
 					$listaAtendimentosPaciente = [];
 					while($x=mysqli_fetch_object($sql->mysqry)) {
 						if($x->id_status==5) {
+
+							// verifica a quantidade de profissionais
+							$aux = explode(",",$x->profissionais);
+							$qtdProfissionais=0;
+							foreach($aux as $p) {
+								if(!empty($p) and is_numeric($p)) $qtdProfissionais++;
+							}
+
+							$agendamentosAtendidosParaPercentual+=$qtdProfissionais;
 							$agendamentosAtendidos++;
 							$listaAtendimentosPaciente[]=$x;
 							$agendamentosAtendidosDuracao+=$x->agenda_duracao;
@@ -419,15 +447,14 @@
 											$labelDentistas[]=utf8_encode($profissional->nome);
 										}
 										$qtd = (isset($grProfissionais[$profissional->id]['qtd']))?$grProfissionais[$profissional->id]['qtd']+1:1;
-										$perc=number_format((($qtd/$agendamentosAtendidos)*100),1,".","");
+										$perc=number_format((($qtd/$agendamentosAtendidosParaPercentual)*100),1,".","");
 										if(!in_array($profissional->calendario_cor,$labelDentistasCor)){
 											$labelDentistasCor[]=$profissional->calendario_cor;
 										}
-										$grProfissionais[$profissional->id]=array(
-											'id'=>$profissional->id,
-											'nome'=>utf8_encode($profissional->nome),
-											'qtd'=>$qtd,
-											'perc'=>$perc);
+										$grProfissionais[$profissional->id]=array('id'=>$profissional->id,
+																					'nome'=>utf8_encode($profissional->nome),
+																					'qtd'=>$qtd,
+																					'perc'=>$perc);
 									}
 								}
 							}

@@ -7,7 +7,7 @@
 		'inteligencia' => array(
 			'page' => 'pg_inteligencia.php',
 			'pages' => explode(",", 'pg_inteligencia.php,pg_inteligencia_pacientes.php,pg_inteligencia_pacientesnovos.php,pg_inteligencia_controledeexames.php'),
-			'title' => 'Dashboard',
+			'title' => 'Tarefas Inteligência',
 			'icon' => '<i class="iconify" data-icon="fluent:lightbulb-filament-20-regular"></i>'
 		),
 		'agenda' => array(
@@ -18,13 +18,13 @@
 		),
 		'pacientes' => array(
 			'page' => 'pg_pacientes.php',
-			'pages' => explode(',', 'pg_pacientes.php,pg_pacientes_dadospessoais.php,pg_pacientes_resumo.php,pg_pacientes_kanban.php,pg_pacientes_prontuario.php'),
+			'pages' => explode(',', 'pg_pacientes.php,pg_pacientes_dadospessoais.php,pg_pacientes_resumo.php,pg_pacientes_kanban.php,pg_pacientes_prontuario.php,pg_pacientes_whatsapp.php'),
 			'title' => 'Pacientes',
 			'icon' => '<i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular"></i>'
 		),
 		'financeiro' => array(
 			'page' => 'pg_clinica_financeiro.php',
-			'pages' => explode(",", "pg_clinica_financeiro.php"),
+			'pages' => explode(",", "pg_clinica_financeiro.php,pg_financeiro_contasareceber.php"),
 			'title' => 'Financeiro',
 			'icon' => '<i class="iconify" data-icon="ph:currency-circle-dollar-light"></i>'
 		),
@@ -68,6 +68,8 @@
 		<div class="nav-buttons">
 			<?php
 			foreach ($_menu as $session => $params) {
+
+				if($usr->tipo=="moderador" and !in_array($session,$_usuariosPermissoes)) continue;
 				$spanWts = '';
 				if ($session == "whatsapp") {
 					if (is_object($_wts)) $spanWts = '<span class="nav-buttons__indicator" style="background-color:var(--verde);"></span><span class="nav-buttons__legenda">WhatsApp (conectado)</span>';

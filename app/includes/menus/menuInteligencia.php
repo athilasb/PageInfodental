@@ -13,5 +13,5 @@
 	<?php /*<a href="pg_inteligencia_relacionamento.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesInteligenciaRelacionamento)?' class="active"':'';?>>Relacionamento</a>*/?>
 	<?php /*<a href="pg_inteligencia_analytics.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesInteligenciaAnalytics)?' class="active"':'';?>>Analytics</a>*/?>
 	<a href="pg_inteligencia_pacientesnovos.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesInteligenciaPacientesNovos)?' class="active"':'';?>>Pacientes Novos</a>	
-	<a href="pg_inteligencia_controledeexames.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesInteligenciaControleDeExames)?' class="active"':'';?>>Controle de Exames</a>						
+	<a href="pg_inteligencia_controledeexames.php"<?php echo in_array(basename($_SERVER['PHP_SELF']),$pagesInteligenciaControleDeExames)?' class="active"':'';?>>Controle de Exames</a>			
 </section>

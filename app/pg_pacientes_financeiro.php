@@ -209,206 +209,220 @@ foreach ($registros as $x) {
 ?>
 
 <script type="text/javascript">
-	var baixas = [];
-	const _clinica = <?= json_encode($_clinica) ?>;
+var baixas = [];
+const _clinica = <?= json_encode($_clinica) ?>;
 </script>
 
 <script type="text/javascript">
-	var _pagamentosList = [];
-	
+var _pagamentosList = [];
 
-	$(function() {
-		<?php
+
+$(function() {
+    <?php
 		if (isset($_GET['unirPagamentos'])) {
 		?>
-			$('.js-btn-unirPagamentos').click(function() {
-				let dataVencimento = $('.js-dataVencimento').val();
-				if (dataVencimento.length == 0 || !validaData(dataVencimento)) {
-					swal({
-						title: "Erro!",
-						text: "Digite uma data de vencimento válida!",
-						html: true,
-						type: "error",
-						confirmButtonColor: "#424242"
-					});
-				} else if ($('.js-checkbox-pagamentos:checked').length <= 1) {
-					swal({
-						title: "Erro!",
-						text: "Selecione pelo menos 2 pagamentos",
-						html: true,
-						type: "error",
-						confirmButtonColor: "#424242"
-					});
-				} else {
-					let pagamentosIds = $('form.js-form-pagamentos').serialize();
-					let data = `ajax=unirPagamentos&dataVencimento=${dataVencimento}&${pagamentosIds}`;
+    $('.js-btn-unirPagamentos').click(function() {
+        let dataVencimento = $('.js-dataVencimento').val();
+        if (dataVencimento.length == 0 || !validaData(dataVencimento)) {
+            swal({
+                title: "Erro!",
+                text: "Digite uma data de vencimento válida!",
+                html: true,
+                type: "error",
+                confirmButtonColor: "#424242"
+            });
+        } else if ($('.js-checkbox-pagamentos:checked').length <= 1) {
+            swal({
+                title: "Erro!",
+                text: "Selecione pelo menos 2 pagamentos",
+                html: true,
+                type: "error",
+                confirmButtonColor: "#424242"
+            });
+        } else {
+            let pagamentosIds = $('form.js-form-pagamentos').serialize();
+            let data = `ajax=unirPagamentos&dataVencimento=${dataVencimento}&${pagamentosIds}`;
 
-					$.ajax({
-						type: "POST",
-						data: data,
-						success: function(rtn) {
-							if (rtn.success) {
-								document.location.href = '<?= "$_page?$url"; ?>';
-							} else if (rtn.error) {
-								swal({
-									title: "Erro!",
-									text: rtn.error,
-									html: true,
-									type: "error",
-									confirmButtonColor: "#424242"
-								});
-							} else {
-								swal({
-									title: "Erro!",
-									text: "Algum erro ocorreu durante a baixa deste pagamento",
-									html: true,
-									type: "error",
-									confirmButtonColor: "#424242"
-								});
-							}
-						},
-						error: function() {
-							swal({
-								title: "Erro!",
-								text: "Algum erro ocorreu durante a baixa deste pagamento.",
-								html: true,
-								type: "error",
-								confirmButtonColor: "#424242"
-							});
-						}
-					})
-				}
-			});
+            $.ajax({
+                type: "POST",
+                data: data,
+                success: function(rtn) {
+                    if (rtn.success) {
+                        document.location.href = '<?= "$_page?$url"; ?>';
+                    } else if (rtn.error) {
+                        swal({
+                            title: "Erro!",
+                            text: rtn.error,
+                            html: true,
+                            type: "error",
+                            confirmButtonColor: "#424242"
+                        });
+                    } else {
+                        swal({
+                            title: "Erro!",
+                            text: "Algum erro ocorreu durante a baixa deste pagamento",
+                            html: true,
+                            type: "error",
+                            confirmButtonColor: "#424242"
+                        });
+                    }
+                },
+                error: function() {
+                    swal({
+                        title: "Erro!",
+                        text: "Algum erro ocorreu durante a baixa deste pagamento.",
+                        html: true,
+                        type: "error",
+                        confirmButtonColor: "#424242"
+                    });
+                }
+            })
+        }
+    });
 
-			$('.js-checkbox-pagamentos').click(function() {
-				let id_tratamento = $(this).attr('data-id_tratamento');
-				if ($(this).prop('checked') == true) {
-					$('.js-checkbox-pagamentos').hide();
-					$(`.js-checkbox-pagamentos[data-id_tratamento=${id_tratamento}]`).show();
-					$(`.js-checkbox-pagamentos-disabled`).show();
-					$(`.js-checkbox-pagamentos-disabled[data-id_tratamento=${id_tratamento}]`).hide();
-				} else {
-					if ($(`.js-checkbox-pagamentos:checked`).length > 0) {
+    $('.js-checkbox-pagamentos').click(function() {
+        let id_tratamento = $(this).attr('data-id_tratamento');
+        if ($(this).prop('checked') == true) {
+            $('.js-checkbox-pagamentos').hide();
+            $(`.js-checkbox-pagamentos[data-id_tratamento=${id_tratamento}]`).show();
+            $(`.js-checkbox-pagamentos-disabled`).show();
+            $(`.js-checkbox-pagamentos-disabled[data-id_tratamento=${id_tratamento}]`).hide();
+        } else {
+            if ($(`.js-checkbox-pagamentos:checked`).length > 0) {
 
-					} else {
+            } else {
 
-						$('.js-checkbox-pagamentos').show();
-						$(`.js-checkbox-pagamentos-disabled`).hide();
-					}
-				}
-			});
+                $('.js-checkbox-pagamentos').show();
+                $(`.js-checkbox-pagamentos-disabled`).hide();
+            }
+        }
+    });
 
-		<?php
+    <?php
 		} else {
 		?>
-			// Quando clica para abrir o aside
-			$('.js-pagamento-item').click(function() {
-				let id = $(this).attr('data-id');
-				abrirAside('contasAreceber', id)
-			});
+    // Quando clica para abrir o aside
+    $('.js-pagamento-item').click(function() {
+        let id = $(this).attr('data-id');
+        abrirAside('contasAreceber', id)
+    });
 
-		<?php
+    <?php
 		}
 		?>
 
-	});
+});
 </script>
 
 <main class="main">
-	<div class="main__content content">
+    <div class="main__content content">
 
-		<section class="filter">
-			<div class="filter-group">
-				<div class="filter-title">
-					<h1>Ficha do Paciente</h1>
-				</div>
-			</div>
-		</section>
-		<script type="text/javascript">
-			$(function() {
-				$('.js-item').click(function() {
-					let id = $(this).attr('data-id');
-					document.location.href = `pg_pacientes_planosdetratamento_form.php?edita=${id}<?= empty($url) ? "" : "&" . $url; ?>`;
-				})
-			})
-		</script>
-		<section class="grid">
-			<div class="box box-col">
-				<? #php require_once("includes/submenus/subPacientesFichaDoPaciente.php");
+        <section class="filter">
+            <div class="filter-group">
+                <div class="filter-title">
+                    <h1>Ficha do Paciente</h1>
+                </div>
+            </div>
+        </section>
+        <script type="text/javascript">
+        $(function() {
+            $('.js-item').click(function() {
+                let id = $(this).attr('data-id');
+                document.location.href =
+                    `pg_pacientes_planosdetratamento_form.php?edita=${id}<?= empty($url) ? "" : "&" . $url; ?>`;
+            })
+        })
+        </script>
+        <section class="grid">
+            <div class="box box-col">
+                <? #php require_once("includes/submenus/subPacientesFichaDoPaciente.php");
 				?>
-				<div class="box-col__inner1">
+                <div class="box-col__inner1">
 
-					<section class="filter">
-						<div class="filter-group"></div>
-						<div class="filter-group">
-							<div class="filter-form form">
-								<dl>
-									<dd>
-										<!-- <a href="pacientes-plano-form.php" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Nova Cobrança</span></a> -->
-									</dd>
-								</dl>
-							</div>
-						</div>
-					</section>
+                    <section class="filter">
+                        <div class="filter-group"></div>
+                        <div class="filter-group">
+                            <div class="filter-form form">
+                                <dl>
+                                    <dd>
+                                        <!-- <a href="pacientes-plano-form.php" class="button button_main"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Nova Cobrança</span></a> -->
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </section>
 
-					<div class="box">
+                    <div class="box">
 
-						<section class="filter">
-							<?php
+                        <section class="filter">
+                            <?php
 							if (isset($_GET['unirPagamentos'])) {
 							?>
-								<div class="filter-group js-unir">
-									<div class="filter-form form">
-										<dl>
-											<dd><input type="tel" name="" class="js-dataVencimento data datecalendar" placeholder="Nova data de vencimento" style="width:190px;" /></dd>
-										</dl>
-										<dl>
-											<dd>
-												<a href="javascript:;" class="button button_main js-btn-unirPagamentos "><i class="iconify" data-icon="fluent:link-square-24-filled"></i><span>Salvar</span></a>
-												<a href="<?= $_page . "?" . $url; ?>" class="button tooltip" title="Cancelar" style="background: var(--vermelho);color:#FFF;"><i class="iconify" data-icon="topcoat:cancel"></i><span>Cancelar</span></a>
+                            <div class="filter-group js-unir">
+                                <div class="filter-form form">
+                                    <dl>
+                                        <dd><input type="tel" name="" class="js-dataVencimento data datecalendar"
+                                                placeholder="Nova data de vencimento" style="width:190px;" /></dd>
+                                    </dl>
+                                    <dl>
+                                        <dd>
+                                            <a href="javascript:;" class="button button_main js-btn-unirPagamentos "><i
+                                                    class="iconify"
+                                                    data-icon="fluent:link-square-24-filled"></i><span>Salvar</span></a>
+                                            <a href="<?= $_page . "?" . $url; ?>" class="button tooltip"
+                                                title="Cancelar" style="background: var(--vermelho);color:#FFF;"><i
+                                                    class="iconify"
+                                                    data-icon="topcoat:cancel"></i><span>Cancelar</span></a>
 
 
-									</div>
-								</div>
-							<?php
+                                </div>
+                            </div>
+                            <?php
 							} else {
 							?>
-								<div class="filter-group">
-									<div class="filter-form form">
-										<dl>
-											<dd><a href="<?= $_page . "?unirPagamentos=1&$url"; ?>" class="button"><i class="iconify" data-icon="fluent:link-square-24-filled"></i><span>Unir Pagamentos</span></a>
-										</dl>
-									</div>
-								</div>
-							<?php
+                            <div class="filter-group">
+                                <div class="filter-form form">
+                                    <dl>
+                                        <dd>
+										<a href="<?= $_page . "?unirPagamentos=1&$url"; ?>" class="button"><i class="iconify"data-icon="fluent:link-square-24-filled"></i><span>Unir Pagamentos</span></a>
+										<a href="javascript:;" class="button" id='pagamento_avulso'><i class="iconify"data-icon="mdi:account-payment"></i><span>Pagamento Avulso</span></a>
+                                    </dl>
+                                </div>
+                            </div>
+                            <?php
 							}
 							?>
 
-							<div class="filter-group">
-								<div class="filter-title">
-									<p style="color:var(--cinza5);font-size:18px">Total<br /><strong>R$ <?= number_format($valor['valorTotal'], 2, ",", "."); ?></strong></p>
-								</div>
-								<div class="filter-title">
-									<p style="font-size:13px">A receber<br /><strong>R$ <?= number_format(($valor['aReceber']), 2, ",", "."); ?></strong></p>
-								</div>
-								<div class="filter-title">
-									<p style="color:var(--laranja);font-size:13px">Definir Pagamento<br /><strong>R$ <?= number_format($valor['definirPagamento'], 2, ",", "."); ?></strong></p>
-								</div>
-								<div class="filter-title">
-									<p style="color:var(--verde);font-size:13px">Recebido<br /><strong>R$ <?= number_format($valor['valorRecebido'], 2, ",", "."); ?></strong></p>
-								</div>
-								<div class="filter-title">
-									<p style="color:var(--vermelho);font-size:13px">Vencido<br /><strong>R$ <?= number_format($valor['valoresVencido'], 2, ",", "."); ?></strong></p>
-								</div>
+                            <div class="filter-group">
+                                <div class="filter-title">
+                                    <p style="color:var(--cinza5);font-size:18px">Total<br /><strong>R$
+                                            <?= number_format($valor['valorTotal'], 2, ",", "."); ?></strong></p>
+                                </div>
+                                <div class="filter-title">
+                                    <p style="font-size:13px">A receber<br /><strong>R$
+                                            <?= number_format(($valor['aReceber']), 2, ",", "."); ?></strong></p>
+                                </div>
+                                <div class="filter-title">
+                                    <p style="color:var(--laranja);font-size:13px">Definir Pagamento<br /><strong>R$
+                                            <?= number_format($valor['definirPagamento'], 2, ",", "."); ?></strong></p>
+                                </div>
+                                <div class="filter-title">
+                                    <p style="color:var(--verde);font-size:13px">Recebido<br /><strong>R$
+                                            <?= number_format($valor['valorRecebido'], 2, ",", "."); ?></strong></p>
+                                </div>
+                                <div class="filter-title">
+                                    <p style="color:var(--vermelho);font-size:13px">Vencido<br /><strong>R$
+                                            <?= number_format($valor['valoresVencido'], 2, ",", "."); ?></strong></p>
+                                </div>
 
 
-							</div>
-						</section>
+                            </div>
+                        </section>
 
-						<form class="js-form-pagamentos" onsubmit="return false">
-							<div class="list1">
-								<table class="js-table-pagamentos">
-									<?php
+                        <form class="js-form-pagamentos" onsubmit="return false">
+                            <div class="list1">
+                                <table class="js-table-pagamentos">
+                                    <?php
 
 									$parcelasTratamentos = array();
 									$DefinirPagamento = 0;
@@ -632,79 +646,88 @@ foreach ($registros as $x) {
 										}
 										$saldoAPagar = $saldoAPagar < 0 ? 0 : number_format($saldoAPagar, 2)
 									?>
-										<tr class="js-pagamento-item js-pagamento-item-<?= $x->id; ?>" data-id="<?= $x->id; ?>">
-											<?php if (isset($_GET['unirPagamentos'])) { ?>
-												<td style="width:30px;">
-													<?php
+                                    <tr class="js-pagamento-item js-pagamento-item-<?= $x->id; ?>" data-id="<?= $x->id; ?>">
+                                        <?php if (isset($_GET['unirPagamentos'])) { ?>
+                                        <td style="width:30px;">
+                                            <?php
 													if ($x->fusao == 0 and !isset($pagamentosComBaixas[$x->id])) {
 													?>
-														<input type="checkbox" name="pagamentos[]" class="js-checkbox-pagamentos" data-id_tratamento="<?= $x->id_tratamento; ?>" value="<?= $x->id; ?>" />
-														<span class="iconify js-checkbox-pagamentos-disabled" data-icon="fxemoji:cancellationx" style="opacity:0.2;display:none;" data-id_tratamento="<?= $x->id_tratamento; ?>"></span>
-													<?php
+                                            <input type="checkbox" name="pagamentos[]" class="js-checkbox-pagamentos"
+                                                data-id_tratamento="<?= $x->id_tratamento; ?>" value="<?= $x->id; ?>" />
+                                            <span class="iconify js-checkbox-pagamentos-disabled"
+                                                data-icon="fxemoji:cancellationx" style="opacity:0.2;display:none;"
+                                                data-id_tratamento="<?= $x->id_tratamento; ?>"></span>
+                                            <?php
 													} else {
 														echo '<span class="iconify" data-icon="fxemoji:cancellationx" style="opacity:0.2"></span>';
 													}
 													?>
 
-												</td>
-											<?php }	?>
-											<td>
-												<h1>
-													<?php
+                                        </td>
+                                        <?php }	?>
+                                        <td>
+                                            <h1>
+                                                <?php
 													if ($x->fusao > 0) {
 													?>
-														<strong><i class="iconify" data-icon="codicon:group-by-ref-type" data-height="18" data-inline="true"></i> União de Pagamentos (<?= isset($_subpagamentos[$x->id]) ? count($_subpagamentos[$x->id]) : 0; ?>)</strong>
-													<?php
+                                                <strong><i class="iconify" data-icon="codicon:group-by-ref-type"
+                                                        data-height="18" data-inline="true"></i> União de Pagamentos
+                                                    (<?= isset($_subpagamentos[$x->id]) ? count($_subpagamentos[$x->id]) : 0; ?>)</strong>
+                                                <?php
 													} else {
 														echo isset($_tratamentos[$x->id_tratamento]) ? utf8_encode($_tratamentos[$x->id_tratamento]->titulo) : 'Avulso';
 													}
 													?>
-												</h1>
-												<p><?= date('d/m/Y', strtotime($x->data_vencimento)); ?></p>
-											</td>
-											<td>
-												<div class="list1__icon" style="color:gray;">
-													<font color=<?= $cor ?>><i class="iconify" data-icon="<?= $icone ?>"></i> <?= $status ?></font>
-												</div>
-											</td>
-											<td>
-												<h1>R$ <?= number_format($x->valor, 2, ",", "."); ?></h1>
-												<span><?= ($saldoAPagar > 0) ? "Faltam: R$ " . $saldoAPagar . "<br>" : "" ?></span>
-												<span><?= ($item['multaAtraso'] > 0) ? "Multa: R$ " . number_format($item['multaAtraso'], 2, ",", ".") . "<br>" : "" ?></span>
-												<span><?= ($item['jurosMensal'] > 0) ? "Juros: R$ " . number_format($item['jurosMensal'], 2, ",", ".") . "<br>" : "" ?></span>
-											</td>
-											<?php
+                                            </h1>
+                                            <p><?= date('d/m/Y', strtotime($x->data_vencimento)); ?></p>
+                                        </td>
+                                        <td>
+                                            <div class="list1__icon" style="color:gray;">
+                                                <font color=<?= $cor ?>><i class="iconify"
+                                                        data-icon="<?= $icone ?>"></i> <?= $status ?></font>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <h1>R$ <?= number_format($x->valor, 2, ",", "."); ?></h1>
+                                            <span><?= ($saldoAPagar > 0) ? "Faltam: R$ " . $saldoAPagar . "<br>" : "" ?></span>
+                                            <span><?= ($item['multaAtraso'] > 0) ? "Multa: R$ " . number_format($item['multaAtraso'], 2, ",", ".") . "<br>" : "" ?></span>
+                                            <span><?= ($item['jurosMensal'] > 0) ? "Juros: R$ " . number_format($item['jurosMensal'], 2, ",", ".") . "<br>" : "" ?></span>
+                                        </td>
+                                        <?php
 											if (isset($parcelasTratamentos[$x->id_tratamento])) {
 												if (!isset($numeroParcela[$x->id_tratamento])) $numeroParcela[$x->id_tratamento] = 1;
 											?>
-												<td>Parcela <?= $numeroParcela[$x->id_tratamento]++; ?> de <?= ($parcelasTratamentos[$x->id_tratamento]); ?></td>
-											<?php
+                                        <td>Parcela <?= $numeroParcela[$x->id_tratamento]++; ?> de
+                                            <?= ($parcelasTratamentos[$x->id_tratamento]); ?></td>
+                                        <?php
 											}
 											?>
-										</tr>
-									<?php
+                                    </tr>
+                                    <?php
 									}
 									?>
-								</table>
-							</div>
-						</form>
-					</div>
-				</div>
-			</div>
-		</section>
-	</div>
+                                </table>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 </main>
 
 <script type="text/javascript">
-	_pagamentosList = JSON.parse(`<?= json_encode($pagamentosJSON); ?>`);
+_pagamentosList = JSON.parse(`<?= json_encode($pagamentosJSON); ?>`);
 </script>
 
 <?php
 
 //require_once("includes/api/apiAsideFinanceiro.php");
 $apiConfig = array(
-	'Pagamentos' => 1,
+	'contasAReceber' => 1,
+	'contasAvulsoAReceberPaciente' => 1,
 );
+
 include_once "includes/api/apiAsidePagamentos.php";
 
 include "includes/footer.php";

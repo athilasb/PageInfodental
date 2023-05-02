@@ -17,6 +17,7 @@
 			global $dompdf, $s3, $_scalewayBucket, $sql, $_p;
 			$erro = '';
 
+
 			$dompdf->loadHtml($html);
 			$dompdf->setPaper('A4', 'portrait');
 			$dompdf->render();
@@ -36,6 +37,9 @@
 					)
 				);
 				$sql->update($_p . "pacientes_evolucoes", "s3=1", "where id=$id_evolucao");
+
+				unlink('arqs/temp.pdf');
+
 			} catch (S3Exception $e) {
 				$erro = 'Algum erro ocorreu durante a persistência do PDF em nosso cloud de armazenamento. Favor contate o suporte.';
 			}
@@ -135,6 +139,7 @@
 				# Gera PDF via domPDF de evoluções #
 					if ($request->method == 'generatePDF') {
 
+
 						// capta dados
 
 							$enviaWhatsapp = (isset($request->enviaWhatsapp) and $request->enviaWhatsapp == 1) ? 1 : 0;
@@ -179,7 +184,7 @@
 							else if ($enviaWhatsapp == 1 and empty($conexao))
 								$erro = 'Infozap não conectado';
 							else if ($enviaWhatsapp == 1 and is_object($conexao) and $conexao->versao != 2)
-								$erro = 'Versão do Infozap não suporta envio de arquivos. Favor atualize seu Infozap!';
+								$erro = 'Versão do Infozap não suporta envio de arquivos. Favor atualize seu Infozap! $conexao->versao';
 
 						if (empty($erro)) {
 
@@ -285,12 +290,13 @@
 										$_anamnesePerguntas[] = $x;
 									}
 									foreach ($_anamnesePerguntas as $p) {
-										$resp = 'Não';
+										
 										$pergunta = json_decode($p->json_pergunta);
 
 										if ($pergunta->tipo == "simnao" or $pergunta->tipo == "simnaotexto") {
-											if ($p->resposta == "SIM")
-												$resp = "Sim";
+											if ($p->resposta == "SIM") $resp = "Sim";
+											else if($p->resposta=="NAO") $resp = 'Não';
+											else $resp = "-";
 										} else if ($pergunta->tipo == "nota") {
 											$resp = "Nota: " . $p->resposta;
 										}
@@ -794,7 +800,7 @@
 							else if (is_object($paciente) and empty($paciente->telefone1)) $erro = 'Paciente não possui celular cadastrado para envio do whatsapp';
 							else if (empty($conexao)) $erro = 'Infozap não conectado';
 							else if (is_object($conexao) and $conexao->versao < 2) $erro = 'Versão do Infozap não suporta envio de arquivos. Favor atualize seu Infozap!';
-							else if(empty($usr)) $erro = 'Colaborador não encontrado!';
+							else if(empty($usr)) $erro = 'Colaborador não encontrado.';
 
 
 						if (empty($erro)) {

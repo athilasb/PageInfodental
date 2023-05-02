@@ -121,6 +121,10 @@
 	}
 	include "includes/header.php";
 	include "includes/nav.php";
+	if($usr->tipo!="admin" and !in_array("pacientes",$_usuariosPermissoes)) {
+		$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
+		die();
+	}
 
 	$_table=$_p."pacientes_prontuarios";
 	require_once("includes/header/headerPacientes.php");
@@ -351,7 +355,7 @@
 										</dd>
 									</dl>
 								</div>
-							</div>							
+							</div>				
 						</section>
 
 						<div class="box">
@@ -460,14 +464,21 @@
 											// anamnese
 											if($eTipo->id==1) {
 
-												if($e->enviarLink==1) {
+												$exibirRespostas=true;
+
+												if($e->enviarLink==1 and $e->enviarLinkFinalizado==0) {
+
+													$exibirRespostas=false;
 													?>
 													<div style="display:flex;width:100%;justify-content: space-between;">
 														<input type="text" readonly value="<?php echo $_SERVER['HTTP_HOST'];?>/anamnese/<?php echo md5($e->id);?>" style="width: 90%;"  />
 														<button type="button" class="button" style="width: 8%;" onclick="$(this).parent().find('input').select();"><span class="iconify" data-icon="material-symbols:content-copy-outline-rounded"></span></button>
 													</div>
 													<?php
-												} else {
+												} 
+
+
+												if($exibirRespostas===true) {
 													$correcoes=1;
 													if(isset($_anamnesePerguntas[$e->id])) {
 														$perguntas=$_anamnesePerguntas[$e->id];
@@ -485,7 +496,8 @@
 																	<?php 
 																	if($pergunta->tipo=="simnao" or $pergunta->tipo=="simnaotexto") {
 																		if($p->resposta=="SIM") echo "Sim";
-																		else echo "Não";
+																		else if($p->resposta=="NAO")  echo "Não";
+																		else echo "-";
 																	} else if($pergunta->tipo=="nota") {
 																		echo "Nota: ".$p->resposta;
 																	} 

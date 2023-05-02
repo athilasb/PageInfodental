@@ -78,6 +78,10 @@ while ($x = mysqli_fetch_object($sql->mysqry)) {
 
 include "includes/header.php";
 include "includes/nav.php";
+if($usr->tipo!="admin" and !in_array("configuracoes",$_usuariosPermissoes)) {
+	$jsc->jAlert("Você não tem permissão para acessar esta área!","erro","document.location.href='dashboard.php'");
+	die();
+}
 
 $values = $adm->get($_GET);
 $campos = explode(",", "titulo,id_banco");
