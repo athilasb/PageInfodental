@@ -19,8 +19,8 @@ $s3 = new S3Client([
 
 $sql = new Mysql();
 
-$_p = "infodental.ident_";
-$dir_arquivos = "arqs/pacientes/arquivos";
+$_p = "excellenceatelieoral.ident_";
+$dir_arquivos = "arqs/pacientes/arquivos/";
 
 //pegando todos os pacientes do sistema, preciso saber qual arquivo pentence a quem
 //$sql->consult($_p."pacientes", "id, nome", "");
@@ -40,11 +40,13 @@ $list_pacientes = array();
 
 foreach($pacientes as $linha)
 {
-    list($id_paciente, $id_pessoa) = explode($linha);
-    $list_pacientes[$id_pessoa] = $id_paciente; 
+    list($id_paciente, $id_pessoa) = explode(";", $linha);
+    $list_pacientes[trim($id_pessoa)] = trim($id_paciente); 
 }
 
 
+//var_dump($list_pacientes);
+//die();
 foreach($arquivos as $linha){
           
     list(
@@ -62,83 +64,92 @@ foreach($arquivos as $linha){
              
     $tx_nome_pessoa = trim($tx_nome_pessoa);
     $index = strtolowerWLIB(str_replace(" ", "", tirarAcentos($tx_nome_pessoa)));
-
         
     list($nome_sem_extensao, $extensao) = explode('.', $tx_nome_arquivo);
     //    echo $extensao;
 
-        $isImage = 0;
+    $isImage = 0;
     if($tx_formato_arquivo == "Imagem"){
         $isImage = 1;
     }
 
+    if($id_pessoa == "NULL"){
+        continue;
+    }
+
     $list_arquivos[$max_id] = array(
         'id' => $max_id,
+        'id_pessoa' => $id_pessoa,
         'tx_nome_pessoa' => $tx_nome_pessoa,
-        'to_nome_documento' => $tx_nome_documento,
-        'tx_nome_arquivo' => $nome_sem_extensao,
+        'tx_nome_documento' => utf8_decode($tx_nome_documento),
+        'tx_nome_arquivo' => utf8_decode($nome_sem_extensao),
         'tx_url_arquivo' => $tx_url_arquivo,
-        'tx_descricao' => $tx_descricao,
+        'tx_descricao' => utf8_decode($tx_descricao),
         'tx_tipo_arquivo' => $tx_tipo_arquivo,
         'tx_formato_arquivo' => $tx_formato_arquivo,
         'id_paciente' => $list_pacientes[$id_pessoa],
         'extensao' => $extensao,
         'isImage' => $isImage
     );
-   // echo "[$max_id] | <br>";
     $max_id++;
 }
 
 //montando o sql e guardando os ids 
-$vSQL = "id, data, id_paciente, tipo, titulo, extensao, id_colaborador, obs, lixo";
+$vSQLabels = "id, data, id_paciente, tipo, titulo, extensao, id_colaborador, obs, lixo";
 
-
-foreach($list_arquivos as $arquivo){
-
+$vSQL = "";
+foreach($list_arquivos as $arquivos){
 
     $vSQL .= "( '". $arquivos['id'] ."', 
                     now(), '" . 
                     $arquivos['id_paciente'] . "', '" . 
                     $arquivos['tx_tipo_arquivo'] . "', '" . 
-                    $arquivos['tx_nome_arquivo'] . "', '" .
-                    $arquivos['extensao'] . "', '" . 
-                // verificar se esse é o id do profissional    "'101', ".
-                    "'',".
-                    "'0')";
+                    $arquivos['tx_nome_documento'] . "', '" .
+                    $arquivos['extensao'] . "', " . 
+                    "'101', ".
+                    "'', ".
+                    "'0'), ";
 
 
-echo("Nome: " . $arquivos['tx_nome_paciente']. " id paciente: " . $arquivos['id_paciente'] . "<br>");
+//echo("Nome: " . $arquivos['tx_nome_pessoa']. " id paciente: " . $arquivos['id_paciente'] . "id_pessoa: " . $arquivos['id_pessoa'] ."<br>");
+}
+$vSQL = substr($vSQL, 0, -2);
+//print_r($vSQL);
+//$sql->insertMultiple($_p . "pacientes_arquivos", $vSQLabels, $vSQL);
 
 
-/*    $url = $arquivos['tx_url_arquivo'];
+$i = 0;
+
+foreach($list_arquivos as $arquivos){
+
+    $url = $arquivos['tx_url_arquivo'];
     $stream = fopen($url, "rb");
     $file = stream_get_contents($stream);
     $size = strlen($file);
-    $nome_arquivo = md5($arquivos['id']) . "." . $arquivos['tx_nome_arquivo'];
+    $nome_arquivo = md5($arquivos['id']) . "." . $arquivos['extensao'];
   
+    echo("Nome: " . $arquivos['tx_nome_pessoa']. " nome_hash:" . md5($arquivos['id'])  . " id paciente: " . $arquivos['id_paciente'] . " id_pessoa: " . $arquivos['id_pessoa'] . " id: " . $arquivos['id'] ."<br>");
+
     //print_r($size);
     try {
         $s3->putObject(array(
             'Bucket'=>'infodental',
-            'Key' =>  "agenda/arqs/pacientes/testes_walker/".$nome_arquivo,
-            'Body' => $file,
+            'Key'   =>  "agenda/walker_testes/". $dir_arquivos . $nome_arquivo,
+            'Body'  => $file,
         //    'ContentLength' => $size,
-            'ACL'    => 'public-read', //for public access
+            'ACL'   => 'public-read', //for public access
         ));
     } catch (Exception $exception) {
         echo "<h1>Failed to upload  with error: " . $exception->getMessage() . "</h1>";
         exit("Please fix error with file upload before continuing.");
-    }*/
+    }
+
+    if($i == 5){
+        die();
+    }
+    $i++;
 }
 ?>
-
-
-
-
-
-
-
-
 
 <!DOCTYPE html>
     <head>
@@ -162,11 +173,3 @@ echo("Nome: " . $arquivos['tx_nome_paciente']. " id paciente: " . $arquivos['id_
         </div>
     </body>
 </html>
-
-
-
-
-
-
-
-
