@@ -20,7 +20,7 @@
 				$_ENV['NAME']=$_ENV['MYSQL_DB']='';
 
 			} else {
-				$_ENV['NAME']=$_ENV['MYSQL_DB']='studiodental';
+				$_ENV['NAME']=$_ENV['MYSQL_DB']='agenda';
 			}
 			
 			if(isset($_COOKIE['infoName'])) $_ENV['NAME']=$_ENV['MYSQL_DB']=$_COOKIE['infoName'];

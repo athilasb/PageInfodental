@@ -657,7 +657,6 @@
 						}
 					}
 
-				
 
 				if(count($pacientesDesmarcadosIds)>0) {
 
@@ -779,7 +778,6 @@
 						$pacientesDesmarcados=$pacientesDesmarcadosAUX;
 					
 				}
-
 
 			# Pacientes em contencao (precisa retornar) sem horario
 
@@ -949,77 +947,78 @@
 
 
 			# Busca metricas de Pacientes Desmarcados e Pacientes em Contencao
-
 				$pacientesMetricas=array();
-				$sql->consult($_p."agenda","id,id_status,id_paciente,agenda_data,agenda_duracao,profissionais","where id_paciente IN (".implode(",",$todosPacientesIds).") and lixo=0 order by agenda_data desc");
-				while($x=mysqli_fetch_object($sql->mysqry)) {
+				if(count($todosPacientesIds)>0) {
+					$sql->consult($_p."agenda","id,id_status,id_paciente,agenda_data,agenda_duracao,profissionais","where id_paciente IN (".implode(",",$todosPacientesIds).") and lixo=0 order by agenda_data desc");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
 
 
-					if(!isset($pacientesMetricas[$x->id_paciente])) {
+						if(!isset($pacientesMetricas[$x->id_paciente])) {
 
-						$ultimo='';
-						if($x->id_status==5) {
-							$ultimo=strtotime(date('Y-m-d'))-strtotime($x->agenda_data);
-							$ultimo/=(60*60*24);
-							$ultimo=floor($ultimo)+1;
-							//echo (date('Y-m-d'))." - ".($x->agenda_data)." = $ultimo \n";
+							$ultimo='';
+							if($x->id_status==5) {
+								$ultimo=strtotime(date('Y-m-d'))-strtotime($x->agenda_data);
+								$ultimo/=(60*60*24);
+								$ultimo=floor($ultimo)+1;
+								//echo (date('Y-m-d'))." - ".($x->agenda_data)." = $ultimo \n";
+							}
+
+							$pacientesMetricas[$x->id_paciente]=array('atendimentos'=>0,
+																		'tempo'=>0,
+																		'faltou'=>0,
+																		'desmarcou'=>0,
+																		'faltouOuDesmarcou'=>0,
+																		'ultimoAtendimento'=>$ultimo,
+																		'ultimos'=>array());
 						}
 
-						$pacientesMetricas[$x->id_paciente]=array('atendimentos'=>0,
-																	'tempo'=>0,
-																	'faltou'=>0,
-																	'desmarcou'=>0,
-																	'faltouOuDesmarcou'=>0,
-																	'ultimoAtendimento'=>$ultimo,
-																	'ultimos'=>array());
-					}
 
+						$profissionais=array();
+						if(!empty($x->profissionais)) {
+							$aux=explode(",",$x->profissionais);
+							foreach($aux as $idP) {
 
-					$profissionais=array();
-					if(!empty($x->profissionais)) {
-						$aux=explode(",",$x->profissionais);
-						foreach($aux as $idP) {
+								if(isset($_profissionais[$idP])) {
+									$p=$_profissionais[$idP];
 
-							if(isset($_profissionais[$idP])) {
-								$p=$_profissionais[$idP];
-
-								$profissionais[]=array('idP'=>$idP,
-														'iniciais'=>$p->calendario_iniciais,
-														'cor'=>$p->calendario_cor);
+									$profissionais[]=array('idP'=>$idP,
+															'iniciais'=>$p->calendario_iniciais,
+															'cor'=>$p->calendario_cor);
+								}
 							}
 						}
-					}
-					if(count($pacientesMetricas[$x->id_paciente]['ultimos'])<3) {
-						$pacientesMetricas[$x->id_paciente]['ultimos'][]=array('status'=>isset($_status[$x->id_status])?utf8_encode($_status[$x->id_status]->titulo):'',
-								'agenda_data'=>date('d/m/y',strtotime($x->agenda_data)),
-																				'agenda_hora'=>date('H:i',strtotime($x->agenda_data)),
-																					'profissionais'=>$profissionais); 
-					}
-
-					if($x->id_status==5) {
-
-						$pacientesMetricas[$x->id_paciente]['tempo']+=$x->agenda_duracao;
-						$pacientesMetricas[$x->id_paciente]['atendimentos']++; 
-
-						
-
-
-						if(empty($pacientesMetricas[$x->id_paciente]['ultimoAtendimento'])) {
-							$ultimo=strtotime(date('Y-m-d'))-strtotime($x->agenda_data);
-							$ultimo/=(60*60*24);
-							$ultimo=floor($ultimo)+1;
-							$pacientesMetricas[$x->id_paciente]['ultimoAtendimento']=$ultimo;
-
-
+						if(count($pacientesMetricas[$x->id_paciente]['ultimos'])<3) {
+							$pacientesMetricas[$x->id_paciente]['ultimos'][]=array('status'=>isset($_status[$x->id_status])?utf8_encode($_status[$x->id_status]->titulo):'',
+									'agenda_data'=>date('d/m/y',strtotime($x->agenda_data)),
+																					'agenda_hora'=>date('H:i',strtotime($x->agenda_data)),
+																						'profissionais'=>$profissionais); 
 						}
+
+						if($x->id_status==5) {
+
+							$pacientesMetricas[$x->id_paciente]['tempo']+=$x->agenda_duracao;
+							$pacientesMetricas[$x->id_paciente]['atendimentos']++; 
+
+							
+
+
+							if(empty($pacientesMetricas[$x->id_paciente]['ultimoAtendimento'])) {
+								$ultimo=strtotime(date('Y-m-d'))-strtotime($x->agenda_data);
+								$ultimo/=(60*60*24);
+								$ultimo=floor($ultimo)+1;
+								$pacientesMetricas[$x->id_paciente]['ultimoAtendimento']=$ultimo;
+
+
+							}
+						}
+						else if($x->id_status==3) $pacientesMetricas[$x->id_paciente]['faltou']++; 
+						else if($x->id_status==4) $pacientesMetricas[$x->id_paciente]['desmarcou']++; 
+
+
+						// se faltou ou desmarcou
+						if($x->id_status==3 or $x->id_status==4) $pacientesMetricas[$x->id_paciente]['faltouOuDesmarcou']++;
+						
 					}
-					else if($x->id_status==3) $pacientesMetricas[$x->id_paciente]['faltou']++; 
-					else if($x->id_status==4) $pacientesMetricas[$x->id_paciente]['desmarcou']++; 
-
-
-					// se faltou ou desmarcou
-					if($x->id_status==3 or $x->id_status==4) $pacientesMetricas[$x->id_paciente]['faltouOuDesmarcou']++;
-					
 				}
 
 

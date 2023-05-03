@@ -66,13 +66,10 @@
 
 			if(empty($erro)) {
 
-				if(generatePDF($evolucao->id)) {
-					$sql->update($_p."pacientes_evolucoes","enviarLinkFinalizado=now()","where id=$evolucao->id");
-					$rtn=array('success'=>true);
-				} else {
-					$rtn=array('success'=>false,'error'=>'Não foi possível finalizar a anamnese.');
-				}
+				$sql->update($_p."pacientes_evolucoes","enviarLinkFinalizado=now()","where id=$evolucao->id");
+				generatePDF($evolucao->id);
 
+				$rtn=array('success'=>true);
 
 
 			} else {
@@ -210,12 +207,9 @@
       xmlns:fb="http://www.facebook.com/2008/fbml">
 
 	<head>
-		<meta charset="UTF-8"/>
-		<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<meta charset="utf-8">
 		<title><?php echo $title;?></title>
-		
-		<link rel="stylesheet" type="text/css" href="../css/evolucoes.css?v1.4" />
+		<link rel="stylesheet" type="text/css" href="../css/evolucoes.css" />
 		<link rel="stylesheet" type="text/css" href="../css/apps.css" />
 		<script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
 		<script src="../js/jquery.js"></script>
@@ -228,23 +222,20 @@
 	<style type="text/css">
 		.erro {color:#cc3300}
 	</style>
-	<body class="body">	
+	<body>	
 
 		<div class="print-header" style="padding-top: 20px;">
 			<?php
-			#Se não tiver autenticado
-			if($auth===false){
-				if(!empty($logo)) {
-				?>
-					<img src="<?php echo $logo;?>" class="print-header__logo"/>
-				<?php
-				} else {
-				?>
-					<img src="../img/logo-info.svg"  class="print-header__logo"/>
-				<?php
-				}
+			if(!empty($logo)) {
+			?>
+			<img src="<?php echo $logo;?>" class="print-header__logo" style="width: auto;height: 30px;" />
+			<?php
+			} else {
+			?>
+			<img src="../img/logo-info.svg"  class="print-header__logo" style="width: auto;height: 25px;" />
+			<?php
 			}
-				?>
+			?>
 		</div>
 
 		<?php
@@ -252,9 +243,9 @@
 		// Se nao encontrou a evolucao
 		if(empty($evolucao) or empty($anamnese)) {
 
-			?>
-
+		?>
 			<table class="print-table">
+
 				<thead><tr><td><div class="print-table-header">&nbsp;</div></td></tr></thead>
 				<tbody>
 					<tr>
@@ -264,11 +255,12 @@
 					</tr>
 				</tbody>
 			</table>
-			<?php
+		<?php
 		} 
 
 		// Se encontrou a evolucao
 		else {
+
 
 			// Se nao estiver autenticado
 			if($auth===false) {
@@ -329,22 +321,17 @@
 						})
 					})
 				</script>
-
-				<div class="form-unico-centro">
-					<form class="form Autentificar">
-						<div class="block">
-							<dl>
-								<dd class="form-comp ">
-								<span><i class="iconify" data-icon="mdi:file-document-outline" style="color:var(--cor-base);"></i></span>
-								<input placeholder="CPF" type="tel" class="js-cpf" /></dd>
-							</dl>
-							<dl>
-								<dd class="form-comp">
-								<span><i class="iconify" data-icon="material-symbols:calendar-month" style="color:var(--cor-base);"></i></span>
-								<input placeholder="Data Nascimento" type="tel" class="js-dn" /></dd>
-							</dl>
-						</div>
-						<button type="button" class="button js-auth .cor-base" data-loading="0">Autenticar</button>
+				<div style="text-align: center;margin-top:200px;">
+					<form>
+						<dl>
+							<dt>CPF</dt>
+							<dd><input type="text" class="js-cpf" /></dd>
+						</dl>
+						<dl>
+							<dt>Data Nascimento</dt>
+							<dd><input type="text" class="js-dn" /></dd>
+						</dl>
+						<button type="button" class="button js-auth" data-loading="0">Autenticar</button>
 					</form>
 				</div>
 				<?php
@@ -353,42 +340,37 @@
 			// Se estiver autenticado
 			else {
 				?>
-				<div class="print-table assinatura">
+				<table class="print-table">
 					<thead><tr><td><div class="print-table-header">&nbsp;</div></td></tr></thead>
 					<tbody>
 						<tr>
 							<td>
 								<section class="print-content">
 
-									<header class="titulo-ficha">
-										<div>	
-											<?php
-												if(!empty($logo)) {
-												?>
-													<img src="<?php echo $logo;?>" class="print-header__logo"/>
-												<?php
-												}; 
-											?>	
-											<h1>Ficha do Paciente</h1>
-											<h2>Formulário da Anamnese</h2>
-											<div class="titulo"><?php echo utf8_encode($anamnese->titulo);?></div>
-
-											<p><?php echo date('d/m/Y',strtotime($evolucao->data));?></p>
-										</div>
+									<header class="titulo1">
+										<h1>Ficha do Paciente</h1>
+										<p><?php echo date('d/m/Y',strtotime($evolucao->data));?></p>
 									</header>
 
-									<div class="ficha" style="display:flex; justify-content: space-between;">
-											<div>
-												<div colspan="3" style="max-width: 120px;"><strong><?php echo utf8_encode($paciente->nome);?></strong></div>
-												<div colspan="3" style="margin-bottom: 5px;"><?php echo $idade>1?"$idade anos":"$idade";?></div>
-											</div>
-											<div>
-												<div colspan="3" style="margin-bottom: 5px;" ><span class="iconify" data-icon="mdi:file-document-outline" data-inline="true"></span> <?php echo utf8_encode($paciente->cpf);?></div>
-												<div colspan="3"><span class="iconify" data-icon="bxs:phone" data-inline="true"></span> <?php echo maskTelefone($paciente->telefone1);?></div>
-											</div>
+									<div class="ficha">
+										<table border="0">
+											<tr>
+												<td colspan="3"><strong><?php echo utf8_encode($paciente->nome);?></strong></td>
+											</tr>
+											<tr>
+												<td><?php echo $idade>1?"$idade anos":"$idade";?></td>
+												<td><?php echo $paciente->sexo=="M"?"Masculino":$paciente->sexo=="F"?"Feminino":'';?></td>
+												<td style="text-align:right;"><span class="iconify" data-icon="bxs:phone" data-inline="true"></span> <?php echo maskTelefone($paciente->telefone1);?></td>
+											</tr>
 										</table>
-										
 									</div>
+
+									<header class="titulo2">
+										<span>
+											<h1>Formulário da Anamnese</h1>
+											<h2><?php echo utf8_encode($anamnese->titulo);?></h2>
+										</span>
+									</header>
 									<?php
 
 									// Anamnese nao finalizada
@@ -421,7 +403,6 @@
 														type:"POST",
 														data:data,
 														success:function(rtn) {
-
 															if(rtn.success) {
 																document.location.reload();
 
@@ -527,10 +508,9 @@
 													?>
 													<tr>
 														<td class="js-td" data-id_pergunta="<?php echo $pergunta->id;?>">
-															<p><strong class="js-pergunta-<?php echo $pergunta->id;?>"><?php echo utf8_encode($p->pergunta).($pergunta->obrigatorio==1?"*":"");?></strong></p>
+															<p><strong class="js-pergunta-<?php echo $pergunta->id;?>"><?php echo utf8_encode($p->pergunta);?></strong></p>
 															<p>
-																<dl class="">
-																	
+																<dl>
 																	<dd class="js-anamnese-campo" data-obg="<?php echo $pergunta->obrigatorio;?>" data-tipo="<?php echo $pergunta->tipo;?>" data-id_pergunta="<?php echo $pergunta->id;?>">
 																<?php  
 																if($pergunta->tipo=="simnao") { 
@@ -547,33 +527,25 @@
 																}
 																else if($pergunta->tipo=="simnaotexto") {
 																	?>
-																		<div  class="radiosn">
-																			<input type="radio" name="resposta_<?php echo $p->id;?>" id="sim-<?php echo $p->id;?>"  value="SIM" class="js-resposta js-simnao-<?php echo $pergunta->id;?>" data-tipo="simnao" data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta=="SIM"?" checked":"";?> /> <label for="sim-<?php echo $p->id;?>" class="label"> Sim</label>
-																			<input type="radio" name="resposta_<?php echo $p->id;?>" id="nao-<?php echo $p->id;?>"  value="NAO" class="js-resposta js-simnao-<?php echo $pergunta->id;?>" data-tipo="simnao" data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta=="NAO"?" checked":"";?> /> <label for="nao-<?php echo $p->id;?>" class="label">Não</label>
+																		<div>
+																			<label><input type="radio" name="resposta_<?php echo $p->id;?>" value="SIM" class="js-resposta js-simnao-<?php echo $pergunta->id;?>" data-tipo="simnao" data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta=="SIM"?" checked":"";?> /> Sim</label>
+																			<label><input type="radio" name="resposta_<?php echo $p->id;?>" value="NAO" class="js-resposta js-simnao-<?php echo $pergunta->id;?>" data-tipo="simnao" data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta=="NAO"?" checked":"";?> /> Não</label>
 																		</div>
 																		<div>
-																			<textarea name="resposta_<?php echo $p->id;?>" placeholder="Escreva sua resposta" class="js-resposta js-simnaotexto-<?php echo $pergunta->id;?>" data-tipo="texto" data-id_resposta="<?php echo $p->id;?>"><?php echo utf8_encode($p->resposta_texto);?></textarea>
+																			<textarea name="resposta_<?php echo $p->id;?>" class="js-resposta js-simnaotexto-<?php echo $pergunta->id;?>" data-tipo="texto" data-id_resposta="<?php echo $p->id;?>"><?php echo utf8_encode($p->resposta_texto);?></textarea>
 																		</div>	
 																	<?php
 																} else if($pergunta->tipo=="nota") {
-																	?> <div class="display-flex">
-																		
-																	<?php 
 																	for($i=1;$i<=10;$i++) {
 																	?>
-																		<span class="radios-Numeros">
-																			<input  id="nota-<?php echo $i;?>" type="radio" name="resposta_<?php echo $p->id;?>" value="<?php echo $i;?>" class="js-resposta js-nota-<?php echo $pergunta->id;?>" data-tipo="nota" data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta==$i?" checked":"";?> />
-																			<label class="contagem" for="nota-<?php echo $i;?>"><?php echo $i;?></label>
-																		</span>
+																	<label>
+																		<input type="radio" name="resposta_<?php echo $p->id;?>" value="<?php echo $i;?>" class="js-resposta js-nota-<?php echo $pergunta->id;?>" data-tipo="nota" data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta==$i?" checked":"";?> /> <?php echo $i;?>
+																	</label>
 																	<?php
 																	}
-																	?> 
-																			</div>
-																	<?php 
-																	
 																} else {
 																	?>
-																	<textarea name="resposta_<?php echo $p->id;?>" placeholder="Escreva sua resposta" class="js-resposta" data-tipo="texto" data-id_resposta="<?php echo $p->id;?>"><?php echo utf8_encode($p->resposta_texto);?></textarea>
+																	<textarea name="resposta_<?php echo $p->id;?>" class="js-resposta" data-tipo="texto" data-id_resposta="<?php echo $p->id;?>"><?php echo utf8_encode($p->resposta_texto);?></textarea>
 																	<?php
 																}
 																?>
@@ -585,11 +557,12 @@
 													<?php
 													}
 													?>
+													
 												</table>
 											</div>
 
 											<div class="">
-												<center><button type="button" class="button_main js-salvarEAssinar assinarESalvar" data-loading="0">Salvar e Assinar</button></center>
+												<center><button type="button" class="button button_main js-salvarEAssinar" data-loading="0">Salvar e Assinar</button></center>
 											</div>
 												
 										</form>
@@ -600,23 +573,17 @@
 									else {
 
 										if(is_object($assinatura)) {
-											?>
-												<div class="documento-assinado">
-													<span class="iconify" data-icon="material-symbols:check-small" style="color: white;"></span> Documento assinado em <b><?php echo date('d/m/Y H:i',strtotime($assinatura->data)); ?></b>  <span>por</span> <b> <?php echo utf8_encode($paciente->nome) ?> </b>
-												</div>
-											<?php
 											$pdfAnamnese = $_scalewayS3endpoint."/".$infoConta->instancia."/arqs/pacientes/anamneses/assinados/".sha1($evolucao->id).".pdf";
 										} else {
 											$pdfAnamnese = $_scalewayS3endpoint."/".$infoConta->instancia."/arqs/pacientes/anamneses/".sha1($evolucao->id).".pdf";
 										}
-										?>
-										
 
-										<iframe  src="<?php echo $pdfAnamnese;?>" type="application/pdf" data='<?php echo $pdfAnamnese;?>#view=fit&toolbar=0' style="width:100%;height:550px;" toolbar="0">			    
-										    <p ><a href="<?php echo $pdfAnamnese;?>" class="button"><i class="iconify" data-icon="fluent:document-24-regular"></i><span>Baixar documento</span></a></p>
-										</iframe>
 
-										<?php
+									?>
+									<object data='<?php echo $pdfAnamnese;?>#view=fit&toolbar=0' style="width:100%;height:700px;" toolbar="0">			    
+									    <p><a href="<?php echo $pdfAnamnese;?>" class="button"><i class="iconify" data-icon="fluent:document-24-regular"></i><span>Baixar documento</span></a></p>
+									</object>
+									<?php
 									}
 									?>
 								</section>
@@ -626,9 +593,13 @@
 									require_once("includes/assinatura-canvas.php");
 								}
 								?>
-					<table>
 							</td>
 						</tr>
+
+
+
+
+						
 
 						<tr>
 							<td style="padding-top:40px;">
@@ -645,8 +616,8 @@
 						</tr>
 
 
-					</table>
-				</div>
+					</tbody>
+				</table>
 				<?php
 			}	
 		}
