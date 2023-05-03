@@ -273,7 +273,7 @@
 		$texto = str_replace("*[agenda_antiga_data]*", "<b>".date('d/m/Y',strtotime(date('Y-m-d')." + 2 day"))."</b>", $texto);
 		$texto = str_replace("*[agenda_antiga_hora]*", "<b>09:00</b>", $texto);
 		$texto = str_replace("*[duracao]*", "<b>60min</b>", $texto);
-		$texto = str_replace("*[profissionais]*", "<b>Dr. Luciano</b>", $texto);
+		$texto = str_replace("*[agenda_profissionais]*", "<b>Dr. Luciano</b>", $texto);
 		$texto = str_replace("[clinica_endereco]", "<b>Rua das Esmeraldas, nº3444 Bairro Ouro Fino, Sala 01, São Paulo-SP</b>", $texto);
 		$texto = str_replace("*Confirmar*", "<b>Confirmar</b>", $texto);
 		$texto = str_replace("*Desmarcar*", "<b>Desmarcar</b>", $texto);
@@ -578,7 +578,7 @@
 									<div class="infozap-chat">
 										<div class="infozap-chat-text infozap-chat-text--author">
 											<article>
-												<p class="infozap-chat-text__msg">
+												<p class="infozap-chat-text__msg js-msg-1">
 													<?php echo substituiTags($_tipos[1]->texto);?>
 												</p>
 												<p class="infozap-chat-text__date">11:59</p>
@@ -607,6 +607,48 @@
 								</div>
 							</fieldset>
 
+							<fieldset>
+								<legend>Desativação de Resposta de Confirmação de Agendamento</legend>
+
+								<div class="grid grid_3" style="margin-bottom:0;">
+									<form method="post" class="form">
+										<dl>
+											<dd>
+												<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="12"<?php echo $_tipos[12]->pub?" checked":"";?> />Ativar</label></dd>
+											</dd>
+										</dl>
+										<dl>
+											<dd><a href="javascript:;" class="button js-restaurar" title="Restaurar mensagem" data-id_tipo="12"><span class="iconify" data-icon="ic:baseline-restart-alt"></span></a></dd>
+										</dl>
+										<dl>
+											<dd>Mensagem de aviso ao paciente que o BOT não estará mais aguardando resposta para confirmação de agendamento</dd>
+										</dl>
+									</form>
+
+									<div>
+										<dt></dt>
+										<dl>
+											<dd>
+												<textarea class="js-mensagem js-mensagem-12" rows="10" data-id_tipo="12"><?php echo $_tipos[12]->texto;?></textarea>
+											</dd>
+										</dl>
+									</div>
+								
+									<div class="infozap-chat">
+										<div class="infozap-chat-text infozap-chat-text--author">
+											<article>
+												<p class="infozap-chat-text__msg js-msg-12">
+													<?php echo substituiTags($_tipos[12]->texto);?>
+												</p>
+												<p class="infozap-chat-text__date">11:59</p>
+											</article>
+											
+										</div>
+										
+									</div>
+
+								</div>
+							</fieldset>
 							<fieldset>
 								<legend>LEMBRETE de Agendamento</legend>
 
@@ -825,6 +867,46 @@
 											<article>
 												<p class="infozap-chat-text__msg js-msg-9">
 													<?php echo substituiTags($_tipos[9]->texto);?>
+												</p>
+												<p class="infozap-chat-text__date">11:59</p>
+											</article>
+										</div>
+									</div>
+								
+								</div>
+							</fieldset>
+
+							<fieldset>
+								<legend>Relacionamento Gestão de Pacientes</legend>
+
+								 <div class="grid grid_3" style="margin-bottom:0;">
+									<form method="post" class="form">
+										<div class="">
+											<dl>
+												<dd>
+													<label><input type="checkbox" class="js-pub input-switch" data-id_tipo="9"<?php echo $_tipos[4]->pub?" checked":"";?> />Ativar</label></dd>
+												</dd>
+											</dl>
+											<dl>
+												<dd><a href="javascript:;" class="button js-restaurar" title="Restaurar mensagem" data-id_tipo="4"><span class="iconify" data-icon="ic:baseline-restart-alt"></span></a></dd>
+											</dl>
+										</div>
+										<dl>
+											<dd>Mensagem rápida para resgate de pacientes na Gestão de Pacientes.</dd>
+										</dl>
+									</form>
+									<div>
+										<dt></dt>
+										<dl>
+											<dd><textarea class="js-mensagem js-mensagem-4" rows="10" data-id_tipo="4"><?php echo $_tipos[4]->texto;?></textarea></dd>
+										</dl>
+									</div>
+
+									<div class="infozap-chat">
+										<div class="infozap-chat-text infozap-chat-text--author">
+											<article>
+												<p class="infozap-chat-text__msg js-msg-4">
+													<?php echo substituiTags($_tipos[4]->texto);?>
 												</p>
 												<p class="infozap-chat-text__date">11:59</p>
 											</article>

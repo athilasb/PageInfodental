@@ -184,7 +184,7 @@
 							else if ($enviaWhatsapp == 1 and empty($conexao))
 								$erro = 'Infozap não conectado';
 							else if ($enviaWhatsapp == 1 and is_object($conexao) and $conexao->versao != 2)
-								$erro = 'Versão do Infozap não suporta envio de arquivos. Favor atualize seu Infozap!';
+								$erro = 'Versão do Infozap não suporta envio de arquivos. Favor atualize seu Infozap! $conexao->versao';
 
 						if (empty($erro)) {
 
@@ -800,7 +800,7 @@
 							else if (is_object($paciente) and empty($paciente->telefone1)) $erro = 'Paciente não possui celular cadastrado para envio do whatsapp';
 							else if (empty($conexao)) $erro = 'Infozap não conectado';
 							else if (is_object($conexao) and $conexao->versao < 2) $erro = 'Versão do Infozap não suporta envio de arquivos. Favor atualize seu Infozap!';
-							else if(empty($usr)) $erro = 'Colaborador não encontrado!';
+							else if(empty($usr)) $erro = 'Colaborador não encontrado.';
 
 
 						if (empty($erro)) {

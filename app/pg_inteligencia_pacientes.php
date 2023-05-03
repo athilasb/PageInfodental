@@ -762,11 +762,11 @@ Lista Unica
 
 
 				<script type="text/javascript">
-					<?php 
+					
 					/*var pacientesDesmarcados = JSON.parse(`<?php echo json_encode($desmarcadosPacientesAgendaJSON);?>`);
 					var pacientesRetorno = JSON.parse(`<?php echo json_encode($retornoPacientesAgendaJSON);?>`);
 					var pacientesExcluidos = JSON.parse(`<?php echo json_encode($pacientesExcluidosJSON);?>`);*/
-					?>
+					
 
 
 					var pacientesOportunidades = [];
@@ -823,7 +823,9 @@ Lista Unica
 						if(pacientes.length==0) {
 							$('.js-nenhumpaciente').show();
 							$('.js-paginacao,.js-guia,.js-carregando').hide();
+							$('#js-inteligencia-paciente').hide();
 						} else {
+							$('#js-inteligencia-paciente').show();
 							$('.js-nenhumpaciente,.js-carregando').hide();
 							$('.js-paginacao,.js-guia').show();
 							paginaQtd =  Math.ceil(pacientes.length/paginaReg);
@@ -931,6 +933,8 @@ Lista Unica
 						let id_paciente = $('#js-inteligencia-paciente .js-id_paciente').val();
 						let obs = $('#js-inteligencia-paciente .js-textarea-obs').val();
 						let id_proximaconsulta = $('#js-inteligencia-paciente .js-id_proximaconsulta').val();
+
+
 						
 						let objTextoAntigo = obj.html();
 
@@ -946,13 +950,16 @@ Lista Unica
 								success:function(rtn) {
 									if(rtn.success) {
 
+										if(tipo=="whatsapp") {
+											swal({title: "Sucesso!", text: `Mensagem enviada para <b>${rtn.numero}</b> com sucesso!`, type:"success", html:true, confirmButtonColor: "#424242"});	
+										}
 										$('#js-inteligencia-paciente .js-textarea-obs').val('');
 										atualizaValorListasInteligentes();
 
-									} else if(rtn.error) {
-
 									} else {
 
+										let erro = rtn.error ? rtn.error : 'Algum erro ocorreu!';
+										swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});
 									}
 								}
 							}).done(function(){
@@ -1036,7 +1043,7 @@ Lista Unica
 										} 
 								});
 							}
-							else if(obs.length==0) {
+							else if(obs.length==0 && tipo!="whatsapp") {
 								swal({title: "Erro!", text: "Preencha o campo de Obervações", type:"error", confirmButtonColor: "#424242"});	
 							} else {
 
@@ -1071,7 +1078,7 @@ Lista Unica
 						</div>
 
 						<div class="header-fone"><div class="js-status"></div>
-							<i class="iconify" data-icon="fluent:call-connecting-20-regular"></i><p class="js-telefone">(62) 98405-0927</p>
+							<i class="iconify" data-icon="fluent:call-connecting-20-regular"></i><p class="js-telefone"></p>
 						</div>
 					</section>
 
@@ -1119,6 +1126,9 @@ Lista Unica
 								</dl>
 								<dl>
 									<dd><a href="javascript:;" class="button tooltip js-btn-relacionamento" data-tipo="desativar" data-loading="0" title="Desativar Paciente">Desativar Paciente</a></dd>
+								</dl>
+								<dl>
+									<dd><a href="javascript:;" class="button tooltip js-btn-relacionamento" data-tipo="whatsapp" data-loading="0" title="Enviar Whatsapp"><i class="iconify" data-icon="la:whatsapp"></i></a></dd>
 								</dl>
 							</div>
 						</div>

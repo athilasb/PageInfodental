@@ -202,32 +202,49 @@
 
 	# Desativação de Espera de resposta para Confirmação de Mensagem
 		echo "<h1>Desativação de espera para confirmação de agendamento (id_tipo=12)</h1>";
-		$sql->consult($_p."whatsapp_mensagens","*","where data>='2023-04-27 00:00:00' and data < NOW() - INTERVAL 4 HOUR and webhook_desativado=0 and lixo=0 and enviado=1 and data_enviado>'0000-00-00 00:00:00'");
+		$where="where data>='2023-04-27 00:00:00' and data < NOW() - INTERVAL 4 HOUR and id_tipo=1 and webhook_desativado=0 and lixo=0 and enviado=1 and data_enviado>'0000-00-00 00:00:00'";
+		$sql->consult($_p."whatsapp_mensagens","*",$where);
+		echo $where." -> $sql->rows<BR>";
 		if($sql->rows) {
+			$agendasIds=[];
 			$webhookVencidos=[];
 			while($x=mysqli_fetch_object($sql->mysqry)) {
 				$webhookVencidos[]=$x;
+				$agendaIds[]=$x->id_agenda;
+			}
+
+			$_agendamentosAConfirmar=[];
+			if(count($agendaIds)>0) {
+				// id_status= 1 (a confirmar)
+				$sql->consult($_p."agenda","id","where id IN (".implode(",",$agendaIds).") and id_status=1 and lixo=0");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$_agendamentosAConfirmar[$x->id]=$x;
+				}
 			}
 
 			foreach($webhookVencidos as $x) {
 
 				echo "ID Wts: $x->id | ID Agenda: $x->id_agenda<br />";
-				$attr=array('id_tipo'=>12,
-								'id_paciente'=>$x->id_paciente,
-								'id_agenda'=>$x->id_agenda,
-								'cronjob'=>1);
 
-				if($wts->adicionaNaFila($attr)) {
-					$sql->update($_p."whatsapp_mensagens","webhook_desativado=1,webhook_expirado_inoperacao=now()","where id=$x->id");
-					echo "Sucesso!";
+				// se agendamento estiver a confirmar
+				if(isset($_agendamentosAConfirmar[$x->id_agenda])) {
+
+					$attr=array('id_tipo'=>12,
+									'id_paciente'=>$x->id_paciente,
+									'id_agenda'=>$x->id_agenda,
+									'cronjob'=>1);
+
+					if($wts->adicionaNaFila($attr)) {
+						$sql->update($_p."whatsapp_mensagens","webhook_desativado=1,webhook_expirado_inoperacao=now()","where id=$x->id");
+						echo "Sucesso!";
+					}
+					else echo "Erro: ".$wts->erro;
+				} else {
+					echo "não está mais com status a confirmar";
 				}
-				else echo "Erro: ".$wts->erro;
 				echo "<hr>";
 			}
 		} else echo "Nehuma mensagem de confirmação de agendamento expirada";
-
-
-
 
 	# Dispara
 		// 2023-03-20: removido pois nao precisa mais disparar pois ja cadastra na fila do rabbitmq

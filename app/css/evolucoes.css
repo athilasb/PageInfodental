@@ -242,7 +242,7 @@ input::placeholder {
 	margin: auto;
 }
 
-.form input[type="text"] {
+.form input[type="text"], .form input[type="tel"] {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;

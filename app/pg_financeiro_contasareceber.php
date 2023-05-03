@@ -14,9 +14,18 @@ if (isset($_POST['ajax'])) {
 
 include "includes/header.php";
 include "includes/nav.php";
+
+// formas de pagamento
+$_formasDePagamento = array();
+$optionFormasDePagamento = '';
+$sql->consult($_p . "parametros_formasdepagamento", "*", "where lixo=0 order by titulo asc");
+while ($x = mysqli_fetch_object($sql->mysqry)) {
+	$_formasDePagamento[$x->id] = (object)array("id" => $x->id, "lixo" => $x->lixo, "titulo" => utf8_encode($x->titulo), "tipo" => $x->tipo, "politica_de_pagamento" => $x->politica_de_pagamento);
+}
 $data_inicial_filtro = isset($_GET['data_inicio']) ? $_GET['data_inicio'] : date('Y-m-d');
 $data_final_filtro =  isset($_GET['data_final']) ? $_GET['data_final'] : date('Y-m-d', strtotime("+7 days"));
 $dias_filtro = (strtotime($data_final_filtro) - strtotime($data_inicial_filtro)) / (60 * 60 * 24);
+
 
 function getValores($data_inicial, $data_final)
 {
@@ -25,7 +34,7 @@ function getValores($data_inicial, $data_final)
 	// buscando informações dos pagamentos
 	$_tratamentos = array();
 	$_origens = array();
-	$_registros = array();
+	$_recebimentos = array();
 	$_pagantes =  array();
 	$idRegistros = array();
 	$idTratamentos = array();
@@ -48,11 +57,12 @@ function getValores($data_inicial, $data_final)
 	}
 
 	// aqui eu busco as baixas que foram dadas
-	$_baixas = array();
+	$_fluxos = array();
 	$sql->consult($_p . "financeiro_fluxo", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 AND desconto=0  AND valor>0 order by data_vencimento asc");
 	if ($sql->rows) {
 		while ($x = mysqli_fetch_object($sql->mysqry)) {
-			$_baixas[$x->id] = $x;
+			$_fluxos[$x->id_registro][$x->id] = $x;
+			//$_fluxos[$x->id] = $x;
 			#$origem = $origens[$x->id_origem];
 			$idRegistros[$x->id_registro] = $x->id_registro;
 		}
@@ -61,7 +71,7 @@ function getValores($data_inicial, $data_final)
 	$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 order by data_vencimento asc");
 	if ($sql->rows) {
 		while ($x = mysqli_fetch_object($sql->mysqry)) {
-			$_registros[$x->id] = $x;
+			$_recebimentos[$x->id] = $x;
 			$idsPagamentos[$x->id] = $x->id;
 			$idTratamentos[$x->id_tratamento] = $x->id_tratamento;
 			$idPagantes[$x->id_pagante] = $x->id_pagante;
@@ -69,10 +79,10 @@ function getValores($data_inicial, $data_final)
 	}
 	// pegandos os IDS pagantes e tratamentos
 	if (count($idRegistros) > 0) {
-		$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", " WHERE id IN (" . IMPLODE(',', $idRegistros) . ")");
+		$sql->consult($_p . "financeiro_fluxo_recebimentos", "*", " WHERE id IN (" . IMPLODE(',', $idRegistros) . ") AND lixo=0");
 		if ($sql->rows) {
 			while ($x = mysqli_fetch_object($sql->mysqry)) {
-				$_registros[$x->id] = $x;
+				$_recebimentos[$x->id] = $x;
 				$idTratamentos[$x->id_tratamento] = $x->id_tratamento;
 				$idPagantes[$x->id_pagante] = $x->id_pagante;
 			}
@@ -97,82 +107,229 @@ function getValores($data_inicial, $data_final)
 		}
 	}
 
-	$dados = [];
-	foreach ($_baixas as $baixa) {
-		$titulo = (isset($_registros[$baixa->id_registro]) && isset($_registros[$baixa->id_registro]->id_tratamento) && isset($_tratamentos[$_registros[$baixa->id_registro]->id_tratamento])) ? utf8_encode($_tratamentos[$_registros[$baixa->id_registro]->id_tratamento]->titulo) : "";
-		$pagante  = (isset($_registros[$baixa->id_registro]) && isset($_registros[$baixa->id_registro]->id_pagante) && isset($_pagantes[$_registros[$baixa->id_registro]->id_pagante])) ? $_pagantes[$_registros[$baixa->id_registro]->id_pagante]->nome : '';
-		$dados[$baixa->id]['id_baixa'] = $baixa->id;
-		$dados[$baixa->id]['data_vencimento'] = $baixa->data_vencimento;
-		$dados[$baixa->id]['id_registro'] = $baixa->id_registro;
-		$dados[$baixa->id]['pagamento'] = $baixa->pagamento;
-		$dados[$baixa->id]['data_efetivado'] = $baixa->data_efetivado;
-		$dados[$baixa->id]['tipo'] = 'fluxo';
-		$dados[$baixa->id]['valor'] = $baixa->valor;
-		$dados[$baixa->id]['valor_multa'] = $baixa->valor_multa;
-		$dados[$baixa->id]['valor_taxa'] = $baixa->valor_taxa;
-		$dados[$baixa->id]['valor_desconto'] = $baixa->valor_desconto;
-		$dados[$baixa->id]['valor_juros'] = $baixa->valor_juros;
-		$dados[$baixa->id]['desconto'] = $baixa->desconto;
-		$dados[$baixa->id]['valorTotalPagamento'] = $_registros[$baixa->id_registro]->valor ?? 0;
-		$dados[$baixa->id]['titulo'] = $titulo;
-		$dados[$baixa->id]['nome_pagante'] = $pagante;
-		$dados[$baixa->id]['status'] = '';
-		$valor['valorTotal'] += $baixa->valor;
-		if ($baixa->pagamento == 1) {
-			$valor['valorRecebido'] += $baixa->valor;
-			$dados[$baixa->id]['status'] = 'Pago';
+	$dados = array();
+	$extras = array();
+
+	foreach ($_recebimentos as $id_recebimento => $recebimento) {
+		$titulo = (isset($_tratamentos[$recebimento->id_tratamento]->titulo)) ? utf8_decode($_tratamentos[$recebimento->id_tratamento]->titulo) : "Pagamento Avulso";
+		$pagante  = (isset($_pagantes[$recebimento->id_pagante]->nome)) ? utf8_decode($_pagantes[$recebimento->id_pagante]->nome) : '-';
+		// verifica se existe um fluxo
+		$valor['valorTotal'] += $recebimento->valor;
+		if (isset($_fluxos[$id_recebimento])) {
+			$fluxos = $_fluxos[$id_recebimento];
+			$valor_total = 0;
+			foreach ($fluxos as $id_fluxo => $fluxo) {
+				isset($extras['formas_pagamentos'][$fluxo->id_formapagamento]) ? $extras['formas_pagamentos'][$fluxo->id_formapagamento] += $fluxo->valor : $extras['formas_pagamentos'][$fluxo->id_formapagamento] = intVal($fluxo->valor);
+				$valor_total += $fluxo->valor;
+				$dados[$fluxo->id]['id_baixa'] = $fluxo->id;
+				$dados[$fluxo->id]['data_vencimento'] = $fluxo->data_vencimento;
+				$dados[$fluxo->id]['id_registro'] = $fluxo->id_registro;
+				$dados[$fluxo->id]['pagamento'] = $fluxo->pagamento;
+				$dados[$fluxo->id]['data_efetivado'] = $fluxo->data_efetivado;
+				$dados[$fluxo->id]['tipo'] = 'fluxo';
+				$dados[$fluxo->id]['valor'] = $fluxo->valor;
+				$dados[$fluxo->id]['valor_multa'] = $fluxo->valor_multa;
+				$dados[$fluxo->id]['valor_taxa'] = $fluxo->valor_taxa;
+				$dados[$fluxo->id]['valor_desconto'] = $fluxo->valor_desconto;
+				$dados[$fluxo->id]['valor_juros'] = $fluxo->valor_juros;
+				$dados[$fluxo->id]['desconto'] = $fluxo->desconto;
+				$dados[$fluxo->id]['valorTotalPagamento'] = $recebimento->valor ?? 0;
+				$dados[$fluxo->id]['titulo'] = $titulo;
+				$dados[$fluxo->id]['nome_pagante'] = $pagante;
+				$dados[$fluxo->id]['status'] = '';
+
+				if ($fluxo->pagamento == 0) {
+					$atraso = (strtotime($fluxo->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
+					if ($atraso < 0) {
+						$valor['valoresVencido'] += $fluxo->valor;
+						$dados[$fluxo->id]['status'] = 'Vencido';
+						$extras['ids']['valoresVencido']['fluxo'][$fluxo->id] = $fluxo->id;
+					} else {
+						$valor['aReceber'] += $fluxo->valor;
+						$dados[$fluxo->id]['status'] = 'a Receber';
+						$extras['ids']['aReceber']['fluxo'][$fluxo->id] = $fluxo->id;
+					}
+				} else {
+					$valor['valorRecebido'] += $fluxo->valor;
+					$dados[$fluxo->id]['status'] = 'Pago';
+					$extras['ids']['valorRecebido']['fluxo'][$fluxo->id] = $fluxo->id;
+				}
+			}
+			if ($valor_total < $recebimento->valor) {
+				$faltam = ($recebimento->valor - $valor_total);
+				$atraso = (strtotime($recebimento->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
+
+				$dados[$recebimento->id]['id_baixa'] = $fluxo->id;
+				$dados[$recebimento->id]['data_vencimento'] = $fluxo->data_vencimento;
+				$dados[$recebimento->id]['id_registro'] = $fluxo->id_registro;
+				$dados[$recebimento->id]['pagamento'] = $fluxo->pagamento;
+				$dados[$recebimento->id]['data_efetivado'] = $fluxo->data_efetivado;
+				$dados[$recebimento->id]['tipo'] = 'fluxo';
+				$dados[$recebimento->id]['valor'] = $faltam;
+				$dados[$recebimento->id]['valor_multa'] = $fluxo->valor_multa;
+				$dados[$recebimento->id]['valor_taxa'] = $fluxo->valor_taxa;
+				$dados[$recebimento->id]['valor_desconto'] = $fluxo->valor_desconto;
+				$dados[$recebimento->id]['valor_juros'] = $fluxo->valor_juros;
+				$dados[$recebimento->id]['desconto'] = $fluxo->desconto;
+				$dados[$recebimento->id]['valorTotalPagamento'] = $recebimento->valor ?? 0;
+				$dados[$recebimento->id]['titulo'] = $titulo;
+				$dados[$recebimento->id]['nome_pagante'] = $pagante;
+				$dados[$recebimento->id]['status'] = '';
+
+				if ($atraso < 0) {
+					$valor['valoresVencido'] += $faltam;
+					$extras['ids']['valoresVencido']['recebimento'][$recebimento->id] = $recebimento->id;
+					$dados[$recebimento->id]['status'] = 'Vencido';
+				} else {
+					$valor['definirPagamento'] += $faltam;
+					$extras['ids']['definirPagamento']['recebimento'][$recebimento->id] = $recebimento->id;
+					$dados[$recebimento->id]['status'] = 'DEFINIR PAGAMENTO';
+				}
+			}
 		} else {
-			$atraso = (strtotime($baixa->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
+			$atraso = (strtotime($recebimento->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
 			if ($atraso < 0) {
-				$valor['valoresVencido'] += $baixa->valor;
-				$dados[$baixa->id]['status'] = 'Vencido';
+				$valor['valoresVencido'] += $recebimento->valor;
+				$extras['ids']['valoresVencido']['recebimento'][$recebimento->id] = $recebimento->id;
+				$valor['valoresVencido'] += $recebimento->valor;
+				$dados[$id_recebimento]['id_baixa'] = $recebimento->id;
+				$dados[$id_recebimento]['data_vencimento'] = $recebimento->data_vencimento;
+				$dados[$id_recebimento]['id_registro'] = $recebimento->id;
+				$dados[$id_recebimento]['pagamento'] = 0;
+				$dados[$id_recebimento]['data_efetivado'] = null;
+				$dados[$id_recebimento]['tipo'] = 'recebimento';
+				$dados[$id_recebimento]['valor'] = $recebimento->valor;
+				$dados[$id_recebimento]['valor_multa'] = $recebimento->valor_multa;
+				$dados[$id_recebimento]['valor_taxa'] = $recebimento->valor_taxa;
+				$dados[$id_recebimento]['valor_desconto'] = $recebimento->valor_desconto;
+				$dados[$id_recebimento]['valor_juros'] = 0;
+				$dados[$id_recebimento]['desconto'] = 0;
+				$dados[$id_recebimento]['valorTotalPagamento'] = $recebimento->valor;
+				$dados[$id_recebimento]['titulo'] = $titulo;
+				$dados[$id_recebimento]['nome_pagante'] = $pagante;
+				$dados[$id_recebimento]['status'] = 'Vencido';
 			} else {
-				$valor['aReceber'] += $baixa->valor;
-				$dados[$baixa->id]['status'] = 'a Receber';
+				$valor['definirPagamento'] += $recebimento->valor;
+				$extras['ids']['definirPagamento']['recebimento'][$recebimento->id] = $recebimento->id;
+				$dados[$id_recebimento]['id_baixa'] = $recebimento->id;
+				$dados[$id_recebimento]['data_vencimento'] = $recebimento->data_vencimento;
+				$dados[$id_recebimento]['id_registro'] = $recebimento->id;
+				$dados[$id_recebimento]['pagamento'] = 0;
+				$dados[$id_recebimento]['data_efetivado'] = null;
+				$dados[$id_recebimento]['tipo'] = 'recebimento';
+				$dados[$id_recebimento]['valor'] = $recebimento->valor;
+				$dados[$id_recebimento]['valor_multa'] = $recebimento->valor_multa;
+				$dados[$id_recebimento]['valor_taxa'] = $recebimento->valor_taxa;
+				$dados[$id_recebimento]['valor_desconto'] = $recebimento->valor_desconto;
+				$dados[$id_recebimento]['valor_juros'] = 0;
+				$dados[$id_recebimento]['desconto'] = 0;
+				$dados[$id_recebimento]['valorTotalPagamento'] = $recebimento->valor;
+				$dados[$id_recebimento]['titulo'] = $titulo;
+				$dados[$id_recebimento]['nome_pagante'] = $pagante;
+				$dados[$id_recebimento]['status'] = 'DEFINIR PAGAMENTO';
 			}
 		}
 	}
+	// debug($dados,true);
+	// foreach ($_fluxos as $fluxo) {
+	//  	$titulo = (isset($_recebimentos[$fluxo->id_registro]) && isset($_recebimentos[$fluxo->id_registro]->id_tratamento) && isset($_tratamentos[$_recebimentos[$fluxo->id_registro]->id_tratamento])) ? utf8_encode($_tratamentos[$_recebimentos[$fluxo->id_registro]->id_tratamento]->titulo) : "";
+	//  	$pagante  = (isset($_recebimentos[$fluxo->id_registro]) && isset($_recebimentos[$fluxo->id_registro]->id_pagante) && isset($_pagantes[$_recebimentos[$fluxo->id_registro]->id_pagante])) ? utf8_encode($_pagantes[$_recebimentos[$fluxo->id_registro]->id_pagante]->nome) : '';
+	//  	$dados[$fluxo->id]['id_baixa'] = $fluxo->id;
+	//  	$dados[$fluxo->id]['data_vencimento'] = $fluxo->data_vencimento;
+	//  	$dados[$fluxo->id]['id_registro'] = $fluxo->id_registro;
+	//  	$dados[$fluxo->id]['pagamento'] = $fluxo->pagamento;
+	//  	$dados[$fluxo->id]['data_efetivado'] = $fluxo->data_efetivado;
+	//  	$dados[$fluxo->id]['tipo'] = 'fluxo';
+	//  	$dados[$fluxo->id]['valor'] = $fluxo->valor;
+	//  	$dados[$fluxo->id]['valor_multa'] = $fluxo->valor_multa;
+	//  	$dados[$fluxo->id]['valor_taxa'] = $fluxo->valor_taxa;
+	//  	$dados[$fluxo->id]['valor_desconto'] = $fluxo->valor_desconto;
+	//  	$dados[$fluxo->id]['valor_juros'] = $fluxo->valor_juros;
+	//  	$dados[$fluxo->id]['desconto'] = $fluxo->desconto;
+	//  	$dados[$fluxo->id]['valorTotalPagamento'] = $_recebimentos[$fluxo->id_registro]->valor ?? 0;
+	//  	$dados[$fluxo->id]['titulo'] = $titulo;
+	//  	$dados[$fluxo->id]['nome_pagante'] = $pagante;
+	//  	$dados[$fluxo->id]['status'] = '';
+	//  	$valor['valorTotal'] += $fluxo->valor;
+	//  	if ($fluxo->pagamento == 1) {
+	//  		$valor['valorRecebido'] += $fluxo->valor;
+	//  		$dados[$fluxo->id]['status'] = 'Pago';
+	//  		$extras['ids']['valorRecebido']['fluxo'][$fluxo->id] = $fluxo->id;
+	//  	} else {
+	//  		$atraso = (strtotime($fluxo->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
+	//  		if ($atraso < 0) {
+	//  			$valor['valoresVencido'] += $fluxo->valor;
+	//  			$dados[$fluxo->id]['status'] = 'Vencido';
+	//  			$extras['ids']['valoresVencido']['fluxo'][$fluxo->id] = $fluxo->id;
+	//  		} else {
+	//  			$valor['aReceber'] += $fluxo->valor;
+	//  			$dados[$fluxo->id]['status'] = 'a Receber';
+	//  			$extras['ids']['aReceber']['fluxo'][$fluxo->id] = $fluxo->id;
+	//  		}
+	//  	}
 
+	// }
 
-
-
-	foreach ($_registros as $id => $pag) {
-		$sql->consult($_p . "financeiro_fluxo", "SUM(valor)", "WHERE id_registro='$id' AND id_origem=1 AND lixo=0");
-		$key = "SUM(valor)";
-		$soma = mysqli_fetch_object($sql->mysqry);
-		if ($soma->$key >= $pag->valor) {
-			//echo "SOMA È MAIOR OU IGUAL QUE O VALOR ORIGINAL<br>";
-		} else {
-			$faltam = ($pag->valor - $soma->$key);
-			//echo "AINDA FALTA UM VALOR DE: $faltam<br>";
-			$titulo = (isset($_tratamentos[$pag->id_tratamento]->titulo)) ? utf8_decode($_tratamentos[$pag->id_tratamento]->titulo) : "-";
-			$pagante  = (isset($_pagantes[$pag->id_pagante]->nome)) ? $_pagantes[$pag->id_pagante]->nome : '-';
-			$valor['definirPagamento'] += $faltam;
-			$dados[$id]['id_baixa'] = $pag->id;
-			$dados[$id]['data_vencimento'] = $pag->data_vencimento;
-			$dados[$id]['id_registro'] = $pag->id;
-			$dados[$id]['pagamento'] = 0;
-			$dados[$id]['data_efetivado'] = null;
-			$dados[$id]['tipo'] = 'recebimento';
-			$dados[$id]['valor'] = $faltam;
-			$dados[$id]['valor_multa'] = $pag->valor_multa;
-			$dados[$id]['valor_taxa'] = $pag->valor_taxa;
-			$dados[$id]['valor_desconto'] = $pag->valor_desconto;
-			$dados[$id]['valor_juros'] = 0;
-			$dados[$id]['desconto'] = 0;
-			$dados[$id]['valorTotalPagamento'] = $_registros[$pag->id]->valor;
-			$dados[$id]['titulo'] = $titulo;
-			$dados[$id]['nome_pagante'] = $pagante;
-			$dados[$id]['status'] = 'DEFINIR PAGAMENTO';
-			$valor['valorTotal'] += $pag->valor;
-		}
-	}
+	// foreach ($_recebimentos as $id => $pag) {
+	// 	$sql->consult($_p . "financeiro_fluxo", "SUM(valor)", "WHERE id_registro='$id' AND id_origem=1 AND lixo=0");
+	//  	$key = "SUM(valor)";
+	//  	$soma = mysqli_fetch_object($sql->mysqry);
+	//  	if ($soma->$key >= $pag->valor) {
+	//  		//echo "SOMA È MAIOR OU IGUAL QUE O VALOR ORIGINAL<br>";
+	//  	} else {
+	//  		$faltam = ($pag->valor - $soma->$key);
+	//  		//echo "AINDA FALTA UM VALOR DE: $faltam<br>";
+	//  		$titulo = (isset($_tratamentos[$pag->id_tratamento]->titulo)) ? utf8_decode($_tratamentos[$pag->id_tratamento]->titulo) : "-";
+	//  		$pagante  = (isset($_pagantes[$pag->id_pagante]->nome)) ? utf8_decode($_pagantes[$pag->id_pagante]->nome) : '-';
+	//  		$atraso = (strtotime($pag->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
+	//  		if ($atraso < 0) {
+	//  			$valor['valoresVencido'] += $faltam;
+	//  			$dados[$id]['id_baixa'] = $pag->id;
+	//  			$dados[$id]['data_vencimento'] = $pag->data_vencimento;
+	//  			$dados[$id]['id_registro'] = $pag->id;
+	//  			$dados[$id]['pagamento'] = 0;
+	//  			$dados[$id]['data_efetivado'] = null;
+	//  			$dados[$id]['tipo'] = 'recebimento';
+	//  			$dados[$id]['valor'] = $faltam;
+	//  			$dados[$id]['valor_multa'] = $pag->valor_multa;
+	//  			$dados[$id]['valor_taxa'] = $pag->valor_taxa;
+	//  			$dados[$id]['valor_desconto'] = $pag->valor_desconto;
+	//  			$dados[$id]['valor_juros'] = 0;
+	//  			$dados[$id]['desconto'] = 0;
+	//  			$dados[$id]['valorTotalPagamento'] = $_recebimentos[$pag->id]->valor;
+	//  			$dados[$id]['titulo'] = $titulo;
+	//  			$dados[$id]['nome_pagante'] = $pagante;
+	//  			$dados[$id]['status'] = 'Vencido';
+	//  			$valor['valorTotal'] += $pag->valor;
+	//  			$extras['ids']['valoresVencido']['recebimento'][$pag->id] = $pag->id;
+	//  		} else {
+	//  			$valor['definirPagamento'] += $faltam;
+	//  			$dados[$id]['id_baixa'] = $pag->id;
+	//  			$dados[$id]['data_vencimento'] = $pag->data_vencimento;
+	//  			$dados[$id]['id_registro'] = $pag->id;
+	// 			$dados[$id]['pagamento'] = 0;
+	//  			$dados[$id]['data_efetivado'] = null;
+	//  			$dados[$id]['tipo'] = 'recebimento';
+	// 			$dados[$id]['valor'] = $faltam;
+	//  			$dados[$id]['valor_multa'] = $pag->valor_multa;
+	//  			$dados[$id]['valor_taxa'] = $pag->valor_taxa;
+	//  			$dados[$id]['valor_desconto'] = $pag->valor_desconto;
+	//  			$dados[$id]['valor_juros'] = 0;
+	//  			$dados[$id]['desconto'] = 0;
+	//  			$dados[$id]['valorTotalPagamento'] = $_recebimentos[$pag->id]->valor;
+	//  			$dados[$id]['titulo'] = $titulo;
+	//  			$dados[$id]['nome_pagante'] = $pagante;
+	//  			$dados[$id]['status'] = 'DEFINIR PAGAMENTO';
+	//  			$valor['valorTotal'] += $pag->valor;
+	//  			$extras['ids']['definirPagamento']['recebimento'][$pag->id] = $pag->id;
+	//  		}
+	//  	}
+	// }
 	$dados = json_decode(json_encode($dados));
-	return [$dados, $_registros, $valor];
+	return [$dados, $_recebimentos, $valor, $extras];
 }
 
-[$dados, $_registros, $valor] = getValores($data_inicial_filtro, $data_final_filtro);
-
+[$dados, $_recebimentos, $valor, $extras] = getValores($data_inicial_filtro, $data_final_filtro);
 ?>
 
 <head>
@@ -205,13 +362,13 @@ function getValores($data_inicial, $data_final)
 		</div>
 	</div>
 </header>
-<main class="main">
+<main class="main" id="body" data-pagina="contasareceber">
 	<div class="main__content content">
 		<section class="filter">
 			<div class="filter-group">
 				<dl>
 					<dd>
-						<a href="javascript:;" id='pagamento_avulso-receber' class="button button_main js-btn-abrir-aside"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Pagamento Avulso</span></a>
+						<button id='pagamento_avulso-receber' class="button button_main js-btn-abrir-aside" data-tipoAvulso="geral"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> <span>Pagamento Avulso</span></button>
 					</dd>
 				</dl>
 			</div>
@@ -271,8 +428,8 @@ function getValores($data_inicial, $data_final)
 					<div class="botoes-graficos">
 						<button id="status-pagamento-btn" class="grafico-btn active">Status do pagamento</button>
 						<button id="formas-pagamento-btn" class="grafico-btn">Formas de pagamento</button>
-						<button id="conciliacoes-btn" class="grafico-btn">Conciliações dos pagamentos</button>
-						<button id="emissao-notas-btn" class="grafico-btn">Emissão de notas e recibos</button>
+						<!-- <button id="conciliacoes-btn" class="grafico-btn">Conciliações dos pagamentos</button> -->
+						<!-- <button id="emissao-notas-btn" class="grafico-btn">Emissão de notas e recibos</button> -->
 					</div>
 					<div class="graficos">
 						<div id="status-pagamento" class="grafico-content" style="display:block">
@@ -282,22 +439,22 @@ function getValores($data_inicial, $data_final)
 									<div class="label-info-1 info-item">
 										<span class="color"></span>
 										<span class="label"><b>Pago:</b></span>
-										<span class="value">R$ 5.000,00</span>
+										<span class="value">R$ <?= number_format($valor['valorRecebido'], 2, ',', '.') ?></span>
 									</div>
 									<div class="label-info-2 info-item">
 										<span class="color"></span>
 										<span class="label"><b>Vencidos:</b></span>
-										<span class="value">R$ 1.000,00</span>
+										<span class="value">R$ <?= number_format($valor['valoresVencido'], 2, ',', '.') ?></span>
 									</div>
 									<div class="label-info-3 info-item">
 										<span class="color"></span>
 										<span class="label"><b>Definir pagamento:</b></span>
-										<span class="value">R$ 2.000,00</span>
+										<span class="value">R$ <?= number_format($valor['definirPagamento'], 2, ',', '.') ?></span>
 									</div>
 									<div class="label-info-3 info-item">
 										<span class="color"></span>
 										<span class="label"><b>A receber</b></span>
-										<span class="value">R$ 900,00</span>
+										<span class="value">R$ <?= number_format($valor['aReceber'], 2, ',', '.') ?></span>
 									</div>
 
 								</div>
@@ -307,12 +464,18 @@ function getValores($data_inicial, $data_final)
 							<div class="graficos-view display-flex-center">
 								<div id="chart2" style="height: 305px;"></div>
 								<div id="chart-info2" class="margin-left-25">
-									<div class="label-info-1 info-item">
-										<span class="color"></span>
-										<span class="label"><b>Cartão de crédito:</b></span>
-										<span class="value">R$ 5.000,00</span>
-									</div>
-									<div class="label-info-2 info-item">
+									<?php 
+										foreach($extras['formas_pagamentos'] as $id=>$forma){
+									?>
+										<div class="info-item">
+											<span class="color"></span>
+											<span class="label"><b><?=$_formasDePagamento[$id]->titulo?></b></span>
+											<span class="value">R$ <?=number_format($forma,2,',','.');?></span>
+										</div>
+									<?php 
+										}
+									?>
+									<!-- <div class="label-info-2 info-item">
 										<span class="color"></span>
 										<span class="label"><b>Boleto bancário:</b></span>
 										<span class="value">R$ 1.000,00</span>
@@ -326,7 +489,7 @@ function getValores($data_inicial, $data_final)
 										<span class="color"></span>
 										<span class="label"><b>Pix:</b></span>
 										<span class="value">R$ 900,00</span>
-									</div>
+									</div> -->
 								</div>
 							</div>
 						</div>
@@ -402,6 +565,10 @@ function getValores($data_inicial, $data_final)
 </main>
 <script>
 	const _lista = <?= json_encode($dados) ?>;
+	const _valor = <?= json_encode($valor) ?>;
+	const _formasDePagamento = <?= json_encode($_formasDePagamento); ?>;
+	const _extras = <?= json_encode($extras); ?>;
+	populaGraficos()
 	$('.js-pagamento-item').on('click', (function() {
 		let idRegistro = $(this).attr('data-idRegistro')
 		abrirAside('contasAreceber', idRegistro)
@@ -477,85 +644,103 @@ function getValores($data_inicial, $data_final)
 
 
 
-
-	//chart Status do pagamento
-
-	var options = {
-		//informações do grafico 
-		series: [5000, 1000, 2000, 9000],
-		chart: {
-			height: 327,
-			type: 'donut',
-		},
-		//cor de cada elemento
-		dataLabels: {
-			enabled: false
-		},
-		//cor de cada elemento
-		colors: ['#01E296', '#FD324E', '#FFAF15', "#566FFF"],
-		responsive: [{
-			breakpoint: 480,
-			options: {
-				chart: {
-					width: 200
-				},
-				legend: {
-					show: false
+	function populaGraficos() {
+		// let aReceber = number_format(_valor.aReceber, 2, ',', '.');
+		// let definirPagamento = number_format(_valor.definirPagamento, 2, ',', '.');
+		// let valorRecebido = number_format(_valor.valorRecebido, 2, ',', '.');
+		// let valorTotal = number_format(_valor.valorTotal, 2, ',', '.');
+		// let valoresVencido = number_format(_valor.valoresVencido, 2, ',', '.');
+		let aReceber = _valor.aReceber;
+		let definirPagamento = _valor.definirPagamento;
+		let valoresVencido = _valor.valoresVencido;
+		let valorRecebido = _valor.valorRecebido;
+		let valorTotal = _valor.valorTotal;
+		//chart Status do pagamento
+		var options = {
+			//informações do grafico 
+			series: [valorRecebido, valoresVencido, definirPagamento, aReceber],
+			chart: {
+				height: 327,
+				type: 'donut',
+			},
+			//cor de cada elemento
+			dataLabels: {
+				enabled: false
+			},
+			//cor de cada elemento
+			colors: ['#01E296', '#FD324E', '#FFAF15', "#566FFF"],
+			responsive: [{
+				breakpoint: 480,
+				options: {
+					chart: {
+						width: 200
+					},
+					legend: {
+						show: false
+					}
 				}
-			}
-		}],
-		legend: {
-			position: 'right',
-			offsetY: 0,
-			height: 230,
-			show: false // oculta as labels da direita,"
-		},
-		//informações do hover 
-		labels: ['Pago: R$ 5.000,00', 'Vencidos: R$  1.000,00', 'Definir pagamento: R$  2.000,00 ', 'A receber: R$  900,00']
-	};
-	var chart = new ApexCharts(document.querySelector("#chart1"), options);
-	//redenrizar elementos
-	chart.render();
+			}],
+			legend: {
+				position: 'right',
+				offsetY: 0,
+				height: 230,
+				show: false // oculta as labels da direita,"
+			},
+			//informações do hover 
+			labels: [`Pago: R$ ${number_format(valorRecebido,2,',','.')}`, `Vencidos: R$ ${number_format(valoresVencido,2,',','.')}`, `Definir pagamento: R$  ${number_format(definirPagamento,2,',','.')} `, `A receber: R$  ${number_format(aReceber,2,',','.')}`]
+		};
+		var chart = new ApexCharts(document.querySelector("#chart1"), options);
+		//redenrizar elementos
+		chart.render();
 
-
-	//chart Status do pagamento
-
-	var options = {
-		//informações do grafico 
-		series: [5000, 1000, 2000, 9000],
-		chart: {
-			height: 327,
-			type: 'donut',
-		},
-		//cor de cada elemento
-		dataLabels: {
-			enabled: false
-		},
-		//cor de cada elemento
-		colors: ['#1E145E', '#FC8DB0', '#6EA1D2', "#566FFF"],
-		responsive: [{
-			breakpoint: 480,
-			options: {
-				chart: {
-					width: 200
-				},
-				legend: {
-					show: false
+		//chart Formas do pagamento
+		let series = []
+		let labels = []
+		for(let x in _extras?.formas_pagamentos){
+			series.push(_extras?.formas_pagamentos[x])
+			labels.push(`${_formasDePagamento[x]?.titulo}: R$ ${number_format(_extras?.formas_pagamentos[x],2,',','.')}`)
+		}
+		var options = {
+			//informações do grafico 
+			series,
+			chart: {
+				height: 327,
+				type: 'donut',
+			},
+			//cor de cada elemento
+			dataLabels: {
+				enabled: false
+			},
+			//cor de cada elemento
+			colors: ['#1E145E', '#FC8DB0', '#6EA1D2', "#566FFF"],
+			responsive: [{
+				breakpoint: 480,
+				options: {
+					chart: {
+						width: 200
+					},
+					legend: {
+						show: false
+					}
 				}
-			}
-		}],
-		legend: {
-			position: 'right',
-			offsetY: 0,
-			height: 230,
-			show: false // oculta as labels da direita,"
-		},
-		//informações do hover 
-		labels: ['Cartão de crédito: R$ 5.000,00', 'Boleto bancário: R$  1.000,00', 'Dinheiro: R$  2.000,00 ', 'Pix: R$  900,00']
-	};
-	var chart = new ApexCharts(document.querySelector("#chart2"), options);
-	//redenrizar elementos
-	chart.render();
+			}],
+			legend: {
+				position: 'right',
+				offsetY: 0,
+				height: 230,
+				show: false // oculta as labels da direita,"
+			},
+			//informações do hover 
+			labels
+		};
+		var chart = new ApexCharts(document.querySelector("#chart2"), options);
+		//redenrizar elementos
+		chart.render();
+	}
+
+
+
+	
 
 	//Conciliações dos pagamentos
 
@@ -660,10 +845,6 @@ function getValores($data_inicial, $data_final)
 	var chart = new ApexCharts(document.querySelector("#chart3"), options);
 	chart.render();
 
-
-
-
-
 	//chart Emissão de notas e recibos
 
 	var options = {
@@ -704,11 +885,11 @@ function getValores($data_inicial, $data_final)
 	chart.render();
 </script>
 <?php
-$apiConfig = array(
-	'contasAReceber' => 1,
-	'contasAvulsoAReceber' => 1,
-);
-require_once("includes/api/apiAsidePagamentos.php");
+	$apiConfig = array(
+		'contasAReceber' => 1,
+		'contasAvulsoAReceber' => 1,
+	);
+	require_once("includes/api/apiAsidePagamentos.php");
 
-include "includes/footer.php";
+	include "includes/footer.php";
 ?>
