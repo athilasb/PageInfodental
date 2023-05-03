@@ -327,7 +327,7 @@ Lista Unica
 
 			$paciente='';
 			if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
-				$sql->consult($_p."pacientes","id,nome","where id='".$_POST['id_paciente']."'");
+				$sql->consult($_p."pacientes","id,nome,telefone1","where id='".$_POST['id_paciente']."'");
 				if($sql->rows) {
 					$paciente=mysqli_fetch_object($sql->mysqry);
 				}
@@ -375,6 +375,21 @@ Lista Unica
 				} else if($tipo=="desativar") {
 					$sql->update($_p."pacientes","situacao='EXCLUIDO'","where id=$paciente->id");
 					$rtn=array('success'=>true);
+				} else if($tipo=="whatsapp") {
+					$attr=array('prefixo'=>$_p,'usr'=>$usr);
+					$wts = new Whatsapp($attr);
+
+					$attr=array('id_tipo'=>4,
+								'id_paciente'=>$paciente->id,
+								'cronjob'=>0);
+
+
+					if($wts->adicionaNaFila($attr)) {
+						$rtn=array('success'=>true,'numero'=>mask($paciente->telefone1));
+					}
+					else {
+						$rtn=array('success'=>false,'error'=>isset($wts->erro)?$wts->erro:'Algum erro ocorreu. Tente novamente!');
+					}
 				} else {
 					$rtn=array('success'=>false,'error'=>'Ação não compreendida');
 				}
@@ -785,11 +800,13 @@ Lista Unica
 				</div>
 
 				<script type="text/javascript">
-					<?php 
-					/*var pacientesDesmarcados = JSON.parse(`<?php echo json_encode($desmarcadosPacientesAgendaJSON);?>`);
+					
+					/*
+					var pacientesDesmarcados = JSON.parse(`<?php echo json_encode($desmarcadosPacientesAgendaJSON);?>`);
 					var pacientesRetorno = JSON.parse(`<?php echo json_encode($retornoPacientesAgendaJSON);?>`);
-					var pacientesExcluidos = JSON.parse(`<?php echo json_encode($pacientesExcluidosJSON);?>`);*/
-					?>
+					var pacientesExcluidos = JSON.parse(`<?php echo json_encode($pacientesExcluidosJSON);?>`);
+					*/
+				
 
 
 					var pacientesOportunidades = [];
@@ -1039,14 +1056,16 @@ Lista Unica
 								success:function(rtn) {
 									if(rtn.success) {
 
+										
 										$('#js-inteligencia-paciente .js-textarea-obs').val('');
 										atualizaValorListasInteligentes();
 
-									} else if(rtn.error) {
+									} else  {
 
-									} else {
-
-									}
+										let erro = rtn.error ? rtn.error : 'Algum erro ocorreu!';
+										swal({title: "Erro!", text: erro, type:"error", confirmButtonColor: "#424242"});	
+										
+									} 
 								}
 							}).done(function(){
 								obj.attr('data-loading',0);
