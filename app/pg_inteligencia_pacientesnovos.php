@@ -7,6 +7,10 @@
 	}
 
 
+	$data_inicial_filtro = isset($_GET['data_inicio']) ? $_GET['data_inicio'] : date('Y-m-d', strtotime("-1 years"));
+	$data_final_filtro =  isset($_GET['data_final']) ? $_GET['data_final'] : date('Y-m-d');
+	
+
 	$data = isset($_GET['data'])?$_GET['data']:date('d/m/Y');
 
 	list($dia,$mes,$ano)=explode("/",$data);
@@ -44,14 +48,14 @@
 						'novosIds'=>array(0),
 						'aguardandoAprovacao'=>array(),
 						'retorno'=>array());
-	$sql->consult($_p."pacientes","id,nome,telefone1,foto,foto_cn","where codigo_bi=1 and lixo=0");
+	$sql->consult($_p."pacientes","id,nome,telefone1,foto,foto_cn","where data>='".$data_inicial_filtro."' and data<='".$data_final_filtro."' and codigo_bi=1 and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_pacientes['novos'][]=$x;
 		$_pacientes['novosIds'][]=$x->id;
 	}
 	$sql->consult($_p."agenda","*","where id_paciente in (".implode(",",$_pacientes['novosIds']).") and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
-		if($x->id_status==1 or $x->id_status==2) $pacientesNovosComAgendamento[$x->id_paciente]=$x;
+		if($x->id_status==1 or $x->id_status==2 or $x->id_status==5) $pacientesNovosComAgendamento[$x->id_paciente]=$x;
 		if($x->id_status==5) $pacientesNovosAtendidos[$x->id_paciente]=1;
 	}
 
@@ -108,9 +112,8 @@
 			$_pacientes['retorno'][]=$x;
 		}
 	}
-	
 
-	
+
 ?> 
 	<script type="text/javascript">
 		const atualizaValorListasInteligentes = () => {
@@ -118,6 +121,51 @@
 			document.location.reload();
 
 		}
+
+		$(function(){
+			$('.js-calendario').daterangepicker({
+				"autoApply": true,
+				"locale": {
+					"format": "DD/MM/YYYY",
+					"separator": " - ",
+					"fromLabel": "De",
+					"toLabel": "Até",
+					"customRangeLabel": "Customizar",
+					"weekLabel": "W",
+					"daysOfWeek": [
+						"Dom",
+						"Seg",
+						"Ter",
+						"Qua",
+						"Qui",
+						"Sex",
+						"Sáb"
+					],
+					"monthNames": [
+						"Janeiro",
+						"Fevereiro",
+						"Março",
+						"Abril",
+						"Maio",
+						"Junho",
+						"Julho",
+						"Agosto",
+						"Setembro",
+						"Outubro",
+						"Novembro",
+						"Dezembro"
+					],
+					"firstDay": 1
+				},
+			});
+
+
+			$('.js-calendario').on('apply.daterangepicker', function(ev, picker) {
+				let dtFim = picker.endDate.format('YYYY-MM-DD');
+				let dtInicio = picker.startDate.format('YYYY-MM-DD');
+				document.location.href = `<?php echo "$_page?"; ?>&data_inicio=${dtInicio}&data_final=${dtFim}`
+			});
+		})
 	</script>
 	<header class="header">
 		<div class="header__content content">
@@ -132,6 +180,19 @@
 				require_once("includes/menus/menuInteligencia.php");
 				?>
 			</div>
+			<div class="header__inner2">
+			<section class="header-date">
+				<div class="header-date-now">
+					<h1 id="dia_i"><?= date('d', strtotime($data_inicial_filtro)) ?></h1>
+					<h2 id="mes_i"><?= strtolower(substr(mes(date('m', strtotime($data_inicial_filtro))),0,3)) ?></h2>
+					<h1 id="ano_i"><?= date('Y', strtotime($data_inicial_filtro)) ?></h1>
+					até
+					<h1 id="dia_f"><?= date('d', strtotime($data_final_filtro)) ?></h1>
+					<h2 id="mes_f"><?= strtolower(substr(mes(date('m', strtotime($data_final_filtro))),0,3)) ?></h2>
+					<h1 id="ano_i"><?= date('Y', strtotime($data_final_filtro)) ?></h1>
+				</div>
+			</section>
+		</div>
 
 			
 		</div>
@@ -140,7 +201,20 @@
 	<main class="main">
 		<div class="main__content content">
 
-			
+			<section class="filter">
+				<div class="filter-group">
+					<dl>
+						<dd>
+							&nbsp;
+						</dd>
+					</dl>
+				</div>
+				<div class="filter-group">
+					<a href="javascript:;" class="button js-calendario">
+						<span class="iconify" data-icon="bi:calendar-week"></span>
+					</a>
+				</div>
+			</section>
 
 			<section class="grid" style="flex:1;margin-top:40px;">
 				<div class="kanban" id="kanban" style="grid-template-columns: repeat(4,minmax(0,4fr))">

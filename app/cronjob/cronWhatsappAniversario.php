@@ -18,10 +18,11 @@
 		die();
 	}
 
-	$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1","WHERE month(data_nascimento)='".date('m')."' and day(data_nascimento)='".date('d')."' and telefone1<>'' and lixo=0");
-
+	echo "<h1>Aniversariantes do dia ".date('d/m')."</h1>";
+	$where="WHERE month(data_nascimento)='".date('m')."' and day(data_nascimento)='".date('d')."' and telefone1<>'' and lixo=0";
+	$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1",$where);
+	echo $where."->".$sql->rows."<BR><BR>";
 	if($sql->rows) {
-		echo "(Aniversariantes do dia ".date('d/m/Y').") <br />";
 		while($x=mysqli_fetch_object($sql->mysqry)) {
 
 			echo "Paciente: ".$x->nome."<br />";
@@ -29,6 +30,8 @@
 			$attr=array('id_tipo'=>13,
 						'id_paciente'=>$x->id,
 						'cronjob'=>1);
+
+			//var_dump($attr);die();
 
 			if($wts->adicionaNaFila($attr)) echo "Sucesso!";
 			else echo "Erro: ".$wts->erro;

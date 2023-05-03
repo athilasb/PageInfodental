@@ -241,7 +241,12 @@
 										<span style="color:var(--cinza3)" title="Não conciliado" class="tooltip"><i class="iconify" data-icon="fluent:checkbox-checked-sync-20-regular"></i></span>
 										<span style="color:var(--cinza3)" title="Regua não executada" class="tooltip"><i class="iconify" data-icon="fluent:task-list-ltr-20-filled"></i></span>
 									</td>
-									<td><a href="javascript:;" class="button js-pagamento-item" style="width:120px" data-idregistro='<?= $x->id_registro ?>'><i class="iconify" data-icon="ph:currency-circle-dollar"></i> <span>Pagar</span></a></td>
+									<td>
+										<a href="javascript:;" class="button js-pagamento-item" style="width:120px; <?=($x->pagamento==1)?'color:var(--cinza3)':'';?>" data-idregistro='<?= $x->id_registro ?>' >
+											<i class="iconify" data-icon="ph:currency-circle-dollar"></i> 
+											<span><?=($x->pagamento==1)?'Pago':'Pagar';?></span>
+										</a>
+									</td>
 								</tr>
 							<?php } ?>
 						</tbody>
@@ -253,6 +258,7 @@
 	</div>
 </main>
 <script>
+	const _pagamentos = <?=json_encode($dados)?>;
 	$('.js-btn-abrir-aside').on('click', (function() {
 		abrirAside1()
 	}));
@@ -300,41 +306,12 @@
 		let dtInicio = picker.startDate.format('YYYY-MM-DD');
 		document.location.href = `<?php echo "$_page?pg_financeiro_contasapagar?"; ?>&data_inicio=${dtInicio}&data_final=${dtFim}`
 	});
-	$('.js-pagamento-item').on('click', function() {
-		let id_registro = $(this).attr('data-idregistro')
-		swal({
-				title: "Atenção",
-				text: "Você tem certeza que deseja pagar este registro?",
-				type: "warning",
-				showCancelButton: true,
-				confirmButtonColor: "#DD6B55",
-				confirmButtonText: "Sim!",
-				cancelButtonText: "Não",
-				closeOnConfirm: false,
-				closeOnCancel: false
-			},
-			function(isConfirm) {
-				if (isConfirm) {
-					console.log('DELETANDO...')
-					swal({
-						title: "Erro!",
-						text: "AINDA NAO IMPLEMENTADO...",
-						html: true,
-						type: "error",
-						confirmButtonColor: "#424242"
-					});
-					//document.location.href = '?<#?= "id_paciente=$paciente->id&id_pagamento="; ?>' + idPagamento;
-				} else {
-					swal.close();
-				}
-			});
 
-
-	})
 </script>
 <?php 
 	$apiConfig = array(
 		'contasAPagar' => 1,
+		'confirmaPagamento' => 1,
 	);
 	require_once("includes/api/apiAsidePagamentos.php");
 
