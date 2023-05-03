@@ -58,11 +58,11 @@
 						$_rabbitMQPassword='zapInf0@#';
 						$_rabbitmqFila=$rabbitmqFila;
 
-						//echo getcwd();die();
 						
 						$dir="../";
 						if(getcwd()=="/root") $dir="../var/www/html/";
 						else if(getcwd()=="/var/www/html/includes/api") $dir="../../";
+						else if(getcwd()=="/var/www/html") $dir="";
 
 						require_once $dir.'vendor/autoload.php';
 						require_once $dir.'lib/class/classRabbitMQ.php';
@@ -317,6 +317,7 @@
 			$cronjob = isset($attr['cronjob']) ? 1 : 0;
 
 			if(is_object($tipo)) {
+
 
 				if($tipo->pub==1) {
 
@@ -705,7 +706,6 @@
 								$this->erro="Paciente não encontrado!";
 							}
 						}
-
 
 						// Relacionamento Gestão do Tempo (id_tipo=4)
 						else if($tipo->id==4) {
