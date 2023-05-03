@@ -725,6 +725,7 @@
 				}
 			} 
 
+		# Checklist
 			else if($_POST['ajax']=="checklistListar") {
 
 				$agenda='';
@@ -787,6 +788,7 @@
 				}
 			}
 
+		# Tags
 			else if($_POST['ajax']=="tagsListar") {
 
 				$_tags=array();
@@ -2791,6 +2793,82 @@
 					$rtn=array('success'=>false,'error'=>$erro);
 				}
 			}
+
+		# Quero Reagendar
+			else if($_POST['ajax']=="asideQueroReagendarPaciente") {
+
+
+				$_profissionais=array();
+				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,foto,calendario_cor,check_agendamento","where lixo=0 order by nome asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
+
+				$_cadeiras=array();
+				$sql->consult($_p."parametros_cadeiras","*","where lixo=0  order by titulo asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
+
+				$agenda = $paciente = '';
+				if(isset($_POST['id_agenda']) and is_numeric($_POST['id_agenda'])) {
+					$sql->consult($_p."agenda","*","where id=".$_POST['id_agenda']." and lixo=0");
+					if($sql->rows) {
+						$agenda=mysqli_fetch_object($sql->mysqry);
+
+						$sql->consult($_p."pacientes","*","where id=$agenda->id_paciente and lixo=0");
+						if($sql->rows) {
+							$paciente=mysqli_fetch_object($sql->mysqry);
+						}
+					}
+				}
+
+				if(is_object($agenda)) {
+
+					if(is_object($paciente)) {
+
+						if($paciente->data_nascimento!="0000-00-00") {
+							$dob = new DateTime($paciente->data_nascimento);
+							$now = new DateTime();
+							$idade = $now->diff($dob)->y;
+						} else $idade=0;
+
+						$ft='img/ilustra-usuario.jpg';
+						if(!empty($paciente->foto_cn)) {
+							$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$paciente->foto_cn;
+						} else if(!empty($paciente->foto)) {
+							$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
+						}
+
+						$aux = explode(",",$agenda->profissionais);
+						$profissionaisIDs=array();
+						foreach($aux as $id_profissional) {
+							if(!empty($id_profissional) and is_numeric($id_profissional)) {
+
+								if(isset($_profissionais[$id_profissional])) {
+									$profissionaisIDs[]=$id_profissional;
+								}
+							}
+
+						}
+
+						$rtn=array('success'=>true,
+								   'data'=>array('id_paciente'=>$paciente->id,
+												 'nome'=>utf8_encode($paciente->nome),
+												 'idade'=>$idade,
+												 'telefone1'=>$paciente->telefone1,		
+												 'musica'=>utf8_encode($paciente->musica),
+												 'ft'=>$ft,
+												 'agenda_duracao' => $agenda->agenda_duracao,
+								   				 'id_cadeira' => $agenda->id_cadeira,
+								   				 'profissionais' => $profissionaisIDs,
+								   				 'obs' => utf8_encode($agenda->obs)));
+
+					} else {
+						$rtn=array('success'=>false,'error'=>'Paciente não encontrado');
+					} 
+
+				} else {
+					$rtn=array('success'=>false,'error'=>'Agendamento não encontrado');
+				}
+
+			}
 	
 		# Lista Personalizada
 			else if($_POST['ajax']=="asListaPersonalizadaAtualizar") {
@@ -4577,7 +4655,64 @@
 									})
 								}
 
+								const asideQueroReagendar = () => {
+
+									let id_agenda = $('#js-aside-edit input[name=id]').val();
+
+									$('#js-aside-queroReagendar .js-tab').show();
+									let data = `ajax=asideQueroReagendarPaciente&id_agenda=${id_agenda}`;
+									$.ajax({
+										type:'POST',
+										data:data,
+										url:baseURLApiAside,
+										success:function(rtn) {
+											if(rtn.success) {
+											
+												$('#js-aside-queroReagendar .js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
+
+												if(rtn.data.ft && rtn.data.ft.length>0) {
+													$('#js-aside-queroReagendar .js-foto').attr('src',rtn.data.ft);
+												} else {
+													$('#js-aside-queroReagendar .js-foto').attr('src','img/ilustra-usuario.jpg');
+												}
+
+												if(rtn.data.idade && rtn.data.idade>0) {
+													$('#js-aside-queroReagendar .js-idade').html(rtn.data.idade+(rtn.data.idade>=2?' anos':' ano'));
+												} else {
+													$('#js-aside-queroReagendar .js-idade').html(``);
+												}
+
+												if(rtn.data.profissionais) {
+													
+													$('#js-aside-queroReagendar .js-profissionais2').prop('selected',false);
+
+													rtn.data.profissionais.forEach(idProfissional=> {
+														$('#js-aside-queroReagendar .js-profissionais2').find(`[value=${idProfissional}]`).prop('selected',true);
+													})
+												}
+
+												$('#js-aside-queroReagendar .js-profissionais2').chosen();
+												$('#js-aside-queroReagendar .js-profissionais2').trigger('chosen:updated');
+
+												$('#js-aside-queroReagendar .js-id_paciente').val(rtn.data.id_paciente);
+												$('#js-aside-queroReagendar input[name=agenda_data]').val('');
+												$('#js-aside-queroReagendar select[name=agenda_duracao]').val(rtn.data.agenda_duracao);
+												$('#js-aside-queroReagendar select[name=id_cadeira]').val(rtn.data.id_cadeira).trigger('chosen:updated');
+												$('#js-aside-queroReagendar textarea.js-obs-qa').val(rtn.data.obs);
+
+											}
+											
+										},
+										error:function() {
+											//swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										}
+									}).done(function(){
+
+									});
+								}
+
 								$(function() {
+
 									$('.js-tab a').click(function() {
 										$(".js-tab a").removeClass("active");
 										$(this).addClass("active");							
@@ -4656,9 +4791,94 @@
 										}
 									});
 
+<<<<<<< HEAD
+									$(".js-btn-aside-queroReagendar").click(function() {
+										let id_paciente = $('#js-aside-queroAgendar .js-id_paciente').val();
+
+										$(".aside-queroReagendar").fadeIn(100,function() {
+											$(".aside-queroReagendar .aside__inner1").addClass("active");
+											asideQueroReagendar();
+										}); 
+									});
+
+									$('#js-aside-queroReagendar .js-ag-agendamento-queroReagendar').on('change','select[name=agenda_duracao], select[name=id_cadeira],  select.js-select-profissionais, input[name=agenda_data]',function(){
+										horarioDisponivel(0,$('.js-ag-agendamento-queroReagendar'));
+									});
+
+									$('#js-aside-queroReagendar .js-agendamento .js-salvar').click(function(){
+										
+										let id_paciente = $('#js-aside-queroReagendar .js-id_paciente').val();
+										let agenda_data = $('.js-ag-agendamento-queroReagendar input[name=agenda_data]').val();
+										let agenda_duracao = $('.js-ag-agendamento-queroReagendar select[name=agenda_duracao]').val();
+										let id_cadeira = $('.js-ag-agendamento-queroReagendar select[name=id_cadeira]').val();
+										let id_profissional = $('.js-ag-agendamento-queroReagendar select.js-select-profissionais').val();
+										let agenda_hora = $('.js-ag-agendamento-queroReagendar select[name=agenda_hora]').val();
+										let obs = $('.js-ag-agendamento-queroReagendar textarea[name=obs]').val();
+										let erro = '';
+
+										if(agenda_data.length==0) erro='Defina a <b>Data do Agendamento</b>';
+										else if(agenda_duracao.length==0) erro='Defina a <b>Duração de Agendamento</b>';
+										else if(id_cadeira.length==0) erro='Defina o <b>Consultório do Agendamento</b>';
+										else if(id_profissional.length==0) erro='Defina o <b>Profissional do Agendamento</b>';
+										else if(agenda_hora.length==0) erro='Defina a <b>Hora do Agendamento</b>';
+
+										if(erro.length==0) {
+
+											let obj = $(this);
+											let obHTMLAntigo = $(this).html();
+
+											if(obj.attr('data-loading')==0) {
+												
+												obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+												obj.attr('data-loading',1);
+
+												let data = `ajax=asRelacionamentoPacienteQueroAgendar&id_paciente=${id_paciente}&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_cadeira=${id_cadeira}&id_profissional=${id_profissional}&agenda_hora=${agenda_hora}&obs=${obs}`;
+
+												data = {
+													'ajax':'asRelacionamentoPacienteQueroAgendar',
+													'id_paciente':id_paciente,
+													'agenda_data':agenda_data,
+													'agenda_duracao':agenda_duracao,
+													'id_cadeira':id_cadeira,
+													'id_profissional':id_profissional,
+													'agenda_hora':agenda_hora,
+													'obs':obs,
+												}
+												$.ajax({
+														type:'POST',
+														data:data,
+														url:baseURLApiAside,
+														success:function(rtn) {
+															if(rtn.success) {
+																swal({title: "Sucesso!", text: 'Agendamento realizado com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
+																});
+																$('.aside-close').click();
+
+															} else if(rtn.error) {
+																swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+															} else {
+																swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+															}
+															
+														},
+														error:function() {
+															swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+														} 
+												}).done(function(){
+													obj.html(obHTMLAntigo);
+													obj.attr('data-loading',0);
+												});
+											}
+
+										} else {
+											swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+										}
+									});
+=======
 									$('.js-ag-whatsapp .js-btn-wtsEnviar').click(function(){
 										let id_tipo = $('.js-ag-whatsapp select[name=id_tipo]').val();
 										if(id_tipo.length>0) {
+>>>>>>> 61c2fb497a0f582ca4919f09b2ddc06624fcfa9a
 
 
 											let obj = $(this);
@@ -4720,6 +4940,9 @@
 											</dl>
 											<dl>
 												<dd><a href="javascript:;" class="button js-webwhatsapp" target="_blank"><span class="iconify" data-icon="ic:outline-whatsapp"></span> Web Whatsapp</a></dd>
+											</dl>
+											<dl>
+												<dd><a href="javascript:;" class="button js-btn-aside-queroReagendar"><span class="iconify" data-icon="mdi:calendar-clock"></span> Reagendamento</a></dd>
 											</dl>
 											<dl>
 												<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
@@ -6043,6 +6266,121 @@
 						</form>
 					</div>
 				</section>
+
+				<!-- Aside Reagendamento -->
+				<section class="aside aside-queroReagendar aside_sub" id="js-aside-queroReagendar">
+					<div class="aside__inner1">
+
+						<header class="aside-header">
+							<h1>Quero Reagendar</h1>
+							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+						</header>
+
+						<form method="post" class="aside-content form" onsubmit="return false;">
+							<input type="hidden" class="js-id_paciente" value="0" />
+
+							<section class="header-profile">
+								<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
+								<div class="header-profile__inner1">
+									<h1><a href="" target="_blank" class="js-nome"></a></h1>
+									<div>
+										<p class="js-statusBI"></p>
+										<p class="js-idade"></p>
+										<p class="js-periodicidade"></p>
+										<p class="js-musica"></p>
+									</div>
+								</div>
+							</section>
+
+							<div class="js-agendamento">
+								<section class="filter">
+									<div class="button-group">
+									</div>
+									<div class="filter-group">
+										<div class="filter-form form">
+											<dl>
+												<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
+											</dl>
+										</div>								
+									</div>
+								</section>
+
+								<div class="js-ag-agendamento-queroReagendar">
+									<div class="colunas3">
+										<dl>
+											<dt>Data</dt>
+											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="agenda_data" class="data datecalendar" /></dd>
+										</dl>
+									
+										<dl>
+											<dt>Duração</dt>
+											<dd class="form-comp form-comp_pos">
+												<?php /*<input type="tel" name="agenda_duracao" class="" />*/?>
+												<select name="agenda_duracao">
+													<option value="">-</option>
+													<?php
+													foreach($optAgendaDuracao as $v) {
+														echo '<option value="'.$v.'">'.$v.'</option>';
+													}
+													?>
+												</select>
+												<span>min</span>
+											</dd>
+										</dl>
+
+										<dl>
+											<dt>Consultório</dt>
+											<dd>
+												<select name="id_cadeira">
+													<option value=""></option>
+													<?php
+													foreach($_cadeiras as $p) {
+														echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
+													}
+													?>
+												</select>
+											</dd>
+										</dl>
+									</div>
+									<div class="colunas3">
+										<dl class="dl2">
+											<dt>Profissionais</dt>
+											<dd>
+												<select class="js-profissionais2 js-select-profissionais">
+													<option value=""></option>
+													<?php
+													foreach($_profissionais as $p) {
+														if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
+														echo '<option value="'.$p->id.'">'.utf8_encode($p->nome).'</option>';
+													}
+													?>
+												</select>
+											</dd>
+										</dl>
+										<dl>
+											<dt>Hora</dt>
+											<dd class="form-comp">
+												<span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span>
+												<select name="agenda_hora">
+													<option value="">Selecione o horário</option>
+												</select>
+											</dd>
+										</dl>
+									</div>
+
+									<dl>
+										<dt>Observações</dt>
+										<dd>
+											<textarea class="js-obs-qa" style="height:80px;"></textarea>
+										</dd>
+									</dl>
+								</div>
+							</div>
+
+						</form>
+					</div>
+				</section>
+
 				<?php
 			}
 
