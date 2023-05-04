@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Info Dental</title>
+    <link rel="icon" type="image/x-icon" href="./img/FAVICON.svg?v1">
+    <link rel="stylesheet" href="./style/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/3.3.4/jquery.inputmask.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+    <style class="style"></style>
+</head>
+<body>
+<!-- Menu-->
+<section>
+    <div class="display-flex-center">
+        <div class="menu" style="max-width: 1190px;"> 
+            
+                <head>
+                    <div class="nav-mobile">
+                    <img class="logo" src="./img/info-logo.svg" alt="">
+                    <a href="javascript:;"class="icon-mobile" onclick="navheader()">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </a>
+                </div>
+                </head> 
+
+                <nav>
+                    <ul>
+                        <li><a href="#/">SOBRE</a></li>
+                        <li><a href="#/">FERRAMENTAS</a></li>
+                        <li><a href="#/">GARANTIAS</a></li>
+                        <li><a href="#/">INVESTIMENTOS</a></li>
+                        <li><a href="#/">SODEPOIMENTOSBRE</a></li>
+                    </ul>
+                </nav>
+        </div>
+    </div>
+</section>
+<!-- Conteudo-->
+<main class="main media-margin">
+    <section class="gird2 vh100">
+        <div class="center-wrap">
+            <h1 class="header-title margin-menos">
+                <div class="frase1" ></div>
+                <div class="frase2" style="margin-top: 10px;"></div>
+            </h1>
+            <div class="visao display-flex-left margin-20"> 
+                <span class="visao1">visão </span> 
+                <span class="visao-animacao"> <div class="visao-animacao-frame"></div></span>  
+                <span class="visao2">missão</span>
+            </div>
+        </div>
+        <div  class="center-wrap margin-menos1">
+            <div class="box center-wrap ">
+                <div class="dourado"> Software Odontológico</div>
+                <div class="sub-Titulo margin-10">Simplifique sua vida com uma solução completa e inteligente.</div>
+                <div class="margin-50" style="width: 70%;"><input type="text" name="" id="" placeholder="Insira seu whatsapp"></div>
+                <div  class="margin-10"><button class="botao-dourado">Teste e Comprove!</button></div>
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="title-parceiros">
+            Nossos parceiros
+        </div>
+        <div class="swiper Carroseu1 margin-30">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide"><img src="./img/Carroseu-parceiros/logo-iugu.png" alt=""></div>
+              <div class="swiper-slide"><img src="./img/Carroseu-parceiros/Logomarca_Dental_Cremer.png" alt=""></div>
+              <div class="swiper-slide"><img src="./img/Carroseu-parceiros/safra-logo-ok.png" alt=""></div>
+              <div class="swiper-slide"><img src="./img/Carroseu-parceiros/scaleway-logo.png" alt=""></div>
+              <div class="swiper-slide"><img src="./img/Carroseu-parceiros/Wasabi-Logo-600x250-1.png" alt=""></div>
+            </div>
+        </div>
+    </section>
+</main>
+<!-- footer-->
+<footer></footer>
+
+<div class="oi"></div>
+<script src="./script/scritp.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+<script>
+    var swiper = new Swiper(".Carroseu1", {
+    slidesPerView: 2,
+    spaceBetween: 30,
+    freeMode: true,
+    autoplay: {
+        delay: 1500, // tempo em milissegundos entre cada slide
+        disableOnInteraction: false, // se o auto-play deve ser desativado quando o usuário interagir com o Swiper
+    },
+    breakpoints: {
+        // quando a largura da tela for maior que 768px (tablets), exibir 3 slides por view
+        1024: {
+        slidesPerView: 5,
+        },
+        // quando a largura da tela for menor ou igual a 767px (celulares), exibir 2 slides por view
+        767: {
+        slidesPerView: 3,
+        },
+    },
+    });
+
+    
+
+</script>
+
+</body>
+</html>
