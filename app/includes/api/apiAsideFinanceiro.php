@@ -99,6 +99,44 @@
 
 			}
 
+			else if($_POST['ajax']=="categoriasRemover") {
+
+				$categoria='';
+				if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+					$sql->consult($_p."financeiro_fluxo_categorias","*","where id='".addslashes($_POST['id'])."'");
+					if($sql->rows) {
+						$categoria=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$erro='';
+				if(empty($categoria)) $erro='Categoria não encontrada';
+
+				if(empty($erro)) {
+					$vSQL="lixo=1";
+					$vWHERE="where id=$categoria->id";
+
+					$sql->update($_p."financeiro_fluxo_categorias",$vSQL,$vWHERE);
+
+					// Subcategorias no lixo
+					$sql->update($_p."financeiro_fluxo_categorias",$vSQL,"WHERE id_categoria='".$categoria->id."'");
+
+					$sql->add($_p."log","data=now(),
+											id_usuario='".$usr->id."',
+											tipo='update',
+											vsql='".addslashes($vSQL)."',
+											vwhere='".addslashes($vWHERE)."',
+											tabela='".$_p."financeiro_fluxo_categorias',
+											id_reg='".$categoria->id."'");
+				}
+
+				if(empty($erro)) {
+					$rtn=array('success'=>true);
+				} else {
+					$rtn=array('success'=>false);
+				}
+			}
+
 		// Subcategorias
 			else if($_POST['ajax']=="subcategoriasListar") {
 
@@ -223,9 +261,9 @@
 															<td>
 																<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-subcategoria-adicionar" data-id="${x.id}"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
 
-																<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-categoria-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+																<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-categoria-editar" data-id="${x.id}" data-titulo="${x.titulo}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
 
-																<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-categoria-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+																<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-categoria-remover" data-id="${x.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 															</td>
 														</tr>`;
 
@@ -365,6 +403,59 @@
 							$('.js-asFinanceiroFluxoSubcategorias-categoriaTitulo').val(titulo);
 							financeiroFluxoSubcategoriasLista(id_categoria);
 							
+						});
+
+						$('.js-financeiroFluxoCategorias-table').on('click', '.js-asFinanceiroFluxoCategorias-categoria-editar',function() {
+							let id_categoria = $(this).attr('data-id');
+							let titulo = $(this).attr('data-titulo');
+
+							if(id_categoria) {
+								$('.js-asFinanceiroFluxoCategorias-titulo').val(titulo);
+								$('.js-asFinanceiroFluxoCategorias-id_categoria').val(id_categoria);
+							}
+						});
+
+						$('.js-financeiroFluxoCategorias-table').on('click', '.js-asFinanceiroFluxoCategorias-categoria-remover',function() {
+							let id_categoria = $(this).attr('data-id');
+
+							swal({   
+								title: "Atenção",   
+								text: "Você tem certeza que deseja remover esta categoria?",   
+								type: "warning",   
+								showCancelButton: true,   
+								confirmButtonColor: "#DD6B55",   
+								confirmButtonText: "Sim!",   
+								cancelButtonText: "Não",   
+								closeOnConfirm: false,   
+								closeOnCancel: false 
+							}, function(isConfirm){   
+								if (isConfirm) {    
+
+									let data = `ajax=categoriasRemover&id=${id_categoria}`;
+									$.ajax({
+										type:"POST",
+										url:baseURLApiAsideFinanceiro,
+										data:data,
+										success:function(rtn) {
+											if(rtn.success) {
+												financeiroFluxoCategoriasLista(); 
+												swal.close();
+												
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												swal({title: "Erro!", text: 'Algum erro ocorreu durante a remoção deste registro', type:"error", confirmButtonColor: "#424242"});
+											}
+										},
+										error:function(){
+											swal({title: "Erro!", text: 'Algum erro ocorreu durante a remoção deste registro.', type:"error", confirmButtonColor: "#424242"});
+										}
+									}) 
+									
+								} else {   
+									swal.close();   
+								} 
+							});
 						});
 
 
