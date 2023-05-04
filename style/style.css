@@ -436,5 +436,8 @@ color: var(--branco);
     .margin-menos1{
         margin-top: -180px;
     }
+    .main{
+        padding: 0px 15px;
+    }
 
 }
