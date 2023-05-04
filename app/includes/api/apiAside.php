@@ -1750,7 +1750,7 @@
 							agenda_data_original='".$agendaData."',
 							agenda_duracao='".$agenda_duracao."',
 							agenda_data_final='".$agendaFinal."',
-							id_cadeira='".$cadeira->id."',
+							id_cadeira='".$cadeira->id."', 
 							obs='".$obs."',
 							data_atualizacao=now(),
 							data=now(),
@@ -1766,6 +1766,14 @@
 					if($sql->rows==0) {
 						$sql->add($_p."agenda",$vSQL);
 						$id_agenda=$sql->ulid;
+
+						if(isset($_POST['reagendar']) and $_POST['reagendar']==1) {
+							$sql->consult($_p."agenda","id","WHERE id='".$id_agenda_origem."'");
+							if($sql->rows) {
+								$x=mysqli_fetch_object($sql->mysqry);
+								$sql->update($_p."agenda","id_status=4,id_reagendamento='".$id_agenda."'","WHERE id='".$x->id."'");
+							}
+						}
 
 						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$id_agenda."'");
 
@@ -2849,7 +2857,8 @@
 						}
 
 						$rtn=array('success'=>true,
-								   'data'=>array('id_paciente'=>$paciente->id,
+								   'data'=>array('id_agenda'=>$agenda->id,
+								   				 'id_paciente'=>$paciente->id,
 												 'nome'=>utf8_encode($paciente->nome),
 												 'idade'=>$idade,
 												 'telefone1'=>$paciente->telefone1,		
@@ -4694,11 +4703,13 @@
 												$('#js-aside-queroReagendar .js-profissionais2').chosen();
 												$('#js-aside-queroReagendar .js-profissionais2').trigger('chosen:updated');
 
-												$('#js-aside-queroReagendar .js-id_paciente').val(rtn.data.id_paciente);
 												$('#js-aside-queroReagendar input[name=agenda_data]').val('');
 												$('#js-aside-queroReagendar select[name=agenda_duracao]').val(rtn.data.agenda_duracao);
 												$('#js-aside-queroReagendar select[name=id_cadeira]').val(rtn.data.id_cadeira).trigger('chosen:updated');
 												$('#js-aside-queroReagendar textarea.js-obs-qa').val(rtn.data.obs);
+
+												$('#js-aside-queroReagendar .js-reagendar-id_agenda').val(rtn.data.id_agenda);
+												$('#js-aside-queroReagendar .js-id_paciente').val(rtn.data.id_paciente);
 
 											}
 											
@@ -4807,6 +4818,7 @@
 
 									$('#js-aside-queroReagendar .js-agendamento .js-salvar').click(function(){
 										
+										let id_agenda_origem = $('#js-aside-queroReagendar .js-reagendar-id_agenda').val();
 										let id_paciente = $('#js-aside-queroReagendar .js-id_paciente').val();
 										let agenda_data = $('.js-ag-agendamento-queroReagendar input[name=agenda_data]').val();
 										let agenda_duracao = $('.js-ag-agendamento-queroReagendar select[name=agenda_duracao]').val();
@@ -4843,6 +4855,8 @@
 													'id_profissional':id_profissional,
 													'agenda_hora':agenda_hora,
 													'obs':obs,
+													'id_agenda_origem':id_agenda_origem,
+													'reagendar':1
 												}
 												$.ajax({
 														type:'POST',
@@ -4850,9 +4864,10 @@
 														url:baseURLApiAside,
 														success:function(rtn) {
 															if(rtn.success) {
-																swal({title: "Sucesso!", text: 'Agendamento realizado com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-																});
+																
 																$('.aside-close').click();
+																$('#js-aside-edit .aside-close-edicaoAgendamento').click();
+																if(calendar) calendar.refetchEvents();
 
 															} else if(rtn.error) {
 																swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -6276,6 +6291,7 @@
 						</header>
 
 						<form method="post" class="aside-content form" onsubmit="return false;">
+							<input type="hidden" class="js-reagendar-id_agenda" value="0" />
 							<input type="hidden" class="js-id_paciente" value="0" />
 
 							<section class="header-profile">
