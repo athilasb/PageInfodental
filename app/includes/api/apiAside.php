@@ -4791,7 +4791,7 @@
 										}
 									});
 
-<<<<<<< HEAD
+
 									$(".js-btn-aside-queroReagendar").click(function() {
 										let id_paciente = $('#js-aside-queroAgendar .js-id_paciente').val();
 
@@ -4874,11 +4874,10 @@
 											swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 										}
 									});
-=======
+
 									$('.js-ag-whatsapp .js-btn-wtsEnviar').click(function(){
 										let id_tipo = $('.js-ag-whatsapp select[name=id_tipo]').val();
 										if(id_tipo.length>0) {
->>>>>>> 61c2fb497a0f582ca4919f09b2ddc06624fcfa9a
 
 
 											let obj = $(this);
