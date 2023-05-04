@@ -274,6 +274,11 @@
     justify-content: center;
     align-items: center;
 }
+.display-flex-space{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
 .display-flex-left {
     display: flex;
@@ -413,9 +418,6 @@ color: var(--branco);
         display: flex;
         margin-top: 24px;
     }
-    .media-margin{
-        margin-top: 90px;
-    }
     .header-title{
         width: auto;
     }
@@ -430,14 +432,25 @@ color: var(--branco);
     .botao-dourado{
         padding: 0px 30px;
     }
-    .margin-menos{
+    /*.margin-menos{
         margin-top: -70px;
     }
     .margin-menos1{
         margin-top: -180px;
-    }
-    .main{
+    }*/
+
+    .main {
         padding: 0px 15px;
+    }
+    .center-wrap,.block{
+        display: block;
+    }
+    .box{
+        margin: auto;
+        margin-top: 10%;
+    }
+    .media-margin{
+        margin-top: 90px;
     }
 
 }
