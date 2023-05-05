@@ -48,7 +48,8 @@
 						'novosIds'=>array(0),
 						'aguardandoAprovacao'=>array(),
 						'retorno'=>array());
-	$sql->consult($_p."pacientes","id,nome,telefone1,foto,foto_cn","where data>='".$data_inicial_filtro."' and data<='".$data_final_filtro."' and codigo_bi=1 and lixo=0");
+
+	$sql->consult($_p."pacientes","id,nome,telefone1,foto,foto_cn","where data>='".$data_inicial_filtro." 00:00:00' and data<='".$data_final_filtro." 23:59:59' and codigo_bi=1 and lixo=0");
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_pacientes['novos'][]=$x;
 		$_pacientes['novosIds'][]=$x->id;
