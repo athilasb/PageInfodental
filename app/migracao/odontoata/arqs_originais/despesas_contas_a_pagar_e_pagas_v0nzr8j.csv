@@ -1,0 +1,32 @@
+﻿clinica;cir_dentista;fornecedor;cpf;cnpj;categoria;codigo;data_vencimento;valor;data_pagamento;forma_pagamento;valor_pago
+Odonto Ata;Dr. Ana Beatriz Laguna;;;;Material de Conservação e Limpeza;4011;2020-11-21;120.0;2020-11-21;Dinheiro;120.0
+Odonto Ata;Dr. Ana Beatriz Laguna;;;;Compra de Material de Consumo Odontológico;4012;2020-11-20;68.5;2020-11-21;Dinheiro;68.5
+Odonto Ata;;;;;Manutenção de Equipamentos Técnicos;;2020-11-24;160.0;2020-11-24;Dinheiro;160.0
+Odonto Ata;;;;;Compra de Material de Consumo Odontológico;4012;2021-01-01;101.11;;;0.0
+Odonto Ata;;;;;Compra de Material de Consumo Odontológico;4012;2020-11-23;101.11;;;0.0
+Odonto Ata;;;;;Despesa com Protético;4028;2020-11-27;50.0;2020-11-27;Dinheiro;50.0
+Odonto Ata;;;;;Descarte de Lixo Contaminado;;2020-12-10;238.34;2020-12-12;Boleto Bancário;238.34
+Odonto Ata;Dr. Ana Beatriz Laguna;;;;Geral;;2020-12-05;685.0;2020-12-07;Dinheiro;685.0
+Odonto Ata;Dr. Ana Beatriz Laguna;;;;Geral;;2020-12-05;120.0;2020-12-05;Dinheiro;120.0
+Odonto Ata;;;;;Material de Conservação e Limpeza;4011;2020-12-09;140.0;2020-12-12;Dinheiro;140.0
+Odonto Ata;;;;;Remuneração paga a Terceiros;4013;2020-12-07;800.0;2020-12-07;Dinheiro;800.0
+Odonto Ata;;;;;Remuneração paga a Terceiros;4013;2020-12-07;800.0;2020-12-07;Dinheiro;800.0
+Odonto Ata;;;;;Remuneração paga a Terceiros;4013;2020-12-07;4080.0;2020-12-07;Dinheiro;4080.0
+Odonto Ata;;;;;Remuneração paga a Terceiros;4013;2020-12-12;550.0;2020-12-07;Dinheiro;550.0
+Odonto Ata;;;;;Remuneração paga a Terceiros;4013;2020-12-07;2850.0;2020-12-07;Dinheiro;2850.0
+Odonto Ata;;;;;Remuneração paga a Terceiros;4013;2020-12-07;736.37;2020-12-07;Dinheiro;736.37
+Odonto Ata;;;;;Compra de Material de Consumo Odontológico;4012;2020-12-09;1663.11;2020-12-09;Dinheiro;1663.11
+Odonto Ata;;;;;Despesa com Protético;4028;2020-12-09;724.5;2020-12-09;Dinheiro;724.5
+Odonto Ata;;;;;Aluguel;4001;2020-11-30;3000.0;2020-12-09;Dinheiro;3000.0
+Odonto Ata;;;;;Honorários do Contador;;2020-12-07;300.0;2020-12-09;Dinheiro;300.0
+Odonto Ata;;;;;Material Fotográfico;;2020-12-09;605.0;2020-12-09;Dinheiro;605.0
+Odonto Ata;;;;;Material Fotográfico;;2020-12-09;605.0;2020-12-09;Dinheiro;605.0
+Odonto Ata;;;;;Reserva para Aquisição de Novos Equipamentos;;2020-12-10;1000.0;2020-12-15;Dinheiro;1000.0
+Odonto Ata;ZZNaira Lima;;;;Compra de Material de Consumo Odontológico;4012;2020-12-15;17.0;2020-12-15;Dinheiro;17.0
+Odonto Ata;;;;;Manutenção de Aparelhos Domésticos;;2020-12-17;70.0;2020-12-17;Dinheiro;70.0
+Odonto Ata;Dr. Ana Beatriz Laguna;;;;Despesa com Protético;4028;2020-12-10;310.5;2020-12-16;Dinheiro;310.5
+Odonto Ata;Dr. Ana Beatriz Laguna;;;;Água;4002;2020-12-18;70.44;2020-12-17;Boleto Bancário;70.44
+Odonto Ata;Dr. Ana Beatriz Laguna;;;;Material de Escritório;;2020-12-21;108.84;2020-12-21;Boleto Bancário;108.84
+Odonto Ata;Dr. Ana Beatriz Laguna;;;;Energia;4007;2020-12-24;951.45;2020-12-24;Boleto Bancário;951.45
+Odonto Ata;Dr. Ana Beatriz Laguna;;;;Material de Conservação e Limpeza;4011;2021-01-08;50.0;2021-01-08;Dinheiro;50.0
+Odonto Ata;Dr. Ana Beatriz Laguna;;;;Material de Conservação e Limpeza;4011;2021-01-09;120.0;2021-01-09;Dinheiro;120.0
