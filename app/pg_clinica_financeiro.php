@@ -170,7 +170,7 @@
 							<?php 
 								foreach($contas_cadastradas as $id=>$conta){
 							?>
-								<div class="itens"> <span class="bancos"><?=$conta['titulo']?></span> <span class="<?=$conta['classe']?>">R$ <?=number_format($conta['balanco'], 2, ',', '.')?></span></div>
+								<div class="itens"> <span class="bancos"><?=utf8_encode($conta['titulo']);?></span> <span class="<?=$conta['classe']?>">R$ <?=number_format($conta['balanco'], 2, ',', '.')?></span></div>
 
 							<?php 
 								}
