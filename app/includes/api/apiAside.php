@@ -19,9 +19,12 @@
 		$_tableTags=$_p."parametros_tags";
 		$_tableChecklist=$_p."agenda_checklist";
 
+		$_usuarios=[];
+		$sql->consult($_p."colaboradores","id,nome","");
+		while($x=mysqli_fetch_object($sql->mysqry)) $_usuarios[$x->id]=$x;
+
 		# Agenda
 			if($_POST['ajax']=="agendamentosProfissionais") {
-
 				$_profissionais=array();
 				$_profissionaisTodos=array();
 				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,lixo,foto,calendario_cor,check_agendamento,contratacaoAtiva"," order by nome asc");
@@ -33,12 +36,14 @@
 				$_tags=array();
 				$sql->consult($_p."parametros_tags","*","WHERE lixo=0 order by titulo asc");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_tags[$x->id]=$x;
+					$_tags[$x->id]=array('id'=>$x->id,
+										'titulo'=>utf8_encode($x->titulo));
 				}
 				
 				$data = (isset($_POST['data']) and isset($_POST['data']))?invDate($_POST['data']):'';
 				$hora = (isset($_POST['hora']) and isset($_POST['hora']))?$_POST['hora'].":00":'';
 				$id_cadeira = (isset($_POST['id_cadeira']) and isset($_POST['id_cadeira']))?$_POST['id_cadeira']:0;
+
 				if(!empty($data) and !empty($hora)) {
 					$diaSemana = date('w',strtotime($data));
 					
@@ -76,6 +81,7 @@
 								'listaProfissionaisDestaque'=>$listaProfissionaisDestaque,
 								'listaProfissionais'=>$listaProfissionais,
 								'tags' => $_tags);
+
 				}
 			}
 
@@ -260,9 +266,19 @@
 						}
 
 
+						$agendouProfissional="Desconhecido";
+
+						if(isset($_usuarios[$cnt->id_usuario])) {
+
+							$aux = explode(" ",utf8_encode($_usuarios[$cnt->id_usuario]->nome));
+							$pnome=$aux[0];
+							$unome=$aux[count($aux)-1];
+
+							$agendouProfissional=$pnome." ".$unome;
+						}
 
 						$data = array('id'=>$cnt->id,
-										'agendou_profissional'=>isset($_usuarios[$cnt->id_usuario])?utf8_encode($_usuarios[$cnt->id_usuario]->nome):"-",
+										'agendou_profissional'=>$agendouProfissional,
 										'agendou_dias'=>(int)$dias,
 										'agendaPessoal'=>0,
 										'ft'=>$ft,
@@ -624,7 +640,7 @@
 
 						$agendaAlterado=invDate($_POST['agenda_data'])." ".$_POST['agenda_hora'].":00";
 
-						if(strtotime($agenda->agenda_data)!=strtotime($agendaAlterado)) {
+						if(strtotime($agenda->agenda_data)!=strtotime($agendaAlterado) and ($agenda->id_status==2 or $idStatusNovo==2)) {
 							$vSQLHistorico="data=now(),
 								id_usuario=$usr->id,
 								evento='agendaHorario',
@@ -643,6 +659,45 @@
 
 							// altera campo agenda_alteracao_data para enviar a notificacao de alteração de horário
 							$sql->update($_p."agenda","agenda_alteracao_data=now(),agenda_alteracao_id_whatsapp=0","where id=$agenda->id");
+
+							$attr=array('id_tipo'=>5,
+										'id_paciente'=>$agenda->id_paciente,
+										'id_agenda'=>$agenda->id);
+							//var_dump($attr);
+							if($infozap->adicionaNaFila($attr)) $wts=1;   
+
+							// se virou para confirmado, envia wts para dentista
+							$sql->consult($_p."agenda","*","where id=$agenda->id");
+							if($sql->rows) {
+								$agendaNew=mysqli_fetch_object($sql->mysqry); // registro de agenda atualizado
+
+								if(!empty($agendaNew->profissionais)) {
+
+									$profissionaisIds=array();
+									$auxProfissionais = explode(",",$agenda->profissionais);
+										foreach($auxProfissionais as $idProfissional) {
+										if(!empty($idProfissional) and is_numeric($idProfissional)) {
+											$profissionaisIds[]=$idProfissional;
+										}
+									}
+								}
+								if(count($profissionaisIds)>0) {
+									$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisIds).") and whatsapp_notificacoes=1 and lixo=0");
+									while($x=mysqli_fetch_object($sql->mysqry)) {
+										if(!empty($x->telefone1)) {
+											$attr=array('id_tipo'=>7,
+														'id_paciente'=>$agendaNew->id_paciente,
+														'id_profissional'=>$x->id,
+														'id_agenda'=>$agendaNew->id);
+								
+											if($infozap->adicionaNaFila($attr)) {  
+												$wts=1;
+											} 
+										}
+									}
+								}
+
+							}
 						}
 
 						// veririca se desmarcou
@@ -655,11 +710,49 @@
 											'id_paciente'=>$agenda->id_paciente,
 											'id_agenda'=>$agenda->id);
 								//var_dump($attr);
-								//if($infozap->adicionaNaFila($attr)) $wts=1;   // COMENTEI AQUI PARA CORRIGIR O ERRO DE MUDANÇA DE ESTATUS
+								if($infozap->adicionaNaFila($attr)) $wts=1;   
 
-							} 
+								// se virou para desmarcado, envia wts para dentista
+								$sql->consult($_p."agenda","*","where id=$agenda->id and id_status=4");
+
+								if($sql->rows) {
+									$agendaNew=mysqli_fetch_object($sql->mysqry); // registro de agenda atualizado
+
+									if(!empty($agendaNew->profissionais)) {
+
+										$profissionaisIds=array();
+										$auxProfissionais = explode(",",$agenda->profissionais);
+										foreach($auxProfissionais as $idProfissional) {
+											if(!empty($idProfissional) and is_numeric($idProfissional)) {
+												$profissionaisIds[]=$idProfissional;
+											}
+										}
+
+
+										if(count($profissionaisIds)>0) {
+											$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisIds).") and whatsapp_notificacoes=1 and lixo=0");
+											while($x=mysqli_fetch_object($sql->mysqry)) {
+												if(!empty($x->telefone1)) {
+													$attr=array('id_tipo'=>8,
+																'id_paciente'=>$agendaNew->id_paciente,
+																'id_profissional'=>$x->id,
+																'id_agenda'=>$agendaNew->id);
+										
+													if($infozap->adicionaNaFila($attr)) {  
+														$wts=1;
+													} else {
+														echo "erro: ".$infozap->erro;
+													}
+												}
+											}
+										}
+									}
+								}
+							}
 							// Se Confirmou
 							else if($idStatusNovo==2) {
+								
+
 								// se virou para confirmado, envia wts para dentista
 								$sql->consult($_p."agenda","*","where id=$agenda->id and id_status=2");
 								if($sql->rows) {
@@ -669,7 +762,7 @@
 
 										$profissionaisIds=array();
 										$auxProfissionais = explode(",",$agenda->profissionais);
-									foreach($auxProfissionais as $idProfissional) {
+										foreach($auxProfissionais as $idProfissional) {
 										if(!empty($idProfissional) and is_numeric($idProfissional)) {
 											$profissionaisIds[]=$idProfissional;
 										}
@@ -684,9 +777,9 @@
 															'id_profissional'=>$x->id,
 															'id_agenda'=>$agendaNew->id);
 									
-												//if($infozap->adicionaNaFila($attr)) {  // COMENTEI AQUI PARA CORRIGIR O ERRO DE MUDANÇA DE ESTATUS
-												//	$wts=1;
-												//}
+												if($infozap->adicionaNaFila($attr)) {  
+													$wts=1;
+												}
 											}
 										}
 									}
@@ -1750,7 +1843,7 @@
 							agenda_data_original='".$agendaData."',
 							agenda_duracao='".$agenda_duracao."',
 							agenda_data_final='".$agendaFinal."',
-							id_cadeira='".$cadeira->id."',
+							id_cadeira='".$cadeira->id."', 
 							obs='".$obs."',
 							data_atualizacao=now(),
 							data=now(),
@@ -1766,6 +1859,14 @@
 					if($sql->rows==0) {
 						$sql->add($_p."agenda",$vSQL);
 						$id_agenda=$sql->ulid;
+
+						if(isset($_POST['reagendar']) and $_POST['reagendar']==1) {
+							$sql->consult($_p."agenda","id","WHERE id='".$id_agenda_origem."'");
+							if($sql->rows) {
+								$x=mysqli_fetch_object($sql->mysqry);
+								$sql->update($_p."agenda","id_status=4,id_reagendamento='".$id_agenda."'","WHERE id='".$x->id."'");
+							}
+						}
 
 						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."agenda',id_reg='".$id_agenda."'");
 
@@ -2849,7 +2950,8 @@
 						}
 
 						$rtn=array('success'=>true,
-								   'data'=>array('id_paciente'=>$paciente->id,
+								   'data'=>array('id_agenda'=>$agenda->id,
+								   				 'id_paciente'=>$paciente->id,
 												 'nome'=>utf8_encode($paciente->nome),
 												 'idade'=>$idade,
 												 'telefone1'=>$paciente->telefone1,		
@@ -3109,60 +3211,7 @@
 	# JS All Asides
 ?>
 	<script type="text/javascript" src="js/aside.funcoes.js"></script>
-	<script type="text/javascript">
-			/*const horarioDisponivel = (id_agenda,obj) => {
-				let agenda_data = obj.find('input[name=agenda_data]').val();
-				let agenda_duracao = obj.find('select[name=agenda_duracao]').val();
-				let id_cadeira = obj.find('select[name=id_cadeira]').val();
-				let id_profissional = obj.find('select.js-select-profissionais').val();
-				let agenda_horaObj = obj.find('select[name=agenda_hora]');
 
-
-				agenda_horaObj.find('option').remove();
-				agenda_horaObj.append('<option value="">Carregando...</option>');
-
-				obj = { agenda_data, agenda_duracao, id_cadeira, id_profissional }
-
-				if(agenda_data.length>0 && agenda_duracao.length>0 && id_profissional.length>0 && id_cadeira.length>0) {
-					let data = `ajax=asRelacionamentoPacienteHorarios&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_profissional=${id_profissional}&id_cadeira=${id_cadeira}&id_agenda=${id_agenda}`;
-
-					data = {
-						'ajax':'asRelacionamentoPacienteHorarios',
-						'agenda_data':agenda_data,
-						'agenda_duracao':agenda_duracao,
-						'id_profissional':id_profissional,
-						'id_cadeira':id_cadeira,
-						'id_agenda':id_agenda
-					}
-					
-					$.ajax({
-						type:"POST",
-						url:baseURLApiAside,
-						data:data,
-						success:function(rtn) {
-							agenda_horaObj.find('option').remove();
-							if(rtn.success) {
-
-								if(rtn.horariosDisponiveis.length>0) {
-									agenda_horaObj.append(`<option value="">Selecione o horário</option>`)
-									rtn.horariosDisponiveis.forEach(x=>{
-
-										agenda_horaObj.append(`<option value="${x}">${x}</option>`)
-									})
-								} else {
-									agenda_horaObj.append(`<option value="">Nenhum horário disponível</option>`)
-								}
-							} else if(rtn.error) {
-								agenda_horaObj.append(`<option value="">${rtn.error}</option>`);
-							}
-						}
-					});
-				} else {
-					agenda_horaObj.find('option').remove();
-					agenda_horaObj.append(`<option value="">Complete os campos</option>`);
-				}
-			}*/
-	</script>
 <?php
 
 	# Asides
@@ -3439,7 +3488,15 @@
 												});
 												$('#js-aside-edit-agendaPessoal select[name=id_profissional]').chosen();
 												$('#js-aside-edit-agendaPessoal select[name=id_profissional]').trigger('chosen:updated'); 
-											} else {
+											} 
+											else {
+
+												if(rtn.data.telefone1.length==0) {
+													$('#js-aside-edit .js-aviso-whatsapp').show();
+												} else {
+													$('#js-aside-edit .js-aviso-whatsapp').hide();
+												}
+												
 												$('#js-aside-edit input[name=id]').val(rtn.data.id);
 
 												$('#js-aside-edit .js-nome').html(`${rtn.data.nome} <i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i>`).attr('href',`pg_pacientes_resumo.php?id_paciente=${rtn.data.id_paciente}`);
@@ -3493,8 +3550,8 @@
 												//$('#js-aside-edit .js-tags').trigger('chosen:updated'); 
 
 
-												if(rtn.data.agendou_dias>1) $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou há ${rtn.data.agendou_dias} dia(s)`);
-												else $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou hoje`);
+												if(rtn.data.agendou_dias>1) $('#js-aside-edit .js-agendou').html(`<b>${rtn.data.agendou_profissional}</b> agendou há <b>${rtn.data.agendou_dias}</b> dia(s)`);
+												else $('#js-aside-edit .js-agendou').html(`<b>${rtn.data.agendou_profissional}</b> agendou <b>hoje</b>`);
 
 												$('.js-fieldset-horarios,.js-btn-remover').show();
 												
@@ -3658,25 +3715,24 @@
 													$('#js-aside-edit select').prop('disabled',true).css('background','var(--cinza3)').trigger('chosen:updated');
 
 
-												} else if(check_agendaDesativarRegrasStatus==0) {
-
-
-													$('#js-aside-edit select[name=id_status]').find('option[value=1]').prop('disabled',false)
-
-													$('#js-aside-edit input[name=agenda_data]').datetimepicker({
-														timepicker:false,
-														format:'d/m/Y',
-														scrollMonth:false,
-														scrollTime:false,
-														scrollInput:false,
-													}).css('background','');
-
-													$('#js-aside-edit input[name=agenda_hora]').datetimepicker({
-														  datepicker:false,
-													      format:'H:i',
-													      pickDate:false
-													}).css('background','');
 												}
+												else if(check_agendaDesativarRegrasStatus==0) {
+													$('#js-aside-edit select[name=id_status]').find('option[value=1]').prop('disabled',false);
+												}
+
+												$('#js-aside-edit input[name=agenda_data]').datetimepicker({
+													timepicker:false,
+													format:'d/m/Y',
+													scrollMonth:false,
+													scrollTime:false,
+													scrollInput:false,
+												}).css('background','');
+
+												$('#js-aside-edit input[name=agenda_hora]').datetimepicker({
+													  datepicker:false,
+												      format:'H:i',
+												      pickDate:false
+												}).css('background','');
 											}
 
 											$('#js-aside-edit input[name=alteracao]').val(0);
@@ -4598,10 +4654,13 @@
 							<a href="javascript:;" class="aside-header__fechar aside-close-edicaoAgendamento"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 						</header>
 
+						<div class="js-aviso-whatsapp" style="width: 100%;background:var(--cinza3);color:var(--vermelho);font-weight:bold;padding: 5px;text-align:center;display: none;">Este paciente não possui número de Whatsapp. Favor realizar Confirmação manual!</div>
+
 						<form method="post" class="aside-content form" onsubmit="return false">
 							<input type="hidden" name="id_status_antigo" />
 							<input type="hidden" name="id" />
 							<input type="hidden" name="alteracao" value="0" />
+
 							<section class="header-profile">
 								<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
 								<div class="header-profile__inner1">
@@ -4694,11 +4753,13 @@
 												$('#js-aside-queroReagendar .js-profissionais2').chosen();
 												$('#js-aside-queroReagendar .js-profissionais2').trigger('chosen:updated');
 
-												$('#js-aside-queroReagendar .js-id_paciente').val(rtn.data.id_paciente);
 												$('#js-aside-queroReagendar input[name=agenda_data]').val('');
 												$('#js-aside-queroReagendar select[name=agenda_duracao]').val(rtn.data.agenda_duracao);
 												$('#js-aside-queroReagendar select[name=id_cadeira]').val(rtn.data.id_cadeira).trigger('chosen:updated');
 												$('#js-aside-queroReagendar textarea.js-obs-qa').val(rtn.data.obs);
+
+												$('#js-aside-queroReagendar .js-reagendar-id_agenda').val(rtn.data.id_agenda);
+												$('#js-aside-queroReagendar .js-id_paciente').val(rtn.data.id_paciente);
 
 											}
 											
@@ -4791,7 +4852,7 @@
 										}
 									});
 
-<<<<<<< HEAD
+
 									$(".js-btn-aside-queroReagendar").click(function() {
 										let id_paciente = $('#js-aside-queroAgendar .js-id_paciente').val();
 
@@ -4807,6 +4868,7 @@
 
 									$('#js-aside-queroReagendar .js-agendamento .js-salvar').click(function(){
 										
+										let id_agenda_origem = $('#js-aside-queroReagendar .js-reagendar-id_agenda').val();
 										let id_paciente = $('#js-aside-queroReagendar .js-id_paciente').val();
 										let agenda_data = $('.js-ag-agendamento-queroReagendar input[name=agenda_data]').val();
 										let agenda_duracao = $('.js-ag-agendamento-queroReagendar select[name=agenda_duracao]').val();
@@ -4843,6 +4905,8 @@
 													'id_profissional':id_profissional,
 													'agenda_hora':agenda_hora,
 													'obs':obs,
+													'id_agenda_origem':id_agenda_origem,
+													'reagendar':1
 												}
 												$.ajax({
 														type:'POST',
@@ -4850,9 +4914,10 @@
 														url:baseURLApiAside,
 														success:function(rtn) {
 															if(rtn.success) {
-																swal({title: "Sucesso!", text: 'Agendamento realizado com sucesso!', type:"success", confirmButtonColor: "#424242"},function(){
-																});
+																
 																$('.aside-close').click();
+																$('#js-aside-edit .aside-close-edicaoAgendamento').click();
+																if(calendar) calendar.refetchEvents();
 
 															} else if(rtn.error) {
 																swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
@@ -4874,11 +4939,10 @@
 											swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
 										}
 									});
-=======
+
 									$('.js-ag-whatsapp .js-btn-wtsEnviar').click(function(){
 										let id_tipo = $('.js-ag-whatsapp select[name=id_tipo]').val();
 										if(id_tipo.length>0) {
->>>>>>> 61c2fb497a0f582ca4919f09b2ddc06624fcfa9a
 
 
 											let obj = $(this);
@@ -4939,10 +5003,10 @@
 												<dd><a href="javascript:;" class="button js-excluir" data-loading="0"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
 											</dl>
 											<dl>
-												<dd><a href="javascript:;" class="button js-webwhatsapp" target="_blank"><span class="iconify" data-icon="ic:outline-whatsapp"></span> Web Whatsapp</a></dd>
+												<dd><a href="javascript:;" class="button js-webwhatsapp" target="_blank"><span class="iconify" data-icon="ic:outline-whatsapp"></span></a></dd>
 											</dl>
 											<dl>
-												<dd><a href="javascript:;" class="button js-btn-aside-queroReagendar"><span class="iconify" data-icon="mdi:calendar-clock"></span> Reagendamento</a></dd>
+												<dd><a href="javascript:;" class="button js-btn-aside-queroReagendar"><span class="iconify" data-icon="mdi:calendar-clock"></span></a></dd>
 											</dl>
 											<dl>
 												<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>
@@ -6277,6 +6341,7 @@
 						</header>
 
 						<form method="post" class="aside-content form" onsubmit="return false;">
+							<input type="hidden" class="js-reagendar-id_agenda" value="0" />
 							<input type="hidden" class="js-id_paciente" value="0" />
 
 							<section class="header-profile">
