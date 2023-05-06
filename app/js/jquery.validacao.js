@@ -80,7 +80,7 @@
 
 $(function(){
 	$('form.formulario-validacao').submit(function(){
-		
+		//console.log(obj);
 		var alertar=false;
 		var alertarEmail=false;
 		var alertaSenha=false;
@@ -124,21 +124,58 @@ $(function(){
 				}
 		});
 		if(alertar) {
+
+			if(obj && objHTMLAntigo) {
+				obj.attr('data-loading',0);
+				obj.html(objHTMLAntigo);
+			}
+
 			swal({title: "Erro!", text: "Complete os campos destacados...", type:"error", confirmButtonColor: "#424242"});
 			return false;
 		} else if(alertarEmail) {
+
+			if(obj && objHTMLAntigo) {
+				obj.attr('data-loading',0);
+				obj.html(objHTMLAntigo);
+			}
+
 			swal({title: "Erro!", text: "Digite um e-mail válido", type:"error", confirmButtonColor: "#424242"});
 			return false;
 		}else if(alertaSenha) {
+
+			if(obj && objHTMLAntigo) {
+				obj.attr('data-loading',0);
+				obj.html(objHTMLAntigo);
+			}
+
 			swal({title: "Erro!", text: "As senhas não conferem", type:"error", confirmButtonColor: "#424242"});
 			return false;
 		}else if(alertaData) {
+
+			if(obj && objHTMLAntigo) {
+				obj.attr('data-loading',0);
+				obj.html(objHTMLAntigo);
+			}
+
 			swal({title: "Erro!", text: "Escolha uma data válida", type:"error", confirmButtonColor: "#424242"});
 			return false;
 		}else if(alertaCPF) {
+
+			if(obj && objHTMLAntigo) {
+				obj.attr('data-loading',0);
+				obj.html(objHTMLAntigo);
+			}
+
 			swal({title: "Erro!", text: "Digite um CPF válido", type:"error", confirmButtonColor: "#424242"});
 			return false;
 		}else if(alertaCNPJ) {
+
+
+			if(obj && objHTMLAntigo) {
+				obj.attr('data-loading',0);
+				obj.html(objHTMLAntigo);
+			}
+
 			swal({title: "Erro!", text: "Digite um CNPJ válido", type:"error", confirmButtonColor: "#424242"});
 			return false;
 		}
