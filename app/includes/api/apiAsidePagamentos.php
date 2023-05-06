@@ -2166,7 +2166,7 @@
 			//$categorias[$x->id] = $x;
 			if ($x->tipo == 'categoria') {
 				$categorias[$x->id]['id'] = $x->id;
-				$categorias[$x->id]['titulo'] = $x->titulo;
+				$categorias[$x->id]['titulo'] = utf8_encode($x->titulo);
 				$categorias[$x->id]['tipo'] = $x->tipo;
 				$categorias[$x->id]['subcategorias'] = array();
 			} else if ($x->tipo == 'subcategoria') {
@@ -2372,7 +2372,7 @@
 			</div>
 		</section>
 		<script>
-			const categorias = <?= json_encode($categorias) ?>;
+			var categorias = `[]`;// <?= empty($categorias)?'[]':json_encode($categorias) ?>;
 			const centrodecustos = <?= json_encode($centrodecustos) ?>;
 			const abrirAside1 = (tipo, index) => {
 				$("#js-aside-asFinanceiro").fadeIn(100, function() {
