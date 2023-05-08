@@ -1646,7 +1646,7 @@
 			<input type="hidden" name="acao" value="wlib" />
 			<input type="hidden" name="status" />
 			<input type="hidden" name="id_politica" value='<?= $values['id_politica'] ?? 0; ?>' />
-			<div class="grid grid_2">
+			<div class="grid grid_1">
 				<div>
 					<!-- Identificacao -->
 					<fieldset>
@@ -1655,12 +1655,51 @@
 							<dd>
 								<?php
 								if (is_object($cnt)) {
-								?>
-									<div class="button-group">
-										<a href="javascript:;" data-status="PENDENTE" class="button js-btn-status<?= $cnt->status == "PENDENTE" ? " active" : ""; ?>"><i class="iconify" data-icon="fluent:timer-24-regular"></i><span>Aguard. Aprovação</span></a>
-										<a href="javascript:;" data-status="APROVADO" class="button js-btn-status<?= $cnt->status == "APROVADO" ? " active" : ""; ?>"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i><span>Aprovado</span></a>
-										<a href="javascript:;" data-status="REPROVADO" class="button js-btn-status<?= $cnt->status == "REPROVADO" ? " active" : ""; ?>"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Reprovado</span></a>
-										<a href="javascript:;" data-status="CANCELADO" class="button js-btn-status<?= $cnt->status == "CANCELADO" ? " active" : ""; ?>"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Cancelado</span></a>
+									
+								?>	<div  class="identificacao-flex">
+										<div class="media-progresso-botoes">
+											<div class="button-group">
+												<a href="javascript:;" data-status="PENDENTE" class="button js-btn-status<?= $cnt->status == "PENDENTE" ? " active" : ""; ?>"><i class="iconify" data-icon="fluent:timer-24-regular"></i><span>Aguard. Aprovação</span></a>
+												<a href="javascript:;" data-status="APROVADO" class="button js-btn-status<?= $cnt->status == "APROVADO" ? " active" : ""; ?>"><i class="iconify" data-icon="fluent:checkbox-checked-24-filled"></i><span>Aprovado</span></a>
+												<a href="javascript:;" data-status="REPROVADO" class="button js-btn-status<?= $cnt->status == "REPROVADO" ? " active" : ""; ?>"><i class="iconify" data-icon="fluent:dismiss-square-24-regular"></i><span>Reprovado</span></a>
+											</div>
+												<a style="margin-left: 10px;" href="javascript:;" data-status="CANCELADO" class="button js-btn-status<?= $cnt->status == "CANCELADO" ? " active" : ""; ?>">  
+													<i class="material-symbols-outlined">free_cancellation</i>
+													<span>Cancelado</span>
+												</a>
+												
+										</div>
+										<!-- barra de progresso -->
+										<div class="media-progresso">
+											<div class="progresso-paciente">
+												<div> 
+													<div class="progresso-circulo progresso-active"><span class="iconify" data-icon="fluent:checkmark-24-filled" style="color: #344848;"></span></div>
+													<div class="progresso-traco progresso-active-traco"></div>
+												</div>
+												<div>Enviado para o cliente</div>
+											</div>
+											<div class="progresso-paciente">
+												<div> 
+												<div class="progresso-circulo progresso-active"><span class="iconify" data-icon="fluent:checkmark-24-filled" style="color: #344848;"></span></div>
+													<div class="progresso-traco"></div>
+												</div>
+												<div>Assinado pelo profissional</div>
+											</div>
+											<div class="progresso-paciente">
+												<div> 
+												<div class="progresso-circulo"></div>
+													<div class="progresso-traco"></div>
+												</div>
+												<div>Assinado pelo paciente</div>
+											</div>
+											<div class="progresso-paciente">
+												<div> 
+												<div class="progresso-circulo"></div>
+												</div>
+												<div>Finalizado</div>
+											</div>
+											<button class="bottom-enviar"><span class="iconify" data-icon="material-symbols:check-circle-outline" style="color: #344848;"></span></button>
+										</div>
 									</div>
 								<?php
 								} else {
@@ -1676,10 +1715,14 @@
 								?>
 							</dd>
 						</dl>
-						<div class="colunas">
+						<div class="grid-4-dinamico">
 							<dl>
 								<dt>Título</dt>
 								<dd><input type="text" name="titulo" value="<?php echo $values['titulo']; ?>" <?php echo $tratamentoAprovado == true ? " disabled" : ""; ?> /></dd>
+							</dl>
+							<dl>
+								<dt>Tempo Estimado</dt>
+								<dd class="form-comp form-comp_pos"><input type="number" name="tempo_estimado" value="<?php echo $values['tempo_estimado']; ?>" <?php echo $tratamentoAprovado == true ? " disabled" : ""; ?> /><span>dias</span></dd>
 							</dl>
 							<dl>
 								<dt>Profissional</dt>
@@ -1696,93 +1739,390 @@
 									</select>
 								</dd>
 							</dl>
-						</div>
-						<div class="colunas">
 							<dl>
-								<dt>Tempo Estimado</dt>
-								<dd class="form-comp form-comp_pos"><input type="number" name="tempo_estimado" value="<?php echo $values['tempo_estimado']; ?>" <?php echo $tratamentoAprovado == true ? " disabled" : ""; ?> /><span>dias</span></dd>
+								<dt>Orçamentista</dt>
+								<dd>
+									<select name="id_profissional" class="js-id_profissional" <?php echo $tratamentoAprovado == true ? " disabled" : ""; ?>>
+										<option value=""><?php echo utf8_encode($clinica->clinica_nome); ?></option>
+										<?php
+										foreach ($_profissionais as $x) {
+											if ($x->check_agendamento == 0 or $x->contratacaoAtiva == 0) continue;
+											$iniciais = $x->calendario_iniciais;
+											echo '<option value="' . $x->id . '" data-iniciais="' . $iniciais . '" data-iniciaisCor="' . $x->calendario_cor . '"' . ($values['id_profissional'] == $x->id ? " selected" : "") . '>' . utf8_encode($x->nome) . '</option>';
+										}
+										?>
+									</select>
+								</dd>
 							</dl>
+
 						</div>
+						<div class="media-progresso1">
+											<div class="progresso-paciente">
+												<div> 
+													<div class="progresso-circulo progresso-active"><span class="iconify" data-icon="fluent:checkmark-24-filled" style="color: #344848;"></span></div>
+													<div class="progresso-traco progresso-active-traco"></div>
+												</div>
+												<div>Enviado para o cliente</div>
+											</div>
+											<div class="progresso-paciente">
+												<div> 
+												<div class="progresso-circulo progresso-active"><span class="iconify" data-icon="fluent:checkmark-24-filled" style="color: #344848;"></span></div>
+													<div class="progresso-traco"></div>
+												</div>
+												<div>Assinado pelo profissional</div>
+											</div>
+											<div class="progresso-paciente">
+												<div> 
+												<div class="progresso-circulo"></div>
+													<div class="progresso-traco"></div>
+												</div>
+												<div>Assinado pelo paciente</div>
+											</div>
+											<div class="progresso-paciente">
+												<div> 
+												<div class="progresso-circulo"></div>
+												</div>
+												<div>Finalizado</div>
+											</div>
+											<button class="bottom-enviar"><span class="iconify" data-icon="material-symbols:check-circle-outline" style="color: #344848;"></span></button>
+										</div>
 					</fieldset>
 					<!-- Procedimentos -->
-					<fieldset>
-						<legend>Procedimentos</legend>
-						<textarea name="procedimentos" id="js-textarea-procedimentos" style="display:none"><?php echo $values['procedimentos']; ?></textarea>
-						<?php
-						if ($tratamentoAprovado === false) {
-						?>
-							<dl>
-								<dd>
-									<a href="javascript:;" ata-aside="plano-procedimento-adicionar" class="button button_main js-btn-adicionarProcedimento"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar Procedimento</span></a>
-								</dd>
-							</dl>
-						<?php
-						}
-						?>
-
-						<div class="list1">
-							<table id="js-table-procedimentos">
-
-							</table>
-						</div>
-					</fieldset>
-				</div>
-				<div>
-					<!-- Financeiro -->
-					<fieldset>
-						<legend>Financeiro</legend>
-						<textarea name="pagamentos" id="js-textarea-pagamentos" style="display:none;"><?= $values['pagamentos']; ?></textarea>
-						<section class="filter">
-							<div class="filter-group">
-								<div class="filter-title">
-									<h1>Total: <strike class="js-valorTotalOriginal"></strike> <strong class="js-valorTotal">R$ 0,00</strong></h1>
-								</div>
-							</div>
-							<div class="filter-group">
-								<?php if ($tratamentoAprovado === false) : ?>
-									<div>
-										<a href="javascript:;" class="button js-btn-desconto"><i class="iconify" data-icon="fluent:money-calculator-24-filled"></i><span>Descontos</span></a>
-									</div>
-									<dl id='botao-voltar-menu-parcelas' style='display: none;'>
-										<dd>
-											<label onclick="voltarMenuParcelas()"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></label>
-										</dd>
-									</dl>
-								<?php endif; ?>
-							</div>
-						</section>
-						<?php if ($tratamentoAprovado === false) : ?>
-							<dl style="margin-bottom:2rem" id='dl-tipo_financeiro'>
-								<dd>
-									<label><input type="radio" name="tipo_financeiro" value="politica" onclick="alternaManualPolitica('politica')" <?= (is_object($cnt) and $cnt->tipo_financeiro == "politica") ? " checked" : ""; ?> /> Política de pagamento</label>
-									<label><input type="radio" name="tipo_financeiro" value="manual" onclick="alternaManualPolitica('manual')" <?= (is_object($cnt) and $cnt->tipo_financeiro == "manual") ? " checked" : ""; ?> /> Financeiro manual</label>
-								</dd>
-							</dl>
-							<section class="js-tipo js-tipo-manual" style="display:none;">
+					<div class="grid grid_2">
+						<fieldset style="height: 390px;" >
+							<legend>Procedimentos</legend>
+							<textarea name="procedimentos" id="js-textarea-procedimentos" style="display:none"><?php echo $values['procedimentos']; ?></textarea>
+							<?php
+							if ($tratamentoAprovado === false) {
+							?>
 								<dl>
-									<dt>Parcelas</dt>
 									<dd>
-										<label><input class="js-pagamentos-quantidade" type="number" name="parcelas" value="<?= isset($values['parcelas']) ? $values['parcelas'] : '0'; ?>" style="width:80px;" /></label>
+										<a href="javascript:;" ata-aside="plano-procedimento-adicionar" class="button button_main js-btn-adicionarProcedimento"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Adicionar Procedimento</span></a>
 									</dd>
 								</dl>
-							</section>
-						<?php endif; ?>
-						<section class="js-tipo js-tipo-politica" style="display:none;">
-							<div class="list1">
-								<table>
+							<?php
+							}
+							?>
+
+							<div class="list1 scroll">
+								<table id="js-table-procedimentos">
+
 								</table>
 							</div>
-						</section>
-						<section class="js-tipo js-listar-parcelas" style="display:none;">
-							<div class="fpag" style="margin-top:1rem;">
+						</fieldset>
+					<!-- Financeiro -->
+						<fieldset style="height: 390px;" >
+							<legend>Financeiro</legend>
+							<textarea name="pagamentos" id="js-textarea-pagamentos" style="display:none;"><?= $values['pagamentos']; ?></textarea>
+							<section class="filter" style="justify-content: end; margin-bottom: 0px;">
+							<?php if ($tratamentoAprovado === false) : ?>
+									<dl style="margin-bottom:2rem" id='dl-tipo_financeiro'>
+										<dd>
+											<label><input type="radio" name="tipo_financeiro" value="politica" onclick="alternaManualPolitica('politica')" <?= (is_object($cnt) and $cnt->tipo_financeiro == "politica") ? " checked" : ""; ?> /> Política de pagamento</label>
+											<label><input type="radio" name="tipo_financeiro" value="manual" onclick="alternaManualPolitica('manual')" <?= (is_object($cnt) and $cnt->tipo_financeiro == "manual") ? " checked" : ""; ?> /> Financeiro manual</label>
+										</dd>
+									</dl>
+									<section class="js-tipo js-tipo-manual" style="display:none; margin-right: auto;">
+										<dl>
+											<dt>Parcelas</dt>
+											<dd>
+												<label><input class="js-pagamentos-quantidade" type="number" name="parcelas" value="<?= isset($values['parcelas']) ? $values['parcelas'] : '0'; ?>" style="width:80px;" /></label>
+											</dd>
+										</dl>
+									</section>
+								<?php endif; ?>
+							
+								<div class="filter-group">
+									<div class="filter-title">
+										<h1>Total: <strike class="js-valorTotalOriginal"></strike> <strong class="js-valorTotal">R$ 0,00</strong></h1>
+									</div>
+								</div>
+								<div class="filter-group">
+									<?php if ($tratamentoAprovado === false) : ?>
+										<div>
+											<a href="javascript:;" class="button js-btn-desconto"><i class="iconify" data-icon="fluent:money-calculator-24-filled"></i><span>Descontos</span></a>
+										</div>
+										<dl id='botao-voltar-menu-parcelas' style='display: none;'>
+											<dd>
+												<label onclick="voltarMenuParcelas()"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></label>
+											</dd>
+										</dl>
+									<?php endif; ?>
+								</div>
+							</section>
+								<section class="js-tipo js-tipo-politica" style="display:none;">
+									<div class="list1">
+										<table>
+										</table>
+									</div>
+								</section>
+								<section class="js-tipo js-listar-parcelas scroll" style="display:none;">
+									<div class="fpag" style="margin-top:1rem;">
+									</div>
+							</section>
+						</fieldset>
+						<fieldset > 
+							<legend>Procedimentos</legend>
+							<div class="dentes login-form">
+								<div class="divisor">
+									<div class="dente">
+										<span>18</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_18_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_18_quadrantes.svg" alt="">
+										</div>
+									</div>
+									<div class="dente">
+										<span>17</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_17_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_17_cima_quadrantes.svg" alt="">
+										</div>
+									</div>
+									<div class="dente">
+										<span>16</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_16_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_16_cima_quadrantes.svg" alt="">
+										</div>
+									</div>
+									<div class="dente">
+										<span>15</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_15_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_15_quadrantes.svg" alt="">
+										</div>
+									</div>
+									<div class="dente">
+										<span>14</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_14_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_14_quadrantes.svg" alt="">
+										</div>
+									</div>
+									<div class="dente">
+										<span>13</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_13_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_18_quadrantes.svg" alt="">
+										</div>
+									</div>
+									<div class="dente">
+										<span>12</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_12_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_18_quadrantes.svg" alt="">
+										</div>
+									</div>
+									<div class="dente">
+										<span>11</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_11_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_18_quadrantes.svg" alt="">
+										</div>
+									</div>
+								</div>
+								<div class="divisor">
+								<div class="dente">
+										<span>21</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_21_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_18_quadrantes.svg" alt="">
+										</div>
+									</div>
+								</div>
+								<div class="dente">
+										<span>22</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_22_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_18_quadrantes.svg" alt="">
+										</div>
+									</div>
+								</div>
+								<div class="dente">
+										<span>23</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_23_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_18_quadrantes.svg" alt="">
+										</div>
+									</div>
+								</div>
+								<div class="dente">
+										<span>24</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_24_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_24_quadrantes.svg" alt="">
+										</div>
+									</div>
+								</div>
+								<div class="dente">
+										<span>25</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_25_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_25_quadrante.svg" alt="">
+										</div>
+									</div>
+								</div>
+								<div class="dente">
+										<span>26</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_11_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_26_quadrantes.svg" alt="">
+										</div>
+									</div>
+								</div>
+								<div class="dente">
+										<span>27</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_27_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_27_quadrantes.svg" alt="">
+										</div>
+									</div>
+								</div>
+								<div class="dente">
+										<span>28</span>
+										<div>
+											<img class="cima" src="./img/dentes_cima/dente_11_cima_notplain.svg" alt="">
+										</div>
+										<div>
+											<img class="centro" src="./img/dentes_centro/dente_18_quadrantes.svg" alt="">
+										</div>
+									</div>
+								</div>
 							</div>
-						</section>
-					</fieldset>
+						</fieldset>
+
+						<fieldset >
+							<legend>Procedimentos</legend>
+							<div style="align-items: center; justify-content: end; display: flex;">							
+								<a class="button " href="javascript:;" id="limpar-canvas" > <span class="iconify" data-icon="carbon:clean"></span> Limpar</a>
+								<a class="button js-desenhar" href="javascript:;" id="limpar-canvas" ><span class="iconify" data-icon="fluent:copy-select-20-filled"></span> Desenhar</a>
+								<a class="button active" href="javascript:;" id="limpar-canvas" href=""> Região</a>
+							</div>
+							<canvas style="display: block;margin: auto;" id="canvas" width="600px" height="500"></canvas>
+						</fieldset>
+					</div>
 				</div>
 			</div>
 		</form>
 	</div>
 </main>
+<script>
+// Seleciona o elemento canvas
+$(document).ready(function() {
+	var desenhar = false;
+
+// Seleciona o elemento canvas
+const canvas = $("#canvas")[0];
+
+// Configura o contexto 2D
+const ctx = canvas.getContext("2d");
+ctx.lineWidth = 5;
+ctx.lineCap = "round";
+
+// Cria um objeto de imagem e define o caminho da imagem
+const img = new Image();
+img.src = "./img/RetratoMulher.png";
+
+// Desenha a imagem de fundo no canvas
+img.onload = function() {
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+};
+
+// Inicializa as variáveis de posição
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
+
+// Adiciona os eventos de mouse
+canvas.addEventListener("mousedown", (e) => {
+
+if (desenhar === true) {
+  isDrawing = true;
+  lastX = e.offsetX;
+  lastY = e.offsetY;
+  
+} else {
+		
+	}
+});
+
+canvas.addEventListener("mousemove", (e) => {
+  if (!isDrawing) return;
+
+  ctx.beginPath();
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(e.offsetX, e.offsetY);
+  ctx.stroke();
+
+  lastX = e.offsetX;
+  lastY = e.offsetY;
+});
+
+canvas.addEventListener("mouseup", () => {
+  isDrawing = false;
+});
+
+canvas.addEventListener("mouseout", () => {
+  isDrawing = false;
+});
+
+// Seleciona o botão de limpar
+const btnLimpar = $('#limpar-canvas').click(
+  function(){
+	ctx.fillStyle = '#ffffff';
+	// Preenche o canvas com branco
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+	
+
+  }
+);
+
+// Seleciona o botão de desenhar
+$(".js-desenhar").click( ()=>{
+	if (desenhar) {
+		desenhar = false
+		$('.js-desenhar').removeClass('active');
+
+	} else {
+		desenhar = true
+		$('.js-desenhar').addClass('active');
+	}
+})
+});
+
+</script>
 
 <?php
 require_once("includes/api/apiAsidePlanoDeTratamento.php");
