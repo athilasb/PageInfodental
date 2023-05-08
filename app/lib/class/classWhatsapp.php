@@ -242,7 +242,6 @@
 
 			if(is_object($paciente)) {
 				$msg = str_replace("[nome]",utf8_encode($paciente->nome), $msg);
-				$msg = str_replace("[paciente]",utf8_encode($paciente->nome), $msg);
 			}
 			if(is_object($agenda)) {
 
@@ -555,7 +554,6 @@
 											$where="where id_agenda=$agenda->id and 
 															id_paciente=$paciente->id and 
 															id_tipo=$tipo->id  and 
-															id_tipo NOT IN (5) and
 															numero='".addslashes($numero)."' and 
 															data > NOW() - INTERVAL 48 HOUR";
 
@@ -624,7 +622,7 @@
 						} 
 
 						// Confirmação de agendamento para dentistas (id_tipo=6)
-						else if($tipo->id==6 or $tipo->id==8 or $tipo->id==7) {
+						else if($tipo->id==6) {
 							if(is_object($paciente)) {
 
 								if(is_object($agenda)) {
@@ -654,7 +652,6 @@
 												$where="where id_agenda=$agenda->id and 
 																id_paciente=$paciente->id and 
 																id_tipo=$tipo->id  and 
-																id_tipo NOT IN (7) and 
 																numero='".addslashes($numero)."' and 
 																data > NOW() - INTERVAL 48 HOUR";
 
@@ -1034,7 +1031,8 @@
 				
 				if(empty($conexao)) $erro="Nenhum whatsapp está conectado a esta unidade";
 				else {
-					if($conexao->versao>=2) {
+
+					if($conexao->versao==2) {
 						$url="https://srv.infodental.dental:8443/v2/profile?instance=".$conexao->wid."&contact=".$this->wtsNumero($paciente->telefone1);
 					} else {
 						$url="https://srv.infodental.dental:8443/profile?instance=".$conexao->wid."&contact=".$this->wtsNumero($paciente->telefone1);
