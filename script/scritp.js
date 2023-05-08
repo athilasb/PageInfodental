@@ -129,3 +129,64 @@ setTimeout(function() {
   next1()
 }, 2000);
 */
+
+
+var swiper = new Swiper(".Carroseu1", {
+  slidesPerView: 2,
+  spaceBetween: 30,
+  freeMode: true,
+  autoplay: {
+      delay: 1500, // tempo em milissegundos entre cada slide
+      disableOnInteraction: false, // se o auto-play deve ser desativado quando o usuário interagir com o Swiper
+  },
+  breakpoints: {
+      // quando a largura da tela for maior que 768px (tablets), exibir 3 slides por view
+      1024: {
+      slidesPerView: 5,
+      },
+      // quando a largura da tela for menor ou igual a 767px (celulares), exibir 2 slides por view
+      767: {
+      slidesPerView: 3,
+      },
+  },
+  });
+
+  var swiper = new Swiper(".Carroseu2", {
+  slidesPerView: 5,
+  spaceBetween: 10,
+  freeMode: true,
+  autoplay: {
+      delay: 2500, // tempo em milissegundos entre cada slide
+      disableOnInteraction: false, // se o auto-play deve ser desativado quando o usuário interagir com o Swiper
+  },
+  breakpoints: {
+      // quando a largura da tela for maior que 768px (tablets), exibir 3 slides por view
+      961: {
+      slidesPerView: 14,
+      },
+      960: {
+      slidesPerView: 13,
+      },
+      760: {
+      slidesPerView: 11,
+      },
+      700: {
+      slidesPerView: 10,
+      },
+      600: {
+      slidesPerView: 9,
+      },
+      500: {
+      slidesPerView: 8,
+      },
+      400: {
+      slidesPerView: 7,
+      },
+      350: {
+      slidesPerView: 6,
+      },
+      300: {
+      slidesPerView: 5,
+      },
+  },
+  });

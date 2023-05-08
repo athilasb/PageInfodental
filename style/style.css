@@ -133,7 +133,7 @@ section{
   }
 
   .nossos-clientes-img .swiper-slide{
-    width: 60px !important;
+    width: 40px !important;
 
   }
 
@@ -406,17 +406,119 @@ padding: 0px 50px 10px 50px;
     margin-top: 10px;
     margin-bottom: -25px;
 }
+
+.titulo-quem{
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: var(--weight1);
+    font-size: var(--h3);
+    line-height: 20px;
+    color: var(--verde);
+}
+.titulo-quem-sub{
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: var(--weight);
+    font-size: var(--h2);
+    line-height: 45px;
+    color: var(--verde);
+}
+.perfil-conteudo{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 50px;
+    flex-wrap: wrap
+}
+
+.perfil-conteudo .conteudo{
+    background: var(--branco);
+    border: 1px solid var(--cinza1);
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    padding: 40px 25px;
+    max-width: 300px;
+    min-height: 260px;
+    margin-top: 30px;
+}
+
+.perfil-conteudo .conteudo div:nth-of-type(1){
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 700;
+    font-size: var(--h2);
+    line-height: 20px;
+    color:  var(--verde);
+}
+
+.perfil-conteudo .conteudo div:nth-of-type(2){
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 700;
+    font-size: var(--h3);
+    line-height: 20px;
+    color: var(--verde);
+    margin-top: 40px;
+}
+
+.perfil-conteudo .conteudo div:nth-of-type(3){
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 20px;
+    color: #344848;
+    margin-top: 36PX;
+}
+.perfil-cards .conteudo{
+width: 240px;
+height: 140px;
+margin: 30px;
+background: var(--cinza2);
+border-radius: 5px;
+}
+
+.perfil-conteudo .ferramentas{
+    background: var(--branco);
+    border: 1px solid var(--cinza1);
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    padding: 40px 25px;
+    max-width: 300px;
+    min-height: 230px;
+    margin-top: 30px;
+}
+
+.perfil-conteudo .ferramentas div:nth-of-type(1){
+    
+}
+
+.perfil-cards{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 90px;
+}
+
+@media screen and (max-width: 810px){
+    .perfil-conteudo{
+        justify-content: center;
+    }
+}
 @media screen and (min-width: 1048px){
     .posicao-sticky{
         position: sticky;
         top: 110px;
     }
+}
+@media screen and (min-width: 770px){
     .nossos-clientes-img{
         display: flex;
         justify-content: center;
     }
-
 }
+
 
 .text-quem-somos .comentarios b{
     font-family: 'Montserrat';
@@ -549,6 +651,7 @@ color: #344848;
         max-width: 440px;
         text-align: left;
         align-items: flex-start;
+        padding: 20px 0px;
     }
     
     .media-margin{
