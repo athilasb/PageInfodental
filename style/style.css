@@ -562,20 +562,20 @@ border-radius: 5px;
 }
 .beneficios .sub-titulo{
     font-family: 'Montserrat';
-font-style: normal;
-font-weight: var(--weight);
-font-size: var(--h1);
-line-height: 45px;
-color: var(--verde);
+    font-style: normal;
+    font-weight: var(--weight);
+    font-size: var(--h1);
+    line-height: 45px;
+    color: var(--verde);
 }
 
 .beneficios .custos{
-font-family: 'Montserrat';
-font-style: normal;
-font-weight: 700;
-font-size: var(--size-god);
-color: var(--verde);
-text-align: center;
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 700;
+    font-size: var(--size-god);
+    color: var(--verde);
+    text-align: center;
 }
 
 .beneficios .info{
@@ -594,8 +594,8 @@ text-align: center;
     flex-wrap: wrap;
 }
 .beneficios .cards-benedicios{
-max-width: 300px;
-margin: 30px;
+    max-width: 300px;
+    margin: 30px;
 }
 
 .beneficios .cards-benedicios div:nth-of-type(1){
@@ -661,12 +661,12 @@ margin: 30px;
     border-bottom: solid 1px var(--cinza2); ;
 }
 .sub-titulo{
-font-family: 'Montserrat';
-font-style: normal;
-font-weight: var(--weight);
-font-size: var(--h2);
-line-height: 45px;
-color: #344848;
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: var(--weight);
+    font-size: var(--h2);
+    line-height: 45px;
+    color: #344848;
 }
 
 .nossos-clientes-img img{
