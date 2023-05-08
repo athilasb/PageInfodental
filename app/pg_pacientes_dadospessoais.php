@@ -178,7 +178,7 @@
 							<dd><a href="" class="button"><i class="iconify" data-icon="fluent:print-24-regular"></i></a></dd>
 						</dl>
 						<dl>
-							<dd><a href="javascript:;" class="button button_main js-submit-loading" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>
+							<dd><a href="javascript:;" class="button button_main js-submit"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>
 						</dl>
 					</div>
 				</div>
@@ -194,23 +194,8 @@
 					<script type="text/javascript">
 						var initIndicacao = '<?php echo $values['indicacao'];?>';
 						var initIndicacao_tipo = '<?php echo $values['indicacao_tipo'];?>';
-						var obj = '';
-						var objHTMLAntigo = '';
 
 						$(function(){
-
-							$('.js-submit-loading').click(function(){
-								if($(this).attr('data-loading')==0) {
-									obj = $(this);
-									objHTMLAntigo = $(this).html();
-
-									$(this).html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
-									$(this).attr('data-loading',1);
-
-									$('form.formulario-validacao').submit();
-									
-								}
-							})
 
 							$('select[name=indicacao_tipo]').change(function(){
 								//let id_indicacao = $(this).find('option:selected').attr('data-id');
