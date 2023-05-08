@@ -27,6 +27,7 @@
     --size1:18px;
     --size2:14px;
     --size3:10px;
+    --size-god:400px;
     
     /*font-weight*/
     --weight:700 ;
@@ -39,16 +40,27 @@
 
 }
 
+@media screen and (max-width: 970px){
+    :root{
+        --size-god:250px;
+    }
+}
+@media screen and (max-width: 630px){
+    :root{
+        --size-god:200px;
+    }
+}
 @media screen and (max-width: 500px){
     :root{
-        --font-grande:400px !important;
-        --h1:43px !important;
-        --h2:25px !important;
-        --h3:20px !important;
-        --size:18px !important;
-        --size1:16px !important;
-        --size2:12px !important;
-        --size3:10px !important;
+        --font-grande:400px ;
+        --h1:43px;
+        --h2:25px;
+        --h3:20px;
+        --size:18px;
+        --size1:16px;
+        --size2:12px;
+        --size3:10px;
+        --size-god:120px;
     }
 
 }
@@ -533,6 +545,77 @@ border-radius: 5px;
     align-items: center;
     flex-wrap: wrap;
     margin-top: 90px;
+    margin-bottom: 90px;
+}
+.benefits{
+    margin-top: 90px;
+}
+.beneficios h2{
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: var(--weight1);
+    font-size: var(--h3);
+    line-height: 20px;
+    color: var(--verde);
+    margin-top: 90px;
+    margin-bottom: 15px;
+}
+.beneficios .sub-titulo{
+    font-family: 'Montserrat';
+font-style: normal;
+font-weight: var(--weight);
+font-size: var(--h1);
+line-height: 45px;
+color: var(--verde);
+}
+
+.beneficios .custos{
+font-family: 'Montserrat';
+font-style: normal;
+font-weight: 700;
+font-size: var(--size-god);
+color: var(--verde);
+text-align: center
+;
+}
+
+.beneficios .info{
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: var(--weight1);
+    font-size: var(--size);
+    line-height: 20px;
+    text-align: center;
+    color: var(--preto);
+}
+.beneficios .benefits{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.beneficios .cards-benedicios{
+max-width: 300px;
+margin: 30px;
+}
+
+.beneficios .cards-benedicios div:nth-of-type(1){
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: var(--weight);
+    font-size: var(--size);
+    line-height: 45px;
+    color: var(--verde);
+    text-align: center
+}
+.beneficios .cards-benedicios div:nth-of-type(2){
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: var(--weight1);
+    font-size: var(--size2);
+    line-height: 23px;
+    color: var(--verde);
+    text-align: center;
 }
 
 @media screen and (max-width: 810px){
