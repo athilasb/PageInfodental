@@ -1,0 +1,1 @@
+UPDATE `ident_financeiro_fluxo_origens` SET `tabela` = 'ident_financeiro_fluxo_pagamentos', `titulo` = 'ident_financeiro_fluxo_pagamentos' WHERE `ident_financeiro_fluxo_origens`.`id` = 2
