@@ -215,9 +215,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		<title><?php echo $title;?></title>
 		
-		<link rel="stylesheet" type="text/css" href="../css/evolucoes.css?v1.4" />
+		<link rel="stylesheet" type="text/css" href="../evolucoes/css/evolucoes.css?<?php echo date('His');?>" />
 		<link rel="stylesheet" type="text/css" href="../css/apps.css" />
 		<script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
+		<base href="//<?php echo $_SERVER['HTTP_HOST'];?>/" />
 		<script src="../js/jquery.js"></script>
 	</head>
 	
@@ -226,7 +227,7 @@
 	<script type="text/javascript" src="../js/jquery.inputmask.js"></script>
 	<script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>
 	<style type="text/css">
-		.erro {color:#cc3300}
+		.erro {color:#cc3300 !important}
 	</style>
 	<body class="body">	
 
@@ -535,21 +536,50 @@
 																<?php  
 																if($pergunta->tipo=="simnao") { 
 																	?>
-																	<label>
-																		<input type="radio" name="resposta_<?php echo $p->id;?>" value="SIM" class="js-resposta js-simnao-<?php echo $pergunta->id;?>" data-tipo="simnao_texto" data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta=="SIM"?" checked":"";?> /> Sim
-																	</label>
-																	<label>
-																		<input type="radio" name="resposta_<?php echo $p->id;?>" value="NAO" class="js-resposta js-simnao-<?php echo $pergunta->id;?>" data-tipo="simnao_texto" data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta=="NAO"?" checked":"";?> /> Não
-																	</label>
+																	<div class="radiosn">
+																		<label>
+																			<input type="radio" 
+																					name="resposta_<?php echo $p->id;?>" 
+																					id="sim-<?php echo $p->id;?>"  
+																					value="SIM" 
+																					class="js-resposta js-simnao-<?php echo $pergunta->id;?>" data-tipo="simnao_texto" 
+																					data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta=="SIM"?" checked":"";?> /> 
+																			<label for="sim-<?php echo $p->id;?>" class="label">Sim</label>
+																		</label>
+																		<label>
+																			<input type="radio" 
+																			name="resposta_<?php echo $p->id;?>" 
+																			id="nao-<?php echo $p->id;?>"  
+																			value="NAO" 
+																			class="js-resposta js-simnao-<?php echo $pergunta->id;?>" 
+																			data-tipo="simnao_texto" 
+																			data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta=="NAO"?" checked":"";?> /> 
+																			<label for="nao-<?php echo $p->id;?>" class="label">Não</label>
+																		</label>
+																	</div>
+
 
 																	<?php
 
 																}
 																else if($pergunta->tipo=="simnaotexto") {
 																	?>
-																		<div  class="radiosn">
-																			<input type="radio" name="resposta_<?php echo $p->id;?>" id="sim-<?php echo $p->id;?>"  value="SIM" class="js-resposta js-simnao-<?php echo $pergunta->id;?>" data-tipo="simnao" data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta=="SIM"?" checked":"";?> /> <label for="sim-<?php echo $p->id;?>" class="label"> Sim</label>
-																			<input type="radio" name="resposta_<?php echo $p->id;?>" id="nao-<?php echo $p->id;?>"  value="NAO" class="js-resposta js-simnao-<?php echo $pergunta->id;?>" data-tipo="simnao" data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta=="NAO"?" checked":"";?> /> <label for="nao-<?php echo $p->id;?>" class="label">Não</label>
+																		<div class="radiosn">
+																			<input type="radio" 
+																					name="resposta_<?php echo $p->id;?>" 
+																					id="sim-<?php echo $p->id;?>"  
+																					value="SIM" 
+																					class="js-resposta js-simnao-<?php echo $pergunta->id;?>" data-tipo="simnao" 
+																					data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta=="SIM"?" checked":"";?> /> 
+																			<label for="sim-<?php echo $p->id;?>" class="label"> Sim</label>
+																			
+																			<input type="radio" 
+																					name="resposta_<?php echo $p->id;?>" 
+																					id="nao-<?php echo $p->id;?>"  
+																					value="NAO" 
+																					class="js-resposta js-simnao-<?php echo $pergunta->id;?>" data-tipo="simnao" 
+																					data-id_resposta="<?php echo $p->id;?>"<?php echo $p->resposta=="NAO"?" checked":"";?> /> 
+																			<label for="nao-<?php echo $p->id;?>" class="label">Não</label>
 																		</div>
 																		<div>
 																			<textarea name="resposta_<?php echo $p->id;?>" placeholder="Escreva sua resposta" class="js-resposta js-simnaotexto-<?php echo $pergunta->id;?>" data-tipo="texto" data-id_resposta="<?php echo $p->id;?>"><?php echo utf8_encode($p->resposta_texto);?></textarea>
@@ -633,14 +663,14 @@
 						<tr>
 							<td style="padding-top:40px;">
 
-								<div class="print-footer">
+								<?php /*<div class="print-footer">
 									<p><span class="iconify" data-icon="bx:bxs-phone" data-inline="true"></span><span><?php echo maskTelefone($clinica->telefone);?></span><span class="iconify" data-icon="ri:whatsapp-fill" data-inline="true"></span><span><?php echo maskTelefone($clinica->whatsapp);?></span></p>
 									<p><?php echo $endereco;?></p>
 									<p>
 										<span><i class="iconify" data-icon="ph-globe-simple"></i> <a href="https://<?php echo $clinica->site;?>"><?php echo $clinica->site;?></a></span>
 										<span><i class="iconify" data-icon="ph-instagram-logo"></i> <a href="https://instagram.com/<?php echo str_replace("@","",$clinica->instagram);?>"><?php echo $clinica->instagram;?></a></span>
 									</p>
-								</div>
+								</div>*/?>
 							</td>
 						</tr>
 
