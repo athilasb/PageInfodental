@@ -1,0 +1,771 @@
+TX_NOME_PACIENTE;TX_DT_EMISSAO;TX_DT_HISTORICO;TX_EXECUTANTE;TX_REGIAO;TX_FACES;CD_PROCEDIMENTO;TX_DESCRICAO;ID_PACIENTE;ID_CONTA_REGISTRO;FL_ATIVO;DT_HISTORICO
+Mariana da Rocha Ferreira;1/4/2023;10/7/2020;EA Servicos Odontologicos Eireli;18;;82000832;Exodontia de permanente por indicação ortodôntica/protética;7938553;9139;0;2020-07-10 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;10/7/2020;EA Servicos Odontologicos Eireli;28;;82000832;Exodontia de permanente por indicação ortodôntica/protética;7938553;9139;0;2020-07-10 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;10/7/2020;EA Servicos Odontologicos Eireli;18;;82000832;Exodontia de permanente por indicação ortodôntica/protética;7938553;9139;0;2020-07-10 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;18,14,ris,28,34,38;;81000421;Radiografia periapical;7938553;9139;0;2020-12-10 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;23/11/2020;EA Servicos Odontologicos Eireli;17;;85400262;Pino de fibra de vidro;7939578;9139;0;2020-11-23 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;3/12/2020;EA Servicos Odontologicos Eireli;27;VDM;85100153;Restauração em ionômero de vidro - 3 faces;7939578;9139;0;2020-12-03 00:00:00.000
+Kalita Rosa Ferreira;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;37;;81000421;Radiografia periapical;9694260;9139;0;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;21;M;85100196;Restauração em resina fotopolimerizável 1 face;9415150;9139;0;2021-07-28 00:00:00.000
+Sebastiana Nunes Moura Vieira;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;13,45;;99000011;Finalização: Raio X;10432526;9139;0;2022-03-26 00:00:00.000
+Sebastiana Nunes Moura Vieira;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;13,45;;99000011;Finalização: Raio X;10432526;9139;0;2022-03-26 00:00:00.000
+Sebastiana Nunes Moura Vieira;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;13,45;;99000011;Finalização: Raio X;10432526;9139;0;2022-03-26 00:00:00.000
+Gabriel Ferreira Cunha ;1/4/2023;24/5/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;11484651;9139;0;2022-05-24 00:00:00.000
+Erika Lorranny Rocha Chagas ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;12816080;9139;0;2022-11-17 00:00:00.000
+Andis Vinicius;1/4/2023;19/10/2020;EA Servicos Odontologicos Eireli;36;;854000841;Coroa Resina Composta provisoria;7416579;9139;1;2020-10-19 00:00:00.000
+Andis Vinicius;1/4/2023;19/10/2020;EA Servicos Odontologicos Eireli;46;MV;85100200;Restauração em resina fotopolimerizável 2 faces;7416579;9139;1;2020-10-19 00:00:00.000
+Débora Batista Veras;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;15;V;85100196;Restauração em resina cervical;7903981;9139;1;2020-12-10 00:00:00.000
+Débora Batista Veras;1/4/2023;4/12/2020;EA Servicos Odontologicos Eireli;14;V;85100196;Restauração em resina fotopolimerizável 1 face;7903981;9139;1;2020-12-04 00:00:00.000
+Débora Batista Veras;1/4/2023;3/12/2020;EA Servicos Odontologicos Eireli;24;O;85100196;Restauração em resina fotopolimerizável 1 face;7903981;9139;1;2020-12-03 00:00:00.000
+Débora Batista Veras;1/4/2023;4/12/2020;EA Servicos Odontologicos Eireli;27;O;85100196;Restauração em resina fotopolimerizável 1 face;7903981;9139;1;2020-12-04 00:00:00.000
+Débora Batista Veras;1/4/2023;4/12/2020;EA Servicos Odontologicos Eireli;35;V;85100196;Restauração em resina fotopolimerizável 1 face;7903981;9139;1;2020-12-04 00:00:00.000
+Débora Batista Veras;1/4/2023;1/12/2020;EA Servicos Odontologicos Eireli;;;99000027;Raspagem para toda a boca;7903981;9139;1;2020-12-01 00:00:00.000
+Geovana da Penha Xavier Faleiros ;1/4/2023;4/12/2020;EA Servicos Odontologicos Eireli;28;;82000875;Exodontia simples de permanente;7910554;9139;1;2020-12-04 00:00:00.000
+Geovana da Penha Xavier Faleiros ;1/4/2023;4/12/2020;EA Servicos Odontologicos Eireli;38;;82001294;Remoção de dentes semi-inclusos / impactados;7910554;9139;1;2020-12-04 00:00:00.000
+Geovana da Penha Xavier Faleiros ;1/4/2023;19/11/2020;EA Servicos Odontologicos Eireli;;;99000027;Raspagem para toda a boca;7910554;9139;1;2020-11-19 00:00:00.000
+Geovana da Penha Xavier Faleiros ;1/4/2023;20/11/2020;EA Servicos Odontologicos Eireli;17;PO;85100200;Restauração em resina fotopolimerizável 2 faces;7910554;9139;1;2020-11-20 00:00:00.000
+Geovana da Penha Xavier Faleiros ;1/4/2023;20/11/2020;EA Servicos Odontologicos Eireli;47;O;85100196;Restauração em resina fotopolimerizável 1 face;7910554;9139;1;2020-11-20 00:00:00.000
+Elenice Simões Machado;1/4/2023;7/12/2020;EA Servicos Odontologicos Eireli;18;;82000875;Exodontia simples de permanente;7915577;9139;1;2020-12-07 00:00:00.000
+Elenice Simões Machado;1/4/2023;7/12/2020;EA Servicos Odontologicos Eireli;48;;82001294;Remoção de dentes semi-inclusos / impactados;7915577;9139;1;2020-12-07 00:00:00.000
+Elenice Simões Machado;1/4/2023;13/11/2020;EA Servicos Odontologicos Eireli;36;DO;99000079;Restauração DO;7915577;9139;1;2020-11-13 00:00:00.000
+Elenice Simões Machado;1/4/2023;24/11/2020;EA Servicos Odontologicos Eireli;46;MO;99000078;Restauração MO;7915577;9139;1;2020-11-24 00:00:00.000
+Elenice Simões Machado;1/4/2023;24/11/2020;EA Servicos Odontologicos Eireli;45;D;85100196;Restauração em resina fotopolimerizável 1 face;7915577;9139;1;2020-11-24 00:00:00.000
+Elenice Simões Machado;1/4/2023;3/11/2020;EA Servicos Odontologicos Eireli;;;99000027;Raspagem para toda a boca;7915577;9139;1;2020-11-03 00:00:00.000
+Elenice Simões Machado;1/4/2023;3/11/2020;EA Servicos Odontologicos Eireli;;;99000028;Ensino de higiene oral;7915577;9139;1;2020-11-03 00:00:00.000
+Davi Dias da Rocha;1/4/2023;7/12/2020;EA Servicos Odontologicos Eireli;85;;83000089;Exodontia simples de decíduo;7918754;9139;1;2020-12-07 00:00:00.000
+Davi Dias da Rocha;1/4/2023;7/12/2020;EA Servicos Odontologicos Eireli;84;DO;85200085;Restauração temporária / tratamento expectante;7918754;9139;1;2020-12-07 00:00:00.000
+Davi Dias da Rocha;1/4/2023;30/11/2020;EA Servicos Odontologicos Eireli;74;DO;85200085;Restauração temporária / tratamento expectante;7918754;9139;1;2020-11-30 00:00:00.000
+Davi Dias da Rocha;1/4/2023;30/11/2020;EA Servicos Odontologicos Eireli;55;O;85100200;Restauração em resina oclusal extensa;7918754;9139;1;2020-11-30 00:00:00.000
+Davi Dias da Rocha;1/4/2023;16/11/2020;EA Servicos Odontologicos Eireli;54;DO;85100226;Restauração em resina oclusal-proximal;7918754;9139;1;2020-11-16 00:00:00.000
+Davi Dias da Rocha;1/4/2023;16/11/2020;EA Servicos Odontologicos Eireli;53;I;85200085;Restauração temporária / tratamento expectante;7918754;9139;1;2020-11-16 00:00:00.000
+Davi Dias da Rocha;1/4/2023;13/11/2020;EA Servicos Odontologicos Eireli;63;V;85200085;Restauração temporária / tratamento expectante;7918754;9139;1;2020-11-13 00:00:00.000
+Davi Dias da Rocha;1/4/2023;13/11/2020;EA Servicos Odontologicos Eireli;61;V;85200085;Restauração temporária / tratamento expectante;7918754;9139;1;2020-11-13 00:00:00.000
+Davi Dias da Rocha;1/4/2023;11/11/2020;EA Servicos Odontologicos Eireli;51;V;85200085;Restauração temporária / tratamento expectante;7918754;9139;1;2020-11-11 00:00:00.000
+Davi Dias da Rocha;1/4/2023;11/11/2020;EA Servicos Odontologicos Eireli;52;VI;85200085;Restauração temporária / tratamento expectante;7918754;9139;1;2020-11-11 00:00:00.000
+Davi Dias da Rocha;1/4/2023;11/11/2020;EA Servicos Odontologicos Eireli;;;99000008;Profilaxia;7918754;9139;1;2020-11-11 00:00:00.000
+Débora Batista Veras;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;45;V;85100196;Restauração em resina cervical;7903981;9139;1;2020-12-10 00:00:00.000
+Débora Batista Veras;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;46;V;85100196;Restauração em resina cervical;7903981;9139;1;2020-12-10 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;10/7/2020;EA Servicos Odontologicos Eireli;28;;82000832;Exodontia de permanente por indicação ortodôntica/protética;7938553;9139;1;2020-07-10 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;10/7/2020;EA Servicos Odontologicos Eireli;17;D;85100196;Restauração em resina fotopolimerizável 1 face;7938553;9139;1;2020-07-10 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;10/7/2020;EA Servicos Odontologicos Eireli;11;;85200166;Tratamento endodôntico unirradicular;7938553;9139;1;2020-07-10 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;45;VDO;85100218;Restauração em resina fotopolimerizável 3 faces;7938553;9139;1;2020-12-10 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;10/7/2020;EA Servicos Odontologicos Eireli;34;D;85100196;Restauração em resina fotopolimerizável 1 face;7938553;9139;1;2020-07-10 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;10/7/2020;EA Servicos Odontologicos Eireli;35;VM;85100200;Restauração em resina fotopolimerizável 2 faces;7938553;9139;1;2020-07-10 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;12/11/2020;EA Servicos Odontologicos Eireli;21;;85400262;Pino pré fabricado;7938553;9139;1;2020-11-12 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;10/11/2020;EA Servicos Odontologicos Eireli;dez/21;;85400084;Coroa provisória sem pino;7938553;9139;1;2020-11-10 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;17/11/2020;EA Servicos Odontologicos Eireli;21;;85400114;Coroa total em cerômero;7938553;9139;1;2020-11-17 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;17/11/2020;EA Servicos Odontologicos Eireli;11;;85400114;Coroa total em cerômero;7938553;9139;1;2020-11-17 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;17/11/2020;EA Servicos Odontologicos Eireli;12;;85400114;Coroa total em cerômero;7938553;9139;1;2020-11-17 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;24/11/2020;EA Servicos Odontologicos Eireli;16;;85400211;Núcleo de preenchimento;7939578;9139;1;2020-11-24 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;23/11/2020;EA Servicos Odontologicos Eireli;16;;85400262;Pino de fibra de vidro;7939578;9139;1;2020-11-23 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;23/11/2020;EA Servicos Odontologicos Eireli;16;;81000421;Radiografia periapical;7939578;9139;1;2020-11-23 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;;;99000027;Raspagem para toda a boca;7939578;9139;1;2020-12-10 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;3/11/2020;EA Servicos Odontologicos Eireli;26;;85100188;Restauração em resina (indireta) - onlay;7939578;9139;1;2020-11-03 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;16;;85400084;Coroa provisória sem pino;7939578;9139;1;2020-12-10 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;9/12/2020;EA Servicos Odontologicos Eireli;16;;85400106;Coroa total em Emax;7939578;9139;1;2020-12-09 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;3/11/2020;EA Servicos Odontologicos Eireli;27;VDM;851002180;Restauração em resina fotopolimerizável 3 faces;7939578;9139;1;2020-11-03 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;4/11/2020;EA Servicos Odontologicos Eireli;25;D;85100218;Restauração em resina proximal;7939578;9139;1;2020-11-04 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;4/11/2020;EA Servicos Odontologicos Eireli;45;D;85100218;Restauração em resina proximal;7939578;9139;1;2020-11-04 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;12;P;99000004;Restauração;7939578;9139;1;2020-12-10 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;13;D;85100218;Restauração em resina proximal;7939578;9139;1;2020-12-10 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;12;;85100064;Faceta direta em resina fotopolimerizável;7939578;9139;1;2020-12-10 00:00:00.000
+Deisiane José da Costa;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;14;O;99000004;Restauração;7939870;9139;1;2020-12-10 00:00:00.000
+Deisiane José da Costa;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;13;P;99000004;Restauração;7939870;9139;1;2020-12-10 00:00:00.000
+Deisiane José da Costa;1/4/2023;9/12/2020;EA Servicos Odontologicos Eireli;36;;82000816;Exodontia a retalho;7939870;9139;1;2020-12-09 00:00:00.000
+Nefales Balbino Silva;1/4/2023;9/12/2020;EA Servicos Odontologicos Eireli;37;O;99000004;Restauração;7939907;9139;1;2020-12-09 00:00:00.000
+Nefales Balbino Silva;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;47;DO;85100226;Restauração em resina oclusal-proximal;7939907;9139;1;2020-12-10 00:00:00.000
+Nefales Balbino Silva;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;16;PO;99000004;Restauração;7939907;9139;1;2020-12-10 00:00:00.000
+Ravilla Cristina Ferreira;1/4/2023;11/12/2020;EA Servicos Odontologicos Eireli;18;;82000875;Exodontia simples de permanente;7939578;9139;1;2020-12-11 00:00:00.000
+Luana Honorio de Souza;1/4/2023;24/11/2020;EA Servicos Odontologicos Eireli;17;O;99000004;Restauração;7964152;9139;1;2020-11-24 00:00:00.000
+Luana Honorio de Souza;1/4/2023;14/12/2020;EA Servicos Odontologicos Eireli;15;O;99000004;Restauração;7964152;9139;1;2020-12-14 00:00:00.000
+Luana Honorio de Souza;1/4/2023;24/11/2020;EA Servicos Odontologicos Eireli;14;O;99000004;Restauração;7964152;9139;1;2020-11-24 00:00:00.000
+Luana Honorio de Souza;1/4/2023;25/11/2020;EA Servicos Odontologicos Eireli;21;P;99000004;Restauração;7964152;9139;1;2020-11-25 00:00:00.000
+Luana Honorio de Souza;1/4/2023;24/11/2020;EA Servicos Odontologicos Eireli;25;DO;99000004;Restauração;7964152;9139;1;2020-11-24 00:00:00.000
+Luana Honorio de Souza;1/4/2023;25/11/2020;EA Servicos Odontologicos Eireli;26;M;99000004;Restauração;7964152;9139;1;2020-11-25 00:00:00.000
+Luana Honorio de Souza;1/4/2023;1/12/2020;EA Servicos Odontologicos Eireli;27;O;99000004;Restauração;7964152;9139;1;2020-12-01 00:00:00.000
+Luana Honorio de Souza;1/4/2023;2/12/2020;EA Servicos Odontologicos Eireli;36;DO;99000004;Restauração;7964152;9139;1;2020-12-02 00:00:00.000
+Luana Honorio de Souza;1/4/2023;14/12/2020;EA Servicos Odontologicos Eireli;34;O;99000004;Restauração;7964152;9139;1;2020-12-14 00:00:00.000
+Luana Honorio de Souza;1/4/2023;9/12/2020;EA Servicos Odontologicos Eireli;46;O;99000004;Restauração;7964152;9139;1;2020-12-09 00:00:00.000
+Luana Honorio de Souza;1/4/2023;11/12/2020;EA Servicos Odontologicos Eireli;47;VDO;99000004;Restauração;7964152;9139;1;2020-12-11 00:00:00.000
+Luana Honorio de Souza;1/4/2023;14/12/2020;EA Servicos Odontologicos Eireli;;;99000027;Raspagem para toda a boca;7964152;9139;1;2020-12-14 00:00:00.000
+Rosely Araujo dos Santos;1/4/2023;17/12/2020;EA Servicos Odontologicos Eireli;26;;82000875;Exodontia simples de permanente;7965056;9139;1;2020-12-17 00:00:00.000
+Rosely Araujo dos Santos;1/4/2023;17/12/2020;EA Servicos Odontologicos Eireli;27;;82000875;Exodontia simples de permanente;7965056;9139;1;2020-12-17 00:00:00.000
+Rosely Araujo dos Santos;1/4/2023;17/12/2020;EA Servicos Odontologicos Eireli;28;;82000875;Exodontia simples de permanente;7965056;9139;1;2020-12-17 00:00:00.000
+Rai Nunes da Silva;1/4/2023;11/1/2021;EA Servicos Odontologicos Eireli;16;DO;99000079;Restauração DO;8221638;9139;1;2021-01-11 00:00:00.000
+Maria de Lima Venâncio;1/4/2023;14/1/2021;EA Servicos Odontologicos Eireli;15;MDO;99000077;Restauração MOD;8112664;9139;1;2021-01-14 00:00:00.000
+Maria de Lima Venâncio;1/4/2023;14/1/2021;EA Servicos Odontologicos Eireli;15;V;85100196;Restauração em resina cervical;8112664;9139;1;2021-01-14 00:00:00.000
+Maria de Lima Venâncio;1/4/2023;13/1/2021;EA Servicos Odontologicos Eireli;;;99000027;Raspagem para toda a boca;8112664;9139;1;2021-01-13 00:00:00.000
+Jair Ribeiro Campos da Silva;1/4/2023;15/1/2021;EA Servicos Odontologicos Eireli;18;;82000832;Exodontia de permanente por indicação ortodôntica/protética;7962538;9139;1;2021-01-15 00:00:00.000
+Janaina Ribeiro de Jesus ;1/4/2023;18/1/2021;EA Servicos Odontologicos Eireli;11;V;85100196;Restauração em resina cervical;8103749;9139;1;2021-01-18 00:00:00.000
+Janaina Ribeiro de Jesus ;1/4/2023;18/1/2021;EA Servicos Odontologicos Eireli;21;V;85100196;Restauração em resina cervical;8103749;9139;1;2021-01-18 00:00:00.000
+Maria de Lima Venâncio;1/4/2023;15/1/2021;EA Servicos Odontologicos Eireli;18;;82000875;Exodontia simples de permanente;8112664;9139;1;2021-01-15 00:00:00.000
+Luzia Maria Neves Paula ;1/4/2023;18/1/2021;EA Servicos Odontologicos Eireli;16;V;85100196;Restauração em resina fotopolimerizável 1 face;8102827;9139;1;2021-01-18 00:00:00.000
+Luzia Maria Neves Paula ;1/4/2023;18/1/2021;EA Servicos Odontologicos Eireli;15;V;85100196;Restauração em resina fotopolimerizável 1 face;8102827;9139;1;2021-01-18 00:00:00.000
+Luzia Maria Neves Paula ;1/4/2023;18/1/2021;EA Servicos Odontologicos Eireli;14;V;85100196;Restauração em resina fotopolimerizável 1 face;8102827;9139;1;2021-01-18 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;19/1/2021;EA Servicos Odontologicos Eireli;25;;85200140;Tratamento endodôntico birradicular;7938553;9139;1;2021-01-19 00:00:00.000
+Mariana da Rocha Ferreira;1/4/2023;19/1/2021;EA Servicos Odontologicos Eireli;25;DO;85100200;Restauração em resina fotopolimerizável 2 faces;7938553;9139;1;2021-01-19 00:00:00.000
+Alessandro Alves de Souza;1/4/2023;5/12/2020;EA Servicos Odontologicos Eireli;47;;85200158;Tratamento endodôntico multirradicular;7920632;9139;1;2020-12-05 00:00:00.000
+Alessandro Alves de Souza;1/4/2023;19/1/2021;EA Servicos Odontologicos Eireli;47;DO;99000079;Restauração DO;7920632;9139;1;2021-01-19 00:00:00.000
+Alessandro Alves de Souza;1/4/2023;19/1/2021;EA Servicos Odontologicos Eireli;46;;82000875;Exodontia simples de permanente;7920632;9139;1;2021-01-19 00:00:00.000
+Alessandro Alves de Souza;1/4/2023;5/12/2020;EA Servicos Odontologicos Eireli;36;;82000859;Exodontia de raiz residual;7920632;9139;1;2020-12-05 00:00:00.000
+Alessandro Alves de Souza;1/4/2023;5/12/2020;EA Servicos Odontologicos Eireli;14;;82000859;Exodontia de raiz residual;7920632;9139;1;2020-12-05 00:00:00.000
+Roberto Carlos Moreira Junior;1/4/2023;20/6/2020;EA Servicos Odontologicos Eireli;46;;85400106;Coroa total em Emax;8111985;9139;1;2020-06-20 00:00:00.000
+Roberto Carlos Moreira Junior;1/4/2023;20/6/2020;EA Servicos Odontologicos Eireli;46;;85200158;Tratamento endodôntico multirradicular;8111985;9139;1;2020-06-20 00:00:00.000
+Eduarda Alves Nunes ;1/4/2023;20/1/2021;EA Servicos Odontologicos Eireli;22;;85400467;Recimentação de trabalhos protéticos;8056453;9139;1;2021-01-20 00:00:00.000
+Kailane Silva Gonçalves ;1/4/2023;8/2/2021;EA Servicos Odontologicos Eireli;21;DP;85100218;Restauração em resina proximal;8107934;9139;1;2021-02-08 00:00:00.000
+Kailane Silva Gonçalves ;1/4/2023;8/2/2021;EA Servicos Odontologicos Eireli;22;M;85100218;Restauração em resina proximal;8107934;9139;1;2021-02-08 00:00:00.000
+Kailane Silva Gonçalves ;1/4/2023;8/2/2021;EA Servicos Odontologicos Eireli;21;;85200166;Tratamento endodôntico unirradicular;8107934;9139;1;2021-02-08 00:00:00.000
+Barbara Ribeiro Silva;1/4/2023;24/2/2021;EA Servicos Odontologicos Eireli;47;VO;85100200;Restauração em resina fotopolimerizável 2 faces;7938039;9139;1;2021-02-24 00:00:00.000
+Barbara Ribeiro Silva;1/4/2023;24/2/2021;EA Servicos Odontologicos Eireli;46;O;85100196;Restauração em resina fotopolimerizável 1 face;7938039;9139;1;2021-02-24 00:00:00.000
+Barbara Ribeiro Silva;1/4/2023;24/2/2021;EA Servicos Odontologicos Eireli;45;O;85100196;Restauração em resina fotopolimerizável 1 face;7938039;9139;1;2021-02-24 00:00:00.000
+Barbara Ribeiro Silva;1/4/2023;15/3/2021;EA Servicos Odontologicos Eireli;15;MDO;85100153;Restauração em ionômero de vidro - 3 faces;7938039;9139;1;2021-03-15 00:00:00.000
+Barbara Ribeiro Silva;1/4/2023;15/3/2021;EA Servicos Odontologicos Eireli;27;DMO;85100218;Restauração em resina fotopolimerizável 3 faces;7938039;9139;1;2021-03-15 00:00:00.000
+Barbara Ribeiro Silva;1/4/2023;15/3/2021;EA Servicos Odontologicos Eireli;26;DO;85100200;Restauração em resina fotopolimerizável 2 faces;7938039;9139;1;2021-03-15 00:00:00.000
+Rikelme Rodrigues de Oliveira;1/4/2023;18/3/2021;EA Servicos Odontologicos Eireli;64;;83000089;Exodontia simples de decíduo;8699403;9139;1;2021-03-18 00:00:00.000
+Rikelme Rodrigues de Oliveira;1/4/2023;18/3/2021;EA Servicos Odontologicos Eireli;65;;83000089;Exodontia simples de decíduo;8699403;9139;1;2021-03-18 00:00:00.000
+Anielle Dias G. S. Menezes;1/4/2023;12/4/2021;EA Servicos Odontologicos Eireli;;;99000027;Raspagem para toda a boca;8402232;9139;1;2021-04-12 00:00:00.000
+Anielle Dias G. S. Menezes;1/4/2023;12/4/2021;EA Servicos Odontologicos Eireli;;;99000008;Profilaxia;8402232;9139;1;2021-04-12 00:00:00.000
+Anielle Dias G. S. Menezes;1/4/2023;12/4/2021;EA Servicos Odontologicos Eireli;24;DO;99000079;Restauração DO;8402232;9139;1;2021-04-12 00:00:00.000
+Anielle Dias G. S. Menezes;1/4/2023;12/4/2021;EA Servicos Odontologicos Eireli;25;DMO;99000077;Restauração MOD;8402232;9139;1;2021-04-12 00:00:00.000
+Anielle Dias G. S. Menezes;1/4/2023;12/4/2021;EA Servicos Odontologicos Eireli;26;M;85100218;Restauração em resina proximal;8402232;9139;1;2021-04-12 00:00:00.000
+Anielle Dias G. S. Menezes;1/4/2023;12/4/2021;EA Servicos Odontologicos Eireli;37;O;85100200;Restauração em resina oclusal extensa;8402232;9139;1;2021-04-12 00:00:00.000
+Anielle Dias G. S. Menezes;1/4/2023;12/4/2021;EA Servicos Odontologicos Eireli;36;DO;99000079;Restauração DO;8402232;9139;1;2021-04-12 00:00:00.000
+Anielle Dias G. S. Menezes;1/4/2023;12/4/2021;EA Servicos Odontologicos Eireli;34;V;85100196;Restauração em resina cervical;8402232;9139;1;2021-04-12 00:00:00.000
+Anielle Dias G. S. Menezes;1/4/2023;12/4/2021;EA Servicos Odontologicos Eireli;46;V;85100196;Restauração em resina cervical;8402232;9139;1;2021-04-12 00:00:00.000
+Anielle Dias G. S. Menezes;1/4/2023;12/4/2021;EA Servicos Odontologicos Eireli;12;V;99000004;Restauração;8402232;9139;1;2021-04-12 00:00:00.000
+Luiza Dias Seixas;1/4/2023;29/4/2021;EA Servicos Odontologicos Eireli;27;;82000875;Exodontia simples de permanente;8700329;9139;1;2021-04-29 00:00:00.000
+Luiza Dias Seixas;1/4/2023;29/4/2021;EA Servicos Odontologicos Eireli;28;;82000832;Exodontia de permanente por indicação ortodôntica/protética;8700329;9139;1;2021-04-29 00:00:00.000
+Luiza Dias Seixas;1/4/2023;29/4/2021;EA Servicos Odontologicos Eireli;26;;82000875;Exodontia simples de permanente;8700329;9139;1;2021-04-29 00:00:00.000
+Luiza Dias Seixas;1/4/2023;29/4/2021;EA Servicos Odontologicos Eireli;23;;82000875;Exodontia simples de permanente;8700329;9139;1;2021-04-29 00:00:00.000
+Luiza Dias Seixas;1/4/2023;29/4/2021;EA Servicos Odontologicos Eireli;12;;82000859;Exodontia de raiz residual;8700329;9139;1;2021-04-29 00:00:00.000
+Luiza Dias Seixas;1/4/2023;29/4/2021;EA Servicos Odontologicos Eireli;14;;82000859;Exodontia de raiz residual;8700329;9139;1;2021-04-29 00:00:00.000
+Flancielly de Lima Ribeiro;1/4/2023;13/7/2021;EA Servicos Odontologicos Eireli;;;99000027;Raspagem para toda a boca;9035428;9139;1;2021-07-13 00:00:00.000
+Flancielly de Lima Ribeiro;1/4/2023;13/7/2021;EA Servicos Odontologicos Eireli;;;99000028;Ensino de higiene oral;9035428;9139;1;2021-07-13 00:00:00.000
+Luiza Dias Seixas;1/4/2023;13/7/2021;EA Servicos Odontologicos Eireli;16;;82000875;Exodontia simples de permanente;8700329;9139;1;2021-07-13 00:00:00.000
+Luiza Dias Seixas;1/4/2023;13/7/2021;EA Servicos Odontologicos Eireli;17;;82000875;Exodontia simples de permanente;8700329;9139;1;2021-07-13 00:00:00.000
+Luiza Dias Seixas;1/4/2023;13/7/2021;EA Servicos Odontologicos Eireli;18;;82000832;Exodontia de permanente por indicação ortodôntica/protética;8700329;9139;1;2021-07-13 00:00:00.000
+Luiza Dias Seixas;1/4/2023;13/7/2021;EA Servicos Odontologicos Eireli;33;;82000875;Exodontia simples de permanente;8700329;9139;1;2021-07-13 00:00:00.000
+Luiza Dias Seixas;1/4/2023;13/7/2021;EA Servicos Odontologicos Eireli;32;;82000875;Exodontia simples de permanente;8700329;9139;1;2021-07-13 00:00:00.000
+Luiza Dias Seixas;1/4/2023;13/7/2021;EA Servicos Odontologicos Eireli;31;;82000875;Exodontia simples de permanente;8700329;9139;1;2021-07-13 00:00:00.000
+Luiza Dias Seixas;1/4/2023;13/7/2021;EA Servicos Odontologicos Eireli;45;;82000859;Exodontia de raiz residual;8700329;9139;1;2021-07-13 00:00:00.000
+Rosely Araujo dos Santos;1/4/2023;22/7/2021;EA Servicos Odontologicos Eireli;23;;82000875;Exodontia simples de permanente;7965056;9139;1;2021-07-22 00:00:00.000
+Rosely Araujo dos Santos;1/4/2023;22/7/2021;EA Servicos Odontologicos Eireli;13;;99000013;Exodontia;7965056;9139;1;2021-07-22 00:00:00.000
+Rosely Araujo dos Santos;1/4/2023;22/7/2021;EA Servicos Odontologicos Eireli;14;;82000859;Exodontia de raiz residual;7965056;9139;1;2021-07-22 00:00:00.000
+Felipe de Araujo Barreto ;1/4/2023;22/7/2021;EA Servicos Odontologicos Eireli;14;V;85100196;Restauração em resina fotopolimerizável 1 face;8110403;9139;1;2021-07-22 00:00:00.000
+Felipe de Araujo Barreto ;1/4/2023;22/7/2021;EA Servicos Odontologicos Eireli;12;V;85100196;Restauração em resina fotopolimerizável 1 face;8110403;9139;1;2021-07-22 00:00:00.000
+Felipe de Araujo Barreto ;1/4/2023;22/7/2021;EA Servicos Odontologicos Eireli;13;V;85100196;Restauração em resina fotopolimerizável 1 face;8110403;9139;1;2021-07-22 00:00:00.000
+Felipe de Araujo Barreto ;1/4/2023;22/7/2021;EA Servicos Odontologicos Eireli;11;V;85100196;Restauração em resina fotopolimerizável 1 face;8110403;9139;1;2021-07-22 00:00:00.000
+Jonas Victor Carvalho de Godoy;1/4/2023;22/7/2021;EA Servicos Odontologicos Eireli;54;;83000089;Exodontia simples de decíduo;9512024;9139;1;2021-07-22 00:00:00.000
+Jonas Victor Carvalho de Godoy;1/4/2023;22/7/2021;EA Servicos Odontologicos Eireli;53;P;85100196;Restauração em resina fotopolimerizável 1 face;9512024;9139;1;2021-07-22 00:00:00.000
+Vanda Pereira da Silva;1/4/2023;27/7/2021;EA Servicos Odontologicos Eireli;;;99000027;Raspagem para toda a boca;9648428;9139;1;2021-07-27 00:00:00.000
+Daniel Santos da Silva ;1/4/2023;27/7/2021;EA Servicos Odontologicos Eireli;;;84000139;Atividade educativa em saúde bucal;8049643;9139;1;2021-07-27 00:00:00.000
+Daniel Santos da Silva ;1/4/2023;27/7/2021;EA Servicos Odontologicos Eireli;;;99000027;Raspagem para toda a boca;8049643;9139;1;2021-07-27 00:00:00.000
+Jonas Victor Carvalho de Godoy;1/4/2023;27/7/2021;EA Servicos Odontologicos Eireli;26;O;85100196;Restauração em resina fotopolimerizável 1 face;9512024;9139;1;2021-07-27 00:00:00.000
+Jonas Victor Carvalho de Godoy;1/4/2023;27/7/2021;EA Servicos Odontologicos Eireli;36;MO;85100200;Restauração em resina fotopolimerizável 2 faces;9512024;9139;1;2021-07-27 00:00:00.000
+Jonas Victor Carvalho de Godoy;1/4/2023;27/7/2021;EA Servicos Odontologicos Eireli;75;D;85100196;Restauração em resina fotopolimerizável 1 face;9512024;9139;1;2021-07-27 00:00:00.000
+Kalita Rosa Ferreira;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;37;;81000421;Radiografia periapical;9694260;9139;1;2021-07-28 00:00:00.000
+Kalita Rosa Ferreira;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;37;;82000875;Exodontia simples de permanente;9694260;9139;1;2021-07-28 00:00:00.000
+Kalita Rosa Ferreira;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;37;;81000421;Radiografia periapical;9694260;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;11;MD;85100200;Restauração em resina fotopolimerizável 2 faces;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;12;M;85100196;Restauração em resina fotopolimerizável 1 face;9415150;9139;1;2021-07-28 00:00:00.000
+Sirley Silva Cabral Martins;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;21;VM;85100200;Restauração em resina fotopolimerizável 2 faces;9708537;9139;1;2021-07-28 00:00:00.000
+Sirley Silva Cabral Martins;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;11;V;85100196;Restauração em resina fotopolimerizável 1 face;9708537;9139;1;2021-07-28 00:00:00.000
+Sirley Silva Cabral Martins;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;46;V;85100196;Restauração em resina fotopolimerizável 1 face;9708537;9139;1;2021-07-28 00:00:00.000
+Sirley Silva Cabral Martins;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;47;DO;85100200;Restauração em resina fotopolimerizável 2 faces;9708537;9139;1;2021-07-28 00:00:00.000
+Vanda Pereira da Silva;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;16;MDO;99000077;Restauração MOD;9648428;9139;1;2021-07-29 00:00:00.000
+Millena Pereira Conceição;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;27;O;85100196;Restauração em resina fotopolimerizável 1 face;9648436;9139;1;2021-07-29 00:00:00.000
+Millena Pereira Conceição;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;37;O;85100196;Restauração em resina fotopolimerizável 1 face;9648436;9139;1;2021-07-29 00:00:00.000
+Millena Pereira Conceição;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;36;O;85100196;Restauração em resina fotopolimerizável 1 face;9648436;9139;1;2021-07-29 00:00:00.000
+Rosely Araujo dos Santos;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;15;;82000859;Exodontia de raiz residual;7965056;9139;1;2021-07-29 00:00:00.000
+Rosely Araujo dos Santos;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;16;;82000859;Exodontia de raiz residual;7965056;9139;1;2021-07-29 00:00:00.000
+Rosely Araujo dos Santos;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;17;;82000859;Exodontia de raiz residual;7965056;9139;1;2021-07-29 00:00:00.000
+Jonas Victor Carvalho de Godoy;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;84;O;85100196;Restauração em resina fotopolimerizável 1 face;9512024;9139;1;2021-07-29 00:00:00.000
+Jonas Victor Carvalho de Godoy;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;46;M;85100196;Restauração em resina fotopolimerizável 1 face;9512024;9139;1;2021-07-29 00:00:00.000
+Felipe de Araujo Barreto ;1/4/2023;30/7/2021;EA Servicos Odontologicos Eireli;21;V;85100196;Restauração em resina fotopolimerizável 1 face;8110403;9139;1;2021-07-30 00:00:00.000
+Felipe de Araujo Barreto ;1/4/2023;30/7/2021;EA Servicos Odontologicos Eireli;22;V;85100196;Restauração em resina fotopolimerizável 1 face;8110403;9139;1;2021-07-30 00:00:00.000
+Felipe de Araujo Barreto ;1/4/2023;30/7/2021;EA Servicos Odontologicos Eireli;23;V;85100196;Restauração em resina fotopolimerizável 1 face;8110403;9139;1;2021-07-30 00:00:00.000
+Mariana França ;1/4/2023;10/8/2021;EA Servicos Odontologicos Eireli;47;V;99000004;Restauração;8103290;9139;1;2021-08-10 00:00:00.000
+Vanda Pereira da Silva;1/4/2023;10/8/2021;EA Servicos Odontologicos Eireli;15;MO;85100200;Restauração em resina fotopolimerizável 2 faces;9648428;9139;1;2021-08-10 00:00:00.000
+Vanda Pereira da Silva;1/4/2023;10/8/2021;EA Servicos Odontologicos Eireli;14;DO;85100200;Restauração em resina fotopolimerizável 2 faces;9648428;9139;1;2021-08-10 00:00:00.000
+Vanda Pereira da Silva;1/4/2023;10/8/2021;EA Servicos Odontologicos Eireli;22;D;85100196;Restauração em resina fotopolimerizável 1 face;9648428;9139;1;2021-08-10 00:00:00.000
+Millena Pereira Conceição;1/4/2023;10/8/2021;EA Servicos Odontologicos Eireli;22;M;85100196;Restauração em resina fotopolimerizável 1 face;9648436;9139;1;2021-08-10 00:00:00.000
+Millena Pereira Conceição;1/4/2023;10/8/2021;EA Servicos Odontologicos Eireli;21;D;85100196;Restauração em resina fotopolimerizável 1 face;9648436;9139;1;2021-08-10 00:00:00.000
+Millena Pereira Conceição;1/4/2023;10/8/2021;EA Servicos Odontologicos Eireli;47;O;85100196;Restauração em resina fotopolimerizável 1 face;9648436;9139;1;2021-08-10 00:00:00.000
+Walisson Oliveira Lacerda;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;21;;85100064;Faceta direta em resina fotopolimerizável;8806974;9139;1;2021-08-12 00:00:00.000
+Walisson Oliveira Lacerda;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;17;PO;85100200;Restauração em resina fotopolimerizável 2 faces;8806974;9139;1;2021-08-12 00:00:00.000
+Ivanilda Ferreira da Cruz;1/4/2023;16/8/2021;EA Servicos Odontologicos Eireli;27;;85200158;Tratamento endodôntico multirradicular;9694062;9139;1;2021-08-16 00:00:00.000
+Amelia Neves dos Santos;1/4/2023;17/8/2021;EA Servicos Odontologicos Eireli;15;;85200093;Retratamento endodôntico birradicular;9610897;9139;1;2021-08-17 00:00:00.000
+Millena Pereira Conceição;1/4/2023;17/8/2021;EA Servicos Odontologicos Eireli;17;O;85100196;Restauração em resina fotopolimerizável 1 face;9648436;9139;1;2021-08-17 00:00:00.000
+Millena Pereira Conceição;1/4/2023;17/8/2021;EA Servicos Odontologicos Eireli;46;O;85100196;Restauração em resina fotopolimerizável 1 face;9648436;9139;1;2021-08-17 00:00:00.000
+Lucas Eduardo Morais Silva;1/4/2023;18/8/2021;EA Servicos Odontologicos Eireli;44;O;85100196;Restauração em resina fotopolimerizável 1 face;9493325;9139;1;2021-08-18 00:00:00.000
+Lucas Eduardo Morais Silva;1/4/2023;18/8/2021;EA Servicos Odontologicos Eireli;34;O;85100196;Restauração em resina fotopolimerizável 1 face;9493325;9139;1;2021-08-18 00:00:00.000
+Lucas Eduardo Morais Silva;1/4/2023;23/8/2021;EA Servicos Odontologicos Eireli;47;O;85100196;Restauração em resina fotopolimerizável 1 face;9493325;9139;1;2021-08-23 00:00:00.000
+Lucas Eduardo Morais Silva;1/4/2023;23/8/2021;EA Servicos Odontologicos Eireli;15;O;85100196;Restauração em resina fotopolimerizável 1 face;9493325;9139;1;2021-08-23 00:00:00.000
+Vanda Pereira da Silva;1/4/2023;24/8/2021;EA Servicos Odontologicos Eireli;34;V;85100196;Restauração em resina fotopolimerizável 1 face;9648428;9139;1;2021-08-24 00:00:00.000
+Vanda Pereira da Silva;1/4/2023;24/8/2021;EA Servicos Odontologicos Eireli;24;DMO;85100218;Restauração em resina fotopolimerizável 3 faces;9648428;9139;1;2021-08-24 00:00:00.000
+Mell Beattriz Moraes Silva;1/4/2023;26/8/2021;EA Servicos Odontologicos Eireli;75;O;85100196;Restauração em resina fotopolimerizável 1 face;9842872;9139;1;2021-08-26 00:00:00.000
+Mell Beattriz Moraes Silva;1/4/2023;26/8/2021;EA Servicos Odontologicos Eireli;36;VO;85100200;Restauração em resina fotopolimerizável 2 faces;9842872;9139;1;2021-08-26 00:00:00.000
+Andrielly Cristina Caixeta da Silva;1/4/2023;8/9/2021;EA Servicos Odontologicos Eireli;11;;85200166;Tratamento endodôntico unirradicular;9998040;9139;1;2021-09-08 00:00:00.000
+Mell Beattriz Moraes Silva;1/4/2023;10/9/2021;EA Servicos Odontologicos Eireli;46;O;85100196;Restauração em resina fotopolimerizável 1 face;9842872;9139;1;2021-09-10 00:00:00.000
+vanessa da cruz amaral;1/4/2023;9/9/2021;EA Servicos Odontologicos Eireli;47;VO;99000004;Restauração;10202485;9139;1;2021-09-09 00:00:00.000
+Adineia Ramos da Silva;1/4/2023;20/9/2021;EA Servicos Odontologicos Eireli;16;;85200158;Tratamento endodôntico multirradicular;10216627;9139;1;2021-09-20 00:00:00.000
+Adineia Ramos da Silva;1/4/2023;20/9/2021;EA Servicos Odontologicos Eireli;16;VMO;851002180;Restauração em resina fotopolimerizável 3 faces;10216627;9139;1;2021-09-20 00:00:00.000
+Johnny Marqyes P Santos;1/4/2023;27/9/2021;EA Servicos Odontologicos Eireli;37;;82000875;Exodontia simples de permanente;10133023;9139;1;2021-09-27 00:00:00.000
+Johnny Marqyes P Santos;1/4/2023;27/9/2021;EA Servicos Odontologicos Eireli;25;;82000816;Exodontia a retalho;10133023;9139;1;2021-09-27 00:00:00.000
+Lucivane Valentim Barcelos ;1/4/2023;5/1/2022;EA Servicos Odontologicos Eireli;;;99000008;Profilaxia;10737406;9139;1;2022-01-05 00:00:00.000
+Lucivane Valentim Barcelos ;1/4/2023;5/1/2022;EA Servicos Odontologicos Eireli;;;99000028;Ensino de higiene oral;10737406;9139;1;2022-01-05 00:00:00.000
+Lucivane Valentim Barcelos ;1/4/2023;5/1/2022;EA Servicos Odontologicos Eireli;16;V;85100196;Restauração em resina fotopolimerizável 1 face;10737406;9139;1;2022-01-05 00:00:00.000
+Elson Manoel de Jesus dos Santos;1/4/2023;15/3/2022;EA Servicos Odontologicos Eireli;;;84000198;Finalização: Profilaxia: polimento coronário;11204862;9139;1;2022-03-15 00:00:00.000
+Elson Manoel de Jesus dos Santos;1/4/2023;15/3/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;11204862;9139;1;2022-03-15 00:00:00.000
+Elson Manoel de Jesus dos Santos;1/4/2023;17/3/2022;EA Servicos Odontologicos Eireli;23;D;85100196;Finalização: Restauração em resina cervical;11204862;9139;1;2022-03-17 00:00:00.000
+Elson Manoel de Jesus dos Santos;1/4/2023;17/3/2022;EA Servicos Odontologicos Eireli;23;V;85100196;Finalização: Restauração em resina cervical;11204862;9139;1;2022-03-17 00:00:00.000
+Elson Manoel de Jesus dos Santos;1/4/2023;17/3/2022;EA Servicos Odontologicos Eireli;as;NULL;99000006;Moldagem anatômica: Prótese parcial removível;11204862;9139;1;2022-03-17 00:00:00.000
+Lindomar Pereira de Miranda;1/4/2023;18/3/2022;EA Servicos Odontologicos Eireli;37;;99000013;Finalização: Exodontia;11205325;9139;1;2022-03-18 00:00:00.000
+Lindomar Pereira de Miranda;1/4/2023;18/3/2022;EA Servicos Odontologicos Eireli;38;;99000013;Finalização: Exodontia;11205325;9139;1;2022-03-18 00:00:00.000
+Deusvando Tavares Santos ;1/4/2023;23/3/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;7977740;9139;1;2022-03-23 00:00:00.000
+Deusvando Tavares Santos ;1/4/2023;23/3/2022;EA Servicos Odontologicos Eireli;26;DO;99000079;Finalização: Restauração DO;7977740;9139;1;2022-03-23 00:00:00.000
+Adriana Dornel de Paula;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;14,26,46;;81000421;Finalização: Radiografia periapical;11229136;9139;1;2022-03-26 00:00:00.000
+Sebastiana Nunes Moura Vieira;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;13;;85200166;Finalização: Tratamento endodôntico unirradicular;10432526;9139;1;2022-03-26 00:00:00.000
+Sebastiana Nunes Moura Vieira;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;13;;85400262;Finalização: Pino pré fabricado;10432526;9139;1;2022-03-26 00:00:00.000
+Sebastiana Nunes Moura Vieira;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;13;;85400084;Finalização: Coroa provisória sem pino;10432526;9139;1;2022-03-26 00:00:00.000
+Sebastiana Nunes Moura Vieira;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;13;;85400114;Finalização: Coroa total em cerômero;10432526;9139;1;2022-03-26 00:00:00.000
+Sebastiana Nunes Moura Vieira;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;13,45;;99000011;Finalização: Raio X;10432526;9139;1;2022-03-26 00:00:00.000
+Sebastiana Nunes Moura Vieira;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;13,45;;99000011;Finalização: Raio X;10432526;9139;1;2022-03-26 00:00:00.000
+Sebastiana Nunes Moura Vieira;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;45;;85200115;Finalização: Retratamento endodôntico unirradicular;10432526;9139;1;2022-03-26 00:00:00.000
+Sebastiana Nunes Moura Vieira;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;45;;85400262;Finalização: Pino pré fabricado;10432526;9139;1;2022-03-26 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;18,28;;82000832;Finalização: Exodontia de permanente por indicação ortodôntica/protética;10807628;9139;1;2022-03-26 00:00:00.000
+Evanda Moreira Morais;1/4/2023;4/4/2022;EA Servicos Odontologicos Eireli;22;;85200166;Finalização: Tratamento endodôntico unirradicular;11291977;9139;1;2022-04-04 00:00:00.000
+Evanda Moreira Morais;1/4/2023;4/4/2022;EA Servicos Odontologicos Eireli;22;PM;99000004;Finalização: Restauração;11291977;9139;1;2022-04-04 00:00:00.000
+Evanda Moreira Morais;1/4/2023;4/4/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;11291977;9139;1;2022-04-04 00:00:00.000
+Evanda Moreira Morais;1/4/2023;4/4/2022;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;11291977;9139;1;2022-04-04 00:00:00.000
+Valdeir Rodrigues da Silva ;1/4/2023;4/4/2022;EA Servicos Odontologicos Eireli;16;MO;85100226;Finalização: Restauração em resina oclusal-proximal;11192752;9139;1;2022-04-04 00:00:00.000
+Adriano Martins Ribeiro;1/4/2023;5/5/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;11482222;9139;1;2022-05-05 00:00:00.000
+Adriano Martins Ribeiro;1/4/2023;24/5/2022;EA Servicos Odontologicos Eireli;;;99000043;Finalização: Fotos;11482222;9139;1;2022-05-24 00:00:00.000
+Gabriel Ferreira Cunha ;1/4/2023;5/5/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;11484651;9139;1;2022-05-05 00:00:00.000
+Gabriel Ferreira Cunha ;1/4/2023;17/5/2022;EA Servicos Odontologicos Eireli;ai;;85100030;Finalização: Clareamento dentário de consultório;11484651;9139;1;2022-05-17 00:00:00.000
+Gabriel Ferreira Cunha ;1/4/2023;17/5/2022;EA Servicos Odontologicos Eireli;as;;85100030;Finalização: Clareamento dentário de consultório;11484651;9139;1;2022-05-17 00:00:00.000
+Gabriel Ferreira Cunha ;1/4/2023;24/5/2022;EA Servicos Odontologicos Eireli;ai;;85100030;Finalização: Clareamento dentário de consultório;11484651;9139;1;2022-05-24 00:00:00.000
+Gabriel Ferreira Cunha ;1/4/2023;24/5/2022;EA Servicos Odontologicos Eireli;as;;85100030;Finalização: Clareamento dentário de consultório;11484651;9139;1;2022-05-24 00:00:00.000
+Isabela Cristina Ribeiro Soares ;1/4/2023;8/4/2022;EA Servicos Odontologicos Eireli;38;;82001294;Finalização: Remoção de dentes semi-inclusos / impactados;8111036;9139;1;2022-04-08 00:00:00.000
+Isabela Cristina Ribeiro Soares ;1/4/2023;8/4/2022;EA Servicos Odontologicos Eireli;38;;81000421;Finalização: Radiografia periapical;8111036;9139;1;2022-04-08 00:00:00.000
+Isabela Cristina Ribeiro Soares ;1/4/2023;8/4/2022;EA Servicos Odontologicos Eireli;38;;81000421;Finalização: Radiografia periapical;8111036;9139;1;2022-04-08 00:00:00.000
+Any Beatriz Cordeiro de Paula;1/4/2023;26/5/2022;EA Servicos Odontologicos Eireli;ai;;85300047;Finalização: Raspagem supra-gengival;7920609;9139;1;2022-05-26 00:00:00.000
+Any Beatriz Cordeiro de Paula;1/4/2023;26/5/2022;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;7920609;9139;1;2022-05-26 00:00:00.000
+Any Beatriz Cordeiro de Paula;1/4/2023;26/5/2022;EA Servicos Odontologicos Eireli;;;99000028;Finalização: Ensino de higiene oral;7920609;9139;1;2022-05-26 00:00:00.000
+Any Beatriz Cordeiro de Paula;1/4/2023;31/5/2022;EA Servicos Odontologicos Eireli;47;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7920609;9139;1;2022-05-31 00:00:00.000
+Wander Braz Aguiar Barbosa ;1/4/2023;31/5/2022;EA Servicos Odontologicos Eireli;46;;85200158;Finalização: Tratamento endodôntico multirradicular;10827011;9139;1;2022-05-31 00:00:00.000
+Wander Braz Aguiar Barbosa ;1/4/2023;31/5/2022;EA Servicos Odontologicos Eireli;11;;85200115;Finalização: Retratamento endodôntico unirradicular;10827011;9139;1;2022-05-31 00:00:00.000
+Wander Braz Aguiar Barbosa ;1/4/2023;31/5/2022;EA Servicos Odontologicos Eireli;21;;85200115;Finalização: Retratamento endodôntico unirradicular;10827011;9139;1;2022-05-31 00:00:00.000
+Wander Braz Aguiar Barbosa ;1/4/2023;31/5/2022;EA Servicos Odontologicos Eireli;21;;85400076;Finalização: Coroa provisória com pino;10827011;9139;1;2022-05-31 00:00:00.000
+Wander Braz Aguiar Barbosa ;1/4/2023;31/5/2022;EA Servicos Odontologicos Eireli;11;;85400076;Finalização: Coroa provisória com pino;10827011;9139;1;2022-05-31 00:00:00.000
+Luzia Maria Neves De Paula;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;11565030;9139;1;2022-06-01 00:00:00.000
+Luzia Maria Neves De Paula;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;11565030;9139;1;2022-06-01 00:00:00.000
+Luzia Maria Neves De Paula;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;;;99000028;Finalização: Ensino de higiene oral;11565030;9139;1;2022-06-01 00:00:00.000
+Luzia Maria Neves De Paula;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;27;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11565030;9139;1;2022-06-01 00:00:00.000
+Luzia Maria Neves De Paula;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;16;VPO;85100218;Finalização: Restauração em resina fotopolimerizável 3 faces;11565030;9139;1;2022-06-01 00:00:00.000
+Luzia Maria Neves De Paula;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;15;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11565030;9139;1;2022-06-01 00:00:00.000
+Luzia Maria Neves De Paula;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;14;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11565030;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;;;99000028;Finalização: Ensino de higiene oral;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;18;;82000832;Finalização: Exodontia de permanente por indicação ortodôntica/protética;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;as;;99000006;Finalização: Prótese parcial removível;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;15;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;14;MD;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;13;VMP;85100218;Finalização: Restauração em resina fotopolimerizável 3 faces;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;21;;82000875;Finalização: Exodontia simples de permanente;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;22;;85200166;Finalização: Tratamento endodôntico unirradicular;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;24;;85200140;Finalização: Tratamento endodôntico birradicular;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;24;DMO;85100218;Finalização: Restauração em resina fotopolimerizável 3 faces;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;23;VDM;85100218;Finalização: Restauração em resina fotopolimerizável 3 faces;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;28;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;38;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;35;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;34;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;33;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;41;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;48;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10393655;9139;1;2022-06-01 00:00:00.000
+Debora Camargo Gonçalves;1/4/2023;1/6/2022;EA Servicos Odontologicos Eireli;42;MV;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10393655;9139;1;2022-06-01 00:00:00.000
+Jose Wesley Rodrigues ;1/4/2023;31/5/2022;EA Servicos Odontologicos Eireli;17;;82000875;Finalização: Exodontia simples de permanente;11601663;9139;1;2022-05-31 00:00:00.000
+Jose Wesley Rodrigues ;1/4/2023;2/6/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;11601663;9139;1;2022-06-02 00:00:00.000
+Sebastiao Furtado Diniz;1/4/2023;2/6/2022;EA Servicos Odontologicos Eireli;22;;81000421;Finalização: Radiografia periapical;8112244;9139;1;2022-06-02 00:00:00.000
+Fabiana Francisco da Silva ;1/4/2023;13/6/2022;EA Servicos Odontologicos Eireli;31;;82000875;Finalização: Exodontia simples de permanente;11446376;9139;1;2022-06-13 00:00:00.000
+Fabiana Francisco da Silva ;1/4/2023;13/6/2022;EA Servicos Odontologicos Eireli;41;;82000875;Finalização: Exodontia simples de permanente;11446376;9139;1;2022-06-13 00:00:00.000
+Rafael Junior Antunes Batista;1/4/2023;15/6/2022;EA Servicos Odontologicos Eireli;26;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11482232;9139;1;2022-06-15 00:00:00.000
+Rafael Junior Antunes Batista;1/4/2023;15/6/2022;EA Servicos Odontologicos Eireli;25;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11482232;9139;1;2022-06-15 00:00:00.000
+Rafael Junior Antunes Batista;1/4/2023;15/6/2022;EA Servicos Odontologicos Eireli;24;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11482232;9139;1;2022-06-15 00:00:00.000
+Rafael Junior Antunes Batista;1/4/2023;15/6/2022;EA Servicos Odontologicos Eireli;14;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11482232;9139;1;2022-06-15 00:00:00.000
+Rafael Junior Antunes Batista;1/4/2023;15/6/2022;EA Servicos Odontologicos Eireli;15;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;11482232;9139;1;2022-06-15 00:00:00.000
+Rafael Junior Antunes Batista;1/4/2023;15/6/2022;EA Servicos Odontologicos Eireli;16;MP;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;11482232;9139;1;2022-06-15 00:00:00.000
+Rafael Junior Antunes Batista;1/4/2023;15/6/2022;EA Servicos Odontologicos Eireli;17;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11482232;9139;1;2022-06-15 00:00:00.000
+Weliton Silva Fagundes;1/4/2023;11/7/2022;EA Servicos Odontologicos Eireli;36;;81000421;Finalização: Radiografia periapical;11597454;9139;1;2022-07-11 00:00:00.000
+Weliton Silva Fagundes;1/4/2023;11/7/2022;EA Servicos Odontologicos Eireli;36;;81000421;Finalização: Radiografia periapical pós acesso e medicação;11597454;9139;1;2022-07-11 00:00:00.000
+Weliton Silva Fagundes;1/4/2023;11/7/2022;EA Servicos Odontologicos Eireli;;;99000040;Finalização: Emergência;11597454;9139;1;2022-07-11 00:00:00.000
+Grazielly Alves Borges Lacerda;1/4/2023;26/9/2022;EA Servicos Odontologicos Eireli;17;O;85100200;Finalização: Restauração em resina oclusal;12246921;9139;1;2022-09-26 00:00:00.000
+Grazielly Alves Borges Lacerda;1/4/2023;26/9/2022;EA Servicos Odontologicos Eireli;16;M;85100218;Finalização: Restauração em resina proximal;12246921;9139;1;2022-09-26 00:00:00.000
+Grazielly Alves Borges Lacerda;1/4/2023;26/9/2022;EA Servicos Odontologicos Eireli;15;MDO;99000077;Finalização: Restauração MOD;12246921;9139;1;2022-09-26 00:00:00.000
+Grazielly Alves Borges Lacerda;1/4/2023;26/9/2022;EA Servicos Odontologicos Eireli;37;;85200158;Finalização: Tratamento endodôntico multirradicular;12246921;9139;1;2022-09-26 00:00:00.000
+Grazielly Alves Borges Lacerda;1/4/2023;26/9/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;12246921;9139;1;2022-09-26 00:00:00.000
+Grazielly Alves Borges Lacerda;1/4/2023;26/9/2022;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;12246921;9139;1;2022-09-26 00:00:00.000
+Géssica Batista Naves ;1/4/2023;10/10/2022;EA Servicos Odontologicos Eireli;27;M;85100218;Finalização: Restauração em resina proximal;12148689;9139;1;2022-10-10 00:00:00.000
+Geovana da Penha Xavier Faleiros ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;18;;82000875;Finalização: Exodontia simples de permanente;7910554;9139;1;2022-11-17 00:00:00.000
+Geovana da Penha Xavier Faleiros ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;48;;82001294;Finalização: Remoção de dentes semi-inclusos / impactados;7910554;9139;1;2022-11-17 00:00:00.000
+Priscyla Lorrany Bailona ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;37;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;12649459;9139;1;2022-11-17 00:00:00.000
+Priscyla Lorrany Bailona ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;36;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;12649459;9139;1;2022-11-17 00:00:00.000
+Priscyla Lorrany Bailona ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;15;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12649459;9139;1;2022-11-17 00:00:00.000
+Priscyla Lorrany Bailona ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;14;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12649459;9139;1;2022-11-17 00:00:00.000
+Elivanio Antonio Pereira ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;45;;85200166;Finalização: Tratamento endodôntico unirradicular;12339831;9139;1;2022-11-17 00:00:00.000
+Elivanio Antonio Pereira ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;45;VDO;85100218;Finalização: Restauração em resina fotopolimerizável 3 faces;12339831;9139;1;2022-11-17 00:00:00.000
+Erika Lorranny Rocha Chagas ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;12816080;9139;1;2022-11-17 00:00:00.000
+Erika Lorranny Rocha Chagas ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;;;84000198;Finalização: Profilaxia: polimento coronário;12816080;9139;1;2022-11-17 00:00:00.000
+Erika Lorranny Rocha Chagas ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;47;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12816080;9139;1;2022-11-17 00:00:00.000
+Erika Lorranny Rocha Chagas ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;12816080;9139;1;2022-11-17 00:00:00.000
+Erika Lorranny Rocha Chagas ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;;;84000198;Finalização: Profilaxia: polimento coronário;12816080;9139;1;2022-11-17 00:00:00.000
+Larissa da Rocha Venâncio ;1/4/2023;28/11/2022;EA Servicos Odontologicos Eireli;65;MO;85100226;Finalização: Restauração em resina oclusal-proximal;8094677;9139;1;2022-11-28 00:00:00.000
+Larissa da Rocha Venâncio ;1/4/2023;28/11/2022;EA Servicos Odontologicos Eireli;64;DO;85100226;Finalização: Restauração em resina oclusal-proximal;8094677;9139;1;2022-11-28 00:00:00.000
+Larissa da Rocha Venâncio ;1/4/2023;20/7/2021;EA Servicos Odontologicos Eireli;11;;83000089;Finalização: Exodontia simples de decíduo;8094677;9139;1;2021-07-20 00:00:00.000
+Larissa da Rocha Venâncio ;1/4/2023;28/11/2022;EA Servicos Odontologicos Eireli;74;DO;99000079;Finalização: Restauração DO;8094677;9139;1;2022-11-28 00:00:00.000
+Beatriz de Brito Gonçalves ;1/4/2023;28/11/2022;EA Servicos Odontologicos Eireli;25;;85200166;Finalização: Tratamento endodôntico unirradicular;12556214;9139;1;2022-11-28 00:00:00.000
+Beatriz de Brito Gonçalves ;1/4/2023;28/11/2022;EA Servicos Odontologicos Eireli;25;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;12556214;9139;1;2022-11-28 00:00:00.000
+Beatriz de Brito Gonçalves ;1/4/2023;28/11/2022;EA Servicos Odontologicos Eireli;17;;85200158;Finalização: Tratamento endodôntico multirradicular;12556214;9139;1;2022-11-28 00:00:00.000
+Beatriz de Brito Gonçalves ;1/4/2023;28/11/2022;EA Servicos Odontologicos Eireli;17;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;12556214;9139;1;2022-11-28 00:00:00.000
+Beatriz de Brito Gonçalves ;1/4/2023;28/11/2022;EA Servicos Odontologicos Eireli;17;;81000421;Finalização: Radiografia periapical;12556214;9139;1;2022-11-28 00:00:00.000
+Amelia Neves dos Santos;1/4/2023;5/1/2023;EA Servicos Odontologicos Eireli;14;MP;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;9610897;9139;1;2023-01-05 00:00:00.000
+Adão Mariano da Silva;1/4/2023;13/10/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;13185123;9139;1;2022-10-13 00:00:00.000
+Amanda Alves Andrade;1/4/2023;17/2/2022;EA Servicos Odontologicos Eireli;24;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10790765;9139;1;2022-02-17 00:00:00.000
+Amanda Alves Andrade;1/4/2023;17/2/2022;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;10790765;9139;1;2022-02-17 00:00:00.000
+Amanda Alves Andrade;1/4/2023;17/2/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;10790765;9139;1;2022-02-17 00:00:00.000
+Ana Paula Gomes Porte Ribeiro;1/4/2023;19/8/2022;EA Servicos Odontologicos Eireli;16;VM;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;12114112;9139;1;2022-08-19 00:00:00.000
+Ana Paula Gomes Porte Ribeiro;1/4/2023;19/8/2022;EA Servicos Odontologicos Eireli;25;VDO;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;12114112;9139;1;2022-08-19 00:00:00.000
+Ana Paula Gomes Porte Ribeiro;1/4/2023;19/8/2022;EA Servicos Odontologicos Eireli;35;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;12114112;9139;1;2022-08-19 00:00:00.000
+Ana Paula Gomes Porte Ribeiro;1/4/2023;19/8/2022;EA Servicos Odontologicos Eireli;28;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;12114112;9139;1;2022-08-19 00:00:00.000
+Ana Paula Gomes Porte Ribeiro;1/4/2023;19/8/2022;EA Servicos Odontologicos Eireli;27;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12114112;9139;1;2022-08-19 00:00:00.000
+Ana Paula Gomes Porte Ribeiro;1/4/2023;19/8/2022;EA Servicos Odontologicos Eireli;21;;85100021;Finalização: Clareamento dentário caseiro;12114112;9139;1;2022-08-19 00:00:00.000
+Ana Paula Gomes Porte Ribeiro;1/4/2023;19/8/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;12114112;9139;1;2022-08-19 00:00:00.000
+Ana Paula Gomes Porte Ribeiro;1/4/2023;19/8/2022;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;12114112;9139;1;2022-08-19 00:00:00.000
+Ana Júlia Lopes Tavares Moreira ;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;16;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11613014;9139;1;2021-07-29 00:00:00.000
+Ana Júlia Lopes Tavares Moreira ;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;13;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11613014;9139;1;2021-07-29 00:00:00.000
+Ana Júlia Lopes Tavares Moreira ;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;63;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11613014;9139;1;2021-07-29 00:00:00.000
+Ana Júlia Lopes Tavares Moreira ;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;64;DM;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;11613014;9139;1;2021-07-29 00:00:00.000
+Ana Júlia Lopes Tavares Moreira ;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;84;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;11613014;9139;1;2021-07-29 00:00:00.000
+Ana Júlia Lopes Tavares Moreira ;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;85;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;11613014;9139;1;2021-07-29 00:00:00.000
+Ana Júlia Lopes Tavares Moreira ;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;65;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11613014;9139;1;2021-07-29 00:00:00.000
+Ana Júlia Lopes Tavares Moreira ;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;26;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11613014;9139;1;2021-07-29 00:00:00.000
+Ana Júlia Lopes Tavares Moreira ;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;73;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11613014;9139;1;2021-07-29 00:00:00.000
+Ana Júlia Lopes Tavares Moreira ;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;74;DMO;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;11613014;9139;1;2021-07-29 00:00:00.000
+Ana Júlia Lopes Tavares Moreira ;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;11613014;9139;1;2021-07-29 00:00:00.000
+Ana Luiza Lopes Tavares Queiroz;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;36;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8915625;9139;1;2021-07-29 00:00:00.000
+Ana Luiza Lopes Tavares Queiroz;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;26;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8915625;9139;1;2021-07-29 00:00:00.000
+Ana Luiza Lopes Tavares Queiroz;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;16;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8915625;9139;1;2021-07-29 00:00:00.000
+Ana Luiza Lopes Tavares Queiroz;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;75;;83000089;Finalização: Exodontia simples de decíduo;8915625;9139;1;2021-07-29 00:00:00.000
+Ana Luiza Lopes Tavares Queiroz;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;75;;83000089;Finalização: Exodontia simples de decíduo;8915625;9139;1;2021-07-29 00:00:00.000
+Ana Luiza Lopes Tavares Queiroz;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;75;;83000089;Finalização: Exodontia simples de decíduo;8915625;9139;1;2021-07-29 00:00:00.000
+Ana Luiza Lopes Tavares Queiroz;1/4/2023;29/7/2021;EA Servicos Odontologicos Eireli;54;;83000089;Finalização: Exodontia simples de decíduo;8915625;9139;1;2021-07-29 00:00:00.000
+Adriel Moreira Machado;1/4/2023;19/1/2022;EA Servicos Odontologicos Eireli;37;;85200158;Finalização: Tratamento endodôntico multirradicular;13185475;9139;1;2022-01-19 00:00:00.000
+Antonio Navarro de Lima Neto;1/4/2023;14/7/2021;EA Servicos Odontologicos Eireli;64;DO;99000079;Finalização: Restauração DO;9586722;9139;1;2021-07-14 00:00:00.000
+Antonio Navarro de Lima Neto;1/4/2023;14/7/2021;EA Servicos Odontologicos Eireli;65;MO;99000078;Finalização: Restauração MO;9586722;9139;1;2021-07-14 00:00:00.000
+Antonio Joao Aguiar Araujo Gomes;1/4/2023;19/8/2022;EA Servicos Odontologicos Eireli;47;;82000875;Finalização: Exodontia simples de permanente;13185541;9139;1;2022-08-19 00:00:00.000
+Heloisa Mendes da Silva;1/4/2023;9/1/2023;EA Servicos Odontologicos Eireli;16;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12816538;9139;1;2023-01-09 00:00:00.000
+Heloisa Mendes da Silva;1/4/2023;9/1/2023;EA Servicos Odontologicos Eireli;26;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12816538;9139;1;2023-01-09 00:00:00.000
+Geraldo Soares da Silva;1/4/2023;10/1/2023;EA Servicos Odontologicos Eireli;;;84000198;Finalização: Profilaxia: polimento coronário;12976310;9139;1;2023-01-10 00:00:00.000
+Geraldo Soares da Silva;1/4/2023;10/1/2023;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;12976310;9139;1;2023-01-10 00:00:00.000
+Geraldo Soares da Silva;1/4/2023;10/1/2023;EA Servicos Odontologicos Eireli;37;;81000421;Finalização: Radiografia periapical;12976310;9139;1;2023-01-10 00:00:00.000
+Jaqueline Alves Martins;1/4/2023;11/1/2023;EA Servicos Odontologicos Eireli;46;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8058250;9139;1;2023-01-11 00:00:00.000
+Heloisa Mendes da Silva;1/4/2023;24/1/2023;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12816538;9139;1;2023-01-24 00:00:00.000
+Heloisa Mendes da Silva;1/4/2023;24/1/2023;EA Servicos Odontologicos Eireli;36;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;12816538;9139;1;2023-01-24 00:00:00.000
+Flancielly de Lima Ribeiro;1/4/2023;31/1/2023;EA Servicos Odontologicos Eireli;25;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;9035428;9139;1;2023-01-31 00:00:00.000
+Flancielly de Lima Ribeiro;1/4/2023;31/1/2023;EA Servicos Odontologicos Eireli;26;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;9035428;9139;1;2023-01-31 00:00:00.000
+Flancielly de Lima Ribeiro;1/4/2023;31/1/2023;EA Servicos Odontologicos Eireli;14;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9035428;9139;1;2023-01-31 00:00:00.000
+Flancielly de Lima Ribeiro;1/4/2023;31/1/2023;EA Servicos Odontologicos Eireli;15;;81000421;Finalização: Radiografia periapical;9035428;9139;1;2023-01-31 00:00:00.000
+Jose Carlos Oliveira Gama;1/4/2023;1/2/2023;EA Servicos Odontologicos Eireli;;;81000065;Finalização: Consulta odontológica inicial;13379362;9139;1;2023-02-01 00:00:00.000
+Heloisa Mendes da Silva;1/4/2023;2/2/2023;EA Servicos Odontologicos Eireli;47;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12816538;9139;1;2023-02-02 00:00:00.000
+Heloisa Mendes da Silva;1/4/2023;2/2/2023;EA Servicos Odontologicos Eireli;46;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;12816538;9139;1;2023-02-02 00:00:00.000
+Maria Elenice de Oliveira Lemes;1/4/2023;2/2/2023;EA Servicos Odontologicos Eireli;15;;81000421;Finalização: Radiografia periapical;13166519;9139;1;2023-02-02 00:00:00.000
+Maria Elenice de Oliveira Lemes;1/4/2023;2/2/2023;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;13166519;9139;1;2023-02-02 00:00:00.000
+Maria Elenice de Oliveira Lemes;1/4/2023;2/2/2023;EA Servicos Odontologicos Eireli;;;99000028;Finalização: Ensino de higiene oral;13166519;9139;1;2023-02-02 00:00:00.000
+Ivanildes Bergamelli de Brito;1/4/2023;13/2/2023;EA Servicos Odontologicos Eireli;21;I;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;13442875;9139;1;2023-02-13 00:00:00.000
+Jose Carlos Oliveira Gama;1/4/2023;23/2/2023;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;13379362;9139;1;2023-02-23 00:00:00.000
+Jose Carlos Oliveira Gama;1/4/2023;23/2/2023;EA Servicos Odontologicos Eireli;;;99000028;Finalização: Ensino de higiene oral;13379362;9139;1;2023-02-23 00:00:00.000
+Jose Carlos Oliveira Gama;1/4/2023;28/2/2023;EA Servicos Odontologicos Eireli;17;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;13379362;9139;1;2023-02-28 00:00:00.000
+Jose Carlos Oliveira Gama;1/4/2023;21/3/2023;EA Servicos Odontologicos Eireli;13;I;99000004;Finalização: Restauração;13379362;9139;1;2023-03-21 00:00:00.000
+Jose Carlos Oliveira Gama;1/4/2023;21/3/2023;EA Servicos Odontologicos Eireli;11;MP;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;13379362;9139;1;2023-03-21 00:00:00.000
+Jose Carlos Oliveira Gama;1/4/2023;21/3/2023;EA Servicos Odontologicos Eireli;21;PM;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;13379362;9139;1;2023-03-21 00:00:00.000
+Jose Carlos Oliveira Gama;1/4/2023;21/3/2023;EA Servicos Odontologicos Eireli;23;I;99000004;Finalização: Restauração;13379362;9139;1;2023-03-21 00:00:00.000
+Jose Carlos Oliveira Gama;1/4/2023;21/3/2023;EA Servicos Odontologicos Eireli;12;I;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;13379362;9139;1;2023-03-21 00:00:00.000
+Jose Carlos Oliveira Gama;1/4/2023;21/3/2023;EA Servicos Odontologicos Eireli;26;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;13379362;9139;1;2023-03-21 00:00:00.000
+Jose Carlos Oliveira Gama;1/4/2023;21/3/2023;EA Servicos Odontologicos Eireli;27;O;99000004;Finalização: Restauração;13379362;9139;1;2023-03-21 00:00:00.000
+Andersson Moreira Bastos;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;12;;85400262;Finalização: Pino pré fabricado;13167578;9139;1;2023-03-25 00:00:00.000
+Andersson Moreira Bastos;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;22;;85400262;Finalização: Pino pré fabricado;13167578;9139;1;2023-03-25 00:00:00.000
+Andersson Moreira Bastos;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;dez/22;;85400084;Finalização: Coroa provisória sem pino;13167578;9139;1;2023-03-25 00:00:00.000
+Andersson Moreira Bastos;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;12;;99000049;Finalização: Aumento de coroa clínica;13167578;9139;1;2023-03-25 00:00:00.000
+Andersson Moreira Bastos;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;22;;99000049;Finalização: Aumento de coroa clínica;13167578;9139;1;2023-03-25 00:00:00.000
+Andersson Moreira Bastos;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;21;;99000049;Finalização: Aumento de coroa clínica;13167578;9139;1;2023-03-25 00:00:00.000
+Andersson Moreira Bastos;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;11;;99000049;Finalização: Aumento de coroa clínica;13167578;9139;1;2023-03-25 00:00:00.000
+Andersson Moreira Bastos;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;11;;85400262;Finalização: Pino pré fabricado;13167578;9139;1;2023-03-25 00:00:00.000
+Annyelle de Oliveira Lemes;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;18;;82001294;Finalização: Remoção de dentes semi-inclusos / impactados;9084445;9139;1;2023-03-25 00:00:00.000
+Annyelle de Oliveira Lemes;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;28;;82001294;Finalização: Remoção de dentes semi-inclusos / impactados;9084445;9139;1;2023-03-25 00:00:00.000
+Annyelle de Oliveira Lemes;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;38;;82001294;Finalização: Remoção de dentes semi-inclusos / impactados;9084445;9139;1;2023-03-25 00:00:00.000
+Annyelle de Oliveira Lemes;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;48;;82001294;Finalização: Remoção de dentes semi-inclusos / impactados;9084445;9139;1;2023-03-25 00:00:00.000
+Annyelle de Oliveira Lemes;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;18;;81000421;Finalização: Radiografia periapical;9084445;9139;1;2023-03-25 00:00:00.000
+Annyelle de Oliveira Lemes;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;28;;81000421;Finalização: Radiografia periapical;9084445;9139;1;2023-03-25 00:00:00.000
+Annyelle de Oliveira Lemes;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;38;;81000421;Finalização: Radiografia periapical;9084445;9139;1;2023-03-25 00:00:00.000
+Annyelle de Oliveira Lemes;1/4/2023;25/3/2023;EA Servicos Odontologicos Eireli;48;;81000421;Finalização: Radiografia periapical;9084445;9139;1;2023-03-25 00:00:00.000
+Erika Lorranny Rocha Chagas ;1/4/2023;17/11/2022;EA Servicos Odontologicos Eireli;17;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12816080;9139;1;2022-11-17 00:00:00.000
+Erika Lorranny Rocha Chagas ;1/4/2023;29/11/2022;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12816080;9139;1;2022-11-29 00:00:00.000
+Erika Lorranny Rocha Chagas ;1/4/2023;29/11/2022;EA Servicos Odontologicos Eireli;ai;;85100021;Finalização: Clareamento dentário caseiro;12816080;9139;1;2022-11-29 00:00:00.000
+Erika Lorranny Rocha Chagas ;1/4/2023;29/11/2022;EA Servicos Odontologicos Eireli;as;NULL;85100021;Finalização: Clareamento dentário caseiro;12816080;9139;1;2022-11-29 00:00:00.000
+Lorrany Pereira Porte;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;16;;85400238;Finalização: Onlay de resina indireta;8889459;9139;1;2023-03-29 00:00:00.000
+Lorrany Pereira Porte;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;15;;85400084;Finalização: Coroa provisória sem pino;8889459;9139;1;2023-03-29 00:00:00.000
+Rosinete Araujo dos Santos Passos;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;26;DMO;85100218;Finalização: Restauração em resina fotopolimerizável 3 faces;12052611;9139;1;2023-03-29 00:00:00.000
+Rosinete Araujo dos Santos Passos;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;26;DMO;85100218;Finalização: Restauração em resina fotopolimerizável 3 faces;12052611;9139;1;2023-03-29 00:00:00.000
+Rosinete Araujo dos Santos Passos;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;35;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12052611;9139;1;2023-03-29 00:00:00.000
+Rosinete Araujo dos Santos Passos;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;36;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;12052611;9139;1;2023-03-29 00:00:00.000
+Rosinete Araujo dos Santos Passos;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;45;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12052611;9139;1;2023-03-29 00:00:00.000
+Rosinete Araujo dos Santos Passos;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;46;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12052611;9139;1;2023-03-29 00:00:00.000
+Jeovanna Alves Monteiro de Assunção;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;36;;85200107;Finalização: Retratamento endodôntico multirradicular;13443052;9139;1;2023-03-29 00:00:00.000
+Jeovanna Alves Monteiro de Assunção;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;36;;85400262;Finalização: Pino de fibra de vidro;13443052;9139;1;2023-03-29 00:00:00.000
+Jeovanna Alves Monteiro de Assunção;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;ai;;85100021;Finalização: Clareamento dentário caseiro;13443052;9139;1;2023-03-29 00:00:00.000
+Jeovanna Alves Monteiro de Assunção;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;36;;85400084;Finalização: Coroa provisória sem pino;13443052;9139;1;2023-03-29 00:00:00.000
+Marcos Vinicios Marques Antunes ;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;18;;82000832;Finalização: Exodontia de permanente por indicação ortodôntica/protética;12704193;9139;1;2023-03-29 00:00:00.000
+Marcos Vinicios Marques Antunes ;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;17;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12704193;9139;1;2023-03-29 00:00:00.000
+Marcos Vinicios Marques Antunes ;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;16;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12704193;9139;1;2023-03-29 00:00:00.000
+Marcos Vinicios Marques Antunes ;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;22;;85200166;Finalização: Tratamento endodôntico unirradicular;12704193;9139;1;2023-03-29 00:00:00.000
+Marcos Vinicios Marques Antunes ;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;27;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12704193;9139;1;2023-03-29 00:00:00.000
+Marcos Vinicios Marques Antunes ;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;28;;82000832;Finalização: Exodontia de permanente por indicação ortodôntica/protética;12704193;9139;1;2023-03-29 00:00:00.000
+Marcos Vinicios Marques Antunes ;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;12704193;9139;1;2023-03-29 00:00:00.000
+Marcos Vinicios Marques Antunes ;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;36;;82000859;Finalização: Exodontia de raiz residual;12704193;9139;1;2023-03-29 00:00:00.000
+Marcos Vinicios Marques Antunes ;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;45;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;12704193;9139;1;2023-03-29 00:00:00.000
+Marcos Vinicios Marques Antunes ;1/4/2023;29/3/2023;EA Servicos Odontologicos Eireli;46;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;12704193;9139;1;2023-03-29 00:00:00.000
+Crislene Soares de Menezes ;1/4/2023;14/12/2021;EA Servicos Odontologicos Eireli;ai;;85100030;Finalização: Clareamento dentário de consultório;13258856;9139;0;2021-12-14 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;28/10/2021;EA Servicos Odontologicos Eireli;22;D;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10249544;9139;0;2021-10-28 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;28/10/2021;EA Servicos Odontologicos Eireli;22;;99000012;Finalização: Tratamento de canal;10249544;9139;0;2021-10-28 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;19/1/2023;EA Servicos Odontologicos Eireli;18;O;85100137;Finalização: Restauração em ionômero de vidro - 1 face;8944989;9139;0;2023-01-19 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;17;O;85100137;Finalização: Restauração em ionômero de vidro - 1 face;8944989;9139;0;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;19/1/2023;EA Servicos Odontologicos Eireli;16;V;85100137;Restauração em resina fotopolimerizável 1 face;8944989;9139;0;2023-01-19 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;11;I;85100137;Finalização: Restauração em ionômero de vidro - 1 face;8944989;9139;0;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;14;O;85100137;Finalização: Restauração em ionômero de vidro - 1 face;8944989;9139;0;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;27;O;85100137;Finalização: Restauração em ionômero de vidro - 1 face;8944989;9139;0;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;28;O;85100137;Finalização: Restauração em ionômero de vidro - 1 face;8944989;9139;0;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;35;O;85100137;Finalização: Restauração em ionômero de vidro - 1 face;8944989;9139;0;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;34;O;85100137;Finalização: Restauração em ionômero de vidro - 1 face;8944989;9139;0;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;47;O;85100137;Finalização: Restauração em ionômero de vidro - 1 face;8944989;9139;0;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;48;O;85100137;Finalização: Restauração em ionômero de vidro - 1 face;8944989;9139;0;2023-01-01 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;36;DO;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977862;9139;0;2022-01-21 00:00:00.000
+Elson Manoel de Jesus dos Santos;1/4/2023;17/3/2022;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;11204862;9139;0;2022-03-17 00:00:00.000
+Simones Rodrigues da Graças;1/4/2023;21/9/2021;EA Servicos Odontologicos Eireli;27;;85200107;Retratamento endodôntico multirradicular;10186271;9139;1;2021-09-21 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;21;DM;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;22;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;23;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;36;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;14;;82000875;Finalização: Exodontia simples de permanente;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;24;;82000875;Finalização: Exodontia simples de permanente;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;18;;82000875;Finalização: Exodontia simples de permanente;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;16;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;17;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;15;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;27;PO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;37;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;9415150;9139;1;2021-07-28 00:00:00.000
+Brasilina da Luz Fagundes;1/4/2023;28/7/2021;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;9415150;9139;1;2021-07-28 00:00:00.000
+Claudia Alves Martins Milhomem;1/4/2023;13/1/2023;EA Servicos Odontologicos Eireli;11;;85100064;Finalização: Faceta direta em resina fotopolimerizável;12687292;9139;1;2023-01-13 00:00:00.000
+Cleverson Carlos Bueno da Silva;1/4/2023;13/1/2023;EA Servicos Odontologicos Eireli;as;;85100030;Finalização: Clareamento dentário de consultório;13225782;9139;1;2023-01-13 00:00:00.000
+Cleuzair Alves Teixeira  ;1/4/2023;13/1/2023;EA Servicos Odontologicos Eireli;ai;;99000006;Finalização: Prótese parcial removível;7977515;9139;1;2023-01-13 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;13/1/2023;EA Servicos Odontologicos Eireli;17;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10807628;9139;1;2023-01-13 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;16;O;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10807628;9139;1;2022-03-26 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;26;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10807628;9139;1;2022-03-26 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;25;O;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10807628;9139;1;2022-03-26 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;24;O;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10807628;9139;1;2022-03-26 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;15;O;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10807628;9139;1;2022-03-26 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;46;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10807628;9139;1;2022-03-26 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10807628;9139;1;2022-03-26 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;27;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10807628;9139;1;2022-03-26 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;45;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10807628;9139;1;2022-03-26 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;44;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10807628;9139;1;2022-03-26 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;48;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10807628;9139;1;2022-03-26 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;23;VP;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10807628;9139;1;2022-03-26 00:00:00.000
+Carlos Antonio Barbosa;1/4/2023;26/3/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;10807628;9139;1;2022-03-26 00:00:00.000
+Cleiton da Silva Gonçalves ;1/4/2023;28/4/2022;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;11373235;9139;1;2022-04-28 00:00:00.000
+Cleiton da Silva Gonçalves ;1/4/2023;28/4/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;11373235;9139;1;2022-04-28 00:00:00.000
+Cleiton Barbosa da Silva;1/4/2023;31/5/2022;EA Servicos Odontologicos Eireli;ai;;85100030;Finalização: Clareamento dentário de consultório;13226091;9139;1;2022-05-31 00:00:00.000
+Cleiton Barbosa da Silva;1/4/2023;31/5/2022;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;13226091;9139;1;2022-05-31 00:00:00.000
+Cleiton Barbosa da Silva;1/4/2023;31/5/2022;EA Servicos Odontologicos Eireli;23;M D;85400017;Finalização: Ajuste oclusal por acréscimo;13226091;9139;1;2022-05-31 00:00:00.000
+Cleiton Barbosa da Silva;1/4/2023;31/5/2022;EA Servicos Odontologicos Eireli;NULL;NULL;85400025;Finalização: Ajuste oclusal por desgaste seletivo;13226091;9139;1;2022-05-31 00:00:00.000
+Crislene Soares de Menezes ;1/4/2023;14/12/2021;EA Servicos Odontologicos Eireli;26;MO;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;13258856;9139;1;2021-12-14 00:00:00.000
+Crislene Soares de Menezes ;1/4/2023;14/12/2021;EA Servicos Odontologicos Eireli;36;DMO;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;13258856;9139;1;2021-12-14 00:00:00.000
+Crislene Soares de Menezes ;1/4/2023;14/12/2021;EA Servicos Odontologicos Eireli;46;MDO;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;13258856;9139;1;2021-12-14 00:00:00.000
+Crislene Soares de Menezes ;1/4/2023;14/12/2021;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;13258856;9139;1;2021-12-14 00:00:00.000
+Crislene Soares de Menezes ;1/4/2023;14/12/2021;EA Servicos Odontologicos Eireli;47;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;13258856;9139;1;2021-12-14 00:00:00.000
+Crislene Soares de Menezes ;1/4/2023;14/12/2021;EA Servicos Odontologicos Eireli;ai;;85100030;Finalização: Clareamento dentário de consultório;13258856;9139;1;2021-12-14 00:00:00.000
+Crislene Soares de Menezes ;1/4/2023;14/12/2021;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;13258856;9139;1;2021-12-14 00:00:00.000
+Crislene Soares de Menezes ;1/4/2023;14/12/2021;EA Servicos Odontologicos Eireli;46;;99000012;Finalização: Tratamento de canal;13258856;9139;1;2021-12-14 00:00:00.000
+Clara Katielle A. Carvalho;1/4/2023;17/1/2023;EA Servicos Odontologicos Eireli;16;;99000012;Finalização: Tratamento de canal;13259529;9139;1;2023-01-17 00:00:00.000
+Cassiano Henrique Chaves Diniz;1/4/2023;23/6/2021;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;8351463;9139;1;2021-06-23 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;21/10/2021;EA Servicos Odontologicos Eireli;16;;99000013;Finalização: Exodontia;10249544;9139;1;2021-10-21 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;28/10/2021;EA Servicos Odontologicos Eireli;13;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10249544;9139;1;2021-10-28 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;28/10/2021;EA Servicos Odontologicos Eireli;11;MI;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10249544;9139;1;2021-10-28 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;28/10/2021;EA Servicos Odontologicos Eireli;21;MI;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10249544;9139;1;2021-10-28 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;28/10/2021;EA Servicos Odontologicos Eireli;23;DM;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10249544;9139;1;2021-10-28 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;28/10/2021;EA Servicos Odontologicos Eireli;22;;99000012;Finalização: Tratamento de canal;10249544;9139;1;2021-10-28 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;28/10/2021;EA Servicos Odontologicos Eireli;25;;99000013;Finalização: Exodontia;10249544;9139;1;2021-10-28 00:00:00.000
+Cristia De Paula Cordeiro Maia;1/4/2023;19/1/2021;EA Servicos Odontologicos Eireli;46;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977540;9139;1;2021-01-19 00:00:00.000
+Cristia De Paula Cordeiro Maia;1/4/2023;19/1/2021;EA Servicos Odontologicos Eireli;36;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977540;9139;1;2021-01-19 00:00:00.000
+Cristia De Paula Cordeiro Maia;1/4/2023;11/12/2019;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;7977540;9139;1;2019-12-11 00:00:00.000
+Cristia De Paula Cordeiro Maia;1/4/2023;11/12/2019;EA Servicos Odontologicos Eireli;46;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977540;9139;1;2019-12-11 00:00:00.000
+Cristia De Paula Cordeiro Maia;1/4/2023;11/12/2019;EA Servicos Odontologicos Eireli;47;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977540;9139;1;2019-12-11 00:00:00.000
+Carlos Xavier Pissarra;1/4/2023;17/1/2023;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;7977583;9139;1;2023-01-17 00:00:00.000
+Carlos Xavier Pissarra;1/4/2023;17/1/2023;EA Servicos Odontologicos Eireli;ai;;85100021;Finalização: Clareamento dentário caseiro;7977583;9139;1;2023-01-17 00:00:00.000
+Célia Alves Evangelista ;1/4/2023;17/1/2023;EA Servicos Odontologicos Eireli;ai;;85100030;Finalização: Clareamento dentário de consultório;7977504;9139;1;2023-01-17 00:00:00.000
+Célia Alves Evangelista ;1/4/2023;17/1/2023;EA Servicos Odontologicos Eireli;ai;;85100021;Finalização: Clareamento dentário caseiro;7977504;9139;1;2023-01-17 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;46;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;36;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;26;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;18;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;17;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;16;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;11;I;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;14;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;27;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;28;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;35;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;34;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;47;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;48;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8944989;9139;1;2023-01-01 00:00:00.000
+Cristiano de Lima Mesquita;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;8944989;9139;1;2023-01-01 00:00:00.000
+Clelinton Marques Farias;1/4/2023;9/10/2020;EA Servicos Odontologicos Eireli;45;;99000013;Finalização: Exodontia;13294075;9139;1;2020-10-09 00:00:00.000
+Clelinton Marques Farias;1/4/2023;9/10/2020;EA Servicos Odontologicos Eireli;36;;99000013;Finalização: Exodontia;13294075;9139;1;2020-10-09 00:00:00.000
+Clelinton Marques Farias;1/4/2023;9/10/2020;EA Servicos Odontologicos Eireli;26;;99000013;Finalização: Exodontia;13294075;9139;1;2020-10-09 00:00:00.000
+Clelinton Marques Farias;1/4/2023;9/10/2020;EA Servicos Odontologicos Eireli;15;MD;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;13294075;9139;1;2020-10-09 00:00:00.000
+Clelinton Marques Farias;1/4/2023;9/10/2020;EA Servicos Odontologicos Eireli;14;MD;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;13294075;9139;1;2020-10-09 00:00:00.000
+Clelinton Marques Farias;1/4/2023;9/10/2020;EA Servicos Odontologicos Eireli;13;MD;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;13294075;9139;1;2020-10-09 00:00:00.000
+Clelinton Marques Farias;1/4/2023;9/10/2020;EA Servicos Odontologicos Eireli;12;MD;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;13294075;9139;1;2020-10-09 00:00:00.000
+Deusdete Martins da Cunha;1/4/2023;19/1/2023;EA Servicos Odontologicos Eireli;36;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9895359;9139;1;2023-01-19 00:00:00.000
+Deusdete Martins da Cunha;1/4/2023;16/9/2021;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9895359;9139;1;2021-09-16 00:00:00.000
+Deusdete Martins da Cunha;1/4/2023;16/9/2021;EA Servicos Odontologicos Eireli;36;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9895359;9139;1;2021-09-16 00:00:00.000
+Deusdete Martins da Cunha;1/4/2023;16/9/2021;EA Servicos Odontologicos Eireli;46;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9895359;9139;1;2021-09-16 00:00:00.000
+Deusdete Martins da Cunha;1/4/2023;16/9/2021;EA Servicos Odontologicos Eireli;47;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;9895359;9139;1;2021-09-16 00:00:00.000
+Dione Ribeiro da Silva ;1/4/2023;22/12/2021;EA Servicos Odontologicos Eireli;12;;85400262;Finalização: Pino de fibra de vidro;11547949;9139;1;2021-12-22 00:00:00.000
+Dione Ribeiro da Silva ;1/4/2023;22/12/2021;EA Servicos Odontologicos Eireli;12;;99000001;Finalização: Coroa;11547949;9139;1;2021-12-22 00:00:00.000
+Dione Ribeiro da Silva ;1/4/2023;22/12/2021;EA Servicos Odontologicos Eireli;12;;99000039;Finalização: Faceta;11547949;9139;1;2021-12-22 00:00:00.000
+Dione Ribeiro da Silva ;1/4/2023;22/12/2021;EA Servicos Odontologicos Eireli;13;;99000039;Finalização: Faceta;11547949;9139;1;2021-12-22 00:00:00.000
+Dione Ribeiro da Silva ;1/4/2023;22/12/2021;EA Servicos Odontologicos Eireli;11;;99000039;Finalização: Faceta;11547949;9139;1;2021-12-22 00:00:00.000
+Dione Ribeiro da Silva ;1/4/2023;22/12/2021;EA Servicos Odontologicos Eireli;11;;85200115;Finalização: Retratamento endodôntico unirradicular;11547949;9139;1;2021-12-22 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;27;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;24;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;25;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;14;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;14;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;16;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;45;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;15;MDO;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;46;MDO;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;47;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;48;;99000013;Finalização: Exodontia;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;17;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;37;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977862;9139;1;2022-01-21 00:00:00.000
+Dhiogenes Venâncio aguiar;1/4/2023;21/1/2022;EA Servicos Odontologicos Eireli;36;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977862;9139;1;2022-01-21 00:00:00.000
+Danilo Rafael Godoy;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;21;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11289468;9139;1;2023-01-01 00:00:00.000
+Danilo Rafael Godoy;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;22;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11289468;9139;1;2023-01-01 00:00:00.000
+Danilo Rafael Godoy;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;26;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11289468;9139;1;2023-01-01 00:00:00.000
+Danilo Rafael Godoy;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;27;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11289468;9139;1;2023-01-01 00:00:00.000
+Danilo Rafael Godoy;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;16;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11289468;9139;1;2023-01-01 00:00:00.000
+Danilo Rafael Godoy;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11289468;9139;1;2023-01-01 00:00:00.000
+Danilo Rafael Godoy;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;36;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11289468;9139;1;2023-01-01 00:00:00.000
+Danilo Rafael Godoy;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;46;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11289468;9139;1;2023-01-01 00:00:00.000
+Danilo Rafael Godoy;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;11289468;9139;1;2023-01-01 00:00:00.000
+Dolerina de Oliveira ;1/4/2023;5/4/2022;EA Servicos Odontologicos Eireli;23;;99000013;Finalização: Exodontia;13301692;9139;1;2022-04-05 00:00:00.000
+Dolerina de Oliveira ;1/4/2023;5/10/1960;EA Servicos Odontologicos Eireli;37;;99000013;Finalização: Exodontia;13301692;9139;1;1960-10-05 00:00:00.000
+Dolerina de Oliveira ;1/4/2023;5/4/2022;EA Servicos Odontologicos Eireli;32;;99000013;Finalização: Exodontia;13301692;9139;1;2022-04-05 00:00:00.000
+Dolerina de Oliveira ;1/4/2023;5/4/2022;EA Servicos Odontologicos Eireli;ai;;99000006;Finalização: Prótese parcial removível;13301692;9139;1;2022-04-05 00:00:00.000
+Dolerina de Oliveira ;1/4/2023;5/4/2022;EA Servicos Odontologicos Eireli;as;;99000018;Finalização: Raspagem para grupo de dentes;13301692;9139;1;2022-04-05 00:00:00.000
+Divino Martins da Costa Junior;1/4/2023;20/1/2023;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;13301943;9139;1;2023-01-20 00:00:00.000
+Divino Martins da Costa Junior;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;36;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;13301943;9139;1;2023-01-01 00:00:00.000
+Divino Martins da Costa Junior;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;45;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;13301943;9139;1;2023-01-01 00:00:00.000
+Divino Martins da Costa Junior;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;47;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;13301943;9139;1;2023-01-01 00:00:00.000
+Divino Martins da Costa Junior;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;46;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;13301943;9139;1;2023-01-01 00:00:00.000
+Divino Martins da Costa Junior;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;ai;;85100030;Finalização: Clareamento dentário de consultório;13301943;9139;1;2023-01-01 00:00:00.000
+Divino Martins da Costa Junior;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;13301943;9139;1;2023-01-01 00:00:00.000
+Divino Martins da Costa Junior;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;ai;;85100021;Finalização: Clareamento dentário caseiro;13301943;9139;1;2023-01-01 00:00:00.000
+Deisiane José da Costa;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;22;P;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7939870;9139;1;2020-12-10 00:00:00.000
+Deisiane José da Costa;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;23;P;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7939870;9139;1;2020-12-10 00:00:00.000
+Deisiane José da Costa;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;24;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7939870;9139;1;2020-12-10 00:00:00.000
+Deisiane José da Costa;1/4/2023;14/12/2021;EA Servicos Odontologicos Eireli;26;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7939870;9139;1;2021-12-14 00:00:00.000
+Deisiane José da Costa;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;47;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7939870;9139;1;2020-12-10 00:00:00.000
+Deisiane José da Costa;1/4/2023;10/12/2020;EA Servicos Odontologicos Eireli;16;MDO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7939870;9139;1;2020-12-10 00:00:00.000
+Diego Candido da Silva;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;16;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8049566;9139;1;2023-01-01 00:00:00.000
+Diego Candido da Silva;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;38;;99000001;Finalização: Coroa;8049566;9139;1;2023-01-01 00:00:00.000
+Diego Candido da Silva;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;8049566;9139;1;2023-01-01 00:00:00.000
+Débora Brito da Silva ;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;17;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8049588;9139;1;2023-01-01 00:00:00.000
+Débora Brito da Silva ;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;16;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8049588;9139;1;2023-01-01 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;18;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;26;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;27;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;44;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;17;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;16;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;24;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;44;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;14;;99000013;Finalização: Exodontia;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;14;;99000009;Finalização: Implante;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;12;;85200069;Finalização: Remoção de material obturador intracanal para retratamento endodôntico;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;11;;85200069;Finalização: Remoção de material obturador intracanal para retratamento endodôntico;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;21;;85200069;Finalização: Remoção de material obturador intracanal para retratamento endodôntico;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;22;;85200069;Finalização: Remoção de material obturador intracanal para retratamento endodôntico;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;12;;85400262;Finalização: Pino de fibra de vidro;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;11;;85400262;Finalização: Pino de fibra de vidro;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;21;;85400262;Finalização: Pino de fibra de vidro;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;22;;85400262;Finalização: Pino de fibra de vidro;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;12;;99000001;Finalização: Coroa;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;11;;99000001;Finalização: Coroa;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;21;;99000001;Finalização: Coroa;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;22;;99000001;Finalização: Coroa;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;25;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;8979318;9139;1;2021-09-23 00:00:00.000
+Divaldo Rodrigues Silva;1/4/2023;23/9/2021;EA Servicos Odontologicos Eireli;45;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;8979318;9139;1;2021-09-23 00:00:00.000
+Daniel Victor de Andrade Guimarães ;1/4/2023;18/9/2018;EA Servicos Odontologicos Eireli;44;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977828;9139;1;2018-09-18 00:00:00.000
+Daniel Victor de Andrade Guimarães ;1/4/2023;18/9/2018;EA Servicos Odontologicos Eireli;22;DM;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977828;9139;1;2018-09-18 00:00:00.000
+Daniel Victor de Andrade Guimarães ;1/4/2023;18/9/2018;EA Servicos Odontologicos Eireli;37;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977828;9139;1;2018-09-18 00:00:00.000
+Daniel Victor de Andrade Guimarães ;1/4/2023;18/9/2018;EA Servicos Odontologicos Eireli;44;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977828;9139;1;2018-09-18 00:00:00.000
+Daniel Victor de Andrade Guimarães ;1/4/2023;18/9/2018;EA Servicos Odontologicos Eireli;11;PD;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977828;9139;1;2018-09-18 00:00:00.000
+Daniel Victor de Andrade Guimarães ;1/4/2023;18/9/2018;EA Servicos Odontologicos Eireli;13;VMP;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;7977828;9139;1;2018-09-18 00:00:00.000
+Daniel Victor de Andrade Guimarães ;1/4/2023;18/9/2018;EA Servicos Odontologicos Eireli;12;MPD;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;7977828;9139;1;2018-09-18 00:00:00.000
+Daniel Victor de Andrade Guimarães ;1/4/2023;18/9/2018;EA Servicos Odontologicos Eireli;22;VPM;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;7977828;9139;1;2018-09-18 00:00:00.000
+Daniel Victor de Andrade Guimarães ;1/4/2023;18/9/2018;EA Servicos Odontologicos Eireli;21;VDP;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;7977828;9139;1;2018-09-18 00:00:00.000
+Daniel Victor de Andrade Guimarães ;1/4/2023;18/9/2018;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;7977828;9139;1;2018-09-18 00:00:00.000
+Dayane Alves de Souza;1/4/2023;30/6/2021;EA Servicos Odontologicos Eireli;11;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8348643;9139;1;2021-06-30 00:00:00.000
+Dayane Alves de Souza;1/4/2023;30/6/2021;EA Servicos Odontologicos Eireli;21;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8348643;9139;1;2021-06-30 00:00:00.000
+Dayane Alves de Souza;1/4/2023;30/6/2021;EA Servicos Odontologicos Eireli;22;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8348643;9139;1;2021-06-30 00:00:00.000
+Dayane Alves de Souza;1/4/2023;30/6/2021;EA Servicos Odontologicos Eireli;25;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8348643;9139;1;2021-06-30 00:00:00.000
+Dayane Alves de Souza;1/4/2023;30/6/2021;EA Servicos Odontologicos Eireli;26;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;8348643;9139;1;2021-06-30 00:00:00.000
+Dayane Alves de Souza;1/4/2023;30/6/2021;EA Servicos Odontologicos Eireli;;;86000209;Finalização: Contenção fixa - por arcada;8348643;9139;1;2021-06-30 00:00:00.000
+Dayane Alves de Souza;1/4/2023;30/6/2021;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;8348643;9139;1;2021-06-30 00:00:00.000
+Dariany;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;27;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977696;9139;1;2023-01-01 00:00:00.000
+Dariany;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977696;9139;1;2023-01-01 00:00:00.000
+Dariany;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;45;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977696;9139;1;2023-01-01 00:00:00.000
+Dariany;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;47;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977696;9139;1;2023-01-01 00:00:00.000
+Dariany;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;7977696;9139;1;2023-01-01 00:00:00.000
+Dariany;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;ai;;85100030;Finalização: Clareamento dentário de consultório;7977696;9139;1;2023-01-01 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;28/10/2021;EA Servicos Odontologicos Eireli;16;;99000013;Finalização: Exodontia;10249544;9139;1;2021-10-28 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;21/10/2021;EA Servicos Odontologicos Eireli;25;;99000013;Finalização: Exodontia;10249544;9139;1;2021-10-21 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;28/10/2021;EA Servicos Odontologicos Eireli;22;;99000012;Finalização: Tratamento de canal;10249544;9139;1;2021-10-28 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;21/10/2021;EA Servicos Odontologicos Eireli;13;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10249544;9139;1;2021-10-21 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;21/10/2021;EA Servicos Odontologicos Eireli;11;MI;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10249544;9139;1;2021-10-21 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;21/10/2021;EA Servicos Odontologicos Eireli;21;MI;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10249544;9139;1;2021-10-21 00:00:00.000
+Creuza Abreu Aguiar;1/4/2023;21/10/2021;EA Servicos Odontologicos Eireli;23;DM;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;10249544;9139;1;2021-10-21 00:00:00.000
+Carla Katielle A. Carvalho;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;16;;99000012;Finalização: Tratamento de canal;13437962;9139;1;2023-01-01 00:00:00.000
+Crislene Soares de Menezes ;1/4/2023;14/12/2021;EA Servicos Odontologicos Eireli;15;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;13258856;9139;1;2021-12-14 00:00:00.000
+Cleiton Barbosa da Silva;1/4/2023;31/5/2022;EA Servicos Odontologicos Eireli;13;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;13226091;9139;1;2022-05-31 00:00:00.000
+David Guilherme de Lima ;1/4/2023;24/10/2019;EA Servicos Odontologicos Eireli;26;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977712;9139;1;2019-10-24 00:00:00.000
+David Guilherme de Lima ;1/4/2023;24/10/2019;EA Servicos Odontologicos Eireli;27;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977712;9139;1;2019-10-24 00:00:00.000
+David Guilherme de Lima ;1/4/2023;24/10/2019;EA Servicos Odontologicos Eireli;17;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;7977712;9139;1;2019-10-24 00:00:00.000
+Daiane;1/4/2023;24/8/2020;EA Servicos Odontologicos Eireli;16;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056314;9139;1;2020-08-24 00:00:00.000
+Daiane;1/4/2023;24/8/2020;EA Servicos Odontologicos Eireli;25;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056314;9139;1;2020-08-24 00:00:00.000
+Daiane;1/4/2023;24/8/2020;EA Servicos Odontologicos Eireli;26;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056314;9139;1;2020-08-24 00:00:00.000
+Daiane;1/4/2023;24/8/2020;EA Servicos Odontologicos Eireli;27;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056314;9139;1;2020-08-24 00:00:00.000
+Daiane;1/4/2023;24/8/2020;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056314;9139;1;2020-08-24 00:00:00.000
+Daiane;1/4/2023;24/8/2020;EA Servicos Odontologicos Eireli;35;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056314;9139;1;2020-08-24 00:00:00.000
+Daiane;1/4/2023;24/8/2020;EA Servicos Odontologicos Eireli;36;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056314;9139;1;2020-08-24 00:00:00.000
+Daiane;1/4/2023;24/8/2020;EA Servicos Odontologicos Eireli;26;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056314;9139;1;2020-08-24 00:00:00.000
+Daiane;1/4/2023;24/8/2020;EA Servicos Odontologicos Eireli;25;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056314;9139;1;2020-08-24 00:00:00.000
+Daiane;1/4/2023;24/8/2020;EA Servicos Odontologicos Eireli;12;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056314;9139;1;2020-08-24 00:00:00.000
+Daiane;1/4/2023;24/8/2020;EA Servicos Odontologicos Eireli;11;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056314;9139;1;2020-08-24 00:00:00.000
+Daiane;1/4/2023;24/8/2020;EA Servicos Odontologicos Eireli;37;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056314;9139;1;2020-08-24 00:00:00.000
+Daiane;1/4/2023;23/8/2020;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;8056314;9139;1;2020-08-23 00:00:00.000
+Hávilla ;1/4/2023;27/8/2020;EA Servicos Odontologicos Eireli;17;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056318;9139;1;2020-08-27 00:00:00.000
+Hávilla ;1/4/2023;27/8/2020;EA Servicos Odontologicos Eireli;16;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056318;9139;1;2020-08-27 00:00:00.000
+Hávilla ;1/4/2023;27/8/2020;EA Servicos Odontologicos Eireli;17;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8056318;9139;1;2020-08-27 00:00:00.000
+Hávilla ;1/4/2023;27/8/2020;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;8056318;9139;1;2020-08-27 00:00:00.000
+Hávilla ;1/4/2023;27/8/2020;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;8056318;9139;1;2020-08-27 00:00:00.000
+Welban;1/4/2023;27/8/2020;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;8056328;9139;1;2020-08-27 00:00:00.000
+Welban;1/4/2023;27/8/2020;EA Servicos Odontologicos Eireli;16;;99000013;Finalização: Exodontia;8056328;9139;1;2020-08-27 00:00:00.000
+Daniela Simionatto Agra;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;34;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8049626;9139;1;2019-07-03 00:00:00.000
+Daniela Simionatto Agra;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;45;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8049626;9139;1;2019-07-03 00:00:00.000
+Daniela Simionatto Agra;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;11;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8049626;9139;1;2019-07-03 00:00:00.000
+Daniela Simionatto Agra;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;45;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8049626;9139;1;2019-07-03 00:00:00.000
+Daniela Simionatto Agra;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;12;P;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8049626;9139;1;2019-07-03 00:00:00.000
+Daniela Simionatto Agra;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;23;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8049626;9139;1;2019-07-03 00:00:00.000
+Daniela Simionatto Agra;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;25;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8049626;9139;1;2019-07-03 00:00:00.000
+Daniela Simionatto Agra;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;34;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8049626;9139;1;2019-07-03 00:00:00.000
+Daniela Simionatto Agra;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;35;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8049626;9139;1;2019-07-03 00:00:00.000
+Daniela Simionatto Agra;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;8049626;9139;1;2019-07-03 00:00:00.000
+Daniela Simionatto Agra;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;8049626;9139;1;2019-07-03 00:00:00.000
+Deusvando Tavares Santos ;1/4/2023;23/3/2022;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;7977740;9139;1;2022-03-23 00:00:00.000
+Deusvando Tavares Santos ;1/4/2023;23/3/2022;EA Servicos Odontologicos Eireli;37;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;7977740;9139;1;2022-03-23 00:00:00.000
+Ester Rodrigues Ferreira;1/4/2023;20/6/2022;EA Servicos Odontologicos Eireli;26;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11563274;9139;1;2022-06-20 00:00:00.000
+Ester Rodrigues Ferreira;1/4/2023;20/6/2022;EA Servicos Odontologicos Eireli;36;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11563274;9139;1;2022-06-20 00:00:00.000
+Ester Rodrigues Ferreira;1/4/2023;20/6/2022;EA Servicos Odontologicos Eireli;46;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11563274;9139;1;2022-06-20 00:00:00.000
+Ester Rodrigues Ferreira;1/4/2023;20/6/2022;EA Servicos Odontologicos Eireli;47;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11563274;9139;1;2022-06-20 00:00:00.000
+Ester Rodrigues Ferreira;1/4/2023;20/6/2022;EA Servicos Odontologicos Eireli;37;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;11563274;9139;1;2022-06-20 00:00:00.000
+Elias Pereira do Prado ;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;13;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11563902;9139;1;2023-01-01 00:00:00.000
+Elias Pereira do Prado ;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;11;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11563902;9139;1;2023-01-01 00:00:00.000
+Elias Pereira do Prado ;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;21;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11563902;9139;1;2023-01-01 00:00:00.000
+Elias Pereira do Prado ;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;15;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;11563902;9139;1;2023-01-01 00:00:00.000
+Elias Pereira do Prado ;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;16;MO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;11563902;9139;1;2023-01-01 00:00:00.000
+Elias Pereira do Prado ;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;25;DMO;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;11563902;9139;1;2023-01-01 00:00:00.000
+Elias Pereira do Prado ;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;11563902;9139;1;2023-01-01 00:00:00.000
+Elias Pereira do Prado ;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;;;99000027;Finalização: Raspagem para toda a boca;11563902;9139;1;2023-01-01 00:00:00.000
+Elias Pereira do Prado ;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;24;;99000013;Finalização: Exodontia;11563902;9139;1;2023-01-01 00:00:00.000
+Erica da Silva Queiroz;1/4/2023;22/3/2022;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;11229376;9139;1;2022-03-22 00:00:00.000
+Erica da Silva Queiroz;1/4/2023;22/2/2022;EA Servicos Odontologicos Eireli;ai;;85100030;Finalização: Clareamento dentário de consultório;11229376;9139;1;2022-02-22 00:00:00.000
+Elson Manoel de Jesus dos Santos;1/4/2023;17/3/2022;EA Servicos Odontologicos Eireli;12;I;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11204862;9139;1;2022-03-17 00:00:00.000
+Elson Manoel de Jesus dos Santos;1/4/2023;17/3/2022;EA Servicos Odontologicos Eireli;13;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11204862;9139;1;2022-03-17 00:00:00.000
+Elson Manoel de Jesus dos Santos;1/4/2023;17/3/2022;EA Servicos Odontologicos Eireli;16;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11204862;9139;1;2022-03-17 00:00:00.000
+Elson Manoel de Jesus dos Santos;1/4/2023;17/3/2022;EA Servicos Odontologicos Eireli;45;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11204862;9139;1;2022-03-17 00:00:00.000
+Elson Manoel de Jesus dos Santos;1/4/2023;17/3/2022;EA Servicos Odontologicos Eireli;44;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;11204862;9139;1;2022-03-17 00:00:00.000
+Elson Manoel de Jesus dos Santos;1/4/2023;17/3/2022;EA Servicos Odontologicos Eireli;24;DMO;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;11204862;9139;1;2022-03-17 00:00:00.000
+Elissanda Rosa Fernandez;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;14;;85400262;Finalização: Pino de fibra de vidro;11270233;9139;1;2023-01-01 00:00:00.000
+Elissanda Rosa Fernandez;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;46;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;11270233;9139;1;2023-01-01 00:00:00.000
+Edivaldo da Silva Araujo;1/4/2023;29/3/2022;EA Servicos Odontologicos Eireli;16;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10056821;9139;1;2022-03-29 00:00:00.000
+Edivaldo da Silva Araujo;1/4/2023;29/3/2022;EA Servicos Odontologicos Eireli;34;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10056821;9139;1;2022-03-29 00:00:00.000
+Edivaldo da Silva Araujo;1/4/2023;29/3/2022;EA Servicos Odontologicos Eireli;35;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10056821;9139;1;2022-03-29 00:00:00.000
+Edivaldo da Silva Araujo;1/4/2023;29/3/2022;EA Servicos Odontologicos Eireli;44;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10056821;9139;1;2022-03-29 00:00:00.000
+Edivaldo da Silva Araujo;1/4/2023;29/3/2022;EA Servicos Odontologicos Eireli;45;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;10056821;9139;1;2022-03-29 00:00:00.000
+Edivaldo da Silva Araujo;1/4/2023;29/3/2022;EA Servicos Odontologicos Eireli;15;VMO;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;10056821;9139;1;2022-03-29 00:00:00.000
+Edivaldo da Silva Araujo;1/4/2023;29/3/2022;EA Servicos Odontologicos Eireli;11;;99000039;Finalização: Faceta;10056821;9139;1;2022-03-29 00:00:00.000
+Edivaldo da Silva Araujo;1/4/2023;29/3/2022;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;10056821;9139;1;2022-03-29 00:00:00.000
+Esdras de Souza Silva;1/4/2023;9/12/2019;EA Servicos Odontologicos Eireli;17;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091474;9139;1;2019-12-09 00:00:00.000
+Esdras de Souza Silva;1/4/2023;9/12/2019;EA Servicos Odontologicos Eireli;27;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091474;9139;1;2019-12-09 00:00:00.000
+Esdras de Souza Silva;1/4/2023;9/12/2019;EA Servicos Odontologicos Eireli;36;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091474;9139;1;2019-12-09 00:00:00.000
+Esdras de Souza Silva;1/4/2023;9/12/2019;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;8091474;9139;1;2019-12-09 00:00:00.000
+Esdras de Souza Silva;1/4/2023;9/12/2019;EA Servicos Odontologicos Eireli;ai;;85100030;Finalização: Clareamento dentário de consultório;8091474;9139;1;2019-12-09 00:00:00.000
+Elman Xavier Navarro;1/4/2023;11/12/2019;EA Servicos Odontologicos Eireli;25;;99000013;Finalização: Exodontia;8091463;9139;1;2019-12-11 00:00:00.000
+Elman Xavier Navarro;1/4/2023;11/12/2019;EA Servicos Odontologicos Eireli;26;;99000013;Finalização: Exodontia;8091463;9139;1;2019-12-11 00:00:00.000
+Elman Xavier Navarro;1/4/2023;11/12/2019;EA Servicos Odontologicos Eireli;13;V;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091463;9139;1;2019-12-11 00:00:00.000
+Ernestina Machado de Azevedo ;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;42;D;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9720043;9139;1;2021-08-12 00:00:00.000
+Ernestina Machado de Azevedo ;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;31;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9720043;9139;1;2021-08-12 00:00:00.000
+Ernestina Machado de Azevedo ;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;46;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9720043;9139;1;2021-08-12 00:00:00.000
+Ernestina Machado de Azevedo ;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;22;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9720043;9139;1;2021-08-12 00:00:00.000
+Ernestina Machado de Azevedo ;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;37;M;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;9720043;9139;1;2021-08-12 00:00:00.000
+Ernestina Machado de Azevedo ;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;11;MI;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;9720043;9139;1;2021-08-12 00:00:00.000
+Ernestina Machado de Azevedo ;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;21;MI;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;9720043;9139;1;2021-08-12 00:00:00.000
+Ernestina Machado de Azevedo ;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;24;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;9720043;9139;1;2021-08-12 00:00:00.000
+Ernestina Machado de Azevedo ;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;35;VO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;9720043;9139;1;2021-08-12 00:00:00.000
+Ernestina Machado de Azevedo ;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;33;D;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;9720043;9139;1;2021-08-12 00:00:00.000
+Ernestina Machado de Azevedo ;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;44;MDO;851002180;Finalização: Restauração em resina fotopolimerizável 3 faces;9720043;9139;1;2021-08-12 00:00:00.000
+Ernestina Machado de Azevedo ;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;9720043;9139;1;2021-08-12 00:00:00.000
+Ernestina Machado de Azevedo ;1/4/2023;12/8/2021;EA Servicos Odontologicos Eireli;12;;99000012;Finalização: Tratamento de canal;9720043;9139;1;2021-08-12 00:00:00.000
+Erika de Lima Maciel Barbosa ;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;36;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8094607;9139;1;2023-01-01 00:00:00.000
+Emily Beatriz Xavier de Menezes;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;16;P;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091517;9139;1;2019-07-03 00:00:00.000
+Emily Beatriz Xavier de Menezes;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;14;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091517;9139;1;2019-07-03 00:00:00.000
+Emily Beatriz Xavier de Menezes;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;15;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091517;9139;1;2019-07-03 00:00:00.000
+Emily Beatriz Xavier de Menezes;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;23;P;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091517;9139;1;2019-07-03 00:00:00.000
+Emily Beatriz Xavier de Menezes;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;24;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091517;9139;1;2019-07-03 00:00:00.000
+Emily Beatriz Xavier de Menezes;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;25;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091517;9139;1;2019-07-03 00:00:00.000
+Emily Beatriz Xavier de Menezes;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;26;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091517;9139;1;2019-07-03 00:00:00.000
+Emily Beatriz Xavier de Menezes;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;27;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091517;9139;1;2019-07-03 00:00:00.000
+Emily Beatriz Xavier de Menezes;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091517;9139;1;2019-07-03 00:00:00.000
+Emily Beatriz Xavier de Menezes;1/4/2023;3/7/2019;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;8091517;9139;1;2019-07-03 00:00:00.000
+Eliete Simone Rodrigues Gonçalves ;1/4/2023;22/11/2022;EA Servicos Odontologicos Eireli;17;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091486;9139;1;2022-11-22 00:00:00.000
+Eliete Simone Rodrigues Gonçalves ;1/4/2023;22/11/2022;EA Servicos Odontologicos Eireli;27;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091486;9139;1;2022-11-22 00:00:00.000
+Eliete Simone Rodrigues Gonçalves ;1/4/2023;22/11/2022;EA Servicos Odontologicos Eireli;26;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091486;9139;1;2022-11-22 00:00:00.000
+Eliete Simone Rodrigues Gonçalves ;1/4/2023;22/11/2022;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091486;9139;1;2022-11-22 00:00:00.000
+Eliete Simone Rodrigues Gonçalves ;1/4/2023;22/11/2022;EA Servicos Odontologicos Eireli;36;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091486;9139;1;2022-11-22 00:00:00.000
+Eliete Simone Rodrigues Gonçalves ;1/4/2023;22/11/2022;EA Servicos Odontologicos Eireli;46;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091486;9139;1;2022-11-22 00:00:00.000
+Eliete Simone Rodrigues Gonçalves ;1/4/2023;22/11/2022;EA Servicos Odontologicos Eireli;47;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8091486;9139;1;2022-11-22 00:00:00.000
+Eliete Simone Rodrigues Gonçalves ;1/4/2023;22/11/2022;EA Servicos Odontologicos Eireli;;;99000008;Finalização: Profilaxia;8091486;9139;1;2022-11-22 00:00:00.000
+Eliete Alves Naves;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;34;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8094415;9139;1;2023-01-01 00:00:00.000
+Eliete Alves Naves;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;37;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8094415;9139;1;2023-01-01 00:00:00.000
+Eliete Alves Naves;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;36;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8094415;9139;1;2023-01-01 00:00:00.000
+Eliete Alves Naves;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;35;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8094415;9139;1;2023-01-01 00:00:00.000
+Eliete Alves Naves;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;34;O;85100196;Finalização: Restauração em resina fotopolimerizável 1 face;8094415;9139;1;2023-01-01 00:00:00.000
+Eliete Alves Naves;1/4/2023;1/1/2023;EA Servicos Odontologicos Eireli;25;DO;85100200;Finalização: Restauração em resina fotopolimerizável 2 faces;8094415;9139;1;2023-01-01 00:00:00.000

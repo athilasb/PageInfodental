@@ -18,15 +18,13 @@
 			$rtn=array('success'=>false,'error'=>'Colaborador não encontrado!');
 		} else if($_POST['ajax']=="comissionamentosPersistir") {
 
-
 			$comissionamento='';
 			if(isset($_POST['id_comissionamento']) and is_numeric($_POST['id_comissionamento'])) {
 				$sql->consult($_p."colaboradores_comissionamento","*","where id=".$_POST['id_comissionamento']." and id_colaborador=$colaborador->id and lixo=0");
 				if($sql->rows) {
 					$comissionamento=mysqli_fetch_object($sql->mysqry);
 				}
-			}
-				
+			}				
 
 			$vSQL='';
 			if($_POST['tipo']=="valor") {
@@ -281,23 +279,18 @@
 				$rtn=array('success'=>false,'error'=>'Horário não encontrado!');
 			}
 		} else if($_POST['ajax']=="foto") {
-
-			
 			$sql->update($_p."colaboradores","foto='".addslashes($_POST['foto'])."'","where id=$colaborador->id");
 			$rtn=array('success'=>true);
-			
-
+		} else if($_POST['ajax']=="rubrica"){
+			//substitui caso exista, cria caso não (com base na primary key)
+			$sql->sintax("REPLACE INTO ".$_p."colaboradores_rubricas (rubrica_png, id_dentista) values ('".addslashes($_POST['canvas-url'])."', $colaborador->id)");
+			$rtn = ["status" => "success", "message" => "rúbrica salva com sucesso"];
 		}
-
 		header("Content-type: application/json");
 		echo json_encode($rtn);
 		die();
-	
-
-		header("Content-Type: application/json");
-		echo json_encode($rtn);
-		die();
 	}
+
 	include "includes/header.php";
 	include "includes/nav.php";
 	if($usr->tipo!="admin" and !in_array("configuracoes",$_usuariosPermissoes)) {
@@ -326,12 +319,15 @@
 	$_cadeiras=array();
 	$sql->consult($_p."parametros_cadeiras","id,titulo","where lixo=0 order by ordem asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
+
+	$_rubrica = "";
+	//$sql->consult($_p."colaboradores_rubricas", "rubrica_png", "where id_dentista='".$_GET['edita']."'");
+	//if($sql->rows){$_rubrica = (mysqli_fetch_object($sql->mysqry)->rubrica_png);}
 	
 ?>
 
 	<header class="header">
 		<div class="header__content content">
-
 			<div class="header__inner1">
 				<section class="header-title">
 					<h1>Configurações</h1>
@@ -395,7 +391,6 @@
 						//echo $vSQL;die();
 
 						if(isset($_POST['senha']) and !empty($_POST['senha'])) $vSQL.="senha='".sha1($_POST['senha'])."',";
-				
 
 						// popula $values para persistir nos cmapos
 						$values=$adm->values;
@@ -932,6 +927,59 @@
 									<input type="hidden" name="lat" id="lat" style="display:none;" />
 								</fieldset>
 
+
+								<!--Rúbrica/assinatura -->
+								<fieldset>
+									<section class="sign">
+										<footer class="sign-footer">
+											<form method="post" class="signature">
+												<div class="form sign-form-canva">	
+													<canvas id="canvas" style="width: 100%;">
+														<p> painel de assinatura </p>
+													</canvas>
+													<p>Desenhe sua assinatura nesta caixa:</p>
+
+													<a href="javascript:;" class="button button_lg button_full" id="canvas-clear"><i class="iconify"
+															data-icon="fluent:eraser-24-regular"></i><span>Apagar assinatura</span></a>
+													<a href="javascript:;" class="button button_lg button_main concluir">Concluir</a>
+													<a href="javascript:;" id="teste1" >draw</a>
+												</div>
+											</form>
+										</footer>
+									</section>
+
+									<!--adicionando a funcionalidade de assinatura-->
+									<script type="text/javascript" src="../includes/assinaturas/canvas.js"></script>
+									<script>
+
+										var img = new Image;
+										img.onload = function(){
+											ctx.drawImage(img,0,0); // Or at whatever offset you like
+										};
+										img.src = "<?php echo $_rubrica?>";
+
+										
+										$(".button.concluir").click(() => {
+											$.ajax({
+												type: "POST",
+												data: {		
+													'ajax': "rubrica",
+													'id_colaborador': id_colaborador,
+													'canvas-url': canvas.toDataURL('image/png')
+												},
+												success: (rtn) => {
+													console.log(rtn);
+													if (rtn.status == "success") {
+														swal({ title: "Sucesso!", text: rtn.message, type: "success", confirmButtonColor: "#424242" });
+														location.reload();
+													} else {
+														swal({ title: "Erro!", text: rtn.message, type: "error", confirmButtonColor: "#424242" });
+													}
+												},
+											});
+										});
+									</script>
+								</fieldset>
 								<?php /*<fieldset>
 									<legend>Certificação Digital</legend>
 

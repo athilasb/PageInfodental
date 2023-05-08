@@ -1,0 +1,108 @@
+﻿id;paciente;data;observacao;situacao;dentista;criado_em
+13;Gustavo Delben Lima;2020-09-01;"";;;2020-08-28 15:47:22 UTC
+14;Adilson Carlino dos Santos;2021-03-10;"";;;2020-09-11 14:30:37 UTC
+15;Alisson da Silva Eugenio;2021-04-07;"";;;2020-10-09 18:43:08 UTC
+16;Julio Cesar dos Santos Wilfer;2020-10-31;"";;ZZNaira Lima;2020-10-16 13:44:34 UTC
+17;Jurandir Martins Junior;2020-10-31;"";;ZZNaira Lima;2020-10-16 14:11:25 UTC
+18;Elaine Ferreira Januario;2021-05-25;"";;;2020-11-26 17:52:04 UTC
+19;Cleber da Rocha Vicente;2021-05-29;"";;;2020-11-30 20:10:58 UTC
+20;Ana Paula da Silva Jesus;2021-05-29;"";;;2020-11-30 20:55:48 UTC
+21;Ana Clara da Silva Bento;2021-05-29;"";;;2020-11-30 21:41:28 UTC
+22;Maycon Douglas Santos Furlan;2021-05-29;"";;;2020-11-30 21:41:44 UTC
+23;Rafael Marques;2021-05-29;"";;;2020-11-30 21:50:48 UTC
+24;Reginaldo Custodio;2021-05-30;"";;;2020-12-01 17:39:02 UTC
+25;Marli Lara Pires;2021-05-30;"";;;2020-12-01 18:26:00 UTC
+26;Célio Gonçalves;2021-05-30;"";;;2020-12-01 18:28:18 UTC
+27;Eliel junior da Silva Alves;2021-05-30;"";;;2020-12-01 18:35:14 UTC
+28;Gentil Meiado Junior;2021-05-30;"";;;2020-12-01 18:58:07 UTC
+29;Adeilda Francisca s. Oliveira;2021-05-30;"";;;2020-12-01 19:46:39 UTC
+30;Joao Victor Souza;2021-05-30;"";;;2020-12-01 19:47:06 UTC
+31;Leonardo Carneiro Daniel;2021-05-30;"";;;2020-12-01 20:11:01 UTC
+32;Alisson Carneiro;2021-05-30;"";;;2020-12-01 20:11:09 UTC
+33;Laureci Maria Carneiro;2021-05-30;"";;;2020-12-01 20:11:19 UTC
+34;Claudinelson Guimarães Alves;2021-05-30;"";;;2020-12-01 20:42:21 UTC
+35;Lúcia Paula Cruz Martins da Costa;2021-05-31;"";;;2020-12-02 17:11:20 UTC
+36;Cibele Pazzoto Castiglioni;2021-05-31;"";;;2020-12-02 17:19:47 UTC
+37;Fernanda Aparecida da Silva;2021-05-31;"";;;2020-12-02 17:23:36 UTC
+38;Ederson Carlos Firminio;2021-05-31;"";;;2020-12-02 19:11:07 UTC
+39;Vania Miranda Santos da Silva;2021-05-31;"";;;2020-12-02 20:39:35 UTC
+40;Evanice Santos;2021-06-01;"";;;2020-12-03 17:33:56 UTC
+41;Bianca Alencar Paloma;2021-06-01;"";;;2020-12-03 18:19:57 UTC
+42;Luana de Pinho  Alencar;2021-06-01;"";;;2020-12-03 18:20:17 UTC
+43;Kaio Vinicius Assunção de Oliveira;2021-06-02;"";;;2020-12-04 17:49:03 UTC
+44;Roseane Alves de Carvalho da Silva;2021-06-02;"";;;2020-12-04 19:18:33 UTC
+45;Laysa da Silva (Claudia Laysa);2021-06-02;"";;;2020-12-04 19:22:18 UTC
+46;Marilda Pereira da Silva Correa;2021-06-02;"";;;2020-12-04 19:50:27 UTC
+47;Emerson Henrique dos Santos;2021-06-02;"";;;2020-12-04 19:50:37 UTC
+48;Alberto Jonas de Oliveira;2021-06-02;"";;;2020-12-04 20:35:25 UTC
+49;Marcléa Luciana de Campos Damaceno;2021-06-05;"";;;2020-12-07 21:25:34 UTC
+50;Victor Gabriel Cheregatti Ferreira;2021-06-07;"";;;2020-12-09 13:05:29 UTC
+51;Karen Vitória de Bem;2021-06-08;"";;;2020-12-10 19:24:41 UTC
+52;Gislene Dourado de Matos;2021-06-13;"";Sem panorâmica;;2020-12-15 14:37:29 UTC
+53;João Pedro da Silva;2021-02-25;"";;;2021-02-10 15:47:41 UTC
+54;Leandro Ribeiro dos Santos;2021-08-11;"";;;2021-02-12 13:18:21 UTC
+55;Roberta Laureto de Assunção;2021-10-16;"";;;2021-04-19 15:36:10 UTC
+56;Laysa da Silva (Claudia Laysa);2021-10-17;"";SUSPEITA DE COVID;;2021-04-20 15:26:42 UTC
+57;Kaiyo Ewerton Teixeira dos Santos Ferreira;2021-10-17;"";SUSPEITA DE COVID;;2021-04-20 15:27:08 UTC
+58;Ewily Kawany Teixeira da Silva;2021-10-17;"";SUSPEITA DE COVID;;2021-04-20 15:27:26 UTC
+59;Viviane Alves Rosse;2021-10-27;"";;;2021-04-30 19:46:44 UTC
+60;Ana Paula da Silva Jesus;2021-11-03;"";;;2021-05-07 16:08:47 UTC
+61;Alisson da Silva Eugenio;2021-11-03;"";;;2021-05-07 16:08:54 UTC
+62;Janaine Maria da Silva Veigas;2021-11-03;"";;;2021-05-07 16:09:01 UTC
+63;Emerson Marçal Guiatto;2021-11-03;"";;;2021-05-07 16:09:15 UTC
+64;Julia Kauany dos Santos Vitoriano Almeida;2021-11-10;"";;;2021-05-14 13:50:53 UTC
+65;Robson Danilo Gomes da Silva;2021-11-10;"";;;2021-05-14 19:23:55 UTC
+66;Amanda de Souza Camargo;2021-11-17;"";;;2021-05-21 17:22:25 UTC
+67;Marli de Jesus Assis Mendes Silva;2021-11-17;"";;;2021-05-21 17:22:36 UTC
+68;Cleber da Rocha Vicente;2021-11-17;"";;;2021-05-21 18:29:57 UTC
+69;Marli de Jesus Assis Mendes Silva;2021-11-24;"";;;2021-05-28 17:22:15 UTC
+70;Luis Felipe da Silva Baltazar;2021-12-08;"";;;2021-06-11 16:44:44 UTC
+71;Adilson Silva dos Santos;2021-12-08;"";;;2021-06-11 16:44:57 UTC
+72;Agnes Ishi Assunção;2021-12-08;"";;;2021-06-11 17:51:42 UTC
+73;Evelin Talita Bonini de Freitas;2021-12-08;"";;;2021-06-11 20:41:46 UTC
+74;Brunyelle Cristina Correa Marques;2021-12-18;"";;;2021-06-21 21:03:10 UTC
+75;Carlos Roberto Furlaneto Junior;2021-12-22;"";;;2021-06-25 20:06:30 UTC
+76;Adilson Silva dos Santos;2021-12-25;"";;;2021-06-28 17:48:57 UTC
+77;Kelly Cristina Ferreira Teixeira;2021-12-27;"";;;2021-06-30 16:20:40 UTC
+78;Iago Santorum de Melo;2021-12-28;"";;;2021-07-01 15:59:24 UTC
+79;Viviane Alves Rosse;2021-12-29;"";;;2021-07-02 18:52:50 UTC
+80;Sérgio Henrique Violim;2022-01-08;"";;;2021-07-12 17:09:55 UTC
+81;Iago Santorum de Melo;2022-01-09;"";;;2021-07-13 20:28:01 UTC
+82;Vanessa de Oliveira da Silva;2022-02-03;"";;;2021-08-07 15:09:03 UTC
+83;Rita de Cássia Coelho Baroni;2022-03-01;"";;;2021-09-02 21:02:35 UTC
+84;Dayane Pereira da Silva;2021-09-23;"";;;2021-09-08 11:43:21 UTC
+85;Ederson Carlos Firminio;2022-03-07;"";;;2021-09-08 16:52:44 UTC
+86;Anderson Victor Caldeira Fernandes;2022-03-07;"";;;2021-09-08 16:52:51 UTC
+87;Joice Batista Reis Santos Eugenio;2022-04-21;"";;;2021-10-23 14:04:34 UTC
+88;Kaio Vinicius Assunção de Oliveira;2022-05-12;"";;;2021-11-13 11:43:22 UTC
+89;Diego Henrique da Silva;2022-06-02;"";;;2021-12-04 15:44:22 UTC
+90;Liliane Custodio Bernardes;2022-08-13;"";;;2022-02-14 19:38:55 UTC
+91;Roberta Laureto de Assunção;2022-04-13;"";;;2022-03-14 16:58:43 UTC
+92;Michelle Alaercio da Silva;2022-09-28;"";;;2022-04-01 19:05:55 UTC
+93;Elizabeth Cristina  Galvan de Souza;2022-09-28;"";;;2022-04-01 19:09:13 UTC
+94;Maria Flor de Sousa Inácio;2022-09-28;"";;;2022-04-01 20:42:36 UTC
+95;Brayan Henrique Ribeiro Barbosa;2022-10-03;"";;;2022-04-06 14:19:48 UTC
+96;Almir Bertoldo Arcangelo;2022-10-03;"";;;2022-04-06 14:19:52 UTC
+97;Emanuelle Beatriz Ribeiro da Silva;2022-10-03;"";;;2022-04-06 14:20:17 UTC
+98;Tomás Buzon Alves Ribeiro;2022-10-03;"";;;2022-04-06 14:20:28 UTC
+99;Mario Henrique Silva de Melo;2022-10-10;"";;;2022-04-13 18:55:12 UTC
+100;Breno Ferreira Mestre César;2022-10-10;"";;;2022-04-13 19:04:50 UTC
+101;Thales Henrique Fernandes da Silva;2022-10-10;"";;;2022-04-13 19:35:49 UTC
+102;Gabriela de Mello Gomes;2022-10-10;"";;;2022-04-13 19:54:25 UTC
+103;Sisleia Cássia Pereira dos Santos;2022-10-10;"";;;2022-04-13 20:07:25 UTC
+104;ERRADO Rosália de Souza Araújo;2022-10-10;"";;;2022-04-13 20:35:52 UTC
+105;Alisson Bruno Higino da Silva;2022-10-16;"";;;2022-04-19 20:32:15 UTC
+106;Marionice Gomes da Conceição;2022-11-07;"";;;2022-05-11 17:43:13 UTC
+107;Gustavo Germano de Oliveira;2022-10-08;"";;Dra. Ana Laura Albuquerque;2022-09-08 18:25:41 UTC
+108;Andreia dos Santos Bezerra;2022-10-10;"";;Dra. Ana Laura Albuquerque;2022-09-10 13:53:47 UTC
+109;Raí Gonçalves da Silva;2022-10-10;"";;Dra. Ana Laura Albuquerque;2022-09-10 13:53:57 UTC
+110;Steven Ramirez;2022-10-22;"";;Dr. Ana Beatriz Laguna;2022-09-22 20:46:55 UTC
+111;Chrystian da Silva Lage;2022-10-30;"";;Dr. Ana Beatriz Laguna;2022-09-30 11:17:24 UTC
+112;Carlos Eduardo Oliveira de Freitas;2023-03-09;"";;Dra. Ana Laura Albuquerque;2023-02-09 19:06:56 UTC
+113;Igor Pimentel;2023-03-09;"";;Dra. Ana Laura Albuquerque;2023-02-09 19:07:04 UTC
+114;Rodrigo Barbosa Santos;2023-03-09;"";;Dra. Ana Laura Albuquerque;2023-02-09 19:07:09 UTC
+115;Diane Germano Carvalho;2023-03-09;"";;Dra. Ana Laura Albuquerque;2023-02-09 19:07:14 UTC
+116;Gustavo Germano de Oliveira;2023-03-09;"";;Dra. Ana Laura Albuquerque;2023-02-09 19:07:18 UTC
+117;Maxsuel das Neves Silva;2023-03-09;"";;Dra. Ana Laura Albuquerque;2023-02-09 19:07:22 UTC
+118;Maria de Lourdes Marques Fernandes;2023-04-10;"";;Dra. Karol Miwa Hayashi;2023-03-10 20:04:23 UTC
+119;Diva Bernardes da Silva;2023-04-29;"";;Dr. Walter Curti;2023-03-29 19:59:06 UTC
