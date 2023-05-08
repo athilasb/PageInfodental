@@ -488,13 +488,6 @@
 					$rtn = ["sucess" => true, 'objeto' => $objeto];
 				}
 			}
-
-			//$sql->add($_p . "financeiro_fluxo", "$vSQL");
-			//$idAdd = $sql->ulid;
-			//$sql->update($_p . "financeiro_fluxo", "id_registro='$idAdd'", "WHERE id=$idAdd");
-
-			//$rtn = ["sucess" => true, 'objeto' => $objeto];
-			//$rtn = ["error" => 'AInda não Implementado'];
 			//$rtn = ["sucess" => true, 'post' => $_POST, 'sql' => $vSQL];
 		} else if ($_POST['ajax'] == 'addContaAReceberAvulsa'){
 			$rtn= $_POST;
@@ -2916,8 +2909,6 @@
 				$('.js-btn-addBaixaPagamento').click(function() {
 					let obj = $(this);
 					let objHTMLAntigo = $(this).html();
-					console.log('OK')
-						return
 					if(obj.attr('data-loading')==0) {
 						obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 						obj.attr('data-loading',1);
@@ -3076,8 +3067,8 @@
 										confirmButtonColor: "#424242"
 									});
 									obj.html(objHTMLAntigo);
-							obj.attr('data-loading',0);
-							return;
+									obj.attr('data-loading',0);
+									return;
 								} else {
 									console.log('erro desconhecido')
 									console.log(rtn)
