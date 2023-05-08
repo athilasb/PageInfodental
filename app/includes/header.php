@@ -1,4 +1,5 @@
 <?php
+
     # API Geral
         if(isset($_POST['ajaxHeader'])) {
               require_once("lib/conf.php");
@@ -70,7 +71,7 @@
 
     # Header das demais páginas
         else {
-              
+
             require_once("lib/conf.php");
             require_once("usuarios/checa.php");
 
@@ -83,6 +84,7 @@
 
 
             // Verifica se possui conta
+
             $sql->consult("infodentalADM.infod_contas","*","where instancia='".$_ENV['NAME']."'");
             if($sql->rows) {
                 $infoConta=mysqli_fetch_object($sql->mysqry);
@@ -106,7 +108,7 @@
 
     $mobileDetect=new MobileDetect();
     $mobile=(!$mobileDetect->isMobile() and !$mobileDetect->isTablet())?0:1;
-      
+
 ?>
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -164,7 +166,7 @@
 <script defer type="text/javascript" src="js/jquery.caret.js"></script>
 <script defer type="text/javascript" src="js/jquery.mobilePhoneNumber.js"></script>
 <script type="text/javascript" src="js/jquery.sweetalert.js"></script>
-<script type="text/javascript" src="js/jquery.validacao.js"></script>
+<script type="text/javascript" src="js/jquery.validacao.js?v4"></script>
 <script type="text/javascript" src="js/jquery.funcoes.js?v3"></script>
 <script type="text/javascript" src="ckeditor/ckeditor.js"></script>
 <script defer src="https://code.iconify.design/1/1.0.3/iconify.min.js"></script>

@@ -23,8 +23,9 @@
 				$_ENV['NAME']=$_ENV['MYSQL_DB']='agenda';
 			}
 
-
-			if(isset($_COOKIE['infoName'])) $_ENV['NAME']=$_ENV['MYSQL_DB']=$_COOKIE['infoName'];
+			if(isset($_COOKIE['infoName'])) {
+				$_ENV['NAME']=$_ENV['MYSQL_DB']=$_COOKIE['infoName'];
+			}
 				
 			$_ENV['MYSQL_USER']="dentalinfo";
 			$_ENV['MYSQL_PASS']="d3ntaL@inf0"; 
@@ -53,6 +54,7 @@
 	$_wasabiSecretKey = "fnyL7tFloprpYpke3UKSV1JDPk2b4jzOzRmc2O7q";
 	$_wasabiURLBase = "https://$_wasabiS3endpoint/$_wasabiBucket/";
 	$wasabiS3 = new S3($_wasabiAccessKey, $_wasabiSecretKey, false, $_wasabiS3endpoint, $_wasabiS3Region);
+
 
 	$_cloudinaryURL = 'https://res.cloudinary.com/infodental/image/upload/';
 	$_cloudinaryPath = "storage.infodental.dental/" . $_ENV['NAME'] . "/";

@@ -79,7 +79,7 @@
 			if(isset($_POST['mensagem']) and !empty($_POST['mensagem'])) {
 
 				$sql = new Mysql(true);
-				$sql->consult($_p."whatsapp_mensagens_tipos","*","where id=10");
+				$sql->consult($_p."whatsapp_mensagens_tipos","*","where id=13");
 				if($sql->rows) {
 					$tipo=mysqli_fetch_object($sql->mysqry);
 				}
