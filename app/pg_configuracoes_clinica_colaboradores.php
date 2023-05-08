@@ -18,13 +18,15 @@
 			$rtn=array('success'=>false,'error'=>'Colaborador não encontrado!');
 		} else if($_POST['ajax']=="comissionamentosPersistir") {
 
+
 			$comissionamento='';
 			if(isset($_POST['id_comissionamento']) and is_numeric($_POST['id_comissionamento'])) {
 				$sql->consult($_p."colaboradores_comissionamento","*","where id=".$_POST['id_comissionamento']." and id_colaborador=$colaborador->id and lixo=0");
 				if($sql->rows) {
 					$comissionamento=mysqli_fetch_object($sql->mysqry);
 				}
-			}				
+			}
+				
 
 			$vSQL='';
 			if($_POST['tipo']=="valor") {
@@ -279,18 +281,23 @@
 				$rtn=array('success'=>false,'error'=>'Horário não encontrado!');
 			}
 		} else if($_POST['ajax']=="foto") {
+
+			
 			$sql->update($_p."colaboradores","foto='".addslashes($_POST['foto'])."'","where id=$colaborador->id");
 			$rtn=array('success'=>true);
-		} else if($_POST['ajax']=="rubrica"){
-			//substitui caso exista, cria caso não (com base na primary key)
-			$sql->sintax("REPLACE INTO ".$_p."colaboradores_rubricas (rubrica_png, id_dentista) values ('".addslashes($_POST['canvas-url'])."', $colaborador->id)");
-			$rtn = ["status" => "success", "message" => "rúbrica salva com sucesso"];
+			
+
 		}
+
 		header("Content-type: application/json");
 		echo json_encode($rtn);
 		die();
-	}
+	
 
+		header("Content-Type: application/json");
+		echo json_encode($rtn);
+		die();
+	}
 	include "includes/header.php";
 	include "includes/nav.php";
 	if($usr->tipo!="admin" and !in_array("configuracoes",$_usuariosPermissoes)) {
@@ -319,15 +326,12 @@
 	$_cadeiras=array();
 	$sql->consult($_p."parametros_cadeiras","id,titulo","where lixo=0 order by ordem asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_cadeiras[$x->id]=$x;
-
-	$_rubrica = "";
-	//$sql->consult($_p."colaboradores_rubricas", "rubrica_png", "where id_dentista='".$_GET['edita']."'");
-	//if($sql->rows){$_rubrica = (mysqli_fetch_object($sql->mysqry)->rubrica_png);}
 	
 ?>
 
 	<header class="header">
 		<div class="header__content content">
+
 			<div class="header__inner1">
 				<section class="header-title">
 					<h1>Configurações</h1>
@@ -391,6 +395,7 @@
 						//echo $vSQL;die();
 
 						if(isset($_POST['senha']) and !empty($_POST['senha'])) $vSQL.="senha='".sha1($_POST['senha'])."',";
+				
 
 						// popula $values para persistir nos cmapos
 						$values=$adm->values;
@@ -927,59 +932,6 @@
 									<input type="hidden" name="lat" id="lat" style="display:none;" />
 								</fieldset>
 
-
-								<!--Rúbrica/assinatura -->
-								<fieldset>
-									<section class="sign">
-										<footer class="sign-footer">
-											<form method="post" class="signature">
-												<div class="form sign-form-canva">	
-													<canvas id="canvas" style="width: 100%;">
-														<p> painel de assinatura </p>
-													</canvas>
-													<p>Desenhe sua assinatura nesta caixa:</p>
-
-													<a href="javascript:;" class="button button_lg button_full" id="canvas-clear"><i class="iconify"
-															data-icon="fluent:eraser-24-regular"></i><span>Apagar assinatura</span></a>
-													<a href="javascript:;" class="button button_lg button_main concluir">Concluir</a>
-													<a href="javascript:;" id="teste1" >draw</a>
-												</div>
-											</form>
-										</footer>
-									</section>
-
-									<!--adicionando a funcionalidade de assinatura-->
-									<script type="text/javascript" src="../includes/assinaturas/canvas.js"></script>
-									<script>
-
-										var img = new Image;
-										img.onload = function(){
-											ctx.drawImage(img,0,0); // Or at whatever offset you like
-										};
-										img.src = "<?php echo $_rubrica?>";
-
-										
-										$(".button.concluir").click(() => {
-											$.ajax({
-												type: "POST",
-												data: {		
-													'ajax': "rubrica",
-													'id_colaborador': id_colaborador,
-													'canvas-url': canvas.toDataURL('image/png')
-												},
-												success: (rtn) => {
-													console.log(rtn);
-													if (rtn.status == "success") {
-														swal({ title: "Sucesso!", text: rtn.message, type: "success", confirmButtonColor: "#424242" });
-														location.reload();
-													} else {
-														swal({ title: "Erro!", text: rtn.message, type: "error", confirmButtonColor: "#424242" });
-													}
-												},
-											});
-										});
-									</script>
-								</fieldset>
 								<?php /*<fieldset>
 									<legend>Certificação Digital</legend>
 
@@ -1030,9 +982,11 @@
 									});
 								});
 							</script>
+
 							<div class="js-tabs js-dadosdacontratacao" style="display:none">
 								<fieldset>
 									<legend>Contratação</legend>
+
 									<div class="colunas3">
 										<dl>
 											<dd>
@@ -1073,27 +1027,16 @@
 											<dd><input type="text" name="salario" value="<?php echo $values['salario'];?>" class="money" /></dd>
 										</dl>
 									</div>
+
 									<div class="colunas3 js-box-contratacaoAtiva">
 										<dl>
 											<dt>Carga Horária Semanal</dt>
-											<dd>
-												<?php /*<select name="carga_horaria" class="">
-													<option value="">-</option>
-													<?php
-													foreach($_cargaHoraria as $k => $v) {
-														echo '<option value="'.$k.'"'.(($values['carga_horaria']==$k)?' selected':'').'>'.$v.'</option>';
-													}
-													?>
-												</select>*/?>
-												<?php /*<input type="text" name="carga_horaria" value="<?php echo $values['carga_horaria'];?>" />*/?>
-											</dd>
 											<?php
 											$horarios = new Horarios(array('prefixo'=>$_p));
 											if($horarios->colaboradorCargaHoraria($cnt->id)) {
 												$carga=$horarios->carga;
 											}
 											?>
-
 											<dd><input type="text" value="<?php echo sec_convert($carga,'HF');?>" class="js-carga" disabled /></dd>
 										</dl>
 										<dl class="dl2">
@@ -1102,11 +1045,11 @@
 										</dl>
 									</div>
 
-									
 								</fieldset>
 
 								<fieldset class="js-fieldset-horarios">
 									<legend>Horário de Atendimento</legend>
+
 									<input type="hidden" class="js-id" value="0" />
 
 									<div class="colunas4">
@@ -1123,14 +1066,17 @@
 												</select>
 											</dd>
 										</dl>
+
 										<dl>
 											<dt>Início</dt>
 											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="text" name="inicio" class="js-inicio hora" /></dd>
 										</dl>
+
 										<dl>
 											<dt>Fim</dt>
 											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="text" name="fim" class="js-fim hora" /></dd>
 										</dl>
+
 										<dl>
 											<dt>Cadeira</dt>
 											<dd>
@@ -1819,71 +1765,77 @@
 
 							<div class="js-tabs js-acessoaosistema" style="display:none;">
 
-								<div class="colunas3">
-									
-									<dl>
-										<dt>Email de recuperação</dt>
-										<dd><input type="text" name="email" value="<?php echo $values['email'];?>" /></dd>
+								<fieldset>
+									<legend>Acesso ao Sistema</legend>
+									<div class="colunas3">
+										
+										<dl>
+											<dt>Email de recuperação</dt>
+											<dd><input type="text" name="email" value="<?php echo $values['email'];?>" /></dd>
+										</dl>
+										<?php /*<dl>
+											<dt>Senha</dt>
+											<dd><input type="password" name="senha" value="" /></dd>
+										</dl>	*/?>
+
+										<dl>
+											<dt>&nbsp;</dt>
+											<dd><a href="javascript:;" class="button js-btn-alterarSenha">Alterar Senha</a></dd>
+										</dl>								
+									</div>
+
+									<dl class="dl2">
+										<dd>
+											<label><input type="checkbox" name="permitir_acesso" value="1" class="input-switch" onclick="$(this).prop('checked')==true?$('input[name=email]').addClass('obg'):$('input[name=email]').removeClass('obg');"<?php echo $values['permitir_acesso']==1?" checked":"";?> /> Acesso ao sistema</label>
+											<?php /*<label><input type="checkbox" name="" class="input-switch"> Ativo</label>*/?>
+										</dd>
 									</dl>
-									<?php /*<dl>
-										<dt>Senha</dt>
-										<dd><input type="password" name="senha" value="" /></dd>
-									</dl>	*/?>
+
 
 									<dl>
-										<dt>&nbsp;</dt>
-										<dd><a href="javascript:;" class="button js-btn-alterarSenha">Alterar Senha</a></dd>
-									</dl>								
-								</div>
-								<dl class="dl2">
-									<dd>
-										<label><input type="checkbox" name="permitir_acesso" value="1" class="input-switch" onclick="$(this).prop('checked')==true?$('input[name=email]').addClass('obg'):$('input[name=email]').removeClass('obg');"<?php echo $values['permitir_acesso']==1?" checked":"";?> /> Acesso ao sistema</label>
-										<?php /*<label><input type="checkbox" name="" class="input-switch"> Ativo</label>*/?>
-									</dd>
-								</dl>
+										<dt>Tipo de Usuário</dt>
+										<dd>
+											<label><input type="radio" name="tipo" value="admin"<?php echo $values['tipo']=="admin"?" checked":"";?> /> Administrador</label>
+											<label><input type="radio" name="tipo" value="moderador"<?php echo $values['tipo']=="moderador"?" checked":"";?> /> Moderador</label>
+										</dd>
+									</dl>
 
-
-								<dl>
-									<dt>Tipo de Usuário</dt>
-									<dd>
-										<label><input type="radio" name="tipo" value="admin"<?php echo $values['tipo']=="admin"?" checked":"";?> /> Administrador</label>
-										<label><input type="radio" name="tipo" value="moderador"<?php echo $values['tipo']=="moderador"?" checked":"";?> /> Moderador</label>
-									</dd>
-								</dl>
-
-								<script>
-									const acessoTipo = () => {
-										if($('input[name=tipo]:checked').val()=="moderador") {
-											$('.js-moderador').show();
-										} else {
-											$('.js-moderador').hide();
+									<script>
+										const acessoTipo = () => {
+											if($('input[name=tipo]:checked').val()=="moderador") {
+												$('.js-moderador').show();
+											} else {
+												$('.js-moderador').hide();
+											}
 										}
-									}
-									$(function(){
-										$('input[name=tipo]').click(acessoTipo);
-										acessoTipo();
-										$('.select2').select2();
-									})
-								</script>
-								<?php
-								$_permissoes=[];
-								foreach($_menu as $k=>$v) {
-									if($k=="dashboard") continue;
-									$_permissoes[$k]=$v['title'];
-								}
-								?>
-								<dl class="js-moderador">
-									<dt>Permissões</dt>
-									<dd>
-										<select class="select2" name="acesso_permissoes[]" multiple>
+										$(function(){
+											$('input[name=tipo]').click(acessoTipo);
+											acessoTipo();
+											$('.select2').select2();
+										})
+									</script>
+
+									<dl class="js-moderador">
+
+										<dt>Permissões</dt>
+										<dd>
 											<?php
-											foreach($_permissoes as $k=>$v) {
-												echo '<option value="'.$k.'"'.(in_array($k,$values['acesso_permissoes'])?' selected':'').'>'.$v.'</option>';
+											$_permissoes=[];
+											foreach($_menu as $k=>$v) {
+												if($k=="dashboard") continue;
+												$_permissoes[$k]=$v['title'];
 											}
 											?>
-										</select>
-									</dd>
-								</dl>
+											<select class="select2" name="acesso_permissoes[]" multiple>
+												<?php
+												foreach($_permissoes as $k=>$v) {
+													echo '<option value="'.$k.'"'.(in_array($k,$values['acesso_permissoes'])?' selected':'').'>'.$v.'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+								</fieldset>
 							</div>
 
 
