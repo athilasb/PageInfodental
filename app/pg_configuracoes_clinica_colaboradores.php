@@ -982,9 +982,11 @@
 									});
 								});
 							</script>
+
 							<div class="js-tabs js-dadosdacontratacao" style="display:none">
 								<fieldset>
 									<legend>Contratação</legend>
+
 									<div class="colunas3">
 										<dl>
 											<dd>
@@ -1025,27 +1027,16 @@
 											<dd><input type="text" name="salario" value="<?php echo $values['salario'];?>" class="money" /></dd>
 										</dl>
 									</div>
+
 									<div class="colunas3 js-box-contratacaoAtiva">
 										<dl>
 											<dt>Carga Horária Semanal</dt>
-											<dd>
-												<?php /*<select name="carga_horaria" class="">
-													<option value="">-</option>
-													<?php
-													foreach($_cargaHoraria as $k => $v) {
-														echo '<option value="'.$k.'"'.(($values['carga_horaria']==$k)?' selected':'').'>'.$v.'</option>';
-													}
-													?>
-												</select>*/?>
-												<?php /*<input type="text" name="carga_horaria" value="<?php echo $values['carga_horaria'];?>" />*/?>
-											</dd>
 											<?php
 											$horarios = new Horarios(array('prefixo'=>$_p));
 											if($horarios->colaboradorCargaHoraria($cnt->id)) {
 												$carga=$horarios->carga;
 											}
 											?>
-
 											<dd><input type="text" value="<?php echo sec_convert($carga,'HF');?>" class="js-carga" disabled /></dd>
 										</dl>
 										<dl class="dl2">
@@ -1054,11 +1045,11 @@
 										</dl>
 									</div>
 
-									
 								</fieldset>
 
 								<fieldset class="js-fieldset-horarios">
 									<legend>Horário de Atendimento</legend>
+
 									<input type="hidden" class="js-id" value="0" />
 
 									<div class="colunas4">
@@ -1075,14 +1066,17 @@
 												</select>
 											</dd>
 										</dl>
+
 										<dl>
 											<dt>Início</dt>
 											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="text" name="inicio" class="js-inicio hora" /></dd>
 										</dl>
+
 										<dl>
 											<dt>Fim</dt>
 											<dd class="form-comp"><span><i class="iconify" data-icon="fluent:clock-24-regular"></i></span><input type="text" name="fim" class="js-fim hora" /></dd>
 										</dl>
+
 										<dl>
 											<dt>Cadeira</dt>
 											<dd>
@@ -1771,71 +1765,77 @@
 
 							<div class="js-tabs js-acessoaosistema" style="display:none;">
 
-								<div class="colunas3">
-									
-									<dl>
-										<dt>Email de recuperação</dt>
-										<dd><input type="text" name="email" value="<?php echo $values['email'];?>" /></dd>
+								<fieldset>
+									<legend>Acesso ao Sistema</legend>
+									<div class="colunas3">
+										
+										<dl>
+											<dt>Email de recuperação</dt>
+											<dd><input type="text" name="email" value="<?php echo $values['email'];?>" /></dd>
+										</dl>
+										<?php /*<dl>
+											<dt>Senha</dt>
+											<dd><input type="password" name="senha" value="" /></dd>
+										</dl>	*/?>
+
+										<dl>
+											<dt>&nbsp;</dt>
+											<dd><a href="javascript:;" class="button js-btn-alterarSenha">Alterar Senha</a></dd>
+										</dl>								
+									</div>
+
+									<dl class="dl2">
+										<dd>
+											<label><input type="checkbox" name="permitir_acesso" value="1" class="input-switch" onclick="$(this).prop('checked')==true?$('input[name=email]').addClass('obg'):$('input[name=email]').removeClass('obg');"<?php echo $values['permitir_acesso']==1?" checked":"";?> /> Acesso ao sistema</label>
+											<?php /*<label><input type="checkbox" name="" class="input-switch"> Ativo</label>*/?>
+										</dd>
 									</dl>
-									<?php /*<dl>
-										<dt>Senha</dt>
-										<dd><input type="password" name="senha" value="" /></dd>
-									</dl>	*/?>
+
 
 									<dl>
-										<dt>&nbsp;</dt>
-										<dd><a href="javascript:;" class="button js-btn-alterarSenha">Alterar Senha</a></dd>
-									</dl>								
-								</div>
-								<dl class="dl2">
-									<dd>
-										<label><input type="checkbox" name="permitir_acesso" value="1" class="input-switch" onclick="$(this).prop('checked')==true?$('input[name=email]').addClass('obg'):$('input[name=email]').removeClass('obg');"<?php echo $values['permitir_acesso']==1?" checked":"";?> /> Acesso ao sistema</label>
-										<?php /*<label><input type="checkbox" name="" class="input-switch"> Ativo</label>*/?>
-									</dd>
-								</dl>
+										<dt>Tipo de Usuário</dt>
+										<dd>
+											<label><input type="radio" name="tipo" value="admin"<?php echo $values['tipo']=="admin"?" checked":"";?> /> Administrador</label>
+											<label><input type="radio" name="tipo" value="moderador"<?php echo $values['tipo']=="moderador"?" checked":"";?> /> Moderador</label>
+										</dd>
+									</dl>
 
-
-								<dl>
-									<dt>Tipo de Usuário</dt>
-									<dd>
-										<label><input type="radio" name="tipo" value="admin"<?php echo $values['tipo']=="admin"?" checked":"";?> /> Administrador</label>
-										<label><input type="radio" name="tipo" value="moderador"<?php echo $values['tipo']=="moderador"?" checked":"";?> /> Moderador</label>
-									</dd>
-								</dl>
-
-								<script>
-									const acessoTipo = () => {
-										if($('input[name=tipo]:checked').val()=="moderador") {
-											$('.js-moderador').show();
-										} else {
-											$('.js-moderador').hide();
+									<script>
+										const acessoTipo = () => {
+											if($('input[name=tipo]:checked').val()=="moderador") {
+												$('.js-moderador').show();
+											} else {
+												$('.js-moderador').hide();
+											}
 										}
-									}
-									$(function(){
-										$('input[name=tipo]').click(acessoTipo);
-										acessoTipo();
-										$('.select2').select2();
-									})
-								</script>
-								<?php
-								$_permissoes=[];
-								foreach($_menu as $k=>$v) {
-									if($k=="dashboard") continue;
-									$_permissoes[$k]=$v['title'];
-								}
-								?>
-								<dl class="js-moderador">
-									<dt>Permissões</dt>
-									<dd>
-										<select class="select2" name="acesso_permissoes[]" multiple>
+										$(function(){
+											$('input[name=tipo]').click(acessoTipo);
+											acessoTipo();
+											$('.select2').select2();
+										})
+									</script>
+
+									<dl class="js-moderador">
+
+										<dt>Permissões</dt>
+										<dd>
 											<?php
-											foreach($_permissoes as $k=>$v) {
-												echo '<option value="'.$k.'"'.(in_array($k,$values['acesso_permissoes'])?' selected':'').'>'.$v.'</option>';
+											$_permissoes=[];
+											foreach($_menu as $k=>$v) {
+												if($k=="dashboard") continue;
+												$_permissoes[$k]=$v['title'];
 											}
 											?>
-										</select>
-									</dd>
-								</dl>
+											<select class="select2" name="acesso_permissoes[]" multiple>
+												<?php
+												foreach($_permissoes as $k=>$v) {
+													echo '<option value="'.$k.'"'.(in_array($k,$values['acesso_permissoes'])?' selected':'').'>'.$v.'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+								</fieldset>
 							</div>
 
 
