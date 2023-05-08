@@ -38,6 +38,20 @@
     --min:320px;
 
 }
+
+@media screen and (max-width: 500px){
+    :root{
+        --font-grande:400px !important;
+        --h1:43px !important;
+        --h2:25px !important;
+        --h3:20px !important;
+        --size:18px !important;
+        --size1:16px !important;
+        --size2:12px !important;
+        --size3:10px !important;
+    }
+
+}
 .menu{
     display: flex;
     justify-content: space-between;
