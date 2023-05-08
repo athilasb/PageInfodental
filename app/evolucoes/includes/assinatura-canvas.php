@@ -26,11 +26,11 @@
 						<div class="form sign-form-canva js-passo2">
 							<p class="text-assinatura">Faça a assinatura eletrônica na caixa abaixo:</p>
 
-							<canvas id="canvas" style="width: 100%; border: 1px solid #E7E7E7; box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);" >
+							<canvas id="canvas" style="width: 100%; border: 1px solid #E7E7E7; box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);margin-bottom:35px;" >
 								<p> painel de assinatura </p>
 							</canvas>
 
-							<div class="colunas" style="margin-top:35px; margin-bottom:35px;">
+							<?php /*<div class="colunas" style="margin-top:35px; margin-bottom:35px;">
 								
 								<dl>
 									<dd class="form-comp">
@@ -44,7 +44,7 @@
 										<input placeholder="Data Nascimento" maxlength="10" type="text" class="js-sign-dn js-dn dn"/>
 									</dd>
 								</dl>
-							</div>
+							</div>*/?>
 
 							<center>
 								<a href="javascript:;" data-loading="0" class="button js-sign-concluir bottom-assinar"><span class="iconify" data-icon="mdi:file-sign"></span> Assinar</a>
@@ -195,13 +195,13 @@
 
 				$('.js-sign-concluir').click(function(){
 
-					let cpf = $('.js-sign-cpf').val();
-					let dn = $('.js-sign-dn').val();
+					//let cpf = $('.js-sign-cpf').val();
+					//let dn = $('.js-sign-dn').val();
 
 					let erro = '';
 					if(assinado<=10) erro='Faça uma assinatura para continuar';
-					else if(cpf.length==0) erro='Digite o CPF';
-					else if(dn.length==0)  erro='Digite a Data de Nascimento';
+					//else if(cpf.length==0) erro='Digite o CPF';
+					//else if(dn.length==0)  erro='Digite a Data de Nascimento';
 
 					if(erro.length>0) {
 						swal({ title: "Erro!", text: erro, type: "error", confirmButtonColor: "#424242" });
@@ -224,114 +224,5 @@
 				})
 			});
 
-			var data_loading = document.getElementsByClassName("concluir")[0]; //recebendo undefined ao usar o jquery para pegar o atributo	
-			var btn = $(".concluir"); 
-
-			btn.click(() => {
-				if (data_loading.getAttribute('data-loading') == 0) {
-					let cpf;
-					let data;
-					let aux = $('.data')[0].value;
-					data_loading.setAttribute('data-loading', 1);
-
-					aux = aux.split('/');
-					if (aux.length != 3) {
-					/*	swal({ title: "Atenção!", 
-									   text: "campo data está vazio ou incompleto", 
-									   type: "warning", 
-									   confirmButtonColor: "#424242" });*/
-                                       alert("campo data vazio");
-						return;
-					}
-
-					cpf = $('.cpf')[0].value.replaceAll('.', '').replace('-', '');
-					data = aux[2] + '-' + aux[1] + '-' + aux[0];
-
-					if (cpf == '') {
-					//	swal({ title: "Atenção!", 
-					//				   text: "campo cpf vazio", 
-					//				   type: "warning", 
-					//				   confirmButtonColor: "#424242" });
-                    alert("campo cpf vazio");
-
-						return;
-					}
-
-			        //swal({ title: "Atenção!", 
-			        //				   text: "Aguarde enquanto processamos a assinatura", 
-			        //				   type: "warning", 
-			        //				   confirmButtonColor: "#424242" });
-                    alert("aguarde");
-
-					navigator.geolocation.getCurrentPosition(
-						(pos) => {
-							$.ajax({
-								type: "POST",
-								data: {
-									'conf': true,
-									'cpf_ent': cpf,
-									'data': data,
-									'canvas-url': canvas.toDataURL('image/png'),
-									'latitude': pos.coords.latitude,
-									'longitude': pos.coords.longitude,
-									'aprox': pos.coords.accuracy,
-									'user_agent': navigator.userAgent
-								},
-								async: true,
-								dataType: 'JSON',
-								success: function (rtn) {
-
-									console.log(rtn);
-									if (rtn.status == "success") {
-										//swal({ title: "Sucesso!", text: rtn.message, type: "success", confirmButtonColor: "#424242" });
-										btn.attr('data-loading', 2);
-										location.reload();
-                                        alert("assinatura concluida");
-
-
-									} else {
-										//swal({ title: "Erro!", text: rtn.message, type: "error", confirmButtonColor: "#424242" });
-                                        alert("assinatura não");
-
-									}
-								},
-							});
-						},
-						(err) => {
-							console.log(`ERROR(${err.code}): ${err.message}`);
-							if (err.code == 1) {
-								//swal({ title: "Erro!", 
-								//	   text: "Você precisa concordar com a coleta da localização", 
-								//	   type: "error", 
-								//	   confirmButtonColor: "#424242" });
-                                alert("concordar com a coleta de dados");
-							} else {
-								//swal({ title: "Erro!", 
-								//	   text: "Algum erro desconhecido foi encontrado", 
-								//	   type: "error", 
-								//	   confirmButtonColor: "#424242" });
-                                alert("erro desconhecido");
-							}
-						},
-						{
-							enableHighAccuracy: true,
-							timeout: Infinity,
-							maximumAge: 0
-						}
-					);
-				} else if (data_loading.getAttribute('data-loading') == 2) {
-					//swal({ title: "Atenção!", 
-					//				   text: "Esse documento já foi assinado", 
-					//				   type: "warning", 
-					//				   confirmButtonColor: "#424242" });
-                    alert("você já clickou no botão");
-				} else {
-					//swal({ title: "Atenção!", 
-					//				   text: "Assinatura está sendo processada", 
-					//				   type: "warning", 
-					//				   confirmButtonColor: "#424242" });
-                    alert("assinatura sendo processada");
-				}
-			})
 		</script>
 	</section>

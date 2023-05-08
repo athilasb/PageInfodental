@@ -67,14 +67,22 @@ class Mysql {
 		if(mysqli_affected_rows($this->connecting)<0) $this->resul="erro";
 		else $this->resul="ok";
 	}
+
+	/**
+	 * adiciona os valores $ms_values na tabela $ms_table.
+	 * grava o id da linha inserida no banco na variavel ulid
+	 * 
+	 * @param string $ms_table	nome da tabela
+	 * @param string $ms_values nome das colunas e valores a serem inseridos 
+	 * @return void 
+	 */
 	function add($ms_table,$ms_values) {
-
-
 		$inserting="INSERT INTO $ms_table SET $ms_values";
 		$qry=mysqli_query($this->connecting, $inserting) or die(mysqli_error($this->connecting));
 		if(mysqli_affected_rows($this->connecting)==0) $this->resul="erro";
 		$this->ulid=mysqli_insert_id($this->connecting);
 	}
+
 	function consult($ms_table,$ms_fields,$ms_arg) {
 		
 		if(isset($this->bd_info[$ms_table])) { 
