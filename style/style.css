@@ -30,6 +30,7 @@
     
     /*font-weight*/
     --weight:700 ;
+    --weight0:600 ;
     --weight1:400 ;
 
     /*Base das dimensões*/
@@ -88,7 +89,7 @@
     color: var(--verde);
 }
 
-.main{
+section{
     padding: 0px 45px;
 }
 
@@ -103,24 +104,37 @@
     width: 100%;
     height: 200px;
   }
-
-  .swiper-slide {
+.titulo-clintes{
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: var(--weight1);
+    font-size: var(--size);
+    line-height: 23px;
+    color: #B3B3B3;
+    text-align: center;
+    margin-top: 90px;
+    margin-bottom: 30px;
+}
+  .swiper-slide-1 {
     text-align: center;
     font-size: 18px;
     background: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+
   }
 
-  .swiper-slide {
+  .swiper-slide-1 {
     width: 200px; /* largura do contêiner pai */
     height: 200px; /* altura do contêiner pai */
   }
   
-  .swiper-slide div {
+  .swiper-slide-1 div {
     width: 100%; /* largura do objeto de plano de fundo */
     height: 100%; /* altura do objeto de plano de fundo */
+  }
+
+  .nossos-clientes-img .swiper-slide{
+    width: 60px !important;
+
   }
 
 
@@ -142,6 +156,8 @@
   .margin-30{margin-top: 30px;}
   .margin-20{margin-top: 20px;}
   .margin-10{margin-top: 10px;}
+  .space-box{padding: 30px 45px 10px 50px;}
+  .space-box1{padding: 0px 45px 10px 50px;}
 
   .gird2{
     display: grid;
@@ -264,9 +280,7 @@
 
   }
 
-  .dud{
-    color:var(--cinza);
-  }
+
   
 
 .display-flex-center{
@@ -290,10 +304,14 @@
     background:#9aa4a4;
     border-radius: 10px;
     text-align: center;
-    padding: 50px;
     max-width: 350px;
     height: 314px;
     transition: 0.5s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    flex-direction: column;
 }
 
 .box:hover{
@@ -308,6 +326,7 @@
     font-size: var(--size);
     line-height: 27px;
     opacity: 1;
+    padding: 0px 50px 0px 50px;
 }
 .box .sub-Titulo{
 font-family: 'Montserrat';
@@ -316,6 +335,7 @@ font-weight: var(--weight1);
 font-size: var(--size2);
 line-height: 20px;
 color: var(--branco);
+padding: 0px 50px 10px 50px;
 }
 .box input[type="text"]{
     background: transparent;
@@ -367,6 +387,92 @@ color: var(--branco);
     color: var(--cinza2);
 
 }
+.text-quem-somos{
+    max-width: 450px;
+    text-align: left;
+}
+.img-quem-somos{
+    max-width: 472px;
+}
+.aspas-quem-somos{
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 40px;
+    line-height: 18px;
+    letter-spacing: 3px;
+    color: #B3B3B3;
+    height: 36px;
+    margin-top: 10px;
+    margin-bottom: -25px;
+}
+@media screen and (min-width: 1048px){
+    .posicao-sticky{
+        position: sticky;
+        top: 110px;
+    }
+    .nossos-clientes-img{
+        display: flex;
+        justify-content: center;
+    }
+
+}
+
+.text-quem-somos .comentarios b{
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: var(--weight0);
+    font-size: var(--size1);
+    line-height: 20px;
+    color: #344848;
+
+}
+
+.text-quem-somos .comentarios{
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: var(--weight1);
+    font-size: var(--size1);
+    line-height: 20px;
+    color: var(--verde);
+    margin-top: 50px;
+    padding-bottom: 50px;
+
+}
+.border-bottom{
+    border-bottom: solid 1px var(--cinza2); ;
+}
+.sub-titulo{
+font-family: 'Montserrat';
+font-style: normal;
+font-weight: var(--weight);
+font-size: var(--h2);
+line-height: 45px;
+color: #344848;
+}
+
+.nossos-clientes-img img{
+    width: 60px;
+    height: 60px;
+}
+.swiper-slide{
+    margin-right: 0px !important;
+}
+
+@media screen and (max-width: 1048px) {
+.media-column{
+    flex-direction: column;
+    justify-content: space-between;
+}
+.img-quem-somos{
+    max-width: 100%;
+}
+.text-quem-somos , .posicao-sticky{
+    margin: auto;
+}
+    
+}
+
 
 @media screen and (max-width: 768px) {
     
@@ -421,28 +527,30 @@ color: var(--branco);
     .header-title{
         width: auto;
     }
-    .box{
-        width: auto;
-        min-width: 150px;
-        padding: 25px;
-    }
+
     .header-title{
         font-size: 25px;
     }
     .botao-dourado{
         padding: 0px 30px;
+        width: auto;
     }
 
-    .main {
+    .section {
         padding: 0px 15px;
     }
-    .center-wrap,.block{
+    .block{
         display: block;
     }
     .box{
         margin: auto;
-        margin-top: 10%;
+        margin-top: 50px;
+        min-width: 150px;
+        max-width: 440px;
+        text-align: left;
+        align-items: flex-start;
     }
+    
     .media-margin{
         margin-top: 90px;
     }
