@@ -505,7 +505,7 @@
 						}
 					?>
 
-					<div class="box" style="margin-top:35px;">
+					<div class="" style="margin-top:35px;">
 					<div class="filter">
 						<div class="filter-group">
 							<div class="filter-title" >
@@ -514,80 +514,118 @@
 						</div>
 					</div>
 					<!--vitinho-->
-						<div class="grid form  ">
-								<div class="list-agendamentos">
-									<div class="colunas3">
-										<dl>
-											<b>Retornar em:</b>
+						<div class="grid form  " >
+							<div class="colunas2">
+								<div class="box" style="overflow: auto; height: 300px;">
+								<table class="list-agendamentos" style="margin: 20px;">
+									<tbody>
+										<tr>
+										<td colspan="5"><b>Retornar em:</b> <br>
 											2 dias
-										</dl>
-										<dl>
-											<b>Duração:</b> 
+										</td>
+										<td colspan="2">
+											<b>Duração:</b> <br>
 											30 min
-										</dl>
-										<dl>
-											<b>Profissional:</b>
+										</td>
+										<td colspan="5">
+											<b>Profissional:</b> <br>
 											Dr. Luciano
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl>
-											<b>Necessita Laboratório:</b> 
+										</td>
+										</tr>
+										<tr>
+										<td colspan="5">
+											<b>Necessita Laboratório:</b> <br>
 											Não
-										</dl>
-										<dl>
-											<b>Necessita imagem:</b>
+										</td>
+										<td colspan="10" style="margin-top: 30px;">
+											<b>Necessita imagem:</b> <br>
 											Não
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl>
-											<b>Obs.:</b> </br>
+										</td>
+										</tr>
+										<tr>
+										<td colspan="2">
+											<b>Obs.:</b> <br>
 											Teste
-										</dl>
-										<dl>
-											Criado por </br>
+										</td>
+										<td colspan="10">
+											Criado por <br>
 											<b>Caio Lucena às 09/05/2023 12:45</b>
-										</dl>
-									</div>
-								</div> 
-								<div class="list-agendamentos">
-									<div class="colunas3">
-										<dl>
-											<b>Retornar em:</b>
+										</td>
+										</tr>
+									</tbody>
+								</table>
+								<table class="list-agendamentos" style="margin: 20px;">
+									<tbody>
+										<tr>
+										<td colspan="5"><b>Retornar em:</b> <br>
 											2 dias
-										</dl>
-										<dl>
-											<b>Duração:</b> 
+										</td>
+										<td colspan="2">
+											<b>Duração:</b> <br>
 											30 min
-										</dl>
-										<dl>
-											<b>Profissional:</b>
+										</td>
+										<td colspan="5">
+											<b>Profissional:</b> <br>
 											Dr. Luciano
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl>
-											<b>Necessita Laboratório:</b> 
+										</td>
+										</tr>
+										<tr>
+										<td colspan="5">
+											<b>Necessita Laboratório:</b> <br>
 											Não
-										</dl>
-										<dl>
-											<b>Necessita imagem:</b>
+										</td>
+										<td colspan="10" style="margin-top: 30px;">
+											<b>Necessita imagem:</b> <br>
 											Não
-										</dl>
-									</div>
-									<div class="colunas3">
-										<dl>
-											<b>Obs.:</b> </br>
+										</td>
+										</tr>
+										<tr>
+										<td colspan="2">
+											<b>Obs.:</b> <br>
 											Teste
-										</dl>
-										<dl>
-											Criado por </br>
+										</td>
+										<td colspan="10">
+											Criado por <br>
 											<b>Caio Lucena às 09/05/2023 12:45</b>
-										</dl>
-									</div>
-								</div> 
-						</table>
+										</td>
+										</tr>
+									</tbody>
+								</table>
+
+									
+								</div>
+								<div>
+								<div class="list-toggle-com box">
+											<header>
+												<h1>Correções</h1>
+											</header>
+											<article class="js-errata-item">
+											<header>
+												<p>Caio Lucena UX/UI</p>
+												<p>09/05/2023 12:46</p>
+											</header>
+											<article>
+												<p>teste</p>
+											</article>
+											</article>
+												<article class="js-errata-item">
+											<header>
+												<p>Caio Lucena UX/UI</p>
+												<p>09/05/2023 12:46</p>
+											</header>
+											<article>
+												<p>teste</p>
+											</article>
+											</article>
+											<dl class="js-errata-item">
+												<textarea style="height: 50px;" class="js-errata-texto-318"></textarea>
+												<button style="margin-top: 15px;"  class="button button_main" data-loading="0" style="float: right;" data-id_evolucao="318"> <span class="iconify" data-icon="fluent:add-circle-24-regular" style="color: #fecea2;"></span> Adicionar</button>
+											</dl>
+											
+											
+										</div>
+								</div>
+							</div>
 						<!-- <div style="height:auto;" class="js-proximoAgendamento">
 							
 							<b>Retornar em:</b><br /> <?php echo $proximaConsulta->retorno;?> dias<br /><br />
