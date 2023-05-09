@@ -515,84 +515,86 @@
 					</div>
 					<!--vitinho-->
 						<div class="grid form  " >
-							<div class="colunas2">
+							<div class="colunas2" style="grid-template-columns: 2fr 1fr;">
 								<div class="box" style="overflow: auto; height: 300px;">
-								<table class="list-agendamentos" style="margin: 20px;">
-									<tbody>
-										<tr>
-										<td colspan="5"><b>Retornar em:</b> <br>
-											2 dias
-										</td>
-										<td colspan="2">
-											<b>Duração:</b> <br>
-											30 min
-										</td>
-										<td colspan="5">
-											<b>Profissional:</b> <br>
-											Dr. Luciano
-										</td>
-										</tr>
-										<tr>
-										<td colspan="5">
-											<b>Necessita Laboratório:</b> <br>
-											Não
-										</td>
-										<td colspan="10" style="margin-top: 30px;">
-											<b>Necessita imagem:</b> <br>
-											Não
-										</td>
-										</tr>
-										<tr>
-										<td colspan="2">
-											<b>Obs.:</b> <br>
-											Teste
-										</td>
-										<td colspan="10">
-											Criado por <br>
-											<b>Caio Lucena às 09/05/2023 12:45</b>
-										</td>
-										</tr>
-									</tbody>
-								</table>
-								<table class="list-agendamentos" style="margin: 20px;">
-									<tbody>
-										<tr>
-										<td colspan="5"><b>Retornar em:</b> <br>
-											2 dias
-										</td>
-										<td colspan="2">
-											<b>Duração:</b> <br>
-											30 min
-										</td>
-										<td colspan="5">
-											<b>Profissional:</b> <br>
-											Dr. Luciano
-										</td>
-										</tr>
-										<tr>
-										<td colspan="5">
-											<b>Necessita Laboratório:</b> <br>
-											Não
-										</td>
-										<td colspan="10" style="margin-top: 30px;">
-											<b>Necessita imagem:</b> <br>
-											Não
-										</td>
-										</tr>
-										<tr>
-										<td colspan="2">
-											<b>Obs.:</b> <br>
-											Teste
-										</td>
-										<td colspan="10">
-											Criado por <br>
-											<b>Caio Lucena às 09/05/2023 12:45</b>
-										</td>
-										</tr>
-									</tbody>
-								</table>
-
-									
+									<table class="list-agendamentos" style="margin: 20px;">
+										<tbody>
+											<tr>
+											<td><b>Retornar em:</b> <br>
+												2 dias
+											</td>
+											<td>
+												<b>Duração:</b> <br>
+												30 min
+											</td>
+											<td>
+												<b>Profissional:</b> <br>
+												Dr. Luciano
+											</td>
+											</tr>
+											<tr>
+											<td>
+												<b>Necessita Laboratório:</b> <br>
+												Não
+											</td>
+											<td></td>
+											<td style="margin-top: 30px;">
+												<b>Necessita imagem:</b> <br>
+												Não
+											</td>
+											</tr>
+											<tr>
+											<td>
+												<b>Obs.:</b> <br>
+												Teste
+											</td>
+											<td></td>
+											<td>
+												Criado por <br>
+												<b>Caio Lucena às 09/05/2023 12:45</b>
+											</td>
+											</tr>
+										</tbody>
+									</table>
+									<table class="list-agendamentos" style="margin: 20px;">
+										<tbody>
+											<tr>
+											<td><b>Retornar em:</b> <br>
+												2 dias
+											</td>
+											<td>
+												<b>Duração:</b> <br>
+												30 min
+											</td>
+											<td>
+												<b>Profissional:</b> <br>
+												Dr. Luciano
+											</td>
+											</tr>
+											<tr>
+											<td>
+												<b>Necessita Laboratório:</b> <br>
+												Não
+											</td>
+											<td></td>
+											<td style="margin-top: 30px;">
+												<b>Necessita imagem:</b> <br>
+												Não
+											</td>
+											</tr>
+											<tr>
+											<td>
+												<b>Obs.:</b> <br>
+												Teste
+											</td>
+											<td></td>
+											<td>
+												Criado por <br>
+												<b>Caio Lucena às 09/05/2023 12:45</b>
+											</td>
+											</tr>
+										</tbody>
+									</table>
 								</div>
 								<div>
 								<div class="list-toggle-com box">
