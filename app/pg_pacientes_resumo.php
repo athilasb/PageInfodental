@@ -518,25 +518,25 @@
 								<div class="list-agendamentos">
 									<div class="colunas3">
 										<dl>
-											<b>Retornar em:</b> </br>
+											<b>Retornar em:</b>
 											2 dias
 										</dl>
 										<dl>
-											<b>Duração:</b> </br>
+											<b>Duração:</b> 
 											30 min
 										</dl>
 										<dl>
-											<b>Profissional:</b> </br>
+											<b>Profissional:</b>
 											Dr. Luciano
 										</dl>
 									</div>
 									<div class="colunas3">
 										<dl>
-											<b>Necessita Laboratório:</b> </br>
+											<b>Necessita Laboratório:</b> 
 											Não
 										</dl>
 										<dl>
-											<b>Necessita imagem:</b> </br>
+											<b>Necessita imagem:</b>
 											Não
 										</dl>
 									</div>
@@ -554,25 +554,25 @@
 								<div class="list-agendamentos">
 									<div class="colunas3">
 										<dl>
-											<b>Retornar em:</b> </br>
+											<b>Retornar em:</b>
 											2 dias
 										</dl>
 										<dl>
-											<b>Duração:</b> </br>
+											<b>Duração:</b> 
 											30 min
 										</dl>
 										<dl>
-											<b>Profissional:</b> </br>
+											<b>Profissional:</b>
 											Dr. Luciano
 										</dl>
 									</div>
 									<div class="colunas3">
 										<dl>
-											<b>Necessita Laboratório:</b> </br>
+											<b>Necessita Laboratório:</b> 
 											Não
 										</dl>
 										<dl>
-											<b>Necessita imagem:</b> </br>
+											<b>Necessita imagem:</b>
 											Não
 										</dl>
 									</div>
