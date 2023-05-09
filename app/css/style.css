@@ -1070,3 +1070,6 @@ input[type="radio"]:checked {background: var(--cinza5);}
 	width: 50px;
 	text-align: center;
 }
+.list-agendamentos{
+	display: block; background: #FFFFFF; border: 1px solid #CDCDCD; border-radius: 5px; padding: 10px;
+}

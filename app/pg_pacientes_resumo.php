@@ -513,93 +513,81 @@
 							</div>
 						</div>
 					</div>
-
-					<style>
-						.list-agendamentos{
-							display: block; background: #FFFFFF; border: 1px solid #CDCDCD; border-radius: 5px; padding: 10px; margin-top: 30px;
-						}
-
-					</style>
 					<!--vitinho-->
-						<table class="list-agendamentos">
-							<tbody>
-								<tr>
-									<tr>
-										<td><b>Retornar em:</b> </br>
-										2 dias
-									</td>
-										<td>
+						<div class="grid form  ">
+								<div class="list-agendamentos">
+									<div class="colunas3">
+										<dl>
+											<b>Retornar em:</b> </br>
+											2 dias
+										</dl>
+										<dl>
 											<b>Duração:</b> </br>
 											30 min
-										</td>
-										<td>
+										</dl>
+										<dl>
 											<b>Profissional:</b> </br>
 											Dr. Luciano
-										</td>
-									</tr>
-									<tr>
-										<td>
+										</dl>
+									</div>
+									<div class="colunas3">
+										<dl>
 											<b>Necessita Laboratório:</b> </br>
 											Não
-										</td>
-										<td>
+										</dl>
+										<dl>
 											<b>Necessita imagem:</b> </br>
 											Não
-										</td>
-									</tr>
-									<tr>
-										<td>
+										</dl>
+									</div>
+									<div class="colunas3">
+										<dl>
 											<b>Obs.:</b> </br>
 											Teste
-										</td>
-										<td>
+										</dl>
+										<dl>
 											Criado por </br>
 											<b>Caio Lucena às 09/05/2023 12:45</b>
-										</td>
-									</tr>
-								</tr> 
-							</tbody>
-						</table>
-						<table class="list-agendamentos">
-							<tbody>
-								<tr>
-									<tr>
-										<td><b>Retornar em:</b> </br>
-										2 dias
-									</td>
-										<td>
+										</dl>
+									</div>
+								</div> 
+								<div class="list-agendamentos">
+									<div class="colunas3">
+										<dl>
+											<b>Retornar em:</b> </br>
+											2 dias
+										</dl>
+										<dl>
 											<b>Duração:</b> </br>
 											30 min
-										</td>
-										<td>
+										</dl>
+										<dl>
 											<b>Profissional:</b> </br>
 											Dr. Luciano
-										</td>
-									</tr>
-									<tr>
-										<td>
+										</dl>
+									</div>
+									<div class="colunas3">
+										<dl>
 											<b>Necessita Laboratório:</b> </br>
 											Não
-										</td>
-										<td>
+										</dl>
+										<dl>
 											<b>Necessita imagem:</b> </br>
 											Não
-										</td>
-									</tr>
-									<tr>
-										<td>
+										</dl>
+									</div>
+									<div class="colunas3">
+										<dl>
 											<b>Obs.:</b> </br>
 											Teste
-										</td>
-										<td>
+										</dl>
+										<dl>
 											Criado por </br>
 											<b>Caio Lucena às 09/05/2023 12:45</b>
-										</td>
-									</tr>
-								</tr> 
-							</tbody>
+										</dl>
+									</div>
+								</div> 
 						</table>
-
 						<!-- <div style="height:auto;" class="js-proximoAgendamento">
 							
 							<b>Retornar em:</b><br /> <?php echo $proximaConsulta->retorno;?> dias<br /><br />
