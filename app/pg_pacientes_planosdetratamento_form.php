@@ -1863,7 +1863,16 @@
 						</fieldset>
 						<fieldset > 
 							<legend>Procedimentos</legend>
-							<?php include "includes/svg/arcada_dentaria.php"; ?>
+							<div style="align-items: center; justify-content: end; display: flex;">	
+							<a style="margin: 5px;" class="button  active" href="javascript:;" id="js-permanentes" href=""> Permanentes</a>
+							<a class="button" href="javascript:;" id="js-deciduos" href=""> Decíduos</a>
+							</div>
+							<div class="permanentes" style="display:block;">		
+							<?php include "includes/svg/arcada_dentaria_permanentes.php"; ?>
+							</div>	
+							<div class="deciduos" style="display:none;">		
+							<?php include "includes/svg/arcada_dentaria_deciduos.php"; ?>
+							</div>	
 						</fieldset>
 
 						<fieldset >
@@ -1965,6 +1974,22 @@ $(".js-desenhar").click( ()=>{
 	}
 })
 });
+
+$("#js-permanentes").click(()=>{
+	$('#js-permanentes').addClass('active');
+	$('#js-deciduos').removeClass('active');
+	$('.permanentes').slideDown();
+	$('.deciduos').slideUp();
+
+})
+
+$("#js-deciduos").click(()=>{
+	$('#js-deciduos').addClass('active');
+	$('#js-permanentes').removeClass('active');
+	$('.permanentes').slideUp();
+	$('.deciduos').slideDown();
+
+})
 
 </script>
 
