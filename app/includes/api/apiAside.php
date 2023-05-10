@@ -19,6 +19,11 @@
 		$_tableTags=$_p."parametros_tags";
 		$_tableChecklist=$_p."agenda_checklist";
 
+
+		$_usuarios=[];
+		$sql->consult($_p."colaboradores","id,nome","");
+		while($x=mysqli_fetch_object($sql->mysqry)) $_usuarios[$x->id]=$x;
+
 		# Agenda
 			if($_POST['ajax']=="agendamentosProfissionais") {
 
@@ -33,7 +38,7 @@
 				$_tags=array();
 				$sql->consult($_p."parametros_tags","*","WHERE lixo=0 order by titulo asc");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
-					$_tags[$x->id]=$x;
+					$_tags[$x->id]=array('id'=>$x->id,'titulo'=>utf8_encode($x->titulo));
 				}
 				
 				$data = (isset($_POST['data']) and isset($_POST['data']))?invDate($_POST['data']):'';
@@ -259,10 +264,19 @@
 							$ft=$_wasabiURL."arqs/clientes/".$paciente->id.".jpg";
 						}
 
+						$agendouProfissional="Desconhecido";
 
+						if(isset($_usuarios[$cnt->id_usuario])) {
+
+							$aux = explode(" ",utf8_encode($_usuarios[$cnt->id_usuario]->nome));
+							$pnome=$aux[0];
+							$unome=$aux[count($aux)-1];
+
+							$agendouProfissional=$pnome." ".$unome;
+						} 
 
 						$data = array('id'=>$cnt->id,
-										'agendou_profissional'=>isset($_usuarios[$cnt->id_usuario])?utf8_encode($_usuarios[$cnt->id_usuario]->nome):"-",
+										'agendou_profissional'=>$agendouProfissional,
 										'agendou_dias'=>(int)$dias,
 										'agendaPessoal'=>0,
 										'ft'=>$ft,
@@ -624,7 +638,7 @@
 
 						$agendaAlterado=invDate($_POST['agenda_data'])." ".$_POST['agenda_hora'].":00";
 
-						if(strtotime($agenda->agenda_data)!=strtotime($agendaAlterado)) {
+						if(strtotime($agenda->agenda_data)!=strtotime($agendaAlterado) and ($agenda->id_status==2 or $idStatusNovo==2)) {
 							$vSQLHistorico="data=now(),
 								id_usuario=$usr->id,
 								evento='agendaHorario',
@@ -643,32 +657,106 @@
 
 							// altera campo agenda_alteracao_data para enviar a notificacao de alteração de horário
 							$sql->update($_p."agenda","agenda_alteracao_data=now(),agenda_alteracao_id_whatsapp=0","where id=$agenda->id");
+
+							$attr=array('id_tipo'=>5,
+										'id_paciente'=>$agenda->id_paciente,
+										'id_agenda'=>$agenda->id);
+							//var_dump($attr);
+							if($infozap->adicionaNaFila($attr)) $wts=1;   
+
+							// se virou para confirmado, envia wts para dentista
+							$sql->consult($_p."agenda","*","where id=$agenda->id");
+							if($sql->rows) {
+								$agendaNew=mysqli_fetch_object($sql->mysqry); // registro de agenda atualizado
+
+								if(!empty($agendaNew->profissionais)) {
+
+									$profissionaisIds=array();
+									$auxProfissionais = explode(",",$agenda->profissionais);
+										foreach($auxProfissionais as $idProfissional) {
+										if(!empty($idProfissional) and is_numeric($idProfissional)) {
+											$profissionaisIds[]=$idProfissional;
+										}
+									}
+								}
+								if(count($profissionaisIds)>0) {
+									$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisIds).") and whatsapp_notificacoes=1 and lixo=0");
+									while($x=mysqli_fetch_object($sql->mysqry)) {
+										if(!empty($x->telefone1)) {
+											$attr=array('id_tipo'=>7,
+														'id_paciente'=>$agendaNew->id_paciente,
+														'id_profissional'=>$x->id,
+														'id_agenda'=>$agendaNew->id);
+
+											if($infozap->adicionaNaFila($attr)) {  
+												$wts=1;
+											} 
+										}
+									}
+								}
+
+							}
 						}
 
 						// veririca se desmarcou
 						$wts=0;
-						//if($agenda->id_status!=$idStatusNovo) {
 							
-							// Se Desmarcou
-							if($idStatusNovo==4) {
-								$attr=array('id_tipo'=>3,
-											'id_paciente'=>$agenda->id_paciente,
-											'id_agenda'=>$agenda->id);
-								//var_dump($attr);
-								//if($infozap->adicionaNaFila($attr)) $wts=1;   // COMENTEI AQUI PARA CORRIGIR O ERRO DE MUDANÇA DE ESTATUS
+						// Se Desmarcou
+						if($idStatusNovo==4) {
+							$attr=array('id_tipo'=>3,
+										'id_paciente'=>$agenda->id_paciente,
+										'id_agenda'=>$agenda->id);
+							//var_dump($attr);
+							if($infozap->adicionaNaFila($attr)) $wts=1;   
 
-							} 
-							// Se Confirmou
-							else if($idStatusNovo==2) {
-								// se virou para confirmado, envia wts para dentista
-								$sql->consult($_p."agenda","*","where id=$agenda->id and id_status=2");
-								if($sql->rows) {
-									$agendaNew=mysqli_fetch_object($sql->mysqry); // registro de agenda atualizado
+							 // se virou para desmarcado, envia wts para dentista
+							$sql->consult($_p."agenda","*","where id=$agenda->id and id_status=4");
 
-									if(!empty($agendaNew->profissionais)) {
+							if($sql->rows) {
+								$agendaNew=mysqli_fetch_object($sql->mysqry); // registro de agenda atualizado
 
-										$profissionaisIds=array();
-										$auxProfissionais = explode(",",$agenda->profissionais);
+								if(!empty($agendaNew->profissionais)) {
+
+									$profissionaisIds=array();
+									$auxProfissionais = explode(",",$agenda->profissionais);
+									foreach($auxProfissionais as $idProfissional) {
+										if(!empty($idProfissional) and is_numeric($idProfissional)) {
+											$profissionaisIds[]=$idProfissional;
+										}
+									}
+
+
+									if(count($profissionaisIds)>0) {
+										$sql->consult($_p."colaboradores","*","where id IN (".implode(",",$profissionaisIds).") and whatsapp_notificacoes=1 and lixo=0");
+										while($x=mysqli_fetch_object($sql->mysqry)) {
+											if(!empty($x->telefone1)) {
+												$attr=array('id_tipo'=>8,
+															'id_paciente'=>$agendaNew->id_paciente,
+															'id_profissional'=>$x->id,
+															'id_agenda'=>$agendaNew->id);
+
+												if($infozap->adicionaNaFila($attr)) {  
+													$wts=1;
+												}
+											}
+										}
+									}
+								}
+							}
+						
+
+						} 
+						// Se Confirmou
+						else if($idStatusNovo==2) {
+							// se virou para confirmado, envia wts para dentista
+							$sql->consult($_p."agenda","*","where id=$agenda->id and id_status=2");
+							if($sql->rows) {
+								$agendaNew=mysqli_fetch_object($sql->mysqry); // registro de agenda atualizado
+
+								if(!empty($agendaNew->profissionais)) {
+
+									$profissionaisIds=array();
+									$auxProfissionais = explode(",",$agenda->profissionais);
 									foreach($auxProfissionais as $idProfissional) {
 										if(!empty($idProfissional) and is_numeric($idProfissional)) {
 											$profissionaisIds[]=$idProfissional;
@@ -684,16 +772,17 @@
 															'id_profissional'=>$x->id,
 															'id_agenda'=>$agendaNew->id);
 									
-												//if($infozap->adicionaNaFila($attr)) {  // COMENTEI AQUI PARA CORRIGIR O ERRO DE MUDANÇA DE ESTATUS
-												//	$wts=1;
-												//}
+												if($infozap->adicionaNaFila($attr)) {  
+													$wts=1;
+												}
 											}
 										}
 									}
-
 								}
+
 							}
 						}
+						
 					}
 
 
@@ -3118,60 +3207,6 @@
 	# JS All Asides
 ?>
 	<script type="text/javascript" src="js/aside.funcoes.js"></script>
-	<script type="text/javascript">
-			/*const horarioDisponivel = (id_agenda,obj) => {
-				let agenda_data = obj.find('input[name=agenda_data]').val();
-				let agenda_duracao = obj.find('select[name=agenda_duracao]').val();
-				let id_cadeira = obj.find('select[name=id_cadeira]').val();
-				let id_profissional = obj.find('select.js-select-profissionais').val();
-				let agenda_horaObj = obj.find('select[name=agenda_hora]');
-
-
-				agenda_horaObj.find('option').remove();
-				agenda_horaObj.append('<option value="">Carregando...</option>');
-
-				obj = { agenda_data, agenda_duracao, id_cadeira, id_profissional }
-
-				if(agenda_data.length>0 && agenda_duracao.length>0 && id_profissional.length>0 && id_cadeira.length>0) {
-					let data = `ajax=asRelacionamentoPacienteHorarios&agenda_data=${agenda_data}&agenda_duracao=${agenda_duracao}&id_profissional=${id_profissional}&id_cadeira=${id_cadeira}&id_agenda=${id_agenda}`;
-
-					data = {
-						'ajax':'asRelacionamentoPacienteHorarios',
-						'agenda_data':agenda_data,
-						'agenda_duracao':agenda_duracao,
-						'id_profissional':id_profissional,
-						'id_cadeira':id_cadeira,
-						'id_agenda':id_agenda
-					}
-					
-					$.ajax({
-						type:"POST",
-						url:baseURLApiAside,
-						data:data,
-						success:function(rtn) {
-							agenda_horaObj.find('option').remove();
-							if(rtn.success) {
-
-								if(rtn.horariosDisponiveis.length>0) {
-									agenda_horaObj.append(`<option value="">Selecione o horário</option>`)
-									rtn.horariosDisponiveis.forEach(x=>{
-
-										agenda_horaObj.append(`<option value="${x}">${x}</option>`)
-									})
-								} else {
-									agenda_horaObj.append(`<option value="">Nenhum horário disponível</option>`)
-								}
-							} else if(rtn.error) {
-								agenda_horaObj.append(`<option value="">${rtn.error}</option>`);
-							}
-						}
-					});
-				} else {
-					agenda_horaObj.find('option').remove();
-					agenda_horaObj.append(`<option value="">Complete os campos</option>`);
-				}
-			}*/
-	</script>
 <?php
 
 	# Asides
@@ -3502,8 +3537,8 @@
 												//$('#js-aside-edit .js-tags').trigger('chosen:updated'); 
 
 
-												if(rtn.data.agendou_dias>1) $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou há ${rtn.data.agendou_dias} dia(s)`);
-												else $('#js-aside-edit .js-agendou').html(`${rtn.data.agendou_profissional} agendou hoje`);
+												if(rtn.data.agendou_dias>1) $('#js-aside-edit .js-agendou').html(`<b>${rtn.data.agendou_profissional}</b> agendou há <b>${rtn.data.agendou_dias} dia(s)</b>`);
+												else $('#js-aside-edit .js-agendou').html(`<b>${rtn.data.agendou_profissional}</b> agendou <b>hoje</b>`);
 
 												$('.js-fieldset-horarios,.js-btn-remover').show();
 												
@@ -4953,10 +4988,10 @@
 												<dd><a href="javascript:;" class="button js-excluir" data-loading="0"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
 											</dl>
 											<dl>
-												<dd><a href="javascript:;" class="button js-webwhatsapp" target="_blank"><span class="iconify" data-icon="ic:outline-whatsapp"></span> Web Whatsapp</a></dd>
+												<dd><a href="javascript:;" class="button js-webwhatsapp" target="_blank"><span class="iconify" data-icon="ic:outline-whatsapp"></span></a></dd>
 											</dl>
 											<dl>
-												<dd><a href="javascript:;" class="button js-btn-aside-queroReagendar"><span class="iconify" data-icon="mdi:calendar-clock"></span> Reagendamento</a></dd>
+												<dd><a href="javascript:;" class="button js-btn-aside-queroReagendar"><span class="iconify" data-icon="mdi:calendar-clock"></span></a></dd>
 											</dl>
 											<dl>
 												<dd><button class="button button_main js-salvar" data-loading="0"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i> <span>Salvar</span></button></dd>

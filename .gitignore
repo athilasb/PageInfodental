@@ -1,5 +1,5 @@
 .DS_Store
 .vscode/sftp.json 
-.sftp-config.json
-.docker-compose.yml
+sftp-config.json
+docker-compose.yml
 app/migracao/
