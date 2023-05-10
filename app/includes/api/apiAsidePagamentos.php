@@ -387,29 +387,33 @@
 				$rtn = array('error' => 'Erro: ' . $err->getMessage());
 			}
 		} else if ($_POST['ajax'] == "addPagamento") {
-			$data_emissao = $_POST['data_emissao'];
-			$descricao = utf8_decode($_POST['descricao']);
-			$id_beneficiario = $_POST['id_beneficiario'];
-			$tipo_beneficiario = $_POST['tipo_beneficiario'];
-			$valor_pagamento = floatval($_POST['valor_pagamento']);
+			$sql->exists($_p . "financeiro_fluxo_pagamentos");
+			if ($sql->rows == 1) {
+				$data_emissao = $_POST['data_emissao'];
+				$descricao = utf8_decode($_POST['descricao']);
+				$id_beneficiario = $_POST['id_beneficiario'];
+				$tipo_beneficiario = $_POST['tipo_beneficiario'];
+				$valor_pagamento = floatval($_POST['valor_pagamento']);
 
-			$vSQL = "data_emissao=NOW()";
-			$vSQL .= ",lixo=0";
-			$vSQL .= ",tipo='$tipo_beneficiario'";
-			$vSQL .= ",id_pagante_beneficiario='$id_beneficiario'";
-			$vSQL .= ",id_colaborador='$usr->id'";
-			$vSQL .= ",descricao='$descricao'";
-			$vSQL .= ",valor='$valor_pagamento'";
-			$vSQL .= ",data_vencimento='$data_emissao'";
+				$vSQL = "data_emissao=NOW()";
+				$vSQL .= ",lixo=0";
+				$vSQL .= ",tipo='$tipo_beneficiario'";
+				$vSQL .= ",id_pagante_beneficiario='$id_beneficiario'";
+				$vSQL .= ",id_colaborador='$usr->id'";
+				$vSQL .= ",descricao='$descricao'";
+				$vSQL .= ",valor='$valor_pagamento'";
+				$vSQL .= ",data_vencimento='$data_emissao'";
 
-			$sql->add($_p . "financeiro_fluxo_pagamentos", "$vSQL");
-			if($sql->rows>0){
-				$last_id = $sql->ulid;
-				$rtn = ["sucess" => true,'id_pagamento'=>$last_id];
-			}else{
-				$rtn = ["error" => true,'message'=>'Erro ao Adicionar Pagamento'];
+				$sql->add($_p . "financeiro_fluxo_pagamentos", "$vSQL");
+				if($sql->rows>0){
+					$last_id = $sql->ulid;
+					$rtn = ["sucess" => true,'id_pagamento'=>$last_id];
+				}else{
+					$rtn = ["error" => true,'message'=>'Erro ao Adicionar Pagamento'];
+				}
+			} else {
+				$rtn = ["error" => true,'message'=>"A tabela $table_name não existe no banco de dados $dbname."];
 			}
-
 		} else if ($_POST['ajax'] == 'addFluxoPagamento') {
 			$data_vencimento = $_POST['data_vencimento'];
 			$descricao = utf8_decode($_POST['descricao']);
@@ -2785,7 +2789,7 @@
 							obj.attr('data-loading',0);
 							return;
 						}
-						let data = `ajax=Pagamento&tipo_beneficiario=${tipo_beneficiario}&id_beneficiario=${id_beneficiario}&data_emissao=${data_emissao}&descricao=${descricao}&valor_pagamento=${valor_pagamento}`;
+						let data = `ajax=addPagamento&tipo_beneficiario=${tipo_beneficiario}&id_beneficiario=${id_beneficiario}&data_emissao=${data_emissao}&descricao=${descricao}&valor_pagamento=${valor_pagamento}`;
 						$.ajax({
 							type: "POST",
 							url: baseURLApiAsidePagamentos,
