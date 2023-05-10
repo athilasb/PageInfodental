@@ -363,6 +363,7 @@
 
 					<?php
 
+					//var_dump($_profissionaisArr);die();
 						$grProfissionais = $labelDentistasCor  = array();
 						$labelDentistas = array();
 						foreach($_grAgendasProfissionais as $id_profissional=>$qtd) {
