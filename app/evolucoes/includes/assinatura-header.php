@@ -42,13 +42,13 @@
 			// validacao
 				$erro='';
 				if(empty($paciente)) $erro='Paciente não encontrado';
-				else if(empty($cpf)) $erro='Preencha o campo de CPF';
-				else if(strlen($cpf)!=11) $erro='Digite um CPF com 11 dígitos';
-				else if(!verificaCpf($cpf)) $erro='CPF inválido';
-				else if(empty($dn)) $erro='Preencha o campo Data de Nascimento com dados válidos';
+				//else if(empty($cpf)) $erro='Preencha o campo de CPF';
+				//else if(strlen($cpf)!=11) $erro='Digite um CPF com 11 dígitos';
+				//else if(!verificaCpf($cpf)) $erro='CPF inválido';
+				//else if(empty($dn)) $erro='Preencha o campo Data de Nascimento com dados válidos';
 				else if(empty($assinatura)) $erro='Faça sua assinatura digital para assinar este documento';
-				else if($paciente->cpf != $cpf) $erro='CPF e/ou Data de Nascimento inválidos';
-				else if(strtotime($paciente->data_nascimento) != strtotime($dn)) $erro='CPF e/ou Data de Nascimento inválidos.';
+				//else if($paciente->cpf != $cpf) $erro='CPF e/ou Data de Nascimento inválidos';
+				//else if(strtotime($paciente->data_nascimento) != strtotime($dn)) $erro='CPF e/ou Data de Nascimento inválidos.';
 
 			// assinatura
 				if(empty($erro)) {

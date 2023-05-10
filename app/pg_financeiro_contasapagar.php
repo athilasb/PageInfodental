@@ -141,7 +141,214 @@
 		$dados = json_decode(json_encode($dados));
 		return [$dados, $valor];
 	}
-	[$dados, $valor] = getPagamentos($data_inicial_filtro, $data_final_filtro);
+	function getValores($data_inicial, $data_final)
+	{
+		global $sql;
+		global $_p;
+		// buscando informações dos pagamentos
+		$_tratamentos = array();
+		$_origens = array();
+		$_recebimentos = array();
+		$_pagantes =  array();
+		$idRegistros = array();
+		$idTratamentos = array();
+		$idPagantes = array();
+		$valor = array(
+			'aPagar' => 0,
+			'valorPago' => 0,
+			'valorVencido' => 0,
+			'valorTotal' => 0,
+			'valorJuros' => 0,
+			'valorMulta' => 0,
+			"definirPagamento" => 0
+		);
+		// pegando as oriugens
+		$sql->consult($_p . "financeiro_fluxo_origens", "*", "WHERE 1");
+		if ($sql->rows) {
+			while ($x = mysqli_fetch_object($sql->mysqry)) {
+				$origens[$x->id] = $x->tabela;
+			}
+		}
+	
+		// aqui eu busco as baixas que foram dadas
+		$_fluxos = array();
+		$sql->consult($_p . "financeiro_fluxo", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 AND desconto=0  AND valor>0 order by data_vencimento asc");
+		if ($sql->rows) {
+			while ($x = mysqli_fetch_object($sql->mysqry)) {
+				$_fluxos[$x->id_registro][$x->id] = $x;
+				$idRegistros[$x->id_registro] = $x->id_registro;
+			}
+		}
+		//pegando os recebimentos totais
+		$sql->consult($_p . "financeiro_fluxo_pagamentos", "*", "WHERE (data_vencimento>='$data_inicial' AND data_vencimento<='$data_final') and lixo=0 order by data_vencimento asc");
+		if ($sql->rows) {
+			while ($x = mysqli_fetch_object($sql->mysqry)) {
+				$_recebimentos[$x->id] = $x;
+				$idsPagamentos[$x->id] = $x->id;
+				$idPagantes[$x->id_pagante_beneficiario] = $x->id_pagante_beneficiario;
+			}
+		}
+		// pegandos os IDS pagantes e tratamentos
+		if (count($idRegistros) > 0) {
+			$sql->consult($_p . "financeiro_fluxo_pagamentos", "*", " WHERE id IN (" . IMPLODE(',', $idRegistros) . ") AND lixo=0");
+			if ($sql->rows) {
+				while ($x = mysqli_fetch_object($sql->mysqry)) {
+					$_recebimentos[$x->id] = $x;
+					$idPagantes[$x->id_pagante_beneficiario] = $x->id_pagante_beneficiario;
+				}
+			}
+		}
+	
+		// pegando os pagantes
+		if (count($idPagantes) > 0) {
+			$sql->consult($_p . "pacientes", "*", " WHERE id IN (" . IMPLODE(',', $idPagantes) . ")");
+			if ($sql->rows) {
+				while ($x = mysqli_fetch_object($sql->mysqry)) {
+					$_pagantes[$x->id] = $x;
+				}
+			}
+		}
+	
+		$dados = array();
+		$extras = array();
+	
+		foreach ($_recebimentos as $id_recebimento => $recebimento) {
+			$titulo = "Pagamento Avulso";
+			$pagante  = (isset($_pagantes[$recebimento->id_pagante_beneficiario]->nome)) ? utf8_decode($_pagantes[$recebimento->id_pagante_beneficiario]->nome) : '-';
+			// verifica se existe um fluxo
+			$valor['valorTotal'] += $recebimento->valor;
+			if (isset($_fluxos[$id_recebimento])) {
+				$fluxos = $_fluxos[$id_recebimento];
+				$valor_total = 0;
+				foreach ($fluxos as $id_fluxo => $fluxo) {
+					isset($extras['formas_pagamentos'][$fluxo->id_formapagamento]) ? $extras['formas_pagamentos'][$fluxo->id_formapagamento] += $fluxo->valor : $extras['formas_pagamentos'][$fluxo->id_formapagamento] = intVal($fluxo->valor);
+					$valor_total += $fluxo->valor;
+					$dados[$fluxo->id]['id_baixa'] = $fluxo->id;
+					$dados[$fluxo->id]['id_pagante_beneficiario'] = $fluxo->id_pagante_beneficiario;
+					$dados[$fluxo->id]['tipo_beneficiario'] = $fluxo->tipo;
+					$dados[$fluxo->id]['data_vencimento'] = $fluxo->data_vencimento;
+					$dados[$fluxo->id]['id_registro'] = $fluxo->id_registro;
+					$dados[$fluxo->id]['pagamento'] = $fluxo->pagamento;
+					$dados[$fluxo->id]['data_efetivado'] = $fluxo->data_efetivado;
+					$dados[$fluxo->id]['tipo'] = 'fluxo';
+					$dados[$fluxo->id]['valor'] = $fluxo->valor;
+					$dados[$fluxo->id]['valor_multa'] = $fluxo->valor_multa;
+					$dados[$fluxo->id]['valor_taxa'] = $fluxo->valor_taxa;
+					$dados[$fluxo->id]['valor_desconto'] = $fluxo->valor_desconto;
+					$dados[$fluxo->id]['valor_juros'] = $fluxo->valor_juros;
+					$dados[$fluxo->id]['desconto'] = $fluxo->desconto;
+					$dados[$fluxo->id]['valorTotalPagamento'] = $recebimento->valor ?? 0;
+					$dados[$fluxo->id]['titulo'] = $titulo;
+					$dados[$fluxo->id]['nome_pagante'] = $pagante;
+					$dados[$fluxo->id]['status'] = '';
+	
+					if ($fluxo->pagamento == 0) {
+						$atraso = (strtotime($fluxo->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
+						if ($atraso < 0) {
+							$valor['valorVencido'] += $fluxo->valor;
+							$dados[$fluxo->id]['status'] = 'Vencido';
+							$extras['ids']['valorVencido']['fluxo'][$fluxo->id] = $fluxo->id;
+						} else {
+							$valor['aPagar'] += $fluxo->valor;
+							$dados[$fluxo->id]['status'] = 'a Receber';
+							$extras['ids']['aPagar']['fluxo'][$fluxo->id] = $fluxo->id;
+						}
+					} else {
+						$valor['valorPago'] += $fluxo->valor;
+						$dados[$fluxo->id]['status'] = 'Pago';
+						$extras['ids']['valorPago']['fluxo'][$fluxo->id] = $fluxo->id;
+					}
+				}
+				if ($valor_total < $recebimento->valor) {
+					$faltam = ($recebimento->valor - $valor_total);
+					$atraso = (strtotime($recebimento->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
+	
+					$dados[$id_recebimento]['id_baixa'] = $fluxo->id;
+					$dados[$id_recebimento]['id_pagante_beneficiario'] = $recebimento->id_pagante_beneficiario;
+					$dados[$id_recebimento]['tipo_beneficiario'] = $recebimento->tipo;
+					$dados[$id_recebimento]['data_vencimento'] = $fluxo->data_vencimento;
+					$dados[$id_recebimento]['id_registro'] = $fluxo->id_registro;
+					$dados[$id_recebimento]['pagamento'] = $fluxo->pagamento;
+					$dados[$id_recebimento]['data_efetivado'] = $fluxo->data_efetivado;
+					$dados[$id_recebimento]['tipo'] = 'fluxo';
+					$dados[$id_recebimento]['valor'] = $faltam;
+					$dados[$id_recebimento]['valor_multa'] = $fluxo->valor_multa;
+					$dados[$id_recebimento]['valor_taxa'] = $fluxo->valor_taxa;
+					$dados[$id_recebimento]['valor_desconto'] = $fluxo->valor_desconto;
+					$dados[$id_recebimento]['valor_juros'] = $fluxo->valor_juros;
+					$dados[$id_recebimento]['desconto'] = $fluxo->desconto;
+					$dados[$id_recebimento]['valorTotalPagamento'] = $recebimento->valor ?? 0;
+					$dados[$id_recebimento]['titulo'] = $titulo;
+					$dados[$id_recebimento]['nome_pagante'] = $pagante;
+					$dados[$id_recebimento]['status'] = '';
+	
+					if ($atraso < 0) {
+						$valor['valorVencido'] += $faltam;
+						$extras['ids']['valorVencido']['recebimento'][$recebimento->id] = $recebimento->id;
+						$dados[$recebimento->id]['status'] = 'Vencido';
+					} else {
+						$valor['definirPagamento'] += $faltam;
+						$extras['ids']['definirPagamento']['recebimento'][$recebimento->id] = $recebimento->id;
+						$dados[$recebimento->id]['status'] = 'DEFINIR PAGAMENTO';
+					}
+				}
+			} else {
+				$atraso = (strtotime($recebimento->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
+				if ($atraso < 0) {
+					$valor['valorVencido'] += $recebimento->valor;
+					$extras['ids']['valorVencido']['recebimento'][$recebimento->id] = $recebimento->id;
+					$valor['valorVencido'] += $recebimento->valor;
+					$dados[$id_recebimento]['id_baixa'] = $recebimento->id;
+					$dados[$id_recebimento]['id_pagante_beneficiario'] = $recebimento->id_pagante_beneficiario;
+					$dados[$id_recebimento]['tipo_beneficiario'] = $recebimento->tipo;
+					$dados[$recebimento->id]['data_emissao'] = $recebimento->data_emissao;
+					$dados[$id_recebimento]['data_vencimento'] = $recebimento->data_vencimento;
+					$dados[$id_recebimento]['id_registro'] = $recebimento->id;
+					$dados[$id_recebimento]['pagamento'] = 0;
+					$dados[$id_recebimento]['data_efetivado'] = null;
+					$dados[$id_recebimento]['tipo'] = 'pagamento';
+					$dados[$id_recebimento]['valor'] = $recebimento->valor;
+					$dados[$id_recebimento]['valor_multa'] = $recebimento->valor_multa;
+					$dados[$id_recebimento]['valor_taxa'] = $recebimento->valor_taxa;
+					$dados[$id_recebimento]['valor_desconto'] = $recebimento->valor_desconto;
+					$dados[$id_recebimento]['valor_juros'] = 0;
+					$dados[$id_recebimento]['desconto'] = 0;
+					$dados[$id_recebimento]['valorTotalPagamento'] = $recebimento->valor;
+					$dados[$id_recebimento]['titulo'] = $titulo;
+					$dados[$id_recebimento]['nome_pagante'] = $pagante;
+					$dados[$id_recebimento]['status'] = 'Vencido';
+				} else {
+					$valor['definirPagamento'] += $recebimento->valor;
+					$extras['ids']['definirPagamento']['recebimento'][$recebimento->id] = $recebimento->id;
+					$dados[$id_recebimento]['id_baixa'] = $recebimento->id;
+					$dados[$id_recebimento]['tipo_beneficiario'] = $recebimento->tipo;
+					$dados[$id_recebimento]['id_pagante_beneficiario'] = $recebimento->id_pagante_beneficiario;
+					$dados[$id_recebimento]['data_vencimento'] = $recebimento->data_vencimento;
+					$dados[$recebimento->id]['data_emissao'] = $recebimento->data_emissao;
+					$dados[$id_recebimento]['id_registro'] = $recebimento->id;
+					$dados[$id_recebimento]['pagamento'] = 0;
+					$dados[$id_recebimento]['data_efetivado'] = null;
+					$dados[$id_recebimento]['tipo'] = 'pagamento';
+					$dados[$id_recebimento]['valor'] = $recebimento->valor;
+					$dados[$id_recebimento]['valor_multa'] = $recebimento->valor_multa;
+					$dados[$id_recebimento]['valor_taxa'] = $recebimento->valor_taxa;
+					$dados[$id_recebimento]['valor_desconto'] = $recebimento->valor_desconto;
+					$dados[$id_recebimento]['valor_juros'] = 0;
+					$dados[$id_recebimento]['desconto'] = 0;
+					$dados[$id_recebimento]['valorTotalPagamento'] = $recebimento->valor;
+					$dados[$id_recebimento]['titulo'] = $titulo;
+					$dados[$id_recebimento]['nome_pagante'] = $pagante;
+					$dados[$id_recebimento]['status'] = 'DEFINIR PAGAMENTO';
+				}
+			}
+		}
+		$dados = json_decode(json_encode($dados));
+		return [$dados, $_recebimentos, $valor, $extras];
+	}
+
+	
+	[$dados, $_recebimentos, $valor, $extras] = getValores($data_inicial_filtro, $data_final_filtro);
+	//[$dados, $valor] = getPagamentos($data_inicial_filtro, $data_final_filtro);
 ?>
 <header class="header">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -197,15 +404,19 @@
 						</div>
 						<div class="filter-title">
 							<p>A Pagar</p>
-							<h2 style="color:var(--cinza4)" id='valor-aReceber'>R$ <?= number_format($valor['aPagar'], 2, ',', '.') ?></h2>
+							<h2 style="color:var(--cinza4)" id='valor-aPagar'>R$ <?= number_format($valor['aPagar'], 2, ',', '.') ?></h2>
 						</div>
 						<div class="filter-title">
 							<p>Pago</p>
-							<h2 style="color:var(--verde)" id='valor-valorRecebido'>R$ <?= number_format($valor['valorPago'], 2, ',', '.') ?></h2>
+							<h2 style="color:var(--verde)" id='valor-valorPago'>R$ <?= number_format($valor['valorPago'], 2, ',', '.') ?></h2>
 						</div>
 						<div class="filter-title">
 							<p>Vencido</p>
-							<h2 style="color:var(--vermelho)" id='valor-valoresVencido'>R$ <?= number_format($valor['valorVencido'], 2, ',', '.') ?></h2>
+							<h2 style="color:var(--vermelho)" id='valor-valorVencido'>R$ <?= number_format($valor['valorVencido'], 2, ',', '.') ?></h2>
+						</div>
+						<div class="filter-title">
+							<p>A definir pagamento</p>
+							<h2 style="color:var(--laranja)" id='valor-definirPagamento'>R$ <?= number_format($valor['definirPagamento'], 2, ',', '.') ?></h2>
 						</div>
 					</div>
 					<div class="filter-group">
@@ -250,7 +461,18 @@
 								</tr>
 							<?php } ?>
 						</tbody>
-						</tbody>
+						<tfoot>
+							<td>00/00/0000</td>
+							<td>Teste</td>
+							<td>Teste de Pagamento</td>
+							<td> R$ 500,00</td>
+							<td>0,00</td>
+							<td>-</td>
+							<td><a href="javascript:;" class="button js-pagamento-item" style="width:120px;" data-idregistro='7' >
+									<i class="iconify" data-icon="ph:currency-circle-dollar"></i> 
+								</a>
+							</td>
+						</tfoot>
 					</table>
 				</div>
 			</div>
@@ -263,7 +485,6 @@
 		abrirAside1()
 	}));
 	// add calendario no botao de filtro
-
 	$('.js-calendario').daterangepicker({
 		"autoApply": true,
 		"locale": {
@@ -306,6 +527,8 @@
 		let dtInicio = picker.startDate.format('YYYY-MM-DD');
 		document.location.href = `<?php echo "$_page?pg_financeiro_contasapagar?"; ?>&data_inicio=${dtInicio}&data_final=${dtFim}`
 	});
+
+
 
 </script>
 <?php 

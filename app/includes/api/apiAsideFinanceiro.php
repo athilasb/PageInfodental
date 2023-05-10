@@ -99,6 +99,63 @@
 
 			}
 
+			else if($_POST['ajax']=="categoriasRemover") {
+
+				$categoria='';
+				if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+					$sql->consult($_p."financeiro_fluxo_categorias","*","where id='".addslashes($_POST['id'])."'");
+					if($sql->rows) {
+						$categoria=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$erro='';
+				if(empty($categoria)) $erro='Categoria não encontrada';
+
+				if(empty($erro)) {
+					$vSQL="lixo=1";
+					$vWHERE="where id=$categoria->id";
+
+					$sql->update($_p."financeiro_fluxo_categorias",$vSQL,$vWHERE);
+
+					// Subcategorias no lixo
+					$sql->update($_p."financeiro_fluxo_categorias",$vSQL,"WHERE id_categoria='".$categoria->id."'");
+
+					$sql->add($_p."log","data=now(),
+											id_usuario='".$usr->id."',
+											tipo='update',
+											vsql='".addslashes($vSQL)."',
+											vwhere='".addslashes($vWHERE)."',
+											tabela='".$_p."financeiro_fluxo_categorias',
+											id_reg='".$categoria->id."'");
+
+					$categorias=array();
+					$sql->consult($_p."financeiro_fluxo_categorias","*","WHERE lixo=0");
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+						$categorias[]=array('id'=>$x->id,'titulo'=>utf8_encode($x->titulo));
+					}
+				}
+
+				if(empty($erro)) {
+					$rtn=array('success'=>true, 'categorias'=>$categorias);
+				} else {
+					$rtn=array('success'=>false);
+				}
+			}
+
+			else if($_POST['ajax']=="categoriasSelect") {
+
+				$categorias=array();
+				$sql->consult($_p."financeiro_fluxo_categorias","*","where id_categoria=0 and lixo=0 order by titulo asc");
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$categorias[]=array('id'=>$x->id,
+										'titulo'=>utf8_encode($x->titulo));
+				}
+
+				$rtn=array('success'=>true,'categorias'=>$categorias);
+
+			}
+
 		// Subcategorias
 			else if($_POST['ajax']=="subcategoriasListar") {
 
@@ -138,17 +195,22 @@
 					if($sql->rows) $categoria=mysqli_fetch_object($sql->mysqry);
 				}
 
-				$erro='';
-				if(empty($titulo)) $erro='Digite o título da categoria';
+				$subcategoria = '';
+				if(isset($_POST['id_subcategoria']) and is_numeric($_POST['id_subcategoria']) and $_POST['id_subcategoria']>0) {
+					$sql->consult($_p."financeiro_fluxo_categorias","*","where id=".$_POST['id_subcategoria']." and lixo=0");
+					if($sql->rows) $subcategoria=mysqli_fetch_object($sql->mysqry);
+				}
 
+				$erro='';
+				if(empty($titulo)) $erro='Digite o título da subcategoria';
 
 				if(empty($erro)) {
 
 					$vSQL="titulo='".addslashes(utf8_decode($_POST['titulo']))."',
-							id_categoria=0";
+							id_categoria='".$categoria->id."'";
 
-					if(is_object($categoria)) {
-						$vWHERE="where id=$categoria->id";
+					if(is_object($subcategoria)) {
+						$vWHERE="where id=$subcategoria->id";
 
 						$sql->update($_p."financeiro_fluxo_categorias",$vSQL,$vWHERE);
 						$id_categoria=$categoria->id;
@@ -159,7 +221,7 @@
 												vsql='".addslashes($vSQL)."',
 												vwhere='".addslashes($vWHERE)."',
 												tabela='".$_p."financeiro_fluxo_categorias',
-												id_reg='".$id_categoria."'");
+												id_reg='".$subcategoria->id."'");
 
 
 					} else {
@@ -186,6 +248,41 @@
 					$rtn=array('success'=>false);
 				}
 
+			}
+
+			else if($_POST['ajax']=="subcategoriasRemover") {
+
+				$subcategoria='';
+				if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+					$sql->consult($_p."financeiro_fluxo_categorias","*","where id='".addslashes($_POST['id'])."'");
+					if($sql->rows) {
+						$subcategoria=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$erro='';
+				if(empty($subcategoria)) $erro='Subcategoria não encontrada';
+
+				if(empty($erro)) {
+					$vSQL="lixo=1";
+					$vWHERE="where id=$subcategoria->id";
+
+					$sql->update($_p."financeiro_fluxo_categorias",$vSQL,$vWHERE);
+
+					$sql->add($_p."log","data=now(),
+											id_usuario='".$usr->id."',
+											tipo='update',
+											vsql='".addslashes($vSQL)."',
+											vwhere='".addslashes($vWHERE)."',
+											tabela='".$_p."financeiro_fluxo_categorias',
+											id_reg='".$subcategoria->id."'");
+				}
+
+				if(empty($erro)) {
+					$rtn=array('success'=>true);
+				} else {
+					$rtn=array('success'=>false);
+				}
 			}
 
 		header("Content-type: application/json");
@@ -223,9 +320,9 @@
 															<td>
 																<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-subcategoria-adicionar" data-id="${x.id}"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
 
-																<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-categoria-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+																<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-categoria-editar" data-id="${x.id}" data-titulo="${x.titulo}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
 
-																<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-categoria-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+																<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-categoria-remover" data-id="${x.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 															</td>
 														</tr>`;
 
@@ -234,14 +331,14 @@
 													tr += `<tr style="background:var(--cinza1);font-size:12px;color:#999">
 																<td>${s.titulo}</td>
 																<td>
-																	<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-subcategoria-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+																	<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-subcategoria-editar" data-id="${s.id}" data-titulo="${s.titulo}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
 
-																	<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-subcategoria-remover" data-id="${x.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+																	<a href="javascript:;" class="button js-asFinanceiroFluxoCategorias-subcategoria-remover" data-id="${s.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 																</td>
 															</tr>`;
 												});
 											} else {
-												tr += `<tr style="background:var(--cinza1);font-size:12px;color:#999"><td colspan="2"><center>Nenhums subcategoria cadastrada</center></td></tr>`;
+												tr += `<tr style="background:var(--cinza1);font-size:12px;color:#999"><td colspan="2"><center>Nenhuma subcategoria cadastrada</center></td></tr>`;
 											}
 
 											$('.js-financeiroFluxoCategorias-table tbody').append(tr);
@@ -277,7 +374,7 @@
 															<td class="titulo">${x.titulo}</td>
 															<td>
 
-																<a href="javascript:;" class="button js-asFinanceiroFluxoSubcategorias-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+																<a href="javascript:;" class="button js-asFinanceiroFluxoSubcategorias-editar" data-id="${x.id}" data-titulo="${x.titulo}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
 
 																<a href="javascript:;" class="button js-asFinanceiroFluxoSubcategorias-remover" data-id="${x.id}"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
 															</td>
@@ -306,8 +403,37 @@
 
 					}
 
+					const financeiroFluxoSelectCategorias = () => {
+
+						let data = `ajax=categoriasSelect`;
+						$.ajax({
+							type:"POST",
+							data:data,
+							url:baseURLApiAsideFinanceiro,
+							success:function(rtn) {
+								if(rtn.success) {
+									$('select[name=id_categoria]').html('');
+									$('select[name=id_categoria]').append(`<option value="">-</option>`);
+
+									if(rtn.categorias.length>0) {
+										rtn.categorias.forEach(x=>{
+											$('select[name=id_categoria]').append(`<option value="${x.id}">${x.titulo}</option>`);
+										});
+									} 
+
+								} else {
+									let error = rtn.error ? rtn.error : 'Algum erro ocorreu durante a listagem das categorias';
+									swal({title: "Erro!", text: error, type:"error", confirmButtonColor: "#424242"});
+
+								}
+							}
+						})
+					}
+
 					$(function(){
-						financeiroFluxoCategoriasLista(); 	
+						financeiroFluxoCategoriasLista(); 
+
+						// Categorias
 
 						$('.js-btn-financeiroFluxoCategorias').click(function(){
 
@@ -320,6 +446,9 @@
 						$('.aside-close-financeiroFluxoCategorias').click(function(){
 							$('.aside-close-financeiroFluxoCategorias').parent().parent().removeClass("active");
 							$('.aside-close-financeiroFluxoCategorias').parent().parent().parent().fadeOut();
+							$('.js-asFinanceiroFluxoCategorias-id_categoria').val(0);
+							$('.js-asFinanceiroFluxoCategorias-titulo').val('');
+							financeiroFluxoSelectCategorias();
 						});
 
 						$('.js-asFinanceiroFluxoCategorias-submit').click(function(){
@@ -327,34 +456,38 @@
 							let titulo = $('.js-asFinanceiroFluxoCategorias-titulo').val();
 							let id_categoria = $('.js-asFinanceiroFluxoCategorias-id_categoria').val();
 
-							let data = `ajax=categoriasPersistir&titulo=${titulo}&id_categoria=${id_categoria}`;
+							if(!titulo) {
+								swal({title: "Erro!", text: "Digite o título da categoria", type:"error", confirmButtonColor: "#424242"});
+							} else {
+								let data = `ajax=categoriasPersistir&titulo=${titulo}&id_categoria=${id_categoria}`;
 
-							let obj = $(this);
-							let objHTMLAntigo = $(this).html();
+								let obj = $(this);
+								let objHTMLAntigo = $(this).html();
 
-							if(obj.attr('data-loading')==0) {
+								if(obj.attr('data-loading')==0) {
 
-								obj.attr('data-loading',1);
-								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+									obj.attr('data-loading',1);
+									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 
-								$.ajax({
-									type:"POST",
-									data:data,
-									url:baseURLApiAsideFinanceiro,
-									success:function(rtn) {
-										if(rtn.success) {
-											financeiroFluxoCategoriasLista();
-											$('.js-asFinanceiroFluxoCategorias-id_categoria').val(0);
-											$('.js-asFinanceiroFluxoCategorias-titulo').val('');
-										} else {
-											let error = rtn.error ? rtn.error : 'Algum erro ocorreu durante o registro da Categoria. Tente novamente!';
-											swal({title: "Erro!", text: error, type:"error", confirmButtonColor: "#424242"});
+									$.ajax({
+										type:"POST",
+										data:data,
+										url:baseURLApiAsideFinanceiro,
+										success:function(rtn) {
+											if(rtn.success) {
+												financeiroFluxoCategoriasLista();
+												$('.js-asFinanceiroFluxoCategorias-id_categoria').val(0);
+												$('.js-asFinanceiroFluxoCategorias-titulo').val('');
+											} else {
+												let error = rtn.error ? rtn.error : 'Algum erro ocorreu durante o registro da Categoria. Tente novamente!';
+												swal({title: "Erro!", text: error, type:"error", confirmButtonColor: "#424242"});
+											}
 										}
-									}
-								}).done(function(){
-									obj.attr('data-loading',0);
-									obj.html(objHTMLAntigo);
-								});
+									}).done(function(){
+										obj.attr('data-loading',0);
+										obj.html(objHTMLAntigo);
+									});
+								}
 							}
 						});
 
@@ -367,46 +500,219 @@
 							
 						});
 
+						$('.js-financeiroFluxoCategorias-table').on('click', '.js-asFinanceiroFluxoCategorias-categoria-editar',function() {
+							let id_categoria = $(this).attr('data-id');
+							let titulo = $(this).attr('data-titulo');
+
+							if(id_categoria) {
+								$('.js-asFinanceiroFluxoCategorias-titulo').val(titulo);
+								$('.js-asFinanceiroFluxoCategorias-id_categoria').val(id_categoria);
+							}
+						});
+
+						$('.js-financeiroFluxoCategorias-table').on('click', '.js-asFinanceiroFluxoCategorias-categoria-remover',function() {
+							let id_categoria = $(this).attr('data-id');
+
+							swal({   
+								title: "Atenção",   
+								text: "Você tem certeza que deseja remover esta categoria?",   
+								type: "warning",   
+								showCancelButton: true,   
+								confirmButtonColor: "#DD6B55",   
+								confirmButtonText: "Sim!",   
+								cancelButtonText: "Não",   
+								closeOnConfirm: false,   
+								closeOnCancel: false 
+							}, function(isConfirm){   
+								if (isConfirm) {    
+
+									let data = `ajax=categoriasRemover&id=${id_categoria}`;
+									$.ajax({
+										type:"POST",
+										url:baseURLApiAsideFinanceiro,
+										data:data,
+										success:function(rtn) {
+											if(rtn.success) {
+												financeiroFluxoCategoriasLista(); 
+												$('.js-asFinanceiroFluxoCategorias-id_categoria').val(0);
+												$('.js-asFinanceiroFluxoCategorias-titulo').val('');
+												swal.close();
+
+												if(rtn.categorias.length>0){
+													$('select[name=id_categoria]').select2();
+													$('select[name=id_categoria]').append(`<option value="">-</option>`);
+
+													rtn.categorias.forEach(x=>{
+														$('select[name=id_categoria]').append(`<option value="${x.id}">${x.titulo}</option>`);
+													});
+												}
+												
+
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												swal({title: "Erro!", text: 'Algum erro ocorreu durante a remoção deste registro', type:"error", confirmButtonColor: "#424242"});
+											}
+										},
+										error:function(){
+											swal({title: "Erro!", text: 'Algum erro ocorreu durante a remoção deste registro.', type:"error", confirmButtonColor: "#424242"});
+										}
+									}) 
+									
+								} else {   
+									swal.close();   
+								} 
+							});
+						});
+
+						// SubCategorias
 
 						$('.aside-close-financeiroFluxoSubcategorias').click(function(){
 							$('.aside-close-financeiroFluxoSubcategorias').parent().parent().removeClass("active");
 							$('.aside-close-financeiroFluxoSubcategorias').parent().parent().parent().fadeOut();
+							$('.js-asFinanceiroFluxoCategorias-id_categoria').val(0);
+							financeiroFluxoCategoriasLista();
+						});
+
+						$('.js-financeiroFluxoSubcategorias-table').on('click', '.js-asFinanceiroFluxoSubcategorias-editar',function() {
+							let id_subcategoria = $(this).attr('data-id');
+							let titulo = $(this).attr('data-titulo');
+
+							if(id_subcategoria) {
+								$('.js-asFinanceiroFluxoSubcategorias-titulo').val(titulo);
+								$('.js-asFinanceiroFluxoCategorias-id_subcategoria').val(id_subcategoria);
+							}
+						});
+
+						$('.js-financeiroFluxoSubcategorias-table').on('click', '.js-asFinanceiroFluxoSubcategorias-remover',function() {
+							let id_categoria = $('.js-asFinanceiroFluxoCategorias-id_categoria').val();
+							let id_subcategoria = $(this).attr('data-id');
+
+							swal({   
+								title: "Atenção",   
+								text: "Você tem certeza que deseja remover esta subcategoria?",   
+								type: "warning",   
+								showCancelButton: true,   
+								confirmButtonColor: "#DD6B55",   
+								confirmButtonText: "Sim!",   
+								cancelButtonText: "Não",   
+								closeOnConfirm: false,   
+								closeOnCancel: false 
+							}, function(isConfirm){   
+								if (isConfirm) {    
+
+									let data = `ajax=subcategoriasRemover&id=${id_subcategoria}`;
+									$.ajax({
+										type:"POST",
+										url:baseURLApiAsideFinanceiro,
+										data:data,
+										success:function(rtn) {
+											if(rtn.success) {
+												financeiroFluxoSubcategoriasLista(id_categoria);
+												$('.js-asFinanceiroFluxoSubcategorias-id_subcategoria').val(0);
+												$('.js-asFinanceiroFluxoSubcategorias-titulo').val('');
+												swal.close();
+
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												swal({title: "Erro!", text: 'Algum erro ocorreu durante a remoção deste registro', type:"error", confirmButtonColor: "#424242"});
+											}
+										},
+										error:function(){
+											swal({title: "Erro!", text: 'Algum erro ocorreu durante a remoção deste registro.', type:"error", confirmButtonColor: "#424242"});
+										}
+									}) 
+									
+								} else {   
+									swal.close();   
+								} 
+							});
+						});
+
+						$('.js-financeiroFluxoCategorias-table').on('click', '.js-asFinanceiroFluxoCategorias-subcategoria-remover',function() {
+							let id_categoria = $('.js-asFinanceiroFluxoCategorias-id_categoria').val();
+							let id_subcategoria = $(this).attr('data-id');
+
+							swal({   
+								title: "Atenção",   
+								text: "Você tem certeza que deseja remover esta subcategoria?",   
+								type: "warning",   
+								showCancelButton: true,   
+								confirmButtonColor: "#DD6B55",   
+								confirmButtonText: "Sim!",   
+								cancelButtonText: "Não",   
+								closeOnConfirm: false,   
+								closeOnCancel: false 
+							}, function(isConfirm){   
+								if (isConfirm) {    
+
+									let data = `ajax=subcategoriasRemover&id=${id_subcategoria}`;
+									$.ajax({
+										type:"POST",
+										url:baseURLApiAsideFinanceiro,
+										data:data,
+										success:function(rtn) {
+											if(rtn.success) {
+												financeiroFluxoCategoriasLista();
+												swal.close();
+
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												swal({title: "Erro!", text: 'Algum erro ocorreu durante a remoção deste registro', type:"error", confirmButtonColor: "#424242"});
+											}
+										},
+										error:function(){
+											swal({title: "Erro!", text: 'Algum erro ocorreu durante a remoção deste registro.', type:"error", confirmButtonColor: "#424242"});
+										}
+									}) 
+									
+								} else {   
+									swal.close();   
+								} 
+							});
 						});
 
 						$('.js-asFinanceiroFluxoSubcategorias-submit').click(function(){
 
 							let titulo = $('.js-asFinanceiroFluxoSubcategorias-titulo').val();
-							let id_categoria = $('.js-asFinanceiroFluxoSubcategorias-id_categoria').val();
-							let id_subcategoria = $('.js-asFinanceiroFluxoSubcategorias-id_subcategoria').val();
+							let id_categoria = $('.js-asFinanceiroFluxoCategorias-id_categoria').val();
+							let id_subcategoria = $('.js-asFinanceiroFluxoCategorias-id_subcategoria').val();
 
-							let data = `ajax=subcategoriasPersistir&titulo=${titulo}&id_categoria=${id_categoria}&id_subcategoria=${id_subcategoria}`;
+							if(!titulo) {
+								swal({title: "Erro!", text: "Digite o título da subcategoria", type:"error", confirmButtonColor: "#424242"});
+							} else {
 
-							let obj = $(this);
-							let objHTMLAntigo = $(this).html();
+								let data = `ajax=subcategoriasPersistir&titulo=${titulo}&id_categoria=${id_categoria}&id_subcategoria=${id_subcategoria}`;
 
-							if(obj.attr('data-loading')==0) {
+								let obj = $(this);
+								let objHTMLAntigo = $(this).html();
 
-								obj.attr('data-loading',1);
-								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+								if(obj.attr('data-loading')==0) {
 
-								$.ajax({
-									type:"POST",
-									data:data,
-									url:baseURLApiAsideFinanceiro,
-									success:function(rtn) {
-										if(rtn.success) {
-											financeiroFluxoSubcategoriasLista(id_categoria);
-											$('.js-asFinanceiroFluxoSubcategorias-id_subcategoria').val(0);
-											$('.js-asFinanceiroFluxoSubcategorias-titulo').val('');
-										} else {
-											let error = rtn.error ? rtn.error : 'Algum erro ocorreu durante o registro da Subcategoria. Tente novamente!';
-											swal({title: "Erro!", text: error, type:"error", confirmButtonColor: "#424242"});
+									obj.attr('data-loading',1);
+									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+
+									$.ajax({
+										type:"POST",
+										data:data,
+										url:baseURLApiAsideFinanceiro,
+										success:function(rtn) {
+											if(rtn.success) {
+												financeiroFluxoSubcategoriasLista(id_categoria);
+												$('.js-asFinanceiroFluxoSubcategorias-id_subcategoria').val(0);
+												$('.js-asFinanceiroFluxoSubcategorias-titulo').val('');
+											} else {
+												let error = rtn.error ? rtn.error : 'Algum erro ocorreu durante o registro da Subcategoria. Tente novamente!';
+												swal({title: "Erro!", text: error, type:"error", confirmButtonColor: "#424242"});
+											}
 										}
-									}
-								}).done(function(){
-									obj.attr('data-loading',0);
-									obj.html(objHTMLAntigo);
-								});
+									}).done(function(){
+										obj.attr('data-loading',0);
+										obj.html(objHTMLAntigo);
+									});
+								}
 							}
 						})
 					})

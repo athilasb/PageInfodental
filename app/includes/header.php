@@ -1,4 +1,5 @@
 <?php
+
     # API Geral
         if(isset($_POST['ajaxHeader'])) {
               require_once("lib/conf.php");
@@ -70,7 +71,7 @@
 
     # Header das demais páginas
         else {
-              
+
             require_once("lib/conf.php");
             require_once("usuarios/checa.php");
 
@@ -83,6 +84,7 @@
 
 
             // Verifica se possui conta
+
             $sql->consult("infodentalADM.infod_contas","*","where instancia='".$_ENV['NAME']."'");
             if($sql->rows) {
                 $infoConta=mysqli_fetch_object($sql->mysqry);
@@ -106,7 +108,7 @@
 
     $mobileDetect=new MobileDetect();
     $mobile=(!$mobileDetect->isMobile() and !$mobileDetect->isTablet())?0:1;
-      
+
 ?>
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -134,13 +136,13 @@
 <meta property="og:image:height" content="700" />
 <meta property="og:site_name" content="Infodental" />
 <meta property="fb:admins" content="1066108721" />
-
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="css/style.css?v3" />
-<link rel="stylesheet" type="text/css" href="css/calendario.css?v3" />
-<link rel="stylesheet" type="text/css" href="css/apps.css?v2" />
+<link rel="stylesheet" type="text/css" href="css/style.css?v5" />
+<link rel="stylesheet" type="text/css" href="css/calendario.css" />
+<link rel="stylesheet" type="text/css" href="css/apps.css" />
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <?php /*<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />*/ ?>
 

@@ -353,58 +353,7 @@
 
 					if($agendamentosAtendidosDuracao>0) $agendamentosAtendidosDuracao*=60;
 					?>
-					<div class="filter">
-						<div class="filter-group">
-							<div class="filter-title">
-								<h1>Análise da Agenda</h1>
-							</div>
-						</div>
-					</div>
-
-					<div class="list4 box">
-						<a href="" class="list4-item">
-							<div>
-								<h1><?php echo sec_convertOriginal($agendamentosAtendidosDuracao,'HF');?></h1>
-							</div>
-							<div>
-								<p>Horas de Atendimento</p>
-							</div>
-						</a>
-						<a href="" class="list4-item">
-							<div>
-								<h1><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i> <?php echo $agendamentos;?></h1>
-							</div>
-							<div>
-								<p>Agendamentos</p>
-							</div>
-						</a>
-						<a href="" class="list4-item">
-							<div>
-								<h1><i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i> <?php echo $agendamentosAtendidos;?></h1>
-							</div>
-							<div>
-								<p>Atendidos</p>
-							</div>
-						</a>
-						<a href="" class="list4-item">
-							<div>
-								<h1><i class="iconify" data-icon="fluent:calendar-sync-24-regular"></i> <?php echo $agendamentosDesmarcados;?></h1>
-							</div>
-							<div>
-								<p>Desmarcados</p>
-							</div>
-						</a>
-						<a href="" class="list4-item">
-							<div>
-								<h1><i class="iconify" data-icon="fluent:calendar-cancel-24-regular"></i> <?php echo $agendamentosFaltou;?></h1>
-							</div>
-							<div>
-								<p>	Faltou</p>
-							</div>
-						</a>
-					</div>
-
-					<div class="filter">
+										<div class="filter">
 						<div class="filter-group">
 							<div class="filter-title">
 								<h1>Atendimento por Dentista</h1>
@@ -528,12 +477,7 @@
 								</table>
 							</div>
 						</div>
-					</div>			
-				</section>
-
-
-				<section class="box pac-hist">
-
+					</div>		
 					<?php
 					if(is_object($proximaConsulta)) {
 
@@ -560,41 +504,200 @@
 							$autor=utf8_encode($c->nome);
 						}
 					?>
-					<script type="text/javascript">
-						const proximoAgendamento = () => {
-							$('.js-proximoAgendamento-instrucoes').hide();
-							if($('.js-proximoAgendamento').is(':visible')) {
-								$('.js-proximoAgendamento-control').html('Próximo Agendamento <span class="iconify" data-icon="ant-design:caret-down-outlined"></span>');
-							} else {
-								$('.js-proximoAgendamento-control').html('Próximo Agendamento <span class="iconify" data-icon="ant-design:caret-up-outlined"></span>');
 
-							}
-
-							$('.js-proximoAgendamento').slideToggle();
-						}
-					</script>
+					<div class="" style="margin-top:35px;">
 					<div class="filter">
 						<div class="filter-group">
 							<div class="filter-title" >
-								<h1 onclick="proximoAgendamento();" style="cursor:pointer;" class="js-proximoAgendamento-control">Próximo Agendamento <span class="iconify" data-icon="ant-design:caret-down-outlined"></span></h1>
-								<p style="font-size:12px;" class="js-proximoAgendamento-instrucoes">clique para expandir</p>
+								<h1 onclick="proximoAgendamento();" class="js-proximoAgendamento-control">Próximo Agendamento</h1>
+							</div>
+						</div>
+					</div>
+					<!--vitinho-->
+						<div class="grid form  " >
+							<div class="colunas2" style="grid-template-columns: 2fr 1fr;">
+								<div class="box" style="overflow: auto; height: 300px;">
+									<table class="list-agendamentos" style="margin: 20px;">
+										<tbody>
+											<tr>
+											<td><b>Retornar em:</b> <br>
+												2 dias
+											</td>
+											<td>
+												<b>Duração:</b> <br>
+												30 min
+											</td>
+											<td>
+												<b>Profissional:</b> <br>
+												Dr. Luciano
+											</td>
+											</tr>
+											<tr>
+											<td>
+												<b>Necessita Laboratório:</b> <br>
+												Não
+											</td>
+											<td></td>
+											<td style="margin-top: 30px;">
+												<b>Necessita imagem:</b> <br>
+												Não
+											</td>
+											</tr>
+											<tr>
+											<td>
+												<b>Obs.:</b> <br>
+												Teste
+											</td>
+											<td></td>
+											<td>
+												Criado por <br>
+												<b>Caio Lucena às 09/05/2023 12:45</b>
+											</td>
+											</tr>
+										</tbody>
+									</table>
+									<table class="list-agendamentos" style="margin: 20px;">
+										<tbody>
+											<tr>
+											<td><b>Retornar em:</b> <br>
+												2 dias
+											</td>
+											<td>
+												<b>Duração:</b> <br>
+												30 min
+											</td>
+											<td>
+												<b>Profissional:</b> <br>
+												Dr. Luciano
+											</td>
+											</tr>
+											<tr>
+											<td>
+												<b>Necessita Laboratório:</b> <br>
+												Não
+											</td>
+											<td></td>
+											<td style="margin-top: 30px;">
+												<b>Necessita imagem:</b> <br>
+												Não
+											</td>
+											</tr>
+											<tr>
+											<td>
+												<b>Obs.:</b> <br>
+												Teste
+											</td>
+											<td></td>
+											<td>
+												Criado por <br>
+												<b>Caio Lucena às 09/05/2023 12:45</b>
+											</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<div>
+								<div class="list-toggle-com box">
+											<header>
+												<h1>Correções</h1>
+											</header>
+											<article class="js-errata-item">
+											<header>
+												<p>Caio Lucena UX/UI</p>
+												<p>09/05/2023 12:46</p>
+											</header>
+											<article>
+												<p>teste</p>
+											</article>
+											</article>
+												<article class="js-errata-item">
+											<header>
+												<p>Caio Lucena UX/UI</p>
+												<p>09/05/2023 12:46</p>
+											</header>
+											<article>
+												<p>teste</p>
+											</article>
+											</article>
+											<dl class="js-errata-item">
+												<textarea style="height: 50px;" class="js-errata-texto-318"></textarea>
+												<button style="margin-top: 15px;"  class="button button_main" data-loading="0" style="float: right;" data-id_evolucao="318"> <span class="iconify" data-icon="fluent:add-circle-24-regular" style="color: #fecea2;"></span> Adicionar</button>
+											</dl>
+											
+											
+										</div>
+								</div>
+							</div>
+						<!-- <div style="height:auto;" class="js-proximoAgendamento">
+							
+							<b>Retornar em:</b><br /> <?php echo $proximaConsulta->retorno;?> dias<br /><br />
+							<b>Duração:</b><br /> <?php echo $proximaConsulta->duracao;?><br /><br />
+							<b>Profissional:</b><br /> <?php echo $proximaConsultaProfissionais;?><br /><br />
+							<b>Necessita Laboratório:</b><br /> <?php echo $proximaConsulta->laboratorio==1?"Sim":"Não";?><br /><br />
+							<b>Necessita Imagem:</b><br /> <?php echo $proximaConsulta->imagem==1?"Sim":"Não";?><br /><br />
+							<b>Obs.:</b><br /> <?php echo utf8_encode(nl2br($proximaConsulta->obs));?><br /><br />
+							<i style="color:#666">Criado por<br /><b><?php echo $autor;?></b> ás <b><?php echo date('d/m/Y H:i',strtotime($proximaConsulta->data));?></b></i>
+						</div>
+						-->
+					</div>
+						<?php
+					}
+					?>	
+				</section>
+
+
+				<section class="box pac-hist">
+				<div class="filter">
+						<div class="filter-group">
+							<div class="filter-title">
+								<h1>Análise da Agenda</h1>
 							</div>
 						</div>
 					</div>
 
-					<div style="height:auto;display: none;" class="js-proximoAgendamento">
-						
-						<b>Retornar em:</b><br /> <?php echo $proximaConsulta->retorno;?> dias<br /><br />
-						<b>Duração:</b><br /> <?php echo $proximaConsulta->duracao;?><br /><br />
-						<b>Profissional:</b><br /> <?php echo $proximaConsultaProfissionais;?><br /><br />
-						<b>Necessita Laboratório:</b><br /> <?php echo $proximaConsulta->laboratorio==1?"Sim":"Não";?><br /><br />
-						<b>Necessita Imagem:</b><br /> <?php echo $proximaConsulta->imagem==1?"Sim":"Não";?><br /><br />
-						<b>Obs.:</b><br /> <?php echo utf8_encode(nl2br($proximaConsulta->obs));?><br /><br />
-						<i style="color:#666">Criado por<br /><b><?php echo $autor;?></b> ás <b><?php echo date('d/m/Y H:i',strtotime($proximaConsulta->data));?></b></i>
+					<div class="list4 box">
+						<a href="" class="list4-item">
+							<div>
+								<h1><?php echo sec_convertOriginal($agendamentosAtendidosDuracao,'HF');?></h1>
+							</div>
+							<div>
+								<p>Horas de Atendimento</p>
+							</div>
+						</a>
+						<a href="" class="list4-item">
+							<div>
+								<h1><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i> <?php echo $agendamentos;?></h1>
+							</div>
+							<div>
+								<p>Agendamentos</p>
+							</div>
+						</a>
+						<a href="" class="list4-item">
+							<div>
+								<h1><i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i> <?php echo $agendamentosAtendidos;?></h1>
+							</div>
+							<div>
+								<p>Atendidos</p>
+							</div>
+						</a>
+						<a href="" class="list4-item">
+							<div>
+								<h1><i class="iconify" data-icon="fluent:calendar-sync-24-regular"></i> <?php echo $agendamentosDesmarcados;?></h1>
+							</div>
+							<div>
+								<p>Desmarcados</p>
+							</div>
+						</a>
+						<a href="" class="list4-item">
+							<div>
+								<h1><i class="iconify" data-icon="fluent:calendar-cancel-24-regular"></i> <?php echo $agendamentosFaltou;?></h1>
+							</div>
+							<div>
+								<p>	Faltou</p>
+							</div>
+						</a>
 					</div>
-					<?php
-					}
-					?>
+					
 
 					<div class="filter">
 						<div class="filter-group">

@@ -22,5 +22,5 @@ DELETE FROM `ident_whatsapp_mensagens_tipos` WHERE `id`=13;
 INSERT INTO `ident_whatsapp_mensagens_tipos` (`id`, `lixo`, `titulo`, `pub`, `getProfile`, `texto`, `texto_original`, `geolocalizacao`) VALUES
 (13, 0, 'Aniversariantes do dia', 1, 0, 'Olá *[nome]*, parabéns pelo seu aniversário 🎂🎉🎉🎉', 'Olá *[nome]*, parabéns pelo seu aniversário 🎂🎉🎉🎉', 0);
 COMMIT;
-UPDATE `ident_whatsapp_mensagens_tipos` SET `lixo` = '0', `pub`=1, WHERE `ident_whatsapp_mensagens_tipos`.`id` = 4;
+UPDATE `ident_whatsapp_mensagens_tipos` SET `lixo` = '0', `pub`=1 WHERE `ident_whatsapp_mensagens_tipos`.`id` = 4;
 UPDATE `ident_whatsapp_mensagens_tipos` SET `titulo` = 'Relacionamento Gestão de Paciente' WHERE `ident_whatsapp_mensagens_tipos`.`id` = 4;
