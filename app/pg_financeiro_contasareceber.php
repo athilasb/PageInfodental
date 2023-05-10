@@ -522,9 +522,10 @@ function getValores($data_inicial, $data_final)
 				</div>
 			</div>
 			<div class="box">
-				<!-- <div class="filter">
-					<a href="" class="button"><i class="iconify" data-icon="fluent:link-square-24-filled"></i><span>Unir pagamentos</span></a>
-				</div> -->
+				<div class="filter">
+					<a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:link-square-24-filled"></i><span>Unir pagamentos</span></a>
+				</div>
+				
 				<div class="list2">
 					<table class="tablesorter" id="list-payments">
 						<thead>

@@ -24,7 +24,7 @@
 		),
 		'financeiro' => array(
 			'page' => 'pg_clinica_financeiro.php',
-			'pages' => explode(",", "pg_clinica_financeiro.php,pg_financeiro_contasareceber.php"),
+			'pages' => explode(",", "pg_clinica_financeiro.php,pg_financeiro_contasareceber.php,pg_clinica_comissionamento.php"),
 			'title' => 'Financeiro',
 			'icon' => '<i class="iconify" data-icon="ph:currency-circle-dollar-light"></i>'
 		),

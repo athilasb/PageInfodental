@@ -349,13 +349,14 @@ if (isset($_POST['ajax'])) {
 					if (x.quantitativo == 1) {
 						opcao = `Qtd. ${x.quantidade}`;
 					} else {
-						opcao = x.opcao;
+						
+						opcao =  `<span class="iconify" data-icon="mdi:tooth-outline" style="color: #848484;"></span>`+ x.opcao;
 					}
 				}
 				let reprovadoCss = '';
 				if (x.situacao == "naoAprovado") reprovadoCss = ` style="opacity:0.3"`;
 
-				let tr = `<tr class="js-tr-item"${reprovadoCss}>								
+				let tr = `<tr class="js-tr-item grid-procedimentos"${reprovadoCss}>								
 							<td>
 								<h1>${x.procedimento}</h1>
 								<p>${x.plano}</p>

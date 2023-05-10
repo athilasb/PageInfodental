@@ -182,7 +182,7 @@
 						</dl>
 					</div>
 				</div>
-				
+				 
 			</section>
  	
 			<section class="grid">
@@ -196,6 +196,7 @@
 						var initIndicacao_tipo = '<?php echo $values['indicacao_tipo'];?>';
 						var obj = '';
 						var objHTMLAntigo = '';
+						
 
 						$(function(){
 
@@ -208,7 +209,7 @@
 									$(this).attr('data-loading',1);
 
 									$('form.formulario-validacao').submit();
-									
+
 								}
 							})
 

@@ -60,8 +60,8 @@
 
 					$vSQL="data=now(),
 							assinatura='".$assinatura."',
-							cpf='".$cpf."',
-							data_nascimento='".$dn."',
+							cpf='".$paciente->cpf."',
+							data_nascimento='".$paciente->data_nascimento."',
 							id_evolucao=$evolucao->id,
 							id_paciente=$paciente->id,
 							dispositivo='$dispositivo',
