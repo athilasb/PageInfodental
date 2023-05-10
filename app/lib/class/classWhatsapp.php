@@ -1091,6 +1091,7 @@
 									if($uploaded) {	
 										$sql->update($_p."pacientes","foto='jpg',foto_wts=now()","where id=$paciente->id");
 									}
+									@unlink($img);
 								}
 							}
 						}
