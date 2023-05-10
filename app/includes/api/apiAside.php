@@ -737,7 +737,7 @@
 
 												if($infozap->adicionaNaFila($attr)) {  
 													$wts=1;
-												}
+												} 
 											}
 										}
 									}
@@ -772,9 +772,9 @@
 															'id_profissional'=>$x->id,
 															'id_agenda'=>$agendaNew->id);
 									
-												if($infozap->adicionaNaFila($attr)) {  
-													$wts=1;
-												}
+												//if($infozap->adicionaNaFila($attr)) {  // COMENTEI AQUI PARA CORRIGIR O ERRO DE MUDANÇA DE ESTATUS
+												//	$wts=1;
+												//}
 											}
 										}
 									}
