@@ -737,9 +737,7 @@
 
 												if($infozap->adicionaNaFila($attr)) {  
 													$wts=1;
-												} else {
-													echo "erro: ".$infozap->erro;
-												}
+												} 
 											}
 										}
 									}
