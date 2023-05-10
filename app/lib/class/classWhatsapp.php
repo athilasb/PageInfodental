@@ -897,8 +897,7 @@
 									// verifica se ja enviou
 									$where="where id_paciente=$paciente->id and 
 												  id_tipo=$tipo->id  and 
-												  numero='".addslashes($numero)."' and 
-												  data > NOW() - INTERVAL 4 HOUR and lixo=0";
+												  numero='".addslashes($numero)."' and lixo=0";
 
 									$sql->consult($_p."whatsapp_mensagens","*",$where);
 								
