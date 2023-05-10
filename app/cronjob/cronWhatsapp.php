@@ -25,8 +25,8 @@
 
 
 	# Envia confirmacao de 24-48h para agendamentos realizados a menos de 7 dias (id_tipo=1)
-		echo "<h1>Lembrete de 23h-24h</h1>";
-		$dataInicio = date('Y-m-d H:i:s',strtotime(date('Y-m-d H:i:s')." + 23 hours"));
+		echo "<h1>Lembrete de 3h-24h</h1>";
+		$dataInicio = date('Y-m-d H:i:s',strtotime(date('Y-m-d H:i:s')." + 3 hours"));
 		$dataFim = date('Y-m-d H:i:s',strtotime(date('Y-m-d H:i:s')." + 24 hours"));
 
 		if(date('w')==5) {

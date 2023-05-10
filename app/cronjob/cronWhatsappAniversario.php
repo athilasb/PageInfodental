@@ -21,7 +21,7 @@
 	echo "<h1>Aniversariantes do dia ".date('d/m')."</h1>";
 	$where="WHERE month(data_nascimento)='".date('m')."' and day(data_nascimento)='".date('d')."' and telefone1<>'' and lixo=0";
 	$sql->consult($_p."pacientes","id,nome,data_nascimento,telefone1",$where);
-	echo $where."->".$sql->rows."<BR><BR>";
+	//echo $where."->".$sql->rows."<BR><BR>";die();
 	if($sql->rows) {
 		while($x=mysqli_fetch_object($sql->mysqry)) {
 
