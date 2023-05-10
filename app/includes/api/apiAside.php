@@ -19,10 +19,6 @@
 		$_tableTags=$_p."parametros_tags";
 		$_tableChecklist=$_p."agenda_checklist";
 
-		$_usuarios=[];
-		$sql->consult($_p."colaboradores","id,nome","");
-		while($x=mysqli_fetch_object($sql->mysqry)) $_usuarios[$x->id]=$x;
-
 		# Agenda
 			if($_POST['ajax']=="agendamentosProfissionais") {
 

@@ -1,4 +1,3 @@
-
 CREATE TABLE `ident_pacientes_evolucoes_assinaturas` (
   `id` int NOT NULL,
   `data` datetime NOT NULL,
