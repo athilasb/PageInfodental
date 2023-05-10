@@ -654,7 +654,6 @@
 												$where="where id_agenda=$agenda->id and 
 																id_paciente=$paciente->id and 
 																id_tipo=$tipo->id  and 
-																id_tipo NOT IN (7) and 
 																numero='".addslashes($numero)."' and 
 																data > NOW() - INTERVAL 48 HOUR";
 
@@ -898,7 +897,8 @@
 									$where="where id_paciente=$paciente->id and 
 												  id_tipo=$tipo->id  and 
 												  numero='".addslashes($numero)."' and 
-												  data > NOW() - INTERVAL 4 HOUR and lixo=0";
+												  data > NOW() - INTERVAL 12 HOUR and lixo=0";
+
 
 									$sql->consult($_p."whatsapp_mensagens","*",$where);
 								
@@ -922,7 +922,7 @@
 										if($wtsEnviada->enviado==0) {
 											$this->wtsRabbitmq($id_whatsapp);
 										} else {
-											$this->erro="Esta mensagem já foi enviada!";
+											$this->erro="Esta mensagem já foi enviada nas ultimas 12horas!";
 										}
 									}
 
@@ -1034,6 +1034,7 @@
 				
 				if(empty($conexao)) $erro="Nenhum whatsapp está conectado a esta unidade";
 				else {
+
 					if($conexao->versao>=2) {
 						$url="https://srv.infodental.dental:8443/v2/profile?instance=".$conexao->wid."&contact=".$this->wtsNumero($paciente->telefone1);
 					} else {
@@ -1090,6 +1091,7 @@
 									if($uploaded) {	
 										$sql->update($_p."pacientes","foto='jpg',foto_wts=now()","where id=$paciente->id");
 									}
+									@unlink($img);
 								}
 							}
 						}
