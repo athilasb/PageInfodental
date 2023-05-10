@@ -4706,7 +4706,7 @@
 												$('#js-aside-queroReagendar input[name=agenda_data]').val('');
 												$('#js-aside-queroReagendar select[name=agenda_duracao]').val(rtn.data.agenda_duracao);
 												$('#js-aside-queroReagendar select[name=id_cadeira]').val(rtn.data.id_cadeira).trigger('chosen:updated');
-												$('#js-aside-queroReagendar textarea.js-obs-qa').val(rtn.data.obs);
+												$('#js-aside-queroReagendar textarea[name=obs]').val(rtn.data.obs);
 
 												$('#js-aside-queroReagendar .js-reagendar-id_agenda').val(rtn.data.id_agenda);
 												$('#js-aside-queroReagendar .js-id_paciente').val(rtn.data.id_paciente);
@@ -6386,7 +6386,7 @@
 									<dl>
 										<dt>Observações</dt>
 										<dd>
-											<textarea class="js-obs-qa" style="height:80px;"></textarea>
+											<textarea name="obs" style="height:80px;"></textarea>
 										</dd>
 									</dl>
 								</div>

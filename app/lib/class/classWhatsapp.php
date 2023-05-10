@@ -897,6 +897,7 @@
 												  numero='".addslashes($numero)."' and 
 												  data > NOW() - INTERVAL 12 HOUR and lixo=0";
 
+
 									$sql->consult($_p."whatsapp_mensagens","*",$where);
 								
 									if($sql->rows==0) {
