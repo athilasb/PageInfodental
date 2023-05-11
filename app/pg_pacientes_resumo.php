@@ -511,7 +511,7 @@ krsort($registrosPorOrdem);
 									</div>
 								</div>
 							</div>
-							<div class="box" style="overflow: auto;max-height: 450px;">
+							<div class="box" style="overflow: auto;max-height: 450px;position: relative;">
 								<table class="list-agendamentos" style="margin: 20px;">
 									<tbody>
 										<tr>
