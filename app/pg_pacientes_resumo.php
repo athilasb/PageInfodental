@@ -596,37 +596,30 @@
 										</tbody>
 									</table>
 								</div>
-								<div>
-								<div class="list-toggle-com box">
-											<header>
-												<h1>Correções</h1>
-											</header>
-											<article class="js-errata-item">
+									<div class="list-toggle-com">
+										<header>
+											<h1>Correções</h1>
+										</header>
+										<article class="js-errata-item">
 											<header>
 												<p>Caio Lucena UX/UI</p>
-												<p>09/05/2023 12:46</p>
+												
+												<p>Caio Lucena UX/UI</p>
 											</header>
 											<article>
 												<p>teste</p>
 											</article>
-											</article>
-												<article class="js-errata-item">
-											<header>
-												<p>Caio Lucena UX/UI</p>
-												<p>09/05/2023 12:46</p>
-											</header>
-											<article>
-												<p>teste</p>
-											</article>
-											</article>
-											<dl class="js-errata-item">
-												<textarea style="height: 50px;" class="js-errata-texto-318"></textarea>
-												<button style="margin-top: 15px;"  class="button button_main" data-loading="0" style="float: right;" data-id_evolucao="318"> <span class="iconify" data-icon="fluent:add-circle-24-regular" style="color: #fecea2;"></span> Adicionar</button>
-											</dl>
-											
-											
-										</div>
-								</div>
+										</article>
+
+										<article class="js-errata-item">
+											<center>Nenhuma errata realizada.</center>
+										</article>
+
+										<dl class="js-errata-item">
+											<textarea style="height: 50px;"></textarea>
+											<button style="margin-top:15px" class="button button_main" data-loading="0" style="float: right;"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> Adicionar</button>
+										</dl>
+									</div>	
 							</div>
 						<!-- <div style="height:auto;" class="js-proximoAgendamento">
 							
@@ -698,7 +691,6 @@
 						</a>
 					</div>
 					
-
 					<div class="filter">
 						<div class="filter-group">
 							<div class="filter-title">

@@ -1862,7 +1862,7 @@
 							</section>
 						</fieldset>
 						<fieldset > 
-							<legend>Procedimentos</legend>
+							<legend>Odontograma</legend>
 							<div style="align-items: center; justify-content: end; display: flex;">	
 							<a style="margin: 5px;" class="button  active" href="javascript:;" id="js-permanentes" href=""> Permanentes</a>
 							<a class="button" href="javascript:;" id="js-deciduos" href=""> Decíduos</a>
@@ -1876,13 +1876,8 @@
 						</fieldset>
 
 						<fieldset >
-							<legend>Procedimentos</legend>
-							<div style="align-items: center; justify-content: end; display: flex;">							
-								<a class="button " href="javascript:;" id="limpar-canvas" > <span class="iconify" data-icon="carbon:clean"></span> Limpar</a>
-								<a class="button js-desenhar" href="javascript:;" id="limpar-canvas" ><span class="iconify" data-icon="fluent:copy-select-20-filled"></span> Desenhar</a>
-								<a class="button active" href="javascript:;" id="limpar-canvas" href=""> Região</a>
-							</div>
-							<canvas style="display: block;margin: auto;" id="canvas" width="600px" height="500"></canvas>
+							<legend>HOF</legend>
+							<?php include "includes/svg/hof_face.php"; ?>
 						</fieldset>
 					</div>
 				</div>
@@ -1890,109 +1885,6 @@
 		</form>
 	</div>
 </main>
-<script>
-// Seleciona o elemento canvas
-$(document).ready(function() {
-	var desenhar = false;
-
-// Seleciona o elemento canvas
-const canvas = $("#canvas")[0];
-
-// Configura o contexto 2D
-const ctx = canvas.getContext("2d");
-ctx.lineWidth = 5;
-ctx.lineCap = "round";
-
-// Cria um objeto de imagem e define o caminho da imagem
-const img = new Image();
-img.src = "./img/RetratoMulher.png";
-
-// Desenha a imagem de fundo no canvas
-img.onload = function() {
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-};
-
-// Inicializa as variáveis de posição
-let isDrawing = false;
-let lastX = 0;
-let lastY = 0;
-
-// Adiciona os eventos de mouse
-canvas.addEventListener("mousedown", (e) => {
-
-if (desenhar === true) {
-  isDrawing = true;
-  lastX = e.offsetX;
-  lastY = e.offsetY;
-  
-} else {
-		
-	}
-});
-
-canvas.addEventListener("mousemove", (e) => {
-  if (!isDrawing) return;
-
-  ctx.beginPath();
-  ctx.moveTo(lastX, lastY);
-  ctx.lineTo(e.offsetX, e.offsetY);
-  ctx.stroke();
-
-  lastX = e.offsetX;
-  lastY = e.offsetY;
-});
-
-canvas.addEventListener("mouseup", () => {
-  isDrawing = false;
-});
-
-canvas.addEventListener("mouseout", () => {
-  isDrawing = false;
-});
-
-// Seleciona o botão de limpar
-const btnLimpar = $('#limpar-canvas').click(
-  function(){
-	ctx.fillStyle = '#ffffff';
-	// Preenche o canvas com branco
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-	
-
-  }
-);
-
-// Seleciona o botão de desenhar
-$(".js-desenhar").click( ()=>{
-	if (desenhar) {
-		desenhar = false
-		$('.js-desenhar').removeClass('active');
-
-	} else {
-		desenhar = true
-		$('.js-desenhar').addClass('active');
-	}
-})
-});
-
-$("#js-permanentes").click(()=>{
-	$('#js-permanentes').addClass('active');
-	$('#js-deciduos').removeClass('active');
-	$('.permanentes').slideDown();
-	$('.deciduos').slideUp();
-
-})
-
-$("#js-deciduos").click(()=>{
-	$('#js-deciduos').addClass('active');
-	$('#js-permanentes').removeClass('active');
-	$('.permanentes').slideUp();
-	$('.deciduos').slideDown();
-
-})
-
-</script>
-
 <?php
 require_once("includes/api/apiAsidePlanoDeTratamento.php");
 include "includes/footer.php";
