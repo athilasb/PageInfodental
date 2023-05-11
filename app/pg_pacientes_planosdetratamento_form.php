@@ -1861,7 +1861,7 @@
 									</div>
 							</section>
 						</fieldset>
-						<fieldset > 
+						<fieldset class="field-pacientes" > 
 							<legend>Odontograma</legend>
 							<div style="align-items: center; justify-content: end; display: flex;">	
 							<a style="margin: 5px;" class="button  active" href="javascript:;" id="js-permanentes" href=""> Permanentes</a>
@@ -1875,7 +1875,7 @@
 							</div>	
 						</fieldset>
 
-						<fieldset >
+						<fieldset  class="field-pacientes" style="margin-bottom: var(--margin1) !important;" >
 							<legend>HOF</legend>
 							<?php include "includes/svg/hof_face.php"; ?>
 						</fieldset>

@@ -7,6 +7,34 @@
                 --largura-numeros:51.45px;
                 --largura-numeros1:52.35px;
            }
+
+           @media screen and (max-width: 1466px) {
+                :root{
+                    --largura: 40px;
+                    --altura: 70px;
+                    --margin-dentes: 0px;
+                    --largura-numeros: 41.45px;
+                    --largura-numeros1: 42.35px;
+                }
+           }
+
+           @media screen and (max-width: 1366px) {
+                :root{
+                    --largura: 30px;
+                    --altura: 70px;
+                    --margin-dentes: 0px;
+                    --largura-numeros: 31.45px;
+                    --largura-numeros1: 32.35px;
+                }
+           }
+
+           @media screen and (max-width: 1150px) {
+                .field-pacientes{
+                    display: none;
+                }
+           }
+           
+           
            .dentes  svg{
                 display: inline-table;
                 width: var(--largura);
