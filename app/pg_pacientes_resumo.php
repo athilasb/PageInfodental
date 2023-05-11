@@ -600,7 +600,7 @@
 										<header>
 											<h1>Correções</h1>
 										</header>
-										<article class="js-errata-item">
+										<article>
 											<header>
 												<p>Caio Lucena UX/UI</p>
 												
@@ -611,11 +611,11 @@
 											</article>
 										</article>
 
-										<article class="js-errata-item">
+										<article>
 											<center>Nenhuma errata realizada.</center>
 										</article>
 
-										<dl class="js-errata-item">
+										<dl>
 											<textarea style="height: 50px;"></textarea>
 											<button style="margin-top:15px" class="button button_main" data-loading="0" style="float: right;"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> Adicionar</button>
 										</dl>
