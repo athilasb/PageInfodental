@@ -303,7 +303,7 @@
 
 
 		// Gestao de Tempo (basea nos registros de proximo atendimento)
-		function gestaoDoTempo() {
+		function gestaoDoTempo($attr) {
 			$_wasabiBucket="storage.infodental.dental"; 
 			$_wasabiPathRoot= $_ENV['NAME'] . "/";
 			$_wasabiS3endpoint = "s3.us-west-1.wasabisys.com";
@@ -328,12 +328,31 @@
 				$pacientesIds=array();
 				$pacienteOrdem=array();
 				$proximasConsultasIds=array();
+				$profissionaisIds=array();
+				$whereProfissionais="";
+
+				// Profissionais Ids
+				if(isset($attr['profissionaisIds']) and is_array($attr['profissionaisIds'])) {
+
+					if(count($attr['profissionaisIds'])>0) {
+						$whereProfissionais.=" and (";
+						foreach($attr['profissionaisIds'] as $id_profissional) {
+							$whereProfissionais.=" profissionais like '%".$id_profissional."%' or";
+						}
+
+						$whereProfissionais=substr($whereProfissionais,0,strlen($whereProfissionais)-3);
+						$whereProfissionais.=")";
+					} else {
+						$whereProfissionais.=" and profissionais like '-1'";
+					}
+				}
 
 			# pacientes que tem proximo agendamento para hoje ou nos proximos 3 dias
 				// nao disponiveis
 				$this->indisponiveis=0;
-				$where="where  DATE_ADD(data, INTERVAL retorno DAY)>'".$df." 23:59:59' and lixo=0 and situacao<3 order by data desc";
-				$sql->consult($_p."pacientes_proximasconsultas","*,DATE_ADD(data, INTERVAL retorno DAY) as proximaConsulta",$where);
+				$where="where DATE_ADD(data, INTERVAL retorno DAY)>'".$df." 23:59:59' and lixo=0 and situacao<3";
+
+				$sql->consult($_p."pacientes_proximasconsultas","*,DATE_ADD(data, INTERVAL retorno DAY) as proximaConsulta",$where.$whereProfissionais." order by data desc");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					
 					// se ja encontrou proxima consulta ignora, pois pega a mais recente
@@ -342,14 +361,11 @@
 					} else {
 						$this->indisponiveis++;
 					}
-
-
-				
 				}
 
 				// situacao<3 => paciente entrara em contato (3), ou excluido (5)
-				$where="where  DATE_ADD(data, INTERVAL retorno DAY)<='".$df." 23:59:59' and lixo=0 and situacao<3 order by data desc";
-				$sql->consult($_p."pacientes_proximasconsultas","*,DATE_ADD(data, INTERVAL retorno DAY) as proximaConsulta",$where);
+				$where="where  DATE_ADD(data, INTERVAL retorno DAY)<='".$df." 23:59:59' and lixo=0 and situacao<3";
+				$sql->consult($_p."pacientes_proximasconsultas","*,DATE_ADD(data, INTERVAL retorno DAY) as proximaConsulta",$where.$whereProfissionais." order by data desc");
 				while($x=mysqli_fetch_object($sql->mysqry)) {
 					
 					// se ja encontrou proxima consulta ignora, pois pega a mais recente
@@ -358,7 +374,6 @@
 					} else {
 						$proximaConsulta[$x->id_paciente]=$x;
 					}
-
 
 					$pacientesIds[$x->id_paciente]=$x->id_paciente;
 					$index=$x->situacao.".".strtotime($x->proximaConsulta);
