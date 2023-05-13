@@ -41,7 +41,12 @@ Lista Unica
 
 		if($_POST['ajax']=="gestaoDoTempo") {
 
-			$pacientes=$inteligencia->gestaoDoTempo();
+			$attr=array();
+			if(isset($_POST['profissionaisIds']) and !empty($_POST['profissionaisIds'])) {
+				$attr=array('profissionaisIds' => json_decode($_POST['profissionaisIds']));
+			}
+
+			$pacientes=$inteligencia->gestaoDoTempo($attr);
 		
 			$rtn=array('success'=>true,
 						'indisponiveis'=>$inteligencia->indisponiveis,
@@ -539,11 +544,8 @@ Lista Unica
 					// horarios da agenda
 					$intervals[] = new Interval($inpInicio, $inpFim);
 
-					$horariosDaCadeira[]="$x->inicio - $x->fim";
-
+					$horariosDaCadeira[$x->id]="$x->inicio - $x->fim";
 				}
-
-
 
 				$newInterval=array();
 				// busca intervalos nos horarios da cadeira que estão disponíveis
@@ -562,8 +564,6 @@ Lista Unica
 				            	//echo  "a2";
 				                $interval->to = $item->from;
 				            } else {
-
-				            	
 				                $intervals[] = new Interval($item->to, $interval->to);
 				                $interval->to = $item->from;
 				            }
@@ -585,6 +585,71 @@ Lista Unica
 							'cadeira'=>$horariosDaCadeira,
 							'agendamentos'=>$agendamentos,
 							'horarios'=>$horarios);
+			} else {
+				$rtn=array('success'=>false,'error'=>$erro);
+			}
+		}
+
+		else if($_POST['ajax']=="ocupacaoHorariosCadeira") {
+
+			$horarios = isset($_POST['horarios'])?$_POST['horarios']:'';
+
+			$cadeira='';
+			if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
+				$sql->consult($_p."parametros_cadeiras","*","where id=".$_POST['id_cadeira']);
+				if($sql->rows) {
+					$cadeira=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+			$erro='';
+			if(empty($horarios)) $erro='Horários não definidos!';
+			else if(empty($cadeira)) $erro='Cadeira não definida';
+
+			if(empty($erro)) {
+
+				list($inicio, $fim) = explode("-", trim($horarios));
+				$inicio = trim($inicio);
+				$fim = trim($fim);
+
+				$profissionaisIds=array();
+				$sql->consult($_p."profissionais_horarios","*","WHERE id_cadeira='".$cadeira->id."' and lixo=0");
+				if($sql->rows) {
+					$inpInicio=strtotime($inicio);
+					$inpFim=strtotime($fim);
+
+					while($x=mysqli_fetch_object($sql->mysqry)) {
+
+						$hInicio=strtotime($x->inicio);
+						$hFim=strtotime($x->fim);
+
+						$intercede=false;
+						$intercedeHorario="";
+						
+						if($inpInicio<$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim<=$hFim) { 
+							//echo 1;
+							$intercede=true;
+						} else if($inpInicio>=$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim<=$hFim) {
+							//echo 2;
+							$intercede=true;
+						} else if($inpInicio>=$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim>$hFim) { 
+							//echo 3;
+							$intercede=true;
+						} else if($inpInicio<$hInicio and $inpInicio<$hFim and $inpFim>$hInicio and $inpFim>$hFim) { 
+						//	echo 4;
+							$intercede=true;
+						}
+						// echo "\n\n ";
+
+						if($intercede===true) {
+							//$intercedeHorario = date('H:i',strtotime($x->inicio))." - ".date('H:i',strtotime($x->fim));
+							$profissionaisIds[]=$x->id_profissional;
+						}
+					}
+				}
+
+				$rtn=array('success'=>true, 'profissionaisIds'=>$profissionaisIds);
+				
 			} else {
 				$rtn=array('success'=>false,'error'=>$erro);
 			}
@@ -757,9 +822,8 @@ Lista Unica
 						<a href="javascript:;" class="js-btn-grafico" data-tipo="dentistas">Dentistas</a>					
 					</section>*/?>
 
-					
-
 					<div class="list4 js-ocupacao-cadeiras">
+
 						<?php
 						/*foreach($_cadeiras as $c) {
 
@@ -822,7 +886,6 @@ Lista Unica
 					const ocupacaoListar = () => {
 
 						let data = `ajax=ocupacaoListar&data=${dataOcupacao}`;
-						
 
 						$.ajax({
 							type:"POST",
@@ -851,28 +914,51 @@ Lista Unica
 
 									$('.js-ocupacao-cadeiras a:eq(0)').click();
 								}
+
+								$('.js-ocupacao-horarios').on('click','.js-horarios',function(){
+
+									$('.js-horarios').removeClass('active');
+									$(this).addClass('active');
+
+									let id_cadeira = $(this).attr('data-id_cadeira');
+									let horarios = $(this).attr('data-horarios');
+
+									let data = `ajax=ocupacaoHorariosCadeira&id_cadeira=${id_cadeira}&horarios=${horarios}`;
+
+									$.ajax({
+										type:"POST",
+										data:data,
+										success:function(rtn) {
+											if(rtn.success) {	
+												atualizaValorListasInteligentes(rtn.profissionaisIds);
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});	
+											} else {
+											}
+										}
+									});
+									
+								});
 							}
 						})
 					}
 
-					const atualizaValorListasInteligentes = () => {
+					const atualizaValorListasInteligentes = (profissionaisIds) => {
 
 						let data = `ajax=gestaoDoTempo`;
+
+						if(profissionaisIds) {
+							data+=`&profissionaisIds=${JSON.stringify(profissionaisIds)}`;
+						}
 
 						$.ajax({
 							type:"POST",
 							data:data,
 							success:function(rtn) {
 								if(rtn.success) {
-
 									pacientesOportunidades = rtn.pacientes;
-
 									$('.js-disponiveis').html(rtn.pacientes.length);
 									$('.js-indisponiveis').html(rtn.indisponiveis);
-
-
-									
-
 								}
 							}
 						}).done(function(){
@@ -883,18 +969,14 @@ Lista Unica
 					const pacientesLista = () => {
 						
 						$('.js-pacientes').html(``);
-
 						pacientes = pacientesOportunidades;
 
 						let filtro = $('.js-filtro-pacientes option:selected').val();
-
-
 						let status = $('.js-filtro-status option:selected').val();
 
 						if(status>0) {
 							pacientes = pacientes.filter(x=>{return x.status==status});
 						}
-
 
 						let profissional = $('.js-filtro-profissional option:selected').val();
 						if(profissional>0) {
@@ -1030,7 +1112,6 @@ Lista Unica
 							if(paginaQtd==1) {
 								$('.js-guia,.js-paginacao').hide();
 							} else {
-
 								$('.js-guia,.js-paginacao').show().hide();
 							}
 						}
@@ -1074,16 +1155,11 @@ Lista Unica
 						}
 					}
 
-					
-
-
 					$(function(){
 						ocupacaoListar();
-
-						atualizaValorListasInteligentes();
+						//atualizaValorListasInteligentes();
 
 						$('.js-ocupacao-cadeiras').on('click','.js-ocupacao-cadeira',function(){
-
 
 							$('.js-ocupacao-cadeira').removeClass('active');
 							$(this).addClass('active');
@@ -1096,15 +1172,15 @@ Lista Unica
 								data:data,
 								success:function(rtn) {
 									if(rtn.success) {	
-
-
 										$('.js-ocupacao-horarios').html('');
 
 										if(rtn.horarios.length>0) {
 											rtn.horarios.forEach(x=>{
-												$('.js-ocupacao-horarios').append(`<a href="javascript:;" class="button button_disabled" style="margin:1px;">${x}</a>`)
+												$('.js-ocupacao-horarios').append(`<a href="javascript:;" class="button button_disabled js-horarios" data-id_cadeira="${id_cadeira}" data-horarios="${x}" style="margin:1px;">${x}</a>`)
 											})
 										}
+
+										atualizaValorListasInteligentes();
 
 									} else if(rtn.error) {
 										swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});	
@@ -1153,7 +1229,6 @@ Lista Unica
 						$('#js-inteligencia-paciente .js-btn-relacionamento').click(function(){
 							var obj = $(this);
 							let tipo = obj.attr('data-tipo');
-
 
 							if(tipo=="pular") {
 								$('.js-proximo').click();
