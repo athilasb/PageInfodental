@@ -506,13 +506,14 @@
 					?>
 
 					<div class="" style="margin-top:35px;">
-					<div class="filter">
-						<div class="filter-group">
-							<div class="filter-title" >
-								<h1 onclick="proximoAgendamento();" class="js-proximoAgendamento-control">Próximo Agendamento</h1>
+						<div class="filter">
+							<div class="filter-group">
+								<div class="filter-title" >
+									<h1 onclick="proximoAgendamento();" class="js-proximoAgendamento-control">Histórico de Lembretes</h1>
+								</div>
 							</div>
 						</div>
-					</div>
+
 					<!--vitinho-->
 						<div class="grid form  " >
 							<div class="colunas2" style="grid-template-columns: 2fr 1fr;">
@@ -639,10 +640,11 @@
 							<i style="color:#666">Criado por<br /><b><?php echo $autor;?></b> ás <b><?php echo date('d/m/Y H:i',strtotime($proximaConsulta->data));?></b></i>
 						</div>
 						-->
-					</div>
+						</div>
 						<?php
 					}
 					?>	
+					</div>
 				</section>
 
 
