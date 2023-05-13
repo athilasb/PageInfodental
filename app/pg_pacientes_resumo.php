@@ -60,6 +60,28 @@
 				$rtn=array('success'=>false);
 			}
 
+		} else if($_POST['ajax']=="correcoes") {
+
+			$paciente='';
+			if(isset($_POST['id_paciente']) and is_numeric($_POST['id_paciente'])) {
+				$sql->consult($_p."pacientes","id","WHERE id='".$_POST['id_paciente']."'");
+				if($sql->rows) {
+					$paciente=mysqli_fetch_object($sql->mysqry);
+				}
+			}
+
+			$obs=(isset($_POST['obs']) and !empty($_POST['obs']))?utf8_decode($_POST['obs']):"";
+
+			if(!empty($paciente)) {
+				$vSQL="data=now(),id_paciente='".$paciente->id."',id_usuario='".$usr->id."',obs='".$obs."'";
+				$sql->add($_p."pacientes_correcoes", $vSQL);
+				$id_reg=$sql->ulid;
+
+				$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',vwhere='',tabela='".$_p."pacientes_correcoes',id_reg='$id_reg'");
+				$rtn=array('success'=>true);
+			} else {
+				$rtn=array('success'=>false, 'error'=>'Paciente não encontrado');
+			}
 		}
 
 		header("Content-type: application/json");
@@ -177,10 +199,21 @@
 	}
 
 	# Proximas consultas
-		$proximaConsulta='';
+		$proximasConsultas=array();
 		$sql->consult($_p."pacientes_proximasconsultas","*","where id_paciente=$paciente->id and lixo=0 order by data desc");
 		if($sql->rows) {
-			$proximaConsulta=mysqli_fetch_object($sql->mysqry);;
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$proximasConsultas[$x->id]=$x;
+			}
+		}
+
+	#Correções
+		$correcoes=array();
+		$sql->consult($_p."pacientes_correcoes","*","where id_paciente=$paciente->id and lixo=0");
+		if($sql->rows) {
+			while($x=mysqli_fetch_object($sql->mysqry)) {
+				$correcoes[$x->id]=$x;
+			}
 		}
 
 	# Resumo
@@ -479,29 +512,21 @@
 						</div>
 					</div>		
 					<?php
-					if(is_object($proximaConsulta)) {
+					if(is_array($proximasConsultas) and count($proximasConsultas)>0) {
 
+						$proximaConsultaProfissionais=array();
+						foreach($proximasConsultas as $x) {
 
-						$proximaConsultaProfissionais='-';
-
-
-						if(!empty($proximaConsulta->profissionais)) {
-							$aux=explode(",",$proximaConsulta->profissionais);
-							$proximaConsultaProfissionais='';
-							foreach($aux as $idP) { 
-								if(!empty($idP) and is_numeric($idP) and isset($_colaboradores[$idP])) {
-									$proximaConsultaProfissionais.=utf8_encode($_colaboradores[$idP]->nome).", ";
+							if(!empty($x->profissionais)) {
+								$aux=explode(",",$x->profissionais);
+								foreach($aux as $idP) { 
+									if(!empty($idP) and is_numeric($idP) and isset($_colaboradores[$idP])) {
+										if(!isset($proximaConsultaProfissionais[$x->id])) $proximaConsultaProfissionais[$x->id]='';
+										$proximaConsultaProfissionais[$x->id].=utf8_encode($_colaboradores[$idP]->nome).", ";
+									}
 								}
+								$proximaConsultaProfissionais[$x->id]=substr($proximaConsultaProfissionais[$x->id],0,strlen($proximaConsultaProfissionais[$x->id])-2);
 							}
-							$proximaConsultaProfissionais=substr($proximaConsultaProfissionais,0,strlen($proximaConsultaProfissionais)-2);
-						}
-
-						$autor='Desconhecido';
-
-						$sql->consult($_p."colaboradores","id,nome","where id=$proximaConsulta->id_colaborador");
-						if($sql->rows) {
-							$c=mysqli_fetch_object($sql->mysqry);
-							$autor=utf8_encode($c->nome);
 						}
 					?>
 
@@ -509,136 +534,132 @@
 					<div class="filter">
 						<div class="filter-group">
 							<div class="filter-title" >
-								<h1 onclick="proximoAgendamento();" class="js-proximoAgendamento-control">Próximo Agendamento</h1>
+								<h1 class="js-proximoAgendamento-control">Próximo Agendamento</h1>
 							</div>
 						</div>
 					</div>
 					<!--vitinho-->
-						<div class="grid form  " >
-							<div class="colunas2" style="grid-template-columns: 2fr 1fr;">
-								<div class="box" style="overflow: auto; height: 300px;">
-									<table class="list-agendamentos" style="margin: 20px;">
-										<tbody>
-											<tr>
+					<div class="grid form  " >
+						<div class="colunas2" style="grid-template-columns: 2fr 1fr;">
+							<div class="box" style="overflow: auto; height: 300px;">
+								<?php 
+									foreach($proximasConsultas as $x) {
+								?>
+								<table class="list-agendamentos" style="margin: 20px;">
+									<tbody>
+										<tr>
 											<td><b>Retornar em:</b> <br>
-												2 dias
+												<?php echo $x->retorno;?> dia(s)
 											</td>
 											<td>
 												<b>Duração:</b> <br>
-												30 min
+												<?php echo $x->duracao;?> min
 											</td>
 											<td>
 												<b>Profissional:</b> <br>
-												Dr. Luciano
+												<?php echo isset($proximaConsultaProfissionais[$x->id])?$proximaConsultaProfissionais[$x->id]:"Desconhecido";?>
 											</td>
 											</tr>
 											<tr>
 											<td>
 												<b>Necessita Laboratório:</b> <br>
-												Não
+												<?php echo $x->laboratorio==1?"Sim":"Não";?>
 											</td>
 											<td></td>
 											<td style="margin-top: 30px;">
 												<b>Necessita imagem:</b> <br>
-												Não
+												<?php echo $x->imagem==1?"Sim":"Não";?>
 											</td>
-											</tr>
-											<tr>
+										</tr>
+										<tr>
 											<td>
 												<b>Obs.:</b> <br>
-												Teste
+												<?php echo utf8_encode($x->obs);?>
 											</td>
 											<td></td>
 											<td>
 												Criado por <br>
-												<b>Caio Lucena às 09/05/2023 12:45</b>
+												<b><?php echo isset($_colaboradores[$x->id_colaborador])?utf8_encode($_colaboradores[$x->id_colaborador]->nome)." às ".date('d/m/Y H:i', strtotime($x->data)):"-";?></b>
 											</td>
-											</tr>
-										</tbody>
-									</table>
-									<table class="list-agendamentos" style="margin: 20px;">
-										<tbody>
-											<tr>
-											<td><b>Retornar em:</b> <br>
-												2 dias
-											</td>
-											<td>
-												<b>Duração:</b> <br>
-												30 min
-											</td>
-											<td>
-												<b>Profissional:</b> <br>
-												Dr. Luciano
-											</td>
-											</tr>
-											<tr>
-											<td>
-												<b>Necessita Laboratório:</b> <br>
-												Não
-											</td>
-											<td></td>
-											<td style="margin-top: 30px;">
-												<b>Necessita imagem:</b> <br>
-												Não
-											</td>
-											</tr>
-											<tr>
-											<td>
-												<b>Obs.:</b> <br>
-												Teste
-											</td>
-											<td></td>
-											<td>
-												Criado por <br>
-												<b>Caio Lucena às 09/05/2023 12:45</b>
-											</td>
-											</tr>
-										</tbody>
-									</table>
-								</div>
-								<div>
-								<div class="list-toggle-com box">
-											<header>
-												<h1>Correções</h1>
-											</header>
-											<article class="js-errata-item">
-											<header>
-												<p>Caio Lucena UX/UI</p>
-												<p>09/05/2023 12:46</p>
-											</header>
-											<article>
-												<p>teste</p>
-											</article>
-											</article>
-												<article class="js-errata-item">
-											<header>
-												<p>Caio Lucena UX/UI</p>
-												<p>09/05/2023 12:46</p>
-											</header>
-											<article>
-												<p>teste</p>
-											</article>
-											</article>
-											<dl class="js-errata-item">
-												<textarea style="height: 50px;" class="js-errata-texto-318"></textarea>
-												<button style="margin-top: 15px;"  class="button button_main" data-loading="0" style="float: right;" data-id_evolucao="318"> <span class="iconify" data-icon="fluent:add-circle-24-regular" style="color: #fecea2;"></span> Adicionar</button>
-											</dl>
-											
-											
-										</div>
-								</div>
+										</tr>
+									</tbody>
+								</table>
+								<?php 
+									}
+								?>
 							</div>
-						<!-- <div style="height:auto;" class="js-proximoAgendamento">
-							
-							<b>Retornar em:</b><br /> <?php echo $proximaConsulta->retorno;?> dias<br /><br />
-							<b>Duração:</b><br /> <?php echo $proximaConsulta->duracao;?><br /><br />
-							<b>Profissional:</b><br /> <?php echo $proximaConsultaProfissionais;?><br /><br />
-							<b>Necessita Laboratório:</b><br /> <?php echo $proximaConsulta->laboratorio==1?"Sim":"Não";?><br /><br />
-							<b>Necessita Imagem:</b><br /> <?php echo $proximaConsulta->imagem==1?"Sim":"Não";?><br /><br />
-							<b>Obs.:</b><br /> <?php echo utf8_encode(nl2br($proximaConsulta->obs));?><br /><br />
-							<i style="color:#666">Criado por<br /><b><?php echo $autor;?></b> ás <b><?php echo date('d/m/Y H:i',strtotime($proximaConsulta->data));?></b></i>
+
+							<script>
+								$(function(){
+									$('.js-errata-adicionar').click(function(){
+										let alertar = false;
+										let id_paciente = <?php echo $paciente->id;?>;
+										let texto   = $('.js-errata-texto').val();
+
+										if(!texto) {
+											alertar = true;
+											$('.js-errata-texto').css('backgroundColor', "#ffffdb");
+										}
+
+										if(alertar) {
+											swal({title: "Erro!", text: "Digite uma errata", type:"error", confirmButtonColor: "#424242"});
+											return false;
+										} else {
+
+											let data=`ajax=correcoes&id_paciente=${id_paciente}&obs=${texto}`;
+											$.ajax({
+												type:"POST",
+												data:data,
+												success:function(rtn) {
+													if(rtn.success) {
+														location.reload();
+													} else if(rtn.error) {
+														swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+													} else {
+														swal({title: "Erro!", text: 'Algum erro ocorreu durante o cadastro da errata!', type:"error", confirmButtonColor: "#424242"});
+													}
+												}
+											});
+										}
+									});
+								});
+							</script>
+							<div class="list-toggle-com box js-erratas">
+								
+								<header>
+									<h1>Correções</h1>
+								</header>
+								<?php 
+									if(count($correcoes)>0) {
+										foreach($correcoes as $c) {
+								?>
+								<article>
+									<header>
+										<p><?php echo isset($_colaboradores[$c->id_usuario])?utf8_encode($_colaboradores[$c->id_usuario]->nome):"-";?></p>
+										<p><?php echo date('d/m/Y H:i', strtotime($c->data));?></p>
+									</header>
+									<article>
+										<p><?php echo utf8_encode($c->obs);?></p>
+									</article>
+								</article>
+								
+								<?php 
+										}
+									} else {
+								?>
+								<article>
+									<center>Nenhuma errata realizada.</center>
+								</article>
+								<?php 
+									}
+								?>
+								
+								<dl>
+									<textarea class="js-errata-texto" style="height: 50px;"></textarea>
+									<button style="margin-top:15px" class="button button_main js-errata-adicionar" data-loading="0" style="float: right;"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i> Adicionar</button>
+								</dl>
+							</div>
 						</div>
-						-->
 					</div>
 						<?php
 					}
