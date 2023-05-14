@@ -92,43 +92,55 @@
 				$valor_total = 0;
 				// aqui faço um foreach em todos os fluxos
 				foreach ($fluxos as $id_fluxo => $fluxo) {
-					isset($extras['formas_pagamentos'][$fluxo->id_formapagamento]) ? $extras['formas_pagamentos'][$fluxo->id_formapagamento] += $fluxo->valor : $extras['formas_pagamentos'][$fluxo->id_formapagamento] = intVal($fluxo->valor);
-					$valor_total += $fluxo->valor;
-					$dados[$fluxo->id]['id_baixa'] = $fluxo->id;
-					$dados[$fluxo->id]['id_pagante_beneficiario'] = $fluxo->id_pagante_beneficiario;
-					$dados[$fluxo->id]['tipo_beneficiario'] = $fluxo->tipo;
-					$dados[$fluxo->id]['data_vencimento'] = $fluxo->data_vencimento;
-					$dados[$fluxo->id]['id_registro'] = $fluxo->id_registro;
-					$dados[$fluxo->id]['pagamento'] = $fluxo->pagamento;
-					$dados[$fluxo->id]['data_efetivado'] = $fluxo->data_efetivado;
-					$dados[$fluxo->id]['tipo'] = 'fluxo';
-					$dados[$fluxo->id]['valor'] = $fluxo->valor;
-					$dados[$fluxo->id]['valor_multa'] = $fluxo->valor_multa;
-					$dados[$fluxo->id]['valor_taxa'] = $fluxo->valor_taxa;
-					$dados[$fluxo->id]['valor_desconto'] = $fluxo->valor_desconto;
-					$dados[$fluxo->id]['valor_juros'] = $fluxo->valor_juros;
-					$dados[$fluxo->id]['desconto'] = $fluxo->desconto;
-					$dados[$fluxo->id]['valorTotalPagamento'] = $recebimento->valor ?? 0;
-					$dados[$fluxo->id]['titulo'] = $titulo;
-					$dados[$fluxo->id]['nome_pagante'] = $pagante;
-					$dados[$fluxo->id]['status'] = '';
-					$dados[$id_recebimento]['baixas'] = $_fluxos[$id_recebimento];
-	
-					if ($fluxo->pagamento == 0) {
+					// se nao é desconto
+					if($fluxo->desconto==0){
+						isset($extras['formas_pagamentos'][$fluxo->id_formapagamento]) ? $extras['formas_pagamentos'][$fluxo->id_formapagamento] += $fluxo->valor : $extras['formas_pagamentos'][$fluxo->id_formapagamento] = intVal($fluxo->valor);
+						$valor_total += $fluxo->valor;
+						$dados[$fluxo->id]['id_baixa'] = $fluxo->id;
+						$dados[$fluxo->id]['id_pagante_beneficiario'] = $fluxo->id_pagante_beneficiario;
+						$dados[$fluxo->id]['tipo_beneficiario'] = $fluxo->tipo;
+						$dados[$fluxo->id]['data_vencimento'] = $fluxo->data_vencimento;
+						$dados[$fluxo->id]['id_registro'] = $fluxo->id_registro;
+						$dados[$fluxo->id]['pagamento'] = $fluxo->pagamento;
+						$dados[$fluxo->id]['data_efetivado'] = $fluxo->data_efetivado;
+						$dados[$fluxo->id]['tipo'] = 'fluxo';
+						$dados[$fluxo->id]['valor'] = $fluxo->valor;
+						$dados[$fluxo->id]['valor_multa'] = $fluxo->valor_multa;
+						$dados[$fluxo->id]['valor_taxa'] = $fluxo->valor_taxa;
+						$dados[$fluxo->id]['valor_desconto'] = $fluxo->valor_desconto;
+						$dados[$fluxo->id]['valor_juros'] = $fluxo->valor_juros;
+						$dados[$fluxo->id]['desconto'] = $fluxo->desconto;
+						$dados[$fluxo->id]['valorTotalPagamento'] = $recebimento->valor ?? 0;
+						$dados[$fluxo->id]['titulo'] = $titulo;
+						$dados[$fluxo->id]['nome_pagante'] = $pagante;
+						$dados[$fluxo->id]['status'] = '';
+						$dados[$id_recebimento]['baixas'] = $_fluxos[$id_recebimento];
+		
+						if ($fluxo->pagamento == 0) {
+							$atraso = (strtotime($fluxo->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
+							if ($atraso < 0) {
+								$valor['valorVencido'] += $fluxo->valor;
+								$dados[$fluxo->id]['status'] = 'Vencido';
+								$extras['ids']['valorVencido']['fluxo'][$fluxo->id] = $fluxo->id;
+							} else {
+								$valor['aPagar'] += $fluxo->valor;
+								$dados[$fluxo->id]['status'] = 'a Receber';
+								$extras['ids']['aPagar']['fluxo'][$fluxo->id] = $fluxo->id;
+							}
+						} else {
+							$valor['valorPago'] += $fluxo->valor;
+							$dados[$fluxo->id]['status'] = 'Pago';
+							$extras['ids']['valorPago']['fluxo'][$fluxo->id] = $fluxo->id;
+						}
+					}else{
+						// se é desconto
+						$valor_total +=$fluxo->valor;
 						$atraso = (strtotime($fluxo->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
 						if ($atraso < 0) {
-							$valor['valorVencido'] += $fluxo->valor;
-							$dados[$fluxo->id]['status'] = 'Vencido';
-							$extras['ids']['valorVencido']['fluxo'][$fluxo->id] = $fluxo->id;
+							//$valor['valorVencido'] -= $fluxo->valor;
 						} else {
-							$valor['aPagar'] += $fluxo->valor;
-							$dados[$fluxo->id]['status'] = 'a Receber';
-							$extras['ids']['aPagar']['fluxo'][$fluxo->id] = $fluxo->id;
+							//$valor['aPagar'] -= $fluxo->valor;
 						}
-					} else {
-						$valor['valorPago'] += $fluxo->valor;
-						$dados[$fluxo->id]['status'] = 'Pago';
-						$extras['ids']['valorPago']['fluxo'][$fluxo->id] = $fluxo->id;
 					}
 				}
 				// aqui é se ainda tiver algum valor faltando da parcela total
@@ -170,7 +182,6 @@
 				if ($atraso < 0) {
 					$valor['valorVencido'] += $recebimento->valor;
 					$extras['ids']['valorVencido']['recebimento'][$recebimento->id] = $recebimento->id;
-					$valor['valorVencido'] += $recebimento->valor;
 					$status = "Vencido";
 				} else {
 					$valor['definirPagamento'] += $recebimento->valor;
@@ -303,7 +314,12 @@
 									<td><?= $x->status ?></td>
 									<td><strong><?= $x->nome_pagante ?></strong><br /><?= $x->titulo ?></td>
 									<td><strong>R$ <?= number_format($x->valor, 2, ',', '.') ?></strong></td>
-									<td style="font-size:0.813em; line-height:1.2;">Multa: R$ <?= number_format($x->valor_multa, 2, ',', '.') ?><br />Juros: R$ <?= number_format($x->valor_juros, 2, ',', '.') ?></td>
+									<td style="font-size:0.813em; line-height:1.2;">
+										<span style="color:var(<?=($x->valor_multa==0)?'--cinza3':'--cinza5'?>)" class="tooltip">Multa: R$ <?= number_format($x->valor_multa, 2, ',', '.') ?></span><br>
+										<span style="color:var(<?=($x->valor_juros==0)?'--cinza3':'--cinza5'?>)" class="tooltip">Juros: R$ <?= number_format($x->valor_juros, 2, ',', '.') ?></span><br>
+										<span style="color:var(<?=($x->valor_desconto==0)?'--cinza3':'--cinza5'?>)" class="tooltip">Desconto: R$ <?= number_format($x->valor_desconto, 2, ',', '.') ?></span><br>
+										<span style="color:var(--cinza5)" class="tooltip">Total: R$ <?= number_format((($x->valor+$x->valor_multa+$x->valor_juros)-$x->valor_desconto), 2, ',', '.') ?></span><br>
+									</td>
 									<td style="font-size:1.75rem;">
 										<span style="color:var(--cinza3)" title="Contrato assinado" class="tooltip"><i class="iconify" data-icon="fluent:signature-20-regular"></i></span>
 										<span style="color:var(--cinza3)" title="Nota fiscal emitida" class="tooltip"><i class="iconify" data-icon="heroicons:receipt-percent"></i></span>
