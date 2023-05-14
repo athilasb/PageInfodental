@@ -46,6 +46,7 @@
 			'valorTotal' => 0,
 			'valorJuros' => 0,
 			'valorMulta' => 0,
+			'valorDescontos' => 0,
 			"definirPagamento" => 0
 		);
 		// pegando as oriugens
@@ -257,7 +258,6 @@
 	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="css/style.css?v99" />
 	<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
 </head>
 <header class="header">
 	<div class="header__content content">
@@ -339,7 +339,6 @@
 							<span class="iconify" id="arrow-up" style="background: #FFFFFF;border: 1px solid #CDCDCD; border-radius: 7px; display:none; width: 35px; height: 35px;" data-icon="material-symbols:arrow-drop-up-rounded"></span>
 							<span class="iconify" id="arrow-down" style="background: #FFFFFF;border: 1px solid #CDCDCD; border-radius: 7px; width: 35px; height: 35px;" data-icon="material-symbols:arrow-drop-down-rounded"></span>
 						</a>
-
 					</section>
 				</div>
 				<div class=" accordion display-flex-center" style="display:none">
@@ -548,9 +547,6 @@
 			$('#arrow-down').toggle();
 
 		});
-	});
-
-	$(document).ready(function() {
 		$('.grafico-btn').click(function() {
 			// Adiciona a classe ativa apenas para o botão clicado
 			$(this).addClass('active');
@@ -571,11 +567,11 @@
 		// let valorRecebido = number_format(_valor.valorRecebido, 2, ',', '.');
 		// let valorTotal = number_format(_valor.valorTotal, 2, ',', '.');
 		// let valoresVencido = number_format(_valor.valoresVencido, 2, ',', '.');
-		let aReceber = _valor.aReceber;
-		let definirPagamento = _valor.definirPagamento;
-		let valoresVencido = _valor.valoresVencido;
-		let valorRecebido = _valor.valorRecebido;
-		let valorTotal = _valor.valorTotal;
+		let aReceber = _valor?.aReceber??0;
+		let definirPagamento = _valor?.definirPagamento??0;
+		let valoresVencido = _valor?.valoresVencido??0;
+		let valorRecebido = _valor?.valorRecebido??0;
+		let valorTotal = _valor?.valorTotal??0;
 		//chart Status do pagamento
 		var options = {
 			//informações do grafico 
@@ -617,9 +613,11 @@
 		//chart Formas do pagamento
 		let series = []
 		let labels = []
-		for(let x in _extras?.formas_pagamentos){
-			series.push(_extras?.formas_pagamentos[x])
-			labels.push(`${_formasDePagamento[x]?.titulo}: R$ ${number_format(_extras?.formas_pagamentos[x],2,',','.')}`)
+		if(_extras?.formas_pagamentos){
+			for(let x in _extras?.formas_pagamentos){
+				series.push(_extras?.formas_pagamentos[x])
+				labels.push(`${_formasDePagamento[x]?.titulo}: R$ ${number_format(_extras?.formas_pagamentos[x],2,',','.')}`)
+			}
 		}
 		var options = {
 			//informações do grafico 
@@ -654,151 +652,11 @@
 			//informações do hover 
 			labels
 		};
+		
 		var chart = new ApexCharts(document.querySelector("#chart2"), options);
 		//redenrizar elementos
 		chart.render();
 	}
-	//Conciliações dos pagamentos
-
-	var options = {
-		series: [{
-			name: 'Paguei',
-			data: [{
-					x: '26/Abr',
-					y: 1292,
-					goals: [{
-						name: 'Conciliado',
-						value: 1400,
-						strokeHeight: 5,
-						strokeColor: '#5C7DB0'
-					}]
-				},
-				{
-					x: '27/Abr',
-					y: 4432,
-					goals: [{
-						name: 'Conciliado',
-						value: 5400,
-						strokeHeight: 5,
-						strokeColor: '#5C7DB0'
-					}]
-				},
-				{
-					x: '28/Abr',
-					y: 5423,
-					goals: [{
-						name: 'Conciliado',
-						value: 5200,
-						strokeHeight: 5,
-						strokeColor: '#5C7DB0'
-					}]
-				},
-				{
-					x: '29/Abr',
-					y: 6653,
-					goals: [{
-						name: 'Conciliado',
-						value: 6500,
-						strokeHeight: 5,
-						strokeColor: '#5C7DB0'
-					}]
-				},
-				{
-					x: '30/Abr',
-					y: 8133,
-					goals: [{
-						name: 'Conciliado',
-						value: 6600,
-						strokeHeight: 5,
-						strokeColor: '#5C7DB0'
-					}]
-				},
-				{
-					x: '01/Mar',
-					y: 7132,
-					goals: [{
-						name: 'Conciliado',
-						value: 7500,
-						strokeHeight: 5,
-						strokeColor: '#5C7DB0'
-					}]
-				},
-				{
-					x: '02/Mar',
-					y: 7332,
-					goals: [{
-						name: 'Conciliado',
-						value: 8700,
-						strokeHeight: 5,
-						strokeColor: '#5C7DB0'
-					}]
-				}
-			]
-		}],
-		chart: {
-			height: 327,
-			type: 'bar'
-		},
-		plotOptions: {
-			bar: {
-				columnWidth: '60%'
-			}
-		},
-		colors: ['#00E396'],
-		dataLabels: {
-			enabled: false
-		},
-		legend: {
-			show: true,
-			showForSingleSeries: true,
-			customLegendItems: ['Paguei', 'Conciliado'],
-			markers: {
-				fillColors: ['#00E396', '#5C7DB0']
-			}
-		}
-	};
-
-	var chart = new ApexCharts(document.querySelector("#chart3"), options);
-	chart.render();
-
-	//chart Emissão de notas e recibos
-
-	var options = {
-		//informações do grafico 
-		series: [5000, 1000, 2000],
-		chart: {
-			height: 327,
-			type: 'donut',
-		},
-		//cor de cada elemento
-		dataLabels: {
-			enabled: false
-		},
-		//cor de cada elemento
-		colors: ['#1E145E', '#546CF8', '#6EA1D2'],
-		responsive: [{
-			breakpoint: 480,
-			options: {
-				chart: {
-					width: 200
-				},
-				legend: {
-					show: false
-				}
-			}
-		}],
-		legend: {
-			position: 'right',
-			offsetY: 0,
-			height: 230,
-			show: false // oculta as labels da direita,"
-		},
-		//informações do hover 
-		labels: ['Notas emitidas: R$ 5.000,00', 'Recibos emitidos: R$  1.000,00', 'Não emitidos: R$  2.000,00 ']
-	};
-	var chart = new ApexCharts(document.querySelector("#chart4"), options);
-	//redenrizar elementos
-	chart.render();
 </script>
 <?php
 	$apiConfig = array(

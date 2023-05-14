@@ -5,6 +5,15 @@
 
 	include "includes/header.php";
 	include "includes/nav.php";
+
+	// formas de pagamento
+	$_formasDePagamento = array();
+	$optionFormasDePagamento = '';
+	$sql->consult($_p . "parametros_formasdepagamento", "*", "where lixo=0 order by titulo asc");
+	while ($x = mysqli_fetch_object($sql->mysqry)) {
+		$_formasDePagamento[$x->id] = (object)array("id" => $x->id, "lixo" => $x->lixo, "titulo" => utf8_encode($x->titulo), "tipo" => $x->tipo, "politica_de_pagamento" => $x->politica_de_pagamento);
+	}
+
 	$data_inicial_filtro = isset($_GET['data_inicio']) ? $_GET['data_inicio'] : date('Y-m-d');
 	$data_final_filtro =  isset($_GET['data_final']) ? $_GET['data_final'] : date('Y-m-d', strtotime("+7 days"));
 	$dias_filtro = (strtotime($data_final_filtro) - strtotime($data_inicial_filtro)) / (60 * 60 * 24);
@@ -24,10 +33,11 @@
 		$valor = array(
 			'aPagar' => 0,
 			'valorPago' => 0,
-			'valorVencido' => 0,
+			'valoresVencido' => 0,
 			'valorTotal' => 0,
 			'valorJuros' => 0,
 			'valorMulta' => 0,
+			'valorDescontos' => 0,
 			"definirPagamento" => 0
 		);
 		// pegando as oriugens
@@ -119,9 +129,9 @@
 						if ($fluxo->pagamento == 0) {
 							$atraso = (strtotime($fluxo->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
 							if ($atraso < 0) {
-								$valor['valorVencido'] += $fluxo->valor;
+								$valor['valoresVencido'] += $fluxo->valor;
 								$dados[$fluxo->id]['status'] = 'Vencido';
-								$extras['ids']['valorVencido']['fluxo'][$fluxo->id] = $fluxo->id;
+								$extras['ids']['valoresVencido']['fluxo'][$fluxo->id] = $fluxo->id;
 							} else {
 								$valor['aPagar'] += $fluxo->valor;
 								$dados[$fluxo->id]['status'] = 'a Receber';
@@ -135,9 +145,10 @@
 					}else{
 						// se é desconto
 						$valor_total +=$fluxo->valor;
+						$valor['valorTotal'] -= $fluxo->valor;
 						$atraso = (strtotime($fluxo->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
 						if ($atraso < 0) {
-							//$valor['valorVencido'] -= $fluxo->valor;
+							//$valor['valoresVencido'] -= $fluxo->valor;
 						} else {
 							//$valor['aPagar'] -= $fluxo->valor;
 						}
@@ -167,8 +178,8 @@
 					$dados[$id_recebimento]['baixas'] = $_fluxos[$id_recebimento];
 					$dados[$id_recebimento]['saldo_a_pagar'] = $faltam;
 					if ($atraso < 0) {
-						$valor['valorVencido'] += $faltam;
-						$extras['ids']['valorVencido']['recebimento'][$recebimento->id] = $recebimento->id;
+						$valor['valoresVencido'] += $faltam;
+						$extras['ids']['valoresVencido']['recebimento'][$recebimento->id] = $recebimento->id;
 						$dados[$recebimento->id]['status'] = 'Vencido';
 					} else {
 						$valor['definirPagamento'] += $faltam;
@@ -180,8 +191,8 @@
 				// se Nao existe alguma baixa para este pagamento
 				$atraso = (strtotime($recebimento->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
 				if ($atraso < 0) {
-					$valor['valorVencido'] += $recebimento->valor;
-					$extras['ids']['valorVencido']['recebimento'][$recebimento->id] = $recebimento->id;
+					$valor['valoresVencido'] += $recebimento->valor;
+					$extras['ids']['valoresVencido']['recebimento'][$recebimento->id] = $recebimento->id;
 					$status = "Vencido";
 				} else {
 					$valor['definirPagamento'] += $recebimento->valor;
@@ -214,11 +225,16 @@
 		$dados = json_decode(json_encode($dados));
 		return [$dados, $_recebimentos, $valor, $extras];
 	}
-
-	
 	[$dados, $_recebimentos, $valor, $extras] = getValores($data_inicial_filtro, $data_final_filtro);
-	//[$dados, $valor] = getPagamentos($data_inicial_filtro, $data_final_filtro);
 ?>
+<head>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="css/style.css?v99" />
+	<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+</head>
 <header class="header">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -242,7 +258,7 @@
 		</div>
 	</div>
 </header>
-<main class="main">
+<main class="main" data-pagina="contasapagar">
 	<div class="main__content content">
 		<section class="filter">
 			<div class="filter-group">
@@ -265,33 +281,123 @@
 		</section>
 		<section class="grid">
 			<div class="box">
-				<section class="filter" style="margin-bottom:0;">
-					<div class="filter-group">
-						<div class="filter-title">
-							<p>Total</p>
-							<h2><strong id='valor-valorTotal'>R$ <?= number_format($valor['valorTotal'], 2, ',', '.') ?></strong></h2>
+				<div class="" style="display:flex; flex-wrap:wrap; justify-content:space-between;">
+					<section class="filter" style="margin-bottom:0;">
+						<div class="filter-group">
+							<div class="filter-title">
+								<p>Total</p>
+								<h2><strong id='valor-valorTotal'>R$ <?= number_format($valor['valorTotal'], 2, ',', '.') ?></strong></h2>
+							</div>
+							<div class="filter-title">
+								<p>A Pagar</p>
+								<h2 style="color:var(--cinza4)" id='valor-aPagar'>R$ <?= number_format($valor['aPagar'], 2, ',', '.') ?></h2>
+							</div>
+							<div class="filter-title">
+								<p>Pago</p>
+								<h2 style="color:var(--verde)" id='valor-valorPago'>R$ <?= number_format($valor['valorPago'], 2, ',', '.') ?></h2>
+							</div>
+							<div class="filter-title">
+								<p>Vencido</p>
+								<h2 style="color:var(--vermelho)" id='valor-valoresVencido'>R$ <?= number_format($valor['valoresVencido'], 2, ',', '.') ?></h2>
+							</div>
+							<div class="filter-title">
+								<p>A definir pagamento</p>
+								<h2 style="color:var(--laranja)" id='valor-definirPagamento'>R$ <?= number_format($valor['definirPagamento'], 2, ',', '.') ?></h2>
+							</div>
 						</div>
-						<div class="filter-title">
-							<p>A Pagar</p>
-							<h2 style="color:var(--cinza4)" id='valor-aPagar'>R$ <?= number_format($valor['aPagar'], 2, ',', '.') ?></h2>
+						<div class="filter-group">
+							<!-- <a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i> <span>Gráficos</span></a> -->
 						</div>
-						<div class="filter-title">
-							<p>Pago</p>
-							<h2 style="color:var(--verde)" id='valor-valorPago'>R$ <?= number_format($valor['valorPago'], 2, ',', '.') ?></h2>
+					</section>
+					<section>
+						<a href="javascript:;" class="link-graficos">
+							<span class="veja-graficos">Veja os gráficos</span>
+							<span class="iconify" id="arrow-up" style="background: #FFFFFF;border: 1px solid #CDCDCD; border-radius: 7px; display:none; width: 35px; height: 35px;" data-icon="material-symbols:arrow-drop-up-rounded"></span>
+							<span class="iconify" id="arrow-down" style="background: #FFFFFF;border: 1px solid #CDCDCD; border-radius: 7px; width: 35px; height: 35px;" data-icon="material-symbols:arrow-drop-down-rounded"></span>
+						</a>
+					</section>
+				</div>
+				<div class=" accordion display-flex-center" style="display:none">
+					<div class="botoes-graficos">
+						<button id="status-pagamento-btn" class="grafico-btn active">Status do pagamento</button>
+						<button id="formas-pagamento-btn" class="grafico-btn">Formas de pagamento</button>
+						<!-- <button id="conciliacoes-btn" class="grafico-btn">Conciliações dos pagamentos</button> -->
+						<!-- <button id="emissao-notas-btn" class="grafico-btn">Emissão de notas e recibos</button> -->
+					</div>
+					<div class="graficos">
+						<div id="status-pagamento" class="grafico-content" style="display:block">
+							<div class="graficos-view display-flex-center">
+								<div id="chart1" style="height: 305px;"></div>
+								<div id="chart-info1" class="margin-left-25">
+									<div class="label-info-1 info-item">
+										<span class="color"></span>
+										<span class="label"><b>Pago:</b></span>
+										<span class="value">R$ <?= number_format($valor['valorPago'], 2, ',', '.') ?></span>
+									</div>
+									<div class="label-info-2 info-item">
+										<span class="color"></span>
+										<span class="label"><b>Vencidos:</b></span>
+										<span class="value">R$ <?= number_format($valor['valoresVencido'], 2, ',', '.') ?></span>
+									</div>
+									<div class="label-info-3 info-item">
+										<span class="color"></span>
+										<span class="label"><b>Definir pagamento:</b></span>
+										<span class="value">R$ <?= number_format($valor['definirPagamento'], 2, ',', '.') ?></span>
+									</div>
+									<div class="label-info-3 info-item">
+										<span class="color"></span>
+										<span class="label"><b>A Pagar</b></span>
+										<span class="value">R$ <?= number_format($valor['aPagar'], 2, ',', '.') ?></span>
+									</div>
+
+								</div>
+							</div>
 						</div>
-						<div class="filter-title">
-							<p>Vencido</p>
-							<h2 style="color:var(--vermelho)" id='valor-valorVencido'>R$ <?= number_format($valor['valorVencido'], 2, ',', '.') ?></h2>
+						<div id="formas-pagamento" class="grafico-content">
+							<div class="graficos-view display-flex-center">
+								<div id="chart2" style="height: 305px;"></div>
+								<div id="chart-info2" class="margin-left-25">
+									<?php 
+										foreach($extras['formas_pagamentos'] as $id=>$forma){
+									?>
+										<div class="info-item">
+											<span class="color"></span>
+											<span class="label"><b><?=$_formasDePagamento[$id]->titulo?></b></span>
+											<span class="value">R$ <?=number_format($forma,2,',','.');?></span>
+										</div>
+									<?php 
+										}
+									?>
+								</div>
+							</div>
 						</div>
-						<div class="filter-title">
-							<p>A definir pagamento</p>
-							<h2 style="color:var(--laranja)" id='valor-definirPagamento'>R$ <?= number_format($valor['definirPagamento'], 2, ',', '.') ?></h2>
+						<div id="conciliacoes" class="grafico-content">
+							<div id="chart3" style="height: 305px;"></div>
+						</div>
+						<div id="emissao-notas" class="grafico-content">
+							<div class="graficos-view display-flex-center">
+								<div id="chart4" style="height: 305px;"></div>
+								<div id="chart-info4" class="margin-left-25">
+									<div class="label-info-1 info-item">
+										<span class="color"></span>
+										<span class="label"><b>Notas emitidas:</b></span>
+										<span class="value">R$ 5.000,00</span>
+									</div>
+									<div class="label-info-2 info-item">
+										<span class="color"></span>
+										<span class="label"><b>Recibos emitidos:</b></span>
+										<span class="value">R$ 1.000,00</span>
+									</div>
+									<div class="label-info-3 info-item">
+										<span class="color"></span>
+										<span class="label"><b>Não emitidos:</b></span>
+										<span class="value">R$ 2.000,00</span>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
-					<div class="filter-group">
-						<!-- <a href="javascript:;" class="button"><i class="iconify" data-icon="fluent:chevron-down-24-regular"></i> <span>Gráficos</span></a> -->
-					</div>
-				</section>
+				</div>
 			</div>
 			<div class="box">
 				<div class="list2">
@@ -355,8 +461,10 @@
 </main>
 <script>
 	let _pagamentos = <?=json_encode($dados)?>;
-	
-
+	const _valor = <?= json_encode($valor) ?>;
+	const _formasDePagamento = <?= json_encode($_formasDePagamento); ?>;
+	const _extras = <?= json_encode($extras); ?>;
+	populaGraficos()
 	// add calendario no botao de filtro
 	$('.js-calendario').daterangepicker({
 		"autoApply": true,
@@ -393,15 +501,127 @@
 			"firstDay": 1
 		},
 	});
-
-
 	$('.js-calendario').on('apply.daterangepicker', function(ev, picker) {
 		let dtFim = picker.endDate.format('YYYY-MM-DD');
 		let dtInicio = picker.startDate.format('YYYY-MM-DD');
 		document.location.href = `<?php echo "$_page?pg_financeiro_contasapagar?"; ?>&data_inicio=${dtInicio}&data_final=${dtFim}`
 	});
 
-	
+	function populaGraficos() {
+		let aPagar = _valor?.aPagar??0;
+		let definirPagamento = _valor?.definirPagamento??0;
+		let valoresVencido = _valor?.valoresVencido??0;
+		let valorPago = _valor?.valorPago??0;
+		let valorTotal = _valor?.valorTotal??0;
+		//chart Status do pagamento
+		var options = {
+			//informações do grafico 
+			series: [valorPago, valoresVencido, definirPagamento, aPagar],
+			chart: {
+				height: 327,
+				type: 'donut',
+			},
+			//cor de cada elemento
+			dataLabels: {
+				enabled: false
+			},
+			//cor de cada elemento
+			colors: ['#01E296', '#FD324E', '#FFAF15', "#566FFF"],
+			responsive: [{
+				breakpoint: 480,
+				options: {
+					chart: {
+						width: 200
+					},
+					legend: {
+						show: false
+					}
+				}
+			}],
+			legend: {
+				position: 'right',
+				offsetY: 0,
+				height: 230,
+				show: false // oculta as labels da direita,"
+			},
+			//informações do hover 
+			labels: [`Pago: R$ ${number_format(valorPago,2,',','.')}`, `Vencidos: R$ ${number_format(valoresVencido,2,',','.')}`, `Definir pagamento: R$  ${number_format(definirPagamento,2,',','.')} `, `A receber: R$  ${number_format(aPagar,2,',','.')}`]
+		};
+		console.log(options)
+		var chart = new ApexCharts(document.querySelector("#chart1"), options);
+		//redenrizar elementos
+		chart.render();
+
+		//chart Formas do pagamento
+		let series = []
+		let labels = []
+		if(_extras?.formas_pagamentos){
+			for(let x in _extras?.formas_pagamentos){
+				series.push(_extras?.formas_pagamentos[x])
+				labels.push(`${_formasDePagamento[x]?.titulo}: R$ ${number_format(_extras?.formas_pagamentos[x],2,',','.')}`)
+			}
+		}
+		var options = {
+			//informações do grafico 
+			series,
+			chart: {
+				height: 327,
+				type: 'donut',
+			},
+			//cor de cada elemento
+			dataLabels: {
+				enabled: false
+			},
+			//cor de cada elemento
+			colors: ['#1E145E', '#FC8DB0', '#6EA1D2', "#566FFF"],
+			responsive: [{
+				breakpoint: 480,
+				options: {
+					chart: {
+						width: 200
+					},
+					legend: {
+						show: false
+					}
+				}
+			}],
+			legend: {
+				position: 'right',
+				offsetY: 0,
+				height: 230,
+				show: false // oculta as labels da direita,"
+			},
+			//informações do hover 
+			labels
+		};
+		
+		var chart = new ApexCharts(document.querySelector("#chart2"), options);
+		//redenrizar elementos
+		chart.render();
+	}
+
+	$(document).ready(function() {
+		$('#arrow-up').hide(); // oculta o ícone de seta para cima
+		$('.link-graficos').click(function() {
+			$(".accordion").slideToggle();
+			$('#arrow-up').toggle();
+			$('#arrow-down').toggle();
+
+		});
+		$('.grafico-btn').click(function() {
+			// Adiciona a classe ativa apenas para o botão clicado
+			$(this).addClass('active');
+			// Remove a classe ativa de todos os botões, exceto o botão atual
+			$('.grafico-btn').not(this).removeClass('active');
+			// Oculta todo o conteúdo do gráfico
+			$('.grafico-content').hide();
+			// Mostra apenas o conteúdo do gráfico correspondente
+			var id = $(this).attr('id').replace('-btn', '');
+			$('#' + id).show();
+			// Altera a cor de fundo e a cor do texto do botão clicado
+		});
+	});
+
 </script>
 <?php 
 	$apiConfig = array(
