@@ -511,112 +511,124 @@ krsort($registrosPorOrdem);
 									</div>
 								</div>
 							</div>
-							<div class="box" >
-								<div style="overflow: auto;max-height: 450px;position: relative;">
-								
-									<section class="grid grid_3 list-agendamentos">
-										<div>
-											<b>Retornar em:</b>
-											<p>2 dias</p>
-											
-										</div>
-										<div>
-											<b>Duração:</b>
-											<p>30 min</p>
-										</div>
-										<div>
-											<b>Profissional:</b>
-											<p>Dr. Luciano</p>
-										</div>
-										<div>
-											<b>Necessita Laboratório:</b>
-											<p>Não</p>
-										</div>
-										<div>
-										</div>
-										<div>
-											<b>Necessita imagem:</b>
-											<p>Não</p>
-										</div>
-										<div>
-											<b>Obs.:</b>
-											<p>Teste</p>
-										</div>
-										<div></div>
-										<div>
-											<b>Criado por</b>
-											<p>Caio Lucena às 09/05/2023 12:45</p>
-										</div>
-									</section>
-									<section class="grid grid_3 list-agendamentos">
-										<div>
-											<b>Retornar em:</b>
-											<p>2 dias</p>
-											
-										</div>
-										<div>
-											<b>Duração:</b>
-											<p>30 min</p>
-										</div>
-										<div>
-											<b>Profissional:</b>
-											<p>Dr. Luciano</p>
-										</div>
-										<div>
-											<b>Necessita Laboratório:</b>
-											<p>Não</p>
-										</div>
-										<div>
-										</div>
-										<div>
-											<b>Necessita imagem:</b>
-											<p>Não</p>
-										</div>
-										<div>
-											<b>Obs.:</b>
-											<p>Teste</p>
-										</div>
-										<div></div>
-										<div>
-											<b>Criado por</b>
-											<p>Caio Lucena às 09/05/2023 12:45</p>
-										</div>
-									</section>
-									<section class="grid grid_3 list-agendamentos">
-										<div>
-											<b>Retornar em:</b>
-											<p>2 dias</p>
-											
-										</div>
-										<div>
-											<b>Duração:</b>
-											<p>30 min</p>
-										</div>
-										<div>
-											<b>Profissional:</b>
-											<p>Dr. Luciano</p>
-										</div>
-										<div>
-											<b>Necessita Laboratório:</b>
-											<p>Não</p>
-										</div>
-										<div>
-										</div>
-										<div>
-											<b>Necessita imagem:</b>
-											<p>Não</p>
-										</div>
-										<div>
-											<b>Obs.:</b>
-											<p>Teste</p>
-										</div>
-										<div></div>
-										<div>
-											<b>Criado por</b>
-											<p>Caio Lucena às 09/05/2023 12:45</p>
-										</div>
-									</section>
-								</div>
+							<div class="box" style="overflow: auto;max-height: 450px;position: relative;">
+								<table class="list-agendamentos" style="margin: 20px;">
+									<tbody>
+										<tr>
+											<td><b>Retornar em:</b> <br>
+												2 dias
+											</td>
+											<td>
+												<b>Duração:</b> <br>
+												30 min
+											</td>
+											<td>
+												<b>Profissional:</b> <br>
+												Dr. Luciano
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<b>Necessita Laboratório:</b> <br>
+												Não
+											</td>
+											<td></td>
+											<td style="margin-top: 30px;">
+												<b>Necessita imagem:</b> <br>
+												Não
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<b>Obs.:</b> <br>
+												Teste
+											</td>
+											<td></td>
+											<td>
+												Criado por <br>
+												<b>Caio Lucena às 09/05/2023 12:45</b>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+								<table class="list-agendamentos" style="margin: 20px;">
+									<tbody>
+										<tr>
+											<td><b>Retornar em:</b> <br>
+												2 dias
+											</td>
+											<td>
+												<b>Duração:</b> <br>
+												30 min
+											</td>
+											<td>
+												<b>Profissional:</b> <br>
+												Dr. Luciano
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<b>Necessita Laboratório:</b> <br>
+												Não
+											</td>
+											<td></td>
+											<td style="margin-top: 30px;">
+												<b>Necessita imagem:</b> <br>
+												Não
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<b>Obs.:</b> <br>
+												Teste
+											</td>
+											<td></td>
+											<td>
+												Criado por <br>
+												<b>Caio Lucena às 09/05/2023 12:45</b>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+								<table class="list-agendamentos" style="margin: 20px;">
+									<tbody>
+										<tr>
+											<td><b>Retornar em:</b> <br>
+												2 dias
+											</td>
+											<td>
+												<b>Duração:</b> <br>
+												30 min
+											</td>
+											<td>
+												<b>Profissional:</b> <br>
+												Dr. Luciano
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<b>Necessita Laboratório:</b> <br>
+												Não
+											</td>
+											<td></td>
+											<td style="margin-top: 30px;">
+												<b>Necessita imagem:</b> <br>
+												Não
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<b>Obs.:</b> <br>
+												Teste
+											</td>
+											<td></td>
+											<td>
+												Criado por <br>
+												<b>Caio Lucena às 09/05/2023 12:45</b>
+											</td>
+										</tr>
+									</tbody>
+								</table>
 							</div>
 
 						</div>
@@ -632,158 +644,156 @@ krsort($registrosPorOrdem);
 										</div>
 									</div>
 								</div>
-								<div class="box">
-									<section style="overflow: auto;max-height: 450px;">
-										<div class="history2">
-											<?php
-											foreach ($registrosPorOrdem as $e) {
+								<section style="overflow: auto;max-height: 450px;">
+									<div class="history2">
+										<?php
+										foreach ($registrosPorOrdem as $e) {
 
-												$subagendas = '';
-												if (is_array($e) and isset($e['ultimaAgenda'])) {
-													$x = $e['ultimaAgenda'];
-													$subagendas = $e['grupo'];
-												} else {
-													$x = $e;
-												}
+											$subagendas = '';
+											if (is_array($e) and isset($e['ultimaAgenda'])) {
+												$x = $e['ultimaAgenda'];
+												$subagendas = $e['grupo'];
+											} else {
+												$x = $e;
+											}
 
-												$style = "";
-												$evento = '';
-												if ($x->evento == "agendaStatus" or $x->evento == "agendaHorario" or $x->evento == "agendaNovo") {
-													$evento = "agendamento";
-													$obs = '';
-													$icone = '<i class="iconify" data-icon="mdi:calendar-check"></i>';
-													$agenda = $cadeira = $profissionais = $profissionaisIniciais = '';
+											$style = "";
+											$evento = '';
+											if ($x->evento == "agendaStatus" or $x->evento == "agendaHorario" or $x->evento == "agendaNovo") {
+												$evento = "agendamento";
+												$obs = '';
+												$icone = '<i class="iconify" data-icon="mdi:calendar-check"></i>';
+												$agenda = $cadeira = $profissionais = $profissionaisIniciais = '';
 
-													if (isset($_agendas[$x->id_agenda])) {
-														$agenda = $_agendas[$x->id_agenda];
-														if (isset($_cadeiras[$agenda->id_cadeira])) {
-															$cadeira = $_cadeiras[$agenda->id_cadeira];
-														}
-														$icone = '<span style="background:' . $_status[$agenda->id_status]->cor . ';color:#FFF;">' . $icone . '</span>';
+												if (isset($_agendas[$x->id_agenda])) {
+													$agenda = $_agendas[$x->id_agenda];
+													if (isset($_cadeiras[$agenda->id_cadeira])) {
+														$cadeira = $_cadeiras[$agenda->id_cadeira];
+													}
+													$icone = '<span style="background:' . $_status[$agenda->id_status]->cor . ';color:#FFF;">' . $icone . '</span>';
 
-														$aux = explode(",", $agenda->profissionais);
-														foreach ($aux as $idP) {
-															if (!empty($idP) and is_numeric($idP) and isset($_colaboradores[$idP])) {
+													$aux = explode(",", $agenda->profissionais);
+													foreach ($aux as $idP) {
+														if (!empty($idP) and is_numeric($idP) and isset($_colaboradores[$idP])) {
 
-																if (!empty($profissionaisIniciais)) {
-																	$profissionaisIniciais = '<div class="badge-prof">+ ' . (count($aux) - 2) . '</div>';
-																	break;
-																}
-
-																$profissionais .= utf8_encode($_colaboradores[$idP]->nome) . ", ";
-																$profissionaisIniciais .= '<div class="badge-prof" style="background:' . $_colaboradores[$idP]->calendario_cor . '">' . $_colaboradores[$idP]->calendario_iniciais . '</div>';
+															if (!empty($profissionaisIniciais)) {
+																$profissionaisIniciais = '<div class="badge-prof">+ ' . (count($aux) - 2) . '</div>';
+																break;
 															}
+
+															$profissionais .= utf8_encode($_colaboradores[$idP]->nome) . ", ";
+															$profissionaisIniciais .= '<div class="badge-prof" style="background:' . $_colaboradores[$idP]->calendario_cor . '">' . $_colaboradores[$idP]->calendario_iniciais . '</div>';
 														}
-														if (!empty($profissionais)) $profissionais = substr($profissionais, 0, strlen($profissionais) - 2);
-
-														//31/03 (quinta) • 10:00
-														$dataTimeline = date('d/m/y • H:i', strtotime($agenda->agenda_data));
 													}
+													if (!empty($profissionais)) $profissionais = substr($profissionais, 0, strlen($profissionais) - 2);
 
-													if (empty($agenda) or empty($cadeira)) continue;
-												} else if ($x->evento == "observacao" || $x->evento == "relacionamento") {
-													$evento = "relacionamento";
-													$icone = '<span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>';
-													$dataTimeline = date('d/m/y • H:i', strtotime($x->data));
-
-													$profissionaisIniciais = isset($_colaboradores[$x->id_usuario]) ? utf8_encode($_colaboradores[$x->id_usuario]->nome) : "";
-													$cadeira = '';
-
-													$obs = utf8_encode($x->descricao);
-													if ($x->id_obs > 0 and isset($_historicoStatus[$x->id_obs])) {
-														$obs = "<strong>" . utf8_encode($_historicoStatus[$x->id_obs]->titulo) . "</strong><br />" . $obs;
-													}
+													//31/03 (quinta) • 10:00
+													$dataTimeline = date('d/m/y • H:i', strtotime($agenda->agenda_data));
 												}
-											?>
-												<div class="history2-item">
-													<aside>
+
+												if (empty($agenda) or empty($cadeira)) continue;
+											} else if ($x->evento == "observacao" || $x->evento == "relacionamento") {
+												$evento = "relacionamento";
+												$icone = '<span><i class="iconify" data-icon="mdi:chat-processing-outline"></i></span>';
+												$dataTimeline = date('d/m/y • H:i', strtotime($x->data));
+
+												$profissionaisIniciais = isset($_colaboradores[$x->id_usuario]) ? utf8_encode($_colaboradores[$x->id_usuario]->nome) : "";
+												$cadeira = '';
+
+												$obs = utf8_encode($x->descricao);
+												if ($x->id_obs > 0 and isset($_historicoStatus[$x->id_obs])) {
+													$obs = "<strong>" . utf8_encode($_historicoStatus[$x->id_obs]->titulo) . "</strong><br />" . $obs;
+												}
+											}
+										?>
+											<div class="history2-item">
+												<aside>
+													<?php
+													//<span style="background:var(--verde);"><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span>
+													echo $icone;
+													?>
+												</aside>
+
+												<article>
+													<div class="history2-main">
+														<div>
+															<h1><?php echo $dataTimeline; ?></h1>
+															<?php echo is_object($cadeira) ? "<h2>" . utf8_encode($cadeira->titulo) . "</h2>" : ""; ?>
+															<?php echo $profissionaisIniciais; ?>
+
+														</div><?php echo $obs; ?>
 														<?php
-														//<span style="background:var(--verde);"><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span>
-														echo $icone;
+														if (is_array($subagendas) and count($subagendas) > 0) {
 														?>
-													</aside>
-
-													<article>
-														<div class="history2-main">
-															<div>
-																<h1><?php echo $dataTimeline; ?></h1>
-																<?php echo is_object($cadeira) ? "<h2>" . utf8_encode($cadeira->titulo) . "</h2>" : ""; ?>
-																<?php echo $profissionaisIniciais; ?>
-
-															</div><?php echo $obs; ?>
+															<a href="javascript:;" onclick="$(this).parent().next('.history2-more').slideToggle('fast');">detalhes</a></h3>
+														<?php
+														}
+														?>
+													</div>
+													<?php
+													if (is_array($subagendas) and count($subagendas) > 0) {
+													?>
+														<div class="history2-more">
 															<?php
-															if (is_array($subagendas) and count($subagendas) > 0) {
+															foreach ($subagendas as $s) {
+																if ($s->evento == "agendaStatus" or $s->evento == "agendaHorario" or $s->evento == "agendaNovo") {
+																	$agenda = $cadeira = $profissionais = '';
+																	if (isset($_agendas[$s->id])) {
+																		$agenda = $_agendas[$s->id];
+																		if (isset($_cadeiras[$agenda->id_cadeira])) {
+																			$cadeira = $_cadeiras[$agenda->id_cadeira];
+																		}
+
+																		$aux = explode(",", $agenda->profissionais);
+																		foreach ($aux as $idP) {
+																			if (!empty($idP) and is_numeric($idP) and isset($_colaboradores[$idP])) {
+																				$profissionais .= utf8_encode($_colaboradores[$idP]->nome) . ", ";
+																			}
+																		}
+																		if (!empty($profissionais)) $profissionais = substr($profissionais, 0, strlen($profissionais) - 2);
+																		$dataTimeline = date('d/m/y H:i', strtotime($agenda->agenda_data));
+																	}
+
+																	if (empty($agenda) or empty($cadeira)) continue;
+																}
 															?>
-																<a href="javascript:;" onclick="$(this).parent().next('.history2-more').slideToggle('fast');">detalhes</a></h3>
+
+
+																<div class="history2-more-item">
+
+																	<h1><?php echo $dataTimeline; ?><?php echo isset($_colaboradores[$s->id_usuario]) ? " - " . utf8_encode($_colaboradores[$s->id_usuario]->nome) : ""; ?></h1>
+																	<?php
+																	if ($s->evento == "agendaHorario") {
+																	?>
+																		<h2>Horário alterado de <span class="data"><?php echo date('d/m/ H:i', strtotime($s->agenda_data_antigo)); ?></span> para <span class="data"><?php echo date('d/m H:i', strtotime($s->agenda_data_novo)); ?></span> <br /><?php echo utf8_encode($cadeira->titulo); ?><?php echo !empty($profissionais) ? " - " . $profissionais : ""; ?></h2>
+																	<?php
+																	} else if ($s->evento == "agendaStatus") {
+																	?>
+																		<h2>Alterou status de <span class="data" style="background:<?php echo $_agendaStatus[$s->id_status_antigo]->cor; ?>"><?php echo utf8_encode($_agendaStatus[$s->id_status_antigo]->titulo); ?></span> para <span class="data" style="background:<?php echo $_agendaStatus[$s->id_status_novo]->cor; ?>"><?php echo utf8_encode($_agendaStatus[$s->id_status_novo]->titulo); ?></span></h2>
+																	<?php
+																	} else if ($s->evento == "agendaNovo") {
+																	?>
+																		<h2>Criou novo agendamento com status <span class="data" style="background:<?php echo $_agendaStatus[$s->id_status_novo]->cor; ?>"><?php echo utf8_encode($_agendaStatus[$s->id_status_novo]->titulo); ?></span></h2>
+																	<?php
+																	}
+																	?>
+
+																</div>
 															<?php
 															}
 															?>
 														</div>
-														<?php
-														if (is_array($subagendas) and count($subagendas) > 0) {
-														?>
-															<div class="history2-more">
-																<?php
-																foreach ($subagendas as $s) {
-																	if ($s->evento == "agendaStatus" or $s->evento == "agendaHorario" or $s->evento == "agendaNovo") {
-																		$agenda = $cadeira = $profissionais = '';
-																		if (isset($_agendas[$s->id])) {
-																			$agenda = $_agendas[$s->id];
-																			if (isset($_cadeiras[$agenda->id_cadeira])) {
-																				$cadeira = $_cadeiras[$agenda->id_cadeira];
-																			}
+													<?php
+													}
+													?>
+												</article>
+											</div>
+										<?php
+										}
+										?>
 
-																			$aux = explode(",", $agenda->profissionais);
-																			foreach ($aux as $idP) {
-																				if (!empty($idP) and is_numeric($idP) and isset($_colaboradores[$idP])) {
-																					$profissionais .= utf8_encode($_colaboradores[$idP]->nome) . ", ";
-																				}
-																			}
-																			if (!empty($profissionais)) $profissionais = substr($profissionais, 0, strlen($profissionais) - 2);
-																			$dataTimeline = date('d/m/y H:i', strtotime($agenda->agenda_data));
-																		}
-
-																		if (empty($agenda) or empty($cadeira)) continue;
-																	}
-																?>
-
-
-																	<div class="history2-more-item">
-
-																		<h1><?php echo $dataTimeline; ?><?php echo isset($_colaboradores[$s->id_usuario]) ? " - " . utf8_encode($_colaboradores[$s->id_usuario]->nome) : ""; ?></h1>
-																		<?php
-																		if ($s->evento == "agendaHorario") {
-																		?>
-																			<h2>Horário alterado de <span class="data"><?php echo date('d/m/ H:i', strtotime($s->agenda_data_antigo)); ?></span> para <span class="data"><?php echo date('d/m H:i', strtotime($s->agenda_data_novo)); ?></span> <br /><?php echo utf8_encode($cadeira->titulo); ?><?php echo !empty($profissionais) ? " - " . $profissionais : ""; ?></h2>
-																		<?php
-																		} else if ($s->evento == "agendaStatus") {
-																		?>
-																			<h2>Alterou status de <span class="data" style="background:<?php echo $_agendaStatus[$s->id_status_antigo]->cor; ?>"><?php echo utf8_encode($_agendaStatus[$s->id_status_antigo]->titulo); ?></span> para <span class="data" style="background:<?php echo $_agendaStatus[$s->id_status_novo]->cor; ?>"><?php echo utf8_encode($_agendaStatus[$s->id_status_novo]->titulo); ?></span></h2>
-																		<?php
-																		} else if ($s->evento == "agendaNovo") {
-																		?>
-																			<h2>Criou novo agendamento com status <span class="data" style="background:<?php echo $_agendaStatus[$s->id_status_novo]->cor; ?>"><?php echo utf8_encode($_agendaStatus[$s->id_status_novo]->titulo); ?></span></h2>
-																		<?php
-																		}
-																		?>
-
-																	</div>
-																<?php
-																}
-																?>
-															</div>
-														<?php
-														}
-														?>
-													</article>
-												</div>
-											<?php
-											}
-											?>
-
-										</div>
-									</section>
-								</div>
+									</div>
+								</section>
 							</div>
 						</div>
 						<!-- <div style="height:auto;" class="js-proximoAgendamento">
