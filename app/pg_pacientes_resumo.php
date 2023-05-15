@@ -346,13 +346,6 @@ krsort($registrosPorOrdem);
 
 				if ($agendamentosAtendidosDuracao > 0) $agendamentosAtendidosDuracao *= 60;
 				?>
-				<div class="filter">
-					<div class="filter-group">
-						<div class="filter-title">
-							<h1>Atendimento por Dentista</h1>
-						</div>
-					</div>
-				</div>
 
 				<?php
 
@@ -409,70 +402,80 @@ krsort($registrosPorOrdem);
 				}
 
 				?>
-
-				<div class="grid grid_2 box" style="margin:0;">
-					<div style="grid-column:span 1">
-						<div style="width:100%; padding:20px;">
-							<script>
-								$(function() {
-									var ctx = document.getElementById('grafico1').getContext('2d');
-									var grafico1 = new Chart(ctx, {
-										type: 'doughnut',
-										data: {
-											labels: <?php echo json_encode($labelDentistas); ?>,
-
-											datasets: [{
-												fill: true,
-												borderDashOffset: 0.0,
-												label: 'Pacientes',
-												data: <?php echo (isset($labelDentistasQtd) and is_array($labelDentistasQtd)) ? json_encode($labelDentistasQtd) : "[]"; ?>,
-												backgroundColor: <?php echo (isset($labelDentistasCor) and is_array($labelDentistasCor)) ? json_encode($labelDentistasCor) : "[]"; ?>,
-												borderColor: 'transparent',
-												borderWidth: 1,
-												borderDash: [],
-												borderDashOffset: 0.0
-											}]
-										},
-										options: {
-											legend: {
-												display: false
-											},
-											responsive: true,
-
-
-										}
-									});
-								});
-							</script>
-							<canvas id="grafico1" class="box-grafico"></canvas>
+				<div class="box">
+					<div class="filter">
+							<div class="filter-group">
+								<div class="filter-title">
+									<h1>Atendimento por Dentista</h1>
+								</div>
+							</div>
 						</div>
-					</div>
+						<div class="grid grid_2" style="margin:0;">
+						<div style="grid-column:span 1">
+							<div style="width:100%; padding:20px;">
+								<script>
+									$(function() {
+										var ctx = document.getElementById('grafico1').getContext('2d');
+										var grafico1 = new Chart(ctx, {
+											type: 'doughnut',
+											data: {
+												labels: <?php echo json_encode($labelDentistas); ?>,
 
-					<div>
-						<div class="list1">
-							<table>
-								<?php
-								foreach ($grProfissionais as $infos) {
-									$id_profissional = $infos['id'];
-									if (isset($_colaboradores[$id_profissional])) {
-										$profissional = $_colaboradores[$id_profissional];
-								?>
-										<tr class="js-item">
-											<td class="list1__border" style="color:<?php echo $profissional->calendario_cor; ?>"></td>
-											<td>
-												<h1><?php echo utf8_encode($profissional->nome); ?></h1>
-												<p><?php echo $infos['qtd']; ?> consulta(s)</p>
-											</td>
-											<td style="font-size:25px;"><?php echo $infos['perc']; ?>%</td>
-										</tr>
-								<?php
+												datasets: [{
+													fill: true,
+													borderDashOffset: 0.0,
+													label: 'Pacientes',
+													data: <?php echo (isset($labelDentistasQtd) and is_array($labelDentistasQtd)) ? json_encode($labelDentistasQtd) : "[]"; ?>,
+													backgroundColor: <?php echo (isset($labelDentistasCor) and is_array($labelDentistasCor)) ? json_encode($labelDentistasCor) : "[]"; ?>,
+													borderColor: 'transparent',
+													borderWidth: 1,
+													borderDash: [],
+													borderDashOffset: 0.0
+												}]
+											},
+											options: {
+												legend: {
+													display: false
+												},
+												responsive: true,
+
+
+											}
+										});
+									});
+								</script>
+								<canvas id="grafico1" class="box-grafico"></canvas>
+							</div>
+						</div>
+
+						<div>
+							<div class="list1">
+								<table>
+									<?php
+									foreach ($grProfissionais as $infos) {
+										$id_profissional = $infos['id'];
+										if (isset($_colaboradores[$id_profissional])) {
+											$profissional = $_colaboradores[$id_profissional];
+									?>
+											<tr class="js-item">
+												<td class="list1__border" style="color:<?php echo $profissional->calendario_cor; ?>"></td>
+												<td>
+													<h1><?php echo utf8_encode($profissional->nome); ?></h1>
+													<p><?php echo $infos['qtd']; ?> consulta(s)</p>
+												</td>
+												<td style="font-size:25px;"><?php echo $infos['perc']; ?>%</td>
+											</tr>
+									<?php
+										}
 									}
-								}
-								?>
-							</table>
+									?>
+								</table>
+							</div>
 						</div>
 					</div>
 				</div>
+
+
 				<?php
 				if (is_object($proximaConsulta)) {
 
@@ -503,16 +506,16 @@ krsort($registrosPorOrdem);
 
 					<div class="form grid grid_2" style="margin-top: 15px;">
 
-						<div style="overflow: auto;">
-							<div class="filter">
-								<div class="filter-group">
-									<div class="filter-title">
-										<h1 onclick="proximoAgendamento();" class="js-proximoAgendamento-control">Histórico de lembretes</h1>
+						<div>
+							<div class="box" >
+								<div class="filter">
+									<div class="filter-group">
+										<div class="filter-title">
+											<h1 onclick="proximoAgendamento();" class="js-proximoAgendamento-control">Histórico de lembretes</h1>
+										</div>
 									</div>
 								</div>
-							</div>
-							<div class="box" >
-								<div style="overflow: auto;max-height: 450px;position: relative;">
+								<div style="overflow: auto;max-height: 450px;position: relative; " class="list-toggle-com">
 								
 									<section class="grid grid_3 list-agendamentos">
 										<div>
@@ -624,16 +627,15 @@ krsort($registrosPorOrdem);
 						<div>
 
 							<div class="pac-hist-content">
-
-								<div class="filter">
-									<div class="filter-group">
-										<div class="filter-title">
-											<h1>Histórico de Agendamento</h1>
+								<div class="box">
+									<div class="filter">
+										<div class="filter-group">
+											<div class="filter-title">
+												<h1>Histórico de Agendamento</h1>
+											</div>
 										</div>
 									</div>
-								</div>
-								<div class="box">
-									<section style="overflow: auto;max-height: 450px;">
+									<section class="list-toggle-com" style="overflow: auto;max-height: 450px;">
 										<div class="history2">
 											<?php
 											foreach ($registrosPorOrdem as $e) {
@@ -805,66 +807,67 @@ krsort($registrosPorOrdem);
 
 
 			<section class="box pac-hist">
-				<div class="filter">
-					<div class="filter-group">
-						<div class="filter-title">
-							<h1>Análise da Agenda</h1>
-						</div>
-					</div>
-				</div>
-
-				<div class="list4 box">
-					<a href="" class="list4-item" style="padding: 10px 1rem;">
-						<div>
-							<h2><?php echo sec_convertOriginal($agendamentosAtendidosDuracao, 'HF'); ?></h2>
-						</div>
-						<div>
-							<p>Horas de Atendimento</p>
-						</div>
-					</a>
-					<a href="" class="list4-item" style="padding: 10px 1rem;">
-						<div>
-							<h2><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i> <?php echo $agendamentos; ?></h2>
-						</div>
-						<div>
-							<p>Agendamentos</p>
-						</div>
-					</a>
-					<a href="" class="list4-item" style="padding: 10px 1rem;">
-						<div>
-							<h2><i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i> <?php echo $agendamentosAtendidos; ?></h2>
-						</div>
-						<div>
-							<p>Atendidos</p>
-						</div>
-					</a>
-					<a href="" class="list4-item" style="padding: 10px 1rem;">
-						<div>
-							<h2><i class="iconify" data-icon="fluent:calendar-sync-24-regular"></i> <?php echo $agendamentosDesmarcados; ?></h2>
-						</div>
-						<div>
-							<p>Desmarcados</p>
-						</div>
-					</a>
-					<a href="" class="list4-item" style="padding: 10px 1rem;">
-						<div>
-							<h2><i class="iconify" data-icon="fluent:calendar-cancel-24-regular"></i> <?php echo $agendamentosFaltou; ?></h2>
-						</div>
-						<div>
-							<p> Faltou</p>
-						</div>
-					</a>
-				</div>
-
-				<div class="filter">
-					<div class="filter-group">
-						<div class="filter-title">
-							<h1>bloco de notas</h1>
-						</div>
-					</div>
-				</div>
-
 				<div class="box">
+					<div class="filter">
+						<div class="filter-group">
+							<div class="filter-title">
+								<h1>Análise da Agenda</h1>
+							</div>
+						</div>
+					</div>
+					<div class="list4">
+						<a href="" class="list4-item" style="padding: 10px 1rem;">
+							<div>
+								<h2><?php echo sec_convertOriginal($agendamentosAtendidosDuracao, 'HF'); ?></h2>
+							</div>
+							<div>
+								<p>Horas de Atendimento</p>
+							</div>
+						</a>
+						<a href="" class="list4-item" style="padding: 10px 1rem;">
+							<div>
+								<h2><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i> <?php echo $agendamentos; ?></h2>
+							</div>
+							<div>
+								<p>Agendamentos</p>
+							</div>
+						</a>
+						<a href="" class="list4-item" style="padding: 10px 1rem;">
+							<div>
+								<h2><i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i> <?php echo $agendamentosAtendidos; ?></h2>
+							</div>
+							<div>
+								<p>Atendidos</p>
+							</div>
+						</a>
+						<a href="" class="list4-item" style="padding: 10px 1rem;">
+							<div>
+								<h2><i class="iconify" data-icon="fluent:calendar-sync-24-regular"></i> <?php echo $agendamentosDesmarcados; ?></h2>
+							</div>
+							<div>
+								<p>Desmarcados</p>
+							</div>
+						</a>
+						<a href="" class="list4-item" style="padding: 10px 1rem;">
+							<div>
+								<h2><i class="iconify" data-icon="fluent:calendar-cancel-24-regular"></i> <?php echo $agendamentosFaltou; ?></h2>
+							</div>
+							<div>
+								<p> Faltou</p>
+							</div>
+						</a>
+					</div>
+				</div>
+
+
+				<div class="box" style="margin-top: 15px;">
+					<div class="filter">
+						<div class="filter-group">
+							<div class="filter-title">
+								<h1>Bloco de notas</h1>
+							</div>
+						</div>
+					</div>
 					<div class="list-toggle-com" style="overflow: auto;max-height: 150px;">
 						<article>
 							<header>
