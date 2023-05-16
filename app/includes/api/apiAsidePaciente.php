@@ -2377,28 +2377,30 @@
 
 											if(f.tipo=="nota") {
 												for(let i=0;i<=10;i++) {
-													formularioCampo+=`<label><input type="radio" name="resposta_${f.id}" value="${i}" /> ${i}</label>`;
+													formularioCampo+=` <label class="input-form-nuber"><input type="radio" name="resposta_${f.id}" value="${i}" /> <div> ${i}</div></label>`;
 												}
 											} else if(f.tipo=="simnao") {
 												
-												formularioCampo+=`<label><input type="radio" name="resposta_${f.id}" value="SIM" /> Sim</label>
-												<label><input type="radio" name="resposta_${f.id}" value="NAO" /> Não</label>`;
+												formularioCampo+=`<div style="width: 100%"> <div class="input-form-sn"> <label class="input-form"><input type="radio" name="resposta_${f.id}" value="SIM" /> <div></div> Sim  </label>
+												<label class="input-form"><input type="radio" name="resposta_${f.id}" value="NAO" /> <div></div> Não </label> </div>`;
 
 											} else if(f.tipo=="simnaotexto") {
 
-												formularioCampo+=`<label><input type="radio" name="resposta_${f.id}" value="SIM" /> Sim</label>
-												<label><input type="radio" name="resposta_${f.id}" value="NAO" /> Não</label><textarea name="resposta_texto_${f.id}" style="height:150px;" class=""></textarea>`;
+												formularioCampo+=`<div style="width: 100%"> <div class="input-form-sn"> <label class="input-form"><input type="radio" name="resposta_${f.id}" value="SIM" /> <div></div> Sim </label>
+												<label class="input-form" ><input type="radio" name="resposta_${f.id}" value="NAO" /> <div> </div> Não </label> </div> <textarea name="resposta_texto_${f.id}" placeholder="Escreva sua resposta" ></textarea> </div>`;
 												
 											
 											} else if(f.tipo=="texto") {
 											
-												formularioCampo+=`<textarea name="resposta_texto_${f.id}" style="height:150px;" class=""></textarea>`;
+												formularioCampo+=`<textarea name="resposta_texto_${f.id}" class=""></textarea>`;
 											
 											} 
 											
-											div.append(`<dl class="js-pergunta" data-obg="${f.obg}" data-tipo="${f.tipo}" style="padding:5px;border-radius:10px;">
-															<dt>${cont}. ${f.pergunta}${obg}</dt>
-															<dd>${formularioCampo}</dd>
+											div.append(`<dl class="js-pergunta input-form-caps filter" data-obg="${f.obg}" data-tipo="${f.tipo}" style="padding:5px;border-radius:10px;flex-direction: inherit;">
+															<dl style="width: 100%;>
+																<dt class="input-form-titulo">${cont}. ${f.pergunta}${obg}</dt>
+																<dd class="input-form-caps-notas" >${formularioCampo}</dd>
+															</dl>
 														</dl>`);
 											cont++;
 										});
@@ -2684,43 +2686,56 @@
 							</div>
 						</section>
 
+						<div class="box" style="    min-height: auto;overflow: initial;margin-bottom: 15px;">
+							<dl>
+								<dt>Quem irá preencher a Anamnese?</dt>
+								<dd class="radios-anamnese">
+									<label>
+										<input type="radio" name="preenchimentoPelo" class="js-asideAnamnese-preenchimento" value="paciente" /> 
+										<div class="icon-raio">
+											<div><span class="iconify" data-icon="fluent:person-20-regular" data-width="40"></span></div>
+											<div>Paciente</div> 
+										</div>
+									</label>
 
-						<dl>
-							<dt>Quem irá preencher a Anamnese?</dt>
-							<dd>
-								<label><input type="radio" name="preenchimentoPelo" class="js-asideAnamnese-preenchimento" value="paciente" /> Paciente</label>
-								<label><input type="radio" name="preenchimentoPelo" class="js-asideAnamnese-preenchimento" value="profissional" /> Profissional</label>
-							</dd>
-						</dl>
-						<dl class="js-asideAnamnese-dl-id_profissional" style="display: none;">
-							<dt>Profissional</dt>
-							<dd>
-								<select class="js-asideAnamnese-id_profissional">
-									<option value="">-</option>
-									<?php
-									foreach($_profissionais as $x) {
-										if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
-										echo '<option value="'.$x->id.'">'.utf8_encode($x->nome).'</option>';
-									}
-									?>
-								</select>
-							</dd>
-						</dl>
+									<label>
+										<input type="radio" name="preenchimentoPelo" class="js-asideAnamnese-preenchimento" value="profissional" />
+										<div class="icon-raio">
+											<div><span class="iconify" data-icon="fluent:person-info-20-regular" data-width="40"></span></div>
+											<div>Profissional</div>
+										</div>
+									</label>
+								</dd>
+							</dl>
+							<dl class="js-asideAnamnese-dl-id_profissional" style="display: none;">
+								<dt>Profissional</dt>
+								<dd>
+									<select class="js-asideAnamnese-id_profissional">
+										<option value="">-</option>
+										<?php
+										foreach($_profissionais as $x) {
+											if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
+											echo '<option value="'.$x->id.'">'.utf8_encode($x->nome).'</option>';
+										}
+										?>
+									</select>
+								</dd>
+							</dl>
 
-						<dl class="js-asideAnamnese-dl-anamnese" style="display: none;">
-							<dt>Tipo de Anamnese</dt>
-							<dd>
-								<select class="js-asideAnamnese-anamnese">
-									<option value="">-</option>
-									<?php
-									foreach($_anamnese as $x) {
-										echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
-									}
-									?>
-								</select>
-							</dd>
-						</dl>
-
+							<dl class="js-asideAnamnese-dl-anamnese" style="display: none;">
+								<dt>Tipo de Anamnese</dt>
+								<dd>
+									<select class="js-asideAnamnese-anamnese">
+										<option value="">-</option>
+										<?php
+										foreach($_anamnese as $x) {
+											echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
+										}
+										?>
+									</select>
+								</dd>
+							</dl>
+						</div>
 						<?php /* <fieldset class="js-fieldset-formularioAnamnese">
 							<legend>Anamnese</legend> */ ?>
 
