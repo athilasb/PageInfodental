@@ -394,133 +394,191 @@
 				$id_beneficiario = $_POST['id_beneficiario'];
 				$tipo_beneficiario = $_POST['tipo_beneficiario'];
 				$valor_pagamento = floatval($_POST['valor_pagamento'])*(-1);
-
-				$vSQL = "data_emissao=NOW()";
-				$vSQL .= ",lixo=0";
-				$vSQL .= ",tipo='$tipo_beneficiario'";
-				$vSQL .= ",id_pagante_beneficiario='$id_beneficiario'";
-				$vSQL .= ",id_colaborador='$usr->id'";
-				$vSQL .= ",descricao='$descricao'";
-				$vSQL .= ",valor='$valor_pagamento'";
-				$vSQL .= ",data_vencimento='$data_emissao'";
-
-				$sql->add($_p . "financeiro_fluxo_pagamentos", "$vSQL");
-				if($sql->rows>0){
+				$objeto = isset($_POST['objetoPagamento']) ? json_decode($_POST['objetoPagamento']) : false;
+				$multiplicador_negativo = (-1);
+				if (!$objeto) {
+					$rtn = ["error" => 'Objeto de Pagamento Não Encontrado'];
+				} else {
 					$titulo = "Pagamento Avulso";
 					$pagante = "";
 					$id_recebimento = $sql->ulid;
-					$sql->consult($_p . "financeiro_fluxo_pagamentos","*","WHERE id='$sql->ulid'");
-					$recebimento = mysqli_fetch_object($sql->mysqry);
-					$dados[$id_recebimento]['id_baixa'] = $recebimento->id;
-					$dados[$id_recebimento]['tipo_beneficiario'] = $recebimento->tipo;
-					$dados[$id_recebimento]['id_pagante_beneficiario'] = $recebimento->id_pagante_beneficiario;
-					$dados[$id_recebimento]['data_vencimento'] = $recebimento->data_vencimento;
-					$dados[$id_recebimento]['data_emissao'] = $recebimento->data_emissao;
-					$dados[$id_recebimento]['id_registro'] = $recebimento->id;
-					$dados[$id_recebimento]['pagamento'] = 0;
-					$dados[$id_recebimento]['data_efetivado'] = null;
-					$dados[$id_recebimento]['tipo'] = 'pagamento';
-					$dados[$id_recebimento]['valor'] = $recebimento->valor;
-					$dados[$id_recebimento]['valor_multa'] = $recebimento->valor_multa;
-					$dados[$id_recebimento]['valor_taxa'] = $recebimento->valor_taxa;
-					$dados[$id_recebimento]['valor_desconto'] = $recebimento->valor_desconto;
-					$dados[$id_recebimento]['valor_juros'] = 0;
-					$dados[$id_recebimento]['desconto'] = 0;
-					$dados[$id_recebimento]['valorTotalPagamento'] = $recebimento->valor;
-					$dados[$id_recebimento]['titulo'] = $titulo;
-					$dados[$id_recebimento]['nome_pagante'] = $pagante;
-					$dados[$id_recebimento]['status'] = 'DEFINIR PAGAMENTO';
-					$last_id = $sql->ulid;
-					$rtn = ["sucess" => true,'id_pagamento'=>$last_id,'pagamento'=>$dados];
-				}else{
-					$rtn = ["error" => true,'message'=>'Erro ao Adicionar Pagamento'];
+					// adicionando os splits e centro de custo
+					if ($objeto->split_recorrente->ativo == true) {
+						// aqui é um pagamento recorrente
+						$acada = intVal($objeto->split_recorrente->acada);
+						$meses = intVal($objeto->split_recorrente->meses);
+						$data_vencimento_inicial = $data_emissao;
+						$id_centro_de_custo = $objeto->split_pagamento->id_centro_de_custo;
+						$id_categoria_split = $objeto->split_pagamento->id_categoria_split;
+						$calcular_como = $objeto->split_pagamento->calcular_como;
+						$dados = [];
+						while ($meses > 0) {
+							
+							$vSQLPagamento = "data_emissao=NOW(),lixo=0,tipo='$tipo_beneficiario',id_pagante_beneficiario='$id_beneficiario',id_colaborador='$usr->id',descricao='$descricao',valor='$valor_pagamento',data_vencimento='$data_vencimento_inicial'";
+							$sql->add($_p . "financeiro_fluxo_pagamentos", "$vSQLPagamento");
+							$data_vencimento_inicial = date('Y-m-d', strtotime("+ $acada days", strtotime($data_vencimento_inicial)));
+							$id_inserido = $sql->ulid;
+							if($meses == intVal($objeto->split_recorrente->meses)){
+								$last_id = $id_inserido;
+							}
+							$meses--;
+							if($sql->rows>0){
+								$ms_values = "id_origem=2,id_registro='$id_inserido',valor='$valor_pagamento',id_centro_custo='$id_centro_de_custo',id_categoria='$id_categoria_split',calcular_como='$calcular_como'";
+								$sql->add("ident_financeiro_fluxo_splits","$ms_values");
+							}
+							//consultando o fluxo ppara retornar e adicioanr a variavel _pagamentos
+							$sql->consult($_p . "financeiro_fluxo_pagamentos","*","WHERE id='$id_inserido'");
+							$recebimento = mysqli_fetch_object($sql->mysqry);
+							$dados[$id_inserido]['id_baixa'] = $recebimento->id;
+							$dados[$id_inserido]['tipo_beneficiario'] = $recebimento->tipo;
+							$dados[$id_inserido]['id_pagante_beneficiario'] = $recebimento->id_pagante_beneficiario;
+							$dados[$id_inserido]['data_vencimento'] = $recebimento->data_vencimento;
+							$dados[$id_inserido]['data_emissao'] = $recebimento->data_emissao;
+							$dados[$id_inserido]['id_registro'] = $recebimento->id;
+							$dados[$id_inserido]['pagamento'] = 0;
+							$dados[$id_inserido]['data_efetivado'] = null;
+							$dados[$id_inserido]['tipo'] = 'pagamento';
+							$dados[$id_inserido]['valor'] = $recebimento->valor;
+							$dados[$id_inserido]['valor_multa'] = $recebimento->valor_multa;
+							$dados[$id_inserido]['valor_taxa'] = $recebimento->valor_taxa;
+							$dados[$id_inserido]['valor_desconto'] = $recebimento->valor_desconto;
+							$dados[$id_inserido]['valor_juros'] = 0;
+							$dados[$id_inserido]['desconto'] = 0;
+							$dados[$id_inserido]['valorTotalPagamento'] = $recebimento->valor;
+							$dados[$id_inserido]['titulo'] = $titulo;
+							$dados[$id_inserido]['nome_pagante'] = $pagante;
+							$dados[$id_inserido]['status'] = 'DEFINIR PAGAMENTO';
+						}
+						$rtn = ["sucess" => true,'id_pagamento'=>$last_id,'pagamento'=>$dados];
+					} else if ($objeto->split_pagamento->ativo == true) {
+						// aqui é se for um split de pagamento
+						$tipo_splits = $objeto->split_pagamento->tipo_splits;
+						$valor = ($objeto->valor_pagamento)*($multiplicador_negativo);
+						$valor_restante = $valor;
+						// adicionar o pagamento 
+						$vSQLPagamento = "data_emissao=NOW(),lixo=0,tipo='$tipo_beneficiario',id_pagante_beneficiario='$id_beneficiario',id_colaborador='$usr->id',descricao='$descricao',valor='$valor_pagamento',data_vencimento='$data_emissao'";
+						$sql->add($_p . "financeiro_fluxo_pagamentos", "$vSQLPagamento");
+						$id_inserido = $sql->ulid;
+						$multiplicador_split = 0;
+						foreach ($objeto->split_pagamento->splits as $split) {
+							if ($tipo_splits == 'porcentagem') {
+								$multiplicador_split = ($split->porc_valor / 100);
+							} else {
+								$multiplicador_split =  ($split->porc_valor / $valor_pagamento);
+							}
+							$id_centro_de_custo = $split->id_centro_de_custo;
+							$id_categoria_split = $split->id_categoria;
+							$calcular_como = $split->calcular_como;
+							$valor_split = $valor * $multiplicador_split;
+							$valor_restante = $valor_restante-$valor_split;
+							if ($split === end($objeto->split_pagamento->splits)) {
+								$valor_split+=$valor_restante;
+							}
+							$ms_values = "id_origem=2,id_registro='$id_inserido',valor='$valor_split',id_centro_custo='$id_centro_de_custo',id_categoria='$id_categoria_split',calcular_como='$calcular_como'";
+							$sql->add("ident_financeiro_fluxo_splits","$ms_values");
+						}
+						//consultando o fluxo ppara retornar e adicioanr a variavel _pagamentos
+						$sql->consult($_p . "financeiro_fluxo_pagamentos","*","WHERE id='$id_inserido'");
+						$recebimento = mysqli_fetch_object($sql->mysqry);
+						$dados[$id_inserido]['id_baixa'] = $recebimento->id;
+						$dados[$id_inserido]['tipo_beneficiario'] = $recebimento->tipo;
+						$dados[$id_inserido]['id_pagante_beneficiario'] = $recebimento->id_pagante_beneficiario;
+						$dados[$id_inserido]['data_vencimento'] = $recebimento->data_vencimento;
+						$dados[$id_inserido]['data_emissao'] = $recebimento->data_emissao;
+						$dados[$id_inserido]['id_registro'] = $recebimento->id;
+						$dados[$id_inserido]['pagamento'] = 0;
+						$dados[$id_inserido]['data_efetivado'] = null;
+						$dados[$id_inserido]['tipo'] = 'pagamento';
+						$dados[$id_inserido]['valor'] = $recebimento->valor;
+						$dados[$id_inserido]['valor_multa'] = $recebimento->valor_multa;
+						$dados[$id_inserido]['valor_taxa'] = $recebimento->valor_taxa;
+						$dados[$id_inserido]['valor_desconto'] = $recebimento->valor_desconto;
+						$dados[$id_inserido]['valor_juros'] = 0;
+						$dados[$id_inserido]['desconto'] = 0;
+						$dados[$id_inserido]['valorTotalPagamento'] = $recebimento->valor;
+						$dados[$id_inserido]['titulo'] = $titulo;
+						$dados[$id_inserido]['nome_pagante'] = $pagante;
+						$dados[$id_inserido]['status'] = 'DEFINIR PAGAMENTO';
+						$rtn = ["sucess" => true,'id_pagamento'=>$id_inserido,'pagamento'=>$dados];
+					} else {
+						// aqui é se nao for split e nao for recorrente
+						$valor = ($objeto->valor_pagamento)*($multiplicador_negativo);
+						$id_centro_de_custo = $objeto->split_pagamento->id_centro_de_custo;
+						$id_categoria_split = $objeto->split_pagamento->id_categoria_split;
+						$calcular_como = $objeto->split_pagamento->calcular_como;
+						
+						$vSQLPagamento = "data_emissao=NOW(),lixo=0,tipo='$tipo_beneficiario',id_pagante_beneficiario='$id_beneficiario',id_colaborador='$usr->id',descricao='$descricao',valor='$valor',data_vencimento=NOW()";
+						$sql->add($_p . "financeiro_fluxo_pagamentos", "$vSQLPagamento");
+						$id_inserido = $sql->ulid;
+						$ms_values = "id_origem=2,id_registro='$id_inserido',valor='$valor',id_centro_custo='$id_centro_de_custo',id_categoria='$id_categoria_split',calcular_como='$calcular_como'";
+						$sql->add("ident_financeiro_fluxo_splits","$ms_values");
+						//consultando o fluxo ppara retornar e adicioanr a variavel _pagamentos
+						$sql->consult($_p . "financeiro_fluxo_pagamentos","*","WHERE id='$id_inserido'");
+						$recebimento = mysqli_fetch_object($sql->mysqry);
+						$dados[$id_inserido]['id_baixa'] = $recebimento->id;
+						$dados[$id_inserido]['tipo_beneficiario'] = $recebimento->tipo;
+						$dados[$id_inserido]['id_pagante_beneficiario'] = $recebimento->id_pagante_beneficiario;
+						$dados[$id_inserido]['data_vencimento'] = $recebimento->data_vencimento;
+						$dados[$id_inserido]['data_emissao'] = $recebimento->data_emissao;
+						$dados[$id_inserido]['id_registro'] = $recebimento->id;
+						$dados[$id_inserido]['pagamento'] = 0;
+						$dados[$id_inserido]['data_efetivado'] = null;
+						$dados[$id_inserido]['tipo'] = 'pagamento';
+						$dados[$id_inserido]['valor'] = $recebimento->valor;
+						$dados[$id_inserido]['valor_multa'] = $recebimento->valor_multa;
+						$dados[$id_inserido]['valor_taxa'] = $recebimento->valor_taxa;
+						$dados[$id_inserido]['valor_desconto'] = $recebimento->valor_desconto;
+						$dados[$id_inserido]['valor_juros'] = 0;
+						$dados[$id_inserido]['desconto'] = 0;
+						$dados[$id_inserido]['valorTotalPagamento'] = $recebimento->valor;
+						$dados[$id_inserido]['titulo'] = $titulo;
+						$dados[$id_inserido]['nome_pagante'] = $pagante;
+						$dados[$id_inserido]['status'] = 'DEFINIR PAGAMENTO';
+						$rtn = ["sucess" => true,'id_pagamento'=>$id_inserido,'pagamento'=>$dados];
+					}
 				}
 			} else {
 				$rtn = ["error" => true,'message'=>"A tabela $table_name não existe no banco de dados $dbname."];
 			}
 		} else if ($_POST['ajax'] == 'addFluxoPagamento') {
 			$multiplicado_negativo = -1;
-			$data_vencimento = $_POST['data_vencimento'];
-			$id_pagamento = $_POST['id_pagamento'];
-			$id_beneficiario = $_POST['id_beneficiario'];
-			$tipo_beneficiario = $_POST['tipo_beneficiario'];
-			$desconto = $_POST['desconto']??0;
-			$valor_pagamento = floatval($_POST['valor_pagamento'])*($multiplicado_negativo);
-			$valor_multa = floatval($_POST['valor_multa']??0)*($multiplicado_negativo);
-			$valor_juros = floatval($_POST['valor_juros']??0)*($multiplicado_negativo);
-			$valor_desconto = floatval($_POST['valor_desconto']??0)*($multiplicado_negativo);
-			$descricao = isset($_POST['descricao'])?utf8_decode($_POST['descricao']):"";
-			$observacao = isset($_POST['observacao'])?utf8_decode($_POST['observacao']):"";
-			$objeto = isset($_POST['objeto']) ? json_decode($_POST['objeto']) : false;
-
-			$vSQL = "data=NOW()";
-			$vSQL .= ",lixo=0";
-			$vSQL .= ",id_origem=2";
-			$vSQL .= ",tipo='$tipo_beneficiario'";
-			$vSQL .= ",desconto='$desconto'";
-			$vSQL .= ",obs='$observacao'";
-			$vSQL .= ",valor_multa='$valor_multa'";
-			$vSQL .= ",valor_juros='$valor_juros'";
-			$vSQL .= ",valor_desconto='$valor_desconto'";
-			$vSQL .= ",id_pagante_beneficiario='$id_beneficiario'";
-			$vSQL .= ",descricao='$descricao'";
-			if (!$objeto) {
-				$rtn = ["error" => 'Objeto de Pagamento Não Encontrado'];
-			} else {
-				if ($objeto->split_recorrente->ativo == true) {
-					// aqui é um pagamento recorrente
-					$acada = intVal($objeto->split_recorrente->acada);
-					$meses = intVal($objeto->split_recorrente->meses);
-					$data_vencimento_inicial = $objeto->pagamentos[0]->data_vencimento;
-					$id_formapagamento = $objeto->id_formapagamento;
-					$id_centro_de_custo = $objeto->split_pagamento->id_centro_de_custo;
-					$id_categoria_split = $objeto->split_pagamento->id_categoria_split;
-
-					$vSQL .= ",valor='$valor_pagamento'";
-					$vSQL .= ",id_formapagamento='$id_formapagamento'";
-					while ($meses > 0) {
-						$meses--;
-						$sql->add($_p . "financeiro_fluxo", "$vSQL,data_vencimento='$data_vencimento_inicial',id_centro_custo='$id_centro_de_custo',id_categoria='$id_categoria_split',id_registro='$id_pagamento'");
-						$data_vencimento_inicial = date('Y-m-d', strtotime("+ $acada days", strtotime($data_vencimento_inicial)));
+			$rtn= $_POST;
+			$descricao = (isset($_POST['descricao']) and !empty($_POST['descricao'])) ? $_POST['descricao'] : "";
+			$id_pagamento = (isset($_POST['id_pagamento']) and !empty($_POST['id_pagamento'])) ? $_POST['id_pagamento'] : "";
+			$id_beneficiario = (isset($_POST['id_beneficiario']) and !empty($_POST['id_beneficiario'])) ? $_POST['id_beneficiario'] : "";
+			$data_vencimento = (isset($_POST['data_vencimento']) and !empty($_POST['data_vencimento'])) ? $_POST['data_vencimento'] : "";
+			$tipo_beneficiario = (isset($_POST['tipo_beneficiario']) and !empty($_POST['tipo_beneficiario'])) ? $_POST['tipo_beneficiario'] : "";
+			$valor_pagamento = (isset($_POST['valor_pagamento']) and !empty($_POST['valor_pagamento'])) ? $_POST['valor_pagamento'] : "";
+			$isDesconto = (isset($_POST['isDesconto']) and !empty($_POST['isDesconto'])) ? $_POST['isDesconto'] : "";
+			$objeto = (isset($_POST['objeto']) and !empty($_POST['objeto'])) ? json_decode($_POST['objeto']) :[];
+			if(!$isDesconto){
+				if(is_object($objeto)){
+					$fluxos = $objeto->pagamentos??[];
+					$qtdParcelas=count($fluxos);
+					foreach($fluxos as $c=>$fluxo){
+						$data_vencimento = $fluxo->data_vencimento;
+						$id_formapagamento = $fluxo->id_formapagamento;
+						$valor = $fluxo->valor*$multiplicado_negativo;
+						$valor_multa=0;
+						$valor_juros=0;
+						$valor_desconto=0;
+						$ms_values="data=NOW(),lixo=0,id_origem=2,id_registro='$id_pagamento',data_vencimento='$data_vencimento',pagamento=0,id_formapagamento='$id_formapagamento',tipo='$tipo_beneficiario',id_pagante_beneficiario='$id_beneficiario',valor='$valor',valor_multa='$valor_multa',valor_juros='$valor_juros',valor_desconto='$valor_desconto',descricao='$descricao',desconto=0";
+						$sql->add($_p."financeiro_fluxo",$ms_values);
 					}
-					$rtn = ["sucess" => true, 'objeto' => $objeto];
-				} else if ($objeto->split_pagamento->ativo == true) {
-					// aqui é se for um split de pagamento
-					$tipo_splits = $objeto->split_pagamento->tipo_splits;
-					$data_vencimento_inicial = $objeto->data_vencimento;
-					$valor = ($objeto->valor_pagamento)*($multiplicado_negativo);
-					$id_formapagamento = $objeto->id_formapagamento;
-					$sql->add($_p . "financeiro_fluxo", "$vSQL,data_vencimento='$data_vencimento_inicial',valor='$valor',id_formapagamento='$id_formapagamento',dividido=1,id_registro='$id_pagamento'");
-					$id_fluxo = $sql->ulid;
-					$multiplicador_split = 0;
-					foreach ($objeto->split_pagamento->splits as $split) {
-						if ($tipo_splits == 'porcentagem') {
-							$multiplicador_split = ($split->porc_valor / 100);
-						} else {
-							$multiplicador_split =  ($split->porc_valor / $valor_pagamento);
-						}
-						$id_centro_de_custo = $split->id_centro_de_custo;
-						$id_categoria = $split->id_categoria;
-						$valor_split = $valor * $multiplicador_split;
-						$sql->add($_p . "financeiro_fluxo", "$vSQL,data_vencimento='$data_vencimento_inicial',valor='$valor_split',id_formapagamento='$id_formapagamento',dividido=0,id_dividido='$id_fluxo',id_centro_custo='$id_centro_de_custo',id_categoria='$id_categoria'");
-						$id_split = $sql->ulid;
-						$sql->update($_p . "financeiro_fluxo", "id_registro='$id_fluxo'", "WHERE id=$id_split");
-						$sql->add($_p . "financeiro_fluxo_splits_vencimentos", "id_split='$id_split',id_fluxo='$id_fluxo',vencimento='$data_vencimento_inicial',centrodecusto='$id_centro_de_custo',valor='$valor_split'");
-					}
-					$rtn = ["sucess" => true, 'objeto' => $objeto];
-				} else {
-					// aqui é se nao for split e nao for recorrente
-					$data_vencimento_inicial = $objeto->data_vencimento;
-					$valor = ($objeto->valor_pagamento)*($multiplicado_negativo);
-					$id_formapagamento = $objeto->id_formapagamento;
-					$id_centro_de_custo = $objeto->split_pagamento->id_centro_de_custo;
-					$id_categoria_split = $objeto->split_pagamento->id_categoria_split;
-					$sql->add($_p . "financeiro_fluxo", "$vSQL,data_vencimento='$data_vencimento_inicial',valor='$valor',id_formapagamento='$id_formapagamento',id_centro_custo='$id_centro_de_custo',id_categoria='$id_categoria_split',id_registro='$id_pagamento'");
-					
-					$rtn = ["sucess" => true, 'objeto' => $objeto];
+					$rtn = ['sucess'=>true,'objeto'=>$objeto,'post'=>$_POST,'sql'=>$ms_values];
+				}else{
+					$rtn = ['error'=>true,'objeto'=>$objeto,'post'=>$_POST];
 				}
+			}else{
+				$valor = $valor_pagamento*$multiplicado_negativo;
+				$valor_multa=0;
+				$valor_juros=0;
+				$valor_desconto=0;
+				$ms_values="data=NOW(),lixo=0,id_origem=2,id_registro='$id_pagamento',data_vencimento=NOW(),pagamento=0,id_formapagamento='',tipo='$tipo_beneficiario',id_pagante_beneficiario='$id_beneficiario',valor='$valor',valor_multa='$valor_multa',valor_juros='$valor_juros',valor_desconto='$valor_desconto',descricao='$descricao',desconto=1";
+				$sql->add($_p."financeiro_fluxo",$ms_values);
+				$rtn = ['sucess'=>true,'objeto'=>$objeto,'post'=>$_POST,'sql'=>$ms_values];
 			}
-			//$rtn = ["sucess" => true, 'post' => $_POST, 'sql' => $vSQL];
+			
 		} else if ($_POST['ajax'] == 'addContaAReceberAvulsa'){
 			$rtn= $_POST;
 			$descricao = (isset($_POST['descricao']) and !empty($_POST['descricao'])) ? $_POST['descricao'] : "";
@@ -2200,7 +2258,7 @@
 		}
 
 		?>
-		<section class="aside aside-form" id="js-aside-asFinanceiro">
+		<section class="aside aside-form" id="js-aside-asFinanceiro-contas-pagar">
 			<div class="aside__inner1">
 				<input type="hidden" name="alteracao" value="0">
 				<header class="aside-header">
@@ -2286,136 +2344,7 @@
 									</dl>
 
 								</div>
-								<dl style="margin-top:1.5rem;">
-									<dd><button href="javascript:;" class="button button_main js-btn-criar-pagamento" type="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Criar</span></button></dd>
-								</dl>
-							</fieldset>
-							<!-- definir as opcoes do pagamentos add baixa -->
-							<fieldset class="js-fieldset-pagamentos-contas-pagar"  style='display:none'>
-								<legend>Definir fatura</legend>
-								<div class="colunas2">
-									<dl>
-										<dd>
-											<label><input type="radio" name="tipoBaixa" value="pagamento" checked> Pagamento</label>
-											<label><input type="radio" name="tipoBaixa" value="desconto"> Desconto</label>
-										</dd>
-									</dl>
-									<dl class="js-area-aplicar-multas-juros-contas-pagar">
-										<dt>Aplicar juros e multas</dt>
-										<label><input type="checkbox" name="juros" class="input-switch  js-aplicar-multas-juros-contas-pagar"/></label>
-									</dl>
-								</div>
-								<!-- area onde mostra as config do pagamento -->
-								<section class="js-pagamento-contas-pagar">
-									<div class="colunas4">
-										<dl>
-											<dt>Valor</dt>
-											<dd class="form-comp"><span>R$</span>
-												<input type="text" class="js-valor-pagamento js-valor money" />
-											</dd>
-										</dl>
-										<dl>
-											<dt>Forma de Pagamento</dt>
-											<dd><select class="js-id_formapagamento-contas-pagar js-tipoPagamento-contas-pagar">
-													<option value=""></option>
-													<?= $optionFormasDePagamento; ?>
-												</select>
-											</dd>
-										</dl>
-										<dl>
-											<dt>Vencimento</dt>
-											<dd><input type="text" class="js-vencimento-contas-pagar js-tipoPagamento-contas-pagar data" value="<?= date('d/m/Y'); ?>" /></dd>
-										</dl>
-										<dl>
-											<dt>Obs.:</dt>
-											<dd><input type="text" class="js-obs-contas-pagar" /></dd>
-										</dl>
-										<dl class="dl2 js-dl-debitoBandeira" style="display:none">
-											<dt>Bandeira</dt>
-											<dd>
-												<select class="js-debitoBandeira-contas-pagar js-tipoPagamento-contas-pagar">
-													<option value="">selecione</option>
-													<?php
-													foreach ($debitoBandeiras as $id_operadora => $x) {
-														echo '<optgroup label="' . utf8_encode($x['titulo']) . '">';
-														foreach ($x['bandeiras'] as $band) {
-															echo '<option value="' . $band['id_bandeira'] . '" data-id_operadora="' . $id_operadora . '" data-taxa="' . $band['taxa'] . '" data-cobrarTaxa="' . $band['cobrarTaxa'] . '">' . utf8_encode($band['titulo']) . '</option>';
-														}
-														echo '</optgroup>';
-													}
-													?>
-												</select>
-											</dd>
-										</dl>
-										<dl class="dl2 js-dl-creditoBandeira" style="display:none">
-											<dt>Bandeira</dt>
-											<dd>
-												<select class="js-creditoBandeira-contas-pagar js-tipoPagamento-contas-pagar">
-													<option value="">selecione</option>
-													<?php
-													foreach ($creditoBandeiras as $id_operadora => $x) {
-														echo '<optgroup label="' . utf8_encode($x['titulo']) . '">';
-														foreach ($x['bandeiras'] as $band) {
-															echo '<option value="' . $band['id_bandeira'] . '" data-id_operadora="' . $id_operadora . '" data-semjuros="' . $band['semJuros'] . '" data-parcelas="' . $band['parcelas'] . '" data-taxa="' . $band['taxa'] . '">' . utf8_encode($band['titulo']) . '</option>';
-														}
-														echo '</optgroup>';
-													}
-													?>
-												</select>
-											</dd>
-										</dl>
-										<dl class="dl2" style="display:none">
-											<dt>Qtd. Parcelas</dt>
-											<dd>
-												<select class="js-parcelas-contas-pagar js-tipoPagamento-contas-pagar">
-													<option value="">selecione a bandeira</option>
-												</select>
-											</dd>
-										</dl>
-										<dl style="display:none">>
-											<dt>Valor da Parcela</dt>
-											<dd><label class="js-valorCreditoDebito-contas-pagar js-tipoPagamento-contas-pagar">R$ 0,00</label></dd>
-										</dl>
-										<dl style="display:none">>
-											<dt>Taxa (%)</dt>
-											<dd><label class="js-valorCreditoDebitoTaxa-contas-pagar js-tipoPagamento-contas-pagar">R$ 0,00</label></dd>
-										</dl>
-									</div>
-								
-									<div class="js-multa-contas-pagar" style="display:none;">
-										<div class="colunas4">
-											<dl>
-												<dt>Multa</dt>
-												<dd class="form-comp"><span>R$</span><input type="text" class="js-valorMultas-contas-pagar  js-valor" style="width:100px;" value="0,00" /></dd>
-											</dl>
-											<dl>
-												<dt>Juros</dt>
-												<dd class="form-comp"><span>R$</span><input type="text" class="js-valorJuros-contas-pagar  js-valor" style="width:100px;" value="0,00" /></dd>
-											</dl>
-											<dl>
-												<dt>Desconto Juros</dt>
-												<dd class="form-comp"><span>R$</span><input type="text" class="js-descontoMultasJuros-contas-pagar js-valor" style="width:100px;" value="0,00" /></dd>
-											</dl>
-											<dl style="font-weight:bold">
-												<dt>Total</dt>
-												<dd><label class="js-TotalaPagar-contas-pagar" data-valor='0'>R$ 0,00</label></dd>
-											</dl>
-										</div>
-									</div>
-								</section>
-								<!-- area onde mostra as config de desconto -->
-								<section class="js-desconto-contas-pagar" style="display:none">
-									<div class="colunas4">
-										<dl>
-											<dt>Valor</dt>
-											<dd class="form-comp"><span>R$</span><input type="text" class="js-valor js-valorDesconto-contas-pagar" /></dd>
-										</dl>
-										<dl class="dl3">
-											<dt>Observações</dt>
-											<dd><input type="text" class="js-obs-desconto-contas-pagar" /></dd>
-										</dl>
-									</div>
-								</section>
+							
 								<!-- area onde mostra as config do centro de custo -->
 								<section class="js-area-centro-custo">
 									<div class="colunas5">
@@ -2475,6 +2404,17 @@
 											</dd>
 										</dl>
 										</div>
+										<div class="colunas3" style="font-size:11px">
+											<dl>
+												<label><input type="radio" name="calcular_como_0" value="horas_clinicas">Calcular Gasto como Horas Clínicas</label>
+											</dl>
+											<dl>
+												<label><input type="radio" name="calcular_como_0" value="gasto_paciente">Controlar gasto por Paciente</label>
+											</dl>
+											<dl>
+												<label><input type="radio" name="calcular_como_0" value="investimentos_outros">Investimentos e Outros</label>
+											</dl>
+										</div>
 								</section>
 								<!-- area onde lista os aplits -->
 								<fieldset class="js-fieldset-pagamentos-splits" style="display:none">
@@ -2500,6 +2440,138 @@
 											</dl>
 
 										</div>
+									</div>
+								</section>
+								<dl style="margin-top:1.5rem;">
+									<dd><button href="javascript:;" class="button button_main js-btn-criar-pagamento" type="button" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i><span>Criar</span></button></dd>
+								</dl>
+							</fieldset>
+							<!-- definir as opcoes do pagamentos add baixa -->
+							<fieldset class="js-fieldset-pagamentos-contas-pagar"  style='display:none'>
+								<legend>Definir fatura</legend>
+								<div class="colunas2">
+									<dl>
+										<dd>
+											<label><input type="radio" name="tipoBaixa" value="pagamento" checked> Pagamento</label>
+											<label><input type="radio" name="tipoBaixa" value="desconto"> Desconto</label>
+										</dd>
+									</dl>
+									<dl class="js-area-aplicar-multas-juros-contas-pagar">
+										<dt>Aplicar juros e multas</dt>
+										<label><input type="checkbox" name="juros" class="input-switch  js-aplicar-multas-juros-contas-pagar"/></label>
+									</dl>
+								</div>
+								<!-- area onde mostra as config do pagamento -->
+								<section class="js-pagamento-contas-pagar">
+									<div class="colunas3">
+										<dl>
+											<dt>Valor</dt>
+											<dd class="form-comp"><span>R$</span>
+												<input type="text" class="js-valor-pagamento js-valor money" />
+											</dd>
+										</dl>
+										<dl>
+											<dt>Parcelas</dt>
+												<input type="number" class="js-parcelas-Avulso" name="qtd_pagamento" maxlength="2" value="1" />
+											</dd>
+										</dl>
+									</div>
+									<div>
+										<dl>
+											<dt>Descrição</dt>
+											<textarea style="padding: 0px;" class="js-descricao-contas-pagar" name="descricao" cols="30" rows="2"></textarea>
+											</dd>
+										</dl>
+									</div>
+									
+									<!-- <div class="colunas3">
+										<dl class="dl2 js-dl-debitoBandeira" style="display:none">
+											<dt>Bandeira</dt>
+											<dd>
+												<select class="js-debitoBandeira-contas-pagar js-tipoPagamento-contas-pagar">
+													<option value="">selecione</option>
+													<?php
+													foreach ($debitoBandeiras as $id_operadora => $x) {
+														echo '<optgroup label="' . utf8_encode($x['titulo']) . '">';
+														foreach ($x['bandeiras'] as $band) {
+															echo '<option value="' . $band['id_bandeira'] . '" data-id_operadora="' . $id_operadora . '" data-taxa="' . $band['taxa'] . '" data-cobrarTaxa="' . $band['cobrarTaxa'] . '">' . utf8_encode($band['titulo']) . '</option>';
+														}
+														echo '</optgroup>';
+													}
+													?>
+												</select>
+											</dd>
+										</dl>
+										<dl class="dl2 js-dl-creditoBandeira" style="display:none">
+											<dt>Bandeira</dt>
+											<dd>
+												<select class="js-creditoBandeira-contas-pagar js-tipoPagamento-contas-pagar">
+													<option value="">selecione</option>
+													<?php
+													foreach ($creditoBandeiras as $id_operadora => $x) {
+														echo '<optgroup label="' . utf8_encode($x['titulo']) . '">';
+														foreach ($x['bandeiras'] as $band) {
+															echo '<option value="' . $band['id_bandeira'] . '" data-id_operadora="' . $id_operadora . '" data-semjuros="' . $band['semJuros'] . '" data-parcelas="' . $band['parcelas'] . '" data-taxa="' . $band['taxa'] . '">' . utf8_encode($band['titulo']) . '</option>';
+														}
+														echo '</optgroup>';
+													}
+													?>
+												</select>
+											</dd>
+										</dl>
+										<dl class="dl2" style="display:none">
+											<dt>Qtd. Parcelas</dt>
+											<dd>
+												<select class="js-parcelas-contas-pagar js-tipoPagamento-contas-pagar">
+													<option value="">selecione a bandeira</option>
+												</select>
+											</dd>
+										</dl>
+										<dl style="display:none">>
+											<dt>Valor da Parcela</dt>
+											<dd><label class="js-valorCreditoDebito-contas-pagar js-tipoPagamento-contas-pagar">R$ 0,00</label></dd>
+										</dl>
+										<dl style="display:none">>
+											<dt>Taxa (%)</dt>
+											<dd><label class="js-valorCreditoDebitoTaxa-contas-pagar js-tipoPagamento-contas-pagar">R$ 0,00</label></dd>
+										</dl>
+									</div> -->
+									<div class="js-multa-contas-pagar" style="display:none;">
+										<div class="colunas4">
+											<dl>
+												<dt>Multa</dt>
+												<dd class="form-comp"><span>R$</span><input type="text" class="js-valorMultas-contas-pagar  js-valor" style="width:100px;" value="0,00" /></dd>
+											</dl>
+											<dl>
+												<dt>Juros</dt>
+												<dd class="form-comp"><span>R$</span><input type="text" class="js-valorJuros-contas-pagar  js-valor" style="width:100px;" value="0,00" /></dd>
+											</dl>
+											<dl>
+												<dt>Desconto Juros</dt>
+												<dd class="form-comp"><span>R$</span><input type="text" class="js-descontoMultasJuros-contas-pagar js-valor" style="width:100px;" value="0,00" /></dd>
+											</dl>
+											<dl style="font-weight:bold">
+												<dt>Total</dt>
+												<dd><label class="js-TotalaPagar-contas-pagar" data-valor='0'>R$ 0,00</label></dd>
+											</dl>
+										</div>
+									</div>
+									<section class="js-tipo js-listar-parcelas" style="display:none;">
+										<div class="fpag" style="margin-top:1rem;">
+										</div>
+									</section>
+								</section>
+								<!-- area onde mostra as config de desconto -->
+								<section class="js-desconto-contas-pagar" style="display:none">
+									<div class="colunas4">
+										<dl>
+											<dt>Valor</dt>
+											<dd class="form-comp"><span>R$</span><input type="text" class="js-valor js-valorDesconto-contas-pagar" /></dd>
+										</dl>
+										<dl class="dl3">
+											<dt>Observações</dt>
+											<dd><input type="text" class="js-obs-desconto-contas-pagar" /></dd>
+										</dl>
 									</div>
 								</section>
 							
@@ -2553,20 +2625,16 @@
 							});
 						return
 					}
-					$("#js-aside-asFinanceiro").fadeIn(100, function() {
-						$("#js-aside-asFinanceiro .aside__inner1").addClass("active");
+					$("#js-aside-asFinanceiro-contas-pagar").fadeIn(100, function() {
+						$("#js-aside-asFinanceiro-contas-pagar .aside__inner1").addClass("active");
 					});
 
 					let data_original = pagamento.data_emissao
 					let valor_parcela = pagamento.valorTotalPagamento
 					let desconto = pagamento.valor_desconto
 					let valor_total = valor_parcela-desconto
-					let saldo_a_pagar = valor_total
-					for(let x in pagamento?.baixas){
-						let baixa = pagamento?.baixas[x]
-						saldo_a_pagar -= baixa.valor
-					}
-
+					let saldo_a_pagar = pagamento.saldo_a_pagar
+				
 					$('.js-cabecalho-pagamento-1').show()
 					$('.js-cabecalho-pagamento-2').hide()
 					// adicionando os ids de busca
@@ -2600,6 +2668,8 @@
 					$('.js-fieldset-pagamentos-contas-pagar .js-multa-contas-pagar .js-valorJuros-contas-pagar').val("0")
 					$('.js-fieldset-pagamentos-contas-pagar .js-multa-contas-pagar .js-descontoMultasJuros-contas-pagar').val("0")
 					$('.js-fieldset-pagamentos-contas-pagar .js-multa-contas-pagar .js-TotalaPagar-contas-pagar').val("R$ 0,00")
+					// definindo para sempre iniciar com valor total do pagamento
+					$('.js-fieldset-pagamentos-contas-pagar .js-valor-pagamento').val(saldo_a_pagar*-1);
 
 					// verifica se split esta habilitado
 					if($('.js-fieldset-pagamentos-contas-pagar .split-pagamento').prop('checked')==true){
@@ -2717,15 +2787,170 @@
 				});
 
 			}
-			const pagamentosListar = () => {
-				$('.js-listar-parcelas').show();
-				$('.js-listar-parcelas .fpag').html('');
-				let valorTotal = unMoney($('[name="valor_pagamento"]').val())
-				let qtdParcelas = parseInt($('.js-pagamentos-quantidade').val())
+			const baixasAtualizarPagamentos = () => {
+				let id_pagamento  = $('.js-id_pagamento-apagar').val()
+				let data = `ajax=baixas&id_pagamento=${id_pagamento}`;
+				if(id_pagamento>0){
+					$.ajax({
+						type: "POST",
+						url: baseURLApiAsidePagamentos,
+						data: data,
+						success: function(rtn) {
+							if (rtn.success) {
+								$('#js-listar-faturas-pagamentos .js-baixas tr').remove();
+								total = 0;
+								let desconto = 0;
+								let despesas = 0;
+								if (rtn.baixas.length > 0) {
+									let contador = 0;
+									baixas = rtn.baixas
+									_pagamentos[id_pagamento].baixas = baixas;
+									rtn.baixas.forEach(x => {
+										let textJuros = "";
+										let textMulta = "";
+										let TextDescontoIncargos = "";
+										let ValorParcela = 0
+										let pagamento = '';
+										let alertVencimento = "";
+										let taxaCartao = ""
+										let btnReceber = ''
+										let btnEstorno = ''
+										if (x.tipoBaixa == "PAGAMENTO") {
+											if (x.formaDePagamento.length > 0) {
+												if (x.id_formapagamento == 2) {
+													// pagamento = `${x.formaDePagamento}<font color=#999><br />Parcela ${x.parcela} de ${x.parcelas}</font>`;
+													pagamento = `${x.formaDePagamento}<font color=#999><br /></font>`;
+												} else {
+													pagamento = x.formaDePagamento;
+												}
+											}
+										} else {
+											pagamento = `<span class="iconify" data-icon="il:dialog" data-inline="true" data-height="18"></span> ${x.obs}`;
+										}
+
+										if (x.tipoBaixa == "DESCONTO") {
+											desconto += x.valor;
+										} else if (x.tipoBaixa == "DESPESA") {
+											despesas += x.valor;
+										} else {
+
+											total += x.valor;
+										}
+
+										let btns = ``;
+
+										if (x.pago == 1) {
+											icon = `<span class="iconify tooltip" title="pago" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
+											btnReceber = `<button type="button" class="button button_green" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar" disabled><span>Recebido</span></button>`
+											btnEstorno = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><i class="iconify" data-icon="fluent:delete-24-regular"></i></span></a>`;
+										} else {
+											btns = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
+											btnEstorno = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><i class="iconify" data-icon="fluent:delete-24-regular"></i></span></a>`;
+											if (x.tipoBaixa == "PAGAMENTO") {
+												btns += ` <a href="javascript:;" class="js-receber button button__sec" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar"><span class="iconify" data-icon="ic:round-attach-money" data-inline="false"></span></a>`;
+												btnReceber = `<a href="javascript:;" class="js-receber button button__sec" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar"><i class="iconify" data-icon="fluent:checkmark-24-filled"></i><span>Receber</span></a>`
+											}
+											if (x.vencido) {
+												icon = `<span class="iconify tooltip" title="vencido" data-icon="icons8:cancel" data-inline="true" style="color:red"></span>`;
+											} else {
+												icon = `<span class="iconify tooltip" title="em aberto" data-icon="bx:bx-hourglass" data-inline="true" style="color:orange"></span>`;
+											}
+										}
+
+										contador++;
+										ValorParcela += x.valor;
+										if (x.valorMulta != 0) {
+											ValorParcela += parseFloat(x.valorMulta);
+											textMulta = `<span style="font-size:12px;color:var(--cinza4)">Multa: R$${number_format(x.valorMulta,2,",",".")}</span></br>`
+										}
+										if (x.valorJuros != 0) {
+											ValorParcela += parseFloat(x.valorJuros);
+											textJuros = `<span style="font-size:12px;color:var(--cinza4)">Juros: R$ ${number_format(x.valorJuros,2,",",".")}</span></br>`
+										}
+										if (x.descontoMultasJuros != 0) {
+											ValorParcela -= parseFloat(x.descontoMultasJuros);
+											TextDescontoIncargos = `<span style="font-size:12px;color:var(--cinza4)">Descontos: R$ ${number_format(x.descontoMultasJuros,2,",",".")}</span></br>`
+										}
+										// let diferenca = (new Date().getTime()-new Date(`${x.vencimento.split('/')[2]}/${x.vencimento.split('/')[1]}/${x.vencimento.split('/')[0]}`).getTime()) / (1000 * 60 * 60 * 24);
+										// if(diferenca>=1){
+										// 	alertVencimento = `<span style="color:red">FATURA VENCIDA!</span>`
+										// }
+										if (x.tipoBaixa == "PAGAMENTO") {
+											if (x.formaDePagamento.length > 0) {
+												if (x.id_formapagamento == 2) {
+													taxaCartao = `<span style="font-size:12px;color:var(--cinza4)">Taxa Cartão: R$${number_format(((ValorParcela)*parseFloat(x.taxa)/100),2,",",".")}</span><br>`
+												}
+											}
+										}
+
+										html = `<tr class="">
+									<td>${icon}</td>
+									<td>${x.data}<br>${alertVencimento}</td>
+									<td>${x.tipoBaixa}</td>
+									<td>${pagamento}</td>
+									<td><font style="font-size:18px">${number_format(ValorParcela,2,",",".")}</font></br></td>
+									<td>
+										${taxaCartao}
+										${textMulta}
+										${textJuros}
+										${TextDescontoIncargos}
+									</td>
+									<td>${btnReceber}</td>
+									<td>${btnEstorno}</td>
+									</tr>`;
+										$('.js-tr .js-recibo, .js-tr .js-estorno').tooltipster({
+											theme: "borderless"
+										});
+										$('#js-listar-faturas-pagamentos  .js-baixas').append(html);
+									});
+								} else {
+									$('#js-listar-faturas-pagamentos .js-baixas').append('<tr class="js-tr"><td colspan="7"><center>Nenhuma baixa cadastrada</center></td></tr>');
+								}
+								$('.js-valorDesconto').val(number_format(desconto, 2, ",", "."));
+								$('.js-valorDespesa').val(number_format(despesas, 2, ",", "."));
+								atualizaAside()
+							} else if (rtn.error) {
+								swal({
+									title: "Erro!",
+									text: rtn.error,
+									html: true,
+									type: "error",
+									confirmButtonColor: "#424242"
+								});
+							} else {
+
+								swal({
+									title: "Erro!",
+									text: "Algum erro ocorreu durante a baixa deste pagamento!",
+									html: true,
+									type: "error",
+									confirmButtonColor: "#424242"
+								});
+							}
+						},
+						error: function(err) {
+							swal({
+								title: "Erro!",
+								text: "Algum erro ocorreu durante a baixa deste pagamento!",
+								html: true,
+								type: "error",
+								confirmButtonColor: "#424242"
+							});
+						}
+					})
+				}
+			}
+			const pagamentosListarAvulsoContasAPagar = () => {
+				$('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').show();
+				$('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas .fpag').html('');
+				let id_pagamento = $('#js-aside-asFinanceiro-contas-pagar .js-id_pagamento-apagar').val()
+				let pagamento = _pagamentos[id_pagamento]
+				let valorTotal = unMoney($('#js-aside-asFinanceiro-contas-pagar .js-valor-pagamento').val())
+				let qtdParcelas = parseInt($('#js-aside-asFinanceiro-contas-pagar .js-parcelas-Avulso').val())
 				let metodosPagamentosAceito = '<?= $optionFormasDePagamento; ?>';
 				let valorParcelas = number_format(valorTotal / qtdParcelas, 2, ",", ".")
 				let valorTotalParcelado = 0
-				if (valorTotal <= 0) {
+				if (valorTotal == 0) {
 					swal({
 						title: "Erro!",
 						text: "Antes Voce precisa Definir qual Valor Total deste Pagamento",
@@ -2761,7 +2986,7 @@
 					let dia = startDate.getDate();
 					dia = dia <= 9 ? `0${dia}` : dia;
 					vencimento = `${dia}/${mes}/${startDate.getFullYear()}`;
-					$('.js-listar-parcelas .fpag').append(`<div class="fpag-item js-pagamento-item">
+					$('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas .fpag').append(`<div class="fpag-item js-pagamento-item">
 							<aside>${i}</aside>
 							<article>
 								<div class="colunas3">
@@ -2806,166 +3031,11 @@
 				}
 				AdicionaMaskaras()
 			}
-			const baixasAtualizarPagamentos = () => {
-				let id_pagamento  = $('.js-id_pagamento-apagar').val()
-				let data = `ajax=baixas&id_pagamento=${id_pagamento}`;
-				if(id_pagamento>0){
-
-				$.ajax({
-					type: "POST",
-					url: baseURLApiAsidePagamentos,
-					data: data,
-					success: function(rtn) {
-						if (rtn.success) {
-							$('#js-listar-faturas-pagamentos .js-baixas tr').remove();
-							total = 0;
-							let desconto = 0;
-							let despesas = 0;
-							if (rtn.baixas.length > 0) {
-								let contador = 0;
-								baixas = rtn.baixas
-								_pagamentos[id_pagamento].baixas = baixas;
-								rtn.baixas.forEach(x => {
-									let textJuros = "";
-									let textMulta = "";
-									let TextDescontoIncargos = "";
-									let ValorParcela = 0
-									let pagamento = '';
-									let alertVencimento = "";
-									let taxaCartao = ""
-									let btnReceber = ''
-									let btnEstorno = ''
-									if (x.tipoBaixa == "PAGAMENTO") {
-										if (x.formaDePagamento.length > 0) {
-											if (x.id_formapagamento == 2) {
-												// pagamento = `${x.formaDePagamento}<font color=#999><br />Parcela ${x.parcela} de ${x.parcelas}</font>`;
-												pagamento = `${x.formaDePagamento}<font color=#999><br /></font>`;
-											} else {
-												pagamento = x.formaDePagamento;
-											}
-										}
-									} else {
-										pagamento = `<span class="iconify" data-icon="il:dialog" data-inline="true" data-height="18"></span> ${x.obs}`;
-									}
-
-									if (x.tipoBaixa == "DESCONTO") {
-										desconto += x.valor;
-									} else if (x.tipoBaixa == "DESPESA") {
-										despesas += x.valor;
-									} else {
-
-										total += x.valor;
-									}
-
-									let btns = ``;
-
-									if (x.pago == 1) {
-										icon = `<span class="iconify tooltip" title="pago" data-icon="akar-icons:circle-check" data-inline="true" style="color:green"></span>`;
-										btnReceber = `<button type="button" class="button button_green" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar" disabled><span>Recebido</span></button>`
-										btnEstorno = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><i class="iconify" data-icon="fluent:delete-24-regular"></i></span></a>`;
-									} else {
-										btns = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><span class="iconify" data-icon="typcn:arrow-back" data-inline="false"></span></a>`;
-										btnEstorno = `<a href="javascript:;" class="js-estorno button button__sec" data-id_baixa="${x.id_baixa}" title="Estorno"><i class="iconify" data-icon="fluent:delete-24-regular"></i></span></a>`;
-										if (x.tipoBaixa == "PAGAMENTO") {
-											btns += ` <a href="javascript:;" class="js-receber button button__sec" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar"><span class="iconify" data-icon="ic:round-attach-money" data-inline="false"></span></a>`;
-											btnReceber = `<a href="javascript:;" class="js-receber button button__sec" data-id_baixa="${x.id_baixa}" data-index="${contador}" title="Pagar"><i class="iconify" data-icon="fluent:checkmark-24-filled"></i><span>Receber</span></a>`
-										}
-										if (x.vencido) {
-											icon = `<span class="iconify tooltip" title="vencido" data-icon="icons8:cancel" data-inline="true" style="color:red"></span>`;
-										} else {
-											icon = `<span class="iconify tooltip" title="em aberto" data-icon="bx:bx-hourglass" data-inline="true" style="color:orange"></span>`;
-										}
-									}
-
-									contador++;
-									ValorParcela += x.valor;
-									if (x.valorMulta != 0) {
-										ValorParcela += parseFloat(x.valorMulta);
-										textMulta = `<span style="font-size:12px;color:var(--cinza4)">Multa: R$${number_format(x.valorMulta,2,",",".")}</span></br>`
-									}
-									if (x.valorJuros != 0) {
-										ValorParcela += parseFloat(x.valorJuros);
-										textJuros = `<span style="font-size:12px;color:var(--cinza4)">Juros: R$ ${number_format(x.valorJuros,2,",",".")}</span></br>`
-									}
-									if (x.descontoMultasJuros != 0) {
-										ValorParcela -= parseFloat(x.descontoMultasJuros);
-										TextDescontoIncargos = `<span style="font-size:12px;color:var(--cinza4)">Descontos: R$ ${number_format(x.descontoMultasJuros,2,",",".")}</span></br>`
-									}
-									// let diferenca = (new Date().getTime()-new Date(`${x.vencimento.split('/')[2]}/${x.vencimento.split('/')[1]}/${x.vencimento.split('/')[0]}`).getTime()) / (1000 * 60 * 60 * 24);
-									// if(diferenca>=1){
-									// 	alertVencimento = `<span style="color:red">FATURA VENCIDA!</span>`
-									// }
-									if (x.tipoBaixa == "PAGAMENTO") {
-										if (x.formaDePagamento.length > 0) {
-											if (x.id_formapagamento == 2) {
-												taxaCartao = `<span style="font-size:12px;color:var(--cinza4)">Taxa Cartão: R$${number_format(((ValorParcela)*parseFloat(x.taxa)/100),2,",",".")}</span><br>`
-											}
-										}
-									}
-
-									html = `<tr class="">
-								<td>${icon}</td>
-								<td>${x.data}<br>${alertVencimento}</td>
-								<td>${x.tipoBaixa}</td>
-								<td>${pagamento}</td>
-								<td><font style="font-size:18px">${number_format(ValorParcela,2,",",".")}</font></br></td>
-								<td>
-									${taxaCartao}
-									${textMulta}
-									${textJuros}
-									${TextDescontoIncargos}
-								</td>
-								<td>${btnReceber}</td>
-								<td>${btnEstorno}</td>
-								</tr>`;
-									$('.js-tr .js-recibo, .js-tr .js-estorno').tooltipster({
-										theme: "borderless"
-									});
-									$('#js-listar-faturas-pagamentos  .js-baixas').append(html);
-								});
-							} else {
-								$('#js-listar-faturas-pagamentos .js-baixas').append('<tr class="js-tr"><td colspan="7"><center>Nenhuma baixa cadastrada</center></td></tr>');
-							}
-							$('.js-valorDesconto').val(number_format(desconto, 2, ",", "."));
-							$('.js-valorDespesa').val(number_format(despesas, 2, ",", "."));
-							atualizaAside()
-						} else if (rtn.error) {
-							swal({
-								title: "Erro!",
-								text: rtn.error,
-								html: true,
-								type: "error",
-								confirmButtonColor: "#424242"
-							});
-						} else {
-
-							swal({
-								title: "Erro!",
-								text: "Algum erro ocorreu durante a baixa deste pagamento!",
-								html: true,
-								type: "error",
-								confirmButtonColor: "#424242"
-							});
-						}
-					},
-					error: function(err) {
-						swal({
-							title: "Erro!",
-							text: "Algum erro ocorreu durante a baixa deste pagamento!",
-							html: true,
-							type: "error",
-							confirmButtonColor: "#424242"
-						});
-					}
-				})
-			}
-
-			}
 			$(function() {
 				// abre o aside para novo pagamento
 				$('.js-btn-abrir-aside').on('click', (function() {
-					$("#js-aside-asFinanceiro").fadeIn(100, function() {
-						$("#js-aside-asFinanceiro .aside__inner1").addClass("active");
+					$("#js-aside-asFinanceiro-contas-pagar").fadeIn(100, function() {
+						$("#js-aside-asFinanceiro-contas-pagar .aside__inner1").addClass("active");
 					});
 					$('.js-id_pagamento-apagar').val(0)
 					$('.js-cabecalho-pagamento-2').show();
@@ -2994,6 +3064,16 @@
 						let descricao = $('[name="descricao"]').val();
 						let valor_pagamento = unMoney($('[name="valor_pagamento"]').val());
 						let erro = ""
+						let split_pagamento = $('.split-pagamento:checked')
+						let split_recorrente = $('.split-custo-recorrente:checked')
+						let objetoPagamento = {
+							tipo_beneficiario,
+							id_beneficiario,
+							data_emissao,
+							descricao,
+							valor_pagamento
+						}
+
 						if (!id_beneficiario || id_beneficiario <= 0) {
 							erro = " Voce precisa selecionar um beneficiario."
 						} else if (!tipo_beneficiario || tipo_beneficiario == undefined) {
@@ -3005,6 +3085,94 @@
 						} else if (!valor_pagamento || valor_pagamento <= 0 || valor_pagamento == undefined) {
 							erro = "Voce precisa adicionar um Valor para Este pagamento."
 						}
+						if (split_pagamento.length > 0) {
+							let camposSplits = $('.js-fieldset-pagamentos-splits').find('.js-pagamento-item');
+							if (camposSplits.length <= 0) {
+								erro = "Voce Precisa Adicionar pelo Menos 1 Split de Pagamento ou Desativar o Split!"
+							} else {
+								let splits = []
+								camposSplits.each(function(index, input) {
+									let porc_valor = $(input).find('[name="porcentagem-splits"]').val()
+									if (($('[name="modo_divisao"]:checked').val() == 'porcentagem')) {
+										porc_valor = parseFloat(porc_valor)
+									} else {
+										porc_valor = unMoney(porc_valor)
+									}
+									let id_centro_de_custo = $(input).find('[name="id_centro_de_custo"]').val()
+									let id_categoria = $(input).find('[name="id_categoria"]').val()
+									let calcular_como = $(input).find(`[name="calcular_como_${index+1}"]:checked`).val()
+									if(!calcular_como || calcular_como ==undefined){
+										erro ="Voce Precisa Informar como esta conta deve ser Calculada!"
+									}
+									splits.push({
+										porc_valor,
+										id_centro_de_custo,
+										id_categoria,
+										calcular_como
+									})
+									if (porc_valor <= 0) {
+										erro = "Todos Os Splits Prcisam Ter um valor Maior que ZERO"
+									}
+									if (!id_centro_de_custo || id_centro_de_custo <= 0 || id_centro_de_custo == undefined) {
+										erro = "Todos Os Splits Prcisam  de um Centro de Custo."
+									}
+									if (!id_categoria || id_categoria <= 0 || id_categoria == undefined) {
+										erro = "Todos Os Splits Prcisam de uma Categoria."
+									}
+									// if (!calcular_como || calcular_como == undefined) {
+									// 	erro = "Todos Os Splits Prcisam pelo menos uma checkbox marcado."
+									// }
+								});
+								objetoPagamento.split_pagamento = {
+									ativo: true,
+									quantidade: $('.js-splits-quantidade').val(),
+									tipo_splits: $('[name="modo_divisao"]:checked').val(),
+									splits
+								}
+							}
+						} else {
+							let id_centro_de_custo = $('[name="id_centro_de_custo"]').val();
+							let id_categoria_split = $('[name="id_categoria"]').val();
+							let calcular_como = $('[name="calcular_como_0"]').val();
+							if (!calcular_como || calcular_como == undefined) {
+								erro ="Voce Precisa Informar como esta conta deve ser Calculada!"
+							}
+							if (!id_centro_de_custo || id_centro_de_custo <= 0 || id_centro_de_custo == undefined) {
+								erro = "Voce precisa Definir um Centro de Custo Para Este Pagamento."
+							}
+							if (!id_categoria_split || id_categoria_split <= 0 || id_categoria_split == undefined) {
+								erro = "Voce precisa Definir uma Categoria Para Este Pagamento."
+							}
+							objetoPagamento.split_pagamento = {
+								ativo: false,
+								quantidade: 0,
+								id_centro_de_custo,
+								id_categoria_split,
+								calcular_como
+							}
+						}
+						if (split_recorrente.length > 0) {
+							let cada_dia = $('[name=area-custo-recorrente-acada-dia]').val()
+							let meses = $('[name=area-custo-recorrente-meses]').val()
+							if (parseFloat(cada_dia) <= 0) {
+								erro = "Voce precisa adicionar a quantidade de Dias para recorrencia deste Pagamento!";
+							}
+							if (parseFloat(meses) <= 0) {
+								erro = "Voce precisa adicionar a quantidade de Meses para recorrencia deste Pagamento!";
+							}
+							objetoPagamento.split_recorrente = {
+								ativo: true,
+								acada: cada_dia,
+								meses: meses,
+							}
+						} else {
+							objetoPagamento.split_recorrente = {
+								ativo: false,
+								acada: 0,
+								meses: 0,
+							}
+						}
+
 						if (erro.length > 0) {
 							swal({
 								title: "Erro!",
@@ -3016,12 +3184,13 @@
 							obj.attr('data-loading',0);
 							return;
 						}
-						let data = `ajax=addPagamento&tipo_beneficiario=${tipo_beneficiario}&id_beneficiario=${id_beneficiario}&data_emissao=${data_emissao}&descricao=${descricao}&valor_pagamento=${valor_pagamento}`;
+						let data = `ajax=addPagamento&tipo_beneficiario=${tipo_beneficiario}&id_beneficiario=${id_beneficiario}&data_emissao=${data_emissao}&descricao=${descricao}&valor_pagamento=${valor_pagamento}&objetoPagamento=${JSON.stringify(objetoPagamento)}`;
 						$.ajax({
 							type: "POST",
 							url: baseURLApiAsidePagamentos,
 							data: data,
 							success: function(rtn) {
+								console.log(rtn)
 								if (rtn.sucess) {
 									swal({
 										title: "Sucesso!",
@@ -3174,7 +3343,7 @@
 					$('.js-TotalaPagar-contas-pagar').html(number_format(valorTotalFinal,2,',','.'))
 				})
 				// botao para adicionar pagamento Fluxo
-				$('.js-btn-addBaixaPagamento').click(function() {
+				$('#js-aside-asFinanceiro-contas-pagar .js-btn-addBaixaPagamento').click(function() {
 					let obj = $(this);
 					let objHTMLAntigo = $(this).html();
 					if(obj.attr('data-loading')==0) {
@@ -3193,30 +3362,21 @@
 						let valor_multa = 0;
 						let valor_juros = 0;
 						let valor_desconto = 0;
-						let split_pagamento ="";
-						let split_recorrente = "";
 						let objetoPagamento = {}
 						let erro = ""
 						let isDesconto=0
-
+						let CamposPagamentos = $('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').find('article');
 						if(tipo_baixa=='pagamento'){
-							data_vencimento = $('.js-vencimento-contas-pagar').val().split("/");
-							data_vencimento = data_vencimento[2] + "-" + data_vencimento[1] + "-" + data_vencimento[0];
-							descricao = $('.js-obs-contas-pagar').val();
-							id_formapagamento  = $('.js-id_formapagamento-contas-pagar').val();
+							descricao = $('#js-aside-asFinanceiro-contas-pagar .js-descricao-contas-pagar').val();
 							valor_pagamento = unMoney($('.js-pagamento-contas-pagar .js-valor-pagamento').val());
 							valor_multa = unMoney($('.js-multa-contas-pagar .js-valorMultas-contas-pagar').val());
 							valor_juros = unMoney($('.js-multa-contas-pagar .js-valorJuros-contas-pagar').val());
 							valor_desconto = unMoney($('.js-multa-contas-pagar .js-descontoMultasJuros-contas-pagar').val());
-							split_pagamento = $('.split-pagamento:checked')
-							split_recorrente = $('.split-custo-recorrente:checked')
 							objetoPagamento = {}
 							if (!id_pagamento || id_pagamento <= 0) {
 								erro = "Pagamento Não encontrado"
 							} else if (!id_beneficiario || id_beneficiario <= 0) {
 								erro = " Voce precisa selecionar um beneficiario."
-							} else if (!data_vencimento || data_vencimento == undefined) {
-								erro = " Selecione a data De Vencimento."
 							} else if (!descricao || descricao == undefined || descricao.length <= 3) {
 								erro = "Voce precisa adicionar uma descricao válida."
 							} else if (!valor_pagamento || valor_pagamento == 0 || valor_pagamento == undefined) {
@@ -3226,115 +3386,55 @@
 								id_pagamento,
 								id_beneficiario,
 								tipo_beneficiario,
-								data_vencimento,
 								descricao,
-								id_formapagamento,
 								valor_pagamento,
+								valor_multa,
+								valor_juros,
+								valor_desconto,
 							}
-							if (split_pagamento.length > 0) {
-								let camposSplits = $('.js-fieldset-pagamentos-splits').find('.js-pagamento-item');
-								if (camposSplits.length <= 0) {
-									erro = "Voce Precisa Adicionar pelo Menos 1 Split de Pagamento ou Desativar o Split!"
-								} else {
-									let splits = []
-									camposSplits.each(function(index, input) {
-										let porc_valor = $(input).find('[name="porcentagem-splits"]').val()
-										if (($('[name="modo_divisao"]:checked').val() == 'porcentagem')) {
-											porc_valor = parseFloat(porc_valor)
-										} else {
-											porc_valor = unMoney(porc_valor)
-										}
-										let id_centro_de_custo = $(input).find('[name="id_centro_de_custo"]').val()
-										let id_categoria = $(input).find('[name="id_categoria"]').val()
-										let calcular_como = $(input).find(`[name="calcular_como_${index+1}"]:checked`).val()
-										splits.push({
-											porc_valor,
-											id_centro_de_custo,
-											id_categoria,
-											calcular_como
-										})
-										if (porc_valor <= 0) {
-											erro = "Todos Os Splits Prcisam Ter um valor Maior que ZERO"
-										}
-										if (!id_centro_de_custo || id_centro_de_custo <= 0 || id_centro_de_custo == undefined) {
-											erro = "Todos Os Splits Prcisam  de um Centro de Custo."
-										}
-										if (!id_categoria || id_categoria <= 0 || id_categoria == undefined) {
-											erro = "Todos Os Splits Prcisam de uma Categoria."
-										}
-										// if (!calcular_como || calcular_como == undefined) {
-										// 	erro = "Todos Os Splits Prcisam pelo menos uma checkbox marcado."
-										// }
-									});
-									objetoPagamento.split_pagamento = {
-										ativo: true,
-										quantidade: $('.js-splits-quantidade').val(),
-										tipo_splits: $('[name="modo_divisao"]:checked').val(),
-										splits
+							if (CamposPagamentos.length <= 0) {
+								erro = "Voce Precisa Adicionar pelo Menos 1 Pagamento"
+							} else {
+								let item = []
+								let valor_total = 0
+								CamposPagamentos.each(function(index, input) {
+									let data_vencimento = $(input).find('.js-vencimento').val().split('/')
+									data_vencimento = data_vencimento[2] + "-" + data_vencimento[1] + "-" + data_vencimento[0];
+									let valor = unMoney($(input).find('.js-valor').val())
+									let id_formapagamento = $(input).find('.js-id_formapagamento').val()
+									valor_total += valor
+									if (!id_formapagamento || id_formapagamento <= 0 || id_formapagamento == undefined) {
+										erro = "Todos Os Pagamentos Necessitam ter uma forma de Pagamento."
 									}
-								}
-							} else {
-								let id_centro_de_custo = $('[name="id_centro_de_custo"]').val();
-								let id_categoria_split = $('[name="id_categoria"]').val();
-								if (!id_centro_de_custo || id_centro_de_custo <= 0 || id_centro_de_custo == undefined) {
-									erro = "Voce precisa Definir um Centro de Custo Para Este Pagamento."
-								}
-								if (!id_categoria_split || id_categoria_split <= 0 || id_categoria_split == undefined) {
-									erro = "Voce precisa Definir uma Categoria Para Este Pagamento."
-								}
-								objetoPagamento.split_pagamento = {
-									ativo: false,
-									quantidade: 0,
-									id_centro_de_custo,
-									id_categoria_split
-								}
-							}
-							if (split_recorrente.length > 0) {
-								let cada_dia = $('[name=area-custo-recorrente-acada-dia]').val()
-								let meses = $('[name=area-custo-recorrente-meses]').val()
-								if (parseFloat(cada_dia) <= 0) {
-									erro = "Voce precisa adicionar a quantidade de Dias para recorrencia deste Pagamento!";
-								}
-								if (parseFloat(meses) <= 0) {
-									erro = "Voce precisa adicionar a quantidade de Meses para recorrencia deste Pagamento!";
-								}
-								objetoPagamento.split_recorrente = {
-									ativo: true,
-									acada: cada_dia,
-									meses: meses,
-								}
-							} else {
-								objetoPagamento.split_recorrente = {
-									ativo: false,
-									acada: 0,
-									meses: 0,
-								}
+									if (index + 1 == CamposPagamentos.length) {
+										if (valor_total < valor_pagamento) {
+											erro = `a Soma dos Pagamentos Precisam Ser igual ao Total do Pagamento. <br> R$ ${number_format((valor_pagamento-valor_total),2,",",".")} Faltando`
+										} else if (valor_total > valor_pagamento) {
+											erro = `a Soma dos Pagamentos Precisam Ser igual ao Total do Pagamento. <br> R$ ${number_format((valor_total-valor_pagamento),2,",",".")} Passando`
+										}
+									}
+									item.push({
+										data_vencimento,
+										valor,
+										id_formapagamento,
+									})
+
+								});
+								objetoPagamento.pagamentos = item
 							}
 						}else if(tipo_baixa == 'desconto'){
-							observacao = $('#js-aside-asFinanceiro .js-obs-desconto-contas-pagar').val();
-							valor_pagamento = unMoney($('#js-aside-asFinanceiro .js-valorDesconto-contas-pagar').val());
-							data_vencimento = $('#js-aside-asFinanceiro .js-vencimento-contas-pagar').val().split("/");
-							data_vencimento = data_vencimento[2] + "-" + data_vencimento[1] + "-" + data_vencimento[0];
+							observacao = $('#js-aside-asFinanceiro-contas-pagar .js-obs-desconto-contas-pagar').val();
+							valor_pagamento = unMoney($('#js-aside-asFinanceiro-contas-pagar .js-valorDesconto-contas-pagar').val());
 							isDesconto = 1;
 							objetoPagamento = {
 								id_pagamento,
 								id_beneficiario,
 								tipo_beneficiario,
-								data_vencimento,
+								data_vencimento: "NOW()",
 								observacao,
 								id_formapagamento:0,
 								valor_pagamento,
-								split_pagamento:{
-									ativo: false,
-									quantidade: 0,
-									id_centro_de_custo:0,
-									id_categoria_split:0
-								},
-								split_recorrente:{
-									ativo: false,
-									acada:0,
-									meses:0
-								}
+								
 							}
 						}else{
 							erro = "Tipo de Baixa Não Encontrado!"
@@ -3351,8 +3451,8 @@
 							obj.attr('data-loading',0);
 							return;
 						}
-						// return
-						let data = `ajax=addFluxoPagamento&id_pagamento=${id_pagamento}&id_beneficiario=${id_beneficiario}&observacao=${observacao}&desconto=${isDesconto}&tipo_beneficiario=${tipo_beneficiario}&data_vencimento=${data_vencimento}&descricao=${descricao}&valor_pagamento=${valor_pagamento}&valor_multa=${valor_multa}&valor_juros=${valor_juros}&valor_desconto=${valor_desconto}&objeto=${JSON.stringify(objetoPagamento)}`;
+						let data = `ajax=addFluxoPagamento&id_pagamento=${id_pagamento}&id_beneficiario=${id_beneficiario}&observacao=${observacao}&isDesconto=${isDesconto}&tipo_beneficiario=${tipo_beneficiario}&descricao=${descricao}&valor_pagamento=${valor_pagamento}&valor_multa=${valor_multa}&valor_juros=${valor_juros}&valor_desconto=${valor_desconto}&objeto=${JSON.stringify(objetoPagamento)}`;
+				
 						$.ajax({
 							type: "POST",
 							url: baseURLApiAsidePagamentos,
@@ -3401,6 +3501,78 @@
 						})
 					}
 				})
+				// altera quantidade de parcelas
+				$('#js-aside-asFinanceiro-contas-pagar .js-parcelas-Avulso').change(function() {
+					let qtd = $(this).val();
+					if (!$.isNumeric(eval(qtd))) qtd = 1;
+					else if (qtd < 1) qtd = 1;
+					else if (qtd >= 36) qtd = 36;
+					$(this).val(qtd);
+					pagamentosListarAvulsoContasAPagar();
+				});
+				// verifica se ha alteracao na primeira data de pagamento
+				$('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').on('change', '.js-vencimento:eq(0)', function() {
+					let CamposDatas = $('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').find('.js-vencimento');
+					if (CamposDatas.length > 1) {
+						let numeroParcelas = CamposDatas.length
+						let aux = $('.js-vencimento:eq(0)').val().split("/")
+						var startDate = new Date();
+						startDate.setDate(aux[0]);
+						startDate.setMonth(eval(aux[1]) - 1);
+						startDate.setFullYear(aux[2]);
+
+						CamposDatas.each(function(index, input) {
+							let newDAte = startDate
+							let mes = startDate.getMonth() + 1;
+							let dia = startDate.getDate();
+							mes = mes <= 9 ? `0${mes}` : mes;
+							dia = dia <= 9 ? `0${dia}` : dia;
+							newDate = startDate;
+							newDate.setMonth(newDate.getMonth() + 1);
+						})
+						return
+					}
+				});
+				//verifica se ha alteracao no valor de cada parcela
+				$('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').on('keyup', '.js-valor', function() {
+					let valorEmCurso = unMoney($('#js-aside-asFinanceiro-contas-pagar .js-valor-pagamento').val())
+					let indexInicial = $(this).attr('data-ordem');
+					let CamposValor = $('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').find('.js-valor');
+					let valorDigitado = unMoney($(this).val());
+					let numeroParcelas = CamposValor.length;
+					let dataOrdem = ($(this).attr('data-ordem') - 1)
+					let erro = "";
+					if (valorDigitado > valorEmCurso) {
+						swal({
+							title: "Erro!",
+							text: 'Os valores das parcelas não podem superar o valor total',
+							html: true,
+							type: "error",
+							confirmButtonColor: "#424242"
+						});
+						let valor = 0
+						CamposValor.each(function(index, input) {
+							$(input).val(0)
+						})
+						$(this).val(number_format(valorEmCurso, 2, ",", "."))
+						return;
+					}
+
+					let valor = 0
+					let valorAteInput = valorDigitado
+					let valorFinal = 0
+					let valorRestante = (valorEmCurso - valorDigitado)
+
+					CamposValor.each(function(index, input) {
+						// valorFinal += valorRestante - unMoney($(input).val())
+						// if ((index + 1) < dataOrdem) {
+						// 	valorRestante = valorRestante - unMoney($(input).val())
+						// }
+						// if ((index + 1) > dataOrdem) {
+						// 	$('.js-listar-parcelas').find(`.js-valor:eq(${index})`).val(number_format(valorRestante / ((numeroParcelas - dataOrdem)), 2, ",", "."))
+						// }
+					});
+				});
 				// conforme vai escrevendo no campo de busca do select ele vai fazendo ajax para buscar no bd
 				$('select[name=id_beneficiario]').select2({
 					ajax: {
@@ -3486,7 +3658,6 @@
 						$('#area-custo-recorrente').hide();
 						$('.js-pagamentos-quantidade').attr('max', 36);
 					}
-					//pagamentosListar();
 				})
 				// modifica quantidade  de splits
 				$('.js-splits-quantidade').change(function() {
@@ -3596,7 +3767,6 @@
 							newDate.setMonth(newDate.getMonth() + 1);
 							// console.log(newDate)
 						})
-						//pagamentosListar();
 						return
 					}
 				});
@@ -4110,9 +4280,7 @@
 							dia = dia <= 9 ? `0${dia}` : dia;
 							newDate = startDate;
 							newDate.setMonth(newDate.getMonth() + 1);
-							// console.log(newDate)
 						})
-						//pagamentosListar();
 						return
 					}
 				});
