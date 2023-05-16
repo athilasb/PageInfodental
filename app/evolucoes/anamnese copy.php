@@ -361,8 +361,8 @@
 							<td>
 								<section class="print-content">
 
-									<header>
-										<div style="text-align: center; margin-bottom: 50px;">	
+									<header class="titulo-ficha">
+										<div>	
 											<?php
 												if(!empty($logo)) {
 												?>
@@ -370,49 +370,27 @@
 												<?php
 												}; 
 											?>	
+											<h1>Ficha do Paciente</h1>
+											<h2>Formulário da Anamnese</h2>
+											<div class="titulo"><?php echo utf8_encode($anamnese->titulo);?></div>
+
+											<p><?php echo date('d/m/Y',strtotime($evolucao->data));?></p>
+										</div>
 									</header>
 
-
-								<div class="header-anamnese">
-									<div class="title-anamnese">
-										<div>
-											<div><b>Formulário da Anamnese</b></div>
-											<div><?php echo utf8_encode($anamnese->titulo);?></div>
-										</div>
-										<div><?php echo date('d/m/Y',strtotime($evolucao->data));?></div>
+									<div class="ficha" style="display:flex; justify-content: space-between;">
+											<div>
+												<div colspan="3" style="max-width: 120px;"><strong><?php echo utf8_encode($paciente->nome);?></strong></div>
+												<div colspan="3" style="margin-bottom: 5px;"><?php echo $idade>1?"$idade anos":"$idade";?></div>
+											</div>
+											<div>
+												<div colspan="3" style="margin-bottom: 5px;" ><span class="iconify" data-icon="mdi:file-document-outline" data-inline="true"></span> <?php echo utf8_encode($paciente->cpf);?></div>
+												<div colspan="3"><span class="iconify" data-icon="bxs:phone" data-inline="true"></span> <?php echo maskTelefone($paciente->telefone1);?></div>
+											</div>
+										</table>
+										
 									</div>
-									<div class="info-anamnese">
-										<div>
-											<div><b>PACIENTE</b></div>
-											<div><?php echo utf8_encode($paciente->nome);?></div>
-										</div>
-										<div>
-											<div><b>IDADE</b></div>
-											<div><?php echo $idade>1?"$idade anos":"$idade";?></div>
-										</div>
-										<div>
-											<div><b>SEXO</b></div>
-											<div>Masculino</div>
-										</div>
-									</div>
-									<div class="info-anamnese">
-										<div>
-											<div><b>PROFISSIONAL</b></div>
-											<div>Kroner Machado Costa</div>
-										</div>
-										<div>
-											<div><b>CRO</b></div>
-											<div>15656</div>
-										</div>
-										<div>
-											<div><b>UF</b></div>
-											<div>GO</div>
-										</div>
-									</div>
-								</div>	
-
 									<?php
-									
 
 									// Anamnese nao finalizada
 									if($anamneseFinalizada==0) {
