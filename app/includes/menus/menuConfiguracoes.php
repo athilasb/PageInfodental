@@ -1,7 +1,7 @@
 <?php
 	$pagesClinica=explode(",","pg_configuracoes_clinica.php,pg_configuracoes_clinica_colaboradores.php,pg_configuracoes_clinica_cadeiras.php,pg_configuracoes_pagamentos.php");
 	$pagesEvolucao=explode(",","pg_configuracoes_evolucao_anamnese.php,pg_configuracoes_evolucao_procedimentos.php,pg_configuracoes_evolucao_servicosdelaboratorio.php,pg_configuracoes_evolucao_examecomplementar.php,pg_configuracoes_evolucao_documentos.php");
-	$pagesFornecedor=explode(",","pg_configuracoes_estoque_fornecedores.php,pg_configuracoes_estoque_produtos.php");
+	$pagesFornecedor=explode(",","pg_configuracoes_estoque_fornecedores.php,pg_configuracoes_estoque_produtos.php,pg_configuracoes_estoque_produtosvariacoes.php");
 	$pagesFinanceiro=explode(",","pg_configuracoes_financeiro_bancosecontas.php,pg_configuracoes_financeiro_cartoes.php,pg_configuracoes_financeiro_politicadepagamento.php");
 	$pagesAssinatura=explode(",","pg_configuracoes_assinatura.php");
 	$pagesAvaliacao=explode(",","pg_configuracoes_avaliacao.php");
