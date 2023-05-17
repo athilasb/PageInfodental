@@ -141,7 +141,7 @@
 		$endereco = utf8_encode($clinica->endereco);
 
 	# dados evolucao
-		$evolucao=$paciente=$anamnese=$assinatura='';
+		$evolucao=$paciente=$anamnese=$assinatura=$profissional='';
 		if(isset($_GET['id_evolucao']) and !empty($_GET['id_evolucao'])) {
 
 			// id_tipo=1 -> anamnese
@@ -159,9 +159,9 @@
 				if($sql->rows) $anamnese=mysqli_fetch_object($sql->mysqry);
 				
 
-				$sql->consult($_p."colaboradores","id,nome","where id=$evolucao->id_usuario");
+				$sql->consult($_p."colaboradores","id,nome,cro,uf_cro","where id=$evolucao->id_profissional");
 				if($sql->rows) {
-					$solicitante=mysqli_fetch_object($sql->mysqry);
+					$profissional=mysqli_fetch_object($sql->mysqry);
 				}
 
 				$sql->consult($_p."pacientes","*","where id=$evolucao->id_paciente");
@@ -200,7 +200,6 @@
 				$auth=true;
 			}
 		}
-
 	include_once("includes/assinatura-header.php");
 
 ?>
@@ -252,9 +251,7 @@
 
 		// Se nao encontrou a evolucao
 		if(empty($evolucao) or empty($anamnese)) {
-
 			?>
-
 			<table class="print-table">
 				<thead><tr><td><div class="print-table-header">&nbsp;</div></td></tr></thead>
 				<tbody>
@@ -392,21 +389,21 @@
 										</div>
 										<div>
 											<div><b>SEXO</b></div>
-											<div>Masculino</div>
+											<div><?php echo $paciente->sexo=="M"?"Masculino":"Feminino";?></div>
 										</div>
 									</div>
 									<div class="info-anamnese">
 										<div>
 											<div><b>PROFISSIONAL</b></div>
-											<div>Kroner Machado Costa</div>
+											<div><?php echo utf8_encode($profissional->nome);?></div>
 										</div>
 										<div>
 											<div><b>CRO</b></div>
-											<div>15656</div>
+											<div><?php echo empty($profissional->cro)?'-':utf8_encode($profissional->cro);?></div>
 										</div>
 										<div>
 											<div><b>UF</b></div>
-											<div>GO</div>
+											<div><?php echo empty($profissional->uf_cro)?'-':utf8_encode($profissional->uf_cro);?></div>
 										</div>
 									</div>
 								</div>	
@@ -547,6 +544,7 @@
 													$evolucaoProntoParaAssinatura=false;
 													foreach($_anamnesePerguntas as $p) {
 														$pergunta=json_decode($p->json_pergunta);
+														if($p->desativado==1) continue;
 													?>
 													<tr>
 														<td class="js-td" data-id_pergunta="<?php echo $pergunta->id;?>">
@@ -663,7 +661,7 @@
 										}
 										?>
 										
-
+										
 										<iframe  src="<?php echo $pdfAnamnese;?>" type="application/pdf" data='<?php echo $pdfAnamnese;?>#view=fit&toolbar=0' style="width:100%;height:550px;" toolbar="0">			    
 										    <p ><a href="<?php echo $pdfAnamnese;?>" class="button"><i class="iconify" data-icon="fluent:document-24-regular"></i><span>Baixar documento</span></a></p>
 										</iframe>

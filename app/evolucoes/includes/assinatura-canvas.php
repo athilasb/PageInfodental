@@ -18,7 +18,7 @@
 					<div style="display:<?php echo $evolucaoProntoParaAssinatura==true?"block":"none";?>">
 
 						<div class="sign-form-status">
-							<h1 style="    background: var(--cinza4); padding: 5px; color: var(--branco); text-align: center;">
+							<h1 style="background: var(--cinza4); padding: 5px; color: var(--branco); text-align: center;">
 								<strong>Aguardando Assinatura</strong>
 							</h1>
 						</div>
