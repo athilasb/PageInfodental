@@ -279,7 +279,7 @@
 														</div>';
 								}
 
-							#ANAMNESE
+							# ANAMNESE
 							if ($evolucao->id_tipo == 1) {
 
 								$form = '';
@@ -290,6 +290,7 @@
 										$_anamnesePerguntas[] = $x;
 									}
 									foreach ($_anamnesePerguntas as $p) {
+										if($p->desativado==1) continue;
 										
 										$pergunta = json_decode($p->json_pergunta);
 
@@ -305,9 +306,7 @@
 												<td>
 													<p><strong>' . utf8_encode($p->pergunta) . '</strong></p>
 														<p>' . $resp . '</p>
-														' .
-											(!empty($p->resposta_texto) ? "<p>Resposta: " . utf8_encode($p->resposta_texto) . "</p>" : "")
-											. '
+														' .(!empty($p->resposta_texto) ? "<p>Resposta: " . utf8_encode($p->resposta_texto) . "</p>" : ""). '
 												</td>
 											</tr>
 										';
@@ -344,7 +343,7 @@
 																</tr>
 																<tr>
 																	<td>' . ($idade > 1 ? "$idade" : "$idade") . '</td>
-																	<td>' . ($paciente->sexo == "M" ? "Masculino" : $paciente->sexo == "F" ? "Feminino" : '.') . '</td>
+																	<td>' . ($paciente->sexo == "M" ? "Masculino" : "Feminino") . '</td>
 							                                        <td style="text-align:right;">' . maskTelefone($paciente->telefone1) . '</td>
 																</tr>
 															</table>
@@ -364,8 +363,8 @@
 								$erro = uploader($infoConta->instancia, $dirEvolucao, $evolucao->id, $html);
 							}
 
-							#ATESTADO
-							if ($evolucao->id_tipo == 4) {
+							# ATESTADO
+							else if ($evolucao->id_tipo == 4) {
 								$sql->consult($_p . "pacientes_evolucoes_atestados", "*", "where id_evolucao=$evolucao->id");
 								if ($sql->rows) {
 									$atestado = mysqli_fetch_object($sql->mysqry);
@@ -411,7 +410,7 @@
 								$erro = uploader($infoConta->instancia, "arqs/pacientes/atestados/", $evolucao->id, $html);
 							}
 							# PEDIDO DE EXAME
-							if ($evolucao->id_tipo == 6) {
+							else if ($evolucao->id_tipo == 6) {
 
 								#pegando e formatando dados do fornecedor
 								$fornecedorTitulo = $fornecedorTelefone = $fornecedorEndereco = $fornecedorComoChegar = '';
@@ -671,7 +670,9 @@
 								$erro = uploader($infoConta->instancia, "arqs/pacientes/receituarios/", $evolucao->id, $html);
 
 								//documentos
-							} else if ($evolucao->id_tipo == 10) {
+							} 
+
+							else if ($evolucao->id_tipo == 10) {
 
 								$sql->consult($_p . "pacientes_evolucoes_documentos", "*", "where id_evolucao=$evolucao->id and lixo=0");
 								if ($sql->rows) {
@@ -722,7 +723,7 @@
 										</main>
 									</body>
 								</html>		
-							';
+								';
 								$erro = uploader($infoConta->instancia, "arqs/pacientes/documentos/", $evolucao->id, $html);
 							}
 

@@ -61,6 +61,12 @@
 
 				$enviarLink = (isset($_POST['enviarLink']) and $_POST['enviarLink']==1) ? $_POST['enviarLink'] : 0;
 
+				$anamnesePerguntasDesativadas = [];
+				if(isset($_POST['anamnesePerguntasDesativadas']) and !empty($_POST['anamnesePerguntasDesativadas'])) {
+					$anamnesePerguntasDesativadas = explode(",",$_POST['anamnesePerguntasDesativadas']);
+				}
+
+
 				$evolucao='';
 				if(is_object($paciente) and is_object($anamnese) and is_object($profissional) and $enviarLink==1) {
 					$sql->consult($_p."pacientes_evolucoes","*","where id_paciente=$paciente->id and id_anamnese=$anamnese->id and id_profissional=$profissional->id and enviarLink=1 and id_assinatura=0");
@@ -68,6 +74,7 @@
 						$evolucao=mysqli_fetch_object($sql->mysqry);
 					}
 				}
+
 
 				if(is_object($paciente)) {
 
@@ -117,6 +124,8 @@
 													tipo='".$p->tipo."',
 													json_pergunta='".addslashes((json_encode($pJson)))."'";
 
+									if(in_array($p->id,$anamnesePerguntasDesativadas)) $vsqlResposta.=",desativado=1";
+
 									if($p->tipo=="nota" or $p->tipo=="simnao") {
 										$vsqlResposta.=",resposta='".addslashes(strtoupperWLIB(utf8_decode(isset($_POST["resposta_$p->id"])?$_POST["resposta_$p->id"]:"")))."'";
 									} else if($p->tipo=='texto') {
@@ -146,7 +155,7 @@
 												'id_evolucao'=>$id_evolucao);
 						
 									if($wts->adicionaNaFila($attr)) {
-										$rtn=array('success'=>true,'celular'=>mask($wts->celular));
+										$rtn=array('success'=>true,'celular'=>mask($wts->celular),'id_evolucao'=>$id_evolucao);
 									} else {
 										$rtn=array('success'=>false,'error'=>$wts->erro);
 									}
@@ -2339,19 +2348,17 @@
 
 			?>
 			<script type="text/javascript">
-				
+				var anamnesePerguntasDesativadas = [];
+
 				const anamnese = (id_anamnese) => {
 
 					let preenchimento = $('.aside-prontuario-anamnese .js-asideAnamnese-preenchimento:checked').val();
 
-					if(id_anamnese>0 && preenchimento=="profissional") {
-
-
+					if(id_anamnese>0) {
 
 						$('.aside-prontuario-anamnese .js-formulario-anamnese').html('');
 						$('.aside-prontuario-anamnese .js-fieldset-formularioAnamnese').show();
 						$('.aside-prontuario-anamnese .js-loading-anamnese').show();
-
 
 						let data = `ajax=asPAnamnese&id_anamnese=${id_anamnese}`;
 
@@ -2396,13 +2403,27 @@
 											
 											} 
 											
-											div.append(`<dl class="js-pergunta input-form-caps filter" data-obg="${f.obg}" data-tipo="${f.tipo}" style="padding:5px;border-radius:10px;flex-direction: inherit;">
-															<dl style="width: 100%;>
-																<dt class="input-form-titulo">${cont}. ${f.pergunta}${obg}</dt>
+											div.append(`<dl class="js-pergunta js-pergunta-${f.id} input-form-caps filter" data-obg="${f.obg}" data-tipo="${f.tipo}" data-id_pergunta="${f.id}" style="padding:5px;border-radius:10px;flex-direction: inherit;">
+															<dl style="width: 90%;>
+																<dt class="input-form-titulo">${f.pergunta}${obg}</dt>
 																<dd class="input-form-caps-notas" >${formularioCampo}</dd>
+															</dl>
+															<dl>
+																<a href="javascript:;" class="button js-btn-remover" data-id_pergunta="${f.id}"><span class="iconify" data-icon="bx-bx-trash"></span></a>
+																<a href="javascript:;" class="button js-btn-voltar" data-id_pergunta="${f.id}" style="display:none;"><span class="iconify" data-icon="ion:arrow-undo"></span></a>
 															</dl>
 														</dl>`);
 											cont++;
+
+											if(cont==rtn.formulario.length) {
+												if(preenchimento=="paciente") {
+													$('.aside-prontuario-anamnese .js-pergunta dd').find('div,textarea').css('opacity',0.5);
+													$('.aside-prontuario-anamnese .js-pergunta dd').find('input,textarea').prop('disabled',true);
+												} else {
+													$('.aside-prontuario-anamnese .js-pergunta dd').find('div,textarea').css('opacity',1);
+													$('.aside-prontuario-anamnese .js-pergunta dd').find('input,textarea').prop('disabled',false);
+												}
+											}
 										});
 									}
 
@@ -2440,27 +2461,67 @@
 
 				$(function(){
 
+					$('.aside-prontuario-anamnese .js-form-anamnese').on('click','.js-btn-remover',function(){
+						let id_pergunta = $(this).attr('data-id_pergunta');
+						$(this).hide();
+						$(`.js-pergunta-${id_pergunta}`).find('.js-btn-voltar').show();
+						$(`.js-pergunta-${id_pergunta} dl:eq(0)`).css('opacity',0.2);
+						let preenchimento = $('.aside-prontuario-anamnese .js-asideAnamnese-preenchimento:checked').val();
+						if(preenchimento=="profissional") {
+							$(`.aside-prontuario-anamnese .js-pergunta-${id_pergunta} dd`).find('input,textarea').prop('disabled',true);
+						}
+						anamnesePerguntasDesativadas.push(id_pergunta);
+
+					});
+
+					$('.aside-prontuario-anamnese .js-form-anamnese').on('click','.js-btn-voltar',function(){
+						let id_pergunta = $(this).attr('data-id_pergunta');
+						$(this).hide();
+						$(`.js-pergunta-${id_pergunta}`).find('.js-btn-remover').show();
+						$(`.js-pergunta-${id_pergunta} dl:eq(0)`).css('opacity',1);
+						let preenchimento = $('.aside-prontuario-anamnese .js-asideAnamnese-preenchimento:checked').val();
+						if(preenchimento=="profissional") {
+							$(`.aside-prontuario-anamnese .js-pergunta-${id_pergunta} dd`).find('input,textarea').prop('disabled',false);
+						}
+						anamnesePerguntasDesativadas = anamnesePerguntasDesativadas.filter(idPergunta=>idPergunta!=id_pergunta);
+
+					});
+
 					$('.aside-prontuario-anamnese .js-asideAnamnese-preenchimento').change(function(){
 
-						if($(this).val()=="paciente") {
-							$('.aside-prontuario-anamnese .js-enviarAnamnese').parent().parent().show();
+						if($('.js-asideAnamnese-preenchimento:checked').length==0) {
+							$('.aside-prontuario-anamnese .js-enviarAnamnese').parent().parent().hide();
 							$('.aside-prontuario-anamnese .js-salvarAnamnese').parent().parent().hide();
 							$('.aside-prontuario-anamnese .js-formulario-anamnese').hide();
+							$('.aside-prontuario-anamnese .js-asideAnamnese-dl-anamnese').hide();
+							$('.aside-prontuario-anamnese .js-asideAnamnese-dl-id_profissional').hide();
 						} else {
-							$('.aside-prontuario-anamnese .js-enviarAnamnese').parent().parent().hide();
-							$('.aside-prontuario-anamnese .js-salvarAnamnese').parent().parent().show();
-							$('.aside-prontuario-anamnese .js-formulario-anamnese').show();
-							$('.aside-prontuario-anamnese .js-asideAnamnese-anamnese').trigger('change')
+							if($(this).val()=="paciente") {
+								$('.aside-prontuario-anamnese .js-enviarAnamnese').parent().parent().show();
+								$('.aside-prontuario-anamnese .js-salvarAnamnese').parent().parent().hide();
+								$('.aside-prontuario-anamnese .js-formulario-anamnese').show();
+								$('.aside-prontuario-anamnese .js-asideAnamnese-anamnese').trigger('change');''
+							} else if($(this).val()=="profissional") {
+								$('.aside-prontuario-anamnese .js-enviarAnamnese').parent().parent().hide();
+								$('.aside-prontuario-anamnese .js-salvarAnamnese').parent().parent().show();
+								$('.aside-prontuario-anamnese .js-formulario-anamnese').show();
+								$('.aside-prontuario-anamnese .js-asideAnamnese-anamnese').trigger('change');
+							}
+							$('.aside-prontuario-anamnese .js-asideAnamnese-dl-anamnese').show();
+							$('.aside-prontuario-anamnese .js-asideAnamnese-dl-id_profissional').show();
 						}
 
-						$('.aside-prontuario-anamnese .js-asideAnamnese-dl-anamnese').show();
-						$('.aside-prontuario-anamnese .js-asideAnamnese-dl-id_profissional').show();
 						
-					})
+					});
 
 					$('.aside-prontuario-anamnese .js-asideAnamnese-anamnese').change(function(){
 						anamnese($(this).val());
 					}).trigger('change');
+
+					$('.aside-prontuario-anamnese').on('click','.js-pergunta',function(){
+						$(this).css('background-color','');
+						$(this).find('textarea,input').css('background-color','');
+					})
 
 					$('.aside-prontuario-anamnese .js-enviarAnamnese').click(function(){
 						let erro = '';
@@ -2506,7 +2567,7 @@
 
 
 								});
-								data+=`&${serialize(campos)}`;
+								data+=`&anamnesePerguntasDesativadas=${anamnesePerguntasDesativadas}&${serialize(campos)}`;
 
 
 								$.ajax({
@@ -2554,8 +2615,10 @@
 							$('.aside-prontuario-anamnese .js-form-anamnese').find('.js-pergunta').each(function(i,el){
 								let obg = eval($(el).attr('data-obg'));
 								let tipo = $(el).attr('data-tipo');
+								let id_pergunta = $(el).attr('data-id_pergunta');
 
-								if(obg==1) {
+
+								if(obg==1 && anamnesePerguntasDesativadas.find(x=>x==id_pergunta)===undefined) {
 									if(tipo=="nota" || tipo=="simnao") {
 										let selecionou = $(el).find('input[type=radio]:checked').length>0?true:false;
 										if(selecionou===false) {
@@ -2602,7 +2665,7 @@
 								obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
 								obj.attr('data-loading',1);
 
-								let data = `ajax=asPAnamnesePersistir&id_profissional=${id_profissional}&id_anamnese=${id_anamnese}&id_paciente=${id_paciente}`;
+								let data = `ajax=asPAnamnesePersistir&id_profissional=${id_profissional}&id_anamnese=${id_anamnese}&id_paciente=${id_paciente}&anamnesePerguntasDesativadas=${anamnesePerguntasDesativadas}`;
 
 								let campos = {};
 								$('.aside-prontuario-anamnese .js-form-anamnese').find('input,textarea').each(function(index,el){
@@ -2658,6 +2721,14 @@
 							}
 
 						}
+					});
+
+					$('.aside-prontuario-anamnese .aside-close').click(function(){
+						/*$('.js-asideAnamnese-id_profissional').val('');
+						$('.js-asideAnamnese-anamnese').val('');
+						$('.js-asideAnamnese-preenchimento:checked').prop('checked',false);
+						$('.js-asideAnamnese-preenchimento').trigger('change');
+						anamnesePerguntasDesativadas = [];*/
 					})
 				});
 			</script>
@@ -2686,7 +2757,7 @@
 							</div>
 						</section>
 
-						<div class="box" style="    min-height: auto;overflow: initial;margin-bottom: 15px;">
+						<div class="box" style="min-height: auto;overflow: initial;margin-bottom: 15px;">
 							<dl>
 								<dt>Quem irá preencher a Anamnese?</dt>
 								<dd class="radios-anamnese">
