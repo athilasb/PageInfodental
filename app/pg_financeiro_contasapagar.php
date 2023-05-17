@@ -33,6 +33,7 @@
 		$idPacientes = array();
 		$idColaboradores = array();
 		$idFornecedores = array();
+		$idsPagamentos = array();
 		$valor = array(
 			'aPagar' => 0,
 			'valorPago' => 0,

@@ -448,6 +448,7 @@
 							$dados[$id_inserido]['titulo'] = $titulo;
 							$dados[$id_inserido]['nome_pagante'] = $pagante;
 							$dados[$id_inserido]['status'] = 'DEFINIR PAGAMENTO';
+							$dados[$id_inserido]['saldo_a_pagar'] = $recebimento->valor;
 						}
 						$rtn = ["sucess" => true,'id_pagamento'=>$last_id,'pagamento'=>$dados];
 					} else if ($objeto->split_pagamento->ativo == true) {
@@ -499,6 +500,7 @@
 						$dados[$id_inserido]['titulo'] = $titulo;
 						$dados[$id_inserido]['nome_pagante'] = $pagante;
 						$dados[$id_inserido]['status'] = 'DEFINIR PAGAMENTO';
+						$dados[$id_inserido]['saldo_a_pagar'] = $recebimento->valor;
 						$rtn = ["sucess" => true,'id_pagamento'=>$id_inserido,'pagamento'=>$dados];
 					} else {
 						// aqui é se nao for split e nao for recorrente
@@ -534,6 +536,7 @@
 						$dados[$id_inserido]['titulo'] = $titulo;
 						$dados[$id_inserido]['nome_pagante'] = $pagante;
 						$dados[$id_inserido]['status'] = 'DEFINIR PAGAMENTO';
+						$dados[$id_inserido]['saldo_a_pagar'] = $recebimento->valor;
 						$rtn = ["sucess" => true,'id_pagamento'=>$id_inserido,'pagamento'=>$dados];
 					}
 				}
@@ -2628,12 +2631,11 @@
 					$("#js-aside-asFinanceiro-contas-pagar").fadeIn(100, function() {
 						$("#js-aside-asFinanceiro-contas-pagar .aside__inner1").addClass("active");
 					});
-
 					let data_original = pagamento.data_emissao
 					let valor_parcela = pagamento.valorTotalPagamento
 					let desconto = pagamento.valor_desconto
 					let valor_total = valor_parcela-desconto
-					let saldo_a_pagar = pagamento.saldo_a_pagar
+					let saldo_a_pagar = (pagamento.saldo_a_pagar)?pagamento.saldo_a_pagar:valor_total
 				
 					$('.js-cabecalho-pagamento-1').show()
 					$('.js-cabecalho-pagamento-2').hide()
@@ -2682,6 +2684,7 @@
 						$('.js-fieldset-pagamentos-contas-pagar [name="area-custo-recorrente-acada-meses"]').val(12)
 						$('.js-fieldset-pagamentos-contas-pagar .split-custo-recorrente').click()
 					}
+					pagamentosListarAvulsoContasAPagar()
 				}
 			}
 			const atualizaQtdSplits = () => {
@@ -3031,6 +3034,31 @@
 				}
 				AdicionaMaskaras()
 			}
+			function formatarDataJs(data,formato="DD/MM/YYYY") {
+				// Obtém os componentes da data
+				var dia = data.getDate();
+				var mes = data.getMonth() + 1; // O mês começa em zero
+				var ano = data.getFullYear();
+
+				// Adiciona um zero à esquerda se o dia ou mês tiver apenas um dígito
+				dia = dia < 10 ? '0' + dia : dia;
+				mes = mes < 10 ? '0' + mes : mes;
+				switch (formato) {
+					case 'DD/MM/YYYY':
+						dataFormatada = `${dia}/${mes}/${ano}`;
+						break;
+					case 'MM/DD/YYYY':
+						dataFormatada = `${mes}/${dia}/${ano}`;
+						break;
+					case 'YYYY-MM-DD':
+						dataFormatada = `${ano}-${mes}-${dia}`;
+						break;
+					default:
+						dataFormatada = data;
+				}
+					// Retorna a data formatada
+				return dataFormatada;
+			}
 			$(function() {
 				// abre o aside para novo pagamento
 				$('.js-btn-abrir-aside').on('click', (function() {
@@ -3190,7 +3218,6 @@
 							url: baseURLApiAsidePagamentos,
 							data: data,
 							success: function(rtn) {
-								console.log(rtn)
 								if (rtn.sucess) {
 									swal({
 										title: "Sucesso!",
@@ -3302,6 +3329,9 @@
 					let valorTotalFinal = (valor_pagamento+valor_multa+valor_juros)-valor_desconto
 					$('.js-TotalaPagar-contas-pagar').attr('data-valor',valorTotalFinal)
 					$('.js-TotalaPagar-contas-pagar').html(number_format(valorTotalFinal,2,',','.'))
+					if(valor>0){
+						pagamentosListarAvulsoContasAPagar()
+					}
 				})
 				// atualiza o valor da Multa
 				$('.js-pagamento-contas-pagar .js-valorMultas-contas-pagar').keyup(function(){
@@ -3510,69 +3540,6 @@
 					$(this).val(qtd);
 					pagamentosListarAvulsoContasAPagar();
 				});
-				// verifica se ha alteracao na primeira data de pagamento
-				$('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').on('change', '.js-vencimento:eq(0)', function() {
-					let CamposDatas = $('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').find('.js-vencimento');
-					if (CamposDatas.length > 1) {
-						let numeroParcelas = CamposDatas.length
-						let aux = $('.js-vencimento:eq(0)').val().split("/")
-						var startDate = new Date();
-						startDate.setDate(aux[0]);
-						startDate.setMonth(eval(aux[1]) - 1);
-						startDate.setFullYear(aux[2]);
-
-						CamposDatas.each(function(index, input) {
-							let newDAte = startDate
-							let mes = startDate.getMonth() + 1;
-							let dia = startDate.getDate();
-							mes = mes <= 9 ? `0${mes}` : mes;
-							dia = dia <= 9 ? `0${dia}` : dia;
-							newDate = startDate;
-							newDate.setMonth(newDate.getMonth() + 1);
-						})
-						return
-					}
-				});
-				//verifica se ha alteracao no valor de cada parcela
-				$('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').on('keyup', '.js-valor', function() {
-					let valorEmCurso = unMoney($('#js-aside-asFinanceiro-contas-pagar .js-valor-pagamento').val())
-					let indexInicial = $(this).attr('data-ordem');
-					let CamposValor = $('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').find('.js-valor');
-					let valorDigitado = unMoney($(this).val());
-					let numeroParcelas = CamposValor.length;
-					let dataOrdem = ($(this).attr('data-ordem') - 1)
-					let erro = "";
-					if (valorDigitado > valorEmCurso) {
-						swal({
-							title: "Erro!",
-							text: 'Os valores das parcelas não podem superar o valor total',
-							html: true,
-							type: "error",
-							confirmButtonColor: "#424242"
-						});
-						let valor = 0
-						CamposValor.each(function(index, input) {
-							$(input).val(0)
-						})
-						$(this).val(number_format(valorEmCurso, 2, ",", "."))
-						return;
-					}
-
-					let valor = 0
-					let valorAteInput = valorDigitado
-					let valorFinal = 0
-					let valorRestante = (valorEmCurso - valorDigitado)
-
-					CamposValor.each(function(index, input) {
-						// valorFinal += valorRestante - unMoney($(input).val())
-						// if ((index + 1) < dataOrdem) {
-						// 	valorRestante = valorRestante - unMoney($(input).val())
-						// }
-						// if ((index + 1) > dataOrdem) {
-						// 	$('.js-listar-parcelas').find(`.js-valor:eq(${index})`).val(number_format(valorRestante / ((numeroParcelas - dataOrdem)), 2, ",", "."))
-						// }
-					});
-				});
 				// conforme vai escrevendo no campo de busca do select ele vai fazendo ajax para buscar no bd
 				$('select[name=id_beneficiario]').select2({
 					ajax: {
@@ -3604,7 +3571,7 @@
 					return
 				})
 				//habilitar o split de pagamento
-				$('.split-pagamento').click(function() {
+				$('#js-aside-asFinanceiro-contas-pagar .split-pagamento').click(function() {
 					let valor = $(this).prop('checked')
 					if (valor == true) {
 						$('.js-fieldset-pagamentos-splits').show();
@@ -3642,7 +3609,7 @@
 					atualizaQtdSplits()
 				})
 				//habilitar pagamento recorrente
-				$('.split-custo-recorrente').click(function() {
+				$('#js-aside-asFinanceiro-contas-pagar .split-custo-recorrente').click(function() {
 					let valor = $(this).prop('checked')
 					if (valor == true) {
 						$('#area-custo-recorrente').show();
@@ -3660,7 +3627,7 @@
 					}
 				})
 				// modifica quantidade  de splits
-				$('.js-splits-quantidade').change(function() {
+				$('#js-aside-asFinanceiro-contas-pagar .js-splits-quantidade').change(function() {
 					let qtd = $(this).val();
 					if (!$.isNumeric(eval(qtd))) qtd = 1;
 					else if (qtd < 1) qtd = 1;
@@ -3669,7 +3636,7 @@
 					atualizaQtdSplits()
 				})
 				// ajusta valores de porcentagens de splits
-				$('.js-fieldset-pagamentos-splits').on('keyup', '[name="porcentagem-splits"]', async function() {
+				$('#js-aside-asFinanceiro-contas-pagar .js-fieldset-pagamentos-splits').on('keyup', '[name="porcentagem-splits"]', async function() {
 					let modo_divisao = $('[name="modo_divisao"]:checked').val();
 					let splits = JSON.parse($('#splits-pagamentos').text()) ?? [];
 					let porc = $(this).val()
@@ -3747,38 +3714,43 @@
 					}
 				})
 				// verifica se ha alteracao na primeira data de pagamento
-				$('.js-listar-parcelas').on('change', '.js-vencimento:eq(0)', function() {
-					let CamposDatas = $('.js-listar-parcelas').find('.js-vencimento');
+				$('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').on('change', '.js-vencimento', function() {
+					let CamposDatas = $('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').find('.js-vencimento');
+					let ordem_atual = $(this).attr('data-ordem')
 					if (CamposDatas.length > 1) {
 						let numeroParcelas = CamposDatas.length
-						let aux = $('.js-vencimento:eq(0)').val().split("/")
+						let aux = $(this).val().split("/")
 						var startDate = new Date();
 						startDate.setDate(aux[0]);
 						startDate.setMonth(eval(aux[1]) - 1);
 						startDate.setFullYear(aux[2]);
 
 						CamposDatas.each(function(index, input) {
-							let newDAte = startDate
-							let mes = startDate.getMonth() + 1;
-							let dia = startDate.getDate();
-							mes = mes <= 9 ? `0${mes}` : mes;
-							dia = dia <= 9 ? `0${dia}` : dia;
-							newDate = startDate;
-							newDate.setMonth(newDate.getMonth() + 1);
-							// console.log(newDate)
+							if(index+1>ordem_atual){
+								let newDAte = startDate
+								let mes = startDate.getMonth() + 1;
+								let dia = startDate.getDate();
+								mes = mes <= 9 ? `0${mes}` : mes;
+								dia = dia <= 9 ? `0${dia}` : dia;
+								newDate = startDate;
+								newDate.setMonth(newDate.getMonth() + 1);
+								let data_input = formatarDataJs(newDate,'DD/MM/YYYY')
+								$(input).val(data_input)
+							}
 						})
 						return
 					}
 				});
 				//verifica se ha alteracao no valor de cada parcela
-				$('.js-listar-parcelas').on('keyup', '.js-valor', function() {
-					let valorEmCurso = unMoney($('[name="valor_pagamento"]').val())
+				$('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').on('keyup', '.js-valor', function() {
+					let valorEmCurso = unMoney($('#js-aside-asFinanceiro-contas-pagar .js-valor-pagamento').val())
 					let indexInicial = $(this).attr('data-ordem');
-					let CamposValor = $('.js-listar-parcelas').find('.js-valor');
+					let CamposValor = $('#js-aside-asFinanceiro-contas-pagar .js-listar-parcelas').find('.js-valor');
 					let valorDigitado = unMoney($(this).val());
 					let numeroParcelas = CamposValor.length;
 					let dataOrdem = ($(this).attr('data-ordem') - 1)
 					let erro = "";
+
 					if (valorDigitado > valorEmCurso) {
 						swal({
 							title: "Erro!",
@@ -3799,15 +3771,20 @@
 					let valorAteInput = valorDigitado
 					let valorFinal = 0
 					let valorRestante = (valorEmCurso - valorDigitado)
-
 					CamposValor.each(function(index, input) {
-						// valorFinal += valorRestante - unMoney($(input).val())
-						// if ((index + 1) < dataOrdem) {
-						// 	valorRestante = valorRestante - unMoney($(input).val())
-						// }
-						// if ((index + 1) > dataOrdem) {
-						// 	$('.js-listar-parcelas').find(`.js-valor:eq(${index})`).val(number_format(valorRestante / ((numeroParcelas - dataOrdem)), 2, ",", "."))
-						// }
+						let valor_parcela = valorRestante / (numeroParcelas - (dataOrdem+1));
+
+						if ((index + 1) > dataOrdem) {
+							$('.js-listar-parcelas').find(`.js-valor:eq(${index+1})`).val(number_format(valor_parcela, 2, ",", "."))
+						}
+						valorFinal += unMoney($(this).val())
+						if(valorFinal !=valorEmCurso){
+							if((index+1)==numeroParcelas){
+								let dif = valorFinal - valorEmCurso;
+								valor_parcela  = valor_parcela - dif
+								$('.js-listar-parcelas').find(`.js-valor:eq(${index+1})`).val(number_format(valor_parcela, 2, ",", "."))
+							}
+						}
 					});
 				});
 				//quando clica em stornar Baixa

@@ -178,81 +178,82 @@ if (isset($_POST['ajax'])) {
 			}
 			pagamentos.forEach(x => {
 				$('.js-listar-parcelas .fpag').append(`<div class="fpag-item js-pagamento-item">
-												<aside>${index++}</aside>
-												<article>
-													<div class="colunas3">
-														<dl>
-															<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data js-vencimento" data-ordem="${index}" value="${x.vencimento}" ${disabledData}/></dd>
-														</dl>
-														<dl>
-															<dd class="form-comp"><span>R$</i></span><input type="tel" name="" data-ordem="${index}" class="valor js-valor" value="${number_format(x.valor,2,",",".")}"  ${disabledValor}/></dd>
-														</dl>
-														<dl>
-															<dd>
-																<select class="js-id_formadepagamento js-tipoPagamento" ${disabledForma}>
-																<option value="">Forma de Pagamento...</option>
-																	${metodosPagamentosAceito}
-																</select>
-															</dd>
-														</dl>
-													</div>
-														
-													<div class="colunas3">
-														<dl style="display:none">
-															<dt>Bandeira</dt>
-															<dd>
-															<select class="js-debitoBandeira js-tipoPagamento" ${disabledBandeira}>
-																<option value="">selecione</option>
-																<?php
-																foreach ($debitoBandeiras as $id_operadora => $x) {
-																	echo '<optgroup label="' . utf8_encode($x['titulo']) . '">';
-																	foreach ($x['bandeiras'] as $band) {
-																		echo '<option value="' . $band['id_bandeira'] . '" data-id_operadora="' . $id_operadora . '">' . utf8_encode($band['titulo']) . '</option>';
-																	}
-																	echo '</optgroup>';
-																}
-																?>
-															</select>
-														</dd></dl>
-														<dl style="display:none">
-															<dt>Bandeira</dt>
-															<dd>
-																<select class="js-creditoBandeira js-tipoPagamento" ${disabledBandeira}>
-																	<option value="">selecione</option>
-																	<?php
-																	foreach ($creditoBandeiras as $id_operadora => $x) {
-																		echo '<optgroup label="' . utf8_encode($x['titulo']) . '">';
-																		foreach ($x['bandeiras'] as $band) {
+						<aside>${index}</aside>
+						<article>
+							<div class="colunas3">
+								<dl>
+									<dd class="form-comp"><span><i class="iconify" data-icon="fluent:calendar-ltr-24-regular"></i></span><input type="tel" name="" class="data js-vencimento" data-ordem="${index}" value="${x.vencimento}" ${disabledData}/></dd>
+								</dl>
+								<dl>
+									<dd class="form-comp"><span>R$</i></span><input type="tel" name="" data-ordem="${index}" class="valor js-valor" value="${number_format(x.valor,2,",",".")}"  ${disabledValor}/></dd>
+								</dl>
+								<dl>
+									<dd>
+										<select class="js-id_formadepagamento js-tipoPagamento" ${disabledForma}>
+										<option value="">Forma de Pagamento...</option>
+											${metodosPagamentosAceito}
+										</select>
+									</dd>
+								</dl>
+							</div>
+								
+							<div class="colunas3">
+								<dl style="display:none">
+									<dt>Bandeira</dt>
+									<dd>
+									<select class="js-debitoBandeira js-tipoPagamento" ${disabledBandeira}>
+										<option value="">selecione</option>
+										<?php
+										foreach ($debitoBandeiras as $id_operadora => $x) {
+											echo '<optgroup label="' . utf8_encode($x['titulo']) . '">';
+											foreach ($x['bandeiras'] as $band) {
+												echo '<option value="' . $band['id_bandeira'] . '" data-id_operadora="' . $id_operadora . '">' . utf8_encode($band['titulo']) . '</option>';
+											}
+											echo '</optgroup>';
+										}
+										?>
+									</select>
+								</dd></dl>
+								<dl style="display:none">
+									<dt>Bandeira</dt>
+									<dd>
+										<select class="js-creditoBandeira js-tipoPagamento" ${disabledBandeira}>
+											<option value="">selecione</option>
+											<?php
+											foreach ($creditoBandeiras as $id_operadora => $x) {
+												echo '<optgroup label="' . utf8_encode($x['titulo']) . '">';
+												foreach ($x['bandeiras'] as $band) {
 
-																			echo '<option value="' . $band['id_bandeira'] . '" data-parcelas="' . $band['parcelas'] . '" data-parcelas-semjuros="' . $band['semJuros'] . '" data-id_operadora="' . $id_operadora . '" data-id_operadorabandeira="' . ($id_operadora . $band['id_bandeira']) . '">' . utf8_encode($band['titulo']) . '</option>';
-																		}
-																		echo '</optgroup>';
-																	}
-																	?>
-																</select>
-															</dd>
-														</dl>
+													echo '<option value="' . $band['id_bandeira'] . '" data-parcelas="' . $band['parcelas'] . '" data-parcelas-semjuros="' . $band['semJuros'] . '" data-id_operadora="' . $id_operadora . '" data-id_operadorabandeira="' . ($id_operadora . $band['id_bandeira']) . '">' . utf8_encode($band['titulo']) . '</option>';
+												}
+												echo '</optgroup>';
+											}
+											?>
+										</select>
+									</dd>
+								</dl>
 
-														<dl style="display:none">
-															<dt>Qtd. Parcelas</dt>
-															<dd>
-																<select class="js-parcelas js-tipoPagamento" ${disabledParcelas}>
-																	<option value="">selecione a as Parcelas</option>
-																</select>
-															</dd>
-														</dl>
+								<dl style="display:none">
+									<dt>Qtd. Parcelas</dt>
+									<dd>
+										<select class="js-parcelas js-tipoPagamento" ${disabledParcelas}>
+											<option value="">selecione a as Parcelas</option>
+										</select>
+									</dd>
+								</dl>
 
-														<dl style="display:none" ${disabledIdent}>
-															<dt>Identificador</dt>
-															<dd><input type="text" class="js-identificador js-tipoPagamento" /></dd>
-														</dl>
-														<dl style="display:none" disabled>
-															<dd><input type="hidden" class="js-metodo-selecionado js-tipoPagamento" /></dd>
-														</dl>
+								<dl style="display:none" ${disabledIdent}>
+									<dt>Identificador</dt>
+									<dd><input type="text" class="js-identificador js-tipoPagamento" /></dd>
+								</dl>
+								<dl style="display:none" disabled>
+									<dd><input type="hidden" class="js-metodo-selecionado js-tipoPagamento" /></dd>
+								</dl>
 
-													</div>
-												</article>
-											</div>`);
+							</div>
+						</article>
+					</div>`);
+					index++
 
 				$('.js-pagamento-item .js-vencimento:last').inputmask('99/99/9999');
 				$('.js-pagamento-item .js-vencimento:last').datetimepicker({
@@ -666,53 +667,36 @@ if (isset($_POST['ajax'])) {
 			$(obj).find('.js-parcelas').attr('disabled', false)
 		}
 	}
+	function formatarDataJs(data,formato="DD/MM/YYYY") {
+		// Obtém os componentes da data
+		var dia = data.getDate();
+		var mes = data.getMonth() + 1; // O mês começa em zero
+		var ano = data.getFullYear();
 
+		// Adiciona um zero à esquerda se o dia ou mês tiver apenas um dígito
+		dia = dia < 10 ? '0' + dia : dia;
+		mes = mes < 10 ? '0' + mes : mes;
+		switch (formato) {
+			case 'DD/MM/YYYY':
+				dataFormatada = `${dia}/${mes}/${ano}`;
+				break;
+			case 'MM/DD/YYYY':
+				dataFormatada = `${mes}/${dia}/${ano}`;
+				break;
+			case 'YYYY-MM-DD':
+				dataFormatada = `${ano}-${mes}-${dia}`;
+				break;
+			default:
+				dataFormatada = data;
+		}
+			// Retorna a data formatada
+		return dataFormatada;
+	}
 	$(function() {
 		procedimentos = JSON.parse($('textarea#js-textarea-procedimentos').val());
 		procedimentosListar();
 		// verificar a forma de Pagamento ja Pré salva 
 		verificaSeExisteParcelasSalvas();
-
-		$('.js-pagamentos').on('change', '.js-vencimento:eq(0)', function() {
-			let pagamento = $('input[name=pagamento]:checked').val();
-
-			if (pagamento != "avista") {
-				$('.js-pagamentos-quantidade').show();
-				let numeroParcelas = $('.js-pagamentos-quantidade').val();
-
-				if (numeroParcelas.length == 0 || numeroParcelas <= 0) numeroParcelas = 2;
-
-				valorParcela = valorTotal / numeroParcelas;
-
-				valorParcela = valorParcela.toFixed(2);
-
-				let startDate = new Date();
-
-				if ($('.js-vencimento:eq(0)').val() != undefined) {
-					aux = $('.js-vencimento:eq(0)').val().split('/');
-					startDate = new Date(); //`${aux[2]}-${aux[1]}-${aux[0]}`);
-					startDate.setDate(aux[0]);
-					startDate.setMonth(eval(aux[1]) - 1);
-					startDate.setFullYear(aux[2]);
-				}
-				for (var i = 1; i <= numeroParcelas; i++) {
-					let mes = startDate.getMonth() + 1;
-					mes = mes <= 9 ? `0${mes}` : mes;
-					let dia = startDate.getDate();
-					dia = dia <= 9 ? `0${dia}` : dia;
-					pagamentos[i - 1].vencimento = `${dia}/${mes}/${startDate.getFullYear()}`;
-					newDate = startDate;
-					newDate.setMonth(newDate.getMonth() + 1);
-
-					startDate = newDate;
-
-					if (i == numeroParcelas) {
-						pagamentosListar();
-					}
-				}
-
-			}
-		});
 
 		// remove descontos
 		$('.aside-plano-desconto .js-btn-removerDesconto').click(function() {
@@ -911,9 +895,7 @@ if (isset($_POST['ajax'])) {
 			}
 			$('.aside-plano-desconto .js-input-desconto').trigger('keyup');
 		}).trigger('change');
-
-
-		$('.js-listar-parcelas').on('change', '.js-vencimento', pagamentosPersistirObjeto);
+		
 
 		$('.js-listar-parcelas').on('change', '.js-creditoBandeira', function() {
 			if ($(this).find('option:checked').attr('data-populaParcela') == "false") {
@@ -926,89 +908,80 @@ if (isset($_POST['ajax'])) {
 		$('.js-listar-parcelas').on('keyup', '.js-identificador', pagamentosPersistirObjeto);
 		$('.js-listar-parcelas').on('change', '.js-debitoBandeira,.js-creditoBandeira,.js-parcelas', pagamentosPersistirObjeto);
 
-
-		/*
-		$('.js-pagamentos').on('keyup','.js-valor',function(){
-			let index = $(this).index('.js-pagamentos .js-valor');
-			let numeroParcelas = eval($('.js-pagamentos-quantidade').val());
-			let valorTotalAux = valorTotal;
-			let valorAcumulado = 0;
-			let parcelas = [];
-			let val = unMoney($(this).val());
-			for(i=0;i<=index;i++) {
-				val = unMoney($(`.js-pagamentos .js-valor:eq(${i})`).val());
-				id_formapagamento = $(`.js-pagamentos .js-id_formadepagamento:eq(${i})`).val();
-				identificador = $(`.js-pagamentos .js-identificador:eq(${i})`).val();
-				creditoBandeira = $(`.js-pagamentos .js-creditoBandeira:eq(${i})`).val();
-				operadora=0;
-				if(id_formapagamento==2) {
-					operadora = $(`.js-pagamentos .js-creditoBandeira:eq(${i}) option:selected`).attr('data-id_operadora');
-				} else if(id_formapagamento==3) {
-					operadora = $(`.js-pagamentos .js-debitoBandeira:eq(${i}) option:selected`).attr('data-id_operadora');
-				}
-				
-				debitoBandeira = $(`.js-pagamentos .js-debitoBandeira:eq(${i})`).val();
-				qtdParcelas = $(`.js-pagamentos .js-parcelas:eq(${i})`).val();
-				valorAcumulado += val;
-
-				let item = pagamentos[i];
-
-
-				item.vencimento=pagamentos[i].vencimento;
-				item.valor=val;
-				parcelas.push(item);
-			}
-
-			let valorRestante = valorTotal-valorAcumulado;
-			let continua = true;
-			if(valorAcumulado>valorTotal) {
-				let dif = valorAcumulado - valorTotal;
-				dif=dif.toFixed(2);
-
-				if(dif>0.1) {
-					continua=false;
-					swal({title: "Erro!", text: 'Os valores das parcelas não podem superar o valor total', html:true, type:"error", confirmButtonColor: "#424242"});
-				}
-			}  
-
-			if(continua) {
-				numeroParcelasRestantes = numeroParcelas - (index+1);
-				valorParcela=valorRestante/numeroParcelasRestantes;
-				valorParcela=valorParcela.toFixed(2);
-				let valorInputado=0;
-				for(i=(index+1);i<numeroParcelas;i++) {
-
-					if(pagamentos[i]) {
-						let item = {};
-						item=pagamentos[i];
-						item.vencimento=pagamentos[i].vencimento;
-						item.valor=valorParcela;
-
-						parcelas.push(item);
+		//verifica se houve alteracao campo data 
+		$('.js-listar-parcelas').on('change', '.js-pagamento-item .js-vencimento',  function() {
+			pagamentosPersistirObjeto
+			let CamposDatas = $('.js-listar-parcelas').find('.js-vencimento');
+			let ordem_atual = $(this).attr('data-ordem')
+			if (CamposDatas.length > 1) {
+				let numeroParcelas = CamposDatas.length
+				let aux = $(this).val().split("/")
+				var startDate = new Date();
+				startDate.setDate(aux[0]);
+				startDate.setMonth(eval(aux[1]) - 1);
+				startDate.setFullYear(aux[2]);
+				CamposDatas.each(function(index, input) {
+					if(index+1>ordem_atual){
+						let newDAte = startDate
+						let mes = startDate.getMonth() + 1;
+						let dia = startDate.getDate();
+						mes = mes <= 9 ? `0${mes}` : mes;
+						dia = dia <= 9 ? `0${dia}` : dia;
+						newDate = startDate;
+						newDate.setMonth(newDate.getMonth() + 1);
+						let data_input = formatarDataJs(newDate,'DD/MM/YYYY')
+						$(input).val(data_input)
 					}
-
-				}
-
-				// se alterou a ultima parcela
-				if(numeroParcelas==(index+1)) {
-
-					// verifica todos os valores inputados batem com o valor total
-					if(valorAcumulado<valorTotal) {
-						dif = valorTotal-valorAcumulado;
-						parcelas[index].valor+=dif;
-					} else if(valorAcumulado>valorTotal) {
-						dif = valorTotal-valorAcumulado;
-						parcelas[index].valor=dif;
-					}
-
-					//alert('alterou o ulitmo '+valorTotal+' = '+valorAcumulado)
-				}
-
-				pagamentos=parcelas;
-				pagamentosPersistirObjeto()
+				})
+				return
 			}
+			
 		});
-		*/
+		//verifica se ha alteracao no valor de cada parcela
+		$(' .js-listar-parcelas').on('keyup', '.js-pagamento-item .js-valor', function() {
+			let valorEmCurso = unMoney($('.js-valorTotal').html())
+			let indexInicial = $(this).attr('data-ordem');
+			let CamposValor = $('.js-listar-parcelas').find('.js-valor');
+			let valorDigitado = unMoney($(this).val());
+			let numeroParcelas = CamposValor.length;
+			let dataOrdem = ($(this).attr('data-ordem') - 1)
+			let erro = "";
+			if (valorDigitado > valorEmCurso) {
+				swal({
+					title: "Erro!",
+					text: 'Os valores das parcelas não podem superar o valor total',
+					html: true,
+					type: "error",
+					confirmButtonColor: "#424242"
+				});
+				let valor = 0
+				CamposValor.each(function(index, input) {
+					$(input).val(0)
+				})
+				$(this).val(number_format(valorEmCurso, 2, ",", "."))
+				return;
+			}
+
+			let valor = 0
+			let valorAteInput = valorDigitado
+			let valorFinal = 0
+			let valorRestante = (valorEmCurso - valorDigitado)
+			CamposValor.each(function(index, input) {
+				let valor_parcela = valorRestante / (numeroParcelas - (dataOrdem+1));
+
+				if ((index + 1) > dataOrdem) {
+					$('.js-listar-parcelas').find(`.js-valor:eq(${index+1})`).val(number_format(valor_parcela, 2, ",", "."))
+				}
+				valorFinal += unMoney($(this).val())
+				if(valorFinal !=valorEmCurso){
+					if((index+1)==numeroParcelas){
+						let dif = valorFinal - valorEmCurso;
+						valor_parcela  = valor_parcela - dif
+						$('.js-listar-parcelas').find(`.js-valor:eq(${index+1})`).val(number_format(valor_parcela, 2, ",", "."))
+					}
+				}
+			});
+		});
 		$('.js-listar-parcelas').on('change', '.js-id_formadepagamento', function() {
 			pagamentosAtualizaCampos($(this), true);
 		});
