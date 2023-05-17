@@ -15,7 +15,6 @@
 			if(isset($attr['prefixo'])) $this->prefixo=$attr['prefixo'];
 			if(isset($attr['_codigoBI'])) $this->_codigoBI=$attr['_codigoBI'];
 			if(isset($attr['_pacientesPeriodicidade'])) $this->_pacientesPeriodicidade=$attr['_pacientesPeriodicidade'];
-
 		}
 
 		// Inteligencia / Controle de Exames: retorna os pedidos aguardando, concluido e cancelados(naoRealizado)
@@ -303,7 +302,7 @@
 
 
 		// Gestao de Tempo (basea nos registros de proximo atendimento)
-		function gestaoDoTempo() {
+		function gestaoDoTempo($attr) {
 			$_wasabiBucket="storage.infodental.dental"; 
 			$_wasabiPathRoot= $_ENV['NAME'] . "/";
 			$_wasabiS3endpoint = "s3.us-west-1.wasabisys.com";
@@ -316,290 +315,180 @@
 
 			// lista de profissionais
 				$_profissionais=array();
-				$sql->consult($_p."colaboradores","id,nome","");
+				$sql->consult($_p."colaboradores","id,nome,calendario_iniciais,calendario_cor","");
 				while($x=mysqli_fetch_object($sql->mysqry)) $_profissionais[$x->id]=$x;
 
-			// define a periodicidade
-				$di = date('Y-m-d');
-				$df = date('Y-m-d',strtotime(date('Y-m-d H:i:s')." + 3 day"));
+			$pacientesIds=[];
 
+			# Lembretes de próxima consulta
 
-			// retornos
-				$pacientesIds=array();
-				$pacienteOrdem=array();
-				$proximasConsultasIds=array();
+				$lembretes=['proximos3diasEPassado'=>[],'indisponiveis'=>[]];
 
-			# pacientes que tem proximo agendamento para hoje ou nos proximos 3 dias
-				
-				// nao disponiveis
-				$this->indisponiveis=0;
-				$where="where  DATE_ADD(data, INTERVAL retorno DAY)>'".$df." 23:59:59' and lixo=0 and situacao<3 order by data desc";
-				$sql->consult($_p."pacientes_proximasconsultas","*,DATE_ADD(data, INTERVAL retorno DAY) as proximaConsulta",$where);
+				$where="where lixo=0 and excluido_data='0000-00-00 00:00:00' and id_agenda=0";
+				$sql->consult($_p."pacientes_proximasconsultas","*,DATE_ADD(data, INTERVAL retorno DAY) as proximaConsulta",$where." order by data desc");
+
 				while($x=mysqli_fetch_object($sql->mysqry)) {
+
+					$x->obs = utf8_encode($x->obs);
 					
-					// se ja encontrou proxima consulta ignora, pois pega a mais recente
-					if(isset($proximaConsulta[$x->id_paciente])) {
-						continue;
-					} else {
-						$this->indisponiveis++;
-					}
+					// data da proxima consulta
+					$dataParaProximaConsulta = date('Y-m-d',strtotime($x->data." + $x->retorno days"));
 
+					// se proxima consulta for futura
+					if(strtotime(date('Y-m-d'))<=strtotime($dataParaProximaConsulta)) {
 
-				
-				}
+						// retorna quantidade de dias para proxima consulta
+						$dias = (strtotime($dataParaProximaConsulta) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
+						//echo "futuro (daqui $dias dias) ".$x->data." + $x->retorno = ".$dataParaProximaConsulta." $x->proximaConsulta\n";
 
-				// situacao<3 => paciente entrara em contato (3), ou excluido (5)
-				$where="where  DATE_ADD(data, INTERVAL retorno DAY)<='".$df." 23:59:59' and lixo=0 and situacao<3 order by data desc";
-				$sql->consult($_p."pacientes_proximasconsultas","*,DATE_ADD(data, INTERVAL retorno DAY) as proximaConsulta",$where);
-				while($x=mysqli_fetch_object($sql->mysqry)) {
-					
-					// se ja encontrou proxima consulta ignora, pois pega a mais recente
-					if(isset($proximaConsulta[$x->id_paciente])) {
-						continue;
-					} else {
-						$proximaConsulta[$x->id_paciente]=$x;
-					}
-
-
-					$pacientesIds[$x->id_paciente]=$x->id_paciente;
-					$index=$x->situacao.".".strtotime($x->proximaConsulta);
-					while(isset($pacienteOrdem[$index])) {
-						$index++;
-					}
-
-					$pacienteOrdem[$index]=$x->id_paciente;
-					$proximasConsultasIds[]=$x->id;
-				}
-
-
-			$listaInteligente=array();
-			if(count($pacientesIds)>0) {
-
-				# verifica os pacientes que possuem agendamento futuro
-					$pacientesIdsQueMarcaram=array();
-
-					$where="where id_paciente IN (".implode(",",$pacientesIds).") and lixo=0 and id_status IN (1,2,6,7) order by agenda_data desc";
-					$sql->consult($_p."agenda","*",$where);
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-
-						// se o agendamento for maior que o "proxima consulta que foi agendado"
-						if(strtotime($x->agenda_data)>strtotime($proximaConsulta[$x->id_paciente]->proximaConsulta)) {
-							$pacientesIdsQueMarcaram[$x->id_paciente][]=$x->agenda_data;
-						}
-					}
-
-				# busca pacientes que tem proximo agendamento cadastrado
-					$preListaInteligente=array();
-					$sql->consult($_p."pacientes","id,nome,periodicidade,foto,data_nascimento,telefone1,codigo_bi,foto_cn,situacao","where id IN (".implode(",",$pacientesIds).")");
-					if($sql->rows) {
-						while($x=mysqli_fetch_object($sql->mysqry)) {
-
-							
-
-							// busca agendamentos futuros do paciente
-								$agendamentosFuturos=array();
-								if(isset($pacientesIdsQueMarcaram[$x->id])) {
-									foreach($pacientesIdsQueMarcaram[$x->id] as $dt) {
-										$agendamentosFuturos[]=date('d/m/Y H:i',strtotime($dt));
-									}
-								}
-
-							$proximaConsultaJSON='';
-							$proxima='';
-							if(isset($proximaConsulta[$x->id])) {
-
-								// identifica os profissionais
-									$profissionais=array();
-									if(!empty($proximaConsulta[$x->id]->profissionais)) {
-										$aux=explode(",",$proximaConsulta[$x->id]->profissionais);
-										
-										foreach($aux as $idP) {
-											if(!empty($idP) and is_numeric($idP) and isset($_profissionais[$idP])) {
-												$profissionais[]=array('nome'=>utf8_encode($_profissionais[$idP]->nome));
-											}
-										}	
-									}
-
-								// estrutura objeto de proxima consulta
-									$i=$proximaConsulta[$x->id];
-									$proxima=date('Y-m-d H:i',strtotime("$i->data + $i->retorno day"));
-									$proximaConsultaJSON=array('duracao'=>(int)$i->duracao,
-																'dataProx'=>date('d/m/Y',strtotime("$i->data + $i->retorno day")),
-																'laboratorio'=>(int)$i->laboratorio,
-																'imagem'=>(int)$i->imagem,
-																'profissionais'=>$profissionais,
-																'obs'=>addslashes(utf8_encode($i->obs)));
-								
-								// cria objeto do paciente da lista inteligente
-
-									$ft='img/ilustra-perfil.png';
-									if(!empty($x->foto_cn)) {
-										$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$x->foto_cn;
-									} else if(!empty($x->foto)) {
-										$ft=$_wasabiURL."arqs/clientes/".$x->id.".jpg";
-									}
-									$preListaInteligente[$x->id]=array('id_proximaconsulta'=>(int)$i->id,
-																		'proxima'=>$proxima,
-																		'id_paciente'=>$x->id,
-																		'nome'=>addslashes(utf8_encode($x->nome)),
-																		'proximaConsulta'=>$proximaConsultaJSON,
-																		'periodicidade'=>$x->periodicidade,
-																		'telefone'=>telefoneMascara($x->telefone1),
-																		'bi'=>isset($_codigoBI[$x->codigo_bi])?utf8_encode($_codigoBI[$x->codigo_bi]):$x->codigo_bi,
-																		'idade'=>(int)idade($x->data_nascimento),
-																		'ft'=>$ft,
-																		'ultimoAtendimento'=>'-',
-																		'atendimentos'=>0,
-																		'tempoMedio'=>0,
-																		'faltou'=>0,
-																		'futuros'=>$agendamentosFuturos);
-							}
-						}
-					}
-
-				# ordena a lista conforme proximo agendamento de forma crescente
-					ksort($pacienteOrdem);
-					foreach($pacienteOrdem as $str=>$idPaciente) {
-						if(isset($preListaInteligente[$idPaciente])) {
-							$listaInteligente[]=$preListaInteligente[$idPaciente];
-						}
-					}
-
-				# busca as metricas dos pacientes
-					$pacientesMetricas=array();
-					$where="where id_paciente IN (".implode(",",$pacientesIds).") and agenda_data>now() and lixo=0 order by data desc";
-					$sql->consult($_p."agenda","id,id_status,id_paciente,agenda_data,agenda_duracao",$where);
-
-					while($x=mysqli_fetch_object($sql->mysqry)) {
-
-						if(!isset($pacientesMetricas[$x->id_paciente])) {
-
-							$ultimo='';
-							if($x->id_status==5) {
-								$ultimo=strtotime(date('Y-m-d'))-strtotime($x->agenda_data);
-								$ultimo/=(60*60*24);
-								$ultimo=floor($ultimo)+1;
-							}
-
-							$pacientesMetricas[$x->id_paciente]=array('atendimentos'=>0,
-																'tempo'=>0,
-																'faltou'=>0,
-																'ultimoAtendimento'=>$ultimo);
-						}
-						if($x->id_status==5) {
-							$pacientesMetricas[$x->id_paciente]['tempo']+=$x->agenda_duracao;
-							$pacientesMetricas[$x->id_paciente]['atendimentos']++; 
-
-
-							if(empty($pacientesMetricas[$x->id_paciente]['ultimoAtendimento'])) {
-								$ultimo=strtotime(date('Y-m-d'))-strtotime($x->agenda_data);
-								$ultimo/=(60*60*24);
-								$ultimo=floor($ultimo)+1;
-								$pacientesMetricas[$x->id_paciente]['ultimoAtendimento']=$ultimo;
-
-
-							}
-						}
-
-						else if($x->id_status==3) {
-							$pacientesMetricas[$x->id_paciente]['faltou']++; 
-						}
-					}
-
-				# busca historicos dos pacientes (evento = observacao => Pedir para entrar em contato, Nao conseguiu contato...)
-					$_pacientesHistorico=array();
-
-					$where="where id_paciente IN (".implode(",",$pacientesIds).") and 
-								id_proximaconsulta IN (".implode(",",$proximasConsultasIds).") and 
-								evento='observacao' and 
-								lixo=0 order by data desc";
-
-					$sql->consult($_p."pacientes_historico","*",$where);
-					if($sql->rows) {
-						while($x=mysqli_fetch_object($sql->mysqry)) {
-							if($x->id_obs==7) continue;
-							if(!isset($_pacientesHistorico[$x->id_paciente])) {
-								$_pacientesHistorico[$x->id_paciente]=$x;
-							}
-						}
-					}
-				
-				# aplica metricas dos pacientes na lista de inteligencia
-					$listaInteligenteComMetricasAplicadas=array();
-					foreach($listaInteligente as $x) {
-						$x=(object)$x;
-
-						$obj=$x;
-						if(isset($pacientesMetricas[$x->id_paciente])) {
-							$obj->atendimentos=$pacientesMetricas[$x->id_paciente]['atendimentos'];
-							$obj->faltou=$pacientesMetricas[$x->id_paciente]['faltou'];
-							$obj->ultimoAtendimento=$pacientesMetricas[$x->id_paciente]['ultimoAtendimento'];
-							$obj->tempoMedio=$pacientesMetricas[$x->id_paciente]['atendimentos']==0?0:round($pacientesMetricas[$x->id_paciente]['tempo']/$pacientesMetricas[$x->id_paciente]['atendimentos']);
-						}
-
-						if(isset($_pacientesHistorico[$x->id_paciente])) {
-							$obj->id_obs=(int)$_pacientesHistorico[$x->id_paciente]->id_obs;
-							$obj->id_obs_observacoes=(int)$_pacientesHistorico[$x->id_paciente]->relacionamento_momento;
+						// se for para os proximos 3 dias
+						if($dias<=3) {
+							//$lembretes['proximos3diasEPassado'][]=$x;
+							$pacientesIds[$x->id_paciente]=$x->id_paciente;
 						} else {
-							$obj->id_obs=0;
-							$obj->id_obs_observacoes='';
+							$lembretes['indisponiveis'][]=$x;
 						}
 
-						$listaInteligenteComMetricasAplicadas[]=$obj;
+					} 
+					// se proxima consulta for passado
+					else {
+						//echo "passado ".$x->data." + $x->retorno = ".$dataParaProximaConsulta." $x->proximaConsulta\n";//die();
+						//$lembretes['proximos3diasEPassado'][]=$x;
+						$pacientesIds[$x->id_paciente]=$x->id_paciente;
 					}
-
-					$listaInteligente=$listaInteligenteComMetricasAplicadas;
-
-			}
-
-			# ordena em 2 lista e depois unifica de forma ordenada
-
-				$listaInteligenteFinalPreOrdenadaFinal=array();
-
-				$listaInteligenteFinalPreOrdenada=array();
-				foreach($listaInteligente as $x) {
-
-					// exclui da lista se for: excluido (5), resolvido (6), agendado pela tarefa inteligente (7)
-					if($x->id_obs==5 or $x->id_obs==6 or $x->id_obs==7) continue;
-
-					// primeira lista
-					$idObs=1;
-
-					// se "NAO CONSEGUIU CONTATO (1)", "PACIENTE ENTRARA EM CONTATO (2)", "PACIENTE PEDIU PARA RETORNAR (3)", "SUGESTAO PULADA (4)", vai para segunda lista
-					if($x->id_obs==1 or $x->id_obs==2 or $x->id_obs==3 or $x->id_obs==4) $idObs=2;
-
-					// trata duplicidade de index
-						$index=strtotime($x->proxima);;
-						while(isset($listaInteligenteFinalPreOrdenada[$idObs][$index])) {
-							$index+=1;
-						}
-					
-					$listaInteligenteFinalPreOrdenada[$idObs][$index]=$x; 
 				}
 
-				// ordena as 2 listas geradas 
-					if(isset($listaInteligenteFinalPreOrdenada[1])) ksort($listaInteligenteFinalPreOrdenada[1]);
-					if(isset($listaInteligenteFinalPreOrdenada[2])) ksort($listaInteligenteFinalPreOrdenada[2]);
+			# Agendamentos que foram desmarcados ou faltou nos ultimos 90
 
-				// unifica as 2 listas geradas
-					if(isset($listaInteligenteFinalPreOrdenada[1]) and isset($listaInteligenteFinalPreOrdenada[2])) {
-						$listaInteligenteFinalOrdenada=array_merge($listaInteligenteFinalPreOrdenada[1],$listaInteligenteFinalPreOrdenada[2]);
-					} else if(isset($listaInteligenteFinalPreOrdenada[1])) {
-						$listaInteligenteFinalOrdenada=$listaInteligenteFinalPreOrdenada[1];
-					} else if(isset($listaInteligenteFinalPreOrdenada[2])) {
-						$listaInteligenteFinalOrdenada=$listaInteligenteFinalPreOrdenada[2];
+				$desmarcados=[];
+				$desmarcadosPacientesIds=[];
+
+				// pacientes que desmarcou/faltou nos ultimos 90 dias
+				$sql->consult($_p."agenda","id,id_paciente,agenda_data,agenda_duracao,profissionais,obs","WHERE agenda_data > NOW() - INTERVAL 90 DAY and id_status IN (4,3) and lixo=0 order by agenda_data desc");
+				if($sql->rows) {
+					while($x=mysqli_fetch_object($sql->mysqry)) { 
+						$x->obs = utf8_encode($x->obs);
+						$pacientesDesmarcadosIds[$x->id_paciente]=$x->id_paciente;
+
+						// capta apenas o ultimo desmarcado
+						if(!isset($desmarcados[$x->id_paciente])) {
+							$desmarcados[$x->id_paciente]=$x;
+						}
+						$desmarcadosPacientesIds[$x->id_paciente]=$x->id_paciente;
 					}
+				}
 
-				// cria lista final
 
-					if(isset($listaInteligenteFinalOrdenada) and is_array($listaInteligenteFinalOrdenada)) {
-						foreach($listaInteligenteFinalOrdenada as $x) {
-							$listaInteligenteFinalPreOrdenadaFinal[]=$x;
+				// exclui pacientes que desmacou/faltou nos ultimos 90 dias e possui agendamento futuro (a confirmar, confirmado)
+				if(count($desmarcadosPacientesIds)>0) {
+					$sql->consult($_p."agenda","distinct id_paciente","where id_paciente IN (".implode(",",$desmarcadosPacientesIds).") and agenda_data > NOW() and id_status IN (1,2) and lixo=0");
+					if($sql->rows) {
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							unset($desmarcados[$x->id_paciente]);
+						}
+					}
+				}
+
+				foreach($desmarcados as $x) {
+					$pacientesIds[$x->id_paciente]=$x->id_paciente;
+				}
+
+			# Busca informacoes (agendamentos futuros, nome)
+
+				// agendamentos futuros
+					$_agendamentosFuturos=[];
+					if(count($pacientesIds)>0) {
+						$sql->consult($_p."agenda","id_paciente,agenda_data","where id_paciente IN (".implode(",",$pacientesIds).") and agenda_data>now() and id_status IN (1,2) and lixo=0");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
+							$_agendamentosFuturos[$x->id_paciente][]=$x;
 						}
 					}
 
-			return $listaInteligenteFinalPreOrdenadaFinal;
+				// informacoes do paciente
+					$_pacientes=[];
+					if(count($pacientesIds)>0) {
+						$sql->consult($_p."pacientes","id,nome,periodicidade,telefone1,codigo_bi,data_nascimento","where id IN (".implode(",",$pacientesIds).")");
+						while($x=mysqli_fetch_object($sql->mysqry)) {
 
+							$idade = idade($x->data_nascimento);
+							$ft='';
+
+							if(!empty($x->foto_cn)) {
+								$ft=$_cloudinaryURL.'c_thumb,w_100,h_100/'.$x->foto_cn;
+							} else if(!empty($x->foto)) {
+								$ft=$_wasabiURL."arqs/clientes/".$x->id.".jpg";
+							}
+
+							$_pacientes[$x->id]=array('nome'=>utf8_encode($x->nome),
+														'periodicidade'=>$x->periodicidade,
+														'idade'=>$idade,
+														'ft'=>$ft);
+						}
+					}
+
+			# Unifica lista (proximas consultas e desmarcados/faltou)
+
+				$listaInteligente = [];
+
+				foreach($lembretes['proximos3diasEPassado'] as $x) {
+					if(isset($_pacientes[$x->id_paciente])) {
+						$paciente = $_pacientes[$x->id_paciente];
+						
+						$profissionais=[];
+						$aux = explode(",",$x->profissionais);
+						foreach($aux as $idProfissional) {
+							if(!empty($idProfissional) and isset($_profissionais[$idProfissional])) {
+								$profissional=$_profissionais[$idProfissional];
+								$profissionais[]=array('nome'=>utf8_encode($profissional->nome));
+							}
+						}
+						$x->profissionais=$profissionais;
+
+						$x->paciente = $paciente;
+						$x->index = ($x->proximaConsulta).".l".$x->id;
+						$x->tipo='proximaConsulta';
+						$x->futuros = isset($_agendamentosFuturos[$x->id_paciente]) ? $_agendamentosFuturos[$x->id_paciente] : [];
+						$listaInteligente[] = $x;
+					}
+				}
+
+
+				foreach($desmarcados as $x) {
+					if(isset($_pacientes[$x->id_paciente])) {
+						$paciente = $_pacientes[$x->id_paciente];
+
+						$profissionais=[];
+						$aux = explode(",",$x->profissionais);
+						foreach($aux as $idProfissional) {
+							if(!empty($idProfissional) and isset($_profissionais[$idProfissional])) {
+								$profissional=$_profissionais[$idProfissional];
+								$profissionais[]=array('nome'=>utf8_encode($profissional->nome));
+							}
+						}
+						$x->profissionais=$profissionais;
+
+						$x->paciente = $paciente;
+						$x->index = ($x->agenda_data).".a".$x->id;
+						$x->agenda_data = date('d/m H:i',strtotime($x->agenda_data));
+						$x->tipo='desmarcados';
+						$x->futuros = isset($_agendamentosFuturos[$x->id_paciente]) ? $_agendamentosFuturos[$x->id_paciente] : [];
+						$listaInteligente[] = $x;
+					}
+				}
+
+			# Ordena
+				$listaInteligenteOrdenada = [];
+				foreach($listaInteligente as $x) {
+					$listaInteligenteOrdenada[$x->index]=$x;
+				}
+
+				ksort($listaInteligenteOrdenada);
+
+				$listaInteligente=[];
+				foreach($listaInteligenteOrdenada as  $x) $listaInteligente[]=$x;
+
+			$this->indisponiveis = count($lembretes['indisponiveis']);
+			return $listaInteligente;
 		}
 
 
@@ -1221,8 +1110,6 @@
 
 
 			return $listaFinal;
-
-
 		}
 	}
 

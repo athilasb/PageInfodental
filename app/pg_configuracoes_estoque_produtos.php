@@ -15,10 +15,18 @@
 	while($x=mysqli_fetch_object($sql->mysqry)) {
 		$_especialidades[$x->id]=$x;
 	}
+
+	$_categorias=array();
+	$sql->consult($_p."produtos_categorias","*","where lixo=0 order by titulo");
+	while($x=mysqli_fetch_object($sql->mysqry)) {
+		$_categorias[$x->id]=$x;
+	}
 	
 	$_unidadesMedidas=array();
 	$sql->consult($_p."produtos_unidadesmedidas","*","where lixo=0 order by titulo asc");
 	while($x=mysqli_fetch_object($sql->mysqry)) $_unidadesMedidas[$x->id]=$x;
+
+	$_tipoBaixas=array('horaClinica' => 'Por Hora Clínica','procedimento' => 'Por Procedimento');
 
 	if(isset($_POST['ajax'])) {
 
@@ -46,12 +54,15 @@
 								'titulo'=>utf8_encode($cnt->titulo),
 								'id_marca'=>utf8_encode($cnt->id_marca),
 								'id_especialidade'=>utf8_encode($cnt->id_especialidade),
+								'id_categoria'=>utf8_encode($cnt->id_categoria),
 								'unidade_medida'=>utf8_encode($cnt->unidade_medida),
 								'volume'=>utf8_encode($cnt->volume),
 								'referencia'=>utf8_encode($cnt->referencia),
 								'estoque_minimo'=>utf8_encode($cnt->estoque_minimo),
 								'embalagemComMais'=>(int)($cnt->embalagemComMais),
-								'quantidade'=>utf8_encode($cnt->quantidade));
+								'quantidade'=>utf8_encode($cnt->quantidade),
+								'tipo_baixa'=>utf8_encode($cnt->tipo_baixa),
+								'codigo_barra'=>utf8_encode($cnt->codigo_barra));
 
 				$rtn=array('success'=>true,'data'=>$data);
 
@@ -208,7 +219,7 @@
 	}
 
 	$values=$adm->get($_GET);
-	$campos=explode(",","titulo,id_marca,id_especialidade,unidade_medida,volume,referencia,estoque_minimo,embalagemComMais,quantidade");
+	$campos=explode(",","titulo,id_marca,id_categoria,id_especialidade,unidade_medida,volume,referencia,estoque_minimo,embalagemComMais,quantidade,tipo_baixa,codigo_barra");
 
 	if(isset($_POST['acao'])) {
 
@@ -289,16 +300,18 @@
 											$('#js-aside input[name=id]').val(rtn.data.id);
 											$('#js-aside select[name=id_marca]').val(rtn.data.id_marca);
 											$('#js-aside select[name=id_especialidade]').val(rtn.data.id_especialidade);
+											$('#js-aside select[name=id_categoria]').val(rtn.data.id_categoria);
 											$('#js-aside select[name=unidade_medida]').val(rtn.data.unidade_medida);
 											$('#js-aside input[name=volume]').val(rtn.data.volume);
 											$('#js-aside input[name=referencia]').val(rtn.data.referencia);
 											$('#js-aside input[name=estoque_minimo]').val(rtn.data.estoque_minimo);
+											$('#js-aside select[name=tipo_baixa]').val(rtn.data.tipo_baixa);
+											$('#js-aside input[name=codigo_barra]').val(rtn.data.codigo_barra);
 											$('#js-aside input[name=embalagemComMais]').prop('checked',rtn.data.embalagemComMais==1?true:false);
 											$('#js-aside input[name=quantidade]').val(rtn.data.quantidade);
 
-
-
 											$('.js-fieldset-regs,.js-btn-remover').show();
+											$('.js-fieldset-variacoes').show();
 											
 											$(".aside-form").fadeIn(100,function() {
 												$(".aside-form .aside__inner1").addClass("active");
@@ -319,8 +332,7 @@
 
 							} else {
 								$('.js-fieldset-regs,.js-btn-remover').hide();
-
-								
+								$('.js-fieldset-variacoes').hide();
 								$(".aside-form").fadeIn(100,function() {
 									$(".aside-form .aside__inner1").addClass("active");
 									embalagemComMais();
@@ -378,7 +390,6 @@
 							$('.list1').on('click','.js-item',function(){
 								$('#js-aside form.formulario-validacao').trigger('reset');
 								let id = $(this).attr('data-id');
-
 								openAside(id);
 							});
 						})
@@ -516,6 +527,22 @@
 							</dd>
 						</dl>
 						<dl>
+							<dt>Categoria</dt>
+							<dd class="form-comp form-comp_pos">
+								<select name="id_categoria" class="ajax-id_categoria">
+									<option value="">-</option>
+									<?php
+									foreach($_categorias as $e) {
+									?>
+									<option value="<?php echo $e->id;?>"><?php echo utf8_encode($e->titulo);?></option>
+									<?php	
+									}
+									?>
+								</select>
+								<a href="javascript:;" class="js-btn-aside" data-aside="categoria" data-aside-sub><i class="iconify" data-icon="fluent:edit-24-regular"></i></a>
+							</dd>
+						</dl>
+						<dl>
 							<dt>Unidade de Medida</dt>
 							<dd>
 								<select name="unidade_medida" class="">
@@ -545,8 +572,27 @@
 						<dl>
 							<dt>Quantidade</dt>
 							<dd><input type="text" name="quantidade" /></dd>
-						</dl>					
+						</dl>		
+						<dl>
+							<dt>Tipo Baixa</dt>
+							<dd>
+								<select name="tipo_baixa" class="">
+									<option value="">-</option>
+									<?php
+									foreach($_tipoBaixas as $k => $v) echo '<option value="'.$k.'">'.$v.'</option>';
+									?>
+								</select>
+							</dd>
+						</dl>
+						<dl class="dl2">
+							<dt>Código de Barra</dt>
+							<dd><input type="text" name="codigo_barra" /></dd>
+						</dl>			
 					</div>
+				</fieldset>
+
+				<fieldset class="js-fieldset-variacoes" style="display: none;">
+					<legend>Variações</legend>
 				</fieldset>
 
 				<script type="text/javascript">
@@ -571,7 +617,9 @@
 
 <?php 
 	$apiConfig=array('especialidade'=>1,
-						'marca'=>1);
+						'marca'=>1,
+						'categoria'=>1);
+
 	require_once("includes/api/apiAside.php");
 	include "includes/footer.php";
 ?>	
