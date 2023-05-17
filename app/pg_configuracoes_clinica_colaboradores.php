@@ -81,7 +81,6 @@
 			} else {
 				$rtn=array('success'=>false,'error'=>'Tipo não especificado!');
 			}
-
 		} else if($_POST['ajax']=="comissionamentosListar") {
 
 			$_planos=array();
@@ -117,7 +116,6 @@
 				}
 			}
 			$rtn=array('success'=>true,'comissionamento'=>$comissionamento);
-		
 		} else if($_POST['ajax']=="comissionamentosRemover") {
 
 			$comissionamento='';
@@ -140,8 +138,6 @@
 			} else {
 				$rtn=array('success'=>false,'error'=>'Comissionamento não encontrado!');
 			}
-
-
 		} else if($_POST['ajax']=="horariosPersistir") {
 			$cadeira='';
 			if(isset($_POST['id_cadeira']) and is_numeric($_POST['id_cadeira'])) {
@@ -281,12 +277,68 @@
 				$rtn=array('success'=>false,'error'=>'Horário não encontrado!');
 			}
 		} else if($_POST['ajax']=="foto") {
-
-			
 			$sql->update($_p."colaboradores","foto='".addslashes($_POST['foto'])."'","where id=$colaborador->id");
 			$rtn=array('success'=>true);
-			
+		} else if($_POST['ajax']=="assinatura") {
+			// capta dados
+				$lat = isset($_POST['lat']) ? $_POST['lat'] : '';
+				$lng = isset($_POST['lng']) ? $_POST['lng'] : '';
+				$dispositivo = isset($_POST['dispositivo']) ? $_POST['dispositivo'] : '';
+				$assinatura = isset($_POST['assinatura']) ? $_POST['assinatura'] : '';
 
+			// validacao
+				$erro='';
+				if(empty($assinatura)) $erro='Faça a rúbrica da sua assinatura digital para continuar';
+
+			// persiste assinatura
+				if(empty($erro)) {
+					$vSQL="data=now(),
+							id_colaborador=$colaborador->id,
+							lat='".addslashes($lat)."',
+							lng='".addslashes($lng)."',
+							dispositivo='".addslashes($dispositivo)."',
+							assinatura='".addslashes($assinatura)."'";
+
+					$sql->consult($_p."colaboradores_assinaturas","id","where id_colaborador=$colaborador->id and lixo=0");
+					$cnt=$sql->rows?mysqli_fetch_object($sql->mysqry):'';
+
+
+					if(is_object($cnt)) {
+						$vWHERE="where id=$cnt->id";
+						$sql->update($_p."colaboradores_assinaturas",$vSQL,$vWHERE);
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."colaboradores_assinaturas',id_reg='".$cnt->id."'");
+					} else {
+						$sql->add($_p."colaboradores_assinaturas",$vSQL);
+						$id_reg=$sql->ulid;
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='insert',vsql='".addslashes($vSQL)."',tabela='".$_p."colaboradores_assinaturas',id_reg='".$id_reg."'");
+					}
+
+					$rtn=array('success'=>true);
+					
+				} else {
+					$rtn=array('success'=>false,'error'=>$erro);
+				}
+		}  else if($_POST['ajax']=="assinaturaApagar") {
+
+			// persiste assinatura
+				if(empty($erro)) {
+					$vSQL="lixo=1";
+
+					$sql->consult($_p."colaboradores_assinaturas","id","where id_colaborador=$colaborador->id and lixo=0");
+					$cnt=$sql->rows?mysqli_fetch_object($sql->mysqry):'';
+
+
+					if(is_object($cnt)) {
+						$vWHERE="where id=$cnt->id";
+						$sql->update($_p."colaboradores_assinaturas",$vSQL,$vWHERE) ;
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='delete',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_p."colaboradores_assinaturas',id_reg='".$cnt->id."'");
+					} 
+
+					$rtn=array('success'=>true);
+					
+				} else {
+					$rtn=array('success'=>false,'error'=>$erro);
+				}
 		}
 
 		header("Content-type: application/json");
@@ -468,28 +520,30 @@
 					</div>
 				</div>
 
-				<?php /*<div class="filter-group">
-					<div class="filter-form form">
-						<dl>
-							<dd><a href="<?php echo $_page."?".$url;?>" class="button"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></a></dd>
-						</dl>
-						<?php
-						if(is_object($cnt)) {
-						?>
-						<dl>
-							<dd><a href="<?php $_page."?form=1&edita=$cnt->id&deleta=1";?>" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
-						</dl>
-						<dl>
-							<dd><a href="" class="button"><i class="iconify" data-icon="fluent:print-24-regular"></i></a></dd>
-						</dl>
-						<?php
-						}
-						?>
-						<dl>
-							<dd><a href="javascript://" class="button button_main js-submit"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>
-						</dl>
-					</div>
-				</div>*/?>
+				<?php 
+					/*<div class="filter-group">
+						<div class="filter-form form">
+							<dl>
+								<dd><a href="<?php echo $_page."?".$url;?>" class="button"><i class="iconify" data-icon="fluent:arrow-left-24-regular"></i></a></dd>
+							</dl>
+							<?php
+							if(is_object($cnt)) {
+							?>
+							<dl>
+								<dd><a href="<?php $_page."?form=1&edita=$cnt->id&deleta=1";?>" class="button"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a></dd>
+							</dl>
+							<dl>
+								<dd><a href="" class="button"><i class="iconify" data-icon="fluent:print-24-regular"></i></a></dd>
+							</dl>
+							<?php
+							}
+							?>
+							<dl>
+								<dd><a href="javascript://" class="button button_main js-submit"><i class="iconify" data-icon="fluent:checkmark-12-filled"></i><span>Salvar</span></a></dd>
+							</dl>
+						</div>
+					</div>*/
+				?>
 			</section>
 			<?php
 			} 
@@ -931,6 +985,223 @@
 									<input type="hidden" name="lng" id="lng" style="display:none;" />
 									<input type="hidden" name="lat" id="lat" style="display:none;" />
 								</fieldset>
+								<?php
+								if(is_object($cnt)) {
+
+									$sql->consult($_p."colaboradores_assinaturas","*","where id_colaborador=$cnt->id and lixo=0");
+									$assinatura=$sql->rows?mysqli_fetch_object($sql->mysqry):'';
+
+								?>
+								<fieldset>
+									<legend>Assinatura Digital</legend>
+
+									<p class="text-assinatura">Faça a assinatura eletrônica na caixa abaixo:</p>
+
+									<canvas id="canvas" style="width: 100%; height: 200px; border: 1px solid #E7E7E7; box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);margin-bottom:35px;" >
+										<p> painel de assinatura </p>
+									</canvas>
+
+									<center>
+											<a href="javascript:;" data-loading="0" class="button js-sign-concluir"><span class="iconify" data-icon="mdi:file-sign"></span> Assinar</a>
+
+											<a href="javascript:;" class="button js-sign-apagar" id="canvas-clear"><i class="iconify" data-icon="fluent:eraser-24-regular"></i><span> Apagar</span></a>
+									</center>
+
+									<script>
+										var assinado = 0;
+										var pos = {};
+										var id_colaborador = <?php echo $cnt->id;?>;
+										var assinatura = '<?php echo is_object($assinatura)?$assinatura->assinatura:'';?>';
+
+										const canvas = $('#canvas')[0];
+										const ctx = canvas.getContext('2d');
+										var pressed = false;
+
+										function getmouse(evt) {
+											var rect = canvas.getBoundingClientRect();
+											var scalex = canvas.width / rect.width;
+											var scaley = canvas.height / rect.height;
+											return {
+												x: (evt.clientX - rect.left) * scalex,
+												y: (evt.clientY - rect.top) * scaley
+											};
+										}
+
+										function draw(e) {
+											if (!pressed) { return; }
+											ctx.lineWidth = 2;
+											ctx.lineCap = 'round';
+											ctx.lineTo(getmouse(e).x, getmouse(e).y);
+											ctx.stroke();
+											assinado++;
+										}
+										
+										canvas.addEventListener("touchmove", (e) => {
+											e.preventDefault();
+											draw(e.touches[0]);
+										});
+
+										canvas.addEventListener("touchstart", (e) => {
+											e.preventDefault(); //impedir o envento de scrool 
+											ctx.beginPath();
+											pressed = true;
+										});
+
+										canvas.addEventListener("touchend", (e) => {
+											pressed = false;
+											ctx.stroke();
+										});
+
+										canvas.addEventListener("mousemove", draw);
+
+										canvas.addEventListener("mousedown", () => {
+											ctx.beginPath();
+											pressed = true;
+										});
+
+										canvas.addEventListener("mouseup", (e) => {
+											pressed = false;
+											ctx.stroke();
+										});
+
+									
+
+										const evolucaoAssinar = () => {
+
+											let obj = $('.js-sign-concluir');
+											let objHTMLAntigo = obj.html();
+
+
+											obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span> Assinando...`);
+											obj.attr('data-loading',1);
+
+											let cpf = $('.js-sign-cpf').val();
+											let dn = $('.js-sign-dn').val();
+
+											let data = {
+													'ajax': 'assinatura',
+													'id_colaborador':id_colaborador,
+													'assinatura': canvas.toDataURL('image/png'),
+													'lat': pos.lat,
+													'lng': pos.lng,
+													'dispositivo': navigator.userAgent
+												}
+
+
+											$.ajax({
+												type: "POST",
+												data: data,
+												success:function(rtn) {
+													if(rtn.success) {
+														swal({title: "Sucesso!", text: 'Assinatura realizada com sucesso!', html:true, type:"success", confirmButtonColor: "#424242"},function(){
+														});
+													} else {
+
+														if(rtn.error) erro=rtn.error;
+														else erro='Algum erro ocorreu durante a autenticação. Tente novamente!';
+
+														swal({title: "Erro!", text: erro, html:true, type:"error", confirmButtonColor: "#424242"});
+
+														obj.html(`<span class="iconify" data-icon="mdi:file-sign"></span> Assinar`);
+														obj.attr('data-loading',0);
+													}
+												}
+											}).done(function(){
+												obj.html(`<span class="iconify" data-icon="mdi:file-sign"></span> Assinar`);
+												obj.attr('data-loading',0);
+											});
+											
+
+											
+										}
+
+										const geolocationSuccess = (position) => {
+
+											let { latitude, longitude, accuracy } = position.coords;
+
+											pos.lat = latitude;
+											pos.lng = longitude
+											pos.acc = accuracy;
+
+											evolucaoAssinar();
+											
+										}
+
+										const geolocationFail = () => { 
+											pos.lat = '';
+											pos.lng = '';
+											pos.acc = '';
+
+											evolucaoAssinar();
+										}
+
+										$(function() {
+
+											$('.js-sign-concluir').click(function(){
+
+												let erro = '';
+												if(assinado<=10) erro='Faça uma assinatura para continuar';
+
+												if(erro.length>0) {
+													swal({ title: "Erro!", text: erro, type: "error", confirmButtonColor: "#424242" });
+												} else {
+
+													let obj = $('.js-sign-concluir');
+
+													if(obj.attr('data-loading')==0) {
+
+														obj.attr('data-loading',1);
+														obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span> Processando...`);
+
+														if(navigator.geolocation) {
+															navigator.geolocation.getCurrentPosition(geolocationSuccess,geolocationFail);
+														} else {
+															geolocationFail();
+														}	
+													}
+												}
+											});
+
+											$('.js-sign-apagar').click(function(){
+												let data = `ajax=assinaturaApagar&id_colaborador=${id_colaborador}`;
+
+												let obj = $(this);
+												let objHTMLAntigo = obj.html();
+												obj.html('<span class="iconify" data-icon="eos-icons:loading"></span>  Apagando...');
+												$.ajax({
+													type:"POST",
+													data:data,
+													success:function(rtn) {
+														if(rtn.success) {
+															ctx.clearRect(0, 0, canvas.width, canvas.height);
+														}
+													}
+												}).done(function(){
+													obj.html(objHTMLAntigo);
+												})
+											});
+
+											if(assinatura.length>0) {
+												let singbox = document.getElementById('canvas');
+												let ctx = singbox.getContext('2d');
+
+												var img = new Image();
+												img.onload = function () {
+													ctx.drawImage(img,0,0);
+												}
+												img.src=assinatura;
+											}
+
+										});
+
+									</script>
+
+								</fieldset>	
+								<?php
+								}
+								?>
+
+
 
 								<?php /*<fieldset>
 									<legend>Certificação Digital</legend>
