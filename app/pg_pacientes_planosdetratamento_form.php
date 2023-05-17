@@ -893,93 +893,74 @@
 			$('[name="id_politica"]').val(temPolitica.id)
 			let valorTotal = valorOriginalProcedimentos - valorDescontos
 			let metodosHabilitados = temPolitica.parcelasParametros.metodos
+			if(metodosHabilitados){
+				metodosHabilitados.forEach(x => {
+					let qtdParcelas = 0
+					let taxaJuros = 0
+					let qtdParcelasTotal = parseInt(x.parcela)
+					let qtdParcelasSemJuros = parseInt(x.parcelaSemJuros??0)
+					let taxaJurosAnual = parseFloat(x.juros)
+					let valorEntrada = valorTotal / qtdParcelasTotal
+					let valorParcela = valorTotal / qtdParcelasTotal
+					let valorTotalParcelado = valorTotal
+					let metodo = x.tipo
+					let icone = '<i class="iconify" data-icon="ep:tickets">'
+					let textoAux = ""
 
-			metodosHabilitados.forEach(x => {
-				let qtdParcelas = 0
-				let taxaJuros = 0
-				let qtdParcelasTotal = parseInt(x.parcelas)
-				let qtdParcelasSemJuros = parseInt(x.parcelaSemJuros)
-				let taxaJurosAnual = parseFloat(x.jurosAnual)
-				let valorEntrada = valorTotal / qtdParcelasTotal
-				let valorParcela = valorTotal / qtdParcelasTotal
-				let valorTotalParcelado = valorTotal
-				let metodo = x.tipo
-				let icone = '<i class="iconify" data-icon="ep:tickets">'
-				let textoAux = ""
-
-				switch (metodo) {
-					case 'dinheiro':
-						icone = `ri:money-dollar-box-line`
-						textoAux = `No Dinheiro`
-						break;
-					case 'pix':
-						icone = `ic:baseline-pix`
-						textoAux = `No Pix`
-						break;
-					case 'debito':
-						icone = `ic:baseline-credit-card`
-						textoAux = `No Cartão de Débito`
-						break;
-					case 'credito':
-						icone = `ic:round-credit-card`
-						textoAux = `No Cartão de Crédito`
-						break;
-					case 'boleto':
-						icone = `ep:tickets`
-						textoAux = `No Boleto`
-						break;
-					case 'cheque':
-						icone = `mdi:cheque-book`
-						textoAux = `No Cheque`
-						break;
-					case 'deposito':
-						icone = `mdi:bank`
-						textoAux = `No Depósito Bancario`
-						break;
-					case 'transferencia':
-						icone = `fa6-solid:money-bill-transfer`
-						textoAux = `Por Transferencia Bancaria`
-						break;
-				}
-				let textCard = `a Vista`
-				let valor = valorTotal;
-				let desconto = "";
-				let acrescimo = "";
-				let texto1 = ""
-				let texto2 = ""
-				let texto3 = ""
-				let texto4 = ""
-				let tr = ""
-				if (x.parcelas == 1) {
-					if (parseFloat(x.descontoAvista) > 0) {
-						valor = valor - (valor * (parseFloat(x.descontoAvista) / 100))
-						desconto = `<em style="background:var(--verde); color:#fff;">desconto de R$ ${number_format((valorTotal-valor),2,",",".")}</em>`
+					switch (metodo) {
+						case 'dinheiro':
+							icone = `ri:money-dollar-box-line`
+							textoAux = `No Dinheiro`
+							break;
+						case 'pix':
+							icone = `ic:baseline-pix`
+							textoAux = `No Pix`
+							break;
+						case 'debito':
+							icone = `ic:baseline-credit-card`
+							textoAux = `No Cartão de Débito`
+							break;
+						case 'credito':
+							icone = `ic:round-credit-card`
+							textoAux = `No Cartão de Crédito`
+							break;
+						case 'boleto':
+							icone = `ep:tickets`
+							textoAux = `No Boleto`
+							break;
+						case 'cheque':
+							icone = `mdi:cheque-book`
+							textoAux = `No Cheque`
+							break;
+						case 'deposito':
+							icone = `mdi:bank`
+							textoAux = `No Depósito Bancario`
+							break;
+						case 'transferencia':
+							icone = `fa6-solid:money-bill-transfer`
+							textoAux = `Por Transferencia Bancaria`
+							break;
 					}
-					if (parseFloat(x.jurosAnual) > 0) {
-						let tempo = Math.ceil(qtdParcelasTotal / 12)
-						valor = valor + (valor * ((taxaJurosAnual / 100) * tempo))
-						valorTotalParcelado = valor * qtdParcelasTotal
-					}
-					tr = `<tr onclick='politicaEscolhida("${metodo}")'>
-								<td class="list1__border" style="color:silver">
-								<i class="iconify" data-icon="${icone}" style="font-size:50px">
-								</td>
-								<td>
-									<h1 style="font-size:1.375em;">${textoAux}</h1>
-									<p><strong>${textCard}</strong>${desconto}</p>
-								</td>	
-								<td>
-									<p>TOTAL: <strong>R$ ${number_format(valor,2,",",".")}</strong></p>
-								</td>									
-							</tr>`
-				} else {
-					if (parseFloat(x.descontoAvista) > 0) {
-						valor = valor - (valor * (parseFloat(x.descontoAvista) / 100))
-						desconto = `<em style="background:var(--verde); color:#fff;">desconto de R$ ${number_format((valorTotal-valor),2,",",".")}</em>`
-					}
-					if (qtdParcelasSemJuros > 0) {
-						textCard = `Em Até ${qtdParcelasSemJuros}x sem Juros`
-						tr += `<tr onclick='politicaEscolhida("${metodo}")'>
+					let textCard = `a Vista`
+					let valor = valorTotal;
+					let desconto = "";
+					let acrescimo = "";
+					let texto1 = ""
+					let texto2 = ""
+					let texto3 = ""
+					let texto4 = ""
+					let tr = ""
+					if (x.parcelas == 1) {
+						if (parseFloat(x.descontoAvista) > 0) {
+							valor = valor - (valor * (parseFloat(x.descontoAvista) / 100))
+							desconto = `<em style="background:var(--verde); color:#fff;">desconto de R$ ${number_format((valorTotal-valor),2,",",".")}</em>`
+						}
+						if (parseFloat(x.jurosAnual) > 0) {
+							let tempo = Math.ceil(qtdParcelasTotal / 12)
+							valor = valor + (valor * ((taxaJurosAnual / 100) * tempo))
+							valorTotalParcelado = valor * qtdParcelasTotal
+						}
+						tr = `<tr onclick='politicaEscolhida("${metodo}")'>
 									<td class="list1__border" style="color:silver">
 									<i class="iconify" data-icon="${icone}" style="font-size:50px">
 									</td>
@@ -991,39 +972,60 @@
 										<p>TOTAL: <strong>R$ ${number_format(valor,2,",",".")}</strong></p>
 									</td>									
 								</tr>`
-					}
-					if (taxaJurosAnual > 0) {
-						let parcelaDe = qtdParcelasSemJuros + 1
-						let parcelaAte = 12
-						let anual = 1
-						let tempo = Math.ceil(qtdParcelasTotal / 12)
-						while (tempo > 0) {
-							acrescimo = `<em style="background:var(--cinza3); color:#fff;">acréscimo de R$ ${number_format((valorTotal*((taxaJurosAnual/100)*anual)),2,",",".")}</em>`
-							valor = valorTotal + (valorTotal * ((taxaJurosAnual / 100) * anual)) - ((taxaJurosAnual / 100) * anual)
-							textCard = `de ${parcelaDe}x Até ${parcelaAte}x com Juros`
+					} else {
+						if (parseFloat(x.descontoAvista) > 0) {
+							valor = valor - (valor * (parseFloat(x.descontoAvista) / 100))
+							desconto = `<em style="background:var(--verde); color:#fff;">desconto de R$ ${number_format((valorTotal-valor),2,",",".")}</em>`
+						}
+						if (qtdParcelasSemJuros > 0) {
+							textCard = `Em Até ${qtdParcelasSemJuros}x sem Juros`
 							tr += `<tr onclick='politicaEscolhida("${metodo}")'>
 										<td class="list1__border" style="color:silver">
 										<i class="iconify" data-icon="${icone}" style="font-size:50px">
 										</td>
 										<td>
 											<h1 style="font-size:1.375em;">${textoAux}</h1>
-											<p><strong>${textCard}</strong>${acrescimo}</p>
+											<p><strong>${textCard}</strong>${desconto}</p>
 										</td>	
 										<td>
 											<p>TOTAL: <strong>R$ ${number_format(valor,2,",",".")}</strong></p>
 										</td>									
 									</tr>`
-							tempo--;
-							anual++
-							parcelaDe = parcelaDe + parcelaDe - 1
-							parcelaAte = parcelaAte * anual
+						}
+						if (taxaJurosAnual > 0) {
+							let parcelaDe = qtdParcelasSemJuros + 1
+							let parcelaAte = 12
+							let anual = 1
+							let tempo = Math.ceil(qtdParcelasTotal / 12)
+							while (tempo > 0) {
+								acrescimo = `<em style="background:var(--cinza3); color:#fff;">acréscimo de R$ ${number_format((valorTotal*((taxaJurosAnual/100)*anual)),2,",",".")}</em>`
+								valor = valorTotal + (valorTotal * ((taxaJurosAnual / 100) * anual)) - ((taxaJurosAnual / 100) * anual)
+								textCard = `de ${parcelaDe}x Até ${parcelaAte}x com Juros`
+								tr += `<tr onclick='politicaEscolhida("${metodo}")'>
+											<td class="list1__border" style="color:silver">
+											<i class="iconify" data-icon="${icone}" style="font-size:50px">
+											</td>
+											<td>
+												<h1 style="font-size:1.375em;">${textoAux}</h1>
+												<p><strong>${textCard}</strong>${acrescimo}</p>
+											</td>	
+											<td>
+												<p>TOTAL: <strong>R$ ${number_format(valor,2,",",".")}</strong></p>
+											</td>									
+										</tr>`
+								tempo--;
+								anual++
+								parcelaDe = parcelaDe + parcelaDe - 1
+								parcelaAte = parcelaAte * anual
+
+							}
 
 						}
-
 					}
-				}
-				$('.js-tipo-politica table').append(tr)
-			})
+					$('.js-tipo-politica table').append(tr)
+				})
+			}
+
 
 		} else {
 			$('[name="tipo_financeiro"]').each((i, x) => {
@@ -1158,9 +1160,12 @@
 	}
 	//quando possui pagamentos salvos ele persiste as info
 	const PossuiPagamentosSalvos = () => {
+		console.log(tipoFinaneiroPadrao)
 		if(tipoFinaneiroPadrao=='politica'){
 			$('.js-tipo-manual').hide();
+			$('.js-tipo-politica').show();
 		}else if(tipoFinaneiroPadrao=='manual'){
+			$('.js-tipo-manual').show();
 			$('.js-tipo-politica').hide();
 		}
 		pagamentosListar(3);
@@ -1182,13 +1187,11 @@
 					disabledParcelas = 'disabled'
 					disabledIdent = 'disabled'
 				}
-
 				if ((contrato.tipo_financeiro == 'politica' && tipoFinaneiroPadrao == 'politica') || (tipoFinaneiroPadrao == 'politica') || (contrato.status == 'APROVADO')) {
 					disabledForma = 'disabled'
 					disabledValor = 'disabled'
 					disabledParcelas = 'disabled'
 				}
-
 				valorPagamentos += x.valor
 				$('.js-pagamento-item article').each((k, x) => {
 					let pagamento = pagamentos[k]
@@ -1311,7 +1314,6 @@
 					})
 				})
 			})
-			//valorOriginalProcedimentos = valorPagamentos
 			updateValorText()
 		}
 		return
@@ -1453,7 +1455,6 @@
 	// verifica no inicio do codigo se ja existe parcelas salvas
 	const verificaSeExisteParcelasSalvas = () => {
 		if (contrato.tipo_financeiro == 'politica') {
-			//alternaManualPolitica('politica')
 			let qtdParcelas = contrato.parcelas
 			let valor = (valorOriginalProcedimentos - valorDescontos / qtdParcelas)
 			if (pagamentos.length > 0) {
@@ -1464,7 +1465,6 @@
 			}
 			//procedimentosListar();
 		} else if (contrato.tipo_financeiro == 'manual') {
-			//	alternaManualPolitica('manual')
 			tipoFinaneiroPadrao = 'manual'
 			let qtdParcelas = contrato.parcelas
 			let valor = (valorOriginalProcedimentos - valorDescontos / qtdParcelas)
@@ -1515,87 +1515,7 @@
 		}
 	}
 
-	$(function() {
-		// clica no botao salvar para fazer o submit
-		$('.js-btn-salvar').click(function() {
-			let erro = ``;
-			if ($('input[name=titulo]').val().length == 0) {
-				erro = 'Digite o título do <b>Tratamento</b>';
-				$('input[name=titulo]').addClass('erro');
-			} else if (procedimentos.length == 0) {
-				erro = 'Adicione pelo menos um procedimento para iniciar um Plano de Tratamento';
-			}
 
-			if (erro.length == 0) {
-				$('.js-pagamento-item').each(function(index, elem) {
-					if ($(elem).find('.js-vencimento').val().length == 0) {
-						$(elem).find('.js-vencimento').addClass('erro');
-						erro = 'Defina a(s) <b>Data(s) de Vencimento</b> do(s) pagamento(s)';
-					}
-				})
-			}
-
-			if (erro.length > 0) {
-				swal({
-					title: "Erro",
-					text: erro,
-					html: true,
-					type: "error",
-					confirmButtonColor: "#424242"
-				});
-			} else {
-				$('.js-pagamentos-quantidade').val(pagamentos.length)
-				pagamentosPersistirObjeto();
-				$('.js-form-plano').submit();
-			}
-		});
-
-		$('.js-btn-status').click(function() {
-			let erro = ""
-			let status = $(this).attr('data-status');
-			if (status == "PENDENTE") {
-				$('input[name=status]').val('PENDENTE');
-			} else if (status == "APROVADO") {
-				$('input[name=status]').val('APROVADO');
-
-			} else if (status == "REPROVADO") {
-				$('input[name=status]').val('REPROVADO');
-
-			} else if (status == "CANCELADO") {
-				$('input[name=status]').val('CANCELADO');
-			} else {
-				$('input[name=status]').val('');
-			}
-			if ((status == "APROVADO") && pagamentos.length <= 0) {
-				erro = "Voce Precisa Selecionar as parcelas antes de Aprovar!"
-			}
-			if (erro.length > 0) {
-				swal({
-					title: "Erro",
-					text: erro,
-					html: true,
-					type: "error",
-					confirmButtonColor: "#424242"
-				});
-			} else {
-				$('.js-pagamentos-quantidade').val(pagamentos.length)
-				pagamentosPersistirObjeto()
-				$('form.js-form-plano').submit();
-			}
-		});
-
-		$('.js-btn-adicionarProcedimento').click(function() {
-			$(".aside-plano-procedimento-adicionar").fadeIn(100, function() {
-				$(".aside-plano-procedimento-adicionar .aside__inner1").addClass("active");
-			});
-
-			$('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento').chosen('destroy');
-			$('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento').chosen();
-
-		})
-
-
-	});
 </script>
 
 <main class="main">
@@ -1850,7 +1770,7 @@
 									<?php endif; ?>
 								</div>
 							</section>
-								<section class="js-tipo js-tipo-politica" style="display:none;">
+								<section class="js-tipo js-tipo-politica scroll" style="display:none;">
 									<div class="list1">
 										<table>
 										</table>
@@ -1861,23 +1781,19 @@
 									</div>
 							</section>
 						</fieldset>
-						<fieldset class="field-pacientes" > 
-							<legend>Odontograma</legend>
-							<div style="align-items: center; justify-content: end; display: flex;">	
-							<a style="margin: 5px;" class="button  active" href="javascript:;" id="js-permanentes" href=""> Permanentes</a>
-							<a class="button" href="javascript:;" id="js-deciduos" href=""> Decíduos</a>
-							</div>
-							<div class="permanentes" style="display:block;">		
-							<?php include "includes/svg/arcada_dentaria_permanentes.php"; ?>
-							</div>	
-							<div class="deciduos" style="display:none;">		
-							<?php include "includes/svg/arcada_dentaria_deciduos.php"; ?>
-							</div>	
+						<fieldset > 
+							<legend>Procedimentos</legend>
+							<?php include "includes/svg/arcada_dentaria.php"; ?>
 						</fieldset>
 
-						<fieldset  class="field-pacientes" style="margin-bottom: var(--margin1) !important;" >
-							<legend>HOF</legend>
-							<?php include "includes/svg/hof_face.php"; ?>
+						<fieldset >
+							<legend>Procedimentos</legend>
+							<div style="align-items: center; justify-content: end; display: flex;">							
+								<a class="button " href="javascript:;" id="limpar-canvas" > <span class="iconify" data-icon="carbon:clean"></span> Limpar</a>
+								<a class="button js-desenhar" href="javascript:;" id="limpar-canvas" ><span class="iconify" data-icon="fluent:copy-select-20-filled"></span> Desenhar</a>
+								<a class="button active" href="javascript:;" id="limpar-canvas" href=""> Região</a>
+							</div>
+							<canvas style="display: block;margin: auto;" id="canvas" width="600px" height="500"></canvas>
 						</fieldset>
 					</div>
 				</div>
@@ -1885,6 +1801,175 @@
 		</form>
 	</div>
 </main>
+<script>
+	$(function() {
+		// clica no botao salvar para fazer o submit
+		$('.js-btn-salvar').click(function() {
+			let erro = ``;
+			if ($('input[name=titulo]').val().length == 0) {
+				erro = 'Digite o título do <b>Tratamento</b>';
+				$('input[name=titulo]').addClass('erro');
+			} else if (procedimentos.length == 0) {
+				erro = 'Adicione pelo menos um procedimento para iniciar um Plano de Tratamento';
+			}
+
+			if (erro.length == 0) {
+				$('.js-pagamento-item').each(function(index, elem) {
+					if ($(elem).find('.js-vencimento').val().length == 0) {
+						$(elem).find('.js-vencimento').addClass('erro');
+						erro = 'Defina a(s) <b>Data(s) de Vencimento</b> do(s) pagamento(s)';
+					}
+				})
+			}
+
+			if (erro.length > 0) {
+				swal({
+					title: "Erro",
+					text: erro,
+					html: true,
+					type: "error",
+					confirmButtonColor: "#424242"
+				});
+			} else {
+				$('.js-pagamentos-quantidade').val(pagamentos.length)
+				pagamentosPersistirObjeto();
+				$('.js-form-plano').submit();
+			}
+		});
+
+		$('.js-btn-status').click(function() {
+			let erro = ""
+			let status = $(this).attr('data-status');
+			if (status == "PENDENTE") {
+				$('input[name=status]').val('PENDENTE');
+			} else if (status == "APROVADO") {
+				$('input[name=status]').val('APROVADO');
+
+			} else if (status == "REPROVADO") {
+				$('input[name=status]').val('REPROVADO');
+
+			} else if (status == "CANCELADO") {
+				$('input[name=status]').val('CANCELADO');
+			} else {
+				$('input[name=status]').val('');
+			}
+			if ((status == "APROVADO") && pagamentos.length <= 0) {
+				erro = "Voce Precisa Selecionar as parcelas antes de Aprovar!"
+			}
+			if (erro.length > 0) {
+				swal({
+					title: "Erro",
+					text: erro,
+					html: true,
+					type: "error",
+					confirmButtonColor: "#424242"
+				});
+			} else {
+				$('.js-pagamentos-quantidade').val(pagamentos.length)
+				pagamentosPersistirObjeto()
+				$('form.js-form-plano').submit();
+			}
+		});
+
+		$('.js-btn-adicionarProcedimento').click(function() {
+			$(".aside-plano-procedimento-adicionar").fadeIn(100, function() {
+				$(".aside-plano-procedimento-adicionar .aside__inner1").addClass("active");
+			});
+
+			$('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento').chosen('destroy');
+			$('.aside-plano-procedimento-adicionar .js-asidePlano-id_procedimento').chosen();
+
+		})
+
+		
+	});
+
+// Seleciona o elemento canvas
+	$(document).ready(function() {
+		var desenhar = false;
+
+		// Seleciona o elemento canvas
+		const canvas = $("#canvas")[0];
+
+		// Configura o contexto 2D
+		const ctx = canvas.getContext("2d");
+		ctx.lineWidth = 5;
+		ctx.lineCap = "round";
+
+		// Cria um objeto de imagem e define o caminho da imagem
+		const img = new Image();
+		img.src = "./img/RetratoMulher.png";
+
+		// Desenha a imagem de fundo no canvas
+		img.onload = function() {
+		ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+		};
+
+		// Inicializa as variáveis de posição
+		let isDrawing = false;
+		let lastX = 0;
+		let lastY = 0;
+
+		// Adiciona os eventos de mouse
+		canvas.addEventListener("mousedown", (e) => {
+
+		if (desenhar === true) {
+		isDrawing = true;
+		lastX = e.offsetX;
+		lastY = e.offsetY;
+		
+		} else {
+				
+			}
+		});
+
+		canvas.addEventListener("mousemove", (e) => {
+		if (!isDrawing) return;
+
+		ctx.beginPath();
+		ctx.moveTo(lastX, lastY);
+		ctx.lineTo(e.offsetX, e.offsetY);
+		ctx.stroke();
+
+		lastX = e.offsetX;
+		lastY = e.offsetY;
+		});
+
+		canvas.addEventListener("mouseup", () => {
+		isDrawing = false;
+		});
+
+		canvas.addEventListener("mouseout", () => {
+		isDrawing = false;
+		});
+
+		// Seleciona o botão de limpar
+		const btnLimpar = $('#limpar-canvas').click(
+		function(){
+			ctx.fillStyle = '#ffffff';
+			// Preenche o canvas com branco
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+			
+
+		}
+		);
+
+		// Seleciona o botão de desenhar
+		$(".js-desenhar").click( ()=>{
+			if (desenhar) {
+				desenhar = false
+				$('.js-desenhar').removeClass('active');
+
+			} else {
+				desenhar = true
+				$('.js-desenhar').addClass('active');
+			}
+		})
+	});
+
+</script>
+
 <?php
 require_once("includes/api/apiAsidePlanoDeTratamento.php");
 include "includes/footer.php";

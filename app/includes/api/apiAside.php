@@ -13,6 +13,7 @@
 		$_tableEspecialidades=$_p."parametros_especialidades";
 		$_tablePlanos=$_p."parametros_planos";
 		$_tableMarcas=$_p."produtos_marcas";
+		$_tableCategorias=$_p."produtos_categorias";
 		$_tablePacientes=$_p."pacientes";
 		$_tableProfissoes=$_p."parametros_profissoes";
 		$_tableListaPersonalizada=$_p."parametros_indicacoes";
@@ -1222,6 +1223,91 @@
 					$vWHERE="where id=$cnt->id";
 					$sql->update($_tableMarcas,$vSQL,$vWHERE);
 						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='delete',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_tableMarcas."',id_reg='$cnt->id'");
+
+					$rtn=array('success'=>true);
+				} else {
+					$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
+				}
+			}
+
+		# Categorias
+			else if($_POST['ajax']=="asCategoriasListar") {
+
+				$regs=array();
+				$sql->consult($_tableCategorias,"*","where lixo=0 order by titulo asc") ;
+				while($x=mysqli_fetch_object($sql->mysqry)) {
+					$regs[]=array('id'=>$x->id,'titulo'=>utf8_encode($x->titulo));
+				}
+
+				$rtn=array('success'=>true,
+							'regs'=>$regs);
+				
+			} 
+
+			else if($_POST['ajax']=="asCategoriasEditar") {
+
+				$cnt='';
+				if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+					$sql->consult($_tableCategorias,"*","where id='".addslashes($_POST['id'])."' and lixo=0");
+					if($sql->rows) {
+						$x=mysqli_fetch_object($sql->mysqry);
+						$cnt=(object)array('id' =>$x->id,'titulo' =>utf8_encode($x->titulo));
+					}
+				}
+
+				if(is_object($cnt)) {
+					$rtn=array('success'=>true,
+								'id'=>$cnt->id,
+								'cnt'=>$cnt);
+				} else {
+					$rtn=array('success'=>false,'error'=>'Registro não encontrado!');
+				}
+			} 
+
+			else if($_POST['ajax']=="asCategoriasPersistir") {
+
+				$cnt='';
+				if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+					$sql->consult($_tableCategorias,"*","where id='".addslashes($_POST['id'])."' and lixo=0");
+					if($sql->rows) {
+						$cnt=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				$titulo=isset($_POST['titulo'])?addslashes(utf8_decode($_POST['titulo'])):'';
+
+				if(empty($titulo)) $rtn=array('success'=>false,'error'=>'Título não preenchido!');
+				else {
+					$vSQL="titulo='$titulo'";
+
+					if(is_object($cnt)) {
+						$vWHERE="where id=$cnt->id";
+						$sql->update($_tableCategorias,$vSQL,$vWHERE);
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_tableCategorias."',id_reg='$cnt->id'");
+					} else {
+						$sql->add($_tableCategorias,$vSQL);
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='update',vsql='".addslashes($vSQL)."',vwhere='',tabela='".$_tableCategorias."',id_reg='$sql->ulid'");
+
+					}
+
+					$rtn=array('success'=>true);
+				}
+			} 
+
+			else if($_POST['ajax']=="asCategoriasRemover") { 
+				$cnt='';
+				if(isset($_POST['id']) and is_numeric($_POST['id'])) {
+					$sql->consult($_tableCategorias,"*","where id='".$_POST['id']."'");
+					if($sql->rows) {
+						$cnt=mysqli_fetch_object($sql->mysqry);
+					}
+				}
+
+				if(is_object($cnt)) {
+					$vSQL="lixo=$usr->id";
+					$vWHERE="where id=$cnt->id";
+					$sql->update($_tableCategorias,$vSQL,$vWHERE);
+						$sql->add($_p."log","data=now(),id_usuario='".$usr->id."',tipo='delete',vsql='".addslashes($vSQL)."',vwhere='".addslashes($vWHERE)."',tabela='".$_tableCategorias."',id_reg='$cnt->id'");
 
 					$rtn=array('success'=>true);
 				} else {
@@ -5743,7 +5829,7 @@
 						if(asMarcas) {
 							$('.js-asMarcas-table tbody').html('');
 
-							let atualizaMarca = $('select.ajax-id_plano')?1:0;
+							let atualizaMarca = $('select.ajax-id_categoria')?1:0;
 							let atualizaMarcaId = 0;
 							let marcasDisabledIds = [];
 							if(atualizaMarca==1) {
@@ -5989,6 +6075,257 @@
 				</section>
 
 
+				<?php
+			}
+
+			// Categoria
+			if(isset($apiConfig['categoria'])) {
+				?>
+				<script type="text/javascript">
+					var asCategorias = [];
+
+					const asCategoriasListar = (openAside) => {
+						
+						if(asCategorias) {
+							$('.js-asCategorias-table tbody').html('');
+
+							let atualizaCategoria = $('select.ajax-id_categoria')?1:0;
+							let atualizaCategoriaId = 0;
+							let categoriasDisabledIds = [];
+							if(atualizaCategoria==1) {
+
+								$('select.ajax-id_categoria option').each(function(index,el){
+									if($(el).prop('disabled')===true) {
+										categoriasDisabledIds.push($(el).val());
+									}
+								})
+								atualizaCategoriaId=$('select.ajax-id_categoria').val();
+								$('select.ajax-id_categoria').find('option').remove();
+								$('select.ajax-id_categoria').append('<option value="">-</option>');
+							}
+
+							asCategorias.forEach(x=>{
+
+								$(`.js-asCategorias-table tbody`).append(`<tr class="aside-open">
+																	<td><h1>${x.titulo}</h1></td>
+																	<td style="text-align:right;"><a href="javascript:;" class="button js-asCategorias-editar" data-id="${x.id}"><i class="iconify" data-icon="fluent:edit-24-regular"></i></a></td>
+																</tr>`);
+
+								if(atualizaCategoria==1) {
+									dis=categoriasDisabledIds.includes(x.id)?' disabled':'';
+									sel=(atualizaCategoriaId==x.id)?' selected':'';
+									$('select.ajax-id_categoria').append(`<option value="${x.id}"${sel}${dis}>${x.titulo}</option>`);
+								}
+
+							});
+							
+							if(openAside===true) {
+								$("#js-aside-asCategorias").fadeIn(100,function() {
+									$("#js-aside-asCategorias .aside__inner1").addClass("active");
+								});
+							}
+
+						} else {
+							if(openAside===true) {
+								$(".aside").fadeIn(100,function() {
+										$(".aside .aside__inner1").addClass("active");
+								});
+							}
+						}
+					}
+
+					const asCategoriasAtualizar = (openAside) => {	
+						let data = `ajax=asCategoriasListar`;
+
+						$.ajax({
+							type:"POST",
+							url:baseURLApiAside,
+							data:data,
+							success:function(rtn) {
+								if(rtn.success) {
+									asCategorias=rtn.regs;
+									asCategoriasListar(openAside);
+								}
+							}
+						})
+					}
+					
+					const asCategoriasEditar = (id) => {
+						let data = `ajax=asCategoriasEditar&id=${id}`;
+						$.ajax({
+							type:"POST",
+							url:baseURLApiAside,
+							data:data,
+							success:function(rtn) {
+								if(rtn.success) {
+									reg=rtn.cnt
+
+									$(`.js-asCategorias-id`).val(reg.id);
+									$(`.js-asCategorias-titulo`).val(reg.titulo);
+									$('.js-asCategorias-form').animate({scrollTop: 0},'fast');
+									$('.js-asCategorias-submit').html(`<i class="iconify" data-icon="fluent:checkmark-12-filled"></i>`);
+									$('.js-asCategorias-remover').show();
+
+									$('.aside-content').animate({scrollTop: 0},'fast');
+
+								} else if(rtn.error) {
+									swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+								} else {
+									swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
+								}
+							},
+							error:function(){
+								swal({title: "Erro!", text: "Algum erro ocorreu durante a edição deste registro!", type:"error", confirmButtonColor: "#424242"});
+							}
+						});
+					}
+					
+					$(function(){
+						asCategoriasAtualizar();
+
+						$('.js-asCategorias-submit').click(function(){
+							let obj = $(this);
+							if(obj.attr('data-loading')==0) {
+
+								let id = $(`.js-asCategorias-id`).val();
+								let titulo = $(`.js-asCategorias-titulo`).val();
+
+								if(titulo.length==0) {
+									swal({title: "Erro!", text: "Digite a Marca", type:"error", confirmButtonColor: "#424242"});
+								}  else {
+
+									obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+									obj.attr('data-loading',1);
+
+									let data = `ajax=asCategoriasPersistir&id=${id}&titulo=${titulo}`;
+								
+									$.ajax({
+										type:'POST',
+										data:data,
+										url:baseURLApiAside,
+										success:function(rtn) {
+											if(rtn.success) {
+												asCategoriasAtualizar();	
+												$(`.js-asCategorias-id`).val(0);
+												$(`.js-asCategorias-titulo`).val(``);
+
+											} else if(rtn.error) {
+												swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+											} else {
+												swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+											}
+											
+										},
+										error:function() {
+											swal({title: "Erro!", text: "Algum erro ocorreu! Tente novamente.", type:"error", confirmButtonColor: "#424242"});
+										}
+									}).done(function(){
+										$('.js-asCategorias-remover').hide();
+										obj.html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+										obj.attr('data-loading',0);
+									});
+
+								}
+							}
+						})
+
+						$('.js-asCategorias-table').on('click','.js-asCategorias-editar',function(){
+							let id = $(this).attr('data-id');
+							asCategoriasEditar(id);
+						});
+
+						$('.aside-categoria').on('click','.js-asCategorias-remover',function(){
+							let obj = $(this);
+
+							if(obj.attr('data-loading')==0) {
+
+								let id = $('.js-asCategorias-id').val();
+								swal({
+									title: "Atenção",
+									text: "Você tem certeza que deseja remover este registro?",
+									type: "warning",
+									showCancelButton: true,
+									confirmButtonColor: "#DD6B55",
+									confirmButtonText: "Sim!",
+									cancelButtonText: "Não",
+									closeOnConfirm:false,
+									closeOnCancel: false }, 
+									function(isConfirm){   
+										if (isConfirm) {   
+
+											obj.html(`<span class="iconify" data-icon="eos-icons:loading"></span>`);
+											obj.attr('data-loading',1);
+											let data = `ajax=asCategoriasRemover&id=${id}`; 
+											$.ajax({
+												type:"POST",
+												data:data,
+												url:baseURLApiAside,
+												success:function(rtn) {
+													if(rtn.success) {
+														$(`.js-asCategorias-id`).val(0);
+														$(`.js-asCategorias-titulo`).val('');
+														asCategoriasAtualizar();
+														swal.close();   
+													} else if(rtn.error) {
+														swal({title: "Erro!", text: rtn.error, type:"error", confirmButtonColor: "#424242"});
+													} else {
+														swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção deste registro!", type:"error", confirmButtonColor: "#424242"});
+													}
+												},
+												error:function(){
+													swal({title: "Erro!", text: "Algum erro ocorreu durante a remoção deste registro!", type:"error", confirmButtonColor: "#424242"});
+												}
+											}).done(function(){
+												$('.js-asMarcas-remover').hide();
+												obj.html('<i class="iconify" data-icon="fluent:delete-24-regular"></i>');
+												obj.attr('data-loading',0);
+												$(`.js-asMarcas-submit`).html(`<i class="iconify" data-icon="fluent:add-circle-24-regular"></i>`);
+											});
+										} else {   
+											swal.close();   
+										} 
+									});
+							}
+						});
+
+					});
+				</script>
+
+				<section class="aside aside-categoria">
+					<div class="aside__inner1">
+
+						<header class="aside-header">
+							<h1>Categoria</h1>
+							<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
+						</header>
+
+						<form method="post" class="aside-content form">
+							<input type="hidden" class="js-asCategorias-id" />
+							
+							<dl>
+								<dt>Título da Categoria</dt>
+								<dd>
+									<input type="text" class="js-asCategorias-titulo" />
+									<button type="button" class="js-asCategorias-submit button button_main" data-loading="0"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
+									<a href="javascript:;" class="button js-asCategorias-remover" data-loading="0" style="display:none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></a>
+								</dd>
+							</dl>
+							<div class="list2" style="margin-top:2rem;">
+									<table class="js-asCategorias-table">
+										<thead>
+											<tr>									
+												<th>CATEGORIA</th>
+												<th></th>
+											</tr>
+										</thead>
+										<tbody>								
+										</tbody>
+									</table>
+								</div>
+							</form>
+						</form>
+					</div>
+				</section>
 				<?php
 			}
 

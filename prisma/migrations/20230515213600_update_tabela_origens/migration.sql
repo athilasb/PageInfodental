@@ -1,0 +1,1 @@
+INSERT INTO `ident_financeiro_fluxo_origens` (`id`, `tabela`, `titulo`) VALUES ('1', 'ident_financeiro_fluxo_recebimentos', 'ident_financeiro_fluxo_recebimentos')
