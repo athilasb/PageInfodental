@@ -17,7 +17,7 @@ services:
     command: mysqld --sql_mode=""
     ports:
       - '5306:3306'
-  web:
+  web_luciano:
     build: .
     restart: on-failure
     depends_on:
@@ -39,9 +39,7 @@ services:
       S3_ENDPOINT: "s3.us-west-1.wasabisys.com"
       S3_REGION: "us-west-1"
     ports:
-      - '5000:80'
-      - '5300:3000'
-      - '443:443'
+      - '5001:80'
   app:
     depends_on:
       - mysql

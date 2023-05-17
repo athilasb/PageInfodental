@@ -348,7 +348,6 @@
 				}
 
 			# pacientes que tem proximo agendamento para hoje ou nos proximos 3 dias
-				
 				// nao disponiveis
 				$this->indisponiveis=0;
 				$where="where DATE_ADD(data, INTERVAL retorno DAY)>'".$df." 23:59:59' and lixo=0 and situacao<3";
