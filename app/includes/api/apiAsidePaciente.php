@@ -3063,72 +3063,76 @@
 
 						<?php /* <fieldset>
 							<legend>Cabeçalho</legend> */ ?>
-							<div class="colunas3">
-								<dl>
-									<dt>Data e Hora</dt>
-									<dd>
-										<input type="tel" name="" class="datahora js-asideAtestado-data js-asideAtestado-inputs"  value="<?php echo date('d/m/Y H:i');?>" /></dd>
-									</dd>
-								</dl>
-								<dl>
-									<dt>Tipo de Atestado</dt>
-									<dd>
-										<select class="js-asideAtestado-id_tipo js-asideAtestado-inputs">
-											<option value="">-</option>
-											<?php
-											foreach($_atestadosTipos as $x) {
-												echo '<option value="'.$x->id.'" data-dias="'.$x->possui_dias.'" data-duracao="'.$x->possui_duracao.'">'.utf8_encode($x->titulo).'</option>';
-											}
-											?>
-										</select>
-									</dd>
-								</dl>
-								<dl>
-									<dt>Fim do Atestado</dt>
-									<dd>
-										<select class="js-asideAtestado-fim js-asideAtestado-inputs">
-											<option value="">-</option>
-											<?php
-											foreach($_atestadosFins as $x) {
-												echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
-											}
-											?>
-										</select>
-									</dd>
-								</dl>
+							<div class="box">
+								<div class="colunas3">
+									<dl>
+										<dt>Data e Hora</dt>
+										<dd>
+											<input type="tel" name="" class="datahora js-asideAtestado-data js-asideAtestado-inputs"  value="<?php echo date('d/m/Y H:i');?>" /></dd>
+										</dd>
+									</dl>
+									<dl>
+										<dt>Tipo de Atestado</dt>
+										<dd>
+											<select class="js-asideAtestado-id_tipo js-asideAtestado-inputs">
+												<option value="">-</option>
+												<?php
+												foreach($_atestadosTipos as $x) {
+													echo '<option value="'.$x->id.'" data-dias="'.$x->possui_dias.'" data-duracao="'.$x->possui_duracao.'">'.utf8_encode($x->titulo).'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+									<dl>
+										<dt>Fim do Atestado</dt>
+										<dd>
+											<select class="js-asideAtestado-fim js-asideAtestado-inputs">
+												<option value="">-</option>
+												<?php
+												foreach($_atestadosFins as $x) {
+													echo '<option value="'.$x->id.'">'.utf8_encode($x->titulo).'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+								</div>
+								<div class="colunas3">
+									<dl>
+										<dt>Cirurgião Dentista</dt>
+										<dd>
+											<select class="js-asideAtestado-id_profissional js-asideAtestado-inputs">
+												<option value="">-</option>
+												<?php
+												foreach($_profissionais as $x) {
+													if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
+													echo '<option value="'.$x->id.'">'.utf8_encode($x->nome).'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+									<dl>
+										<dt>Dias do Atestado</dt>
+										<dd class="form-comp form-comp_pos">
+											<input type="number" class="js-asideAtestado-dias js-asideAtestado-inputs" /><span>dias</span>
+										</dd>
+									</dl>
+									<dl>
+										<dt>Duração do Atestado</dt>
+										<dd class="form-comp form-comp_pos">
+											<input type="number" class="js-asideAtestado-duracao js-asideAtestado-inputs" /><span>mins</span>
+										</dd>
+									</dl>
+								</div>
 							</div>
-							<div class="colunas3">
-								<dl>
-									<dt>Cirurgião Dentista</dt>
-									<dd>
-										<select class="js-asideAtestado-id_profissional js-asideAtestado-inputs">
-											<option value="">-</option>
-											<?php
-											foreach($_profissionais as $x) {
-												if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
-												echo '<option value="'.$x->id.'">'.utf8_encode($x->nome).'</option>';
-											}
-											?>
-										</select>
-									</dd>
-								</dl>
-								<dl>
-									<dt>Dias do Atestado</dt>
-									<dd class="form-comp form-comp_pos">
-										<input type="number" class="js-asideAtestado-dias js-asideAtestado-inputs" /><span>dias</span>
-									</dd>
-								</dl>
-								<dl>
-									<dt>Duração do Atestado</dt>
-									<dd class="form-comp form-comp_pos">
-										<input type="number" class="js-asideAtestado-duracao js-asideAtestado-inputs" /><span>mins</span>
-									</dd>
-								</dl>
-							</div>
+
+
 						<?php /* </fieldset> * ?>
 						<?php /* <fieldset class="js-fieldset-textoAtestado" style="display:none;">
 							<legend>Atestado</legend> */ ?>
-							<dl>
+							<dl style="margin-top: 15px;">
 								<dd>
 									<textarea class="js-asideAtestado-texto" id="asideAtestado-texto" style="height:120px;width:100%;"></textarea>
 								</dd>
@@ -3417,7 +3421,7 @@
 								</div>								
 							</div>
 						</section>
-
+					<div class="box">
 						<?php /* <fieldset>
 							<legend>Cabeçalho</legend> */ ?>
 							<div class="colunas3">
@@ -3550,16 +3554,16 @@
 						<?php /* <fieldset> */ ?>
 							<textarea class="js-asidePedidoExame-exames" style="display:none;"></textarea>
 							<?php /* <legend>Exames Adicionados</legend> */ ?>
-							<div class="list1">
-								<table class="js-asidePedidoExame-tabela">
-									<tbody>
-									
-									</tbody>						
-								</table>
-							</div>
 						<?php /* </fieldset> */ ?>
 						
-					
+					</div>
+						<div class="list1" style="margin-top: 15px;">
+							<table class="js-asidePedidoExame-tabela">
+								<tbody>
+								
+								</tbody>						
+							</table>
+						</div>
 					</form>
 				</div>
 			</section>
@@ -3791,121 +3795,121 @@
 								</div>								
 							</div>
 						</section>
+						<div class="box">
+							<?php /* <fieldset>
+								<legend>Cabeçalho</legend> */ ?>
+								<div class="colunas3">
+									<dl>
+										<dt>Data do Receituário</dt>
+										<dd>
+											<input type="tel" class="data js-asideReceituario-data js-asideReceituario-inputs2" value="<?php echo date('d/m/Y');?>" /></dd>
+										</dd>
+									</dl>
+									<dl>
+										<dt>Tipo de Uso</dt>
+										<dd>
+											<select class="js-asideReceituario-tipo_receita js-asideReceituario-inputs2">
+												<option value="">-</option>
+												<?php
+												foreach($_tiposReceitas as $k=>$v) {
+													echo '<option value="'.$k.'"'.($k=='interno'?' selected':'').'>'.$v.'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+									<dl>
+										<dt>Cirurgião Dentista</dt>
+										<dd>
+											<select class="js-asideReceituario-id_profissional js-asideReceituario-inputs2">
+												<option value="">-</option>
+												<?php
+												foreach($_profissionais as $p) {
+													if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
+													echo '<option value="'.$p->id.'"'.((is_object($evolucao) and $evolucao->id_profissional==$p->id)?' selected':'').'>'.utf8_encode($p->nome).'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+								</div>					
+							<?php /* </fieldset> */ ?>
 
-						<?php /* <fieldset>
-							<legend>Cabeçalho</legend> */ ?>
-							<div class="colunas3">
-								<dl>
-									<dt>Data do Receituário</dt>
-									<dd>
-										<input type="tel" class="data js-asideReceituario-data js-asideReceituario-inputs2" value="<?php echo date('d/m/Y');?>" /></dd>
-									</dd>
-								</dl>
-								<dl>
-									<dt>Tipo de Uso</dt>
-									<dd>
-										<select class="js-asideReceituario-tipo_receita js-asideReceituario-inputs2">
-											<option value="">-</option>
-											<?php
-											foreach($_tiposReceitas as $k=>$v) {
-												echo '<option value="'.$k.'"'.($k=='interno'?' selected':'').'>'.$v.'</option>';
-											}
-											?>
-										</select>
-									</dd>
-								</dl>
-								<dl>
-									<dt>Cirurgião Dentista</dt>
-									<dd>
-										<select class="js-asideReceituario-id_profissional js-asideReceituario-inputs2">
-											<option value="">-</option>
-											<?php
-											foreach($_profissionais as $p) {
-												if($p->check_agendamento==0 or $p->contratacaoAtiva==0) continue;
-												echo '<option value="'.$p->id.'"'.((is_object($evolucao) and $evolucao->id_profissional==$p->id)?' selected':'').'>'.utf8_encode($p->nome).'</option>';
-											}
-											?>
-										</select>
-									</dd>
-								</dl>
-							</div>					
-						<?php /* </fieldset> */ ?>
+							<?php /* <fieldset>
+								<legend>Adicionar Medicamento</legend> */ ?>
+								<input type="hidden" class="js-asideReceituario-index js-asideReceituario-inputs" />
+								<div class="colunas3">
+									<dl>
+										<dt>Medicamento</dt>
+										<dd class="">
+											<select class="js-asideReceituario-id_medicamento js-asideReceituario-inputs">
+												<option value="">...</option>
+											</select>
+											<a href="javascript:;" data-aside="medicamento" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
 
-						<?php /* <fieldset>
-							<legend>Adicionar Medicamento</legend> */ ?>
-							<input type="hidden" class="js-asideReceituario-index js-asideReceituario-inputs" />
-							<div class="colunas3">
+										</dd>
+										<input type="hidden" class="js-asideReceituario-medicamento js-asideReceituario-inputs">
+									</dl>
+									<dl>
+										<dt>Quantidade</dt>
+										<dd>
+											<input type="tel" class="js-asideReceituario-quantidade  js-asideReceituario-inputs" />
+										</dd>
+									</dl>
+									<dl>
+										<dt>Tipo</dt>
+										<dd>
+											<select class="js-asideReceituario-tipo  js-asideReceituario-inputs">
+												<option value="">-</option>
+												<?php
+												foreach($_medicamentosTipos as $k=>$v) {
+													echo '<option value="'.$k.'"'.($values['tipo']==$k?' selected':'').'>'.$v.'</option>';
+												}
+												?>								
+											</select>
+										</dd>
+									</dl>
+								</div>		
 								<dl>
-									<dt>Medicamento</dt>
-									<dd class="">
-										<select class="js-asideReceituario-id_medicamento js-asideReceituario-inputs">
-											<option value="">...</option>
-										</select>
-										<a href="javascript:;" data-aside="medicamento" data-aside-sub><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></a>
-
-									</dd>
-									<input type="hidden" class="js-asideReceituario-medicamento js-asideReceituario-inputs">
-								</dl>
-								<dl>
-									<dt>Quantidade</dt>
 									<dd>
-										<input type="tel" class="js-asideReceituario-quantidade  js-asideReceituario-inputs" />
+										<label>
+											<input type="checkbox" class="js-asideReceituario-controleEspecial js-asideReceituario-inputs" value="1" /> Medicamento de controle especial
+										</label>
 									</dd>
 								</dl>
 								<dl>
-									<dt>Tipo</dt>
+									<dt>Posologia</dt>
 									<dd>
-										<select class="js-asideReceituario-tipo  js-asideReceituario-inputs">
-											<option value="">-</option>
-											<?php
-											foreach($_medicamentosTipos as $k=>$v) {
-												echo '<option value="'.$k.'"'.($values['tipo']==$k?' selected':'').'>'.$v.'</option>';
-											}
-											?>								
-										</select>
+										<input type="text" class="js-asideReceituario-posologia  js-asideReceituario-inputs">
+										<button type="button" class="button button_main js-asideReceituario-medicamento-add"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
+										<button type="button" class="button js-asideReceituario-medicamento-remover" style="display: none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></button>
 									</dd>
 								</dl>
-							</div>		
-							<dl>
-								<dd>
-									<label>
-										<input type="checkbox" class="js-asideReceituario-controleEspecial js-asideReceituario-inputs" value="1" /> Medicamento de controle especial
-									</label>
-								</dd>
-							</dl>
-							<dl>
-								<dt>Posologia</dt>
-								<dd>
-									<input type="text" class="js-asideReceituario-posologia  js-asideReceituario-inputs">
-									<button type="button" class="button button_main js-asideReceituario-medicamento-add"><i class="iconify" data-icon="fluent:add-circle-24-regular"></i></button>
-									<button type="button" class="button js-asideReceituario-medicamento-remover" style="display: none;"><i class="iconify" data-icon="fluent:delete-24-regular"></i></button>
-								</dd>
-							</dl>
-						<?php /* </fieldset> */ ?>
+							<?php /* </fieldset> */ ?>
 
 
-						<?php /* <fieldset> /* ?>
-							<textarea class="js-asideReceituario-receitas js-asideReceituario-inputs" style="display:none;"></textarea>
-							<?php /* <legend>Medicamentos Adicionados</legend> */ ?>
-							<div class="list1">
-								<table class="js-asideReceituario-tabela">
-									<tbody>
-										<?php
-										/*
-										<tr>
-											<td>
-												<h1>1 - 1 tubo(s)</h1>
-												<p>tomar 1 comprimido</p>
-											</td>								
-										</tr>		
-										*/
-										?>
-									</tbody>						
-								</table>
-							</div>
-						<?php /* </fieldset> */ ?>
-						
-					
+							<?php /* <fieldset> /* ?>
+								<textarea class="js-asideReceituario-receitas js-asideReceituario-inputs" style="display:none;"></textarea>
+								<?php /* <legend>Medicamentos Adicionados</legend> */ ?>
+							<?php /* </fieldset> */ ?>
+							
+						</div>
+						<div class="list1" style="margin-top: 15px;">
+							<table class="js-asideReceituario-tabela">
+								<tbody>
+									<?php
+									/*
+									<tr>
+										<td>
+											<h1>1 - 1 tubo(s)</h1>
+											<p>tomar 1 comprimido</p>
+										</td>								
+									</tr>		
+									*/
+									?>
+								</tbody>						
+							</table>
+						</div>
 					</form>
 				</div>
 			</section>
@@ -5420,23 +5424,6 @@
 					</header>
 
 					<form method="post" class="aside-content form js-form-procedimentos">
-						
-						<section class="header-profile" style="display:none">
-							<img src="img/ilustra-usuario.jpg" alt="" width="60" height="60" class="header-profile__foto js-foto" />
-							<div class="header-profile__inner1">
-								<h1><a href="" target="_blank" class="js-nome"></a></h1>
-								<div>
-									<p class="js-statusBI"></p>
-									<p class="js-idade"></p>
-									<p class="js-periodicidade">Periodicidade: 6 meses</p>
-									<p class="js-musica"></p>
-								</div>
-							</div>
-						</section>
-
-						<section class="tab tab_alt js-tab" style="display:none">
-							<a href="javascript:;" class="active">Prontuário</a>	
-						</section>
 
 						<section class="filter">
 							<div class="filter-group"></div>
@@ -5451,103 +5438,105 @@
 								</div>								
 							</div>
 						</section>
+						<div class="box">
 
-						<input type="hidden" name="alteracao" value="0" />
+							<input type="hidden" name="alteracao" value="0" />
 
-						
-							<div class="colunas3">
+							
+								<div class="colunas3">
+									<dl>
+										<dt>Data da Evolução</dt>
+										<dd>
+											<input type="tel" name="" class="datahora js-asideProcedimentos-data js-asideProcedimentos-inputs" value="" /></dd>
+										</dd>
+									</dl>
+									<dl class="dl2">
+										<dt>Profissional</dt>
+										<dd>
+											<select class="js-asideProcedimentos-id_profissional js-asideProcedimentos-inputs">
+												<option value="">-</option>
+												<?php
+												foreach($_profissionais as $x) {
+													if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
+													echo '<option value="'.$x->id.'"'.($usr->id==$x->id?' selected':'').'>'.utf8_encode($x->nome).'</option>';
+												}
+												?>
+											</select>
+										</dd>
+									</dl>
+								</div>
+
 								<dl>
-									<dt>Data da Evolução</dt>
+									<dt>Evolução Geral</dt>
 									<dd>
-										<input type="tel" name="" class="datahora js-asideProcedimentos-data js-asideProcedimentos-inputs" value="" /></dd>
+										<textarea class="js-asideProcedimentos-obs js-asideProcedimentos-inputs" style="height:180px;width:100%;"></textarea>
 									</dd>
 								</dl>
+
 								<dl class="dl2">
-									<dt>Profissional</dt>
+									<dt>Procedimento</dt>
 									<dd>
-										<select class="js-asideProcedimentos-id_profissional js-asideProcedimentos-inputs">
-											<option value="">-</option>
+										<select class="js-asideProcedimentos-id_procedimento js-asideProcedimentos-inputs" multiple>
+											<option value=""></option>
 											<?php
-											foreach($_profissionais as $x) {
-												if($x->check_agendamento==0 or $x->contratacaoAtiva==0) continue;
-												echo '<option value="'.$x->id.'"'.($usr->id==$x->id?' selected':'').'>'.utf8_encode($x->nome).'</option>';
-											}
-											?>
-										</select>
-									</dd>
-								</dl>
-							</div>
+											/*foreach($_procedimentosAprovadosASerEvoluido as $id_tratamento=>$regs) {
+												echo '<optgroup label="'.utf8_encode($_tratamentos[$id_tratamento]->titulo).'">';
+												foreach($regs as $v) {
+													$disabled='';
+													if(isset($procedimentosAEvoluirIds) and in_array($v->id,$procedimentosAEvoluirIds)) $disabled=" disabled";;
+													if(isset($_procedimentos[$v->id_procedimento])) {
+														$procedimento=$_procedimentos[$v->id_procedimento];
+														$profissionalIniciais='';
+														$profissionalCor='#ccc';
+														if(isset($_profissionais[$v->id_profissional])) {
+															$p=$_profissionais[$v->id_profissional];
+															$profissionalIniciais=$p->calendario_iniciais;
+															$profissionalCor=$p->calendario_cor;
 
-							<dl>
-								<dt>Evolução Geral</dt>
-								<dd>
-									<textarea class="js-asideProcedimentos-obs js-asideProcedimentos-inputs" style="height:180px;width:100%;"></textarea>
-								</dd>
-							</dl>
+														}
+														$complemento='';
+														if($v->numeroTotal>1) $complemento.=' - '.utf8_encode($v->numero."/".$v->numeroTotal);
 
-							<dl class="dl2">
-								<dt>Procedimento</dt>
-								<dd>
-									<select class="js-asideProcedimentos-id_procedimento js-asideProcedimentos-inputs" multiple>
-										<option value=""></option>
-										<?php
-										/*foreach($_procedimentosAprovadosASerEvoluido as $id_tratamento=>$regs) {
-											echo '<optgroup label="'.utf8_encode($_tratamentos[$id_tratamento]->titulo).'">';
-											foreach($regs as $v) {
-												$disabled='';
-												if(isset($procedimentosAEvoluirIds) and in_array($v->id,$procedimentosAEvoluirIds)) $disabled=" disabled";;
-												if(isset($_procedimentos[$v->id_procedimento])) {
-													$procedimento=$_procedimentos[$v->id_procedimento];
-													$profissionalIniciais='';
-													$profissionalCor='#ccc';
-													if(isset($_profissionais[$v->id_profissional])) {
-														$p=$_profissionais[$v->id_profissional];
-														$profissionalIniciais=$p->calendario_iniciais;
-														$profissionalCor=$p->calendario_cor;
-
-													}
-													$complemento='';
-													if($v->numeroTotal>1) $complemento.=' - '.utf8_encode($v->numero."/".$v->numeroTotal);
-
-													//	id_tratamento_procedimento => Procedimento de tratamento aprovado
-													if(isset($_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento])) {
-														$procedimentoAprovado=$_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento];
-														if(!empty($procedimentoAprovado->opcao)) $complemento.=" - ".utf8_encode($procedimentoAprovado->opcao)
-															;
-														echo '<option value="'.$v->id.'" 
-																		data-id_procedimento="'.$v->id_procedimento.'" 
-																		data-numero="'.$v->numero.'" 
-																		data-numeroTotal="'.$v->numeroTotal.'" 
-																		data-opcao="'.strip_tags(utf8_encode($procedimentoAprovado->opcao)).'" 
-																		data-plano="'.utf8_encode($procedimentoAprovado->plano).'" 
-																		data-profissionalCor="'.$profissionalCor.'" 
-																		data-id_profissional="'.$v->id_profissional.'" 
-																		data-profissionalIniciais="'.$profissionalIniciais.'"  
-																		data-statusEvolucao="'.$v->status_evolucao.'" 
-																		data-titulo="'.utf8_encode($procedimento->titulo).'" 
-																		data-id_tratamento_procedimento="'.$procedimentoAprovado->id.'"'.$disabled.'>'.utf8_encode($procedimento->titulo)." ".$complemento.'</option>';
+														//	id_tratamento_procedimento => Procedimento de tratamento aprovado
+														if(isset($_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento])) {
+															$procedimentoAprovado=$_procedimentosDeTratamentosAprovados[$v->id_tratamento_procedimento];
+															if(!empty($procedimentoAprovado->opcao)) $complemento.=" - ".utf8_encode($procedimentoAprovado->opcao)
+																;
+															echo '<option value="'.$v->id.'" 
+																			data-id_procedimento="'.$v->id_procedimento.'" 
+																			data-numero="'.$v->numero.'" 
+																			data-numeroTotal="'.$v->numeroTotal.'" 
+																			data-opcao="'.strip_tags(utf8_encode($procedimentoAprovado->opcao)).'" 
+																			data-plano="'.utf8_encode($procedimentoAprovado->plano).'" 
+																			data-profissionalCor="'.$profissionalCor.'" 
+																			data-id_profissional="'.$v->id_profissional.'" 
+																			data-profissionalIniciais="'.$profissionalIniciais.'"  
+																			data-statusEvolucao="'.$v->status_evolucao.'" 
+																			data-titulo="'.utf8_encode($procedimento->titulo).'" 
+																			data-id_tratamento_procedimento="'.$procedimentoAprovado->id.'"'.$disabled.'>'.utf8_encode($procedimento->titulo)." ".$complemento.'</option>';
+														}
 													}
 												}
-											}
-											echo '</optgroup>';
-										}*/
-										?>
-									</select>
+												echo '</optgroup>';
+											}*/
+											?>
+										</select>
 
-									<button type="button" class="button button_main js-asideProcedimentos-adicionar" data-loading="0"><span class="iconify" data-icon="akar-icons:plus"></span></button>
+										<button type="button" class="button button_main js-asideProcedimentos-adicionar" data-loading="0"><span class="iconify" data-icon="akar-icons:plus"></span></button>
 
-									<?php /*<button type="button" class="button js-asideProcedimentos-adicionarAvulso"><span class="iconify" data-icon="akar-icons:plus"></span> Avulso</button>*/?>
-								</dd>
-							</dl>
+										<?php /*<button type="button" class="button js-asideProcedimentos-adicionarAvulso"><span class="iconify" data-icon="akar-icons:plus"></span> Avulso</button>*/?>
+									</dd>
+								</dl>
 
-							<div class="list1">
-								<table class="js-asideProcedimentos-tabela">
-									<tbody>
-									
-									</tbody>						
-								</table>
-							</div>
-						
+								<div class="list1">
+									<table class="js-asideProcedimentos-tabela">
+										<tbody>
+										
+										</tbody>						
+									</table>
+								</div>
+						</div>
+					
 					</form>
 				</div>
 			</section>

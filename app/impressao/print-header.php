@@ -50,7 +50,12 @@
 	?>
 </div>
 
-<div class="print-footer">
+
+
+
+<!--footer desabilitado pois esta comfitando com header arrumar depois-->
+
+<div class="print-footer" style="display:none;">
 	<p><span class="iconify" data-icon="bx:bxs-phone" data-inline="true"></span><span><?php echo maskTelefone($unidade->telefone);?></span><span class="iconify" data-icon="ri:whatsapp-fill" data-inline="true"></span><span><?php echo maskTelefone($unidade->whatsapp);?></span></p>
 	<p><?php echo $endereco;?></p>
 	<p>
