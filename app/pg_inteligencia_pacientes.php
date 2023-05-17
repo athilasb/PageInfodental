@@ -942,7 +942,7 @@ Lista Unica
 
 							obj.attr('data-loading',1);
 							let data = `ajax=pacienteHistoricoObs&obs=${obs}&tipo=${tipo}&id_paciente=${id_paciente}`;
-
+							alert(data);return;
 							$.ajax({
 								type:"POST",
 								data:data,
