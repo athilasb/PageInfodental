@@ -36,7 +36,7 @@
 		),
 		'estoque' => array(
 			'page' => 'pg_estoque.php',
-			'pages' => explode(",", "pg_estoque.php"),
+			'pages' => explode(",", "pg_estoque.php,pg_compras.php "),
 			'title' => 'Estoque',
 			'icon' => '<i class="iconify" data-icon="fluent:box-multiple-20-regular"></i>'
 		),
