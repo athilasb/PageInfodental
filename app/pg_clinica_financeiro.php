@@ -37,7 +37,7 @@
 	while($x=mysqli_fetch_object($sql->mysqry)){
 		$_recebimentos[$x->id] = $x;
 	}
-	$sql->consult("ident_financeiro_fluxo","*","WHERE lixo=0 AND valor>0");
+	$sql->consult("ident_financeiro_fluxo","*","WHERE lixo=0 AND id_origem=1");
 	while($x=mysqli_fetch_object($sql->mysqry)){
 		$_fluxos[$x->id_registro][$x->id] = $x;
 	}
@@ -47,15 +47,21 @@
 			$fluxos = $_fluxos[$id_recebimento];
 			$valor_total = 0;
 			foreach($fluxos as $id_fluxo=>$fluxo){
-				$valor_total += $fluxo->valor;
-				$valor['valorTotal'] += $fluxo->valor;
-				if($fluxo->pagamento==0){
-					$atraso = (strtotime($fluxo->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
-					if ($atraso < 0) {
-						$valor['aReceberVencidos'] += $fluxo->valor;
-						$extras['ids']['aReceberVencidos']['fluxo'][$fluxo->id] = $fluxo->id;
+				// valida se é um desconto 
+				if($fluxo->desconto==0){
+					$valor_total += $fluxo->valor;
+					$valor['valorTotal'] += $fluxo->valor;
+					if($fluxo->pagamento==0){
+						$atraso = (strtotime($fluxo->data_vencimento) - strtotime(date('Y-m-d'))) / (60 * 60 * 24);
+						if ($atraso < 0) {
+							$valor['aReceberVencidos'] += $fluxo->valor;
+							$extras['ids']['aReceberVencidos']['fluxo'][$fluxo->id] = $fluxo->id;
+						}
 					}
+				}else{
+					
 				}
+
 			}
 			if($valor_total<$recebimento->valor){
 				$faltam = ($recebimento->valor-$valor_total);
