@@ -679,7 +679,7 @@
 				<a href="javascript:;" class="aside-header__fechar aside-close"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 			</header>
 
-			<form method="post" class="aside-content form js-form formulario-validacao">
+			<form method="post" class="aside-content form js-form formulario-validacao" onsubmit="return false;">
 				<input type="hidden" name="acao" value="wlib" />
 				<input type="hidden" name="id" value="0" />
 

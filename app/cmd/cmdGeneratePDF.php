@@ -4,8 +4,8 @@
 	$params = [];
 	$params['token']='ee7a1554b556f657e8659a56d1a19c315684c39d';
 	$params['method']='generatePDF';
-	$params['infoConta']='studiodental';
-	$params['id_evolucao']=4724;
+	$params['infoConta']='agenda';
+	$params['id_evolucao']=358;
 	$params['enviaWhatsapp']=0;
 
 		

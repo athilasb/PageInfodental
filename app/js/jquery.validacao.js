@@ -125,7 +125,7 @@ $(function(){
 		});
 		if(alertar) {
 
-			if(obj && objHTMLAntigo) {
+			if(obj && obj.attr('data-loading') && objHTMLAntigo) {
 				obj.attr('data-loading',0);
 				obj.html(objHTMLAntigo);
 			}
@@ -134,7 +134,7 @@ $(function(){
 			return false;
 		} else if(alertarEmail) {
 
-			if(obj && objHTMLAntigo) {
+			if(obj && obj.attr('data-loading') && objHTMLAntigo) {
 				obj.attr('data-loading',0);
 				obj.html(objHTMLAntigo);
 			}
@@ -143,7 +143,7 @@ $(function(){
 			return false;
 		}else if(alertaSenha) {
 
-			if(obj && objHTMLAntigo) {
+			if(obj && obj.attr('data-loading') && objHTMLAntigo) {
 				obj.attr('data-loading',0);
 				obj.html(objHTMLAntigo);
 			}
@@ -152,7 +152,7 @@ $(function(){
 			return false;
 		}else if(alertaData) {
 
-			if(obj && objHTMLAntigo) {
+			if(obj && obj.attr('data-loading') && objHTMLAntigo) {
 				obj.attr('data-loading',0);
 				obj.html(objHTMLAntigo);
 			}
@@ -161,7 +161,7 @@ $(function(){
 			return false;
 		}else if(alertaCPF) {
 
-			if(obj && objHTMLAntigo) {
+			if(obj && obj.attr('data-loading') && objHTMLAntigo) {
 				obj.attr('data-loading',0);
 				obj.html(objHTMLAntigo);
 			}
@@ -171,7 +171,7 @@ $(function(){
 		}else if(alertaCNPJ) {
 
 
-			if(obj && objHTMLAntigo) {
+			if(obj && obj.attr('data-loading') && objHTMLAntigo) {
 				obj.attr('data-loading',0);
 				obj.html(objHTMLAntigo);
 			}
