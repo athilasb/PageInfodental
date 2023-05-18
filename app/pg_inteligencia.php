@@ -47,6 +47,8 @@ Lista Unica
 			}
 
 			$pacientes=$inteligencia->gestaoDoTempo($attr);
+
+		//	var_dump($pacientes);die();
 		
 			$rtn=array('success'=>true,
 						'indisponiveis'=>$inteligencia->indisponiveis,
@@ -966,7 +968,142 @@ Lista Unica
 						})
 					}
 
+
 					const pacientesLista = () => {
+						
+						$('.js-pacientes').html(``);
+						pacientes = pacientesOportunidades;
+
+						let filtro = $('.js-filtro-pacientes option:selected').val();
+						let status = $('.js-filtro-status option:selected').val();
+
+
+						if(pacientes.length==0) {
+							$('#js-inteligencia-paciente').hide();
+							$('.js-nenhumpaciente').show(); 
+						} else {
+							$('#js-inteligencia-paciente').show();
+							$('.js-nenhumpaciente').hide(); 
+
+							$('.js-paginacao,.js-guia').show();
+							paginaQtd =  Math.ceil(pacientes.length/paginaReg);
+
+							for (var i = pagina * paginaReg; i < pacientes.length && i < (pagina + 1) * paginaReg; i++) {
+
+								x = pacientes[i];
+								paciente = pacientes[i].paciente;
+
+
+
+								let ft = (paciente.ft && paciente.ft.length>0)?x.ft:'img/ilustra-usuario.jpg';
+
+								$('#js-inteligencia-paciente .js-nome').html(`${paciente.nome} ${x.tipo} <a href="pg_pacientes_resumo.php?id_paciente=${x.id_paciente}" target="_blank"><i class="iconify" data-icon="fluent:share-screen-person-overlay-20-regular" style="color:var(--cinza4)"></i></a>`);
+
+
+								if(x.futuros.length==0) {
+									$('#js-inteligencia-paciente .js-futuros').html('');
+								} else {
+									let agendamentos='Agendamentos Futuros:<br>';
+									x.futuros.forEach(dt=>{ 
+										agendamentos+=`${dt}<br>`;
+									});
+									//agendamentos=agendamentos.substr(0,agendamentos.length-2)
+									$('#js-inteligencia-paciente .js-futuros').html(`<a href="javascript:;" class="js-futuros-agendamentos" title="${agendamentos}"><i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i></a>`);
+									$('#js-inteligencia-paciente .js-futuros-agendamentos').tooltipster({contentAsHTML:true});
+
+								}
+
+								$('#js-inteligencia-paciente .js-id_paciente').val(x.id_paciente);
+ 								$('#js-inteligencia-paciente .js-periodicidade').html(paciente.periodicidade+' meses');
+								$('#js-inteligencia-paciente .js-idade').html(paciente.idade>1?paciente.idade+' anos':paciente.idade+' ano');
+ 								$('#js-inteligencia-paciente .js-telefone').html(paciente.telefone);
+ 								$('#js-inteligencia-paciente .js-ft').attr('src',ft);
+
+
+
+								if(x.tipo=='proximaConsulta') {
+									$('.js-proxag').show();
+									$('.js-desmarcado').hide();
+									$('#js-inteligencia-paciente .js-id_proximaconsulta').val(x.id_proximaconsulta);
+ 									$('#js-inteligencia-paciente .js-btn-queroAgendar').attr('href',`javascript:asideQueroAgendar(${x.id_paciente},${x.id_proximaconsulta})`);
+
+	 								if(x.profissionais.length>0) {
+ 										x.profissionais.forEach(p=>{
+ 											$('#js-inteligencia-paciente .js-proxag .js-profissionais').append(`${p.nome}<br />`)
+ 										})
+ 									}
+
+	 								$('#js-inteligencia-paciente .js-proxag .js-proxDuracao').html(`${x.duracao}m`);
+	 								$('#js-inteligencia-paciente .js-proxag .js-obs').html(x.obs.length>0?x.obs:'-');
+
+ 									/*if(x.proximaConsulta && x.proximaConsulta.duracao) {
+	 									$('#js-inteligencia-paciente .js-proxag .js-obs').html(x.proximaConsulta.obs);
+	 									$('#js-inteligencia-paciente .js-proxag .js-agendamento').html(x.proximaConsulta.dataProx);
+
+	 									if(x.proximaConsulta.laboratorio==1) {
+	 										$('#js-inteligencia-paciente .js-proxag .js-laboratorio').html(`Necessita de laboratório`).css("color","#ccc");
+	 									} else {
+	 										$('#js-inteligencia-paciente .js-proxag .js-laboratorio').html(`Não necessita de laboratório`).css("color","#666");
+	 									}
+
+	 									if(x.proximaConsulta.imagem==1) {
+	 										$('#js-inteligencia-paciente .js-proxag .js-imagem').html(`Necessita de imagem`).css("color","#ccc");
+	 									} else {
+	 										$('#js-inteligencia-paciente .js-proxag .js-imagem').html(`Não necessita de imagem`).css("color","#666");
+	 									}
+
+	 									$('#js-inteligencia-paciente .js-proxag .js-profissionais').html('');
+	 									if(x.proximaConsulta.profissionais.length>0) {
+	 										x.proximaConsulta.profissionais.forEach(p=>{
+	 											$('#js-inteligencia-paciente .js-proxag .js-profissionais').append(`${p.nome}<br />`)
+	 										})
+	 									}
+
+	 									if(x.proximaConsulta.profissionais.length>0) {
+	 										x.proximaConsulta.profissionais.forEach(p=>{
+	 											$('#js-inteligencia-paciente .js-proxag .js-profissionais').append(`${p.nome}<br />`)
+	 										})
+	 									}
+	 								} else {
+	 									$('#js-inteligencia-paciente .js-proxag .js-proxDuracao').html(`-`);
+	 									$('#js-inteligencia-paciente .js-proxag .js-obs').html('-');
+	 									$('#js-inteligencia-paciente .js-proxag .js-agendamento').html('-');
+										$('#js-inteligencia-paciente .js-proxag .js-laboratorio').html('');
+										$('#js-inteligencia-paciente .js-proxag .js-imagem').html('');
+	 								}*/
+								} else {
+									$('#js-inteligencia-paciente .js-proxag').hide();
+									$('#js-inteligencia-paciente .js-desmarcado').show();
+									$('#js-inteligencia-paciente .js-id_proximaconsulta').val(0);
+
+									$('#js-inteligencia-paciente .js-desmarcado .js-agendamento').html(x.agenda_data);
+									$('#js-inteligencia-paciente .js-desmarcado .js-proxDuracao').html(x.agenda_duracao+'m');
+									$('#js-inteligencia-paciente .js-desmarcado .js-profissionais').html('');
+									$('#js-inteligencia-paciente .js-desmarcado .js-obs').html(x.obs.length>0?x.obs:'-');
+ 									$('#js-inteligencia-paciente .js-btn-queroAgendar').attr('href',`javascript:asideQueroAgendar(${x.id_paciente},0)`);
+
+ 									if(x.profissionais.length>0) {
+ 										x.profissionais.forEach(p=>{
+ 											$('#js-inteligencia-paciente .js-desmarcado .js-profissionais').append(`${p.nome}<br />`)
+ 										})
+ 									}
+
+								}
+ 							
+
+							};
+
+							$('.js-guia').html(`Página <b>${pagina+1}</b> de <b>${paginaQtd}</b>`);
+
+							if(paginaQtd==1) {
+								$('.js-guia,.js-paginacao').hide();
+							} else {
+								$('.js-guia,.js-paginacao').show().hide();
+							}
+						}
+					}
+
+					const pacientesListaBKP = () => {
 						
 						$('.js-pacientes').html(``);
 						pacientes = pacientesOportunidades;
@@ -1306,26 +1443,8 @@ Lista Unica
 						</div>
 					</section>
 
-					<div class="list6">
-						<?php /*<div class="list6-item">
-							<h1>Atendimentos</h1>
-							<h2 class="js-atendimentos"></h2>
-						</div>
-						<div class="list6-item">
-							<h1>Último Atend.</h1>
-							<h2 class="js-ultimoAtendimento"></h2>
-						</div>
-						<div class="list6-item">
-							<h1>Tempo Médio</h1>
-							<h2 class="js-tempoMedio"></h2>
-						</div>
-						<div class="list6-item">
-							<h1>Faltou</h1>
-							<h2 class="js-faltou"></h2>
-						</div>*/?>
-					</div>
 
-					<div class="proxag js-proxag" style="flex:0 0 150px;">
+					<div class="proxag js-proxag" style="flex:0 0 150px;display:none">
 						<header>
 							<i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i>
 							<center><h1>Agendar em</h1></center>
@@ -1335,6 +1454,25 @@ Lista Unica
 							<p>Duração: <strong class="js-proxDuracao"></strong></p>
 							<p class="js-laboratorio" style="font-size:12px;"></p>
 							<p class="js-imagem"  style="font-size:12px;"></p>
+						</article>
+						<article>
+							<p>Profissionais:</p>
+							<p class="js-profissionais"></p>
+						</article>
+						<article>
+							<p>Obs:</p>
+							<p class="js-obs"></p>
+						</article>
+					</div>
+
+					<div class="proxag js-desmarcado" style="flex:0 0 150px;display:none">
+						<header>
+							<i class="iconify" data-icon="fluent:calendar-checkmark-24-regular"></i>
+							<center><h1>Agendamento</h1></center>
+							<p class="js-agendamento"></p>
+						</header>
+						<article>
+							<p>Duração: <strong class="js-proxDuracao"></strong></p>
 						</article>
 						<article>
 							<p>Profissionais:</p>

@@ -468,13 +468,13 @@
 
 												if($e->enviarLink==1 and $e->enviarLinkFinalizado==0) {
 
-													$exibirRespostas=false;
-													?>
+													//$exibirRespostas=false;
+													/* ?>
 													<div style="display:flex;width:100%;justify-content: space-between;">
 														<input type="text" readonly value="<?php echo $_SERVER['HTTP_HOST'];?>/anamnese/<?php echo md5($e->id);?>" style="width: 90%;"  />
-														<button type="button" class="button" style="width: 8%;" onclick="$(this).parent().find('input').select();"><span class="iconify" data-icon="material-symbols:content-copy-outline-rounded"></span></button>
+														<button type="button" class="button" style="width: 8%;" onclick="$(this).parent().find('input').select();document.execCommand('copy');"><span class="iconify" data-icon="material-symbols:content-copy-outline-rounded"></span></button>
 													</div>
-													<?php
+													<?php */
 												} 
 
 
@@ -488,6 +488,7 @@
 													<div class="list-toggle-topics">
 														<?php
 														foreach($perguntas as $p) {
+															if($p->desativado) continue;
 															$pergunta=json_decode($p->json_pergunta);
 															?>
 															<div class="list-toggle-topic">

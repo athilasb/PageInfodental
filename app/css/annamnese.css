@@ -160,15 +160,19 @@
   margin: 0 auto !important;
 }
 
+.print-header,.print-footer{
+  left: auto !important;
+}
+
 .pergunta-form{
   padding: 10px;
-  max-width: 546px;
+  padding-bottom: 0px;
+  max-width: 580px;
   min-width: 100px;
   width: 100%;
   text-align: left;
-  background: #344848;
   border-radius: 10px;
-  color: #fff;
+  color: #344848;
   font-family: 'Manrope';
   font-style: normal;
 }
@@ -197,7 +201,7 @@
   font-weight: 400;
   font-size: 14px;
   line-height: 19px;
-  color: #344848;
+  color: #848484;
   margin-bottom: 5px;
   margin-left: 10px;
 }

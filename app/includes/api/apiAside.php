@@ -4198,7 +4198,8 @@
 											<option value="">-</option>
 											<?php
 											foreach($_cadeiras as $p) {
-												echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
+												if($p->lixo==1) continue;
+												echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'aas</option>';
 											}
 											?>
 										</select>
@@ -4477,6 +4478,7 @@
 											<option value=""></option>
 											<?php
 											foreach($_cadeiras as $p) {
+												if($p->lixo==1) continue;
 												echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
 											}
 											?>
@@ -5138,6 +5140,7 @@
 												<option value=""></option>
 												<?php
 												foreach($_cadeiras as $p) {
+													if($p->lixo==1) continue;
 													echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
 												}
 												?>
@@ -6070,6 +6073,8 @@
 						</form>
 					</div>
 				</section>
+
+
 				<?php
 			}
 
@@ -6722,6 +6727,7 @@
 													<option value=""></option>
 													<?php
 													foreach($_cadeiras as $p) {
+														if($p->lixo==1) continue;
 														echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
 													}
 													?>
@@ -7395,6 +7401,7 @@
 														<option value=""></option>
 														<?php
 														foreach($_cadeiras as $p) {
+															if($p->lixo==1) continue;
 															echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
 														}
 														?>
@@ -8665,6 +8672,7 @@
 													<option value=""></option>
 													<?php
 													foreach($_cadeiras as $p) {
+														if($p->lixo==1) continue;
 														echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
 													}
 													?>
@@ -9169,6 +9177,7 @@
 													<option value=""></option>
 													<?php
 													foreach($_cadeiras as $p) {
+														if($p->lixo==1) continue;
 														echo '<option value="'.$p->id.'"'.($values['id_cadeira']==$p->id?' selected':'').'>'.utf8_encode($p->titulo).'</option>';
 													}
 													?>
