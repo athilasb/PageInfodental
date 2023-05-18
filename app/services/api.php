@@ -26,6 +26,8 @@
 			$output = $dompdf->output();
 			file_put_contents('arqs/temp.pdf', $output);
 
+			//die('teste');
+
 			$uploadPathFile = $instancia . "/" . $_dirEvolucao . sha1($id_evolucao) . ".pdf";
 			try {
 				$s3->putObject(
@@ -138,7 +140,6 @@
 
 				# Gera PDF via domPDF de evoluções #
 					if ($request->method == 'generatePDF') {
-
 
 						// capta dados
 
@@ -321,6 +322,47 @@
 												</style>
 											</head>
 											<body>
+
+											<header>
+												<div class="header-anamnese header-max-width">
+													<div class="title-anamnese">
+														<div>
+															<div><b>Formulário da Anamnese</b></div>
+															<div>Anamnese HOF</div>
+														</div>
+														<div>24/06/2023</div>
+													</div>
+													<div class="info-anamnese">
+														<div>
+															<div><b>PACIENTE</b></div>
+															<div>Nome Paciente</div>
+														</div>
+														<div>
+															<div><b>IDADE</b></div>
+															<div>34 anos</div>
+														</div>
+														<div>
+															<div><b>SEXO</b></div>
+															<div>Masculino</div>
+														</div>
+													</div>
+													<div class="info-anamnese">
+														<div>
+															<div><b>PROFISSIONAL</b></div>
+															<div>Kroner Machado Costa</div>
+														</div>
+														<div>
+															<div><b>CRO</b></div>
+															<div>15656</div>
+														</div>
+														<div>
+															<div><b>UF</b></div>
+															<div>GO</div>
+														</div>
+													</div>
+												</div>	
+											</header>
+											
 												<header>
 													<img src="'.$unidadeLogo.'" />
 												</header>
@@ -332,7 +374,7 @@
 												</footer>
 
 												<main>
-														<h1>Formulário da Anamnese</h1>	
+														<h1>Formulário da Anamneseaaa</h1>	
 
 														<p style="text-align:center;">' . date('d/m/Y', strtotime($evolucao->data)) . '</p>
 
