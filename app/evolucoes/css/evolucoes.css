@@ -479,3 +479,9 @@ input::placeholder {
     grid-template-columns: 3fr 1fr 1fr;
     padding: 15px;
 }
+
+.header-max-width{
+    max-width: 580px;
+    margin: auto;
+    margin-bottom: 15px;
+}
