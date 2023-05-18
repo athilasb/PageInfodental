@@ -5311,6 +5311,10 @@
 										url:baseURLApiAsidePaciente,
 										success:function(rtn) {
 											if(rtn.success) {
+												$('.js-asideProcedimentos-obs').val('');
+												$('.js-asideProcedimentos-id_profissional').val('');
+												procedimentos=[];
+												procedimentosListar();
 												if(id_agenda>0) {
 													asideProximaConsultaLembrete();
 													obj.html(objHTMLAntigo);
@@ -5419,7 +5423,7 @@
 				
 				<div class="aside__inner1">
 					<header class="aside-header">
-						<h1>Procedimentos </h1>
+						<h1>Procedimentos</h1>
 						<a href="javascript:;" class="aside-header__fechar aside-close-procedimentos"><i class="iconify" data-icon="fluent:dismiss-24-filled"></i></a>
 					</header>
 
