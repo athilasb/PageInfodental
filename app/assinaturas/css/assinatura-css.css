@@ -9,7 +9,7 @@ body {height:100vh; line-height:1.5; text-rendering: optimizeSpeed; -webkit-font
 .print-table-footer {height:2.5cm;}
 .print-header {position:fixed; top:0; left:50%; width:19cm; margin-left:-9.5cm; height:1.8cm; text-align:center; background:#fff;}
 .print-header__logo {width:8cm; height:auto;}
-.print-footer {position:fixed; bottom:0; left:50%; width:19cm; margin-left:-9.5cm; height:2.5cm; text-align:center; padding-top:.5cm; background:#fff;}
+.print-footer {position:fixed; bottom:0; width:19cm; margin-left:-9.5cm; height:2.5cm; text-align:center; padding-top:.5cm; background:#fff;}
 .print-footer p {margin-bottom:8px;}
 .print-footer p span {margin-right:1rem;}
 .print-footer p span:last-child {margin-right:0;}

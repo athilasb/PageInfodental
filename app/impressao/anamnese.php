@@ -54,31 +54,50 @@
 
 ?>
 <head>
-<link rel="stylesheet" type="text/css" href="../css/annamnese.css">
+<link rel="stylesheet" type="text/css" href="../css/annamnese.css?v5">
+<link rel="stylesheet" type="text/css" href="../evolucoes/css/evolucoes.css?v5" />
 </head>
 
-<header style="text-align: center;" >
-	<table class="text-center w100">
-      <thead>
-			<h1 class="Titulo">Formulário da anamnese</h1> 
-			<span class="sub-titulo" ><?php echo date('d/m/Y',strtotime($evolucao->data));?></span>   
-		</td>
-      </thead>
-    </table>
+<header >
+	<div class="header-anamnese header-max-width">
+		<div class="title-anamnese">
+			<div>
+				<div><b>Formulário da Anamnese</b></div>
+				<div>Anamnese HOF</div>
+			</div>
+			<div>24/06/2023</div>
+		</div>
+		<div class="info-anamnese">
+			<div>
+				<div><b>PACIENTE</b></div>
+				<div><?php echo utf8_encode($paciente->nome);?></div>
+			</div>
+			<div>
+				<div><b>IDADE</b></div>
+				<div><?php echo $idade>1?"$idade anos":"$idade";?></div>
+			</div>
+			<div>
+				<div><b>SEXO</b></div>
+				<div><?php echo $paciente->sexo=="M"?"Masculino":"Feminino";?></div>
+			</div>
+		</div>
+		<div class="info-anamnese">
+			<div>
+				<div><b>PROFISSIONAL</b></div>
+				<div>Kroner Machado Costa</div>
+			</div>
+			<div>
+				<div><b>CRO</b></div>
+				<div>15656</div>
+			</div>
+			<div>
+				<div><b>UF</b></div>
+				<div>GO</div>
+			</div>
+		</div>
+	</div>	
 </header>
 
-<table class="dados-pessoais">
-        <tbody>
-			<tr>
-				<td ><b><?php echo utf8_encode($paciente->nome);?></b> </td>
-				<td class="text-right"><span class="iconify" data-icon="mdi:file-document-outline"></span><?php $cpf = utf8_encode($paciente->cpf); $cpf_formatado = preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $cpf);echo $cpf_formatado;?></td>   
-			</tr>    
-			<tr>
-				<td><?php echo $idade>1?"$idade anos":"$idade";?></td> 
-				<td class="text-right"><span class="iconify" data-icon="bxs:phone"></span><?php echo maskTelefone($paciente->telefone1);?></td>
-			</tr> 
-	</tbody>
-</table>
 
 <div class="page-form">
 	<section>
@@ -112,40 +131,7 @@
 			?>
 		</table>
 	</section>
-	<section class="box-border">
-		<table class="w95 conteudo border-solid">
-			<div>
-				<tr>
-				<td width="40%"><b>Nome</b></td>
-				<td width="40%"><b>Telefone</b></td>
-				<td width="40%"><b>Whatsapp</b></td>
-				</tr>
 
-				<tr>
-					<td>Kroner</td>
-					<td>(62) 99338-3782</td>
-					<td>(62) 99338-3782</td>
-				</tr>
-				</div>
-				<tr class="margin">
-					<td><b>Nome do Profissional</b></td>
-					<td><b>CRO</b></td>
-					<td><b>UF</b></td>
-				</tr>
-				<tr>
-					<td>Eliabio da Silva Pereira</td>
-					<td>15656</td>
-					<td>GO</td>
-					</tr>
-				<tr class="margin">
-				<td colspan="3" > <b>Endereço</b></td>
-				</tr>
-				<tr>
-				<td colspan="3">Studio Dental - Rua 5 - Setor Oeste, Goiânia - State of Goiás, Brazil</td>
-				</tr>
-			</div>	
-		</table>
-	</section>
 	<section> <div class="assinatura-data">Sábado, 22 de Junho de 2022</div></section>
 	<section>
 		<table class="assinaturas"> 
