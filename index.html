@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -11,228 +12,589 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/3.3.4/jquery.inputmask.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css?v1" />
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jQuery.Marquee/1.5.0/jquery.marquee.min.js"></script>
+    <script src="./script/jquery.datetimepicker.js"></script>
+    <link rel="stylesheet" href="./style/jquery.datetimepicker.min.css">
+    <script src="./script/jquery.datetimepicker.full.js"></script>
     <style class="style"></style>
 </head>
+
 <body>
-<!-- Menu-->
-<section>
-    <div class="display-flex-center">
-        <div class="menu"> 
-            
+    <!-- Menu-->
+    <section>
+        <div class="display-flex-center" id="inicio">
+            <div class="menu">
+
                 <head>
                     <div class="nav-mobile">
-                    <img class="logo" src="./img/info-logo.svg" alt="">
-                    <a href="javascript:;"class="icon-mobile" onclick="navheader()">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </a>
-                </div>
-                </head> 
+                        <img class="logo" src="./img/info-logo.svg" alt="">
+                        <a href="javascript:;" class="icon-mobile" onclick="navheader()">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </a>
+                    </div>
+                </head>
 
                 <nav>
                     <ul>
-                        <li><a href="#/">SOBRE</a></li>
-                        <li><a href="#/">FERRAMENTAS</a></li>
-                        <li><a href="#/">GARANTIAS</a></li>
-                        <li><a href="#/">INVESTIMENTOS</a></li>
-                        <li><a href="#/">SODEPOIMENTOSBRE</a></li>
+                        <li><a href="#inicio">INICIO</a></li>
+                        <li><a href="#sobre" class="scroll-link">SOBRE</a></li>
+                        <li><a href="#ferramentas" class="scroll-link">FERRAMENTAS</a></li>
+                        <li><a href="#garantias" class="scroll-link">GARANTIAS</a></li>
+                        <li><a href="#investimentos" class="scroll-link">INVESTIMENTOS</a></li>
+                        <li><a href="#depoimentos" class="scroll-link">DEPOIMENTOS</a></li>
                     </ul>
                 </nav>
-        </div>
-    </div>
-</section>
-<!-- Conteudo-->
-<main class="main media-margin">
-    <section class="display-flex-space block vh100">
-        <div class="center-wrap">
-            <h1 class="header-title margin-menos">
-                <div class="frase1" ></div>
-                <div class="frase2" style="margin-top: 10px;"></div>
-            </h1>
-            <div class="visao display-flex-left margin-20"> 
-                <span class="visao1">visão </span> 
-                <span class="visao-animacao"> <div class="visao-animacao-frame"></div></span>  
-                <span class="visao2">missão</span>
-            </div>
-        </div>
-        <div  class="center-wrap margin-menos1">
-            <div class="box">
-                <div class="dourado"> Software Odontológico</div>
-                <div class="sub-Titulo margin-10">Simplifique sua vida com uma solução completa e inteligente.</div>
-                <div class="space-box" style="width: 70%; margin: 25px auto;"><input type="text" name="" id="" placeholder="Insira seu whatsapp"></div>
-                <div  class="space-box1"><button class="botao-dourado">Teste e Comprove!</button></div>
             </div>
         </div>
     </section>
-    <section>
-        <div class="title-parceiros">
-            Nossos parceiros
-        </div>
-        <div class="swiper Carroseu1 margin-30">
-            <div class="swiper-wrapper">
-              <div class="swiper-slide swiper-slide-1"><img src="./img/Carroseu-parceiros/logo-iugu.png" alt=""></div>
-              <div class="swiper-slide swiper-slide-1"><img src="./img/Carroseu-parceiros/Logomarca_Dental_Cremer.png" alt=""></div>
-              <div class="swiper-slide swiper-slide-1"><img src="./img/Carroseu-parceiros/safra-logo-ok.png" alt=""></div>
-              <div class="swiper-slide swiper-slide-1"><img src="./img/Carroseu-parceiros/scaleway-logo.png" alt=""></div>
-              <div class="swiper-slide swiper-slide-1"><img src="./img/Carroseu-parceiros/Wasabi-Logo-600x250-1.png" alt=""></div>
-            </div>
-        </div>
-    </section>
-    <div style="background: #F7F7F7;padding: 90px 0px 50px 0px;">
-        <section>
-            <div class="display-flex-space media-column" style="align-items: flex-start;">
-                <div class="text-quem-somos">
-                    <div class="aspas-quem-somos">“</div>
-                    <h2 class="sub-titulo">Somos uma empresa de tecnologia, que o foco é transformar a gestão da sua clínica.</h2>
-                    <div class="comentarios border-bottom"><b>Profissionais de sucesso</b> dedicam seu tempo executando uma <b>odontologia de alto nível</b>, sobrando pouco tempo para gestão da clínica e até mesmo para <b>momentos de lazer e família.</b></div>
-                    <div class="comentarios border-bottom">Essa <b>dedicação</b> é <b>muito nobre e fundamental</b> para que os bons resultados sejam atingidos, todavia traz como consequências deficiência na gestão de processos, pessoas e financeira.</div>
-                    <div class="comentarios">Nossa missão é resolver exatamente esse problema. Por meio de tecnologia de ponta e soluções integradas, fazemos com que dentistas e pacientes sejam beneficiados.</div>
+    <!-- Conteudo-->
+    <main class="main media-margin" >
+        <!-- section1-->
+        <section class=" space-home display-flex-space block vh100 " >
+            <div class="center-wrap">
+                <h1 class="header-title margin-menos">
+                    <div class="frase1"></div>
+                    <div class="frase2" style="margin-top: 10px;"></div>
+                </h1>
+                <div class="visao display-flex-left margin-20">
+                    <span class="visao1">visão </span>
+                    <span class="visao-animacao">
+                        <div class="visao-animacao-frame"></div>
+                    </span>
+                    <span class="visao2">missão</span>
                 </div>
-                <div class="posicao-sticky">
-                    <img class="img-quem-somos " src="./img/andre-kimura.png" alt="">
+            </div>
+            <div class="center-wrap margin-menos1">
+                <div class="box">
+                    <div class="dourado"> Software Odontológico</div>
+                    <div class="sub-Titulo margin-10">Simplifique sua vida com uma solução completa e inteligente.</div>
+                    <div class="space-box" style="width: 70%; margin: 25px auto;"><input type="text" name="" id=""
+                            placeholder="Insira seu whatsapp"></div>
+                    <div class="space-box1"><button class="botao-dourado">Teste e Comprove!</button></div>
+                </div>
+            </div>
+            <video autoplay muted loop id="my-video" style="opacity: 0.5;">
+                <source src="./img/move.mov" type="video/mp4">
+                Desculpe, seu navegador não suporta vídeos HTML5.
+              </video>
+        </section>
+        <!-- section2-->
+        <section class="parceiros-section">
+            <div class="title-parceiros">PARCEIROS</div>
+            <div class="marquee_text">
+                <div class="marquee_text-img"  style="display: flex; justify-content: space-between;">
+                    <div ><img src="./img/Carroseu-parceiros/logo-iugu.png" alt=""></div>
+                    <div ><img src="./img/Carroseu-parceiros/Logomarca_Dental_Cremer.png" alt=""></div>
+                    <div ><img src="./img/Carroseu-parceiros/safra-logo-ok.png" alt=""></div>
+                    <div ><img src="./img/Carroseu-parceiros/scaleway-logo.png"alt=""></div>
+                    <div ><img src="./img/Carroseu-parceiros/Wasabi-Logo-600x250-1.png" alt=""></div>
                 </div>
             </div>
         </section>
-    </div>
-    <section>
-        <div class="titulo-clintes">Nossos clientes</div>
-        <div class="swiper Carroseu2 margin-30">
-            <div class="swiper-wrapper nossos-clientes-img">
-                <div class="swiper-slide"><img  src="./img/nossos-clientes/Ellipse2.png" alt=""></div>
-                <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse3.png" alt=""></div>
-                <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse4.png" alt=""></div>
-                <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse5.png" alt=""></div>
-                <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse6.png" alt=""></div>
-                <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse7.png" alt=""></div>
-                <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse8.png" alt=""></div>
-                <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse9.png" alt=""></div>
-                <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse10.png" alt=""></div>
-                <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse11.png" alt=""></div>
-                <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse12.png" alt=""></div>
-                <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse13.png" alt=""></div>
-                <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse14.png" alt=""></div>
-                <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse15.png" alt=""></div>                
-            </div>
-        </div>
-    </section>
 
-    <section>
-        <h2 class="titulo-quem">Para quem é o Info Dental?</h2>
-        <h3 class="titulo-quem-sub">PERFIL DO PROFISSIONAL</h3>
-        <div class="perfil-conteudo">
-            <div class="conteudo">
-                <div>01</div>
-                <div>Alto desempenho</div>
-                <div>Nossa missão é resolver exatamente esse problema. Por meio de tecnologia de ponta e soluções integradas, fazemos com que dentistas e pacientes sejam beneficiados.</div>
-            </div>
-            <div class="conteudo">
-                <div>02</div>
-                <div>Valoriza tecnologia</div>
-                <div>Dentista inovador e tecnologico, que acredita que as inovações servem para melhorar o atendimento e democratizar o acesso do cliente final.</div>
-            </div>
-            <div class="conteudo">
-                <div>03 </div>
-                <div>Busca o bem-estar</div>
-                <div>Para você que entende que os momentos de familia e lazer são essenciais para seu desenvolvimento pessoal, sem que haja a renuncia de seus compromissos profissionais.</div>
-            </div>
+        <!-- section3-->
+        <div style="background: #F7F7F7;padding: 90px 0px 50px 0px;" id="sobre">
+            <section>
+                <div class="display-flex-space media-column" style="align-items: flex-start;">
+                    <div class="text-quem-somos">
+                        <div class="aspas-quem-somos">“</div>
+                        <h2 class="sub-titulo">Somos uma empresa de tecnologia, que o foco é transformar a gestão da sua
+                            clínica.</h2>
+                        <div class="comentarios border-bottom"><b>Profissionais de sucesso</b> dedicam seu tempo
+                            executando uma <b>odontologia de alto nível</b>, sobrando pouco tempo para gestão da clínica
+                            e até mesmo para <b>momentos de lazer e família.</b></div>
+                        <div class="comentarios border-bottom">Essa <b>dedicação</b> é <b>muito nobre e fundamental</b>
+                            para que os bons resultados sejam atingidos, todavia traz como consequências deficiência na
+                            gestão de processos, pessoas e financeira.</div>
+                        <div class="comentarios">Nossa missão é resolver exatamente esse problema. Por meio de
+                            tecnologia de ponta e soluções integradas, fazemos com que dentistas e pacientes sejam
+                            beneficiados.</div>
+                    </div>
+                    <div class="posicao-sticky">
+                        <img class="img-quem-somos " src="./img/andre-kimura.png" alt="">
+                    </div>
+                </div>
+            </section>
         </div>
-        <div class="perfil-cards">
-            <div class="conteudo"></div>
-            <div class="conteudo"></div>
-            <div class="conteudo"></div>
-            <div class="conteudo"></div>
-            <div class="conteudo"></div>
-            <div class="conteudo"></div>
-        </div>
-    </section>
-    <div style="background: #F7F7F7;padding: 50px 0px 50px 0px;">
+
+        <!-- section4-->
         <section>
-            <h2 class="titulo-quem" style="margin-top:80px;">Tecnologia Info Dental</h2>
-            <h3 class="titulo-quem-sub">FERRAMENTAS TRANSFORMADORAS</h3>
+            <div class="titulo-clintes">Nossos clientes</div>
+            <div class="swiper Carroseu2 margin-30">
+                <div class="swiper-wrapper nossos-clientes-img">
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse2.png" alt=""></div>
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse3.png" alt=""></div>
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse4.png" alt=""></div>
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse5.png" alt=""></div>
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse6.png" alt=""></div>
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse7.png" alt=""></div>
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse8.png" alt=""></div>
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse9.png" alt=""></div>
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse10.png" alt=""></div>
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse11.png" alt=""></div>
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse12.png" alt=""></div>
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse13.png" alt=""></div>
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse14.png" alt=""></div>
+                    <div class="swiper-slide"><img src="./img/nossos-clientes/Ellipse15.png" alt=""></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- section5-->
+        <section>
+            <h2 class="titulo-quem">Para quem é o Info Dental?</h2>
+            <h3 class="titulo-quem-sub">PERFIL DO PROFISSIONAL</h3>
             <div class="perfil-conteudo">
-                <div class="ferramentas">
-                    <div><b>infodental</b>marketing</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span> Aumentar numero de Pacientes</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Landing page personalizada</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Jornada do Paciente</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Controle: da Captação ao Fechemento</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Endomarketing</div>
+                <div class="conteudo">
+                    <div>01</div>
+                    <div>Alto desempenho</div>
+                    <div>Nossa missão é resolver exatamente esse problema. Por meio de tecnologia de ponta e soluções
+                        integradas, fazemos com que dentistas e pacientes sejam beneficiados.</div>
                 </div>
-                <div class="ferramentas">
-                    <div><b>infodental</b>agenda</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span> Aumentar numero de Pacientes</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Landing page personalizada</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Jornada do Paciente</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Controle: da Captação ao Fechemento</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Endomarketing</div>
+                <div class="conteudo">
+                    <div>02</div>
+                    <div>Valoriza tecnologia</div>
+                    <div>Dentista inovador e tecnologico, que acredita que as inovações servem para melhorar o
+                        atendimento e democratizar o acesso do cliente final.</div>
                 </div>
-                <div class="ferramentas">
-                    <div><b>infodental</b>prontuário</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span> Aumentar numero de Pacientes</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Landing page personalizada</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Jornada do Paciente</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Controle: da Captação ao Fechemento</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Endomarketing</div>
+                <div class="conteudo">
+                    <div>03 </div>
+                    <div>Busca o bem-estar</div>
+                    <div>Para você que entende que os momentos de familia e lazer são essenciais para seu
+                        desenvolvimento pessoal, sem que haja a renuncia de seus compromissos profissionais.</div>
                 </div>
-                <div class="ferramentas">
-                    <div><b>infodental</b>financeiro</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span> Aumentar numero de Pacientes</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Landing page personalizada</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Jornada do Paciente</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Controle: da Captação ao Fechemento</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Endomarketing</div>
+            </div>
+            <div class="perfil-cards">
+
+                <div>
+                    <div class="conteudo"><div><span class="iconify" data-icon="ic:sharp-whatsapp" style="color: white;" data-width="25"></span></div> O InfoZap está conectado</div>
+                    <div class="conteudo"> <div><img src="./img/InfoSign.svg" alt=""></div> O InfoSign te ajuda nas assinaturas digitais</div>
+                    <div class="conteudo"> oi</div>
                 </div>
-                <div class="ferramentas">
-                    <div><b>infodental</b>jurídico</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span> Aumentar numero de Pacientes</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Landing page personalizada</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Jornada do Paciente</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Controle: da Captação ao Fechemento</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Endomarketing</div>
+                <div class="perfil-cards-center">
+
                 </div>
-                <div class="ferramentas">
-                    <div><b>infodental</b>analytics</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span> Aumentar numero de Pacientes</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Landing page personalizada</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Jornada do Paciente</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Controle: da Captação ao Fechemento</div>
-                    <div><span class="iconify" data-icon="material-symbols:check-small-rounded" style="color: #fecea2;"></span>Endomarketing</div>
+                <div class="perfil-cards-end">
+
+                    <div></div>
+                    <div></div>
                 </div>
             </div>
         </section>
-    </div>
 
-    <section>
-        <div class="beneficios">
-            <h2>Quem compara economiza</h2>
-            <div class="sub-titulo">RECURSOS SEM TAXA ADICIONAL</div>
-            <div class="custos">0,00</div>
-            <div class="info"><b>Sem tarifa</b> adicional: WhatsApp<b> Ilimitado</b> - Usuários <b>Ilimitado</b> - Acesso a <b>todos os Módulos</b></div>
-            <div class="benefits">
-                <div class="cards-benedicios">
-                    <div><span class="iconify" data-icon="fluent:checkmark-starburst-16-filled" style="color: #fecea2;"></span>Teste de 7 dias grátis</div>
-                    <div>Teste grátis por 7 dias, sem que haja nenhuma cobrança no seu cartão.</div>
+        <!-- section6-->
+        <div id="ferramentas" style="background: #F7F7F7;padding: 50px 0px 50px 0px;">
+            <section>
+                <h2 class="titulo-quem" style="margin-top:80px;">Tecnologia Info Dental</h2>
+                <h3 class="titulo-quem-sub">FERRAMENTAS TRANSFORMADORAS</h3>
+                <div class="perfil-conteudo">
+                    <div class="ferramentas">
+                        <div> <img src="./img/Ferramentas/marketing.svg" alt=""> <div><b>infodental</b>marketing</div>  <div></div>  </div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20" ></span> Aumentar numero de Pacientes</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Landing page personalizada</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Jornada do Paciente</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Controle: da Captação ao Fechemento</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Endomarketing</div>
+                    </div>
+                    <div class="ferramentas">
+                        <div><img src="./img/Ferramentas/agendamento.svg" alt=""><div><b>infodental</b>agenda</div>  <div></div> </div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span> Aumentar numero de Pacientes</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Landing page personalizada</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Jornada do Paciente</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Controle: da Captação ao Fechemento</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Endomarketing</div>
+                    </div>
+                    <div class="ferramentas">
+                        <div><img src="./img/Ferramentas/prontuario.svg" alt=""><div><b>infodental</b>prontuário</div> <div></div></div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span> Aumentar numero de Pacientes</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Landing page personalizada</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Jornada do Paciente</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Controle: da Captação ao Fechemento</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Endomarketing</div>
+                    </div>
+                    <div class="ferramentas">
+                        <div><img src="./img/Ferramentas/financeiro.svg" alt=""><div><b>infodental</b>financeiro</div><div></div> </div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span> Aumentar numero de Pacientes</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Landing page personalizada</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Jornada do Paciente</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Controle: da Captação ao Fechemento</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Endomarketing</div>
+                    </div>
+                    <div class="ferramentas">
+                        <div><img src="./img/Ferramentas/juridico.svg" alt=""><div><b>infodental</b>jurídico</div><div></div>  </div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span> Aumentar numero de Pacientes</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Landing page personalizada</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Jornada do Paciente</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Controle: da Captação ao Fechemento</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Endomarketing</div>
+                    </div>
+                    <div class="ferramentas">
+                        <div><img src="./img/Ferramentas/analytics.svg" alt=""><div><b>infodental</b>analytics</div> <div></div> </div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span> Aumentar numero de Pacientes</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Landing page personalizada</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Jornada do Paciente</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Controle: da Captação ao Fechemento</div>
+                        <div><span class="iconify" data-icon="material-symbols:check-small-rounded"
+                                style="color: #fecea2;" data-width="20"></span>Endomarketing</div>
+                    </div>
                 </div>
-                <div class="cards-benedicios">
-                    <div><span class="iconify" data-icon="fluent:checkmark-starburst-16-filled" style="color: #fecea2;"></span>Garantia de 60 dias</div>
-                    <div>Tenha seu dinheiro de volta, sem nenhum questionamento.</div>
-                </div>
-                <div class="cards-benedicios">
-                    <div><span class="iconify" data-icon="fluent:checkmark-starburst-16-filled" style="color: #fecea2;"></span>Sem fidelidade</div>
-                    <div>Disponibilizamos seus dados de forma completa.</div>
+            </section>
+        </div>
+
+        <!-- section7-->
+        <section id="garantias">
+            <div class="beneficios">
+                <h2>Quem compara economiza</h2>
+                <div class="sub-titulo">RECURSOS SEM TAXA ADICIONAL</div>
+                <div class="custos">0,00</div>
+                <div class="info"><b>Sem tarifa</b> adicional: WhatsApp<b> Ilimitado</b> - Usuários <b>Ilimitado</b> -
+                    Acesso a <b>todos os Módulos</b></div>
+                <div class="benefits">
+                    <div class="cards-benedicios">
+                        <div><span class="iconify" data-icon="fluent:checkmark-starburst-16-filled"
+                                style="color: #fecea2;"></span>Teste de 7 dias grátis</div>
+                        <div>Teste grátis por 7 dias, sem que haja nenhuma cobrança no seu cartão.</div>
+                    </div>
+                    <div class="cards-benedicios">
+                        <div><span class="iconify" data-icon="fluent:checkmark-starburst-16-filled"
+                                style="color: #fecea2;"></span>Garantia de 60 dias</div>
+                        <div>Tenha seu dinheiro de volta, sem nenhum questionamento.</div>
+                    </div>
+                    <div class="cards-benedicios">
+                        <div><span class="iconify" data-icon="fluent:checkmark-starburst-16-filled"
+                                style="color: #fecea2;"></span>Sem fidelidade</div>
+                        <div>Disponibilizamos seus dados de forma completa.</div>
+                    </div>
                 </div>
             </div>
+        </section>
+
+        <!-- section8-->
+        <div class="Pricing" id="investimentos">
+            <section>
+
+                <div class="title-prices" style="max-width: 350px;">
+                    <h3>Planos Info Dental</h3>
+                    <h2>Escolha o melhor plano para você.</h2>
+                </div>
+                <div class="button-group">
+                    <a href="javascript:;" class="button ">Mensal</a>
+                    <a href="javascript:;" class="button">Semestral</a>
+                    <a href="javascript:;" class="button active">Anual</a>
+                </div>
+                <div class="button-group-container">
+                    <div class="button-group-fixed">Economize até 15% ao ano</div>
+                </div>
+
+
+
+                
+                <div class="display-boxs prices1" style="display:none">
+                    <div class="box-1-prices">
+                        <div class="box-prices-padding">
+                            <div class="box-1-prices-d1">Início imediato</div>
+                            <div class="box-1-prices-d2">Tire suas dúvidas em nossa consultoria imediata e desfrute do nosso software agora mesmo!</div>
+                            <div class="box-1-prices-d3"><span class="iconify" data-icon="fluent:checkmark-12-regular"
+                                    data-width="10"></span> Ímplementação gratuita</div>
+
+                            <div class="box-prices-values">
+                                <p>de R$ 2.150,00</p>
+                                <div></div>
+                                <p>economize 5% na 1º mensalidade</p>
+                                
+                            </div>
+                            <div class="box-prices-values1">por<b> R$ 1.999,00</b> por 1 ano</div>
+
+                            <div class="title-prices">
+                                <h1><span>R$</span> <span>192</span> <span>/MÊS</span></h1>
+                            </div>
+
+
+                            <div class="regressive-prices">
+                                <div class="regressive-prices-b">
+                                    <div class="regressive-prices-day">
+                                        <p>dias</p>
+                                        <b>00</b>
+                                    </div>
+                                    <div class="regressive-prices-hrs">
+                                        <p>hrs</p>
+                                        <b>02</b>
+                                    </div>
+                                    <div class="regressive-prices-min">
+                                        <p>min</p>
+                                        <b>20</b>
+                                    </div>
+                                    <div class="regressive-prices-seg">
+                                        <p>seg</p>
+                                        <b>53</b>
+                                    </div>
+                                </div>
+                                <a class="button-prices" href="javascript:;">Assinar</a>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="box-2-prices">
+                        <div class="box-prices-padding">
+                            <div class="box-prices-title">Consultoria online</div>
+                            <div class="box-prices-contente">
+                                <p>Ainda em dúvida?</p>
+                                <p>Agende agora uma consultoria online e personalizada. (tempo médio 30min)</p>
+                            </div>
+                        </div>
+
+                        <a style="margin-bottom: 30px;" href="javascript:;" class="button-prices">Agendar</a>
+                    </div>
+                </div>
+
+                <div class="display-boxs prices2" style="display:none">
+                    <div class="box-1-prices">
+                        <div class="box-prices-padding">
+                            <div class="box-1-prices-d1">Início imediato</div>
+                            <div class="box-1-prices-d2">Tire suas dúvidas em nossa consultoria imediata e desfrute do nosso software agora mesmo!</div>
+                            <div class="box-1-prices-d3"><span class="iconify" data-icon="fluent:checkmark-12-regular"
+                                    data-width="10"></span> Ímplementação gratuita</div>
+
+                            <div class="box-prices-values">
+                                <p>de R$ 2.150,00</p>
+                                <div></div>
+                                <p>economize 10%</p>
+                                
+                            </div>
+                            <div class="box-prices-values1">por<b> R$ 1.999,00</b> por 1 ano</div>
+
+                            <div class="title-prices">
+                                <h1><span>R$</span> <span>192</span> <span>/MÊS</span></h1>
+                            </div>
+
+
+                            <div class="regressive-prices">
+                                <div class="regressive-prices-b">
+                                    <div class="regressive-prices-day">
+                                        <p>dias</p>
+                                        <b>00</b>
+                                    </div>
+                                    <div class="regressive-prices-hrs">
+                                        <p>hrs</p>
+                                        <b>02</b>
+                                    </div>
+                                    <div class="regressive-prices-min">
+                                        <p>min</p>
+                                        <b>20</b>
+                                    </div>
+                                    <div class="regressive-prices-seg">
+                                        <p>seg</p>
+                                        <b>53</b>
+                                    </div>
+                                </div>
+                                <a class="button-prices" href="javascript:;">Assinar</a>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="box-2-prices">
+                        <div class="box-prices-padding">
+                            <div class="box-prices-title">Consultoria online</div>
+                            <div class="box-prices-contente">
+                                <p>Ainda em dúvida?</p>
+                                <p>Agende agora uma consultoria online e personalizada. (tempo médio 30min)</p>
+                            </div>
+                        </div>
+
+                        <a style="margin-bottom: 30px;" href="javascript:;" class="button-prices">Agendar</a>
+                    </div>
+                </div>
+
+                <div class="display-boxs prices3" >
+                    <div class="box-1-prices">
+                        <div class="box-prices-padding">
+                            <div class="box-1-prices-d1">Início imediato</div>
+                            <div class="box-1-prices-d2">Tire suas dúvidas em nossa consultoria imediata e desfrute do nosso software agora mesmo!</div>
+                            <div class="box-1-prices-d3"><span class="iconify" data-icon="fluent:checkmark-12-regular"data-width="10"></span> Ímplementação gratuita</div>
+
+                            <div class="box-prices-values">
+                                <p>de R$ 2.150,00</p>
+                                <div></div>
+                                <p>economize 15%</p>
+                                
+                            </div>
+                            <div class="box-prices-values1">por<b> R$ 1.999,00</b> por 1 ano</div>
+
+                            <div class="title-prices">
+                                <h1><span>R$</span> <span>192</span> <span>/MÊS</span></h1>
+                            </div>
+
+
+                            <div class="regressive-prices">
+                                <div class="regressive-prices-b">
+                                    <div class="regressive-prices-day">
+                                        <p>dias</p>
+                                        <b>00</b>
+                                    </div>
+                                    <div class="regressive-prices-hrs">
+                                        <p>hrs</p>
+                                        <b>02</b>
+                                    </div>
+                                    <div class="regressive-prices-min">
+                                        <p>min</p>
+                                        <b>20</b>
+                                    </div>
+                                    <div class="regressive-prices-seg">
+                                        <p>seg</p>
+                                        <b>53</b>
+                                    </div>
+                                </div>
+                                <a class="button-prices" href="javascript:;">Assinar</a>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="box-2-prices">
+                        <div class="box-prices-padding">
+                            <div class="box-prices-title">Ainda em dúvida?</div>
+                            <div class="box-prices-contente">
+                                <p>Agende agora uma consultoria online e personalizada. (tempo médio 30min)</p>
+                            </div>
+
+                            <div class="box-2-prices-list">
+                                <p> <span class="iconify" data-icon="fluent:checkmark-12-regular"data-width="10"></span> Consultória online</p>
+                                <p> <span class="iconify" data-icon="fluent:checkmark-12-regular"data-width="10"></span> Versão demo</p>
+                            </div>
+                            <div class="box-2-prices-val">Grátis</div>
+                        </div>
+
+                        <a style="margin-bottom: 30px;" href="javascript:;" class="button-prices">Agendar</a>
+                    </div>
+                </div>
+                <div class="modal-calendario" style="display: none;"> 
+                    
+                    <div class="calendario-info">
+                        <span class="fechar-mobile"><span class="iconify"  data-icon="fluent:dismiss-circle-20-filled"  data-width="30"></span></span>
+                        <div class="calendario-info-p1">
+                            <img class="perfil-calendario" src="./img/face.svg" alt="">
+                             <h2>Caio Lucena</h2>
+                             <h3>Info Dental</h3>
+                             <p class="calendario-info-description"><span class="iconify" data-icon="fluent:info-16-regular" style="color: white; display: block; width: 46px;" data-width="20"></span>
+                                Consulta marcada.  Habilite seu 
+                                Google Agenda para notificarmos 
+                                antes do horário da sua consulta.
+                            </p>
+                            <p><span class="iconify" data-icon="fluent:clock-16-regular" style="color: white;" data-width="20"></span>01 hr</p>
+                            <p><span class="iconify" data-icon="fluent:location-24-regular" style="color: white;" data-width="20"></span> Presencial</p>
+                            <p><span class="iconify" data-icon="fluent:globe-20-regular" style="color: white;" data-width="20"></span>R. 5, nº 691 - St. Oeste, Goiânia - GO</p>
+                        </div>
+                        <div>
+                            <span class="js-fechar-modal fechar-desktop"><span class="iconify"  data-icon="fluent:dismiss-circle-20-filled"  data-width="30"></span></span>
+                            
+                            <div class="" id="datetimepicker3"></div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+
+            </section>
         </div>
-    </section>
 
-</main>
-<!-- footer-->
+        <!-- section9-->
 
-<footer></footer>
+        <section class="Depoimentos" id="depoimentos">
+            <div class="Depoimentos-title">Depoimentos</div>
+            <div class="Depoimentos-sub">QUEM TESTA SE APAIXONA!</div>
+            <div class="display-boxs1">
+                <div class="box-depoimentos">
+                    <div></div>
+                    <div>Walker da silva</div>
+                    <div>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Unde perspiciatis consectetur quasi
+                        repellendus qui necessitatibus repudiandae assumenda aspernatur nobis? Nulla eveniet alias
+                        suscipit at explicabo corrupti distinctio provident culpa rerum.</div>
+                </div>
+                <div class="box-depoimentos">
+                    <div></div>
+                    <div>Walker da silva</div>
+                    <div>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Unde perspiciatis consectetur quasi
+                        repellendus qui necessitatibus repudiandae assumenda aspernatur nobis? Nulla eveniet alias
+                        suscipit at explicabo corrupti distinctio provident culpa rerum.</div>
+                </div>
+                <div class="box-depoimentos">
+                    <div></div>
+                    <div>Walker da silva</div>
+                    <div>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Unde perspiciatis consectetur quasi
+                        repellendus qui necessitatibus repudiandae assumenda aspernatur nobis? Nulla eveniet alias
+                        suscipit at explicabo corrupti distinctio provident culpa rerum.</div>
+                </div>
+                <div class="box-depoimentos">
+                    <div></div>
+                    <div>Walker da silva</div>
+                    <div>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Unde perspiciatis consectetur quasi
+                        repellendus qui necessitatibus repudiandae assumenda aspernatur nobis? Nulla eveniet alias
+                        suscipit at explicabo corrupti distinctio provident culpa rerum.</div>
+                </div>
+            </div>
+        </section>
 
-<script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
-<script src="./script/scritp.js"></script>
 
+    </main>
+    <!-- footer-->
+
+    <footer class="footer">
+        <div class="footer-info">
+            <img src="./img/logo.svg" alt="">
+            <div>
+                <a href="#sobre">Sobre nós</a>
+                <br>
+                <a href="">Política de privacidade</a>
+            </div>
+        </div>
+
+        <div>
+            The Prime Tamandaré Office - Rua 05, Numero 691, Loja 01/B. 74115-060 - Goiânia - GO
+        </div>
+
+    </footer>
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+
+    <script src="./script/scritp.js"></script>
 </body>
+
 </html>
