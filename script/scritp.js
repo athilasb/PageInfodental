@@ -3,37 +3,37 @@
 
 // função nav bar menu mobile desktop
 var bolean = false
-$(document).ready(function() {
-    $('.icon-mobile').click(function() {
-        if (bolean) {
-            bolean = false
-            $(".menu nav").slideUp() 
-            $(".menu ul").slideUp() 
-        } else {
-            $(".menu nav").slideDown()
-            $(".menu ul").slideDown()
-            bolean = true
-        }
-        
-    });
+$(document).ready(function () {
+  $('.icon-mobile').click(function () {
+    if (bolean) {
+      bolean = false
+      $(".menu nav").slideUp()
+      $(".menu ul").slideUp()
+    } else {
+      $(".menu nav").slideDown()
+      $(".menu ul").slideDown()
+      bolean = true
+    }
+
+  });
 });
 
 
 
 
-$(document).ready(function() {
+$(document).ready(function () {
   // Verifica a largura da janela ao carregar a página
   if ($(window).width() < 768) {
-    $(".menu ul li a").click(function() {
+    $(".menu ul li a").click(function () {
       $(".menu ul").slideUp();
       $(".menu nav").slideUp();
     });
   }
-  
+
   // Verifica a largura da janela ao redimensionar
-  $(window).resize(function() {
+  $(window).resize(function () {
     if ($(window).width() < 768) {
-      $(".menu ul li a").click(function() {
+      $(".menu ul li a").click(function () {
         $(".menu ul").slideUp();
         $(".menu nav").slideUp();
       });
@@ -46,25 +46,44 @@ $(document).ready(function() {
 
 
 
+$(document).ready(function () {
+  $(window).resize(function () {
+    if ($(window).width() > 768) {
+      bolean = true
+      $(".menu nav").slideDown();
+      $(".menu ul").slideDown();
+    } else {
+      bolean = false
 
-
-
-$(document).ready(function() {
-    $(window).resize(function() {
-      if ($(window).width() > 768) {
-        bolean = true
-        $(".menu nav").slideDown();
-        $(".menu ul").slideDown();
-      } else {
-        bolean = false
-
-        $(".menu nav").slideUp();
-        $(".menu ul").slideUp();
-      }
-    });
+      $(".menu nav").slideUp();
+      $(".menu ul").slideUp();
+    }
   });
+});
+
+
+//scoll no menu
+$(document).ready(function () {
+  $('.menu a ,.footer a').click(function (e) {
+    e.preventDefault();
+    var targetId = $(this).attr('href').substring(1);
+    var targetElement = $('#' + targetId);
+
+    if (targetElement.length) {
+      var menuHeight = $('.menu').outerHeight();
+      var targetPosition = targetElement.offset().top - menuHeight;
+
+      $('html, body').animate({
+        scrollTop: targetPosition
+      }, 100); // Tempo de duração da animação em milissegundos
+    }
+  });
+});
+
 
 //fim
+
+
 
 /*Gerador de caracteres aleatorios para apresentar a frase na pagina inicial*/
 class TextScramble {
@@ -155,6 +174,157 @@ const next1 = () => {
   counter1 = (counter1 + 1) % phrases1.length
 }
 next()
+
+
+  // banner animado
+$(document).ready(function () {
+  $('.marquee_text').marquee({
+    duration: 15000,
+    duplicated: true,
+    startVisible: true
+  });
+})
+
+
+
+
+$(document).ready(function () {
+  $(".button-group a:nth-of-type(1)").click(function () {
+    $(".button-group a").removeClass("active")
+    $(".button-group a:nth-of-type(1)").addClass("active")
+    $(".prices1").fadeIn()
+    $(".prices2").css("display", "none")
+    $(".prices3").css("display", "none")
+
+  })
+  $(".button-group a:nth-of-type(2)").click(function () {
+    $(".button-group a").removeClass("active")
+    $(".button-group a:nth-of-type(2)").addClass("active")
+    $(".prices1").css("display", "none")
+    $(".prices2").fadeIn()
+    $(".prices3").css("display", "none")
+
+  })
+  $(".button-group a:nth-of-type(3)").click(function () {
+    $(".button-group a").removeClass("active")
+    $(".button-group a:nth-of-type(3)").addClass("active")
+    $(".prices1").css("display", "none")
+    $(".prices2").css("display", "none")
+    $(".prices3").fadeIn()
+
+  })
+})
+
+//Contagem regreciva
+$(document).ready(function () {
+  var daysElement = $('.regressive-prices-day b');
+  var hoursElement = $('.regressive-prices-hrs b');
+  var minutesElement = $('.regressive-prices-min b');
+  var secondsElement = $('.regressive-prices-seg b');
+
+  // Define o tempo total da contagem regressiva em segundos
+  var countdownTime = 172800;
+
+  // Obtém o horário de entrada do usuário ou usa o horário atual
+  var entryTime = localStorage.getItem('entryTime');
+  if (!entryTime) {
+    entryTime = new Date().getTime(); // Obtém o horário atual em milissegundos
+    localStorage.setItem('entryTime', entryTime); // Salva o horário de entrada no armazenamento local
+  }
+
+  function updateCountdown() {
+    var currentTime = new Date().getTime();
+    var elapsedSeconds = Math.floor((currentTime - entryTime) / 1000);
+
+    var remainingSeconds = countdownTime - elapsedSeconds;
+    var days = Math.floor(remainingSeconds / 86400); // Calcula o número de dias
+    var hours = Math.floor((remainingSeconds % 86400) / 3600); // Calcula o número de horas restantes
+    var minutes = Math.floor((remainingSeconds % 3600) / 60); // Calcula o número de minutos restantes
+    var seconds = Math.floor(remainingSeconds % 60); // Calcula o número de segundos restantes
+
+    if (hours < 0 || minutes < 0 || seconds < 0) {
+      entryTime = new Date().getTime(); // se a contagem for menor de 0 refazer a contagem
+      localStorage.setItem('entryTime', entryTime); //Regravar a contagem em localStorage
+    }
+
+    daysElement.text(('0' + days).slice(-2)); // Exibe os dias formatados com dois dígitos
+    hoursElement.text(('0' + hours).slice(-2)); // Exibe as horas formatadas com dois dígitos
+    minutesElement.text(('0' + minutes).slice(-2)); // Exibe os minutos formatados com dois dígitos
+    secondsElement.text(('0' + seconds).slice(-2)); // Exibe os segundos formatados com dois dígitos
+
+    if (remainingSeconds <= 0) {
+      clearInterval(countdownInterval);
+    }
+  }
+  updateCountdown();
+  var countdownInterval = setInterval(updateCountdown, 1000);
+});
+
+
+$('#datetimepicker3').datetimepicker({
+  format: 'd.m.Y H:i',
+  inline: true,
+  theme: 'dark',
+});
+
+
+
+
+//modal
+
+$(".js-fechar-modal , .fechar-mobile").click(function () {
+  $(".modal-calendario").fadeOut();
+});
+
+$(".button-prices").click(function () {
+  $(".modal-calendario").fadeIn();
+});
+
+
+var swiper = new Swiper(".mySwiper", {
+  slidesPerView: 1,
+  spaceBetween: 10,
+  pagination: {
+    el: ".swiper-pagination",
+    clickable: true,
+  },
+  autoplay: {
+    delay: 2500,
+    disableOnInteraction: false,
+  },
+  breakpoints: {
+    640: {
+      slidesPerView: 1,
+      spaceBetween: 20,
+    },
+    768: {
+      slidesPerView: 2,
+      spaceBetween: 40,
+    },
+    1024: {
+      slidesPerView: 4,
+      spaceBetween: 50,
+    },
+  },
+});
+
+
+//agenda
+$(document).ready(function () {
+  $('.xdsoft_time').click(function () {
+    var hasDateCurrent = $('.xdsoft_date').hasClass('xdsoft_current');
+    var hasTimeCurrent = $('.xdsoft_time').hasClass('xdsoft_current');
+
+    if (hasTimeCurrent) {
+      $('.confirmar-agenda').addClass('active');
+    } else {
+      $('.confirmar-agenda').removeClass('active');
+    }
+  });
+});
+
+
+
 /*
 setTimeout(function() {
   next1()
@@ -183,205 +353,42 @@ setTimeout(function() {
   });*/
 
 
-
-  $(document).ready(function() {
-  $('.marquee_text').marquee({
-    duration:15000,
-    duplicated: true,
-    startVisible: true
-});
-  })
-  var swiper = new Swiper(".Carroseu2", {
-  slidesPerView: 5,
-  spaceBetween: 10,
-  freeMode: true,
-  autoplay: {
-      delay: 2500, // tempo em milissegundos entre cada slide
-      disableOnInteraction: false, // se o auto-play deve ser desativado quando o usuário interagir com o Swiper
-  },
-  breakpoints: {
-      // quando a largura da tela for maior que 768px (tablets), exibir 3 slides por view
-      961: {
-      slidesPerView: 14,
-      },
-      960: {
-      slidesPerView: 13,
-      },
-      760: {
-      slidesPerView: 11,
-      },
-      700: {
-      slidesPerView: 10,
-      },
-      600: {
-      slidesPerView: 9,
-      },
-      500: {
-      slidesPerView: 8,
-      },
-      400: {
-      slidesPerView: 7,
-      },
-      350: {
-      slidesPerView: 6,
-      },
-      300: {
-      slidesPerView: 5,
-      },
-  },
-  });
-
-
-
-  $(document).ready(function() {
-    $('.menu a ,.footer a').click(function(e) {
-      e.preventDefault();
-      var targetId = $(this).attr('href').substring(1);
-      var targetElement = $('#' + targetId);
-      
-      if (targetElement.length) {
-        var menuHeight = $('.menu').outerHeight();
-        var targetPosition = targetElement.offset().top - menuHeight;
-        
-        $('html, body').animate({
-          scrollTop: targetPosition
-        }, 100); // Tempo de duração da animação em milissegundos
-      }
-    });
-  });
-
-
-  $(document).ready(function(){
-    $(".button-group a:nth-of-type(1)").click(function(){
-      $(".button-group a").removeClass("active")
-      $(".button-group a:nth-of-type(1)").addClass("active")
-      $(".prices1").fadeIn()
-      $(".prices2").css("display", "none")
-      $(".prices3").css("display", "none")
-
-    })
-    $(".button-group a:nth-of-type(2)").click(function(){
-      $(".button-group a").removeClass("active")
-      $(".button-group a:nth-of-type(2)").addClass("active")
-      $(".prices1").css("display", "none")
-      $(".prices2").fadeIn()
-      $(".prices3").css("display", "none")
-      
-    })
-    $(".button-group a:nth-of-type(3)").click(function(){
-      $(".button-group a").removeClass("active")
-      $(".button-group a:nth-of-type(3)").addClass("active")
-      $(".prices1").css("display", "none")
-      $(".prices2").css("display", "none")
-      $(".prices3").fadeIn()
-      
-    })
-  })
-  
-  //Contagem regreciva
-  $(document).ready(function() {
-    var daysElement = $('.regressive-prices-day b');
-    var hoursElement = $('.regressive-prices-hrs b');
-    var minutesElement = $('.regressive-prices-min b');
-    var secondsElement = $('.regressive-prices-seg b');
-  
-    // Define o tempo total da contagem regressiva em segundos
-    var countdownTime = 172800;
-  
-    // Obtém o horário de entrada do usuário ou usa o horário atual
-    var entryTime = localStorage.getItem('entryTime');
-    if (!entryTime) {
-      entryTime = new Date().getTime(); // Obtém o horário atual em milissegundos
-      localStorage.setItem('entryTime', entryTime); // Salva o horário de entrada no armazenamento local
-    }
-  
-    function updateCountdown() {
-      var currentTime = new Date().getTime();
-      var elapsedSeconds = Math.floor((currentTime - entryTime) / 1000);
-  
-      var remainingSeconds = countdownTime - elapsedSeconds;
-      var days = Math.floor(remainingSeconds / 86400); // Calcula o número de dias
-      var hours = Math.floor((remainingSeconds % 86400) / 3600); // Calcula o número de horas restantes
-      var minutes = Math.floor((remainingSeconds % 3600) / 60); // Calcula o número de minutos restantes
-      var seconds = Math.floor(remainingSeconds % 60); // Calcula o número de segundos restantes
-  
-      if (hours < 0 || minutes < 0 || seconds < 0) {
-        entryTime = new Date().getTime(); // se a contagem for menor de 0 refazer a contagem
-        localStorage.setItem('entryTime', entryTime); //Regravar a contagem em localStorage
-      }
-  
-      daysElement.text(('0' + days).slice(-2)); // Exibe os dias formatados com dois dígitos
-      hoursElement.text(('0' + hours).slice(-2)); // Exibe as horas formatadas com dois dígitos
-      minutesElement.text(('0' + minutes).slice(-2)); // Exibe os minutos formatados com dois dígitos
-      secondsElement.text(('0' + seconds).slice(-2)); // Exibe os segundos formatados com dois dígitos
-  
-      if (remainingSeconds <= 0) {
-        clearInterval(countdownInterval);
-      }
-    }
-    updateCountdown();
-    var countdownInterval = setInterval(updateCountdown, 1000);
-  });
-  
-
-  $('#datetimepicker3').datetimepicker({
-    format:'d.m.Y H:i',
-    inline:true,
-    theme: 'dark',
-  });
-
-
-
-  
-//modal
-
-  $(".js-fechar-modal , .fechar-mobile").click(function() {
-    $(".modal-calendario").fadeOut();
-  });
-
-  $(".button-prices").click(function() {
-    $(".modal-calendario").fadeIn();
-  });
-
-
-  var swiper = new Swiper(".mySwiper", {
-    slidesPerView: 1,
-    spaceBetween: 10,
-    pagination: {
-      el: ".swiper-pagination",
-      clickable: true,
-    },
-          autoplay: {
-        delay: 2500,
-        disableOnInteraction: false,
-      },
-    breakpoints: {
-      640: {
-        slidesPerView: 1,
-        spaceBetween: 20,
-      },
-      768: {
-        slidesPerView: 2,
-        spaceBetween: 40,
-      },
-      1024: {
-        slidesPerView: 3,
-        spaceBetween: 50,
-      },
-    },
-  });
-
-  $(document).ready(function() {
-    $('.xdsoft_time').click(function () {
-      var hasDateCurrent = $('.xdsoft_date').hasClass('xdsoft_current');
-      var hasTimeCurrent = $('.xdsoft_time').hasClass('xdsoft_current');
-      
-      if (hasTimeCurrent) {
-        $('.confirmar-agenda').addClass('active');
-      } else {
-        $('.confirmar-agenda').removeClass('active');
-      }
-    });
-  });
-  
-  
+/* var swiper = new Swiper(".Carroseu2", {
+ slidesPerView: 5,
+ spaceBetween: 10,
+ freeMode: true,
+ autoplay: {
+     delay: 2500, // tempo em milissegundos entre cada slide
+     disableOnInteraction: false, // se o auto-play deve ser desativado quando o usuário interagir com o Swiper
+ },
+ breakpoints: {
+     // quando a largura da tela for maior que 768px (tablets), exibir 3 slides por view
+     961: {
+     slidesPerView: 14,
+     },
+     960: {
+     slidesPerView: 13,
+     },
+     760: {
+     slidesPerView: 11,
+     },
+     700: {
+     slidesPerView: 10,
+     },
+     600: {
+     slidesPerView: 9,
+     },
+     500: {
+     slidesPerView: 8,
+     },
+     400: {
+     slidesPerView: 7,
+     },
+     350: {
+     slidesPerView: 6,
+     },
+     300: {
+     slidesPerView: 5,
+     },
+ },
+ });*/
