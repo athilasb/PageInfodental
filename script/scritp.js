@@ -355,10 +355,6 @@ setTimeout(function() {
         delay: 2500,
         disableOnInteraction: false,
       },
-      navigation: {
-        nextEl: ".swiper-button-next",
-        prevEl: ".swiper-button-prev",
-      },
     breakpoints: {
       640: {
         slidesPerView: 1,
@@ -374,3 +370,18 @@ setTimeout(function() {
       },
     },
   });
+
+  $(document).ready(function() {
+    $('.xdsoft_time').click(function () {
+      var hasDateCurrent = $('.xdsoft_date').hasClass('xdsoft_current');
+      var hasTimeCurrent = $('.xdsoft_time').hasClass('xdsoft_current');
+      
+      if (hasTimeCurrent) {
+        $('.confirmar-agenda').addClass('active');
+      } else {
+        $('.confirmar-agenda').removeClass('active');
+      }
+    });
+  });
+  
+  
