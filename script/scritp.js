@@ -324,7 +324,6 @@ $(document).ready(function () {
 });
 
 
-
 /*
 setTimeout(function() {
   next1()
