@@ -381,7 +381,7 @@ html {
 
 .display-flex-space {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between !important;
     align-items: center;
 }
 
@@ -413,7 +413,7 @@ html {
     font-size: var(--size);
     line-height: 27px;
     opacity: 1;
-    padding: 0px 50px 0px 50px;
+    padding: 0px 10px 0px 10px;
 }
 
 .box .sub-Titulo {
@@ -509,6 +509,10 @@ html {
 
 .img-quem-somos {
     max-width: 472px;
+}
+
+.text-left{
+    text-align: left !important;
 }
 
 .aspas-quem-somos {
@@ -801,6 +805,35 @@ html {
 }
 
 @media screen and (max-width: 1000px) {
+    .box .sub-Titulo{
+        padding: 0px 40px 10px 40px;    
+    }
+    .botao-dourado {
+        padding: 0px 30px;
+        width: 100%;
+    }
+
+    .box .dourado {
+        color: var(--dourado);
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 700;
+        font-size: var(--size);
+        line-height: 27px;
+        opacity: 1;
+        padding: 0px 45px 0px 45px;
+    }
+    .space-box1{
+        width: 78%;
+        padding: 0px 45px 0px 45px;
+    }
+
+    .space-box {
+        width: 78%;
+        padding: 0px 45px 0px 45px;
+        margin-left: 0;
+        margin-right: 0;
+    }
     .space-home {
         display: block !important;
         margin-top: 30px !important;
@@ -824,23 +857,24 @@ html {
 
 }
 
-@media screen and (max-width: 810px) {
-
-    .header-title {
-        font-size: 18px;
-        line-height: 30px;
-    }
-
-}
 
 @media screen and (max-width: 810px) {
+
     .perfil-conteudo {
         justify-content: center;
     }
+    .space-box1{
+        width: 70%;
+        padding: 0px 45px 0px 45px;
+    }
 
     .space-box {
-        padding: 0px 45px 0px 50px;
+        width: 70%;
+        padding: 0px 45px 0px 45px;
+        margin-left: 0;
+        margin-right: 0;
     }
+
 }
 
 @media screen and (min-width: 1048px) {
@@ -1676,10 +1710,6 @@ html {
         font-size: 25px;
     }
 
-    .botao-dourado {
-        padding: 0px 30px;
-        width: auto;
-    }
 
     .section {
         padding: 0px 15px;
@@ -1930,7 +1960,7 @@ input[type="checkbox"], input[type="radio"] {
 }
 .input-grid .grid2{
     grid-template-columns: 1fr 1fr;
-    gap:50px ;
+    gap:15px ;
 }
 
 .input-grid .grid1{
@@ -1940,9 +1970,9 @@ input[type="checkbox"], input[type="radio"] {
 .input-grid input[type="text"] {
     border: solid 1px #848484;
     border-radius: 5px;
-    width: 100%;
     height: 35px;
     padding: 0px 10px;
+    width: -webkit-fill-available;
 
 }
 
@@ -2002,4 +2032,14 @@ input[type="checkbox"], input[type="radio"] {
     font-size: var(--size2);
     text-align: center;
 
+}
+
+
+@media screen and (max-width: 510px) {
+    .input-grid .gird1, .input-grid .grid2{
+        display: block;
+    }
+    .input-grid input[type="text"]{
+       width:-webkit-fill-available;
+    }
 }

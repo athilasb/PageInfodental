@@ -6,3 +6,13 @@ $(document).ready(function() {
       $(this).find('.check').addClass('active'); // Adiciona a classe 'active' ao elemento com a classe 'check' dentro do elemento clicado
   });
 });
+
+$(document).ready(function() {
+  $('input[name="tipo-pessoa"]').change(function() {
+      if ($(this).attr('id') === 'tipo-pessoa-1') {
+          $('.js-name').text('CPF');
+      } else if ($(this).attr('id') === 'tipo-pessoa-2') {
+          $('.js-name').text('CNPJ');
+      }
+  });
+});

@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="./style/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/3.3.4/jquery.inputmask.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css?v1" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css?v1"/>
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jQuery.Marquee/1.5.0/jquery.marquee.min.js"></script>
@@ -104,7 +104,7 @@
             </div>
         </section>
 
-        <section class="page-center"  style="display:none;" >
+        <section class="page-center" style="display:none">
             <div class="page-planos">
                 <div class="passos-planos">Passo 2 de 3</div>
                 <h2 class="title-planos">Informe os dados do responsável pela clínica e/ou sistema..</h2>
@@ -112,42 +112,80 @@
                     <div class="satistacao">
                         <div class="input-radio-pessoa">
                             <label for="tipo-pessoa-1"> <input type="radio" name="tipo-pessoa" id="tipo-pessoa-1">Pessoa física</label>
-                            <label for="tipo-pessoa-2"> <input type="radio" name="tipo-pessoa" id="tipo-pessoa-2">Pessoa física</label>
+                            <label for="tipo-pessoa-2"> <input type="radio" name="tipo-pessoa" id="tipo-pessoa-2">Pessoa Juridica</label>
                         </div>
                         <div class="input-grid">
                             <div class="grid2">
                                 <div>
                                     <p>Responsável</p>
-                                    <p><input type="text" name="" id=""></p>
+                                    <p><input type="text"></p>
                                 </div>
                                 <div>
                                     <p>E-mail</p>
-                                    <p><input type="text" name="" id=""></p>
+                                    <p><input type="text"></p>
                                 </div>
                             </div>
                             <div class="grid2">
                                 <div>
-                                    <p>CPF</p>
-                                    <p><input type="text" name="" id=""></p>
+                                    <p class="js-name">CPF</p>
+                                    <p><input type="text"></p>
                                 </div>
                                 <div>
                                     <p>Celular/Whatsapp</p>
-                                    <p><input type="text" name="" id=""></p>
+                                    <p><input type="text"></p>
                                 </div>
                             </div>
                             <div class="grid1">
                                 <div>
                                     <p>Nome da Clínica</p>
-                                    <p><input type="text" name="" id=""></p>
+                                    <p><input type="text"></p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </form>
-
                     <a class="button-planos" href="javascript:;">Continuar</a>
             </div>
         </section>
+        <section class="page-center" style="display:none">
+            <div class="page-planos">
+                <div class="passos-planos">Passo 2 de 3</div>
+                <h2 class="title-planos">Informe os dados do responsável pela clínica e/ou sistema..</h2>
+                <form action="post">
+                    <div class="satistacao">
+                        <div class="input-radio-pessoa">
+                            <label for="tipo-pessoa-1"> <input type="radio" name="tipo-pessoa" id="tipo-pessoa-1">Pessoa física</label>
+                            <label for="tipo-pessoa-2"> <input type="radio" name="tipo-pessoa" id="tipo-pessoa-2">Pessoa Juridica</label>
+                        </div>
+                        <div class="input-grid">
+                            <div class="grid2">
+                                <div>
+                                    <p>Responsável</p>
+                                    <p><input type="text"></p>
+                                </div>
+                                <div>
+                                    <p>E-mail</p>
+                                    <p><input type="text"></p>
+                                </div>
+                            </div>
+                            <div class="grid2">
+                                <div>
+                                    <p class="js-name">CPF</p>
+                                    <p><input type="text"></p>
+                                </div>
+                                <div>
+                                    <p>Celular/Whatsapp</p>
+                                    <p><input type="text"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                    <a class="button-planos" href="javascript:;">Continuar</a>
+            </div>
+        </section>
+
+
         <section class="page-center"  style="display:none;" >
             <div class="page-planos">
                 <div class="passos-planos">Passo 2 de 3</div>
@@ -163,7 +201,7 @@
             </div>
         </section>
 
-        <section class="page-center"  >
+        <section class="page-center" style="display: none;" >
             <div class="page-planos">
                 <div class="passos-planos">Passo 3 de 3</div>
                 <h2 class="title-planos">Escolha o melhor plano para você.</h2>
@@ -222,6 +260,138 @@
                                     </div>
                                 </label>
                             </div>
+                        </div>
+                    </form>
+
+                    <a class="button-planos" href="javascript:;">Continuar</a>
+            </div>
+        </section>
+        <section class="page-center" style="display: none;" >
+            <div class="page-planos">
+                <div class="passos-planos">Passo 3 de 3</div>
+                <h2 class="title-planos">Escolha o melhor plano para você.</h2>
+                    <form action="post">
+                        <div class="satistacao">
+                            <div class="box-satistacao">
+                                <input type="radio" name="pagamento" id="pagamento-1">
+                                <label for="pagamento-1">
+                                    <a href="javascript:;" class="display-flex-space itens">
+                                        <div>
+                                            <div class="passos-planos text-left">Cartão de crédito ou débito</div>
+                                            <div class="passos-planos text-left">
+                                                <img style="width: 15px;" src="./img/bandeiras/logo-visa-1024.svg" alt="logo-visa">
+                                                <img style="width: 15px;" src="./img/bandeiras/logo-mastercard-1024.svg" alt="logo-mastercar">
+                                                <img style="width: 15px;" src="./img/bandeiras/logo-american-express-1024.svg" alt="logo-american-express">
+                                                <img style="width: 15px;" src="./img/bandeiras/logo-cartao-elo-1024.svg" alt="logo-cartao-elo">
+                                                <img style="width: 15px;" src="./img/bandeiras/logo-hipercard-1024.svg" alt="logo-hipercard">
+                                            </div>
+                                        </div>
+                                        <div><span class="iconify" data-icon="fluent:ios-arrow-rtl-24-filled" data-width="15"></span></div>
+                                    </a>
+                                </label>
+                            </div>
+    
+                            <div class="box-satistacao">
+                                <input type="radio" name="pagamento" id="pagamento-2">
+                                <label for="pagamento-2">
+                                    <a href="javascript:;" class="display-flex-space itens">
+                                        <div>
+                                            <div class="passos-planos text-left">pix</div>
+                                            <div class="passos-planos text-left">
+                                            </div>
+                                        </div>
+                                        <div><span class="iconify" data-icon="fluent:ios-arrow-rtl-24-filled" data-width="15"></span></div>
+                                    </a>
+                                </label>
+                            </div>
+
+                        </div>
+                    </form>
+
+                    <a class="button-planos" href="javascript:;">Continuar</a>
+            </div>
+        </section>
+        <section class="page-center" style="display: none;">
+            <div class="page-planos">
+                <div class="passos-planos">Passo 3 de 3</div>
+                <h2 class="title-planos">Informe os dados do seu cartão de crédito ou débito</h2>
+                <form action="post">
+                    <div class="satistacao">
+                            <div class="passos-planos text-left">
+                                <img style="width: 15px;" src="./img/bandeiras/logo-visa-1024.svg" alt="logo-visa">
+                                <img style="width: 15px;" src="./img/bandeiras/logo-mastercard-1024.svg" alt="logo-mastercar">
+                                <img style="width: 15px;" src="./img/bandeiras/logo-american-express-1024.svg" alt="logo-american-express">
+                                <img style="width: 15px;" src="./img/bandeiras/logo-cartao-elo-1024.svg" alt="logo-cartao-elo">
+                                <img style="width: 15px;" src="./img/bandeiras/logo-hipercard-1024.svg" alt="logo-hipercard">
+                            </div>
+                            <div class="input-grid">
+                                <div class="grid1">
+                                    <div>
+                                        <p><input type="text" placeholder="Número do cartão"></p>
+                                    </div>
+                                </div>
+                                <div class="grid2">
+                                    <div>
+                                        <p><input type="text" placeholder="Data de validade"></p>
+                                    </div>
+                                    <div>
+                                        <p><input type="text" placeholder="CVV"></p>
+                                    </div>
+                                </div>
+                                <div class="grid1">
+                                    <div>
+                                        <p><input type="text" placeholder="Nome"></p>
+                                    </div>
+                                </div>
+                                <div class="grid1">
+                                    <div>
+                                        <p><input type="text" placeholder="Sobrenome"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="passos-planos text-left">Escolha sua forma de pagamento preferida:</div>
+                            <div class="input-radio-pessoa" style="margin-top: 15px;">
+                                <label for="tipo-1"> <input type="radio" name="tipo" id="tipo-1">Crédito</label>
+                                <label for="tipo-2"> <input type="radio" name="tipo" id="tipo-2">Débito</label>
+                            </div>
+                    </div>
+                </form>
+                    <a class="button-planos" href="javascript:;">Continuar</a>
+            </div>
+        </section>
+        <section class="page-center">
+            <div class="page-planos">
+                <div class="passos-planos">Passo 3 de 3</div>
+                <h2 class="title-planos">Escolha o melhor plano para você.</h2>
+                    <form action="post">
+                        <div class="satistacao">
+                            <div class="box-satistacao">
+                                <input type="radio" name="tipo-acesso" id="tipo-acesso-1">
+                                <label for="tipo-acesso-1">
+                                    <a href="javascript:;" class="display-flex-space itens">
+                                        <div>
+                                            <strong class="passos-planos text-left">Criar agora</strong>
+                                            <div class="passos-planos text-left">A etapa dessa criação demora de 2 a 5 minutos e será enviado via 
+                                                e-mail seu usuário e senha</div>
+                                        </div>
+                                        <div><span class="check" style="border-radius: 30px;"> <span class="iconify" data-icon="fluent:checkmark-20-filled" style="color: white;" data-width="15"></span> </span></div>
+                                    </a>
+                                </label>
+                            </div>
+    
+                            <div class="box-satistacao">
+                                <input type="radio" name="tipo-acesso" id="tipo-acesso-2">
+                                <label for="tipo-acesso-2">
+                                    <a href="javascript:;" class="display-flex-space itens">
+                                        <div>
+                                            <strong class="passos-planos text-left">Ajuda da equipe</strong>
+                                            <div class="passos-planos text-left">Caso não tenha entendido selecione essa opção que nossa equipe entrará em contato para te ajudar (Prazo de 24 à 48 horas)</div>
+                                        </div>
+                                        <div><span class="check" style="border-radius: 30px;"> <span class="iconify" data-icon="fluent:checkmark-20-filled" style="color: white;" data-width="15"></span> </span></div>
+                                    </a>
+                                </label>
+                            </div>
+
                         </div>
                     </form>
 
