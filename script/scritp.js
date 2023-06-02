@@ -261,15 +261,6 @@ $(document).ready(function () {
 });
 
 
-$('#datetimepicker3').datetimepicker({
-  format: 'd.m.Y H:i',
-  inline: true,
-  theme: 'dark',
-});
-
-
-
-
 //modal
 
 $(".js-fechar-modal , .fechar-mobile").click(function () {
@@ -309,19 +300,6 @@ var swiper = new Swiper(".mySwiper", {
 });
 
 
-//agenda
-$(document).ready(function () {
-  $('.xdsoft_time').click(function () {
-    var hasDateCurrent = $('.xdsoft_date').hasClass('xdsoft_current');
-    var hasTimeCurrent = $('.xdsoft_time').hasClass('xdsoft_current');
-
-    if (hasTimeCurrent) {
-      $('.confirmar-agenda').addClass('active');
-    } else {
-      $('.confirmar-agenda').removeClass('active');
-    }
-  });
-});
 
 
 /*

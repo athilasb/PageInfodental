@@ -22,15 +22,24 @@ a {
     --cinza: #B3B3B3;
     --cinza1: #F7F7F7;
     --cinza2: #CDCDCD;
+    --cinza3: #848484;
+    --cinza4:#EBEBEB;
+    --cinza5:#b1b1b1;
     /*cor principal*/
     --verde: #344848;
+    --verde1:#15B64F;
+
+    --vermelho: #FF5F5F;
     --dourado: #FECEA2;
+    
+
 
     /*font*/
     --font-grande: 400px;
     --h1: 48px;
     --h2: 35px;
     --h3: 25px;
+    --size0:32px;
     --size: 20px;
     --size1: 18px;
     --size2: 14px;
@@ -124,7 +133,7 @@ html {
     font-size: var(--size3);
     line-height: 57px;
     letter-spacing: 0.5px;
-    color: #344848;
+    color: var(--verde);
 
 }
 
@@ -140,7 +149,7 @@ html {
 }
 
 .padding-section1 {
-    background: #F7F7F7;
+    background: var(--cinza1);
     padding: 90px 0px 50px 0px;
 }
 
@@ -162,7 +171,7 @@ html {
     font-weight: var(--weight1);
     font-size: var(--size);
     line-height: 23px;
-    color: #B3B3B3;
+    color: var(--verde);
     text-align: center;
     margin-top: 90px;
     margin-bottom: 30px;
@@ -193,7 +202,7 @@ html {
     font-family: 'Montserrat';
     font-style: normal;
     font-weight: var(--weight);
-    font-size: 32px;
+    font-size: var(--size0);
     height: 140px;
     width: 540px;
     line-height: 57px;
@@ -278,7 +287,7 @@ html {
 }
 
 .visao-animacao-frame {
-    background: #848484;
+    background: var(--cinza3);
     width: 20px;
     height: 2px;
     animation: move-frames 10s ease-in-out infinite;
@@ -319,12 +328,12 @@ html {
     }
 
     30% {
-        color: #848484;
+        color: var(--cinza3);
 
     }
 
     55% {
-        color: #848484;
+        color: var(--cinza3);
 
     }
 
@@ -339,13 +348,13 @@ html {
 }
 
 .visao1 {
-    color: #848484;
+    color: var(--cinza3);
     animation: move-visao2 10s ease-in-out infinite;
 }
 
 @keyframes move-visao2 {
     5% {
-        color: #848484;
+        color: var(--cinza3);
 
     }
 
@@ -365,7 +374,7 @@ html {
     }
 
     60% {
-        color: #848484;
+        color: var(--cinza3);
     }
 
 }
@@ -440,7 +449,7 @@ html {
     font-family: 'Montserrat';
     font-style: normal;
     font-weight: 400;
-    font-size: 14px;
+    font-size: var(--size2);
     line-height: 19px;
     color: var(--cinza2);
 }
@@ -522,7 +531,7 @@ html {
     font-size: 40px;
     line-height: 18px;
     letter-spacing: 3px;
-    color: #B3B3B3;
+    color: var(--verde);
     height: 36px;
     margin-top: 10px;
     margin-bottom: -25px;
@@ -590,9 +599,9 @@ html {
     font-family: 'Montserrat';
     font-style: normal;
     font-weight: 400;
-    font-size: 18px;
+    font-size: var(--size1);
     line-height: 20px;
-    color: #344848;
+    color: var(--verde);
     margin-top: 36PX;
 }
 
@@ -626,7 +635,7 @@ html {
     font-size: var(--size1);
     line-height: 20px;
     margin-bottom: 15px;
-    color: #000000;
+    color: var(--preto);
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -748,19 +757,19 @@ html {
     grid-column-start: 1;
     grid-row-start: 1;
     grid-row-end: 2;
-    font-size: 18px;
+    font-size: var(--size1);
     line-height: 20px;
 
 }
 
 .grid-avand>div:nth-of-type(2) {
     grid-column-start: 2;
-    font-size: 18px;
+    font-size: var(--size1);
     line-height: 20px;
     grid-row-start: 1;
     grid-row-end: 6;
     margin: 0px 20px;
-    background: #b1b1b1;
+    background: var(--cinza5);
 }
 
 .grid-avand>div:nth-of-type(3) {
@@ -768,7 +777,7 @@ html {
     grid-row-start: 1;
     grid-row-end: 6;
     padding: 0;
-    border: 0px solid #EBEBEB;
+    border: 0px solid var(--cinza4);
     box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.15);
     background: transparent;
 }
@@ -900,7 +909,7 @@ html {
     font-weight: var(--weight0);
     font-size: var(--size1);
     line-height: 20px;
-    color: #344848;
+    color: var(--verde);
 
 }
 
@@ -927,7 +936,7 @@ html {
     font-weight: var(--weight);
     font-size: var(--h2);
     line-height: 45px;
-    color: #344848;
+    color: var(--verde);
 }
 
 .nossos-clientes-img img {
@@ -1009,7 +1018,7 @@ html {
 .box-prices-values div {
     width: 70px;
     height: 1px;
-    background: #FECEA2;
+    background: var(--dourado);
     position: absolute;
 
 
@@ -1035,7 +1044,7 @@ html {
     line-height: 14px;
     text-align: center;
     color: var(--verde);
-    background: #FECEA2;
+    background: var(--dourado);
     border-radius: 30px;
     padding: 0px 5px;
     margin-left: 10px;
@@ -1124,7 +1133,7 @@ html {
 }
 
 .Pricing .regressive-prices {
-    background: #FFFFFF;
+    background: var(--branco);
     border-radius: 10px;
     color: var(--verde);
     padding-top: 15px;
@@ -1196,7 +1205,7 @@ html {
 
 .box-2-prices {
     background: var(--branco);
-    border: 1px solid #CDCDCD;
+    border: 1px solid var(--cinza2);
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.15);
     border-radius: 10px;
     color: var(--verde);
@@ -1298,8 +1307,8 @@ html {
 .button-group {
     display: flex;
     padding: 8px;
-    background: #FFFFFF;
-    border: 1px solid #B3B3B3;
+    background: var(--branco);
+    border: 1px solid var(--verde);
     border-radius: 30px;
     width: 260px;
     margin: auto;
@@ -1312,7 +1321,7 @@ html {
 }
 
 .button-group a.active {
-    background: #344848;
+    background: var(--verde);
     color: var(--branco);
 }
 
@@ -1327,7 +1336,7 @@ html {
     font-family: 'Montserrat';
     font-style: normal;
     font-weight: var(--weight1);
-    font-size: 12px;
+    font-size: var(--size5);
     line-height: 20px;
     margin: 0px 10px;
 }
@@ -1389,19 +1398,6 @@ html {
     padding: 2px 5px;
     left: 145px;
     bottom: 70px;
-}
-
-.modal-calendario {
-    background: #ffffffb9;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 2;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
 .calendario-info {
@@ -1486,7 +1482,7 @@ html {
 }
 
 .confirmar-agenda.active {
-    background: #15B64F;
+    background: var(--verde1);
 }
 
 .perfil-calendario {
@@ -1531,7 +1527,7 @@ html {
 .calendario-color div:nth-of-type(2) span {
     width: 10px;
     height: 10px;
-    background: #FF5F5F;
+    background: var(--vermelho);
     border-radius: 30px;
     margin-right: 5px;
     display: block;
@@ -1541,7 +1537,7 @@ html {
 .calendario-color div:nth-of-type(3) span {
     width: 10px;
     height: 10px;
-    background: #FECEA2;
+    background: var(--dourado);
     border-radius: 30px;
     margin-right: 5px;
     display: block;
@@ -1707,7 +1703,7 @@ html {
     }
 
     .header-title {
-        font-size: 25px;
+        font-size: var(--h3);
     }
 
 
@@ -1735,7 +1731,7 @@ html {
     }
 
     .Pricing .title-prices h1 span:nth-of-type(1) {
-        font-size: 15px;
+        font-size: var(--size2);
     }
 
     .Pricing .title-prices h1 span:nth-of-type(2) {
@@ -1743,7 +1739,7 @@ html {
     }
 
     .Pricing .title-prices h1 span:nth-of-type(3) {
-        font-size: 15px;
+        font-size: var(--size2);
         bottom: 25px;
     }
 
@@ -1795,7 +1791,7 @@ html {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #B3B3B3 ;
+    border-bottom: 1px solid var(--verde) ;
     padding: 15px 70px;
     
 }
@@ -1811,7 +1807,7 @@ html {
     font-weight: var(--weight0);
     line-height: 57px;
     letter-spacing: 0.5px;
-    color: #344848;
+    color: var(--verde);
     font-size: var(--size1);
 
 }
@@ -1879,12 +1875,12 @@ html {
 .passos-planos{
 font-size: var(--size2);
 text-align: center;
-color: #344848;
+color: var(--verde);
 
 }
 
 .satistacao .check {
-    border: 1px solid #B3B3B3;
+    border: 1px solid var(--verde);
     border-radius: 5px;
     width: 25px;
     height: 25px;
@@ -1892,7 +1888,7 @@ color: #344848;
 }
 
 .satistacao .check.active {
-    background: #15B64F;
+    background: var(--verde1);
     align-items: center;
     display: flex;
     justify-content: center;
@@ -1906,18 +1902,26 @@ color: #344848;
     align-items: center;
     max-width: 350px;
     margin: 20px auto;
-    border: 1px solid #B3B3B3;
+    border: 1px solid var(--verde);
     border-radius: 10px;
     padding: 15px;
     gap: 20px;
 }
 
 .satistacao .itens.active{
-    border: 2px solid #344848;
+    border: 2px solid var(--verde);
 }
 
 .satistacao .box-satistacao input[type="radio"]{
     display: none;
+}
+.box-border{
+    background: var(--branco);
+    border: 1px solid var(--verde);
+    border-radius: 10px;
+    color: var(--cinza3);
+    font-size: var(--size2);
+    padding: 20px;
 }
 
 .satistacao .input-radio-pessoa label{
@@ -1968,7 +1972,7 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .input-grid input[type="text"] {
-    border: solid 1px #848484;
+    border: solid 1px var(--cinza3);
     border-radius: 5px;
     height: 35px;
     padding: 0px 10px;
@@ -1978,7 +1982,7 @@ input[type="checkbox"], input[type="radio"] {
 
 .input-grid .grid2 p, .input-grid .grid1 p{
     margin: 10px 0px;
-    color: #848484;
+    color: var(--cinza3);
 }
 
 .margin-bottom{
@@ -2005,7 +2009,7 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .itens .title-precos{
-    background: #848484;
+    background: var(--cinza3);
     border-radius: 5px;
     display: flex;
     justify-content: center;
@@ -2028,12 +2032,43 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .itens .content-sub-prices{
-    color: #848484;
+    color: var(--cinza3);
     font-size: var(--size2);
     text-align: center;
 
 }
 
+.input-dominio{
+    display: flex;
+    margin-top: 15px;
+}
+
+.input-dominio span{
+    background: var(--cinza4);
+    padding: 10px;
+    border-radius: 0px 5px 5px 0px;
+    color: #8e98a6;
+    font-size: var(--size2);
+}
+
+.input-dominio input[type="text"]{
+    padding: 5px;
+    border-radius: 5px 0px 0px 5px;
+    border: solidvar(--cinza4) 1px;
+    width: 40%;
+
+}
+
+.input-dominio-descrition{
+    font-size: var(--size3);
+    text-align: center;
+    line-height: 10px;
+    margin-top: 10px;
+}
+
+.page-result{
+    border-bottom: solid 1px var(--verde);
+}
 
 @media screen and (max-width: 510px) {
     .input-grid .gird1, .input-grid .grid2{

@@ -16,3 +16,21 @@ $(document).ready(function() {
       }
   });
 });
+
+$('#datetimepicker3').datetimepicker({
+  format: 'd.m.Y H:i',
+  inline: true,
+  theme: 'dark',
+});
+
+
+//agenda
+  $('.xdsoft_time').click(function () {
+    var hasTimeCurrent = $('.xdsoft_time').hasClass('xdsoft_current');
+
+    if (hasTimeCurrent) {
+      $('.confirmar-agenda').addClass('active');
+    } else {
+      $('.confirmar-agenda').removeClass('active');
+    }
+  });
