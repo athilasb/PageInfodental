@@ -1538,6 +1538,38 @@ html {
     display: block;
 }
 
+.menu-planos{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--verde) ;
+    padding: 15px 70px;
+    
+}
+
+.menu-planos a{
+    text-decoration: none;
+    color: var(--verde);
+    transition: 0.3s;
+}
+
+.menu-planos li {
+    list-style-type: none;
+    font-weight: var(--weight0);
+    line-height: 57px;
+    letter-spacing: 0.5px;
+    color: var(--verde);
+    font-size: var(--size1);
+
+}
+
+
+.menu-planos .logo{
+    width: 160px;
+    height: 21px;
+    margin-left: 45px;
+
+}
 
 
 @media screen and (max-width: 1048px) {
@@ -1593,6 +1625,9 @@ html {
 
 
 @media screen and (max-width: 768px) {
+    .menu-planos{
+        padding: 15px 25px;
+    }
 
     .box-1-prices,
     .box-2-prices {
@@ -1796,60 +1831,27 @@ html {
     left: 0;
 }
 
-.menu-planos{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--verde) ;
-    padding: 15px 70px;
-    
-}
-
-.menu-planos a{
-    text-decoration: none;
-    color: var(--verde);
-    transition: 0.3s;
-}
-
-.menu-planos li {
-    list-style-type: none;
-    font-weight: var(--weight0);
-    line-height: 57px;
-    letter-spacing: 0.5px;
-    color: var(--verde);
-    font-size: var(--size1);
-
-}
-
-
-.menu-planos .logo{
-    width: 160px;
-    height: 21px;
-    margin-left: 45px;
-
-}
-
 .page-planos .title-planos{
     font-weight: var(--weight);
     font-size: var(--size);
-    line-height: 45px;
+    line-height: 25px;
     color: var(--verde);
     text-align: center;
+    margin-top: 10px;
 }
 
 .content-planos{
 
     font-weight: var(--weight1);
     font-size: var(--size1);
-    line-height: 45px;
+    line-height: 25px;
     color: var(--verde);
     text-align: center;
-
 }
 
 .page-planos{
     max-width: 900px;
-    margin: auto;
+    margin: 0 auto;
     padding: 30px;
 }
 
@@ -1872,13 +1874,17 @@ html {
     color: var(--verde);
     margin-top: 50px;
 }
+.menu-position{
+    position: absolute;
+    width: 100%;
+    top: 0;
+}
 
 .page-center{
-    margin-top: 88px;
-    height: 70vh;
+    margin-top: 90px;
+    height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
 }
 
 .passos-planos{
@@ -1911,10 +1917,10 @@ color: var(--verde);
     align-items: center;
     max-width: 350px;
     margin: 20px auto;
-    border: 1px solid var(--verde);
     border-radius: 10px;
     padding: 15px;
     gap: 20px;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0,0.15)
 }
 
 .satistacao .itens.active{
@@ -2064,10 +2070,12 @@ input[type="checkbox"], input[type="radio"] {
 .input-dominio input[type="text"]{
     padding: 5px;
     border-radius: 5px 0px 0px 5px;
-    border: solidvar(--cinza4) 1px;
+    border: solid var(--cinza4) 1px;
     width: 40%;
 
 }
+.space{
+    height: 60vh !important;}
 
 .input-dominio-descrition{
     font-size: var(--size3);
