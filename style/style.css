@@ -91,7 +91,9 @@ html {
     scroll-behavior: smooth;
 }
 
-
+.input-spance{
+    max-width: 450px; margin: auto;
+}
 
 .menu {
     display: flex;
@@ -1412,6 +1414,8 @@ html {
     font-style: normal;
     padding: 25px;
     padding-right: 15px;
+    margin: auto;
+    max-width: 800px;
 }
 
 .calendario-info h2 {
@@ -1882,7 +1886,6 @@ html {
 
 .page-center{
     margin-top: 90px;
-    height: 100vh;
     display: flex;
     justify-content: center;
 }
@@ -1932,7 +1935,7 @@ color: var(--verde);
 }
 .box-border{
     background: var(--branco);
-    border: 1px solid var(--verde);
+    border: 1px solid var(--cinza);
     border-radius: 10px;
     color: var(--cinza3);
     font-size: var(--size2);
@@ -2074,8 +2077,7 @@ input[type="checkbox"], input[type="radio"] {
     width: 40%;
 
 }
-.space{
-    height: 60vh !important;}
+
 
 .input-dominio-descrition{
     font-size: var(--size3);

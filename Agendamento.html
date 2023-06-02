@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Info Dental</title>
+    <link rel="icon" type="image/x-icon" href="./img/FAVICON.svg?v1">
+    <link rel="stylesheet" href="./style/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/3.3.4/jquery.inputmask.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css?v1" />
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery.Marquee/1.5.0/jquery.marquee.min.js"></script>
+    <link rel="stylesheet" href="./style/jquery.datetimepicker.css">
+    <script src="script/jquery.datetimepicker.full.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@vime/core@^5/themes/default.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@vime/core@^5/themes/light.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@vime/core@^5/dist/vime/vime.esm.js"></script>
+</head>
+
+<body>
+
+    <!-- Menu-->
+    <section class="menu-position">
+        <div>
+            <div class="menu-planos">
+                <div class="js-voltar"><span class="iconify" data-icon="fluent:chevron-circle-left-24-filled" style="color: #344848;" data-width="30"></span></div>
+
+                <head>
+                    <img class="logo" src="./img/info-logo.svg" alt="Logo">
+                </head>
+
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Sair</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </section>
+    <!-- Conteudo-->
+    <main class="main" id="inicio">
+        
+        <!--form agendamento calendario -->
+        <section class="page-center">
+            <div class="page-planos">
+                <h2 class="title-planos">Agende agora seu horário com nosso time.</h2>
+                <form action="post">
+                    <div class="satistacao">
+                        <div class="input-grid">
+                            <div class="grid2 input-spance">
+                                <div>
+                                    <p>Responsável</p>
+                                    <p><input type="text"></p>
+                                </div>
+                                <div>
+                                    <p>Celular/Whatsapp</p>
+                                    <p><input type="text"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="calendario-info">
+                                <div class="calendario-info-p1">
+                                    <img class="perfil-calendario" src="./img/face.svg" alt="calendario">
+                                    <h2>Caio Lucena</h2>
+                                    <h3>Info Dental</h3>
+                                    <p class="calendario-info-description"><span class="iconify"
+                                            data-icon="fluent:info-16-regular"
+                                            style="color: white; display: block; width: 46px;" data-width="20"></span>
+                                        Consulta marcada. Habilite seu
+                                        Google Agenda para notificarmos
+                                        antes do horário da sua consulta.
+                                    </p>
+                                    <p><span class="iconify" data-icon="fluent:clock-16-regular" style="color: white;"
+                                            data-width="20"></span>01 hr</p>
+                                    <p><span class="iconify" data-icon="fluent:location-24-regular"
+                                            style="color: white;" data-width="20"></span> Presencial</p>
+                                    <p><span class="iconify" data-icon="fluent:globe-20-regular" style="color: white;"
+                                            data-width="20"></span>R. 5, nº 691 - St. Oeste, Goiânia - GO</p>
+                                </div>
+                                <div>
+                                    <div class="" id="datetimepicker3"></div>
+
+                                    <div class="calendario-color">
+                                        <div><span></span> Disponíveis</div>
+                                        <div> <span></span>Indisponíveis</div>
+                                        <div> <span></span> Selecionado</div>
+                                        <a href="javascript:;" class="confirmar-agenda">Confirmar</a>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <a class="button-planos js-proximo" href="javascript:;">Continuar</a>
+            </div>
+        </section>
+        <!--form cadastro-->
+        <section class="page-center">
+            <div class="page-planos">
+                <h2 class="title-planos">Seu acesso já está sendo configurado.</h2>
+                <div class="passos-planos">Para finalizar insira os últimos dados que precisamos!</div>
+                <form action="post">
+                    <div class="satistacao margin-20">
+                        <div class="input-grid">
+                            <div class="grid2">
+                                <div>
+                                    <p>CPF</p>
+                                    <p><input type="text"></p>
+                                </div>
+                                <div>
+                                    <p>E-mail</p>
+                                    <p><input type="text"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <a class="button-planos js-proximo" href="javascript:;">Finalizar</a>
+            </div>
+        </section>
+        <!--Finalizado agendamento-->
+        <section class="page-center">
+            <div class="page-planos" style="position: absolute;z-index: 100;">
+                <h2 class="title-planos  text-left">Parabéns.</h2>
+                <div class="passos-planos text-left">Acesse agora e conheça melhor nosso sistema.
+                    <br> Link de acesso: <a href="www.infodental.dental/demo"
+                        class="page-result">www.infodental.dental/demo</a>
+                    <div class="satistacao">
+                        <div class="box-border">
+                            <div>
+                                <div><strong>CPF</strong></div>
+                                <div>000.000.000-00</div>
+                            </div>
+                            <div>
+                                <div><strong>SENHA</strong></div>
+                                <div>demo</div>
+                            </div>
+                        </div>
+
+                        <div class="text-center"><img src="./img/parabens.svg" alt="parabens"
+                                style="margin-top: 30px; width: 100%;"></div>
+                    </div>
+                </div>
+        </section>
+        <!--video-->
+        <section>
+            <div class="Video-pop" style="display: none;">
+                <span class="fechar-mobile"><span class="iconify" data-icon="fluent:dismiss-circle-20-filled"data-width="30" style="position: fixed;z-index: 106;top: 35px;right: 5%;cursor: pointer; color:#ffff;"></span></span>
+                <div class="VideoPlayer" style="width: 70%;">
+                </div>
+            </div>
+            <div class="video-viewer">
+                <div>
+                    <b>Ainda em dúvida?</b>
+                    <p>Assista agora o vídeo explicativo</p>
+                </div>
+                <span class="iconify" data-icon="fluent:play-20-filled" style="color: white;" data-width="25"></span>
+            </div>
+        </section>
+        
+
+
+
+
+    </main>
+    <!-- footer-->
+
+    <script src="./script/scritp-planos.js"></script>
+    <script src="./script/jquery.confetti.js"></script>
+</body>
+
+</html>
