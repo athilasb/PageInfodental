@@ -34,3 +34,34 @@ $('#datetimepicker3').datetimepicker({
       $('.confirmar-agenda').removeClass('active');
     }
   });
+
+
+
+  $(".fechar-mobile").click(function () {
+    $(".Video-pop").fadeOut();
+    $(".VideoPlayer").html(``)
+  })
+  $(".video-viewer").click(function () {
+    $(".Video-pop").fadeIn();
+    $(".VideoPlayer").html(`<vm-player theme="dark" style="--vm-player-theme: #e86c8b;"> <vm-video cross-origin 
+      poster="https://media.vimejs.com/poster.png">
+      <source data-src="https://media.vimejs.com/720p.mp4" 
+      
+      type="video/mp4" /> <track  default  kind="subtitles"  src="https://media.vimejs.com/subs/portugues.vtt"  srclang="pt-br"  label="portugues"  /> </vm-video> <vm-default-ui><vm-default-ui> </vm-player>`)
+  })
+
+  $(document).ready(function () {
+    const player = new Vimeo.Player('#vimeo-player', {
+      id: 'https://media.geeksforgeeks.org/wp-content/uploads/20200107020629/sample_video.mp4',
+      autoplay: true
+    });
+
+    player.on('play', function () {
+      console.log('O vídeo foi iniciado');
+    });
+
+    player.on('pause', function () {
+      console.log('O vídeo foi pausado');
+    });
+  });
+
